@@ -1,0 +1,1136 @@
+# ============================================================
+# KOBI EL - Full ERP System Specification
+# Enterprise Product Architecture - SAP/Oracle/Priority Level
+# ============================================================
+# Source of Truth:
+#   UI/UX → New system design
+#   Business Logic → Old system (AI-Task-Manager)
+# ============================================================
+
+# ============================================================
+# LAYER 1: FULL SYSTEM MAP
+# ============================================================
+system_map:
+  dashboard:
+    purpose: "מסך על מרכזי עם KPI, קיצורי דרך, משימות פתוחות, חריגים והתראות"
+    priority: critical
+
+  crm:
+    purpose: "ניהול לקוחות, לידים, אנשי קשר, פעילויות, תקשורת ומסמכים"
+    priority: high
+
+  sales:
+    purpose: "ניהול הצעות מחיר, הזדמנויות, הזמנות לקוח, pipeline ומעקב מכירות"
+    priority: high
+
+  customers:
+    purpose: "ניהול לקוחות פעילים, כרטיס לקוח, מסמכים, יתרות והיסטוריה"
+    priority: critical
+
+  suppliers:
+    purpose: "ניהול ספקים, התקשרויות, מסמכי רכש, תשלומים והיסטוריה"
+    priority: critical
+
+  products_services:
+    purpose: "קטלוג מוצרים ושירותים, מחירים, קטגוריות, יחידות מידה ומדיניות"
+    priority: high
+
+  projects:
+    purpose: "ניהול פרויקטים, משימות, אבני דרך, תקציב, רווחיות וקבצים"
+    priority: medium
+
+  procurement:
+    purpose: "דרישות רכש, הזמנות רכש, קבלת סחורה/שירות, התאמות ומעקב"
+    priority: high
+
+  inventory:
+    purpose: "מלאי, מחסנים, תנועות, מקטים, רמות מלאי, הקצאות וספירות"
+    priority: medium
+
+  finance:
+    purpose: "הכנסות, הוצאות, מסמכים, תשלומים, התאמות, גבייה וחשבונאות"
+    priority: critical
+
+  billing:
+    purpose: "חשבוניות, קבלות, דרישות תשלום, מסמכים מחזוריים, זיכויים"
+    priority: critical
+
+  payments:
+    purpose: "סליקה, העברות, מס\"ב, הוראות קבע, שיוך תשלומים למסמכים"
+    priority: critical
+
+  hr:
+    purpose: "עובדים, תפקידים, נוכחות, שכר, משימות והרשאות"
+    priority: medium
+
+  operations:
+    purpose: "תהליכי עבודה, סטטוסים, SLA, תורים, ביצוע ותפעול"
+    priority: medium
+
+  documents:
+    purpose: "מרכז מסמכים, קבצים, חתימות, גרסאות, שיוכים וישויות קשורות"
+    priority: high
+
+  reports:
+    purpose: "דוחות, KPI, חתכים, ייצוא, בקרה וניתוחים"
+    priority: high
+
+  automations:
+    purpose: "טריגרים, חוקים, אוטומציות, תזמונים, webhooks, integrations"
+    priority: medium
+
+  settings:
+    purpose: "הגדרות מערכת, מאסטר דאטה, הרשאות, סטטוסים, מספור, לוגים"
+    priority: critical
+
+# ============================================================
+# LAYER 2: MAIN SIDE MENU
+# ============================================================
+main_menu:
+  - icon: dashboard
+    label: "דשבורד"
+    route: /dashboard
+
+  - icon: people
+    label: "CRM"
+    route: /crm
+    children:
+      - label: "לידים"
+        route: /crm/leads
+      - label: "אנשי קשר"
+        route: /crm/contacts
+      - label: "פעילויות"
+        route: /crm/activities
+
+  - icon: trending_up
+    label: "מכירות"
+    route: /sales
+    children:
+      - label: "הזדמנויות"
+        route: /sales/opportunities
+      - label: "הצעות מחיר"
+        route: /sales/quotes
+      - label: "הזמנות לקוח"
+        route: /sales/orders
+      - label: "Pipeline"
+        route: /sales/pipeline
+
+  - icon: person
+    label: "לקוחות"
+    route: /customers
+    children:
+      - label: "רשימת לקוחות"
+        route: /customers/list
+      - label: "לקוח חדש"
+        route: /customers/create
+
+  - icon: local_shipping
+    label: "ספקים"
+    route: /suppliers
+    children:
+      - label: "רשימת ספקים"
+        route: /suppliers/list
+      - label: "ספק חדש"
+        route: /suppliers/create
+
+  - icon: inventory_2
+    label: "מוצרים ושירותים"
+    route: /products
+    children:
+      - label: "קטלוג"
+        route: /products/catalog
+      - label: "קטגוריות"
+        route: /products/categories
+      - label: "מחירונים"
+        route: /products/price-lists
+
+  - icon: assignment
+    label: "פרויקטים"
+    route: /projects
+    children:
+      - label: "רשימת פרויקטים"
+        route: /projects/list
+      - label: "משימות"
+        route: /projects/tasks
+      - label: "אבני דרך"
+        route: /projects/milestones
+
+  - icon: shopping_cart
+    label: "רכש"
+    route: /procurement
+    children:
+      - label: "דרישות רכש"
+        route: /procurement/requests
+      - label: "הזמנות רכש"
+        route: /procurement/orders
+      - label: "קבלת סחורה"
+        route: /procurement/receipts
+
+  - icon: warehouse
+    label: "מלאי"
+    route: /inventory
+    children:
+      - label: "מצב מלאי"
+        route: /inventory/stock
+      - label: "מחסנים"
+        route: /inventory/warehouses
+      - label: "תנועות מלאי"
+        route: /inventory/movements
+      - label: "ספירת מלאי"
+        route: /inventory/counts
+
+  - icon: account_balance
+    label: "פיננסים"
+    route: /finance
+    children:
+      - label: "סקירה כללית"
+        route: /finance/overview
+      - label: "הכנסות"
+        route: /finance/income
+      - label: "הוצאות"
+        route: /finance/expenses
+      - label: "התאמות"
+        route: /finance/reconciliation
+
+  - icon: receipt_long
+    label: "חיוב ומסמכים"
+    route: /billing
+    children:
+      - label: "חשבוניות"
+        route: /billing/invoices
+      - label: "קבלות"
+        route: /billing/receipts
+      - label: "דרישות תשלום"
+        route: /billing/payment-requests
+      - label: "זיכויים"
+        route: /billing/credit-notes
+      - label: "מסמכים מחזוריים"
+        route: /billing/recurring
+
+  - icon: payments
+    label: "תשלומים"
+    route: /payments
+    children:
+      - label: "סליקת אשראי"
+        route: /payments/credit-clearing
+      - label: "העברות בנקאיות"
+        route: /payments/bank-transfers
+      - label: "מס\"ב"
+        route: /payments/masav
+      - label: "הוראות קבע"
+        route: /payments/standing-orders
+      - label: "שיוך תשלומים"
+        route: /payments/matching
+
+  - icon: groups
+    label: "משאבי אנוש"
+    route: /hr
+    children:
+      - label: "עובדים"
+        route: /hr/employees
+      - label: "נוכחות"
+        route: /hr/attendance
+      - label: "שכר"
+        route: /hr/payroll
+      - label: "תפקידים"
+        route: /hr/roles
+
+  - icon: engineering
+    label: "תפעול"
+    route: /operations
+    children:
+      - label: "תהליכי עבודה"
+        route: /operations/workflows
+      - label: "תורי עבודה"
+        route: /operations/queues
+      - label: "SLA"
+        route: /operations/sla
+
+  - icon: folder
+    label: "מסמכים"
+    route: /documents
+    children:
+      - label: "מרכז מסמכים"
+        route: /documents/center
+      - label: "קבצים"
+        route: /documents/files
+      - label: "תבניות"
+        route: /documents/templates
+
+  - icon: bar_chart
+    label: "דוחות"
+    route: /reports
+    children:
+      - label: "דוחות כספיים"
+        route: /reports/financial
+      - label: "דוחות מכירות"
+        route: /reports/sales
+      - label: "דוחות מלאי"
+        route: /reports/inventory
+      - label: "KPI"
+        route: /reports/kpi
+
+  - icon: smart_toy
+    label: "אוטומציות"
+    route: /automations
+    children:
+      - label: "חוקים"
+        route: /automations/rules
+      - label: "תזמונים"
+        route: /automations/schedules
+      - label: "Webhooks"
+        route: /automations/webhooks
+
+  - icon: settings
+    label: "הגדרות"
+    route: /settings
+    children:
+      - label: "כללי"
+        route: /settings/general
+      - label: "משתמשים"
+        route: /settings/users
+      - label: "הרשאות"
+        route: /settings/permissions
+      - label: "סטטוסים"
+        route: /settings/statuses
+      - label: "סוגי מסמכים"
+        route: /settings/document-types
+      - label: "אמצעי תשלום"
+        route: /settings/payment-methods
+      - label: "קטגוריות"
+        route: /settings/categories
+      - label: "מספור אוטומטי"
+        route: /settings/auto-numbering
+      - label: "לוג מערכת"
+        route: /settings/audit-log
+
+# ============================================================
+# LAYER 3: SUB-MENU TREE PER MODULE
+# ============================================================
+sub_menus:
+  dashboard:
+    pages:
+      - main_dashboard
+
+  crm:
+    pages:
+      - leads_list
+      - lead_create
+      - lead_details
+      - contacts_list
+      - contact_create
+      - contact_details
+      - activities_list
+      - activity_create
+      - activity_details
+
+  sales:
+    pages:
+      - opportunities_list
+      - opportunity_create
+      - opportunity_details
+      - quotes_list
+      - quote_create
+      - quote_details
+      - sales_orders_list
+      - sales_order_create
+      - sales_order_details
+      - pipeline_view
+
+  customers:
+    pages:
+      - customers_list
+      - customer_create
+      - customer_edit
+      - customer_profile
+      - customer_documents
+      - customer_payments
+      - customer_activity_log
+
+  suppliers:
+    pages:
+      - suppliers_list
+      - supplier_create
+      - supplier_edit
+      - supplier_profile
+      - supplier_documents
+      - supplier_payments
+      - supplier_activity_log
+
+  products_services:
+    pages:
+      - catalog_list
+      - product_create
+      - product_edit
+      - product_details
+      - categories_list
+      - category_create
+      - price_lists
+      - price_list_details
+
+  projects:
+    pages:
+      - projects_list
+      - project_create
+      - project_details
+      - project_tasks
+      - project_milestones
+      - project_budget
+      - project_files
+      - project_activity_log
+
+  procurement:
+    pages:
+      - purchase_requests_list
+      - purchase_request_create
+      - purchase_request_details
+      - purchase_orders_list
+      - purchase_order_create
+      - purchase_order_details
+      - goods_receipts_list
+      - goods_receipt_create
+      - goods_receipt_details
+
+  inventory:
+    pages:
+      - stock_overview
+      - warehouses_list
+      - warehouse_details
+      - movements_list
+      - movement_create
+      - inventory_counts_list
+      - inventory_count_create
+      - inventory_count_details
+
+  finance:
+    pages:
+      - finance_overview
+      - income_documents_list
+      - income_document_create
+      - income_document_details
+      - expense_documents_list
+      - expense_document_create
+      - expense_document_details
+      - reconciliation_screen
+      - document_relations
+
+  billing:
+    pages:
+      - invoices_list
+      - invoice_create
+      - invoice_details
+      - receipts_list
+      - receipt_create
+      - receipt_details
+      - payment_requests_list
+      - payment_request_create
+      - payment_request_details
+      - credit_notes_list
+      - credit_note_create
+      - credit_note_details
+      - recurring_templates_list
+      - recurring_template_create
+      - recurring_template_details
+
+  payments:
+    pages:
+      - credit_transactions_list
+      - credit_charge_create
+      - bank_transfers_list
+      - bank_transfer_create
+      - masav_batches_list
+      - masav_batch_create
+      - standing_orders_list
+      - standing_order_create
+      - payment_matching_screen
+
+  hr:
+    pages:
+      - employees_list
+      - employee_create
+      - employee_profile
+      - attendance_list
+      - attendance_report
+      - payroll_list
+      - payroll_run
+      - roles_list
+      - role_create
+
+  operations:
+    pages:
+      - workflows_list
+      - workflow_create
+      - workflow_details
+      - queues_list
+      - queue_details
+      - sla_list
+      - sla_create
+
+  documents:
+    pages:
+      - document_center
+      - file_upload
+      - file_details
+      - templates_list
+      - template_create
+      - template_details
+
+  reports:
+    pages:
+      - financial_reports
+      - sales_reports
+      - inventory_reports
+      - kpi_dashboard
+      - custom_report_builder
+
+  automations:
+    pages:
+      - rules_list
+      - rule_create
+      - rule_details
+      - schedules_list
+      - schedule_create
+      - webhooks_list
+      - webhook_create
+
+  settings:
+    pages:
+      - general_settings
+      - users_list
+      - user_create
+      - user_details
+      - permissions_matrix
+      - statuses_list
+      - document_types_list
+      - payment_methods_list
+      - categories_list
+      - auto_numbering
+      - audit_log
+
+# ============================================================
+# LAYER 4: ALL PAGES IN SYSTEM
+# ============================================================
+total_pages_count: 147
+# See sub_menus above for complete list per module
+
+# ============================================================
+# LAYER 5: ALL ENTITIES/TABLES
+# ============================================================
+entities:
+  # === Foundation ===
+  statuses:
+    type: seed_table
+    seed: [draft, pending, open, paid, partially_paid, cancelled, archived, failed, recurring_active, recurring_paused]
+
+  document_types:
+    type: seed_table
+    seed: [receipt, invoice, invoice_receipt, payment_request, expense_invoice, expense_receipt, credit_note, other_document, recurring_document_template]
+
+  payment_methods:
+    type: seed_table
+    seed: [cash, credit_card, bank_transfer, check, standing_order, masav, other]
+
+  categories:
+    type: hierarchical
+    fields: [id, name, direction, parent_category_id, is_active]
+
+  # === Core Business ===
+  customers:
+    type: master_data
+    fields: [id, customer_number, full_name, phone, email, company_name, tax_id, address, city, zip_code, notes, status_id, created_at, updated_at]
+
+  suppliers:
+    type: master_data
+    fields: [id, supplier_number, full_name, company_name, phone, email, tax_id, address, city, zip_code, notes, status_id, created_at, updated_at]
+
+  contacts:
+    type: master_data
+    fields: [id, first_name, last_name, phone, email, company, position, customer_id, supplier_id, notes, created_at, updated_at]
+
+  leads:
+    type: transactional
+    fields: [id, name, company, phone, email, source, status_id, assigned_to, notes, created_at, updated_at]
+
+  # === Products & Services ===
+  products:
+    type: master_data
+    fields: [id, sku, name, description, category_id, unit_of_measure, default_price, tax_rate, is_active, created_at, updated_at]
+
+  price_lists:
+    type: master_data
+    fields: [id, name, currency, effective_from, effective_to, is_active, created_at]
+
+  price_list_items:
+    type: junction
+    fields: [id, price_list_id, product_id, price, min_quantity, created_at]
+
+  # === Sales ===
+  opportunities:
+    type: transactional
+    fields: [id, name, customer_id, contact_id, stage, probability, expected_amount, expected_close_date, assigned_to, notes, status_id, created_at, updated_at]
+
+  quotes:
+    type: transactional
+    fields: [id, quote_number, customer_id, contact_id, opportunity_id, issue_date, valid_until, subtotal, tax_amount, total_amount, status_id, notes, created_at, updated_at]
+
+  quote_items:
+    type: line_items
+    fields: [id, quote_id, product_id, description, quantity, unit_price, discount_percent, tax_rate, line_total, sort_order]
+
+  sales_orders:
+    type: transactional
+    fields: [id, order_number, customer_id, quote_id, order_date, delivery_date, subtotal, tax_amount, total_amount, status_id, notes, created_at, updated_at]
+
+  sales_order_items:
+    type: line_items
+    fields: [id, sales_order_id, product_id, description, quantity, unit_price, discount_percent, tax_rate, line_total, delivered_quantity, sort_order]
+
+  # === Documents (Central) ===
+  documents:
+    type: central_transactional
+    fields: [id, document_number, document_type_id, direction, customer_id, supplier_id, issue_date, due_date, reference_number, title, description, currency, subtotal_amount, tax_amount, total_amount, paid_amount, balance_due, payment_method_id, status_id, is_recurring_template, parent_recurring_id, created_by, created_at, updated_at]
+    rules:
+      - "direction=income → customer_id required"
+      - "direction=expense → supplier_id required"
+      - "document_number unique per document_type"
+      - "status auto-updates based on payment"
+
+  document_items:
+    type: line_items
+    fields: [id, document_id, product_id, description, quantity, unit_price, discount_percent, tax_rate, line_total, sort_order]
+
+  document_links:
+    type: junction
+    fields: [id, source_document_id, target_document_id, link_type, notes, created_at]
+    link_types: [based_on, converted_to, paid_by, receipt_for, related_to, attachment_reference]
+
+  attachments:
+    type: supporting
+    fields: [id, document_id, file_name, file_url, file_type, uploaded_at, uploaded_by]
+
+  # === Payments ===
+  payments:
+    type: transactional
+    fields: [id, document_id, payment_method_id, payment_date, amount, reference_number, external_transaction_id, status_id, notes, created_at]
+    rules:
+      - "full payment → status = paid"
+      - "partial payment → status = partially_paid"
+      - "updates paid_amount and balance_due on document"
+
+  credit_transactions:
+    type: transactional
+    fields: [id, customer_id, document_id, transaction_date, amount, transaction_code, provider_reference, status_id, notes, created_at]
+
+  standing_orders:
+    type: transactional
+    fields: [id, customer_id, related_document_id, amount, frequency, start_date, end_date, status_id, notes, created_at]
+
+  recurring_documents:
+    type: transactional
+    fields: [id, template_document_id, frequency, interval_value, next_run_date, end_date, auto_send, status_id, created_at, updated_at]
+
+  # === Procurement ===
+  purchase_requests:
+    type: transactional
+    fields: [id, request_number, requested_by, department, request_date, needed_by, status_id, notes, approved_by, approved_at, created_at, updated_at]
+
+  purchase_request_items:
+    type: line_items
+    fields: [id, purchase_request_id, product_id, description, quantity, estimated_price, supplier_id, sort_order]
+
+  purchase_orders:
+    type: transactional
+    fields: [id, order_number, supplier_id, purchase_request_id, order_date, expected_delivery, subtotal, tax_amount, total_amount, status_id, notes, created_at, updated_at]
+
+  purchase_order_items:
+    type: line_items
+    fields: [id, purchase_order_id, product_id, description, quantity, unit_price, tax_rate, line_total, received_quantity, sort_order]
+
+  goods_receipts:
+    type: transactional
+    fields: [id, receipt_number, purchase_order_id, supplier_id, receipt_date, warehouse_id, status_id, notes, received_by, created_at]
+
+  goods_receipt_items:
+    type: line_items
+    fields: [id, goods_receipt_id, purchase_order_item_id, product_id, quantity_received, quality_status, notes, sort_order]
+
+  # === Inventory ===
+  warehouses:
+    type: master_data
+    fields: [id, name, code, address, city, manager, is_active, created_at]
+
+  stock_levels:
+    type: computed
+    fields: [id, product_id, warehouse_id, quantity_on_hand, quantity_reserved, quantity_available, reorder_level, last_updated]
+
+  inventory_movements:
+    type: transactional
+    fields: [id, product_id, warehouse_from_id, warehouse_to_id, movement_type, quantity, reference_type, reference_id, notes, performed_by, created_at]
+    movement_types: [in, out, transfer, adjustment, count]
+
+  inventory_counts:
+    type: transactional
+    fields: [id, count_number, warehouse_id, count_date, status_id, counted_by, approved_by, notes, created_at]
+
+  inventory_count_items:
+    type: line_items
+    fields: [id, inventory_count_id, product_id, system_quantity, counted_quantity, variance, notes]
+
+  # === Projects ===
+  projects:
+    type: transactional
+    fields: [id, project_number, name, customer_id, start_date, end_date, budget, actual_cost, status_id, manager, description, created_at, updated_at]
+
+  project_tasks:
+    type: transactional
+    fields: [id, project_id, name, description, assigned_to, start_date, due_date, actual_hours, estimated_hours, status_id, priority, parent_task_id, sort_order, created_at, updated_at]
+
+  project_milestones:
+    type: transactional
+    fields: [id, project_id, name, due_date, completed_date, status_id, deliverable, notes, created_at]
+
+  # === HR ===
+  employees:
+    type: master_data
+    fields: [id, employee_number, first_name, last_name, email, phone, department, position, manager_id, hire_date, status_id, created_at, updated_at]
+
+  attendance:
+    type: transactional
+    fields: [id, employee_id, date, clock_in, clock_out, total_hours, status_id, notes, created_at]
+
+  payroll_runs:
+    type: transactional
+    fields: [id, period_start, period_end, run_date, total_gross, total_deductions, total_net, status_id, created_by, created_at]
+
+  payroll_items:
+    type: line_items
+    fields: [id, payroll_run_id, employee_id, gross_pay, deductions, net_pay, notes]
+
+  # === Operations ===
+  workflows:
+    type: master_data
+    fields: [id, name, description, trigger_entity, trigger_event, is_active, created_at, updated_at]
+
+  workflow_steps:
+    type: master_data
+    fields: [id, workflow_id, step_order, action_type, action_config_json, condition_json]
+
+  work_queues:
+    type: transactional
+    fields: [id, name, entity_type, assigned_team, priority, sla_hours, is_active, created_at]
+
+  # === System ===
+  users:
+    type: master_data
+    fields: [id, username, email, full_name, role_id, is_active, last_login, created_at, updated_at]
+
+  roles:
+    type: master_data
+    fields: [id, name, description, created_at]
+
+  role_permissions:
+    type: junction
+    fields: [id, role_id, module, action, is_allowed]
+
+  activity_logs:
+    type: audit
+    fields: [id, entity_type, entity_id, action_type, old_value_json, new_value_json, actor, created_at]
+    action_types: [created, updated, deleted, linked, unlinked, uploaded_file, payment_recorded, status_changed]
+
+  auto_number_sequences:
+    type: system
+    fields: [id, entity_type, prefix, next_value, padding_length]
+
+  notifications:
+    type: system
+    fields: [id, user_id, title, message, entity_type, entity_id, is_read, created_at]
+
+# ============================================================
+# LAYER 6: FIELDS PER ENTITY
+# ============================================================
+# See entities section above - all fields defined per entity
+
+# ============================================================
+# LAYER 7: ACTIONS PER PAGE
+# ============================================================
+page_actions:
+  # Dashboard
+  main_dashboard:
+    quick_actions:
+      - {action: create_customer, target: /customers/create}
+      - {action: create_supplier, target: /suppliers/create}
+      - {action: create_income_document, target: /finance/income/create}
+      - {action: upload_expense, target: /finance/expenses/create}
+      - {action: create_invoice, target: /billing/invoices/create}
+      - {action: create_invoice_receipt, target: /billing/receipts/create}
+      - {action: create_recurring_document, target: /billing/recurring/create}
+      - {action: create_standing_order, target: /payments/standing-orders/create}
+      - {action: quick_credit_charge, target: /payments/credit-clearing/create}
+
+  # Customers
+  customers_list:
+    actions:
+      - {action: create, target: /customers/create}
+      - {action: edit, target: "/customers/:id/edit"}
+      - {action: view_profile, target: "/customers/:id"}
+      - {action: export, type: bulk}
+      - {action: search, type: filter}
+      - {action: filter_by_status, type: filter}
+
+  customer_profile:
+    actions:
+      - {action: edit, target: "/customers/:id/edit"}
+      - {action: create_document, target: "/finance/income/create?customer_id=:id"}
+      - {action: create_quote, target: "/sales/quotes/create?customer_id=:id"}
+      - {action: view_documents, tab: documents}
+      - {action: view_payments, tab: payments}
+      - {action: view_standing_orders, tab: standing_orders}
+      - {action: view_activity, tab: activity_log}
+
+  # Suppliers
+  suppliers_list:
+    actions:
+      - {action: create, target: /suppliers/create}
+      - {action: edit, target: "/suppliers/:id/edit"}
+      - {action: view_profile, target: "/suppliers/:id"}
+      - {action: export, type: bulk}
+
+  supplier_profile:
+    actions:
+      - {action: edit, target: "/suppliers/:id/edit"}
+      - {action: create_expense, target: "/finance/expenses/create?supplier_id=:id"}
+      - {action: create_purchase_order, target: "/procurement/orders/create?supplier_id=:id"}
+      - {action: view_documents, tab: documents}
+      - {action: view_payments, tab: payments}
+      - {action: view_activity, tab: activity_log}
+
+  # Income Documents
+  income_documents_list:
+    actions:
+      - {action: create, target: /finance/income/create}
+      - {action: view, target: "/finance/income/:id"}
+      - {action: duplicate, type: inline}
+      - {action: link_document, type: modal}
+      - {action: record_payment, type: modal}
+      - {action: filter_by_type, type: filter}
+      - {action: filter_by_customer, type: filter}
+      - {action: filter_by_date, type: filter}
+      - {action: filter_by_status, type: filter}
+      - {action: filter_by_amount, type: filter}
+
+  income_document_details:
+    actions:
+      - {action: edit, target: "/finance/income/:id/edit"}
+      - {action: record_payment, type: modal}
+      - {action: link_document, type: modal}
+      - {action: upload_attachment, type: modal}
+      - {action: duplicate, type: action}
+      - {action: cancel_document, type: action}
+      - {action: convert_to_invoice, type: action, condition: "type=payment_request"}
+      - {action: create_receipt, type: action, condition: "type=invoice"}
+
+  # Expense Documents
+  expense_documents_list:
+    actions:
+      - {action: upload_expense, target: /finance/expenses/create}
+      - {action: create_expense, target: /finance/expenses/create}
+      - {action: view, target: "/finance/expenses/:id"}
+      - {action: attach_file, type: modal}
+      - {action: link_document, type: modal}
+
+  expense_document_details:
+    actions:
+      - {action: edit, target: "/finance/expenses/:id/edit"}
+      - {action: record_payment, type: modal}
+      - {action: link_document, type: modal}
+      - {action: upload_attachment, type: modal}
+
+  # Billing
+  invoices_list:
+    actions:
+      - {action: create, target: /billing/invoices/create}
+      - {action: view, target: "/billing/invoices/:id"}
+      - {action: send_to_customer, type: action}
+      - {action: record_payment, type: modal}
+      - {action: create_credit_note, type: action}
+
+  # Payments
+  credit_transactions_list:
+    actions:
+      - {action: create_charge, target: /payments/credit-clearing/create}
+      - {action: view, target: "/payments/credit-clearing/:id"}
+      - {action: match_to_document, type: modal}
+
+  standing_orders_list:
+    actions:
+      - {action: create, target: /payments/standing-orders/create}
+      - {action: view, target: "/payments/standing-orders/:id"}
+      - {action: pause, type: action}
+      - {action: resume, type: action}
+      - {action: cancel, type: action}
+
+  payment_matching_screen:
+    actions:
+      - {action: match_payment_to_document, type: modal}
+      - {action: mark_as_paid, type: action}
+      - {action: mark_as_partial, type: action}
+      - {action: unmatch, type: action}
+
+# ============================================================
+# LAYER 8: NAVIGATION MAP
+# ============================================================
+navigation_map:
+  dashboard:
+    navigates_to:
+      - customers_list
+      - suppliers_list
+      - income_documents_list
+      - expense_documents_list
+      - credit_transactions_list
+      - standing_orders_list
+      - billing_invoices_list
+      - reports_kpi
+
+  customer_profile:
+    navigates_to:
+      - customer_edit
+      - income_document_create
+      - quote_create
+      - document_details (via documents tab)
+      - payment_details (via payments tab)
+      - standing_order_details (via standing_orders tab)
+
+  supplier_profile:
+    navigates_to:
+      - supplier_edit
+      - expense_document_create
+      - purchase_order_create
+      - document_details (via documents tab)
+
+  income_document_details:
+    navigates_to:
+      - customer_profile (click customer name)
+      - linked_document_details (via links tab)
+      - attachment_download (via attachments tab)
+      - payment_details (via payments tab)
+      - income_document_edit
+
+  expense_document_details:
+    navigates_to:
+      - supplier_profile (click supplier name)
+      - linked_document_details (via links tab)
+      - attachment_download (via attachments tab)
+      - payment_details (via payments tab)
+
+  invoice_details:
+    navigates_to:
+      - customer_profile
+      - receipt_create (action: create receipt)
+      - credit_note_create (action: create credit note)
+      - payment_record (action: record payment)
+      - quote_details (if based on quote)
+      - sales_order_details (if based on order)
+
+  purchase_order_details:
+    navigates_to:
+      - supplier_profile
+      - goods_receipt_create
+      - purchase_request_details (if based on request)
+      - expense_document_create
+
+  project_details:
+    navigates_to:
+      - project_tasks_list
+      - project_milestones_list
+      - project_budget
+      - project_files
+      - customer_profile
+      - document_details (linked invoices/expenses)
+
+# ============================================================
+# LAYER 9: RELATED RECORDS (TABS/RELATIONS/CARDS)
+# ============================================================
+related_records:
+  customer_profile:
+    tabs:
+      - {name: "פרטים", entity: customers, type: detail_card}
+      - {name: "מסמכים", entity: documents, filter: "customer_id=:id", type: table}
+      - {name: "הצעות מחיר", entity: quotes, filter: "customer_id=:id", type: table}
+      - {name: "הזמנות", entity: sales_orders, filter: "customer_id=:id", type: table}
+      - {name: "תשלומים", entity: payments, filter: "via documents.customer_id=:id", type: table}
+      - {name: "הוראות קבע", entity: standing_orders, filter: "customer_id=:id", type: table}
+      - {name: "סליקות", entity: credit_transactions, filter: "customer_id=:id", type: table}
+      - {name: "אנשי קשר", entity: contacts, filter: "customer_id=:id", type: table}
+      - {name: "לוג פעילות", entity: activity_logs, filter: "entity_type=customer,entity_id=:id", type: timeline}
+
+  supplier_profile:
+    tabs:
+      - {name: "פרטים", entity: suppliers, type: detail_card}
+      - {name: "מסמכי הוצאה", entity: documents, filter: "supplier_id=:id,direction=expense", type: table}
+      - {name: "הזמנות רכש", entity: purchase_orders, filter: "supplier_id=:id", type: table}
+      - {name: "קבלות סחורה", entity: goods_receipts, filter: "supplier_id=:id", type: table}
+      - {name: "תשלומים", entity: payments, filter: "via documents.supplier_id=:id", type: table}
+      - {name: "אנשי קשר", entity: contacts, filter: "supplier_id=:id", type: table}
+      - {name: "לוג פעילות", entity: activity_logs, filter: "entity_type=supplier,entity_id=:id", type: timeline}
+
+  income_document_details:
+    tabs:
+      - {name: "פרטי מסמך", entity: documents, type: detail_card}
+      - {name: "שורות מסמך", entity: document_items, filter: "document_id=:id", type: editable_table}
+      - {name: "מסמכים מקושרים", entity: document_links, filter: "source_document_id=:id OR target_document_id=:id", type: table}
+      - {name: "קבצים", entity: attachments, filter: "document_id=:id", type: file_grid}
+      - {name: "תשלומים", entity: payments, filter: "document_id=:id", type: table}
+      - {name: "לוג פעילות", entity: activity_logs, filter: "entity_type=document,entity_id=:id", type: timeline}
+
+  project_details:
+    tabs:
+      - {name: "פרטי פרויקט", entity: projects, type: detail_card}
+      - {name: "משימות", entity: project_tasks, filter: "project_id=:id", type: kanban_or_table}
+      - {name: "אבני דרך", entity: project_milestones, filter: "project_id=:id", type: timeline}
+      - {name: "תקציב", type: budget_summary}
+      - {name: "קבצים", entity: attachments, filter: "entity_type=project,entity_id=:id", type: file_grid}
+      - {name: "לוג פעילות", entity: activity_logs, filter: "entity_type=project,entity_id=:id", type: timeline}
+
+# ============================================================
+# LAYER 10: STATUSES, FILTERS, SEARCH, VIEWS
+# ============================================================
+statuses:
+  global:
+    seed: [draft, pending, open, paid, partially_paid, cancelled, archived, failed, recurring_active, recurring_paused]
+
+  opportunities:
+    stages: [new, qualification, proposal, negotiation, closed_won, closed_lost]
+
+  purchase_orders:
+    statuses: [draft, sent, confirmed, partially_received, received, cancelled]
+
+  projects:
+    statuses: [planning, active, on_hold, completed, cancelled]
+
+  tasks:
+    statuses: [todo, in_progress, review, done, cancelled]
+
+  inventory_movements:
+    types: [in, out, transfer, adjustment, count]
+
+filters:
+  customers_list: [status, city, created_date_range, search_name_phone_email]
+  suppliers_list: [status, city, search_name_phone_email]
+  income_documents: [document_type, customer, date_range, status, amount_range, payment_method]
+  expense_documents: [supplier, document_type, date_range, status, category]
+  invoices: [customer, date_range, status, amount_range, due_date_range]
+  payments: [payment_method, date_range, status, amount_range]
+  products: [category, is_active, price_range]
+  projects: [status, manager, customer, date_range]
+  employees: [department, status, role]
+  purchase_orders: [supplier, status, date_range]
+  inventory: [warehouse, product, movement_type, date_range]
+
+search:
+  global_search:
+    searches_in: [customers, suppliers, documents, products, projects, employees]
+    fields: [name, number, phone, email, reference]
+
+views:
+  list_view: default
+  kanban_view: [opportunities, tasks]
+  calendar_view: [tasks, milestones, attendance]
+  timeline_view: [activity_logs, project_milestones]
+
+# ============================================================
+# LAYER 11: SETTINGS / PERMISSIONS / AUDIT
+# ============================================================
+settings:
+  general:
+    - company_name
+    - company_logo
+    - default_currency
+    - default_tax_rate
+    - fiscal_year_start
+    - date_format
+    - language
+
+  auto_numbering:
+    entities:
+      - {entity: customers, prefix: "CUS-", padding: 5}
+      - {entity: suppliers, prefix: "SUP-", padding: 5}
+      - {entity: invoices, prefix: "INV-", padding: 6}
+      - {entity: receipts, prefix: "RCP-", padding: 6}
+      - {entity: payment_requests, prefix: "PRQ-", padding: 6}
+      - {entity: credit_notes, prefix: "CRN-", padding: 6}
+      - {entity: quotes, prefix: "QUO-", padding: 5}
+      - {entity: sales_orders, prefix: "SO-", padding: 5}
+      - {entity: purchase_orders, prefix: "PO-", padding: 5}
+      - {entity: projects, prefix: "PRJ-", padding: 4}
+
+  master_data:
+    - statuses
+    - document_types
+    - payment_methods
+    - categories
+    - warehouses
+    - departments
+    - roles
+
+permissions:
+  model: RBAC (Role-Based Access Control)
+  actions: [view, create, edit, delete, export, approve]
+  modules: [dashboard, crm, sales, customers, suppliers, products, projects, procurement, inventory, finance, billing, payments, hr, operations, documents, reports, automations, settings]
+  special_permissions:
+    - approve_purchase_orders
+    - approve_credit_notes
+    - run_payroll
+    - access_audit_log
+    - manage_users
+    - manage_automations
+
+audit:
+  activity_logs:
+    tracked_entities: [customers, suppliers, documents, payments, products, projects, employees, purchase_orders, sales_orders, quotes, inventory_movements]
+    tracked_actions: [created, updated, deleted, linked, unlinked, uploaded_file, payment_recorded, status_changed]
+    retention: 365_days
+    fields: [entity_type, entity_id, action_type, old_value_json, new_value_json, actor, created_at]
+
+# ============================================================
+# LAYER 12: MISSING ASSUMPTIONS
+# ============================================================
+missing_assumptions:
+  - name: "multi_tenant"
+    question: "האם המערכת תומכת במספר חברות/סניפים?"
+    default: "single company"
+
+  - name: "multi_currency"
+    question: "האם יש תמיכה במטבעות מרובים? שערי חליפין?"
+    default: "ILS primary, USD/EUR supported"
+
+  - name: "tax_engine"
+    question: "חישוב מע\"מ - שיעור אחיד או מרובה? פטורים?"
+    default: "17% VAT default, configurable per product"
+
+  - name: "israeli_compliance"
+    question: "חיבור לרשות המיסים? חשבונית ממוחשבת? e-invoice?"
+    default: "not in phase 1, planned for phase 2"
+
+  - name: "document_numbering"
+    question: "מספור רציף לפי חוק? reset שנתי?"
+    default: "sequential per type, no reset"
+
+  - name: "approval_workflows"
+    question: "אישור הזמנות רכש מעל סכום מסוים?"
+    default: "simple approval, no multi-level"
+
+  - name: "email_integration"
+    question: "שליחת מסמכים במייל?"
+    default: "planned for phase 2"
+
+  - name: "api_external"
+    question: "API חיצוני לאינטגרציות?"
+    default: "REST API, planned for phase 2"
+
+  - name: "mobile"
+    question: "גרסת מובייל?"
+    default: "responsive web, no native app"
+
+  - name: "backup_strategy"
+    question: "גיבויים ו-disaster recovery?"
+    default: "daily DB backup, GitHub code backup"

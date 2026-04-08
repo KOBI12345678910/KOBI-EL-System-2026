@@ -182,3 +182,17 @@ export * from "./whatsapp-messages";
 export * from "./onboarding-checklists";
 export * from "./performance-reviews";
 export * from "./payroll-records";
+
+// Financial Module - New Architecture
+export * from "./fin-statuses";
+export * from "./fin-document-types";
+export * from "./fin-payment-methods";
+export * from "./fin-categories";
+export * from "./fin-documents";
+export * from "./fin-document-links";
+export * from "./fin-attachments";
+export * from "./fin-payments";
+export * from "./fin-recurring-documents";
+export * from "./fin-standing-orders";
+export * from "./fin-credit-transactions";
+export * from "./fin-activity-logs";
