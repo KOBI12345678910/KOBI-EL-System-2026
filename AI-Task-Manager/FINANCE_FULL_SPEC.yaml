@@ -1,0 +1,563 @@
+# ============================================================
+# KOBI EL - Complete Finance Domain Specification
+# 17 Modules | 160+ Submodules | Enterprise Level
+# ============================================================
+
+finance_domain:
+  purpose: "ניהול מלא של כל המערכת הפיננסית בארגון"
+  total_modules: 17
+  total_submodules: 160+
+
+# ============================================================
+# MENU STRUCTURE (17 categories)
+# ============================================================
+finance_menu:
+  - dashboard_finance
+  - income
+  - expenses
+  - billing_documents
+  - receivables_collections
+  - payables
+  - payments
+  - credit_clearing
+  - standing_orders_masav
+  - banks_cash
+  - accounting_ledger
+  - budgets_forecasts
+  - taxation
+  - profitability
+  - financial_documents_center
+  - reports
+  - finance_settings
+
+# ============================================================
+# SUBCATEGORIES PER MODULE
+# ============================================================
+finance_subcategories:
+
+  dashboard_finance:
+    - finance_overview
+    - cash_position
+    - open_balances
+    - alerts_exceptions
+    - recent_activity
+
+  income:
+    - all_income_documents
+    - invoices
+    - receipts
+    - invoice_receipts
+    - payment_requests
+    - income_credit_notes
+    - customer_refunds
+    - recurring_income
+
+  expenses:
+    - all_expense_documents
+    - supplier_invoices
+    - expense_receipts
+    - reimbursements
+    - petty_cash
+    - prepaid_expenses
+    - expense_credit_notes
+
+  billing_documents:
+    - drafts
+    - active_documents
+    - recurring_documents
+    - archived_documents
+    - templates
+    - numbering_sequences
+    - document_relations
+
+  receivables_collections:
+    - receivables_dashboard
+    - overdue_documents
+    - aging_report
+    - collection_tasks
+    - promised_payments
+    - customer_balances
+
+  payables:
+    - payables_dashboard
+    - due_to_suppliers
+    - payable_aging
+    - scheduled_supplier_payments
+    - supplier_balances
+    - blocked_payments
+
+  payments:
+    - all_payments
+    - incoming_payments
+    - outgoing_payments
+    - payment_allocations
+    - unmatched_payments
+    - failed_payments
+    - reversed_payments
+
+  credit_clearing:
+    - credit_transactions
+    - settlements
+    - chargebacks
+    - installment_plans
+    - terminal_management
+    - reconciliation_with_provider
+
+  standing_orders_masav:
+    - standing_orders
+    - mandates
+    - masav_batches
+    - failed_debits
+    - retry_runs
+    - recurring_collections
+
+  banks_cash:
+    - bank_accounts
+    - bank_transactions
+    - reconciliations
+    - deposits
+    - withdrawals
+    - internal_transfers
+    - cash_boxes
+
+  accounting_ledger:
+    - chart_of_accounts
+    - journal_entries
+    - accruals
+    - adjustments
+    - reversing_entries
+    - posting_rules
+    - subledgers
+
+  budgets_forecasts:
+    - annual_budget
+    - department_budget
+    - project_budget
+    - rolling_forecast
+    - cashflow_forecast
+    - budget_vs_actual
+
+  taxation:
+    - vat_management
+    - withholding_tax
+    - tax_codes
+    - exemptions
+    - tax_reports
+
+  profitability:
+    - by_customer
+    - by_project
+    - by_product
+    - by_supplier
+    - cost_centers
+    - profit_centers
+    - variance_analysis
+
+  financial_documents_center:
+    - attachments
+    - scanned_documents
+    - linked_documents
+    - signed_documents
+    - archive
+    - versions
+
+  reports:
+    - pnl
+    - balance_sheet
+    - cashflow
+    - receivables
+    - payables
+    - tax
+    - profitability
+    - custom_reports
+
+  finance_settings:
+    - payment_methods
+    - payment_terms
+    - currencies
+    - exchange_rates
+    - statuses
+    - categories
+    - tax_codes
+    - approval_matrix
+    - fiscal_periods
+    - closing_periods
+
+# ============================================================
+# REQUIRED PAGES PER MODULE
+# ============================================================
+required_pages_per_finance_module:
+  mandatory:
+    - dashboard_page
+    - list_page
+    - details_page
+    - create_form
+    - edit_form
+    - activity_log_tab
+    - attachments_tab
+    - related_records_tab
+    - reports_or_summary_page
+  optional_if_relevant:
+    - approval_page
+    - reconciliation_page
+    - recurring_setup_page
+    - batch_processing_page
+    - import_export_page
+
+# ============================================================
+# SHARED FINANCE FIELDS
+# ============================================================
+shared_finance_fields:
+  identity: [id, number, external_reference, title]
+  classification: [category_id, status_id, type, direction]
+  money: [currency_id, exchange_rate, subtotal_amount, tax_amount, total_amount, paid_amount, balance_due]
+  relations: [customer_id, supplier_id, related_document_id, project_id, cost_center_id, profit_center_id]
+  dates: [issue_date, due_date, payment_date, created_at, updated_at]
+  control: [created_by, approved_by, approval_status, notes, internal_notes]
+  files_audit: [attachments_count, last_activity_at, audit_log_id]
+
+# ============================================================
+# DATA MODELS
+# ============================================================
+finance_models:
+
+  master_data:
+    - currencies
+    - exchange_rates
+    - payment_methods
+    - payment_terms
+    - tax_codes
+    - vat_rates
+    - document_types
+    - document_statuses
+    - numbering_sequences
+    - fiscal_periods
+    - finance_categories
+    - cost_centers
+    - profit_centers
+    - departments
+    - branches
+
+  parties:
+    - customers
+    - suppliers
+    - customer_contacts
+    - supplier_contacts
+    - bank_accounts_parties
+
+  core_documents:
+    - documents
+    - document_lines
+    - document_links
+    - document_attachments
+    - document_comments
+    - recurring_documents
+    - document_templates
+
+  payment_models:
+    - payments
+    - payment_allocations
+    - incoming_payments
+    - outgoing_payments
+    - partial_payments
+    - unmatched_payments
+    - payment_failures
+    - payment_batches
+
+  credit_models:
+    - credit_transactions
+    - credit_settlements
+    - chargebacks
+    - installment_plans
+    - tokenized_cards
+    - credit_providers
+    - terminal_devices
+
+  direct_debit_models:
+    - standing_orders
+    - direct_debit_mandates
+    - masav_batches
+    - direct_debit_runs
+    - failed_direct_debits
+    - retry_cycles
+
+  bank_cash_models:
+    - bank_accounts
+    - bank_transactions
+    - bank_reconciliations
+    - deposits
+    - withdrawals
+    - transfer_orders
+    - cash_boxes
+    - petty_cash_transactions
+
+  accounting_models:
+    - chart_of_accounts
+    - ledger_accounts
+    - journal_entries
+    - journal_entry_lines
+    - subledger_entries
+    - posting_rules
+    - accrual_entries
+    - reversing_entries
+    - manual_adjustments
+
+  receivables_payables_models:
+    - accounts_receivable
+    - accounts_payable
+    - customer_balances
+    - supplier_balances
+    - receivable_aging
+    - payable_aging
+    - collection_cases
+    - promised_payments
+    - supplier_payment_schedules
+
+  control_audit_models:
+    - approval_requests
+    - approval_steps
+    - audit_logs
+    - activity_logs
+    - exception_flags
+    - duplicate_checks
+    - blocked_transactions
+    - policy_violations
+
+  budgeting_models:
+    - budgets
+    - budget_lines
+    - forecasts
+    - forecast_versions
+    - budget_vs_actual_snapshots
+    - cashflow_forecasts
+    - scenario_models
+
+  reporting_models:
+    - financial_reports
+    - saved_report_views
+    - report_exports
+    - report_schedules
+
+# ============================================================
+# GAP ANALYSIS - WHAT EXISTS vs WHAT'S NEEDED
+# ============================================================
+gap_analysis:
+
+  existing_pages_count: 119  # 111 finance + 8 fin
+  existing_db_schemas: 26
+  target_submodules: 160
+
+  missing_pages:
+    income:
+      - invoice_receipts_list  # חשבונית/קבלה
+      - customer_refunds_list  # החזרים
+      - deferred_income        # הכנסות נדחות
+      - income_allocations     # הקצאות הכנסה
+
+    expenses:
+      - reimbursements         # החזרי הוצאות
+      - prepaid_expenses       # הוצאות ששולמו מראש
+      - expense_allocations    # הקצאות הוצאה
+
+    receivables:
+      - collection_tasks       # משימות גבייה
+      - collection_workflows   # תהליכי גבייה
+      - dunning_letters        # מכתבי התראה
+      - promised_payments      # הבטחות תשלום
+
+    payables:
+      - due_payments           # תשלומים לביצוע
+      - supplier_payment_runs  # הרצות תשלום לספקים
+      - blocked_payments       # תשלומים חסומים
+      - scheduled_payments     # תשלומים מתוכננים
+
+    payments:
+      - incoming_payments      # תשלומים נכנסים
+      - outgoing_payments      # תשלומים יוצאים
+      - payment_allocations    # שיוך תשלומים
+      - failed_payments        # תשלומים שנכשלו
+      - reversed_payments      # תשלומים מבוטלים
+
+    credit:
+      - credit_settlements     # התאמות סליקה
+      - chargebacks            # ביטולי עסקה
+      - installment_plans      # תשלומים
+      - terminal_management    # ניהול מסופים
+
+    standing_orders:
+      - masav_batches          # קבצי מסב
+      - mandate_management     # ניהול הרשאות
+      - failed_direct_debits   # חיובים שנכשלו
+      - retry_cycles           # מחזורי ניסיון חוזר
+
+    banks:
+      - bank_transactions      # תנועות בנק
+      - deposits               # הפקדות
+      - withdrawals            # משיכות
+      - internal_transfers     # העברות פנימיות
+      - cash_boxes             # קופות
+
+    accounting:
+      - subledgers             # ספרי עזר
+      - posting_rules          # כללי רישום
+      - accrual_entries        # צבירות
+      - reversing_entries      # פקודות סטורנו
+
+    budgets:
+      - rolling_forecast       # תחזית מתגלגלת
+      - cashflow_forecast      # תחזית תזרים
+      - scenario_planning      # תכנון תרחישים
+
+    taxation:
+      - tax_codes_management   # ניהול קודי מס
+      - tax_exemptions         # פטורים
+
+    control:
+      - spending_limits        # מגבלות הוצאה
+      - duplicate_detection    # זיהוי כפילויות
+      - fraud_flags            # דגלי הונאה
+      - segregation_of_duties  # הפרדת סמכויות
+
+    profitability:
+      - product_margin         # רווחיות מוצר
+      - contribution_margin    # רווח גולמי
+      - variance_analysis      # ניתוח סטיות
+
+    documents:
+      - ocr_review_queue       # תור סריקות
+      - scanned_documents      # מסמכים סרוקים
+
+    settings:
+      - fiscal_periods         # תקופות כספיות
+      - closing_periods        # סגירת תקופה
+      - approval_matrix        # מטריצת אישורים
+      - finance_tags           # תגיות
+
+  missing_db_schemas:
+    - bank_transactions
+    - deposits_withdrawals
+    - collection_cases
+    - promised_payments
+    - dunning_letters
+    - credit_settlements
+    - chargebacks
+    - installment_plans
+    - terminal_devices
+    - masav_batches
+    - direct_debit_mandates
+    - posting_rules
+    - subledger_entries
+    - accrual_entries
+    - forecast_models
+    - cashflow_forecasts
+    - fiscal_periods
+    - payment_terms
+    - tax_codes
+
+# ============================================================
+# ADVANCED FINANCE: QUANT, RISK & INSTITUTIONAL GRADE
+# ============================================================
+advanced_finance:
+
+  financial_statements:
+    existing: [balance-sheet, profit-loss-page, trial-balance, trial-balance-page]
+    missing: [equity_statement, retained_earnings, comparative_statements, period_close_reports, cash_flow_statement_detailed]
+
+  profitability_engine:
+    existing: [operational-profit, customer-profitability, project-profitability, cost-centers, profit-centers]
+    missing: [gross_profit_analysis, net_profit_analysis, contribution_margin, ebit_analysis, ebitda_analysis, segment_profitability, variance_profitability, product_margin_analysis]
+
+  risk_management:
+    existing: [blackrock-risk-matrix, blackrock-var]
+    missing: [enterprise_risk_dashboard, liquidity_risk, credit_risk, concentration_risk, operational_risk, supplier_risk, customer_default_risk, stress_test_engine, scenario_risk_analysis, early_warning_indicators, margin_erosion_risk]
+
+  hedge_exposure:
+    existing: [blackrock-hedging]
+    missing: [exposure_registry, hedge_positions, hedge_ratio_tracking, natural_hedge, cashflow_hedge, cost_hedge, commodity_exposure, currency_exposure, interest_rate_exposure, hedge_effectiveness]
+
+  quant_analytics:
+    existing: [blackrock-ai]
+    missing: [ratio_engine, multiple_engine, distribution_analysis, sensitivity_analysis, correlation_analysis, covariance_analysis, downside_risk, drawdown_analysis, tail_risk, factor_stress]
+
+  monte_carlo:
+    existing: [blackrock-monte-carlo]
+    missing: [mc_cashflow, mc_profitability, mc_project_margin, mc_collections, mc_supplier_costs, mc_sales_pipeline, mc_working_capital, mc_inventory_cost, mc_fx_impact, mc_stress_scenarios]
+
+  treasury_capital:
+    existing: [treasury-management]
+    missing: [liquidity_ladder, funding_sources, debt_obligations, covenant_tracking, working_capital_analysis, debt_service_capacity, cash_reserve_policy, capital_structure, financing_gap]
+
+# ============================================================
+# FINANCIAL RATIO FRAMEWORK (120+ ratios)
+# ============================================================
+finance_ratio_framework:
+  profitability_ratios: [gross_margin, operating_margin, net_margin, contribution_margin, ebit_margin, ebitda_margin, return_on_sales, roa, roe, roic, project_profitability_ratio, customer_profitability_ratio, product_profitability_ratio, incremental_margin, break_even_ratio]
+  loss_and_downside_ratios: [loss_ratio, downside_deviation, drawdown_ratio, maximum_drawdown, expected_shortfall, tail_loss_ratio, cost_overrun_ratio, budget_breach_ratio, uncollected_revenue_ratio, bad_debt_ratio, failed_payment_ratio, margin_erosion_ratio]
+  liquidity_ratios: [current_ratio, quick_ratio, cash_ratio, operating_cashflow_ratio, working_capital_ratio, liquidity_buffer_ratio, debt_service_coverage_ratio, burn_rate, runway_months]
+  leverage_and_solvency_ratios: [debt_to_equity, debt_to_assets, equity_ratio, leverage_ratio, interest_coverage_ratio, fixed_charge_coverage, liability_coverage_ratio, solvency_ratio]
+  efficiency_ratios: [asset_turnover, receivables_turnover, payables_turnover, inventory_turnover, working_capital_turnover, revenue_per_employee, cost_per_project, cash_conversion_cycle, dso, dpo, dio]
+  hedge_ratios: [hedge_ratio, hedge_coverage_ratio, natural_hedge_ratio, exposure_to_hedged_ratio, unhedged_exposure_ratio, hedge_effectiveness_ratio, supplier_customer_offset_ratio, fx_protection_ratio, commodity_protection_ratio, cashflow_stability_ratio]
+  risk_ratios: [var, cvar, volatility_ratio, scenario_breach_ratio, probability_of_loss, probability_of_default, collection_risk_ratio, supplier_dependency_ratio, concentration_top_customers, concentration_top_suppliers, earnings_at_risk, cashflow_at_risk, margin_at_risk, project_failure_probability]
+  market_multiples: [revenue_multiple, ebit_multiple, ebitda_multiple, net_income_multiple, fcf_multiple, book_value_multiple, ev_to_sales, ev_to_ebitda, pe, pb, ps, peg, ltv_to_cac, payback_multiple, project_value_multiple]
+
+# ============================================================
+# FINANCIAL STATEMENTS STRUCTURE
+# ============================================================
+financial_statements:
+  balance_sheet:
+    assets: [cash_and_cash_equivalents, accounts_receivable, inventory, prepaid_expenses, fixed_assets, intangible_assets, other_assets]
+    liabilities: [accounts_payable, accrued_expenses, short_term_debt, long_term_debt, tax_liabilities, deferred_revenue, other_liabilities]
+    equity: [share_capital, retained_earnings, current_period_profit, reserves]
+  profit_and_loss:
+    revenue: [operating_revenue, recurring_revenue, other_income]
+    cost_of_sales: [material_cost, labor_cost, subcontractor_cost, logistics_cost]
+    gross_profit: [gross_profit_value, gross_margin_percent]
+    operating_expenses: [sales_expenses, marketing_expenses, admin_expenses, rent, software, utilities, salaries, depreciation]
+    operating_profit: [ebit]
+    financing: [finance_income, finance_expense]
+    pre_tax_profit: [pbt]
+    taxes: [income_tax]
+    net_profit: [net_income]
+  cash_flow_statement:
+    operating: [collections_from_customers, payments_to_suppliers, salaries_paid, taxes_paid, operating_net_cashflow]
+    investing: [capex, asset_sales, investment_cashflow]
+    financing: [loans_received, debt_repayments, owner_injections, dividend_distributions]
+    net: [opening_cash, closing_cash]
+
+# ============================================================
+# ADDITIONAL DATA MODELS (35 tables)
+# ============================================================
+additional_models:
+  quant_risk: [ratio_definitions, ratio_results, kpi_definitions, kpi_snapshots, risk_register, risk_events, risk_limits, exposure_items, hedge_positions, hedge_effectiveness_results, scenario_definitions, scenario_runs, monte_carlo_runs, monte_carlo_variables, monte_carlo_results, monte_carlo_percentiles, stress_test_runs, covariance_matrices, correlation_matrices, forecast_versions, statement_snapshots, working_capital_snapshots, profitability_snapshots, variance_analysis_results]
+  treasury: [liquidity_buckets, debt_facilities, covenant_rules, capital_structure_snapshots, funding_plans]
+  statements: [pnl_lines, balance_sheet_lines, cashflow_lines, statement_mappings, closing_entries, period_close_runs]
+
+# ============================================================
+# MONTE CARLO ENGINE REQUIREMENTS
+# ============================================================
+monte_carlo:
+  minimum_scenarios: 50000
+  models: [cashflow_forecast, project_profitability, customer_payment_delay, supplier_cost_inflation, revenue_variability, margin_variability, working_capital, liquidity_runway, portfolio_of_projects, full_company_pnl]
+  distributions: [normal, lognormal, triangular, uniform, beta, custom_empirical]
+  outputs: [mean, median, mode, std_dev, variance, min, max, p1, p5, p10, p25, p50, p75, p90, p95, p99, prob_negative_cash, prob_loss, prob_margin_breach, prob_covenant_breach, expected_shortfall, var]
+  stress_dimensions: [revenue_drop, raw_material_increase, payroll_increase, collection_delay, supplier_failure, fx_move, financing_cost_increase, project_delay, cancellation_rate]
+
+# ============================================================
+# CALCULATION RULES
+# ============================================================
+calculation_rules:
+  - "gross_profit = revenue - cost_of_sales"
+  - "gross_margin = gross_profit / revenue"
+  - "operating_profit = gross_profit - operating_expenses"
+  - "net_profit = pre_tax_profit - taxes"
+  - "current_ratio = current_assets / current_liabilities"
+  - "quick_ratio = (current_assets - inventory) / current_liabilities"
+  - "debt_to_equity = total_debt / total_equity"
+  - "roe = net_profit / equity"
+  - "roa = net_profit / total_assets"
+  - "hedge_ratio = hedged_amount / gross_exposure"
+  - "unhedged_exposure = gross_exposure - hedged_amount"
+  - "probability_of_loss = loss_scenarios / total_scenarios"
+  - "value_at_risk = percentile(loss_distribution, confidence_level)"
+  - "expected_shortfall = average(losses_beyond_var)"
+  - "cash_runway_months = available_cash / monthly_net_burn"

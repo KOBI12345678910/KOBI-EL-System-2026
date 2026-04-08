@@ -3642,3 +3642,5810 @@ module_8_procurement:
           trigger: "click supplier"
         - target: /procurement/receipts
           trigger: "click back"
+
+# ============================================================
+# MODULE 9: INVENTORY
+# ============================================================
+module_9_inventory:
+  module_key: inventory
+  icon: warehouse
+  label: "מלאי"
+  route: /inventory
+  priority: medium
+  purpose: "מלאי, מחסנים, תנועות, מקטים, רמות מלאי, הקצאות וספירות"
+
+  # ----------------------------------------------------------
+  # 9.1 SIDEBAR SUBMENUS
+  # ----------------------------------------------------------
+  submenus:
+    - key: items
+      label: "פריטי מלאי"
+      route: /inventory/items
+      icon: inventory_2
+    - key: warehouses
+      label: "מחסנים"
+      route: /inventory/warehouses
+      icon: warehouse
+    - key: stock_levels
+      label: "מצב מלאי"
+      route: /inventory/stock
+      icon: assessment
+    - key: stock_movements
+      label: "תנועות מלאי"
+      route: /inventory/movements
+      icon: swap_horiz
+    - key: allocations
+      label: "הקצאות"
+      route: /inventory/allocations
+      icon: bookmark
+    - key: stock_counts
+      label: "ספירת מלאי"
+      route: /inventory/counts
+      icon: fact_check
+
+  # ----------------------------------------------------------
+  # 9.2 ENTITIES
+  # ----------------------------------------------------------
+  entities:
+
+    warehouses:
+      table_name: warehouses
+      type: master_data
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: name
+          type: string
+          max_length: 100
+          required: true
+          description: "שם מחסן"
+        - name: code
+          type: string
+          max_length: 20
+          required: true
+          unique: true
+          description: "קוד מחסן"
+        - name: address
+          type: string
+          max_length: 255
+          required: false
+          description: "כתובת"
+        - name: city
+          type: string
+          max_length: 100
+          required: false
+          description: "עיר"
+        - name: manager
+          type: uuid
+          foreign_key: users.id
+          required: false
+          description: "מנהל מחסן"
+        - name: is_active
+          type: boolean
+          default: true
+          description: "פעיל"
+        - name: created_at
+          type: datetime
+          auto_generated: true
+      indexes:
+        - fields: [code]
+          unique: true
+        - fields: [is_active]
+
+    stock_levels:
+      table_name: stock_levels
+      type: computed
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: product_id
+          type: uuid
+          foreign_key: products.id
+          required: true
+          description: "מוצר"
+        - name: warehouse_id
+          type: uuid
+          foreign_key: warehouses.id
+          required: true
+          description: "מחסן"
+        - name: quantity_on_hand
+          type: decimal
+          precision: 12
+          scale: 2
+          default: 0
+          description: "כמות בפועל"
+        - name: quantity_reserved
+          type: decimal
+          precision: 12
+          scale: 2
+          default: 0
+          description: "כמות מוקצית"
+        - name: quantity_available
+          type: decimal
+          precision: 12
+          scale: 2
+          computed: "quantity_on_hand - quantity_reserved"
+          description: "כמות זמינה (מחושב)"
+        - name: reorder_level
+          type: decimal
+          precision: 12
+          scale: 2
+          default: 0
+          description: "רמת הזמנה מחדש"
+        - name: reorder_quantity
+          type: decimal
+          precision: 12
+          scale: 2
+          default: 0
+          description: "כמות הזמנה מחדש"
+        - name: last_movement_at
+          type: datetime
+          nullable: true
+          description: "תנועה אחרונה"
+        - name: last_counted_at
+          type: datetime
+          nullable: true
+          description: "ספירה אחרונה"
+      indexes:
+        - fields: [product_id, warehouse_id]
+          unique: true
+        - fields: [product_id]
+        - fields: [warehouse_id]
+      business_rules:
+        - "quantity_available = quantity_on_hand - quantity_reserved"
+        - "status derived: ok (available > reorder_level), low (available <= reorder_level AND > 0), critical (available <= 0)"
+        - "updated automatically by stock_movements"
+
+    stock_movements:
+      table_name: stock_movements
+      type: transactional
+      auto_number:
+        prefix: "SM-"
+        padding: 6
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: movement_number
+          type: string
+          auto_generated: true
+          unique: true
+          format: "SM-000001"
+        - name: product_id
+          type: uuid
+          foreign_key: products.id
+          required: true
+        - name: warehouse_from_id
+          type: uuid
+          foreign_key: warehouses.id
+          nullable: true
+          description: "מחסן מקור"
+        - name: warehouse_to_id
+          type: uuid
+          foreign_key: warehouses.id
+          nullable: true
+          description: "מחסן יעד"
+        - name: movement_type
+          type: enum
+          values: [in, out, transfer, adjustment, return, count_adjustment]
+          required: true
+        - name: quantity
+          type: decimal
+          precision: 12
+          scale: 2
+          required: true
+        - name: unit_cost
+          type: decimal
+          precision: 10
+          scale: 2
+          nullable: true
+        - name: reference_type
+          type: string
+          nullable: true
+          description: "goods_receipt, sales_order, stock_count, manual"
+        - name: reference_id
+          type: uuid
+          nullable: true
+        - name: reason
+          type: text
+          nullable: true
+        - name: performed_by
+          type: uuid
+          foreign_key: users.id
+          required: true
+        - name: created_at
+          type: datetime
+          auto_generated: true
+      indexes:
+        - fields: [movement_number]
+          unique: true
+        - fields: [product_id]
+        - fields: [warehouse_from_id]
+        - fields: [warehouse_to_id]
+        - fields: [movement_type]
+        - fields: [created_at]
+        - fields: [reference_type, reference_id]
+      business_rules:
+        - "type=in: warehouse_to_id required, increases quantity_on_hand"
+        - "type=out: warehouse_from_id required, decreases quantity_on_hand"
+        - "type=transfer: both warehouses required, decreases from, increases to"
+        - "type=adjustment: sets stock to new value"
+        - "type=return: warehouse_to_id required, increases stock"
+        - "type=count_adjustment: created by approved stock_count"
+
+    stock_allocations:
+      table_name: stock_allocations
+      type: transactional
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: product_id
+          type: uuid
+          foreign_key: products.id
+          required: true
+        - name: warehouse_id
+          type: uuid
+          foreign_key: warehouses.id
+          required: true
+        - name: sales_order_id
+          type: uuid
+          foreign_key: sales_orders.id
+          required: true
+        - name: quantity_allocated
+          type: decimal
+          precision: 12
+          scale: 2
+          required: true
+        - name: status
+          type: enum
+          values: [reserved, picked, shipped, released]
+          default: reserved
+          required: true
+        - name: created_at
+          type: datetime
+          auto_generated: true
+      indexes:
+        - fields: [product_id, warehouse_id]
+        - fields: [sales_order_id]
+        - fields: [status]
+      business_rules:
+        - "creating allocation increases stock_levels.quantity_reserved"
+        - "releasing allocation decreases stock_levels.quantity_reserved"
+        - "shipping creates stock_movement type=out"
+
+    stock_counts:
+      table_name: stock_counts
+      type: transactional
+      auto_number:
+        prefix: "SC-"
+        padding: 5
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: count_number
+          type: string
+          auto_generated: true
+          unique: true
+          format: "SC-00001"
+        - name: warehouse_id
+          type: uuid
+          foreign_key: warehouses.id
+          required: true
+        - name: count_date
+          type: date
+          required: true
+          default: today
+        - name: status_id
+          type: enum
+          values: [planned, in_progress, completed, approved]
+          default: planned
+          required: true
+        - name: counted_by
+          type: uuid
+          foreign_key: users.id
+          required: true
+        - name: approved_by
+          type: uuid
+          foreign_key: users.id
+          nullable: true
+        - name: notes
+          type: text
+          required: false
+        - name: created_at
+          type: datetime
+          auto_generated: true
+      indexes:
+        - fields: [count_number]
+          unique: true
+        - fields: [warehouse_id]
+        - fields: [status_id]
+
+    stock_count_items:
+      table_name: stock_count_items
+      type: line_items
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: stock_count_id
+          type: uuid
+          foreign_key: stock_counts.id
+          required: true
+          on_delete: cascade
+        - name: product_id
+          type: uuid
+          foreign_key: products.id
+          required: true
+        - name: system_quantity
+          type: decimal
+          precision: 12
+          scale: 2
+          description: "auto-populated from stock_levels"
+        - name: counted_quantity
+          type: decimal
+          precision: 12
+          scale: 2
+          required: true
+        - name: variance
+          type: decimal
+          precision: 12
+          scale: 2
+          computed: "counted_quantity - system_quantity"
+        - name: variance_reason
+          type: text
+          nullable: true
+      indexes:
+        - fields: [stock_count_id]
+        - fields: [product_id]
+
+  # ----------------------------------------------------------
+  # 9.3 PAGES
+  # ----------------------------------------------------------
+  pages:
+
+    # === 9.3.1 INVENTORY ITEMS ===
+    inventory_items:
+      route: /inventory/items
+      title: "פריטי מלאי"
+      type: list_page
+      entity: products
+      base_filter: "products that have stock_levels records"
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש לפי שם, מק\"ט..."
+            searches_fields: [name, sku]
+          - component: filter_dropdown
+            key: category_filter
+            label: "קטגוריה"
+            options_from: categories
+            display_field: name
+          - component: filter_dropdown
+            key: stock_status_filter
+            label: "מצב מלאי"
+            options:
+              - value: ok
+                label: "תקין"
+              - value: low
+                label: "נמוך"
+              - value: critical
+                label: "קריטי"
+              - value: out_of_stock
+                label: "אזל"
+          - component: filter_dropdown
+            key: warehouse_filter
+            label: "מחסן"
+            options_from: warehouses
+            display_field: name
+        right:
+          - component: button
+            label: "ייצוא"
+            icon: download
+            action: export
+            formats: [xlsx, csv]
+
+      table_columns:
+        - key: sku
+          label: "מק\"ט"
+          sortable: true
+          width: 100
+          link_to: "/products/:id"
+        - key: name
+          label: "שם מוצר"
+          sortable: true
+          width: 220
+          link_to: "/products/:id"
+        - key: category
+          label: "קטגוריה"
+          sortable: true
+          width: 140
+          display: "category.name"
+        - key: total_on_hand
+          label: "כמות בפועל"
+          sortable: true
+          width: 110
+          computed: "SUM(stock_levels.quantity_on_hand)"
+          format: decimal
+        - key: total_reserved
+          label: "מוקצה"
+          sortable: true
+          width: 100
+          computed: "SUM(stock_levels.quantity_reserved)"
+          format: decimal
+        - key: total_available
+          label: "זמין"
+          sortable: true
+          width: 100
+          computed: "SUM(stock_levels.quantity_available)"
+          format: decimal
+        - key: reorder_level
+          label: "רמת הזמנה"
+          width: 100
+          format: decimal
+        - key: stock_status
+          label: "מצב"
+          sortable: true
+          width: 100
+          type: status_badge
+          color_map:
+            ok: green
+            low: orange
+            critical: red
+            out_of_stock: red
+        - key: unit_of_measure
+          label: "יח\"מ"
+          width: 70
+
+    # === 9.3.2 WAREHOUSES LIST ===
+    warehouses_list:
+      route: /inventory/warehouses
+      title: "מחסנים"
+      type: list_page
+      entity: warehouses
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש מחסן..."
+            searches_fields: [name, code]
+          - component: filter_dropdown
+            key: active_filter
+            label: "סטטוס"
+            options:
+              - value: true
+                label: "פעיל"
+              - value: false
+                label: "לא פעיל"
+        right:
+          - component: button
+            label: "מחסן חדש"
+            icon: add
+            action: navigate
+            target: /inventory/warehouses/create
+            variant: primary
+
+      table_columns:
+        - key: code
+          label: "קוד"
+          sortable: true
+          width: 80
+        - key: name
+          label: "שם מחסן"
+          sortable: true
+          width: 200
+          link_to: "/inventory/warehouses/:id"
+        - key: address
+          label: "כתובת"
+          width: 200
+        - key: city
+          label: "עיר"
+          sortable: true
+          width: 120
+        - key: manager
+          label: "מנהל"
+          width: 150
+          display: "manager_user.full_name"
+        - key: items_count
+          label: "פריטים"
+          width: 80
+          computed: "COUNT(DISTINCT stock_levels.product_id)"
+        - key: total_value
+          label: "שווי מלאי"
+          width: 130
+          format: currency
+          computed: "SUM(stock_levels.quantity_on_hand * product.default_price)"
+        - key: is_active
+          label: "פעיל"
+          width: 70
+          type: boolean_badge
+
+      row_actions:
+        - action: view
+          label: "צפייה"
+          icon: visibility
+          target: "/inventory/warehouses/:id"
+        - action: edit
+          label: "עריכה"
+          icon: edit
+          target: "/inventory/warehouses/:id/edit"
+        - action: deactivate
+          label: "השבת"
+          icon: block
+          condition: "is_active = true"
+        - action: activate
+          label: "הפעל"
+          icon: check_circle
+          condition: "is_active = false"
+
+    # === 9.3.3 WAREHOUSE CREATE ===
+    warehouse_create:
+      route: /inventory/warehouses/create
+      title: "מחסן חדש"
+      type: form_page
+      entity: warehouses
+      form_sections:
+        - section: details
+          title: "פרטי מחסן"
+          layout: two_column
+          fields:
+            - name: name
+              label: "שם מחסן"
+              type: text_input
+              required: true
+              col_span: 1
+            - name: code
+              label: "קוד מחסן"
+              type: text_input
+              required: true
+              col_span: 1
+            - name: address
+              label: "כתובת"
+              type: text_input
+              col_span: 1
+            - name: city
+              label: "עיר"
+              type: text_input
+              col_span: 1
+            - name: manager
+              label: "מנהל מחסן"
+              type: select
+              entity: users
+              display_field: full_name
+              col_span: 1
+            - name: is_active
+              label: "פעיל"
+              type: toggle
+              default: true
+              col_span: 1
+      form_actions:
+        - action: save
+          label: "שמור"
+          variant: primary
+          navigates_to: "/inventory/warehouses/:id"
+        - action: cancel
+          label: "ביטול"
+          variant: text
+          navigates_to: /inventory/warehouses
+
+    # === 9.3.4 WAREHOUSE DETAILS ===
+    warehouse_details:
+      route: "/inventory/warehouses/:id"
+      title: "פרטי מחסן"
+      type: detail_page
+      entity: warehouses
+
+      header:
+        layout: detail_header
+        elements:
+          - component: back_button
+            target: /inventory/warehouses
+          - component: title
+            display: "name"
+            subtitle: "code"
+          - component: boolean_badge
+            field: is_active
+          - component: action_buttons
+            actions:
+              - action: edit
+                label: "עריכה"
+                icon: edit
+                target: "/inventory/warehouses/:id/edit"
+
+      summary_cards:
+        - label: "פריטים"
+          value: "COUNT(DISTINCT stock_levels.product_id)"
+        - label: "כמות כוללת"
+          value: "SUM(stock_levels.quantity_on_hand)"
+          format: decimal
+        - label: "שווי מלאי"
+          value: "SUM(stock_levels.quantity_on_hand * product.default_price)"
+          format: currency
+        - label: "פריטים קריטיים"
+          value: "COUNT(stock_levels WHERE quantity_available <= 0)"
+          color: red
+
+      tabs:
+        - tab: stock
+          label: "מצב מלאי"
+          icon: assessment
+          content:
+            entity: stock_levels
+            filter: "warehouse_id = :id"
+            type: table
+            columns:
+              - key: product_sku
+                label: "מק\"ט"
+                width: 100
+                display: "product.sku"
+              - key: product_name
+                label: "מוצר"
+                width: 220
+                display: "product.name"
+                link_to: "/products/:product_id"
+              - key: quantity_on_hand
+                label: "בפועל"
+                width: 100
+                format: decimal
+              - key: quantity_reserved
+                label: "מוקצה"
+                width: 100
+                format: decimal
+              - key: quantity_available
+                label: "זמין"
+                width: 100
+                format: decimal
+              - key: reorder_level
+                label: "רמת הזמנה"
+                width: 100
+                format: decimal
+              - key: status
+                label: "מצב"
+                width: 100
+                type: status_badge
+              - key: last_movement_at
+                label: "תנועה אחרונה"
+                width: 140
+                format: datetime
+
+        - tab: movements
+          label: "תנועות"
+          icon: swap_horiz
+          content:
+            entity: stock_movements
+            filter: "warehouse_from_id = :id OR warehouse_to_id = :id"
+            type: table
+            sort: created_at DESC
+            columns:
+              - key: movement_number
+                label: "מספר"
+                width: 120
+              - key: product
+                label: "מוצר"
+                width: 180
+                display: "product.name"
+              - key: movement_type
+                label: "סוג"
+                width: 100
+                type: badge
+              - key: quantity
+                label: "כמות"
+                width: 100
+                format: decimal
+              - key: performed_by
+                label: "בוצע ע\"י"
+                width: 140
+                display: "performer_user.full_name"
+              - key: created_at
+                label: "תאריך"
+                width: 140
+                format: datetime
+
+        - tab: activity_log
+          label: "לוג"
+          icon: history
+          content:
+            entity: activity_logs
+            filter: "entity_type = warehouse AND entity_id = :id"
+            view_type: timeline
+            sort: created_at DESC
+
+    # === 9.3.5 STOCK LEVELS PAGE ===
+    stock_levels_page:
+      route: /inventory/stock
+      title: "מצב מלאי"
+      type: list_page
+      entity: stock_levels
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש לפי מוצר, מק\"ט..."
+            searches_fields: ["product.name", "product.sku"]
+          - component: filter_dropdown
+            key: warehouse_filter
+            label: "מחסן"
+            options_from: warehouses
+            display_field: name
+          - component: filter_dropdown
+            key: category_filter
+            label: "קטגוריה"
+            options_from: categories
+            display_field: name
+          - component: filter_dropdown
+            key: stock_status_filter
+            label: "מצב מלאי"
+            options:
+              - value: ok
+                label: "תקין"
+              - value: low
+                label: "נמוך"
+              - value: critical
+                label: "קריטי"
+              - value: out_of_stock
+                label: "אזל"
+        right:
+          - component: button
+            label: "ייצוא"
+            icon: download
+            action: export
+            formats: [xlsx, csv]
+
+      summary_cards:
+        - label: "סה\"כ פריטים"
+          value: "COUNT(DISTINCT product_id)"
+        - label: "שווי מלאי"
+          value: "SUM(quantity_on_hand * product.default_price)"
+          format: currency
+        - label: "פריטים נמוכים"
+          value: "COUNT(WHERE quantity_available > 0 AND quantity_available <= reorder_level)"
+          color: orange
+        - label: "פריטים קריטיים"
+          value: "COUNT(WHERE quantity_available <= 0)"
+          color: red
+
+      table_columns:
+        - key: product_sku
+          label: "מק\"ט"
+          sortable: true
+          width: 100
+          display: "product.sku"
+          link_to: "/products/:product_id"
+        - key: product_name
+          label: "מוצר"
+          sortable: true
+          width: 220
+          display: "product.name"
+          link_to: "/products/:product_id"
+        - key: warehouse_name
+          label: "מחסן"
+          sortable: true
+          width: 140
+          display: "warehouse.name"
+          link_to: "/inventory/warehouses/:warehouse_id"
+        - key: quantity_on_hand
+          label: "בפועל"
+          sortable: true
+          width: 100
+          format: decimal
+        - key: quantity_reserved
+          label: "מוקצה"
+          sortable: true
+          width: 100
+          format: decimal
+        - key: quantity_available
+          label: "זמין"
+          sortable: true
+          width: 100
+          format: decimal
+        - key: reorder_level
+          label: "רמת הזמנה"
+          sortable: true
+          width: 100
+          format: decimal
+        - key: stock_status
+          label: "מצב"
+          sortable: true
+          width: 100
+          type: status_badge
+          color_map:
+            ok: green
+            low: orange
+            critical: red
+            out_of_stock: red
+        - key: last_movement_at
+          label: "תנועה אחרונה"
+          sortable: true
+          width: 140
+          format: datetime
+        - key: last_counted_at
+          label: "ספירה אחרונה"
+          width: 140
+          format: datetime
+
+      row_actions:
+        - action: view_movements
+          label: "צפה בתנועות"
+          icon: swap_horiz
+          target: "/inventory/movements?product_id=:product_id&warehouse_id=:warehouse_id"
+        - action: create_adjustment
+          label: "תיקון מלאי"
+          icon: tune
+          type: modal_form
+          form_fields:
+            - name: new_quantity
+              label: "כמות חדשה"
+              type: number_input
+              required: true
+            - name: reason
+              label: "סיבה"
+              type: textarea
+              required: true
+        - action: create_transfer
+          label: "העבר למחסן"
+          icon: swap_horiz
+          type: modal_form
+          form_fields:
+            - name: target_warehouse_id
+              label: "מחסן יעד"
+              type: select
+              entity: warehouses
+              display_field: name
+              required: true
+            - name: quantity
+              label: "כמות"
+              type: number_input
+              required: true
+        - action: edit_reorder
+          label: "ערוך רמת הזמנה"
+          icon: edit
+          type: inline_edit
+          editable_fields: [reorder_level, reorder_quantity]
+
+    # === 9.3.6 STOCK MOVEMENTS PAGE ===
+    stock_movements_page:
+      route: /inventory/movements
+      title: "תנועות מלאי"
+      type: list_page
+      entity: stock_movements
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש לפי מספר תנועה, מוצר..."
+            searches_fields: [movement_number, "product.name", "product.sku"]
+          - component: filter_dropdown
+            key: product_filter
+            label: "מוצר"
+            options_from: products
+            display_field: name
+            searchable: true
+          - component: filter_dropdown
+            key: warehouse_filter
+            label: "מחסן"
+            options_from: warehouses
+            display_field: name
+          - component: filter_dropdown
+            key: type_filter
+            label: "סוג תנועה"
+            options:
+              - value: in
+                label: "כניסה"
+              - value: out
+                label: "יציאה"
+              - value: transfer
+                label: "העברה"
+              - value: adjustment
+                label: "תיקון"
+              - value: return
+                label: "החזרה"
+              - value: count_adjustment
+                label: "תיקון ספירה"
+            multi_select: true
+          - component: date_range_picker
+            key: date_filter
+            label: "תאריך"
+            applies_to: created_at
+        right:
+          - component: button
+            label: "תנועה חדשה"
+            icon: add
+            action: navigate
+            target: /inventory/movements/create
+            variant: primary
+          - component: button
+            label: "ייצוא"
+            icon: download
+            action: export
+            formats: [xlsx, csv]
+
+      table_columns:
+        - key: movement_number
+          label: "מספר תנועה"
+          sortable: true
+          width: 120
+        - key: created_at
+          label: "תאריך"
+          sortable: true
+          width: 140
+          format: datetime
+        - key: product
+          label: "מוצר"
+          sortable: true
+          width: 200
+          display: "product.name"
+          link_to: "/products/:product_id"
+        - key: movement_type
+          label: "סוג"
+          sortable: true
+          width: 110
+          type: badge
+          color_map:
+            in: green
+            out: red
+            transfer: blue
+            adjustment: orange
+            return: teal
+            count_adjustment: purple
+        - key: quantity
+          label: "כמות"
+          sortable: true
+          width: 100
+          format: decimal
+        - key: unit_cost
+          label: "עלות יחידה"
+          width: 110
+          format: currency
+        - key: warehouse_from
+          label: "ממחסן"
+          width: 130
+          display: "warehouse_from.name"
+        - key: warehouse_to
+          label: "למחסן"
+          width: 130
+          display: "warehouse_to.name"
+        - key: reference
+          label: "מסמך מקור"
+          width: 130
+          link_to: "dynamic based on reference_type"
+        - key: reason
+          label: "סיבה"
+          width: 200
+        - key: performed_by
+          label: "בוצע ע\"י"
+          width: 140
+          display: "performer_user.full_name"
+
+    # === 9.3.7 MOVEMENT CREATE ===
+    movement_create:
+      route: /inventory/movements/create
+      title: "תנועת מלאי חדשה"
+      type: form_page
+      entity: stock_movements
+      form_sections:
+        - section: details
+          title: "פרטי תנועה"
+          layout: two_column
+          fields:
+            - name: movement_type
+              label: "סוג תנועה"
+              type: select
+              options:
+                - value: in
+                  label: "כניסה"
+                - value: out
+                  label: "יציאה"
+                - value: transfer
+                  label: "העברה"
+                - value: adjustment
+                  label: "תיקון"
+                - value: return
+                  label: "החזרה"
+              required: true
+              col_span: 1
+            - name: product_id
+              label: "מוצר"
+              type: search_select
+              entity: products
+              display_field: name
+              search_fields: [name, sku]
+              required: true
+              col_span: 1
+            - name: warehouse_from_id
+              label: "מחסן מקור"
+              type: select
+              entity: warehouses
+              display_field: name
+              filter: "is_active = true"
+              col_span: 1
+              visible_when: "movement_type IN (out, transfer, adjustment)"
+              required_when: "movement_type IN (out, transfer)"
+            - name: warehouse_to_id
+              label: "מחסן יעד"
+              type: select
+              entity: warehouses
+              display_field: name
+              filter: "is_active = true"
+              col_span: 1
+              visible_when: "movement_type IN (in, transfer, return, adjustment)"
+              required_when: "movement_type IN (in, transfer, return)"
+            - name: quantity
+              label: "כמות"
+              type: number_input
+              decimal_places: 2
+              min: 0.01
+              required: true
+              col_span: 1
+            - name: unit_cost
+              label: "עלות יחידה"
+              type: currency_input
+              col_span: 1
+            - name: reason
+              label: "סיבה / הערה"
+              type: textarea
+              rows: 3
+              col_span: 2
+      form_actions:
+        - action: save
+          label: "בצע תנועה"
+          variant: primary
+          navigates_to: /inventory/movements
+        - action: cancel
+          label: "ביטול"
+          variant: text
+          navigates_to: /inventory/movements
+
+    # === 9.3.8 ALLOCATIONS PAGE ===
+    allocations_page:
+      route: /inventory/allocations
+      title: "הקצאות מלאי"
+      type: list_page
+      entity: stock_allocations
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש לפי מוצר, הזמנה..."
+            searches_fields: ["product.name", "sales_order.order_number"]
+          - component: filter_dropdown
+            key: status_filter
+            label: "סטטוס"
+            options: [reserved, picked, shipped, released]
+            multi_select: true
+          - component: filter_dropdown
+            key: warehouse_filter
+            label: "מחסן"
+            options_from: warehouses
+            display_field: name
+
+      table_columns:
+        - key: product
+          label: "מוצר"
+          sortable: true
+          width: 200
+          display: "product.name"
+          link_to: "/products/:product_id"
+        - key: warehouse
+          label: "מחסן"
+          sortable: true
+          width: 140
+          display: "warehouse.name"
+        - key: sales_order
+          label: "הזמנת לקוח"
+          sortable: true
+          width: 130
+          display: "sales_order.order_number"
+          link_to: "/sales/orders/:sales_order_id"
+        - key: quantity_allocated
+          label: "כמות מוקצית"
+          sortable: true
+          width: 110
+          format: decimal
+        - key: status
+          label: "סטטוס"
+          sortable: true
+          width: 110
+          type: status_badge
+          color_map:
+            reserved: blue
+            picked: orange
+            shipped: green
+            released: gray
+        - key: created_at
+          label: "תאריך"
+          sortable: true
+          width: 140
+          format: datetime
+
+      row_actions:
+        - action: release
+          label: "שחרר"
+          icon: lock_open
+          condition: "status = reserved"
+        - action: mark_picked
+          label: "סמן כנלקט"
+          icon: check
+          condition: "status = reserved"
+        - action: mark_shipped
+          label: "סמן כנשלח"
+          icon: local_shipping
+          condition: "status = picked"
+
+    # === 9.3.9 STOCK COUNTS LIST ===
+    stock_counts_list:
+      route: /inventory/counts
+      title: "ספירות מלאי"
+      type: list_page
+      entity: stock_counts
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש לפי מספר ספירה..."
+            searches_fields: [count_number]
+          - component: filter_dropdown
+            key: warehouse_filter
+            label: "מחסן"
+            options_from: warehouses
+            display_field: name
+          - component: filter_dropdown
+            key: status_filter
+            label: "סטטוס"
+            options: [planned, in_progress, completed, approved]
+            multi_select: true
+          - component: date_range_picker
+            key: date_filter
+            label: "תאריך ספירה"
+            applies_to: count_date
+        right:
+          - component: button
+            label: "ספירה חדשה"
+            icon: add
+            action: navigate
+            target: /inventory/counts/create
+            variant: primary
+
+      table_columns:
+        - key: count_number
+          label: "מספר ספירה"
+          sortable: true
+          width: 120
+          link_to: "/inventory/counts/:id"
+        - key: warehouse
+          label: "מחסן"
+          sortable: true
+          width: 150
+          display: "warehouse.name"
+          link_to: "/inventory/warehouses/:warehouse_id"
+        - key: count_date
+          label: "תאריך ספירה"
+          sortable: true
+          width: 120
+          format: date
+        - key: items_count
+          label: "פריטים"
+          width: 80
+          computed: "COUNT(stock_count_items)"
+        - key: variance_count
+          label: "סטיות"
+          width: 80
+          computed: "COUNT(stock_count_items WHERE variance != 0)"
+          color_rules:
+            - condition: "value > 0"
+              color: orange
+            - condition: "value = 0"
+              color: green
+        - key: counted_by
+          label: "נספר ע\"י"
+          width: 140
+          display: "counter_user.full_name"
+        - key: status_id
+          label: "סטטוס"
+          sortable: true
+          width: 110
+          type: status_badge
+          color_map:
+            planned: gray
+            in_progress: blue
+            completed: orange
+            approved: green
+
+      row_actions:
+        - action: view
+          label: "צפייה"
+          icon: visibility
+          target: "/inventory/counts/:id"
+        - action: start_count
+          label: "התחל"
+          icon: play_arrow
+          condition: "status_id = planned"
+        - action: complete_count
+          label: "סיים"
+          icon: check
+          condition: "status_id = in_progress"
+        - action: approve_count
+          label: "אשר"
+          icon: check_circle
+          condition: "status_id = completed"
+        - action: delete
+          label: "מחק"
+          icon: delete
+          condition: "status_id = planned"
+
+    # === 9.3.10 STOCK COUNT CREATE ===
+    stock_count_create:
+      route: /inventory/counts/create
+      title: "ספירת מלאי חדשה"
+      type: form_page
+      entity: stock_counts
+
+      form_sections:
+        - section: header
+          title: "פרטי ספירה"
+          layout: two_column
+          fields:
+            - name: warehouse_id
+              label: "מחסן"
+              type: select
+              entity: warehouses
+              display_field: name
+              filter: "is_active = true"
+              required: true
+              col_span: 1
+              on_select: "auto-populate items from stock_levels"
+            - name: count_date
+              label: "תאריך ספירה"
+              type: date_picker
+              default: today
+              required: true
+              col_span: 1
+            - name: counted_by
+              label: "סופר"
+              type: select
+              entity: users
+              display_field: full_name
+              default: current_user
+              required: true
+              col_span: 1
+            - name: notes
+              label: "הערות"
+              type: textarea
+              rows: 2
+              col_span: 2
+
+        - section: items
+          title: "פריטים לספירה"
+          layout: editable_table
+          entity: stock_count_items
+          auto_populate_from: "stock_levels WHERE warehouse_id = :warehouse_id"
+          columns:
+            - name: product_name
+              label: "מוצר"
+              type: display
+              display: "product.name"
+              width: 220
+              read_only: true
+            - name: product_sku
+              label: "מק\"ט"
+              type: display
+              display: "product.sku"
+              width: 100
+              read_only: true
+            - name: system_quantity
+              label: "כמות מערכת"
+              type: display
+              width: 120
+              format: decimal
+              read_only: true
+            - name: counted_quantity
+              label: "כמות שנספרה"
+              type: number_input
+              decimal_places: 2
+              width: 120
+              required: true
+            - name: variance
+              label: "סטייה"
+              type: computed
+              formula: "counted_quantity - system_quantity"
+              width: 100
+              read_only: true
+              color_rules:
+                - condition: "value != 0"
+                  color: red
+                - condition: "value = 0"
+                  color: green
+            - name: variance_reason
+              label: "סיבת סטייה"
+              type: text_input
+              width: 200
+              required_when: "variance != 0"
+
+      form_actions:
+        - action: save_planned
+          label: "שמור כמתוכנן"
+          variant: secondary
+          sets: "status_id = planned"
+          navigates_to: "/inventory/counts/:id"
+        - action: save_and_start
+          label: "שמור והתחל ספירה"
+          variant: primary
+          sets: "status_id = in_progress"
+          navigates_to: "/inventory/counts/:id"
+        - action: cancel
+          label: "ביטול"
+          variant: text
+          navigates_to: /inventory/counts
+
+    # === 9.3.11 STOCK COUNT DETAILS ===
+    stock_count_details:
+      route: "/inventory/counts/:id"
+      title: "פרטי ספירת מלאי"
+      type: detail_page
+      entity: stock_counts
+
+      header:
+        layout: detail_header
+        elements:
+          - component: back_button
+            target: /inventory/counts
+          - component: title
+            display: "count_number"
+          - component: status_badge
+            field: status_id
+          - component: action_buttons
+            actions:
+              - action: start_count
+                label: "התחל ספירה"
+                icon: play_arrow
+                condition: "status_id = planned"
+              - action: complete_count
+                label: "סיים ספירה"
+                icon: check
+                condition: "status_id = in_progress"
+              - action: approve_count
+                label: "אשר ספירה"
+                icon: check_circle
+                condition: "status_id = completed"
+                side_effects:
+                  - "creates stock_movements type=count_adjustment for items with variance != 0"
+                  - "updates stock_levels"
+                  - "sets stock_levels.last_counted_at"
+              - action: print
+                label: "הדפסה"
+                icon: print
+
+      summary_cards:
+        - label: "פריטים"
+          value: "COUNT(stock_count_items)"
+        - label: "סטיות"
+          value: "COUNT(stock_count_items WHERE variance != 0)"
+          color: orange
+        - label: "סטייה כוללת"
+          value: "SUM(ABS(stock_count_items.variance))"
+
+      tabs:
+        - tab: details
+          label: "פרטים"
+          icon: info
+          content:
+            layout: detail_grid
+            fields:
+              - label: "מספר ספירה"
+                value: count_number
+              - label: "מחסן"
+                value: "warehouse.name"
+                link_to: "/inventory/warehouses/:warehouse_id"
+              - label: "תאריך ספירה"
+                value: count_date
+                format: date
+              - label: "סטטוס"
+                value: status_id
+                type: status_badge
+              - label: "נספר ע\"י"
+                value: "counter_user.full_name"
+              - label: "אושר ע\"י"
+                value: "approver_user.full_name"
+              - label: "הערות"
+                value: notes
+
+        - tab: items
+          label: "פריטים"
+          icon: list
+          content:
+            entity: stock_count_items
+            filter: "stock_count_id = :id"
+            type: table
+            editable: "status_id = in_progress"
+            columns:
+              - key: product_sku
+                label: "מק\"ט"
+                width: 100
+                display: "product.sku"
+              - key: product_name
+                label: "מוצר"
+                width: 220
+                display: "product.name"
+              - key: system_quantity
+                label: "כמות מערכת"
+                width: 120
+                format: decimal
+              - key: counted_quantity
+                label: "כמות שנספרה"
+                width: 120
+                format: decimal
+                editable: true
+              - key: variance
+                label: "סטייה"
+                width: 100
+                format: decimal
+                color_rules:
+                  - condition: "value > 0"
+                    color: blue
+                  - condition: "value < 0"
+                    color: red
+                  - condition: "value = 0"
+                    color: green
+              - key: variance_percent
+                label: "סטייה %"
+                width: 90
+                computed: "(variance / system_quantity) * 100"
+                format: percentage
+              - key: variance_reason
+                label: "סיבה"
+                width: 200
+                editable: true
+
+        - tab: activity_log
+          label: "לוג"
+          icon: history
+          content:
+            entity: activity_logs
+            filter: "entity_type = stock_count AND entity_id = :id"
+            view_type: timeline
+            sort: created_at DESC
+
+  # ----------------------------------------------------------
+  # 9.4 NAVIGATION MAP
+  # ----------------------------------------------------------
+  navigation_map:
+    stock_levels_page:
+      navigates_to:
+        - target: "/products/:product_id"
+          trigger: "click product"
+        - target: "/inventory/warehouses/:warehouse_id"
+          trigger: "click warehouse"
+        - target: "/inventory/movements?product_id=:product_id"
+          trigger: "click view movements"
+    stock_movements_page:
+      navigates_to:
+        - target: "/products/:product_id"
+          trigger: "click product"
+        - target: /inventory/movements/create
+          trigger: "click create"
+    stock_counts_list:
+      navigates_to:
+        - target: /inventory/counts/create
+          trigger: "click create"
+        - target: "/inventory/counts/:id"
+          trigger: "click count row"
+    warehouses_list:
+      navigates_to:
+        - target: /inventory/warehouses/create
+          trigger: "click create"
+        - target: "/inventory/warehouses/:id"
+          trigger: "click warehouse"
+
+# ============================================================
+# MODULE 10: FINANCE
+# ============================================================
+module_10_finance:
+  module_key: finance
+  icon: account_balance
+  label: "פיננסים"
+  route: /finance
+  priority: critical
+  purpose: "הכנסות, הוצאות, מסמכים, תשלומים, התאמות, גבייה וחשבונאות"
+  note: "Uses central documents table with direction enum[income, expense]"
+
+  # ----------------------------------------------------------
+  # 10.1 SIDEBAR SUBMENUS
+  # ----------------------------------------------------------
+  submenus:
+    - key: income_documents
+      label: "מסמכי הכנסה"
+      route: /finance/income
+      icon: arrow_downward
+    - key: expense_documents
+      label: "מסמכי הוצאה"
+      route: /finance/expenses
+      icon: arrow_upward
+    - key: journal_overview
+      label: "סקירת יומן"
+      route: /finance/journal
+      icon: menu_book
+    - key: receivables
+      label: "חייבים (גבייה)"
+      route: /finance/receivables
+      icon: account_balance_wallet
+    - key: payables
+      label: "זכאים (תשלומים)"
+      route: /finance/payables
+      icon: payments
+    - key: reconciliation
+      label: "התאמות"
+      route: /finance/reconciliation
+      icon: compare_arrows
+
+  # ----------------------------------------------------------
+  # 10.2 ENTITIES (uses central documents table)
+  # ----------------------------------------------------------
+  entities_reference:
+    primary_table: documents
+    direction_field: direction
+    income_types: [receipt, invoice, invoice_receipt, payment_request, credit_note]
+    expense_types: [expense_invoice, expense_receipt]
+    supporting_tables:
+      - document_items
+      - document_links
+      - attachments
+      - payments
+      - activity_logs
+
+  # ----------------------------------------------------------
+  # 10.3 PAGES
+  # ----------------------------------------------------------
+  pages:
+
+    # === 10.3.1 INCOME DOCUMENTS LIST ===
+    income_documents_list:
+      route: /finance/income
+      title: "מסמכי הכנסה"
+      type: list_page
+      entity: documents
+      base_filter: "direction = income"
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש לפי מספר מסמך, לקוח, הפניה..."
+            searches_fields: [document_number, "customer.full_name", reference_number, title]
+          - component: filter_dropdown
+            key: document_type_filter
+            label: "סוג מסמך"
+            options:
+              - value: invoice
+                label: "חשבונית"
+              - value: receipt
+                label: "קבלה"
+              - value: invoice_receipt
+                label: "חשבונית קבלה"
+              - value: payment_request
+                label: "דרישת תשלום"
+              - value: credit_note
+                label: "זיכוי"
+            multi_select: true
+          - component: filter_dropdown
+            key: customer_filter
+            label: "לקוח"
+            options_from: customers
+            display_field: full_name
+            searchable: true
+          - component: date_range_picker
+            key: date_filter
+            label: "תאריך"
+            applies_to: issue_date
+          - component: filter_dropdown
+            key: status_filter
+            label: "סטטוס"
+            options: [draft, pending, open, paid, partially_paid, cancelled]
+            multi_select: true
+          - component: amount_range_filter
+            key: amount_filter
+            label: "סכום"
+            applies_to: total_amount
+          - component: filter_dropdown
+            key: payment_method_filter
+            label: "אמצעי תשלום"
+            options_from: payment_methods
+            display_field: name
+        right:
+          - component: button
+            label: "מסמך הכנסה חדש"
+            icon: add
+            action: navigate
+            target: /finance/income/create
+            variant: primary
+          - component: button
+            label: "ייצוא"
+            icon: download
+            action: export
+            formats: [xlsx, csv, pdf]
+
+      table_columns:
+        - key: document_number
+          label: "מספר מסמך"
+          sortable: true
+          width: 130
+          link_to: "/finance/income/:id"
+        - key: issue_date
+          label: "תאריך"
+          sortable: true
+          width: 110
+          format: date
+        - key: customer
+          label: "לקוח"
+          sortable: true
+          width: 180
+          display: "customer.full_name"
+          link_to: "/customers/:customer_id"
+        - key: document_type
+          label: "סוג מסמך"
+          sortable: true
+          width: 120
+          display: "document_type.name"
+        - key: total_amount
+          label: "סה\"כ"
+          sortable: true
+          width: 120
+          format: currency
+        - key: paid_amount
+          label: "שולם"
+          sortable: true
+          width: 120
+          format: currency
+        - key: balance_due
+          label: "יתרה"
+          sortable: true
+          width: 120
+          format: currency
+          color_rules:
+            - condition: "value > 0"
+              color: red
+            - condition: "value = 0"
+              color: green
+        - key: payment_method
+          label: "אמצעי תשלום"
+          width: 120
+          display: "payment_method.name"
+        - key: status_id
+          label: "סטטוס"
+          sortable: true
+          width: 110
+          type: status_badge
+          color_map:
+            draft: gray
+            pending: orange
+            open: blue
+            paid: green
+            partially_paid: yellow
+            cancelled: red
+        - key: linked_count
+          label: "מקושרים"
+          width: 80
+          computed: "COUNT(document_links)"
+        - key: attachments_count
+          label: "קבצים"
+          width: 80
+          computed: "COUNT(attachments)"
+
+      row_actions:
+        - action: view
+          label: "צפייה"
+          icon: visibility
+          target: "/finance/income/:id"
+        - action: edit
+          label: "עריכה"
+          icon: edit
+          target: "/finance/income/:id/edit"
+          condition: "status_id = draft"
+        - action: duplicate
+          label: "שכפול"
+          icon: content_copy
+        - action: link_document
+          label: "קשר מסמך"
+          icon: link
+          type: modal
+        - action: record_payment
+          label: "רשום תשלום"
+          icon: payment
+          type: modal
+          condition: "balance_due > 0"
+        - action: send_to_customer
+          label: "שלח ללקוח"
+          icon: send
+          condition: "status_id IN (open, partially_paid)"
+
+    # === 10.3.2 INCOME DOCUMENT CREATE ===
+    income_document_create:
+      route: /finance/income/create
+      title: "מסמך הכנסה חדש"
+      type: form_page
+      entity: documents
+      default_values:
+        direction: income
+
+      form_sections:
+        - section: header
+          title: "פרטי מסמך"
+          layout: two_column
+          fields:
+            - name: document_type_id
+              label: "סוג מסמך"
+              type: select
+              options:
+                - value: invoice
+                  label: "חשבונית"
+                - value: receipt
+                  label: "קבלה"
+                - value: invoice_receipt
+                  label: "חשבונית קבלה"
+                - value: payment_request
+                  label: "דרישת תשלום"
+                - value: credit_note
+                  label: "זיכוי"
+              required: true
+              col_span: 1
+            - name: customer_id
+              label: "לקוח"
+              type: search_select
+              entity: customers
+              display_field: full_name
+              search_fields: [full_name, customer_number, company_name, phone, email]
+              required: true
+              create_new_target: /customers/create
+              col_span: 1
+            - name: issue_date
+              label: "תאריך הנפקה"
+              type: date_picker
+              default: today
+              required: true
+              col_span: 1
+            - name: due_date
+              label: "תאריך לתשלום"
+              type: date_picker
+              required: false
+              col_span: 1
+            - name: title
+              label: "כותרת"
+              type: text_input
+              max_length: 255
+              col_span: 1
+            - name: reference_number
+              label: "מספר הפניה"
+              type: text_input
+              max_length: 50
+              col_span: 1
+            - name: description
+              label: "תיאור"
+              type: textarea
+              rows: 2
+              col_span: 2
+            - name: currency
+              label: "מטבע"
+              type: select
+              options: [ILS, USD, EUR]
+              default: ILS
+              col_span: 1
+            - name: payment_method_id
+              label: "אמצעי תשלום"
+              type: select
+              options_from: payment_methods
+              display_field: name
+              col_span: 1
+
+        - section: line_items
+          title: "שורות מסמך"
+          layout: editable_table
+          entity: document_items
+          columns:
+            - name: product_id
+              label: "מוצר/שירות"
+              type: search_select
+              entity: products
+              display_field: name
+              search_fields: [name, sku]
+              width: 200
+              on_select_auto_fill:
+                description: "product.name"
+                unit_price: "product.default_price"
+                tax_rate: "product.tax_rate"
+            - name: description
+              label: "תיאור"
+              type: text_input
+              width: 220
+              required: true
+            - name: quantity
+              label: "כמות"
+              type: number_input
+              decimal_places: 2
+              width: 80
+              default: 1
+              required: true
+            - name: unit_price
+              label: "מחיר יחידה"
+              type: currency_input
+              width: 120
+              required: true
+            - name: discount_percent
+              label: "הנחה %"
+              type: number_input
+              decimal_places: 2
+              width: 80
+              default: 0
+              min: 0
+              max: 100
+            - name: tax_rate
+              label: "מע\"מ %"
+              type: number_input
+              decimal_places: 2
+              width: 80
+              default: 17.00
+            - name: line_total
+              label: "סה\"כ"
+              type: computed
+              formula: "quantity * unit_price * (1 - discount_percent/100)"
+              width: 120
+              format: currency
+              read_only: true
+          row_actions:
+            - action: add_row
+              label: "הוסף שורה"
+              icon: add
+            - action: delete_row
+              label: "מחק שורה"
+              icon: delete
+          footer:
+            - label: "סכום לפני מע\"מ"
+              key: subtotal_amount
+              value: "SUM(line_total)"
+              format: currency
+            - label: "מע\"מ"
+              key: tax_amount
+              value: "SUM(line_total * tax_rate / 100)"
+              format: currency
+            - label: "סה\"כ"
+              key: total_amount
+              value: "subtotal_amount + tax_amount"
+              format: currency
+              bold: true
+
+        - section: notes_attachments
+          title: "הערות וקבצים"
+          layout: single_column
+          fields:
+            - name: notes
+              label: "הערות"
+              type: textarea
+              rows: 3
+            - name: attachments
+              label: "קבצים מצורפים"
+              type: file_upload
+              accept: "*/*"
+              max_size_mb: 50
+              multiple: true
+
+      form_actions:
+        - action: save_draft
+          label: "שמור כטיוטה"
+          variant: secondary
+          sets: "status_id = draft"
+          navigates_to: "/finance/income/:id"
+        - action: save_and_finalize
+          label: "שמור וסגור"
+          variant: primary
+          sets: "status_id = open"
+          side_effects:
+            - "generate document_number"
+            - "calculate totals"
+          navigates_to: "/finance/income/:id"
+        - action: cancel
+          label: "ביטול"
+          variant: text
+          navigates_to: /finance/income
+
+    # === 10.3.3 INCOME DOCUMENT DETAILS ===
+    income_document_details:
+      route: "/finance/income/:id"
+      title: "פרטי מסמך הכנסה"
+      type: detail_page
+      entity: documents
+      load_data: "documents WHERE id = :id AND direction = income"
+
+      header:
+        layout: detail_header
+        elements:
+          - component: back_button
+            target: /finance/income
+          - component: title
+            display: "document_number"
+            subtitle: "document_type.name"
+          - component: status_badge
+            field: status_id
+          - component: action_buttons
+            actions:
+              - action: edit
+                label: "עריכה"
+                icon: edit
+                target: "/finance/income/:id/edit"
+                condition: "status_id = draft"
+              - action: record_payment
+                label: "רשום תשלום"
+                icon: payment
+                type: modal
+                condition: "balance_due > 0"
+                modal_fields:
+                  - name: payment_method_id
+                    label: "אמצעי תשלום"
+                    type: select
+                    options_from: payment_methods
+                    required: true
+                  - name: amount
+                    label: "סכום"
+                    type: currency_input
+                    default: "balance_due"
+                    required: true
+                  - name: payment_date
+                    label: "תאריך תשלום"
+                    type: date_picker
+                    default: today
+                    required: true
+                  - name: reference_number
+                    label: "אסמכתא"
+                    type: text_input
+                  - name: notes
+                    label: "הערות"
+                    type: textarea
+              - action: link_document
+                label: "קשר מסמך"
+                icon: link
+                type: modal
+                modal_fields:
+                  - name: target_document_id
+                    label: "מסמך"
+                    type: search_select
+                    entity: documents
+                    display_field: document_number
+                    required: true
+                  - name: link_type
+                    label: "סוג קשר"
+                    type: select
+                    options: [based_on, converted_to, paid_by, receipt_for, related_to]
+                    required: true
+              - action: upload_attachment
+                label: "העלה קובץ"
+                icon: attach_file
+                type: file_upload
+              - action: duplicate
+                label: "שכפול"
+                icon: content_copy
+              - action: cancel_document
+                label: "ביטול מסמך"
+                icon: cancel
+                type: confirm_dialog
+                condition: "status_id IN (draft, open)"
+              - action: create_receipt
+                label: "צור קבלה"
+                icon: receipt
+                target: "/finance/income/create?document_type=receipt&based_on=:id"
+                condition: "document_type_id = invoice AND balance_due > 0"
+              - action: create_credit_note
+                label: "צור זיכוי"
+                icon: remove_circle
+                target: "/finance/income/create?document_type=credit_note&based_on=:id"
+                condition: "document_type_id IN (invoice, invoice_receipt)"
+              - action: send_to_customer
+                label: "שלח ללקוח"
+                icon: send
+                condition: "status_id IN (open, partially_paid)"
+              - action: print
+                label: "הדפסה"
+                icon: print
+              - action: export_pdf
+                label: "ייצוא PDF"
+                icon: picture_as_pdf
+
+      summary_cards:
+        - label: "סה\"כ"
+          value: total_amount
+          format: currency
+        - label: "שולם"
+          value: paid_amount
+          format: currency
+        - label: "יתרה"
+          value: balance_due
+          format: currency
+          color_rules:
+            - condition: "value > 0"
+              color: red
+            - condition: "value = 0"
+              color: green
+
+      tabs:
+        - tab: general_info
+          label: "פרטי מסמך"
+          icon: info
+          content:
+            layout: detail_grid
+            fields:
+              - label: "מספר מסמך"
+                value: document_number
+              - label: "סוג מסמך"
+                value: "document_type.name"
+              - label: "כיוון"
+                value: direction
+              - label: "לקוח"
+                value: "customer.full_name"
+                link_to: "/customers/:customer_id"
+              - label: "תאריך הנפקה"
+                value: issue_date
+                format: date
+              - label: "תאריך לתשלום"
+                value: due_date
+                format: date
+              - label: "כותרת"
+                value: title
+              - label: "מספר הפניה"
+                value: reference_number
+              - label: "תיאור"
+                value: description
+              - label: "מטבע"
+                value: currency
+              - label: "סכום לפני מע\"מ"
+                value: subtotal_amount
+                format: currency
+              - label: "מע\"מ"
+                value: tax_amount
+                format: currency
+              - label: "סה\"כ"
+                value: total_amount
+                format: currency
+              - label: "שולם"
+                value: paid_amount
+                format: currency
+              - label: "יתרה"
+                value: balance_due
+                format: currency
+              - label: "אמצעי תשלום"
+                value: "payment_method.name"
+              - label: "סטטוס"
+                value: status_id
+                type: status_badge
+              - label: "נוצר על ידי"
+                value: created_by
+              - label: "תאריך יצירה"
+                value: created_at
+                format: datetime
+
+        - tab: line_items
+          label: "שורות מסמך"
+          icon: list
+          content:
+            entity: document_items
+            filter: "document_id = :id"
+            type: editable_table
+            editable: "status_id = draft"
+            columns:
+              - key: product
+                label: "מוצר"
+                width: 200
+                display: "product.name"
+              - key: description
+                label: "תיאור"
+                width: 220
+              - key: quantity
+                label: "כמות"
+                width: 80
+                format: decimal
+              - key: unit_price
+                label: "מחיר"
+                width: 120
+                format: currency
+              - key: discount_percent
+                label: "הנחה %"
+                width: 80
+              - key: tax_rate
+                label: "מע\"מ %"
+                width: 80
+              - key: line_total
+                label: "סה\"כ"
+                width: 120
+                format: currency
+            footer:
+              - label: "סכום לפני מע\"מ"
+                value: "SUM(line_total)"
+                format: currency
+              - label: "מע\"מ"
+                value: "SUM(line_total * tax_rate / 100)"
+                format: currency
+              - label: "סה\"כ"
+                value: total_amount
+                format: currency
+                bold: true
+
+        - tab: linked_documents
+          label: "מסמכים מקושרים"
+          icon: link
+          content:
+            entity: document_links
+            filter: "source_document_id = :id OR target_document_id = :id"
+            type: table
+            columns:
+              - key: linked_document_number
+                label: "מספר מסמך"
+                width: 130
+                link_to: "dynamic"
+              - key: linked_document_type
+                label: "סוג"
+                width: 120
+              - key: link_type
+                label: "סוג קשר"
+                width: 130
+              - key: linked_amount
+                label: "סכום"
+                width: 120
+                format: currency
+              - key: linked_status
+                label: "סטטוס"
+                width: 110
+                type: status_badge
+              - key: notes
+                label: "הערות"
+                width: 180
+              - key: created_at
+                label: "תאריך קישור"
+                width: 130
+                format: datetime
+            actions:
+              - action: add_link
+                label: "קשר מסמך"
+                icon: add_link
+                type: modal
+
+        - tab: attachments
+          label: "קבצים"
+          icon: attach_file
+          content:
+            entity: attachments
+            filter: "document_id = :id"
+            type: file_grid
+            display_fields:
+              - file_name
+              - file_type
+              - uploaded_at
+              - uploaded_by
+            actions:
+              - action: upload
+                label: "העלה קובץ"
+                icon: upload
+                type: file_upload
+              - action: download
+                label: "הורדה"
+                icon: download
+              - action: preview
+                label: "תצוגה מקדימה"
+                icon: visibility
+              - action: delete
+                label: "מחיקה"
+                icon: delete
+
+        - tab: payments
+          label: "תשלומים"
+          icon: payment
+          content:
+            entity: payments
+            filter: "document_id = :id"
+            type: table
+            columns:
+              - key: payment_date
+                label: "תאריך"
+                width: 120
+                format: date
+              - key: payment_method
+                label: "אמצעי תשלום"
+                width: 130
+                display: "payment_method.name"
+              - key: amount
+                label: "סכום"
+                width: 120
+                format: currency
+              - key: reference_number
+                label: "אסמכתא"
+                width: 130
+              - key: status_id
+                label: "סטטוס"
+                width: 110
+                type: status_badge
+              - key: notes
+                label: "הערות"
+                width: 200
+              - key: created_at
+                label: "נרשם"
+                width: 140
+                format: datetime
+            actions:
+              - action: add_payment
+                label: "רשום תשלום"
+                icon: add
+                type: modal
+
+        - tab: activity_log
+          label: "לוג פעילות"
+          icon: history
+          content:
+            entity: activity_logs
+            filter: "entity_type = document AND entity_id = :id"
+            view_type: timeline
+            sort: created_at DESC
+
+    # === 10.3.4 EXPENSE DOCUMENTS LIST ===
+    expense_documents_list:
+      route: /finance/expenses
+      title: "מסמכי הוצאה"
+      type: list_page
+      entity: documents
+      base_filter: "direction = expense"
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש לפי מספר מסמך, ספק..."
+            searches_fields: [document_number, "supplier.full_name", reference_number]
+          - component: filter_dropdown
+            key: document_type_filter
+            label: "סוג מסמך"
+            options:
+              - value: expense_invoice
+                label: "חשבונית ספק"
+              - value: expense_receipt
+                label: "קבלה מספק"
+            multi_select: true
+          - component: filter_dropdown
+            key: supplier_filter
+            label: "ספק"
+            options_from: suppliers
+            display_field: full_name
+            searchable: true
+          - component: date_range_picker
+            key: date_filter
+            label: "תאריך"
+            applies_to: issue_date
+          - component: filter_dropdown
+            key: status_filter
+            label: "סטטוס"
+            options: [draft, pending, open, paid, partially_paid, cancelled]
+            multi_select: true
+          - component: amount_range_filter
+            key: amount_filter
+            label: "סכום"
+            applies_to: total_amount
+          - component: filter_dropdown
+            key: category_filter
+            label: "קטגוריה"
+            options_from: categories
+            filter: "direction = expense"
+            display_field: name
+        right:
+          - component: button
+            label: "מסמך הוצאה חדש"
+            icon: add
+            action: navigate
+            target: /finance/expenses/create
+            variant: primary
+          - component: button
+            label: "ייצוא"
+            icon: download
+            action: export
+            formats: [xlsx, csv, pdf]
+
+      table_columns:
+        - key: document_number
+          label: "מספר מסמך"
+          sortable: true
+          width: 130
+          link_to: "/finance/expenses/:id"
+        - key: issue_date
+          label: "תאריך"
+          sortable: true
+          width: 110
+          format: date
+        - key: supplier
+          label: "ספק"
+          sortable: true
+          width: 180
+          display: "supplier.full_name"
+          link_to: "/suppliers/:supplier_id"
+        - key: document_type
+          label: "סוג"
+          sortable: true
+          width: 120
+        - key: total_amount
+          label: "סה\"כ"
+          sortable: true
+          width: 120
+          format: currency
+        - key: paid_amount
+          label: "שולם"
+          width: 120
+          format: currency
+        - key: balance_due
+          label: "יתרה"
+          width: 120
+          format: currency
+        - key: status_id
+          label: "סטטוס"
+          sortable: true
+          width: 110
+          type: status_badge
+
+      row_actions:
+        - action: view
+          label: "צפייה"
+          icon: visibility
+          target: "/finance/expenses/:id"
+        - action: edit
+          label: "עריכה"
+          icon: edit
+          target: "/finance/expenses/:id/edit"
+          condition: "status_id = draft"
+        - action: record_payment
+          label: "רשום תשלום"
+          icon: payment
+          type: modal
+          condition: "balance_due > 0"
+        - action: link_document
+          label: "קשר מסמך"
+          icon: link
+          type: modal
+
+    # === 10.3.5 EXPENSE DOCUMENT CREATE ===
+    expense_document_create:
+      route: /finance/expenses/create
+      title: "מסמך הוצאה חדש"
+      type: form_page
+      entity: documents
+      default_values:
+        direction: expense
+      description: "Same structure as income_document_create but with supplier instead of customer"
+
+      form_sections:
+        - section: header
+          title: "פרטי מסמך"
+          layout: two_column
+          fields:
+            - name: document_type_id
+              label: "סוג מסמך"
+              type: select
+              options:
+                - value: expense_invoice
+                  label: "חשבונית ספק"
+                - value: expense_receipt
+                  label: "קבלה מספק"
+              required: true
+              col_span: 1
+            - name: supplier_id
+              label: "ספק"
+              type: search_select
+              entity: suppliers
+              display_field: full_name
+              search_fields: [full_name, supplier_number, company_name, phone]
+              required: true
+              create_new_target: /suppliers/create
+              col_span: 1
+            - name: issue_date
+              label: "תאריך"
+              type: date_picker
+              default: today
+              required: true
+              col_span: 1
+            - name: due_date
+              label: "תאריך לתשלום"
+              type: date_picker
+              col_span: 1
+            - name: title
+              label: "כותרת"
+              type: text_input
+              col_span: 1
+            - name: reference_number
+              label: "מספר הפניה"
+              type: text_input
+              col_span: 1
+            - name: description
+              label: "תיאור"
+              type: textarea
+              rows: 2
+              col_span: 2
+            - name: currency
+              label: "מטבע"
+              type: select
+              options: [ILS, USD, EUR]
+              default: ILS
+              col_span: 1
+            - name: payment_method_id
+              label: "אמצעי תשלום"
+              type: select
+              options_from: payment_methods
+              display_field: name
+              col_span: 1
+
+        - section: line_items
+          title: "שורות מסמך"
+          layout: editable_table
+          entity: document_items
+          columns:
+            - name: product_id
+              label: "מוצר/שירות"
+              type: search_select
+              entity: products
+              display_field: name
+              width: 200
+              on_select_auto_fill:
+                description: "product.name"
+                unit_price: "product.default_price"
+                tax_rate: "product.tax_rate"
+            - name: description
+              label: "תיאור"
+              type: text_input
+              width: 220
+              required: true
+            - name: quantity
+              label: "כמות"
+              type: number_input
+              width: 80
+              default: 1
+              required: true
+            - name: unit_price
+              label: "מחיר יחידה"
+              type: currency_input
+              width: 120
+              required: true
+            - name: discount_percent
+              label: "הנחה %"
+              type: number_input
+              width: 80
+              default: 0
+            - name: tax_rate
+              label: "מע\"מ %"
+              type: number_input
+              width: 80
+              default: 17.00
+            - name: line_total
+              label: "סה\"כ"
+              type: computed
+              formula: "quantity * unit_price * (1 - discount_percent/100)"
+              width: 120
+              format: currency
+              read_only: true
+          row_actions:
+            - action: add_row
+              label: "הוסף שורה"
+              icon: add
+            - action: delete_row
+              label: "מחק שורה"
+              icon: delete
+          footer:
+            - label: "סכום לפני מע\"מ"
+              value: "SUM(line_total)"
+              format: currency
+            - label: "מע\"מ"
+              value: "SUM(line_total * tax_rate / 100)"
+              format: currency
+            - label: "סה\"כ"
+              value: "subtotal + tax"
+              format: currency
+              bold: true
+
+        - section: notes_attachments
+          title: "הערות וקבצים"
+          fields:
+            - name: notes
+              label: "הערות"
+              type: textarea
+              rows: 3
+            - name: attachments
+              label: "קבצים"
+              type: file_upload
+              multiple: true
+
+      form_actions:
+        - action: save_draft
+          label: "שמור כטיוטה"
+          variant: secondary
+          navigates_to: "/finance/expenses/:id"
+        - action: save_and_finalize
+          label: "שמור וסגור"
+          variant: primary
+          navigates_to: "/finance/expenses/:id"
+        - action: cancel
+          label: "ביטול"
+          variant: text
+          navigates_to: /finance/expenses
+
+    # === 10.3.6 EXPENSE DOCUMENT DETAILS ===
+    expense_document_details:
+      route: "/finance/expenses/:id"
+      title: "פרטי מסמך הוצאה"
+      type: detail_page
+      entity: documents
+      load_data: "documents WHERE id = :id AND direction = expense"
+      description: "Same tabs as income_document_details but with supplier instead of customer"
+
+      header:
+        layout: detail_header
+        elements:
+          - component: back_button
+            target: /finance/expenses
+          - component: title
+            display: "document_number"
+          - component: status_badge
+            field: status_id
+          - component: action_buttons
+            actions:
+              - action: edit
+                label: "עריכה"
+                icon: edit
+                condition: "status_id = draft"
+              - action: record_payment
+                label: "רשום תשלום"
+                icon: payment
+                type: modal
+                condition: "balance_due > 0"
+              - action: link_document
+                label: "קשר מסמך"
+                icon: link
+                type: modal
+              - action: upload_attachment
+                label: "העלה קובץ"
+                icon: attach_file
+              - action: cancel_document
+                label: "ביטול מסמך"
+                icon: cancel
+                condition: "status_id IN (draft, open)"
+              - action: print
+                label: "הדפסה"
+                icon: print
+              - action: export_pdf
+                label: "ייצוא PDF"
+                icon: picture_as_pdf
+
+      tabs:
+        - tab: general_info
+          label: "פרטי מסמך"
+          icon: info
+          content:
+            layout: detail_grid
+            fields:
+              - label: "מספר מסמך"
+                value: document_number
+              - label: "סוג"
+                value: "document_type.name"
+              - label: "ספק"
+                value: "supplier.full_name"
+                link_to: "/suppliers/:supplier_id"
+              - label: "תאריך"
+                value: issue_date
+                format: date
+              - label: "לתשלום עד"
+                value: due_date
+                format: date
+              - label: "סה\"כ"
+                value: total_amount
+                format: currency
+              - label: "שולם"
+                value: paid_amount
+                format: currency
+              - label: "יתרה"
+                value: balance_due
+                format: currency
+              - label: "סטטוס"
+                value: status_id
+                type: status_badge
+
+        - tab: line_items
+          label: "שורות"
+          icon: list
+          content:
+            entity: document_items
+            filter: "document_id = :id"
+            type: table
+            columns:
+              - key: description
+                label: "תיאור"
+                width: 250
+              - key: quantity
+                label: "כמות"
+                width: 80
+              - key: unit_price
+                label: "מחיר"
+                width: 120
+                format: currency
+              - key: tax_rate
+                label: "מע\"מ %"
+                width: 80
+              - key: line_total
+                label: "סה\"כ"
+                width: 120
+                format: currency
+
+        - tab: linked_documents
+          label: "מקושרים"
+          icon: link
+          content:
+            entity: document_links
+            filter: "source_document_id = :id OR target_document_id = :id"
+            type: table
+
+        - tab: attachments
+          label: "קבצים"
+          icon: attach_file
+          content:
+            entity: attachments
+            filter: "document_id = :id"
+            type: file_grid
+
+        - tab: payments
+          label: "תשלומים"
+          icon: payment
+          content:
+            entity: payments
+            filter: "document_id = :id"
+            type: table
+
+        - tab: activity_log
+          label: "לוג"
+          icon: history
+          content:
+            entity: activity_logs
+            filter: "entity_type = document AND entity_id = :id"
+            view_type: timeline
+
+    # === 10.3.7 JOURNAL OVERVIEW ===
+    journal_overview:
+      route: /finance/journal
+      title: "סקירת יומן"
+      type: report_page
+
+      toolbar:
+        left:
+          - component: date_range_picker
+            key: period_filter
+            label: "תקופה"
+            default: current_month
+          - component: filter_dropdown
+            key: direction_filter
+            label: "כיוון"
+            options:
+              - value: income
+                label: "הכנסות"
+              - value: expense
+                label: "הוצאות"
+          - component: filter_dropdown
+            key: type_filter
+            label: "סוג מסמך"
+            options_from: document_types
+            multi_select: true
+
+      summary_cards:
+        - label: "סה\"כ הכנסות"
+          value: "SUM(documents.total_amount WHERE direction = income AND status != cancelled)"
+          format: currency
+          color: green
+        - label: "סה\"כ הוצאות"
+          value: "SUM(documents.total_amount WHERE direction = expense AND status != cancelled)"
+          format: currency
+          color: red
+        - label: "מאזן"
+          value: "income - expense"
+          format: currency
+        - label: "מסמכים בתקופה"
+          value: "COUNT(documents in period)"
+
+      table_columns:
+        - key: issue_date
+          label: "תאריך"
+          sortable: true
+          width: 110
+          format: date
+        - key: document_number
+          label: "מספר מסמך"
+          sortable: true
+          width: 130
+          link_to: "dynamic: /finance/income/:id or /finance/expenses/:id"
+        - key: document_type
+          label: "סוג"
+          width: 120
+        - key: direction
+          label: "כיוון"
+          width: 80
+          type: badge
+          color_map:
+            income: green
+            expense: red
+        - key: customer_or_supplier
+          label: "לקוח/ספק"
+          width: 180
+          link_to: "dynamic"
+        - key: debit
+          label: "חובה"
+          width: 120
+          format: currency
+          computed: "CASE WHEN direction = expense THEN total_amount ELSE 0 END"
+        - key: credit
+          label: "זכות"
+          width: 120
+          format: currency
+          computed: "CASE WHEN direction = income THEN total_amount ELSE 0 END"
+        - key: status_id
+          label: "סטטוס"
+          width: 110
+          type: status_badge
+
+    # === 10.3.8 RECEIVABLES (AGING REPORT) ===
+    receivables_page:
+      route: /finance/receivables
+      title: "חייבים (גיול חובות)"
+      type: report_page
+
+      toolbar:
+        left:
+          - component: filter_dropdown
+            key: customer_filter
+            label: "לקוח"
+            options_from: customers
+            display_field: full_name
+            searchable: true
+          - component: date_picker
+            key: as_of_date
+            label: "נכון לתאריך"
+            default: today
+
+      summary_cards:
+        - label: "סה\"כ חייבים"
+          value: "SUM(balance_due WHERE direction = income AND balance_due > 0)"
+          format: currency
+        - label: "שוטף"
+          value: "SUM(balance_due WHERE days_overdue <= 0)"
+          format: currency
+          color: green
+        - label: "30 יום"
+          value: "SUM(balance_due WHERE days_overdue BETWEEN 1 AND 30)"
+          format: currency
+          color: yellow
+        - label: "60 יום"
+          value: "SUM(balance_due WHERE days_overdue BETWEEN 31 AND 60)"
+          format: currency
+          color: orange
+        - label: "90 יום"
+          value: "SUM(balance_due WHERE days_overdue BETWEEN 61 AND 90)"
+          format: currency
+          color: red
+        - label: "120+ יום"
+          value: "SUM(balance_due WHERE days_overdue > 90)"
+          format: currency
+          color: red
+
+      grouping: customer
+      table_columns:
+        - key: customer
+          label: "לקוח"
+          width: 200
+          display: "customer.full_name"
+          link_to: "/customers/:customer_id"
+        - key: current_amount
+          label: "שוטף"
+          width: 120
+          format: currency
+        - key: days_30
+          label: "1-30 יום"
+          width: 120
+          format: currency
+        - key: days_60
+          label: "31-60 יום"
+          width: 120
+          format: currency
+        - key: days_90
+          label: "61-90 יום"
+          width: 120
+          format: currency
+        - key: days_120_plus
+          label: "120+ יום"
+          width: 120
+          format: currency
+        - key: total_due
+          label: "סה\"כ חוב"
+          width: 130
+          format: currency
+          bold: true
+
+      expandable_row:
+        shows: "individual documents for this customer"
+        columns:
+          - key: document_number
+            label: "מסמך"
+            link_to: "/finance/income/:id"
+          - key: issue_date
+            label: "תאריך"
+            format: date
+          - key: due_date
+            label: "לתשלום"
+            format: date
+          - key: total_amount
+            label: "סכום"
+            format: currency
+          - key: balance_due
+            label: "יתרה"
+            format: currency
+          - key: days_overdue
+            label: "ימי איחור"
+
+    # === 10.3.9 PAYABLES (AGING REPORT) ===
+    payables_page:
+      route: /finance/payables
+      title: "זכאים (גיול חובות לספקים)"
+      type: report_page
+
+      toolbar:
+        left:
+          - component: filter_dropdown
+            key: supplier_filter
+            label: "ספק"
+            options_from: suppliers
+            display_field: full_name
+            searchable: true
+          - component: date_picker
+            key: as_of_date
+            label: "נכון לתאריך"
+            default: today
+
+      summary_cards:
+        - label: "סה\"כ זכאים"
+          value: "SUM(balance_due WHERE direction = expense AND balance_due > 0)"
+          format: currency
+        - label: "שוטף"
+          value: "SUM(balance_due WHERE days_overdue <= 0)"
+          format: currency
+          color: green
+        - label: "30 יום"
+          value: "SUM(balance_due WHERE days_overdue BETWEEN 1 AND 30)"
+          format: currency
+          color: yellow
+        - label: "60 יום"
+          value: "SUM(balance_due WHERE days_overdue BETWEEN 31 AND 60)"
+          format: currency
+          color: orange
+        - label: "90 יום"
+          value: "SUM(balance_due WHERE days_overdue BETWEEN 61 AND 90)"
+          format: currency
+          color: red
+        - label: "120+ יום"
+          value: "SUM(balance_due WHERE days_overdue > 90)"
+          format: currency
+          color: red
+
+      grouping: supplier
+      table_columns:
+        - key: supplier
+          label: "ספק"
+          width: 200
+          display: "supplier.full_name"
+          link_to: "/suppliers/:supplier_id"
+        - key: current_amount
+          label: "שוטף"
+          width: 120
+          format: currency
+        - key: days_30
+          label: "1-30 יום"
+          width: 120
+          format: currency
+        - key: days_60
+          label: "31-60 יום"
+          width: 120
+          format: currency
+        - key: days_90
+          label: "61-90 יום"
+          width: 120
+          format: currency
+        - key: days_120_plus
+          label: "120+ יום"
+          width: 120
+          format: currency
+        - key: total_due
+          label: "סה\"כ חוב"
+          width: 130
+          format: currency
+          bold: true
+
+      expandable_row:
+        shows: "individual documents for this supplier"
+        columns:
+          - key: document_number
+            label: "מסמך"
+            link_to: "/finance/expenses/:id"
+          - key: issue_date
+            label: "תאריך"
+            format: date
+          - key: due_date
+            label: "לתשלום"
+            format: date
+          - key: total_amount
+            label: "סכום"
+            format: currency
+          - key: balance_due
+            label: "יתרה"
+            format: currency
+          - key: days_overdue
+            label: "ימי איחור"
+
+    # === 10.3.10 RECONCILIATION ===
+    reconciliation_page:
+      route: /finance/reconciliation
+      title: "התאמות"
+      type: special_page
+
+      layout: split_panel
+
+      left_panel:
+        title: "תשלומים לא משויכים"
+        entity: payments
+        filter: "document_id IS NULL OR unmatched = true"
+        table_columns:
+          - key: payment_date
+            label: "תאריך"
+            width: 110
+            format: date
+          - key: payment_method
+            label: "אמצעי"
+            width: 120
+            display: "payment_method.name"
+          - key: amount
+            label: "סכום"
+            width: 120
+            format: currency
+          - key: reference_number
+            label: "אסמכתא"
+            width: 130
+          - key: notes
+            label: "הערות"
+            width: 180
+        selectable: true
+
+      right_panel:
+        title: "מסמכים עם יתרה"
+        entity: documents
+        filter: "balance_due > 0 AND status_id NOT IN (draft, cancelled)"
+        table_columns:
+          - key: document_number
+            label: "מסמך"
+            width: 130
+          - key: direction
+            label: "כיוון"
+            width: 80
+            type: badge
+          - key: customer_or_supplier
+            label: "לקוח/ספק"
+            width: 160
+          - key: total_amount
+            label: "סכום"
+            width: 120
+            format: currency
+          - key: balance_due
+            label: "יתרה"
+            width: 120
+            format: currency
+          - key: due_date
+            label: "לתשלום"
+            width: 110
+            format: date
+        selectable: true
+
+      actions:
+        - action: match
+          label: "שייך תשלום למסמך"
+          icon: link
+          type: action
+          description: "Select a payment on the left and a document on the right, then click match"
+          side_effects:
+            - "sets payment.document_id"
+            - "updates document.paid_amount"
+            - "updates document.balance_due"
+            - "updates document.status_id based on payment"
+        - action: partial_match
+          label: "שיוך חלקי"
+          icon: link
+          type: modal
+          modal_fields:
+            - name: match_amount
+              label: "סכום לשיוך"
+              type: currency_input
+              required: true
+        - action: create_document_for_payment
+          label: "צור מסמך לתשלום"
+          icon: add
+          type: action
+
+  # ----------------------------------------------------------
+  # 10.4 NAVIGATION MAP
+  # ----------------------------------------------------------
+  navigation_map:
+    income_documents_list:
+      navigates_to:
+        - target: /finance/income/create
+          trigger: "click create"
+        - target: "/finance/income/:id"
+          trigger: "click document row"
+        - target: "/customers/:customer_id"
+          trigger: "click customer"
+    income_document_details:
+      navigates_to:
+        - target: "/finance/income/:id/edit"
+          trigger: "click edit"
+        - target: "/customers/:customer_id"
+          trigger: "click customer"
+        - target: "linked document details"
+          trigger: "click linked document"
+        - target: "/finance/income/create?document_type=receipt&based_on=:id"
+          trigger: "click create receipt"
+        - target: "/finance/income/create?document_type=credit_note&based_on=:id"
+          trigger: "click create credit note"
+    expense_documents_list:
+      navigates_to:
+        - target: /finance/expenses/create
+          trigger: "click create"
+        - target: "/finance/expenses/:id"
+          trigger: "click document row"
+        - target: "/suppliers/:supplier_id"
+          trigger: "click supplier"
+    expense_document_details:
+      navigates_to:
+        - target: "/finance/expenses/:id/edit"
+          trigger: "click edit"
+        - target: "/suppliers/:supplier_id"
+          trigger: "click supplier"
+    receivables_page:
+      navigates_to:
+        - target: "/customers/:customer_id"
+          trigger: "click customer"
+        - target: "/finance/income/:id"
+          trigger: "click document in expanded row"
+    payables_page:
+      navigates_to:
+        - target: "/suppliers/:supplier_id"
+          trigger: "click supplier"
+        - target: "/finance/expenses/:id"
+          trigger: "click document in expanded row"
+
+# ============================================================
+# MODULE 11: BILLING
+# ============================================================
+module_11_billing:
+  module_key: billing
+  icon: receipt_long
+  label: "חיוב ומסמכים"
+  route: /billing
+  priority: critical
+  purpose: "חשבוניות, קבלות, דרישות תשלום, מסמכים מחזוריים, זיכויים"
+  note: "All billing document types are stored in the central documents table with direction=income. Each submenu is a filtered view by document_type."
+
+  # ----------------------------------------------------------
+  # 11.1 SIDEBAR SUBMENUS
+  # ----------------------------------------------------------
+  submenus:
+    - key: invoices
+      label: "חשבוניות"
+      route: /billing/invoices
+      icon: receipt
+    - key: receipts
+      label: "קבלות"
+      route: /billing/receipts
+      icon: receipt_long
+    - key: invoice_receipts
+      label: "חשבוניות קבלה"
+      route: /billing/invoice-receipts
+      icon: description
+    - key: payment_requests
+      label: "דרישות תשלום"
+      route: /billing/payment-requests
+      icon: request_quote
+    - key: credit_notes
+      label: "זיכויים"
+      route: /billing/credit-notes
+      icon: remove_circle
+    - key: recurring_documents
+      label: "מסמכים מחזוריים"
+      route: /billing/recurring
+      icon: autorenew
+
+  # ----------------------------------------------------------
+  # 11.2 ENTITY REFERENCE
+  # ----------------------------------------------------------
+  entities_reference:
+    primary_table: documents
+    document_type_mapping:
+      invoices: "document_type_id = invoice, direction = income"
+      receipts: "document_type_id = receipt, direction = income"
+      invoice_receipts: "document_type_id = invoice_receipt, direction = income"
+      payment_requests: "document_type_id = payment_request, direction = income"
+      credit_notes: "document_type_id = credit_note, direction = income"
+    recurring_table: recurring_documents
+    recurring_fields:
+      - template_document_id (fk documents.id)
+      - frequency (enum: weekly, monthly, quarterly, yearly)
+      - interval_value (integer)
+      - next_run_date (date)
+      - end_date (date nullable)
+      - auto_send (boolean)
+      - status_id (enum: recurring_active, recurring_paused)
+
+  # ----------------------------------------------------------
+  # 11.3 PAGES
+  # ----------------------------------------------------------
+  pages:
+
+    # === 11.3.1 INVOICES LIST ===
+    invoices_list:
+      route: /billing/invoices
+      title: "חשבוניות"
+      type: list_page
+      entity: documents
+      base_filter: "document_type_id = invoice AND direction = income"
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש לפי מספר, לקוח..."
+            searches_fields: [document_number, "customer.full_name", reference_number]
+          - component: filter_dropdown
+            key: customer_filter
+            label: "לקוח"
+            options_from: customers
+            display_field: full_name
+            searchable: true
+          - component: date_range_picker
+            key: date_filter
+            label: "תאריך"
+            applies_to: issue_date
+          - component: filter_dropdown
+            key: status_filter
+            label: "סטטוס"
+            options: [draft, open, paid, partially_paid, cancelled]
+            multi_select: true
+          - component: amount_range_filter
+            key: amount_filter
+            label: "סכום"
+            applies_to: total_amount
+          - component: date_range_picker
+            key: due_date_filter
+            label: "לתשלום עד"
+            applies_to: due_date
+        right:
+          - component: button
+            label: "חשבונית חדשה"
+            icon: add
+            action: navigate
+            target: "/billing/invoices/create"
+            variant: primary
+          - component: button
+            label: "ייצוא"
+            icon: download
+            action: export
+            formats: [xlsx, csv, pdf]
+
+      table_columns:
+        - key: document_number
+          label: "מספר חשבונית"
+          sortable: true
+          width: 130
+          link_to: "/billing/invoices/:id"
+        - key: issue_date
+          label: "תאריך"
+          sortable: true
+          width: 110
+          format: date
+        - key: due_date
+          label: "לתשלום עד"
+          sortable: true
+          width: 110
+          format: date
+        - key: customer
+          label: "לקוח"
+          sortable: true
+          width: 180
+          display: "customer.full_name"
+          link_to: "/customers/:customer_id"
+        - key: total_amount
+          label: "סה\"כ"
+          sortable: true
+          width: 120
+          format: currency
+        - key: paid_amount
+          label: "שולם"
+          width: 120
+          format: currency
+        - key: balance_due
+          label: "יתרה"
+          width: 120
+          format: currency
+          color_rules:
+            - condition: "value > 0"
+              color: red
+            - condition: "value = 0"
+              color: green
+        - key: payment_method
+          label: "אמצעי תשלום"
+          width: 120
+          display: "payment_method.name"
+        - key: status_id
+          label: "סטטוס"
+          sortable: true
+          width: 110
+          type: status_badge
+        - key: linked_count
+          label: "מקושרים"
+          width: 80
+        - key: attachments_count
+          label: "קבצים"
+          width: 80
+
+      row_actions:
+        - action: view
+          label: "צפייה"
+          icon: visibility
+          target: "/billing/invoices/:id"
+        - action: edit
+          label: "עריכה"
+          icon: edit
+          condition: "status_id = draft"
+        - action: create_receipt
+          label: "צור קבלה"
+          icon: receipt_long
+          target: "/billing/receipts/create?based_on=:id"
+          condition: "balance_due > 0"
+        - action: create_credit_note
+          label: "צור זיכוי"
+          icon: remove_circle
+          target: "/billing/credit-notes/create?based_on=:id"
+        - action: send_to_customer
+          label: "שלח ללקוח"
+          icon: send
+          condition: "status_id IN (open, partially_paid)"
+        - action: record_payment
+          label: "רשום תשלום"
+          icon: payment
+          type: modal
+          condition: "balance_due > 0"
+        - action: duplicate
+          label: "שכפול"
+          icon: content_copy
+
+    # === 11.3.2 INVOICE CREATE ===
+    invoice_create:
+      route: /billing/invoices/create
+      title: "חשבונית חדשה"
+      type: form_page
+      entity: documents
+      default_values:
+        direction: income
+        document_type_id: invoice
+      description: "Same form structure as income_document_create with document_type pre-set to invoice"
+      form_sections: "identical to income_document_create (section 10.3.2) with document_type_id pre-set and read-only"
+      form_actions:
+        - action: save_draft
+          label: "שמור כטיוטה"
+          variant: secondary
+          navigates_to: "/billing/invoices/:id"
+        - action: save_and_finalize
+          label: "הנפק חשבונית"
+          variant: primary
+          navigates_to: "/billing/invoices/:id"
+        - action: cancel
+          label: "ביטול"
+          variant: text
+          navigates_to: /billing/invoices
+
+    # === 11.3.3 INVOICE DETAILS ===
+    invoice_details:
+      route: "/billing/invoices/:id"
+      title: "פרטי חשבונית"
+      type: detail_page
+      entity: documents
+      load_data: "documents WHERE id = :id AND document_type_id = invoice"
+      description: "Same as income_document_details (section 10.3.3) with invoice-specific actions"
+
+      header:
+        layout: detail_header
+        elements:
+          - component: back_button
+            target: /billing/invoices
+          - component: title
+            display: "document_number"
+            subtitle: "חשבונית"
+          - component: status_badge
+            field: status_id
+          - component: action_buttons
+            actions:
+              - action: edit
+                label: "עריכה"
+                icon: edit
+                condition: "status_id = draft"
+              - action: create_receipt
+                label: "צור קבלה"
+                icon: receipt_long
+                target: "/billing/receipts/create?based_on=:id"
+                condition: "balance_due > 0"
+              - action: create_credit_note
+                label: "צור זיכוי"
+                icon: remove_circle
+                target: "/billing/credit-notes/create?based_on=:id"
+              - action: send_to_customer
+                label: "שלח ללקוח"
+                icon: send
+                condition: "status_id IN (open, partially_paid)"
+              - action: record_payment
+                label: "רשום תשלום"
+                icon: payment
+                type: modal
+                condition: "balance_due > 0"
+              - action: duplicate
+                label: "שכפול"
+                icon: content_copy
+              - action: cancel_document
+                label: "ביטול"
+                icon: cancel
+                condition: "status_id IN (draft, open)"
+              - action: print
+                label: "הדפסה"
+                icon: print
+              - action: export_pdf
+                label: "PDF"
+                icon: picture_as_pdf
+
+      tabs:
+        - tab: general_info
+          label: "פרטים"
+          icon: info
+          content: "same as income_document_details.tabs.general_info"
+        - tab: line_items
+          label: "שורות"
+          icon: list
+          content: "same as income_document_details.tabs.line_items"
+        - tab: linked_documents
+          label: "מקושרים"
+          icon: link
+          content: "same as income_document_details.tabs.linked_documents"
+        - tab: attachments
+          label: "קבצים"
+          icon: attach_file
+          content: "same as income_document_details.tabs.attachments"
+        - tab: payments
+          label: "תשלומים"
+          icon: payment
+          content: "same as income_document_details.tabs.payments"
+        - tab: activity_log
+          label: "לוג"
+          icon: history
+          content: "same as income_document_details.tabs.activity_log"
+
+    # === 11.3.4 RECEIPTS LIST ===
+    receipts_list:
+      route: /billing/receipts
+      title: "קבלות"
+      type: list_page
+      entity: documents
+      base_filter: "document_type_id = receipt AND direction = income"
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש..."
+            searches_fields: [document_number, "customer.full_name"]
+          - component: filter_dropdown
+            key: customer_filter
+            label: "לקוח"
+            options_from: customers
+            display_field: full_name
+            searchable: true
+          - component: date_range_picker
+            key: date_filter
+            label: "תאריך"
+            applies_to: issue_date
+          - component: filter_dropdown
+            key: status_filter
+            label: "סטטוס"
+            options: [draft, open, paid, cancelled]
+            multi_select: true
+        right:
+          - component: button
+            label: "קבלה חדשה"
+            icon: add
+            action: navigate
+            target: /billing/receipts/create
+            variant: primary
+          - component: button
+            label: "ייצוא"
+            icon: download
+            action: export
+            formats: [xlsx, csv, pdf]
+
+      table_columns:
+        - key: document_number
+          label: "מספר קבלה"
+          sortable: true
+          width: 130
+          link_to: "/billing/receipts/:id"
+        - key: issue_date
+          label: "תאריך"
+          sortable: true
+          width: 110
+          format: date
+        - key: customer
+          label: "לקוח"
+          sortable: true
+          width: 180
+          display: "customer.full_name"
+          link_to: "/customers/:customer_id"
+        - key: total_amount
+          label: "סה\"כ"
+          sortable: true
+          width: 120
+          format: currency
+        - key: payment_method
+          label: "אמצעי תשלום"
+          width: 120
+          display: "payment_method.name"
+        - key: status_id
+          label: "סטטוס"
+          sortable: true
+          width: 110
+          type: status_badge
+
+      row_actions:
+        - action: view
+          label: "צפייה"
+          icon: visibility
+          target: "/billing/receipts/:id"
+        - action: link_to_invoice
+          label: "קשר לחשבונית"
+          icon: link
+          type: modal
+        - action: duplicate
+          label: "שכפול"
+          icon: content_copy
+
+    # === 11.3.5 RECEIPT CREATE ===
+    receipt_create:
+      route: /billing/receipts/create
+      title: "קבלה חדשה"
+      type: form_page
+      entity: documents
+      default_values:
+        direction: income
+        document_type_id: receipt
+      pre_fill_from: "invoice document (if based_on param exists)"
+      form_sections: "identical to income_document_create with document_type pre-set to receipt"
+      form_actions:
+        - action: save_draft
+          label: "שמור כטיוטה"
+          variant: secondary
+          navigates_to: "/billing/receipts/:id"
+        - action: save_and_finalize
+          label: "הנפק קבלה"
+          variant: primary
+          side_effects:
+            - "if based_on invoice: create document_link (link_type=receipt_for)"
+            - "update invoice.paid_amount and balance_due"
+          navigates_to: "/billing/receipts/:id"
+        - action: cancel
+          label: "ביטול"
+          variant: text
+          navigates_to: /billing/receipts
+
+    # === 11.3.6 RECEIPT DETAILS ===
+    receipt_details:
+      route: "/billing/receipts/:id"
+      title: "פרטי קבלה"
+      type: detail_page
+      entity: documents
+      load_data: "documents WHERE id = :id AND document_type_id = receipt"
+      header:
+        layout: detail_header
+        elements:
+          - component: back_button
+            target: /billing/receipts
+          - component: title
+            display: "document_number"
+            subtitle: "קבלה"
+          - component: status_badge
+            field: status_id
+          - component: action_buttons
+            actions:
+              - action: edit
+                label: "עריכה"
+                icon: edit
+                condition: "status_id = draft"
+              - action: link_to_invoice
+                label: "קשר לחשבונית"
+                icon: link
+                type: modal
+              - action: send_to_customer
+                label: "שלח"
+                icon: send
+              - action: print
+                label: "הדפסה"
+                icon: print
+              - action: export_pdf
+                label: "PDF"
+                icon: picture_as_pdf
+      tabs:
+        - tab: general_info
+          label: "פרטים"
+          icon: info
+        - tab: line_items
+          label: "שורות"
+          icon: list
+        - tab: linked_documents
+          label: "מקושרים"
+          icon: link
+        - tab: attachments
+          label: "קבצים"
+          icon: attach_file
+        - tab: activity_log
+          label: "לוג"
+          icon: history
+
+    # === 11.3.7 INVOICE RECEIPTS LIST ===
+    invoice_receipts_list:
+      route: /billing/invoice-receipts
+      title: "חשבוניות קבלה"
+      type: list_page
+      entity: documents
+      base_filter: "document_type_id = invoice_receipt AND direction = income"
+      description: "Same structure as invoices_list. Invoice-receipt is a combined document that serves as both invoice and receipt."
+      toolbar: "same as invoices_list"
+      table_columns: "same as invoices_list with label 'מספר חשבונית קבלה'"
+      row_actions: "same as invoices_list without create_receipt action (already paid)"
+
+    # === 11.3.8 INVOICE RECEIPT CREATE ===
+    invoice_receipt_create:
+      route: /billing/invoice-receipts/create
+      title: "חשבונית קבלה חדשה"
+      type: form_page
+      entity: documents
+      default_values:
+        direction: income
+        document_type_id: invoice_receipt
+      form_sections: "identical to income_document_create with document_type pre-set"
+      form_actions:
+        - action: save_draft
+          label: "שמור כטיוטה"
+          variant: secondary
+          navigates_to: "/billing/invoice-receipts/:id"
+        - action: save_and_finalize
+          label: "הנפק חשבונית קבלה"
+          variant: primary
+          sets: "status_id = paid, paid_amount = total_amount, balance_due = 0"
+          navigates_to: "/billing/invoice-receipts/:id"
+        - action: cancel
+          label: "ביטול"
+          variant: text
+          navigates_to: /billing/invoice-receipts
+
+    # === 11.3.9 PAYMENT REQUESTS LIST ===
+    payment_requests_list:
+      route: /billing/payment-requests
+      title: "דרישות תשלום"
+      type: list_page
+      entity: documents
+      base_filter: "document_type_id = payment_request AND direction = income"
+      toolbar: "same structure as invoices_list"
+      table_columns: "same as invoices_list with label 'מספר דרישת תשלום'"
+
+      row_actions:
+        - action: view
+          label: "צפייה"
+          icon: visibility
+          target: "/billing/payment-requests/:id"
+        - action: convert_to_invoice
+          label: "המר לחשבונית"
+          icon: transform
+          target: "/billing/invoices/create?based_on=:id"
+          condition: "status_id IN (open, partially_paid)"
+        - action: record_payment
+          label: "רשום תשלום"
+          icon: payment
+          type: modal
+          condition: "balance_due > 0"
+        - action: send_to_customer
+          label: "שלח ללקוח"
+          icon: send
+        - action: duplicate
+          label: "שכפול"
+          icon: content_copy
+
+    # === 11.3.10 PAYMENT REQUEST CREATE ===
+    payment_request_create:
+      route: /billing/payment-requests/create
+      title: "דרישת תשלום חדשה"
+      type: form_page
+      entity: documents
+      default_values:
+        direction: income
+        document_type_id: payment_request
+      form_sections: "identical to income_document_create with document_type pre-set"
+      form_actions:
+        - action: save_draft
+          label: "שמור כטיוטה"
+          variant: secondary
+          navigates_to: "/billing/payment-requests/:id"
+        - action: save_and_send
+          label: "שמור ושלח"
+          variant: primary
+          navigates_to: "/billing/payment-requests/:id"
+        - action: cancel
+          label: "ביטול"
+          variant: text
+          navigates_to: /billing/payment-requests
+
+    # === 11.3.11 PAYMENT REQUEST DETAILS ===
+    payment_request_details:
+      route: "/billing/payment-requests/:id"
+      title: "פרטי דרישת תשלום"
+      type: detail_page
+      entity: documents
+      load_data: "documents WHERE id = :id AND document_type_id = payment_request"
+      header:
+        layout: detail_header
+        elements:
+          - component: back_button
+            target: /billing/payment-requests
+          - component: title
+            display: "document_number"
+            subtitle: "דרישת תשלום"
+          - component: status_badge
+            field: status_id
+          - component: action_buttons
+            actions:
+              - action: edit
+                label: "עריכה"
+                icon: edit
+                condition: "status_id = draft"
+              - action: convert_to_invoice
+                label: "המר לחשבונית"
+                icon: transform
+                target: "/billing/invoices/create?based_on=:id"
+                condition: "status_id IN (open)"
+                side_effects:
+                  - "creates new invoice document"
+                  - "creates document_link (link_type=converted_to)"
+                  - "sets payment_request status to converted"
+              - action: record_payment
+                label: "רשום תשלום"
+                icon: payment
+                type: modal
+                condition: "balance_due > 0"
+              - action: send_to_customer
+                label: "שלח"
+                icon: send
+              - action: print
+                label: "הדפסה"
+                icon: print
+      tabs:
+        - tab: general_info
+          label: "פרטים"
+          icon: info
+        - tab: line_items
+          label: "שורות"
+          icon: list
+        - tab: linked_documents
+          label: "מקושרים"
+          icon: link
+        - tab: attachments
+          label: "קבצים"
+          icon: attach_file
+        - tab: payments
+          label: "תשלומים"
+          icon: payment
+        - tab: activity_log
+          label: "לוג"
+          icon: history
+
+    # === 11.3.12 CREDIT NOTES LIST ===
+    credit_notes_list:
+      route: /billing/credit-notes
+      title: "זיכויים"
+      type: list_page
+      entity: documents
+      base_filter: "document_type_id = credit_note AND direction = income"
+      toolbar: "same structure as invoices_list"
+
+      table_columns:
+        - key: document_number
+          label: "מספר זיכוי"
+          sortable: true
+          width: 130
+          link_to: "/billing/credit-notes/:id"
+        - key: issue_date
+          label: "תאריך"
+          sortable: true
+          width: 110
+          format: date
+        - key: customer
+          label: "לקוח"
+          sortable: true
+          width: 180
+          display: "customer.full_name"
+          link_to: "/customers/:customer_id"
+        - key: total_amount
+          label: "סכום זיכוי"
+          sortable: true
+          width: 120
+          format: currency
+        - key: original_document
+          label: "מסמך מקור"
+          width: 130
+          computed: "linked invoice number via document_links"
+          link_to: "original document"
+        - key: status_id
+          label: "סטטוס"
+          sortable: true
+          width: 110
+          type: status_badge
+
+      row_actions:
+        - action: view
+          label: "צפייה"
+          icon: visibility
+          target: "/billing/credit-notes/:id"
+        - action: link_to_original
+          label: "קשר למסמך מקור"
+          icon: link
+          type: modal
+        - action: duplicate
+          label: "שכפול"
+          icon: content_copy
+
+    # === 11.3.13 CREDIT NOTE CREATE ===
+    credit_note_create:
+      route: /billing/credit-notes/create
+      title: "זיכוי חדש"
+      type: form_page
+      entity: documents
+      default_values:
+        direction: income
+        document_type_id: credit_note
+      pre_fill_from: "original invoice/invoice_receipt (if based_on param exists, copies line items with negative amounts)"
+      form_sections: "identical to income_document_create with document_type pre-set"
+      form_actions:
+        - action: save_draft
+          label: "שמור כטיוטה"
+          variant: secondary
+          navigates_to: "/billing/credit-notes/:id"
+        - action: save_and_finalize
+          label: "הנפק זיכוי"
+          variant: primary
+          side_effects:
+            - "if based_on document: create document_link (link_type=related_to)"
+            - "updates original document balance if linked"
+          navigates_to: "/billing/credit-notes/:id"
+        - action: cancel
+          label: "ביטול"
+          variant: text
+          navigates_to: /billing/credit-notes
+
+    # === 11.3.14 CREDIT NOTE DETAILS ===
+    credit_note_details:
+      route: "/billing/credit-notes/:id"
+      title: "פרטי זיכוי"
+      type: detail_page
+      entity: documents
+      load_data: "documents WHERE id = :id AND document_type_id = credit_note"
+      header:
+        layout: detail_header
+        elements:
+          - component: back_button
+            target: /billing/credit-notes
+          - component: title
+            display: "document_number"
+            subtitle: "זיכוי"
+          - component: status_badge
+            field: status_id
+          - component: action_buttons
+            actions:
+              - action: edit
+                label: "עריכה"
+                icon: edit
+                condition: "status_id = draft"
+              - action: link_to_original_document
+                label: "קשר למסמך מקור"
+                icon: link
+                type: modal
+              - action: send_to_customer
+                label: "שלח"
+                icon: send
+              - action: print
+                label: "הדפסה"
+                icon: print
+              - action: export_pdf
+                label: "PDF"
+                icon: picture_as_pdf
+      tabs:
+        - tab: general_info
+          label: "פרטים"
+          icon: info
+        - tab: line_items
+          label: "שורות"
+          icon: list
+        - tab: linked_documents
+          label: "מקושרים"
+          icon: link
+        - tab: attachments
+          label: "קבצים"
+          icon: attach_file
+        - tab: activity_log
+          label: "לוג"
+          icon: history
+
+    # === 11.3.15 RECURRING DOCUMENTS LIST ===
+    recurring_documents_list:
+      route: /billing/recurring
+      title: "מסמכים מחזוריים"
+      type: list_page
+      entity: recurring_documents
+      join: "JOIN documents ON recurring_documents.template_document_id = documents.id"
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש..."
+            searches_fields: ["template_document.document_number", "template_document.customer.full_name"]
+          - component: filter_dropdown
+            key: status_filter
+            label: "סטטוס"
+            options:
+              - value: recurring_active
+                label: "פעיל"
+              - value: recurring_paused
+                label: "מושהה"
+          - component: filter_dropdown
+            key: frequency_filter
+            label: "תדירות"
+            options:
+              - value: weekly
+                label: "שבועי"
+              - value: monthly
+                label: "חודשי"
+              - value: quarterly
+                label: "רבעוני"
+              - value: yearly
+                label: "שנתי"
+        right:
+          - component: button
+            label: "מסמך מחזורי חדש"
+            icon: add
+            action: navigate
+            target: /billing/recurring/create
+            variant: primary
+
+      table_columns:
+        - key: template_document_number
+          label: "מסמך תבנית"
+          sortable: true
+          width: 130
+          display: "template_document.document_number"
+          link_to: "/billing/recurring/:id"
+        - key: document_type
+          label: "סוג מסמך"
+          width: 120
+          display: "template_document.document_type.name"
+        - key: customer
+          label: "לקוח"
+          sortable: true
+          width: 180
+          display: "template_document.customer.full_name"
+          link_to: "/customers/:customer_id"
+        - key: total_amount
+          label: "סכום"
+          width: 120
+          format: currency
+          display: "template_document.total_amount"
+        - key: frequency
+          label: "תדירות"
+          sortable: true
+          width: 100
+        - key: next_run_date
+          label: "הרצה הבאה"
+          sortable: true
+          width: 120
+          format: date
+        - key: end_date
+          label: "תאריך סיום"
+          width: 120
+          format: date
+        - key: auto_send
+          label: "שליחה אוטומטית"
+          width: 100
+          type: boolean_badge
+        - key: status_id
+          label: "סטטוס"
+          sortable: true
+          width: 110
+          type: status_badge
+          color_map:
+            recurring_active: green
+            recurring_paused: orange
+        - key: generated_count
+          label: "מסמכים שנוצרו"
+          width: 100
+          computed: "COUNT(documents WHERE parent_recurring_id = :id)"
+
+      row_actions:
+        - action: view
+          label: "צפייה"
+          icon: visibility
+          target: "/billing/recurring/:id"
+        - action: edit
+          label: "עריכה"
+          icon: edit
+          target: "/billing/recurring/:id/edit"
+        - action: pause
+          label: "השהה"
+          icon: pause
+          condition: "status_id = recurring_active"
+          sets: "status_id = recurring_paused"
+        - action: resume
+          label: "חדש"
+          icon: play_arrow
+          condition: "status_id = recurring_paused"
+          sets: "status_id = recurring_active"
+        - action: view_generated
+          label: "מסמכים שנוצרו"
+          icon: list
+          target: "/finance/income?parent_recurring_id=:id"
+
+    # === 11.3.16 RECURRING DOCUMENT CREATE ===
+    recurring_document_create:
+      route: /billing/recurring/create
+      title: "מסמך מחזורי חדש"
+      type: form_page
+
+      form_sections:
+        - section: template
+          title: "מסמך תבנית"
+          description: "First create the template document (same as income document), then define recurrence"
+          layout: single_column
+          fields:
+            - name: document_type_id
+              label: "סוג מסמך"
+              type: select
+              options:
+                - value: invoice
+                  label: "חשבונית"
+                - value: receipt
+                  label: "קבלה"
+                - value: invoice_receipt
+                  label: "חשבונית קבלה"
+                - value: payment_request
+                  label: "דרישת תשלום"
+              required: true
+            - name: customer_id
+              label: "לקוח"
+              type: search_select
+              entity: customers
+              display_field: full_name
+              required: true
+          sub_form: "embedded income_document_create form for template"
+
+        - section: recurrence
+          title: "הגדרות חזרה"
+          layout: two_column
+          fields:
+            - name: frequency
+              label: "תדירות"
+              type: select
+              options:
+                - value: weekly
+                  label: "שבועי"
+                - value: monthly
+                  label: "חודשי"
+                - value: quarterly
+                  label: "רבעוני"
+                - value: yearly
+                  label: "שנתי"
+              required: true
+              col_span: 1
+            - name: interval_value
+              label: "כל X תקופות"
+              type: number_input
+              default: 1
+              min: 1
+              required: true
+              col_span: 1
+              description: "לדוגמה: תדירות=חודשי, ערך=2 = כל חודשיים"
+            - name: next_run_date
+              label: "הרצה ראשונה"
+              type: date_picker
+              required: true
+              col_span: 1
+            - name: end_date
+              label: "תאריך סיום (אופציונלי)"
+              type: date_picker
+              required: false
+              col_span: 1
+            - name: auto_send
+              label: "שליחה אוטומטית ללקוח"
+              type: toggle
+              default: false
+              col_span: 1
+
+      form_actions:
+        - action: save
+          label: "צור מסמך מחזורי"
+          variant: primary
+          side_effects:
+            - "creates template document with is_recurring_template = true"
+            - "creates recurring_documents record"
+          navigates_to: "/billing/recurring/:id"
+        - action: cancel
+          label: "ביטול"
+          variant: text
+          navigates_to: /billing/recurring
+
+    # === 11.3.17 RECURRING DOCUMENT DETAILS ===
+    recurring_document_details:
+      route: "/billing/recurring/:id"
+      title: "פרטי מסמך מחזורי"
+      type: detail_page
+      entity: recurring_documents
+
+      header:
+        layout: detail_header
+        elements:
+          - component: back_button
+            target: /billing/recurring
+          - component: title
+            display: "template_document.document_number"
+            subtitle: "מחזורי"
+          - component: status_badge
+            field: status_id
+          - component: action_buttons
+            actions:
+              - action: edit
+                label: "עריכה"
+                icon: edit
+              - action: pause
+                label: "השהה"
+                icon: pause
+                condition: "status_id = recurring_active"
+              - action: resume
+                label: "חדש"
+                icon: play_arrow
+                condition: "status_id = recurring_paused"
+              - action: run_now
+                label: "הרץ עכשיו"
+                icon: play_circle
+                description: "generates document immediately"
+              - action: delete
+                label: "מחק"
+                icon: delete
+                type: confirm_dialog
+
+      tabs:
+        - tab: template
+          label: "מסמך תבנית"
+          icon: description
+          content:
+            description: "shows the template document details (line items, amounts, customer)"
+            entity: documents
+            filter: "id = :template_document_id"
+            type: detail_card
+
+        - tab: schedule
+          label: "לוח זמנים"
+          icon: schedule
+          content:
+            layout: detail_grid
+            fields:
+              - label: "תדירות"
+                value: frequency
+              - label: "כל X תקופות"
+                value: interval_value
+              - label: "הרצה הבאה"
+                value: next_run_date
+                format: date
+              - label: "תאריך סיום"
+                value: end_date
+                format: date
+              - label: "שליחה אוטומטית"
+                value: auto_send
+                type: boolean_badge
+              - label: "סטטוס"
+                value: status_id
+                type: status_badge
+
+        - tab: generated_documents
+          label: "מסמכים שנוצרו"
+          icon: list
+          content:
+            entity: documents
+            filter: "parent_recurring_id = :template_document_id"
+            type: table
+            sort: issue_date DESC
+            columns:
+              - key: document_number
+                label: "מספר מסמך"
+                width: 130
+                link_to: "/finance/income/:id"
+              - key: issue_date
+                label: "תאריך"
+                width: 110
+                format: date
+              - key: total_amount
+                label: "סכום"
+                width: 120
+                format: currency
+              - key: status_id
+                label: "סטטוס"
+                width: 110
+                type: status_badge
+              - key: paid_amount
+                label: "שולם"
+                width: 120
+                format: currency
+
+        - tab: activity_log
+          label: "לוג"
+          icon: history
+          content:
+            entity: activity_logs
+            filter: "entity_type = recurring_document AND entity_id = :id"
+            view_type: timeline
+
+  # ----------------------------------------------------------
+  # 11.4 NAVIGATION MAP
+  # ----------------------------------------------------------
+  navigation_map:
+    invoices_list:
+      navigates_to:
+        - target: /billing/invoices/create
+          trigger: "click create"
+        - target: "/billing/invoices/:id"
+          trigger: "click invoice row"
+        - target: "/customers/:customer_id"
+          trigger: "click customer"
+        - target: "/billing/receipts/create?based_on=:id"
+          trigger: "click create receipt"
+        - target: "/billing/credit-notes/create?based_on=:id"
+          trigger: "click create credit note"
+    invoice_details:
+      navigates_to:
+        - target: "/customers/:customer_id"
+          trigger: "click customer"
+        - target: "/billing/receipts/create?based_on=:id"
+          trigger: "click create receipt"
+        - target: "/billing/credit-notes/create?based_on=:id"
+          trigger: "click create credit note"
+        - target: "linked document"
+          trigger: "click linked doc in tab"
+    receipts_list:
+      navigates_to:
+        - target: /billing/receipts/create
+          trigger: "click create"
+        - target: "/billing/receipts/:id"
+          trigger: "click receipt row"
+    payment_requests_list:
+      navigates_to:
+        - target: /billing/payment-requests/create
+          trigger: "click create"
+        - target: "/billing/invoices/create?based_on=:id"
+          trigger: "click convert to invoice"
+    credit_notes_list:
+      navigates_to:
+        - target: /billing/credit-notes/create
+          trigger: "click create"
+        - target: "/billing/credit-notes/:id"
+          trigger: "click credit note row"
+    recurring_documents_list:
+      navigates_to:
+        - target: /billing/recurring/create
+          trigger: "click create"
+        - target: "/billing/recurring/:id"
+          trigger: "click row"
+        - target: "/finance/income?parent_recurring_id=:id"
+          trigger: "click view generated"
+
+# ============================================================
+# MODULE 12: PAYMENTS
+# ============================================================
+module_12_payments:
+  module_key: payments
+  icon: payments
+  label: "תשלומים"
+  route: /payments
+  priority: critical
+  purpose: "סליקה, העברות, מס\"ב, הוראות קבע, שיוך תשלומים למסמכים"
+
+  # ----------------------------------------------------------
+  # 12.1 SIDEBAR SUBMENUS
+  # ----------------------------------------------------------
+  submenus:
+    - key: transactions
+      label: "כל התשלומים"
+      route: /payments/transactions
+      icon: list
+    - key: credit_clearing
+      label: "סליקת אשראי"
+      route: /payments/credit-clearing
+      icon: credit_card
+    - key: bank_transfers
+      label: "העברות בנקאיות"
+      route: /payments/bank-transfers
+      icon: account_balance
+    - key: standing_orders
+      label: "הוראות קבע"
+      route: /payments/standing-orders
+      icon: autorenew
+    - key: masav
+      label: "מס\"ב"
+      route: /payments/masav
+      icon: upload_file
+    - key: unmatched_payments
+      label: "תשלומים לא משויכים"
+      route: /payments/unmatched
+      icon: help_outline
+
+  # ----------------------------------------------------------
+  # 12.2 ENTITIES
+  # ----------------------------------------------------------
+  entities:
+
+    payments:
+      table_name: payments
+      type: transactional
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: document_id
+          type: uuid
+          foreign_key: documents.id
+          nullable: true
+          description: "מסמך משויך"
+        - name: payment_method_id
+          type: uuid
+          foreign_key: payment_methods.id
+          required: true
+          description: "אמצעי תשלום"
+        - name: payment_date
+          type: date
+          required: true
+          default: today
+          description: "תאריך תשלום"
+        - name: amount
+          type: decimal
+          precision: 12
+          scale: 2
+          required: true
+          description: "סכום"
+        - name: reference_number
+          type: string
+          max_length: 100
+          nullable: true
+          description: "מספר אסמכתא"
+        - name: external_transaction_id
+          type: string
+          max_length: 255
+          nullable: true
+          description: "מזהה עסקה חיצוני"
+        - name: status_id
+          type: enum
+          values: [pending, completed, failed, refunded, cancelled]
+          default: completed
+          required: true
+          description: "סטטוס"
+        - name: notes
+          type: text
+          required: false
+          description: "הערות"
+        - name: created_at
+          type: datetime
+          auto_generated: true
+      indexes:
+        - fields: [document_id]
+        - fields: [payment_method_id]
+        - fields: [payment_date]
+        - fields: [status_id]
+        - fields: [external_transaction_id]
+
+    credit_transactions:
+      table_name: credit_transactions
+      type: transactional
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: customer_id
+          type: uuid
+          foreign_key: customers.id
+          required: true
+          description: "לקוח"
+        - name: document_id
+          type: uuid
+          foreign_key: documents.id
+          nullable: true
+          description: "מסמך משויך"
+        - name: transaction_date
+          type: datetime
+          required: true
+          description: "תאריך עסקה"
+        - name: amount
+          type: decimal
+          precision: 12
+          scale: 2
+          required: true
+          description: "סכום"
+        - name: transaction_code
+          type: string
+          max_length: 50
+          nullable: true
+          description: "קוד עסקה"
+        - name: provider_reference
+          type: string
+          max_length: 255
+          nullable: true
+          description: "אסמכתא מחברת סליקה"
+        - name: card_last_four
+          type: string
+          max_length: 4
+          nullable: true
+          description: "4 ספרות אחרונות"
+        - name: card_type
+          type: string
+          max_length: 20
+          nullable: true
+          description: "סוג כרטיס (Visa, Mastercard, etc.)"
+        - name: installments
+          type: integer
+          default: 1
+          description: "מספר תשלומים"
+        - name: status_id
+          type: enum
+          values: [pending, approved, declined, settled, refunded, cancelled]
+          default: pending
+          required: true
+          description: "סטטוס"
+        - name: notes
+          type: text
+          required: false
+        - name: created_at
+          type: datetime
+          auto_generated: true
+      indexes:
+        - fields: [customer_id]
+        - fields: [document_id]
+        - fields: [transaction_date]
+        - fields: [status_id]
+        - fields: [transaction_code]
+
+    bank_transfers:
+      table_name: bank_transfers
+      type: transactional
+      auto_number:
+        prefix: "BT-"
+        padding: 5
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: transfer_number
+          type: string
+          auto_generated: true
+          unique: true
+          format: "BT-00001"
+        - name: from_account
+          type: string
+          max_length: 50
+          required: true
+          description: "חשבון מקור"
+        - name: to_account
+          type: string
+          max_length: 50
+          required: true
+          description: "חשבון יעד"
+        - name: amount
+          type: decimal
+          precision: 12
+          scale: 2
+          required: true
+          description: "סכום"
+        - name: transfer_date
+          type: date
+          required: true
+          default: today
+          description: "תאריך העברה"
+        - name: reference
+          type: string
+          max_length: 100
+          nullable: true
+          description: "אסמכתא"
+        - name: document_id
+          type: uuid
+          foreign_key: documents.id
+          nullable: true
+          description: "מסמך משויך"
+        - name: status_id
+          type: enum
+          values: [pending, completed, failed, cancelled]
+          default: pending
+          required: true
+        - name: notes
+          type: text
+          required: false
+        - name: created_at
+          type: datetime
+          auto_generated: true
+      indexes:
+        - fields: [transfer_number]
+          unique: true
+        - fields: [transfer_date]
+        - fields: [status_id]
+
+    standing_orders:
+      table_name: standing_orders
+      type: transactional
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: customer_id
+          type: uuid
+          foreign_key: customers.id
+          required: true
+          description: "לקוח"
+        - name: related_document_id
+          type: uuid
+          foreign_key: documents.id
+          nullable: true
+          description: "מסמך קשור"
+        - name: amount
+          type: decimal
+          precision: 12
+          scale: 2
+          required: true
+          description: "סכום"
+        - name: frequency
+          type: enum
+          values: [monthly, quarterly, yearly]
+          required: true
+          description: "תדירות"
+        - name: start_date
+          type: date
+          required: true
+          description: "תאריך התחלה"
+        - name: end_date
+          type: date
+          nullable: true
+          description: "תאריך סיום"
+        - name: next_charge_date
+          type: date
+          required: true
+          description: "חיוב הבא"
+        - name: status_id
+          type: enum
+          values: [active, paused, cancelled, completed]
+          default: active
+          required: true
+        - name: bank_details
+          type: text
+          nullable: true
+          description: "פרטי בנק"
+        - name: notes
+          type: text
+          required: false
+        - name: created_at
+          type: datetime
+          auto_generated: true
+      indexes:
+        - fields: [customer_id]
+        - fields: [status_id]
+        - fields: [next_charge_date]
+
+    masav_batches:
+      table_name: masav_batches
+      type: transactional
+      auto_number:
+        prefix: "MSV-"
+        padding: 5
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: batch_number
+          type: string
+          auto_generated: true
+          unique: true
+          format: "MSV-00001"
+        - name: batch_date
+          type: date
+          required: true
+          default: today
+          description: "תאריך אצווה"
+        - name: total_amount
+          type: decimal
+          precision: 14
+          scale: 2
+          computed: "SUM(included payments.amount)"
+          description: "סכום כולל"
+        - name: transaction_count
+          type: integer
+          computed: "COUNT(included payments)"
+          description: "מספר עסקאות"
+        - name: file_path
+          type: string
+          max_length: 500
+          nullable: true
+          description: "נתיב קובץ מס\"ב"
+        - name: status_id
+          type: enum
+          values: [draft, generated, sent, processed, failed]
+          default: draft
+          required: true
+        - name: created_at
+          type: datetime
+          auto_generated: true
+      indexes:
+        - fields: [batch_number]
+          unique: true
+        - fields: [status_id]
+        - fields: [batch_date]
+
+    masav_batch_items:
+      table_name: masav_batch_items
+      type: junction
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: masav_batch_id
+          type: uuid
+          foreign_key: masav_batches.id
+          required: true
+          on_delete: cascade
+        - name: payment_id
+          type: uuid
+          foreign_key: payments.id
+          required: true
+        - name: amount
+          type: decimal
+          precision: 12
+          scale: 2
+          required: true
+        - name: bank_code
+          type: string
+          max_length: 10
+        - name: branch_code
+          type: string
+          max_length: 10
+        - name: account_number
+          type: string
+          max_length: 20
+        - name: beneficiary_name
+          type: string
+          max_length: 100
+      indexes:
+        - fields: [masav_batch_id]
+        - fields: [payment_id]
+
+  # ----------------------------------------------------------
+  # 12.3 PAGES
+  # ----------------------------------------------------------
+  pages:
+
+    # === 12.3.1 ALL TRANSACTIONS ===
+    transactions_page:
+      route: /payments/transactions
+      title: "כל התשלומים"
+      type: list_page
+      entity: payments
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש לפי אסמכתא, מזהה עסקה..."
+            searches_fields: [reference_number, external_transaction_id]
+          - component: filter_dropdown
+            key: method_filter
+            label: "אמצעי תשלום"
+            options_from: payment_methods
+            display_field: name
+          - component: date_range_picker
+            key: date_filter
+            label: "תאריך"
+            applies_to: payment_date
+          - component: filter_dropdown
+            key: status_filter
+            label: "סטטוס"
+            options: [pending, completed, failed, refunded, cancelled]
+            multi_select: true
+          - component: amount_range_filter
+            key: amount_filter
+            label: "סכום"
+            applies_to: amount
+          - component: filter_dropdown
+            key: matched_filter
+            label: "שיוך"
+            options:
+              - value: matched
+                label: "משויך למסמך"
+              - value: unmatched
+                label: "לא משויך"
+        right:
+          - component: button
+            label: "ייצוא"
+            icon: download
+            action: export
+            formats: [xlsx, csv]
+
+      summary_cards:
+        - label: "סה\"כ תשלומים"
+          value: "SUM(amount WHERE status = completed)"
+          format: currency
+        - label: "עסקאות"
+          value: "COUNT(*)"
+        - label: "ממתינים"
+          value: "COUNT(WHERE status = pending)"
+          color: orange
+        - label: "לא משויכים"
+          value: "COUNT(WHERE document_id IS NULL AND status = completed)"
+          color: red
+
+      table_columns:
+        - key: payment_date
+          label: "תאריך"
+          sortable: true
+          width: 110
+          format: date
+        - key: payment_method
+          label: "אמצעי"
+          sortable: true
+          width: 130
+          display: "payment_method.name"
+        - key: amount
+          label: "סכום"
+          sortable: true
+          width: 120
+          format: currency
+        - key: reference_number
+          label: "אסמכתא"
+          width: 130
+        - key: external_transaction_id
+          label: "מזהה עסקה"
+          width: 150
+        - key: document
+          label: "מסמך"
+          width: 130
+          display: "document.document_number"
+          link_to: "dynamic: /finance/income/:document_id or /finance/expenses/:document_id"
+        - key: customer_or_supplier
+          label: "לקוח/ספק"
+          width: 170
+          computed: "via document"
+        - key: status_id
+          label: "סטטוס"
+          sortable: true
+          width: 110
+          type: status_badge
+          color_map:
+            pending: orange
+            completed: green
+            failed: red
+            refunded: blue
+            cancelled: gray
+        - key: notes
+          label: "הערות"
+          width: 180
+
+      row_actions:
+        - action: view_document
+          label: "צפה במסמך"
+          icon: visibility
+          target: "dynamic document url"
+          condition: "document_id IS NOT NULL"
+        - action: match_to_document
+          label: "שייך למסמך"
+          icon: link
+          type: modal
+          condition: "document_id IS NULL"
+          modal_fields:
+            - name: document_id
+              label: "מסמך"
+              type: search_select
+              entity: documents
+              display_field: document_number
+              filter: "balance_due > 0"
+              required: true
+
+    # === 12.3.2 CREDIT CLEARING LIST ===
+    credit_clearing_list:
+      route: /payments/credit-clearing
+      title: "סליקת אשראי"
+      type: list_page
+      entity: credit_transactions
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש לפי לקוח, קוד עסקה..."
+            searches_fields: ["customer.full_name", transaction_code, provider_reference]
+          - component: filter_dropdown
+            key: customer_filter
+            label: "לקוח"
+            options_from: customers
+            display_field: full_name
+            searchable: true
+          - component: date_range_picker
+            key: date_filter
+            label: "תאריך"
+            applies_to: transaction_date
+          - component: filter_dropdown
+            key: status_filter
+            label: "סטטוס"
+            options: [pending, approved, declined, settled, refunded, cancelled]
+            multi_select: true
+          - component: amount_range_filter
+            key: amount_filter
+            label: "סכום"
+            applies_to: amount
+        right:
+          - component: button
+            label: "סליקה חדשה"
+            icon: add
+            action: navigate
+            target: /payments/credit-clearing/create
+            variant: primary
+          - component: button
+            label: "ייצוא"
+            icon: download
+            action: export
+            formats: [xlsx, csv]
+
+      table_columns:
+        - key: transaction_date
+          label: "תאריך"
+          sortable: true
+          width: 140
+          format: datetime
+        - key: customer
+          label: "לקוח"
+          sortable: true
+          width: 180
+          display: "customer.full_name"
+          link_to: "/customers/:customer_id"
+        - key: amount
+          label: "סכום"
+          sortable: true
+          width: 120
+          format: currency
+        - key: card_type
+          label: "סוג כרטיס"
+          width: 100
+        - key: card_last_four
+          label: "4 ספרות"
+          width: 80
+        - key: installments
+          label: "תשלומים"
+          width: 80
+        - key: transaction_code
+          label: "קוד עסקה"
+          width: 130
+        - key: provider_reference
+          label: "אסמכתא סליקה"
+          width: 150
+        - key: document
+          label: "מסמך"
+          width: 130
+          display: "document.document_number"
+          link_to: "/finance/income/:document_id"
+        - key: status_id
+          label: "סטטוס"
+          sortable: true
+          width: 110
+          type: status_badge
+          color_map:
+            pending: orange
+            approved: green
+            declined: red
+            settled: blue
+            refunded: purple
+            cancelled: gray
+
+      row_actions:
+        - action: view
+          label: "צפייה"
+          icon: visibility
+        - action: match_to_document
+          label: "שייך למסמך"
+          icon: link
+          type: modal
+          condition: "document_id IS NULL"
+        - action: refund
+          label: "זיכוי"
+          icon: undo
+          type: confirm_dialog
+          condition: "status_id IN (approved, settled)"
+
+    # === 12.3.3 CREDIT CHARGE CREATE ===
+    credit_charge_create:
+      route: /payments/credit-clearing/create
+      title: "סליקת אשראי חדשה"
+      type: form_page
+      entity: credit_transactions
+
+      form_sections:
+        - section: details
+          title: "פרטי סליקה"
+          layout: two_column
+          fields:
+            - name: customer_id
+              label: "לקוח"
+              type: search_select
+              entity: customers
+              display_field: full_name
+              search_fields: [full_name, customer_number, phone]
+              required: true
+              col_span: 1
+            - name: document_id
+              label: "מסמך לחיוב"
+              type: search_select
+              entity: documents
+              display_field: document_number
+              filter: "direction = income AND balance_due > 0"
+              allow_clear: true
+              col_span: 1
+              on_select_auto_fill:
+                amount: "document.balance_due"
+            - name: amount
+              label: "סכום"
+              type: currency_input
+              required: true
+              col_span: 1
+            - name: installments
+              label: "מספר תשלומים"
+              type: number_input
+              min: 1
+              max: 36
+              default: 1
+              col_span: 1
+            - name: card_type
+              label: "סוג כרטיס"
+              type: select
+              options:
+                - value: Visa
+                  label: "Visa"
+                - value: Mastercard
+                  label: "Mastercard"
+                - value: Amex
+                  label: "American Express"
+                - value: Diners
+                  label: "Diners"
+                - value: Isracard
+                  label: "ישראכרט"
+              col_span: 1
+            - name: card_last_four
+              label: "4 ספרות אחרונות"
+              type: text_input
+              max_length: 4
+              col_span: 1
+            - name: notes
+              label: "הערות"
+              type: textarea
+              rows: 2
+              col_span: 2
+
+      form_actions:
+        - action: charge
+          label: "בצע סליקה"
+          variant: primary
+          side_effects:
+            - "sends charge request to payment provider"
+            - "on success: creates payment record, updates document.paid_amount"
+          navigates_to: /payments/credit-clearing
+        - action: cancel
+          label: "ביטול"
+          variant: text
+          navigates_to: /payments/credit-clearing
+
+    # === 12.3.4 BANK TRANSFERS LIST ===
+    bank_transfers_list:
+      route: /payments/bank-transfers
+      title: "העברות בנקאיות"
+      type: list_page
+      entity: bank_transfers
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש לפי מספר העברה, אסמכתא..."
+            searches_fields: [transfer_number, reference]
+          - component: date_range_picker
+            key: date_filter
+            label: "תאריך"
+            applies_to: transfer_date
+          - component: filter_dropdown
+            key: status_filter
+            label: "סטטוס"
+            options: [pending, completed, failed, cancelled]
+            multi_select: true
+          - component: amount_range_filter
+            key: amount_filter
+            label: "סכום"
+            applies_to: amount
+        right:
+          - component: button
+            label: "העברה חדשה"
+            icon: add
+            action: navigate
+            target: /payments/bank-transfers/create
+            variant: primary
+          - component: button
+            label: "ייצוא"
+            icon: download
+            action: export
+            formats: [xlsx, csv]
+
+      table_columns:
+        - key: transfer_number
+          label: "מספר העברה"
+          sortable: true
+          width: 120
+        - key: transfer_date
+          label: "תאריך"
+          sortable: true
+          width: 110
+          format: date
+        - key: from_account
+          label: "מחשבון"
+          width: 130
+        - key: to_account
+          label: "לחשבון"
+          width: 130
+        - key: amount
+          label: "סכום"
+          sortable: true
+          width: 120
+          format: currency
+        - key: reference
+          label: "אסמכתא"
+          width: 130
+        - key: document
+          label: "מסמך"
+          width: 130
+          display: "document.document_number"
+          link_to: "dynamic"
+        - key: status_id
+          label: "סטטוס"
+          sortable: true
+          width: 110
+          type: status_badge
+          color_map:
+            pending: orange
+            completed: green
+            failed: red
+            cancelled: gray
+        - key: notes
+          label: "הערות"
+          width: 180
+
+      row_actions:
+        - action: view
+          label: "צפייה"
+          icon: visibility
+        - action: mark_completed
+          label: "סמן כבוצע"
+          icon: check_circle
+          condition: "status_id = pending"
+        - action: cancel
+          label: "בטל"
+          icon: cancel
+          condition: "status_id = pending"
+
+    # === 12.3.5 BANK TRANSFER CREATE ===
+    bank_transfer_create:
+      route: /payments/bank-transfers/create
+      title: "העברה בנקאית חדשה"
+      type: form_page
+      entity: bank_transfers
+
+      form_sections:
+        - section: details
+          title: "פרטי העברה"
+          layout: two_column
+          fields:
+            - name: from_account
+              label: "מחשבון"
+              type: text_input
+              required: true
+              col_span: 1
+            - name: to_account
+              label: "לחשבון"
+              type: text_input
+              required: true
+              col_span: 1
+            - name: amount
+              label: "סכום"
+              type: currency_input
+              required: true
+              col_span: 1
+            - name: transfer_date
+              label: "תאריך"
+              type: date_picker
+              default: today
+              required: true
+              col_span: 1
+            - name: reference
+              label: "אסמכתא"
+              type: text_input
+              col_span: 1
+            - name: document_id
+              label: "מסמך משויך"
+              type: search_select
+              entity: documents
+              display_field: document_number
+              allow_clear: true
+              col_span: 1
+            - name: notes
+              label: "הערות"
+              type: textarea
+              rows: 2
+              col_span: 2
+
+      form_actions:
+        - action: save
+          label: "שמור"
+          variant: primary
+          navigates_to: /payments/bank-transfers
+        - action: cancel
+          label: "ביטול"
+          variant: text
+          navigates_to: /payments/bank-transfers
+
+    # === 12.3.6 STANDING ORDERS LIST ===
+    standing_orders_list:
+      route: /payments/standing-orders
+      title: "הוראות קבע"
+      type: list_page
+      entity: standing_orders
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש לפי לקוח..."
+            searches_fields: ["customer.full_name", "customer.customer_number"]
+          - component: filter_dropdown
+            key: status_filter
+            label: "סטטוס"
+            options:
+              - value: active
+                label: "פעיל"
+              - value: paused
+                label: "מושהה"
+              - value: cancelled
+                label: "בוטל"
+              - value: completed
+                label: "הסתיים"
+            multi_select: true
+          - component: filter_dropdown
+            key: frequency_filter
+            label: "תדירות"
+            options: [monthly, quarterly, yearly]
+        right:
+          - component: button
+            label: "הוראת קבע חדשה"
+            icon: add
+            action: navigate
+            target: /payments/standing-orders/create
+            variant: primary
+
+      table_columns:
+        - key: customer
+          label: "לקוח"
+          sortable: true
+          width: 180
+          display: "customer.full_name"
+          link_to: "/customers/:customer_id"
+        - key: amount
+          label: "סכום"
+          sortable: true
+          width: 120
+          format: currency
+        - key: frequency
+          label: "תדירות"
+          sortable: true
+          width: 100
+        - key: start_date
+          label: "התחלה"
+          sortable: true
+          width: 110
+          format: date
+        - key: end_date
+          label: "סיום"
+          width: 110
+          format: date
+        - key: next_charge_date
+          label: "חיוב הבא"
+          sortable: true
+          width: 120
+          format: date
+        - key: related_document
+          label: "מסמך"
+          width: 130
+          display: "related_document.document_number"
+          link_to: "/finance/income/:related_document_id"
+        - key: status_id
+          label: "סטטוס"
+          sortable: true
+          width: 110
+          type: status_badge
+          color_map:
+            active: green
+            paused: orange
+            cancelled: red
+            completed: gray
+        - key: bank_details
+          label: "פרטי בנק"
+          width: 150
+
+      row_actions:
+        - action: view
+          label: "צפייה"
+          icon: visibility
+          target: "/payments/standing-orders/:id"
+        - action: edit
+          label: "עריכה"
+          icon: edit
+          target: "/payments/standing-orders/:id/edit"
+          condition: "status_id IN (active, paused)"
+        - action: pause
+          label: "השהה"
+          icon: pause
+          condition: "status_id = active"
+          sets: "status_id = paused"
+        - action: resume
+          label: "חדש"
+          icon: play_arrow
+          condition: "status_id = paused"
+          sets: "status_id = active"
+        - action: cancel
+          label: "בטל"
+          icon: cancel
+          type: confirm_dialog
+          condition: "status_id IN (active, paused)"
+          sets: "status_id = cancelled"
+
+    # === 12.3.7 STANDING ORDER CREATE ===
+    standing_order_create:
+      route: /payments/standing-orders/create
+      title: "הוראת קבע חדשה"
+      type: form_page
+      entity: standing_orders
+
+      form_sections:
+        - section: details
+          title: "פרטי הוראת קבע"
+          layout: two_column
+          fields:
+            - name: customer_id
+              label: "לקוח"
+              type: search_select
+              entity: customers
+              display_field: full_name
+              required: true
+              col_span: 1
+            - name: related_document_id
+              label: "מסמך קשור"
+              type: search_select
+              entity: documents
+              display_field: document_number
+              allow_clear: true
+              col_span: 1
+            - name: amount
+              label: "סכום"
+              type: currency_input
+              required: true
+              col_span: 1
+            - name: frequency
+              label: "תדירות"
+              type: select
+              options:
+                - value: monthly
+                  label: "חודשי"
+                - value: quarterly
+                  label: "רבעוני"
+                - value: yearly
+                  label: "שנתי"
+              required: true
+              col_span: 1
+            - name: start_date
+              label: "תאריך התחלה"
+              type: date_picker
+              required: true
+              col_span: 1
+            - name: end_date
+              label: "תאריך סיום"
+              type: date_picker
+              required: false
+              col_span: 1
+            - name: bank_details
+              label: "פרטי בנק"
+              type: textarea
+              rows: 2
+              col_span: 2
+            - name: notes
+              label: "הערות"
+              type: textarea
+              rows: 2
+              col_span: 2
+
+      form_actions:
+        - action: save
+          label: "צור הוראת קבע"
+          variant: primary
+          sets: "status_id = active, next_charge_date = start_date"
+          navigates_to: /payments/standing-orders
+        - action: cancel
+          label: "ביטול"
+          variant: text
+          navigates_to: /payments/standing-orders
+
+    # === 12.3.8 STANDING ORDER DETAILS ===
+    standing_order_details:
+      route: "/payments/standing-orders/:id"
+      title: "פרטי הוראת קבע"
+      type: detail_page
+      entity: standing_orders
+
+      header:
+        layout: detail_header
+        elements:
+          - component: back_button
+            target: /payments/standing-orders
+          - component: title
+            display: "customer.full_name"
+            subtitle: "הוראת קבע"
+          - component: status_badge
+            field: status_id
+          - component: action_buttons
+            actions:
+              - action: edit
+                label: "עריכה"
+                icon: edit
+                condition: "status_id IN (active, paused)"
+              - action: pause
+                label: "השהה"
+                icon: pause
+                condition: "status_id = active"
+              - action: resume
+                label: "חדש"
+                icon: play_arrow
+                condition: "status_id = paused"
+              - action: cancel
+                label: "בטל"
+                icon: cancel
+                condition: "status_id IN (active, paused)"
+
+      tabs:
+        - tab: details
+          label: "פרטים"
+          icon: info
+          content:
+            layout: detail_grid
+            fields:
+              - label: "לקוח"
+                value: "customer.full_name"
+                link_to: "/customers/:customer_id"
+              - label: "סכום"
+                value: amount
+                format: currency
+              - label: "תדירות"
+                value: frequency
+              - label: "תאריך התחלה"
+                value: start_date
+                format: date
+              - label: "תאריך סיום"
+                value: end_date
+                format: date
+              - label: "חיוב הבא"
+                value: next_charge_date
+                format: date
+              - label: "מסמך קשור"
+                value: "related_document.document_number"
+                link_to: "/finance/income/:related_document_id"
+              - label: "פרטי בנק"
+                value: bank_details
+              - label: "סטטוס"
+                value: status_id
+                type: status_badge
+              - label: "הערות"
+                value: notes
+
+        - tab: payment_history
+          label: "היסטוריית חיובים"
+          icon: history
+          content:
+            entity: payments
+            filter: "linked to this standing order"
+            type: table
+            sort: payment_date DESC
+            columns:
+              - key: payment_date
+                label: "תאריך"
+                width: 110
+                format: date
+              - key: amount
+                label: "סכום"
+                width: 120
+                format: currency
+              - key: status_id
+                label: "סטטוס"
+                width: 110
+                type: status_badge
+              - key: document
+                label: "מסמך"
+                width: 130
+                display: "document.document_number"
+
+        - tab: activity_log
+          label: "לוג"
+          icon: history
+          content:
+            entity: activity_logs
+            filter: "entity_type = standing_order AND entity_id = :id"
+            view_type: timeline
+
+    # === 12.3.9 MASAV BATCHES LIST ===
+    masav_batches_list:
+      route: /payments/masav
+      title: "מס\"ב"
+      type: list_page
+      entity: masav_batches
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש לפי מספר אצווה..."
+            searches_fields: [batch_number]
+          - component: date_range_picker
+            key: date_filter
+            label: "תאריך"
+            applies_to: batch_date
+          - component: filter_dropdown
+            key: status_filter
+            label: "סטטוס"
+            options: [draft, generated, sent, processed, failed]
+            multi_select: true
+        right:
+          - component: button
+            label: "אצווה חדשה"
+            icon: add
+            action: navigate
+            target: /payments/masav/create
+            variant: primary
+
+      table_columns:
+        - key: batch_number
+          label: "מספר אצווה"
+          sortable: true
+          width: 120
+          link_to: "/payments/masav/:id"
+        - key: batch_date
+          label: "תאריך"
+          sortable: true
+          width: 110
+          format: date
+        - key: transaction_count
+          label: "עסקאות"
+          sortable: true
+          width: 90
+        - key: total_amount
+          label: "סכום כולל"
+          sortable: true
+          width: 130
+          format: currency
+        - key: status_id
+          label: "סטטוס"
+          sortable: true
+          width: 110
+          type: status_badge
+          color_map:
+            draft: gray
+            generated: blue
+            sent: orange
+            processed: green
+            failed: red
+        - key: file_path
+          label: "קובץ"
+          width: 100
+          type: file_link
+
+      row_actions:
+        - action: view
+          label: "צפייה"
+          icon: visibility
+          target: "/payments/masav/:id"
+        - action: generate_file
+          label: "צור קובץ"
+          icon: upload_file
+          condition: "status_id = draft"
+          sets: "status_id = generated"
+        - action: mark_sent
+          label: "סמן כנשלח"
+          icon: send
+          condition: "status_id = generated"
+          sets: "status_id = sent"
+        - action: mark_processed
+          label: "סמן כעובד"
+          icon: check_circle
+          condition: "status_id = sent"
+          sets: "status_id = processed"
+
+    # === 12.3.10 MASAV BATCH CREATE ===
+    masav_batch_create:
+      route: /payments/masav/create
+      title: "אצווה חדשה"
+      type: form_page
+      entity: masav_batches
+
+      form_sections:
+        - section: header
+          title: "פרטי אצווה"
+          layout: two_column
+          fields:
+            - name: batch_date
+              label: "תאריך אצווה"
+              type: date_picker
+              default: today
+              required: true
+              col_span: 1
+
+        - section: select_payments
+          title: "בחר תשלומים"
+          layout: full_width
+          description: "Select payments to include in this MASAV batch"
+          content:
+            entity: payments
+            filter: "payment_method = masav AND status = pending AND NOT in any batch"
+            type: selectable_table
+            columns:
+              - key: payment_date
+                label: "תאריך"
+                width: 110
+                format: date
+              - key: customer_or_supplier
+                label: "לקוח/ספק"
+                width: 180
+              - key: document
+                label: "מסמך"
+                width: 130
+                display: "document.document_number"
+              - key: amount
+                label: "סכום"
+                width: 120
+                format: currency
+              - key: bank_code
+                label: "קוד בנק"
+                width: 80
+              - key: branch_code
+                label: "סניף"
+                width: 80
+              - key: account_number
+                label: "חשבון"
+                width: 120
+            selectable: true
+            select_all: true
+
+        - section: summary
+          title: "סיכום"
+          layout: single_column
+          content:
+            - label: "עסקאות נבחרות"
+              value: "COUNT(selected)"
+            - label: "סכום כולל"
+              value: "SUM(selected.amount)"
+              format: currency
+
+      form_actions:
+        - action: save_draft
+          label: "שמור כטיוטה"
+          variant: secondary
+          navigates_to: "/payments/masav/:id"
+        - action: save_and_generate
+          label: "שמור וצור קובץ"
+          variant: primary
+          side_effects:
+            - "creates masav_batch_items for selected payments"
+            - "generates MASAV file"
+            - "sets status = generated"
+          navigates_to: "/payments/masav/:id"
+        - action: cancel
+          label: "ביטול"
+          variant: text
+          navigates_to: /payments/masav
+
+    # === 12.3.11 MASAV BATCH DETAILS ===
+    masav_batch_details:
+      route: "/payments/masav/:id"
+      title: "פרטי אצווה"
+      type: detail_page
+      entity: masav_batches
+
+      header:
+        layout: detail_header
+        elements:
+          - component: back_button
+            target: /payments/masav
+          - component: title
+            display: "batch_number"
+          - component: status_badge
+            field: status_id
+          - component: action_buttons
+            actions:
+              - action: generate_file
+                label: "צור קובץ"
+                icon: upload_file
+                condition: "status_id = draft"
+              - action: download_file
+                label: "הורד קובץ"
+                icon: download
+                condition: "file_path IS NOT NULL"
+              - action: mark_sent
+                label: "סמן כנשלח"
+                icon: send
+                condition: "status_id = generated"
+              - action: mark_processed
+                label: "סמן כעובד"
+                icon: check_circle
+                condition: "status_id = sent"
+              - action: delete
+                label: "מחק"
+                icon: delete
+                condition: "status_id = draft"
+
+      summary_cards:
+        - label: "עסקאות"
+          value: transaction_count
+        - label: "סכום כולל"
+          value: total_amount
+          format: currency
+
+      tabs:
+        - tab: details
+          label: "פרטים"
+          icon: info
+          content:
+            layout: detail_grid
+            fields:
+              - label: "מספר אצווה"
+                value: batch_number
+              - label: "תאריך"
+                value: batch_date
+                format: date
+              - label: "עסקאות"
+                value: transaction_count
+              - label: "סכום כולל"
+                value: total_amount
+                format: currency
+              - label: "סטטוס"
+                value: status_id
+                type: status_badge
+              - label: "קובץ"
+                value: file_path
+                type: file_link
+
+        - tab: items
+          label: "עסקאות"
+          icon: list
+          content:
+            entity: masav_batch_items
+            filter: "masav_batch_id = :id"
+            type: table
+            columns:
+              - key: beneficiary_name
+                label: "שם מוטב"
+                width: 180
+              - key: bank_code
+                label: "בנק"
+                width: 80
+              - key: branch_code
+                label: "סניף"
+                width: 80
+              - key: account_number
+                label: "חשבון"
+                width: 120
+              - key: amount
+                label: "סכום"
+                width: 120
+                format: currency
+              - key: payment
+                label: "תשלום"
+                width: 130
+                display: "payment details"
+
+        - tab: activity_log
+          label: "לוג"
+          icon: history
+          content:
+            entity: activity_logs
+            filter: "entity_type = masav_batch AND entity_id = :id"
+            view_type: timeline
+
+    # === 12.3.12 UNMATCHED PAYMENTS ===
+    unmatched_payments_page:
+      route: /payments/unmatched
+      title: "תשלומים לא משויכים"
+      type: special_page
+
+      description: "Shows all payments that do not have a document_id assigned"
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש..."
+            searches_fields: [reference_number, external_transaction_id]
+          - component: filter_dropdown
+            key: method_filter
+            label: "אמצעי"
+            options_from: payment_methods
+            display_field: name
+          - component: date_range_picker
+            key: date_filter
+            label: "תאריך"
+            applies_to: payment_date
+          - component: amount_range_filter
+            key: amount_filter
+            label: "סכום"
+            applies_to: amount
+
+      summary_cards:
+        - label: "תשלומים לא משויכים"
+          value: "COUNT(payments WHERE document_id IS NULL AND status = completed)"
+        - label: "סכום כולל"
+          value: "SUM(amount WHERE document_id IS NULL AND status = completed)"
+          format: currency
+
+      table:
+        entity: payments
+        filter: "document_id IS NULL AND status_id = completed"
+        sort: payment_date DESC
+        columns:
+          - key: payment_date
+            label: "תאריך"
+            sortable: true
+            width: 110
+            format: date
+          - key: payment_method
+            label: "אמצעי"
+            width: 130
+            display: "payment_method.name"
+          - key: amount
+            label: "סכום"
+            sortable: true
+            width: 120
+            format: currency
+          - key: reference_number
+            label: "אסמכתא"
+            width: 130
+          - key: external_transaction_id
+            label: "מזהה עסקה"
+            width: 150
+          - key: notes
+            label: "הערות"
+            width: 200
+          - key: created_at
+            label: "נרשם"
+            width: 140
+            format: datetime
+
+      row_actions:
+        - action: match_to_document
+          label: "שייך למסמך"
+          icon: link
+          type: modal
+          modal_fields:
+            - name: document_id
+              label: "מסמך"
+              type: search_select
+              entity: documents
+              display_field: document_number
+              search_fields: [document_number, "customer.full_name", "supplier.full_name"]
+              filter: "balance_due > 0"
+              required: true
+              show_fields_in_dropdown: [document_number, customer_or_supplier, total_amount, balance_due]
+            - name: match_amount
+              label: "סכום לשיוך"
+              type: currency_input
+              default: "payment.amount"
+              required: true
+          side_effects:
+            - "sets payment.document_id"
+            - "creates payment record if partial"
+            - "updates document.paid_amount"
+            - "updates document.balance_due"
+            - "updates document.status_id"
+        - action: create_document
+          label: "צור מסמך חדש"
+          icon: add
+          target: "/finance/income/create?payment_id=:id"
+          description: "Creates a new income document and links this payment to it"
+        - action: delete_payment
+          label: "מחק תשלום"
+          icon: delete
+          type: confirm_dialog
+
+      quick_match:
+        description: "System suggests possible matches based on amount and date proximity"
+        suggestion_algorithm: "find documents with balance_due = payment.amount OR close to it, same customer if identifiable"
+        display: "suggestion badge next to each payment row"
+
+  # ----------------------------------------------------------
+  # 12.4 NAVIGATION MAP
+  # ----------------------------------------------------------
+  navigation_map:
+    transactions_page:
+      navigates_to:
+        - target: "document details (dynamic)"
+          trigger: "click document number"
+        - target: "/customers/:customer_id"
+          trigger: "click customer"
+        - target: "/suppliers/:supplier_id"
+          trigger: "click supplier"
+    credit_clearing_list:
+      navigates_to:
+        - target: /payments/credit-clearing/create
+          trigger: "click create"
+        - target: "/customers/:customer_id"
+          trigger: "click customer"
+        - target: "/finance/income/:document_id"
+          trigger: "click document"
+    bank_transfers_list:
+      navigates_to:
+        - target: /payments/bank-transfers/create
+          trigger: "click create"
+        - target: "document details"
+          trigger: "click document"
+    standing_orders_list:
+      navigates_to:
+        - target: /payments/standing-orders/create
+          trigger: "click create"
+        - target: "/payments/standing-orders/:id"
+          trigger: "click row"
+        - target: "/customers/:customer_id"
+          trigger: "click customer"
+    masav_batches_list:
+      navigates_to:
+        - target: /payments/masav/create
+          trigger: "click create"
+        - target: "/payments/masav/:id"
+          trigger: "click batch"
+    unmatched_payments_page:
+      navigates_to:
+        - target: "document details"
+          trigger: "click after matching"
+        - target: "/finance/income/create?payment_id=:id"
+          trigger: "click create document"
+
+# ============================================================
+# END OF MODULES 7-12 DETAIL SPECIFICATION
+# ============================================================

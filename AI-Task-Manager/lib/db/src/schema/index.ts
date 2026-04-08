@@ -196,3 +196,9 @@ export * from "./fin-recurring-documents";
 export * from "./fin-standing-orders";
 export * from "./fin-credit-transactions";
 export * from "./fin-activity-logs";
+
+// Institutional Finance - Ratios, Risk, Monte Carlo, Statements, Treasury
+export * from "./fin-ratios";
+export * from "./fin-risk";
+export * from "./fin-monte-carlo";
+export * from "./fin-statements";
