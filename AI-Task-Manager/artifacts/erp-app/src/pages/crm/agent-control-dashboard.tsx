@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import {
   UserCheck, Ban, Star, Medal, ArrowRight
 } from "lucide-react";
 import { useLocation } from "wouter";
+import { authFetch } from "@/lib/utils";
 
 // ============================================================
 // AGENT DATA - Full P&L per agent
@@ -96,7 +98,7 @@ interface Agent {
   maxBurnRate: number;
 }
 
-const agents: Agent[] = [
+const FALLBACK_AGENTS: Agent[] = [
   {
     id: 1, name: "דני כהן", team: "צוות A", status: "active", grade: "A+",
     leadsReceived: 85, leadsHandled: 82, leadsBurned: 3, leadsConverted: 12,
@@ -159,10 +161,7 @@ const agents: Agent[] = [
   },
 ];
 
-// ============================================================
-// CALCULATED TOTALS
-// ============================================================
-const totals = useMemo_static(() => {
+function computeTotals(agents: Agent[]) {
   const t = {
     agents: agents.length,
     active: agents.filter(a => a.status === "active").length,
@@ -184,9 +183,7 @@ const totals = useMemo_static(() => {
   t.avgConversion = t.leadsReceived > 0 ? (t.dealsClosed / t.leadsReceived * 100) : 0;
   t.avgResponse = Math.round(agents.filter(a => a.status === "active").reduce((s, a) => s + a.avgResponseMinutes, 0) / Math.max(1, agents.filter(a => a.status === "active").length));
   return t;
-});
-
-function useMemo_static<T>(fn: () => T): T { return fn(); }
+}
 
 const fmt = (v: number) => v >= 1000000 ? `₪${(v / 1000000).toFixed(2)}M` : v >= 1000 ? `₪${(v / 1000).toFixed(0)}K` : `₪${v.toLocaleString()}`;
 
@@ -231,6 +228,13 @@ function AgentPnl({ agent }: { agent: Agent }) {
 }
 
 export default function AgentControlDashboard() {
+  const { data: apiAgents } = useQuery<Agent[]>({
+    queryKey: ["crm-agent-control-dashboard"],
+    queryFn: async () => { const res = await authFetch("/api/crm/agents"); if (!res.ok) throw new Error("API error"); return res.json(); },
+  });
+  const agents = apiAgents ?? FALLBACK_AGENTS;
+  const totals = useMemo(() => computeTotals(agents), [agents]);
+
   const [, navigate] = useLocation();
   const [period, setPeriod] = useState("monthly");
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);

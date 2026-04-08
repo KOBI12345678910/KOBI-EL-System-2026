@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,7 +33,7 @@ const workflowStages = [
   { key: "project_closed", label: "פרויקט נסגר", icon: CheckCircle, color: "bg-sky-500" },
 ];
 
-const projects = [
+const FALLBACK_WF_PROJECTS = [
   { id: "WF-2001", name: "חלונות אלומיניום — מגדל הים", client: "גולדשטיין נדל\"ן", stage: "installation_completed", stageIdx: 11, value: 920000, pm: "אורי כהן" },
   { id: "WF-2002", name: "קירות מסך — משרדים הרצליה", client: "אמות השקעות", stage: "production_started", stageIdx: 8, value: 2100000, pm: "דנה לוי" },
   { id: "WF-2003", name: "דלתות פלדה — בית ספר אורט", client: "משרד החינוך", stage: "engineering_ready", stageIdx: 5, value: 380000, pm: "יוסי מרקוביץ" },
@@ -42,7 +44,7 @@ const projects = [
   { id: "WF-2008", name: "חלונות עץ-אלומיניום — וילה פרטית", client: "משפחת בן דוד", stage: "quote_approved", stageIdx: 3, value: 145000, pm: "מירי אביטל" },
 ];
 
-const automationRules = [
+const FALLBACK_AUTOMATION_RULES = [
   { id: "AR-01", name: "פתיחת פרויקט אוטומטית", trigger: "הצעת מחיר מאושרת על ידי הלקוח", action: "יצירת פרויקט חדש, הקצאת מנהל פרויקט, פתיחת תיק הנדסי", status: "active", runs: 23, lastRun: "2026-04-07" },
   { id: "AR-02", name: "התראת חריגת תקציב", trigger: "ניצול תקציב עובר 90% מהמתוכנן", action: "שליחת התראה למנהל פרויקט + מנהל כספים, הקפאת הזמנות חדשות", status: "active", runs: 8, lastRun: "2026-04-05" },
   { id: "AR-03", name: "התראת איחור בלוח זמנים", trigger: "שלב נשאר מעל 5 ימים מעבר ליעד", action: "שליחת אסקלציה למנהל תפעול, עדכון סטטוס ל-'באיחור'", status: "active", runs: 12, lastRun: "2026-04-06" },
@@ -50,7 +52,7 @@ const automationRules = [
   { id: "AR-05", name: "עדכון שינויי הזמנה", trigger: "אישור הזמנת שינוי (Change Order) על ידי הלקוח", action: "עדכון תקציב, עדכון לוח זמנים, שליחת הודעה לכל הצוותים", status: "paused", runs: 4, lastRun: "2026-03-28" },
 ];
 
-const stageAnalytics = [
+const FALLBACK_STAGE_ANALYTICS = [
   { stage: "lead_qualified", avgDays: 3.2, projects: 45, bottleneck: false },
   { stage: "site_visit", avgDays: 5.1, projects: 42, bottleneck: false },
   { stage: "estimate_created", avgDays: 7.8, projects: 40, bottleneck: true },
@@ -98,13 +100,20 @@ const transitionStats = [
 const stageLabel = (key: string) => workflowStages.find(s => s.key === key)?.label || key;
 const stageColor = (key: string) => workflowStages.find(s => s.key === key)?.color || "bg-slate-500";
 const fmt = (n: number) => "₪" + new Intl.NumberFormat("he-IL").format(n);
-const maxBar = Math.max(...stageAnalytics.map(s => s.avgDays));
-
 export default function ProjectWorkflowPage() {
   const [tab, setTab] = useState("pipeline");
   const [search, setSearch] = useState("");
 
-  const filtered = projects.filter(p =>
+  const { data: apiWf } = useQuery({
+    queryKey: ["project-workflow"],
+    queryFn: async () => { const r = await authFetch("/api/projects/workflow"); return r.json(); },
+  });
+  const projects = apiWf?.projects ?? apiWf?.data?.projects ?? FALLBACK_WF_PROJECTS;
+  const automationRules = apiWf?.automationRules ?? apiWf?.data?.automationRules ?? FALLBACK_AUTOMATION_RULES;
+  const stageAnalytics = apiWf?.stageAnalytics ?? apiWf?.data?.stageAnalytics ?? FALLBACK_STAGE_ANALYTICS;
+  const maxBar = Math.max(...stageAnalytics.map((s: any) => s.avgDays));
+
+  const filtered = projects.filter((p: any) =>
     p.name.includes(search) || p.client.includes(search) || p.id.includes(search)
   );
 

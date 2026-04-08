@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,7 +13,7 @@ import {
 
 const fmt = (v: number) => `${v.toLocaleString("he-IL")} \u20AA`;
 
-const workCenters = [
+const FALLBACK_WORK_CENTERS = [
   { id: "WC-01", key: "raw_material_cutting", name: "חיתוך חומר גלם", icon: Zap, stations: 2, load: 78, activeJobs: 3, oee: 86.2, color: "text-blue-400", bg: "bg-blue-500" },
   { id: "WC-02", key: "welding", name: "ריתוך", icon: Flame, stations: 2, load: 92, activeJobs: 4, oee: 81.5, color: "text-orange-400", bg: "bg-orange-500" },
   { id: "WC-03", key: "grinding", name: "השחזה וליטוש", icon: Sparkles, stations: 2, load: 65, activeJobs: 2, oee: 88.0, color: "text-purple-400", bg: "bg-purple-500" },
@@ -39,7 +41,7 @@ interface Station {
   maintenance_status: MaintenanceStatus;
 }
 
-const stations: Station[] = [
+const FALLBACK_STATIONS: Station[] = [
   { station_code: "STN-101", station_name: "מסור סרט אוטומטי", work_center_id: "WC-01", station_type: "CNC", capacity_hours_day: 16, setup_time_min: 20, cycle_time_ref: "4.5 דקות/יחידה", labor_cost_hr: 85, machine_cost_hr: 120, active_status: "active", maintenance_status: "ok" },
   { station_code: "STN-102", station_name: "חותך פלזמה", work_center_id: "WC-01", station_type: "אוטומטי", capacity_hours_day: 16, setup_time_min: 15, cycle_time_ref: "3.2 דקות/יחידה", labor_cost_hr: 90, machine_cost_hr: 150, active_status: "active", maintenance_status: "due_soon" },
   { station_code: "STN-201", station_name: "ריתוך MIG/MAG", work_center_id: "WC-02", station_type: "ידני", capacity_hours_day: 14, setup_time_min: 10, cycle_time_ref: "8.0 דקות/יחידה", labor_cost_hr: 110, machine_cost_hr: 45, active_status: "active", maintenance_status: "ok" },
@@ -56,7 +58,7 @@ const stations: Station[] = [
   { station_code: "STN-801", station_name: "קו אריזה אוטומטי", work_center_id: "WC-08", station_type: "אוטומטי", capacity_hours_day: 16, setup_time_min: 10, cycle_time_ref: "1.8 דקות/יחידה", labor_cost_hr: 60, machine_cost_hr: 75, active_status: "active", maintenance_status: "ok" },
 ];
 
-const maintenanceSchedule = [
+const FALLBACK_MAINTENANCE = [
   { station: "STN-302", name: "מלטשת סרט", type: "תחזוקה מונעת", date: "2026-04-02", status: "overdue", notes: "החלפת סרט שחיקה + כיול מנוע", tech: "עומר חדד" },
   { station: "STN-102", name: "חותך פלזמה", type: "בדיקת שגרה", date: "2026-04-12", status: "due_soon", notes: "בדיקת ראש חיתוך + מערכת קירור", tech: "דוד מזרחי" },
   { station: "STN-402", name: "מכופף פרופילים", type: "תחזוקה מונעת", date: "2026-04-14", status: "due_soon", notes: "שימון מסילות + בדיקת לחץ הידראולי", tech: "אלון גולדשטיין" },
@@ -96,15 +98,23 @@ const oeeColor = (v: number) => v >= 85 ? "text-emerald-400" : v >= 75 ? "text-a
 const oeeBg = (v: number) => v >= 85 ? "bg-emerald-500" : v >= 75 ? "bg-amber-500" : "bg-red-500";
 const loadColor = (v: number) => v >= 85 ? "[&>div]:bg-red-500" : v >= 60 ? "[&>div]:bg-amber-500" : "[&>div]:bg-emerald-500";
 
-const centerName = (id: string) => workCenters.find(c => c.id === id)?.name || id;
-
 export default function WorkStations() {
   const [tab, setTab] = useState("centers");
 
+  const { data: apiData } = useQuery({
+    queryKey: ["production-work-stations"],
+    queryFn: () => authFetch("/api/production/machines").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const workCenters = safeArr(apiData?.workCenters).length > 0 ? safeArr(apiData.workCenters) : FALLBACK_WORK_CENTERS;
+  const stations: Station[] = safeArr(apiData?.stations).length > 0 ? safeArr(apiData.stations) : FALLBACK_STATIONS;
+  const maintenanceSchedule = safeArr(apiData?.maintenance).length > 0 ? safeArr(apiData.maintenance) : FALLBACK_MAINTENANCE;
+
+  const centerName = (id: string) => workCenters.find((c: any) => c.id === id)?.name || id;
   const totalStations = stations.length;
-  const activeCount = stations.filter(s => s.active_status === "active").length;
-  const maintCount = stations.filter(s => s.active_status === "maintenance").length;
-  const avgOee = (workCenters.reduce((a, c) => a + c.oee, 0) / workCenters.length).toFixed(1);
+  const activeCount = stations.filter((s: any) => s.active_status === "active").length;
+  const maintCount = stations.filter((s: any) => s.active_status === "maintenance").length;
+  const avgOee = (workCenters.reduce((a: number, c: any) => a + c.oee, 0) / workCenters.length).toFixed(1);
 
   return (
     <div className="p-6 space-y-5" dir="rtl">

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   AlertTriangle, CheckCircle2, TrendingUp, ClipboardList, Activity
 } from "lucide-react";
@@ -13,12 +15,12 @@ const API = "/api";
 
 const TABS = ["סקירה", "בזמן אמת", "איכות", "משאבים", "התראות"];
 
-const hourlyOutput = [
+const FALLBACK_HOURLY_OUTPUT = [
   { time: "00:00", count: 3 }, { time: "04:00", count: 4 }, { time: "08:00", count: 5 },
   { time: "12:00", count: 8 }, { time: "16:00", count: 6 }, { time: "20:00", count: 4 },
 ];
 
-const stageDistribution = [
+const FALLBACK_STAGE_DISTRIBUTION = [
   { name: "הנדסה: 2", value: 2, color: "#3b82f6" },
   { name: "מדידה: 4", value: 4, color: "#22c55e" },
   { name: "חיתוך: 6", value: 6, color: "#f59e0b" },
@@ -28,7 +30,7 @@ const stageDistribution = [
   { name: "welding: 6", value: 6, color: "#06b6d4" },
 ];
 
-const workstations = [
+const FALLBACK_WORKSTATIONS = [
   { name: "מעגלי מתכת", customer: "חברת הנדסה א", task: "חיתוך", code: "cutting", hours: "0/18h" },
   { name: "מסגרות פלדה", customer: "מפעל הרכבה", task: "ריתוך", code: "welding", hours: "0/24h" },
   { name: "חלקי ברזל", customer: "תעשיות בניה", task: "מדידה", code: "measurement", hours: "0/12h" },
@@ -36,7 +38,7 @@ const workstations = [
   { name: "צילינדרים", customer: "מערכות הידראוליות", task: "צביעה", code: "painting", hours: "0/18h" },
 ];
 
-const workstationLoad = [
+const FALLBACK_WORKSTATION_LOAD = [
   { name: "מדידה", load: 75, status: "פעיל" },
   { name: "חיתוך", load: 80, status: "פעיל" },
   { name: "ריתוך", load: 85, status: "פעיל" },
@@ -90,6 +92,16 @@ const relatedTabs = [
 
 export default function MESSystemPage() {
   const [tab, setTab] = useState(0);
+
+  const { data: apiData } = useQuery({
+    queryKey: ["production-mes-system"],
+    queryFn: () => authFetch("/api/production/dashboard?type=mes").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const hourlyOutput = safeArr(apiData?.hourlyOutput).length > 0 ? safeArr(apiData.hourlyOutput) : FALLBACK_HOURLY_OUTPUT;
+  const stageDistribution = safeArr(apiData?.stageDistribution).length > 0 ? safeArr(apiData.stageDistribution) : FALLBACK_STAGE_DISTRIBUTION;
+  const workstations = safeArr(apiData?.workstations).length > 0 ? safeArr(apiData.workstations) : FALLBACK_WORKSTATIONS;
+  const workstationLoad = safeArr(apiData?.workstationLoad).length > 0 ? safeArr(apiData.workstationLoad) : FALLBACK_WORKSTATION_LOAD;
 
   return (
     <div className="p-6 space-y-6" dir="rtl">

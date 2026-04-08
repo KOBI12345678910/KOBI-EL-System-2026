@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -8,8 +10,8 @@ import {
   HardHat, MapPin, Award, Timer, ShieldAlert, Star,
 } from "lucide-react";
 
-/* ── Mock data ── */
-const workers = [
+/* ── Fallback data ── */
+const FALLBACK_WORKERS = [
   { id: 1, name: "רועי כהן", skills: { cutting: true, welding: true, assembly: true, installation: false, cnc: true, painting: false }, cert: "טכנאי בכיר", clockIn: "07:02", clockOut: "16:05", hours: 9.05, location: "מפעל", overtime: 1.05, jobsDone: 14, avgTime: "32 דק׳", output: 108, target: 100, ranking: 1, active: true, onSite: false },
   { id: 2, name: "אמיר לוי", skills: { cutting: false, welding: true, assembly: true, installation: true, cnc: false, painting: false }, cert: "מתקין מוסמך", clockIn: "06:55", clockOut: "15:50", hours: 8.92, location: "שטח", overtime: 0.92, jobsDone: 11, avgTime: "38 דק׳", output: 95, target: 100, ranking: 3, active: true, onSite: true },
   { id: 3, name: "יוסי מזרחי", skills: { cutting: true, welding: true, assembly: false, installation: false, cnc: true, painting: true }, cert: "רתך מוסמך", clockIn: "07:10", clockOut: "16:30", hours: 9.33, location: "מפעל", overtime: 1.33, jobsDone: 16, avgTime: "28 דק׳", output: 115, target: 100, ranking: 2, active: true, onSite: false },
@@ -20,7 +22,7 @@ const workers = [
   { id: 8, name: "נועה פרידמן", skills: { cutting: false, welding: false, assembly: true, installation: true, cnc: false, painting: false }, cert: "מתקינה", clockIn: "07:00", clockOut: "—", hours: 7.0, location: "שטח", overtime: 0, jobsDone: 7, avgTime: "45 דק׳", output: 72, target: 100, ranking: 8, active: true, onSite: true },
 ];
 
-const teams = [
+const FALLBACK_TEAMS = [
   { name: "צוות התקנות צפון", members: ["אמיר לוי", "דני אברהם", "נועה פרידמן"], current: "פרויקט הרצליה - בניין A", next: "פרויקט נתניה - קומפלקס מגורים" },
   { name: "צוות התקנות דרום", members: ["רועי כהן", "אלי ביטון"], current: "פרויקט באר שבע - מפעל", next: "פרויקט אשדוד - מרכז מסחרי" },
   { name: "צוות מפעל - ריתוך", members: ["יוסי מזרחי", "מוחמד חסן"], current: "הזמנה WO-4510 שלדות פלדה", next: "הזמנה WO-4522 מעקות" },
@@ -31,7 +33,7 @@ const teams = [
   { name: "צוות CNC", members: ["שרה לוי", "אלי ביטון", "רועי כהן"], current: "הזמנה WO-4525 חיתוך מדויק", next: "הזמנה WO-4530 כיפוף" },
 ];
 
-const incidents = [
+const FALLBACK_INCIDENTS = [
   { date: "2026-04-07", worker: "דני אברהם", type: "חתך קל", severity: "קל", location: "שטח - הרצליה", resolution: "טופל במקום" },
   { date: "2026-04-03", worker: "יוסי מזרחי", type: "כוויה קלה", severity: "קל", location: "מפעל - ריתוך", resolution: "טופל במרפאה" },
   { date: "2026-03-28", worker: "אלי ביטון", type: "נפילה מגובה", severity: "בינוני", location: "שטח - ת״א", resolution: "יום מנוחה + בדיקה" },
@@ -49,10 +51,19 @@ const sevColor: Record<string, string> = { "קל": "bg-green-500/20 text-green-3
 export default function LaborControl() {
   const [tab, setTab] = useState("skills");
 
-  const activeCount = workers.filter(w => w.active).length;
-  const onSiteCount = workers.filter(w => w.onSite).length;
-  const inFactoryCount = workers.filter(w => w.active && !w.onSite).length;
-  const totalOvertime = workers.reduce((s, w) => s + w.overtime, 0).toFixed(1);
+  const { data: apiData } = useQuery({
+    queryKey: ["production-labor-control"],
+    queryFn: () => authFetch("/api/production/lines?type=labor").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const workers = safeArr(apiData?.workers).length > 0 ? safeArr(apiData.workers) : FALLBACK_WORKERS;
+  const teams = safeArr(apiData?.teams).length > 0 ? safeArr(apiData.teams) : FALLBACK_TEAMS;
+  const incidents = safeArr(apiData?.incidents).length > 0 ? safeArr(apiData.incidents) : FALLBACK_INCIDENTS;
+
+  const activeCount = workers.filter((w: any) => w.active).length;
+  const onSiteCount = workers.filter((w: any) => w.onSite).length;
+  const inFactoryCount = workers.filter((w: any) => w.active && !w.onSite).length;
+  const totalOvertime = workers.reduce((s: number, w: any) => s + w.overtime, 0).toFixed(1);
   const avgProductivity = Math.round(workers.reduce((s, w) => s + w.output, 0) / workers.length);
   const monthIncidents = incidents.filter(i => i.date >= "2026-04-01").length;
 

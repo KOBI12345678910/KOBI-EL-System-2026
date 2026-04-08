@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,8 +13,9 @@ import {
   Clock, Users, Target, Shield, Send, Bell, UserCog,
   ArrowRight, DollarSign, Pause, RotateCcw, Eye
 } from "lucide-react";
+import { authFetch } from "@/lib/utils";
 
-const recentDecisions = [
+const FALLBACK_DECISIONS = [
   { id: 1, time: "2026-04-08 11:45", trigger: "deal_stuck", entity: "חיפוי מגורים רמת גן", decision: "escalate", detail: "עסקה תקועה 18 ימים - escalation למנהל צוות", confidence: 0.88, status: "executed", overridden: false },
   { id: 2, time: "2026-04-08 10:30", trigger: "risk_increase", entity: "סופרגז אנרגיה", decision: "block_deal", detail: "חסמה עסקאות חדשות - סיכון אשראי קריטי", confidence: 0.95, status: "executed", overridden: false },
   { id: 3, time: "2026-04-08 09:15", trigger: "negative_interaction", entity: "שיכון ובינוי", decision: "notify_manager", detail: "אינטראקציה שלילית - העברה לטיפול מנהל", confidence: 0.82, status: "executed", overridden: false },
@@ -24,7 +26,7 @@ const recentDecisions = [
   { id: 8, time: "2026-04-07 09:00", trigger: "deal_stuck", entity: "בית ספר חולון", decision: "change_priority", detail: "שונה לעדיפות נמוכה - P(Win) ירד מ-40% ל-25%", confidence: 0.79, status: "overridden", overridden: true },
 ];
 
-const aiRecommendations = [
+const FALLBACK_AI_RECOMMENDATIONS = [
   { customer: "קבוצת אלון", action: "שלח הצעה מורחבת למגדל B", reason: "P(Close) = 72%, buying intent עולה", who: "דני כהן", when: "היום", offer: "הנחת 8% על חבילה שנתית", confidence: 0.88 },
   { customer: "אמות השקעות", action: "תאם חתימת חוזה", reason: "עסקה באישור סופי, P(Win) = 85%", who: "דני כהן", when: "מחר", offer: "ביטוח מורחב חינם", confidence: 0.92 },
   { customer: "BIG מרכזי קניות", action: "סיור באתר + הצגת portfolio", reason: "ליד חדש בעל ערך גבוה ₪1.2M", who: "דני כהן", when: "השבוע", offer: "פגישה עם מנכ\"ל", confidence: 0.75 },
@@ -58,6 +60,13 @@ const decisionIcon = (d: string) => {
 };
 
 export default function DecisionEngine() {
+  const { data: apiEngine } = useQuery<{ decisions: typeof FALLBACK_DECISIONS; recommendations: typeof FALLBACK_AI_RECOMMENDATIONS }>({
+    queryKey: ["crm-decision-engine"],
+    queryFn: async () => { const res = await authFetch("/api/crm/decisions"); if (!res.ok) throw new Error("API error"); return res.json(); },
+  });
+  const recentDecisions = apiEngine?.decisions ?? FALLBACK_DECISIONS;
+  const aiRecommendations = apiEngine?.recommendations ?? FALLBACK_AI_RECOMMENDATIONS;
+
   const executed = recentDecisions.filter(d => d.status === "executed").length;
   const pending = recentDecisions.filter(d => d.status === "pending").length;
   const overridden = recentDecisions.filter(d => d.overridden).length;

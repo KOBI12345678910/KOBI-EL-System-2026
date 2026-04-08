@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -13,8 +15,8 @@ import {
 /* ── helpers ────────────────────────────────────────────────────── */
 const fmt = (v: number) => v.toLocaleString("he-IL");
 
-/* ── shortage data ──────────────────────────────────────────────── */
-const shortages = [
+/* ── Fallback shortage data ──────────────────────────────────────────────── */
+const FALLBACK_SHORTAGES = [
   { id: "SHT-001", material: "RM-142 ציר כבד 120 מ\"מ", wo: "WO-1021", woName: "מבנה תעשייתי נתניה", qtyNeeded: 48, available: 12, supplier: "מחברי עוזי טכנו", leadDays: 7, action: "הזמנה", priority: "דחוף" },
   { id: "SHT-002", material: "RM-450 פרופיל גומי EPDM", wo: "WO-1021", woName: "מבנה תעשייתי נתניה", qtyNeeded: 120, available: 0, supplier: "גומי ואטמים בע\"מ", leadDays: 14, action: "הזמנה", priority: "דחוף" },
   { id: "SHT-003", material: "RM-315 סיליקון שקוף UV", wo: "WO-1025", woName: "ויטרינות חנויות ת\"א", qtyNeeded: 60, available: 22, supplier: "כימיקלים מרכז", leadDays: 5, action: "חלופי", priority: "גבוה" },
@@ -50,9 +52,16 @@ export default function ShortagesPage() {
   const [sortField, setSortField] = useState<string>("priority");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
+  const { data: apiData } = useQuery({
+    queryKey: ["production-shortages"],
+    queryFn: () => authFetch("/api/production/work-orders?type=shortages").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const shortages = safeArr(apiData).length > 0 ? safeArr(apiData) : FALLBACK_SHORTAGES;
+
   /* KPI computations */
-  const activeShortages = shortages.filter(s => s.available < s.qtyNeeded).length;
-  const urgentShortages = shortages.filter(s => s.priority === "דחוף").length;
+  const activeShortages = shortages.filter((s: any) => s.available < s.qtyNeeded).length;
+  const urgentShortages = shortages.filter((s: any) => s.priority === "דחוף").length;
   const pendingOrders = shortages.filter(s => s.action === "הזמנה").length;
   const avgLeadTime = Math.round(shortages.reduce((s, sh) => s + sh.leadDays, 0) / shortages.length);
   const totalGap = shortages.reduce((s, sh) => s + Math.max(0, sh.qtyNeeded - sh.available), 0);

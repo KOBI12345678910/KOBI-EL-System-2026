@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   TrendingUp, TrendingDown, DollarSign, BarChart3, Target, AlertTriangle,
   ArrowUpRight, ArrowDownRight, Layers, Building2, Home, Factory, Wrench,
@@ -16,7 +18,7 @@ const fmtC = (v: number) => "₪" + fmt(v);
 const fmtP = (v: number) => v.toFixed(1) + "%";
 
 // [id, name, type, client, contract, materials, labor, sub, overhead, expectedMargin, status]
-const rawProjects: any[][] = [
+const FALLBACK_RAW_PROJECTS: any[][] = [
   [1,"מגדל אופק רמת גן","residential","אופק נכסים",2850000,855000,570000,342000,171000,32,"active"],
   [2,"קניון הנגב באר שבע","commercial","נגב מרכזי קניות",4200000,1386000,840000,504000,252000,29,"active"],
   [3,"מפעל אלביט כרמיאל","industrial","אלביט מערכות",3600000,1080000,720000,432000,216000,32,"active"],
@@ -30,12 +32,12 @@ const rawProjects: any[][] = [
   [11,"מפעל מזון רהט","industrial","תנובה",2700000,864000,540000,297000,189000,30,"completed"],
   [12,"שיפוץ כיתות אוניברסיטה","renovation","אוניברסיטת בן גוריון",680000,217600,149600,74800,54400,27,"active"],
 ];
-const projects = rawProjects.map(r => ({
+const FALLBACK_PROJECTS = FALLBACK_RAW_PROJECTS.map(r => ({
   id: r[0], name: r[1], type: r[2], client: r[3], contract: r[4],
   materials: r[5], labor: r[6], sub: r[7], overhead: r[8], expectedMargin: r[9], status: r[10],
 }));
 
-const monthlyTrends = [
+const FALLBACK_MONTHLY_TRENDS = [
   { month: "אוק׳ 25", avgMargin: 28.2, quoteMargin: 30.5, erosion: -2.3 },
   { month: "נוב׳ 25", avgMargin: 27.8, quoteMargin: 30.5, erosion: -2.7 },
   { month: "דצמ׳ 25", avgMargin: 29.1, quoteMargin: 30.5, erosion: -1.4 },
@@ -63,11 +65,18 @@ export default function ProjectProfitabilityPage() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
 
-  const enriched = useMemo(() => projects.map(p => {
+  const { data: apiProfit } = useQuery({
+    queryKey: ["project-profitability"],
+    queryFn: async () => { const r = await authFetch("/api/projects/profitability"); return r.json(); },
+  });
+  const projects = apiProfit?.projects ?? apiProfit?.data?.projects ?? FALLBACK_PROJECTS;
+  const monthlyTrends = apiProfit?.monthlyTrends ?? apiProfit?.data?.monthlyTrends ?? FALLBACK_MONTHLY_TRENDS;
+
+  const enriched = useMemo(() => projects.map((p: any) => {
     const totalCost = p.materials + p.labor + p.sub + p.overhead;
     const gp = p.contract - totalCost, margin = (gp / p.contract) * 100;
     return { ...p, totalCost, gp, margin, marginDelta: margin - p.expectedMargin };
-  }), []);
+  }), [projects]);
 
   const filtered = useMemo(() => enriched
     .filter(p => typeFilter === "all" || p.type === typeFilter)

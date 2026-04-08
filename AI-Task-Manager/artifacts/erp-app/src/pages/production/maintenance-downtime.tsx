@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,8 +10,8 @@ import {
   TrendingDown, CalendarDays, Activity, Timer, Shield, Zap, Settings
 } from "lucide-react";
 
-/* ───── KPIs ───── */
-const kpis = [
+/* ───── Fallback KPIs ───── */
+const FALLBACK_KPIS = [
   { label: "משימות תחזוקה מונעת", value: "12", sub: "3 דחופות", icon: CalendarDays, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "תקלות פעילות", value: "2", sub: "קו C + קו F", icon: AlertTriangle, color: "text-red-400", bg: "bg-red-500/10" },
   { label: 'השבתה היום (שעות)', value: "3.8", sub: "מתוכנן: 1.5 | לא: 2.3", icon: Clock, color: "text-amber-400", bg: "bg-amber-500/10" },
@@ -18,8 +20,8 @@ const kpis = [
   { label: "MTTR (שעות)", value: "2.1", sub: "זמן תיקון ממוצע", icon: Timer, color: "text-cyan-400", bg: "bg-cyan-500/10" },
 ];
 
-/* ───── Preventive Maintenance ───── */
-const preventive = [
+/* ───── Fallback Preventive Maintenance ───── */
+const FALLBACK_PREVENTIVE = [
   { station: "קו A — חיתוך", task: "החלפת להבים", freq: "שבועי", lastDone: "2026-04-01", nextDue: "2026-04-08", status: "due" },
   { station: "קו B — כיפוף", task: "שימון מסילות", freq: "יומי", lastDone: "2026-04-07", nextDue: "2026-04-08", status: "due" },
   { station: "קו C — ריתוך", task: "כיול טמפרטורה", freq: "חודשי", lastDone: "2026-03-10", nextDue: "2026-04-10", status: "upcoming" },
@@ -30,8 +32,8 @@ const preventive = [
   { station: "קו A — חיתוך", task: "בדיקת לחץ הידראולי", freq: "חודשי", lastDone: "2026-03-08", nextDue: "2026-04-08", status: "overdue" },
 ];
 
-/* ───── Breakdown Events ───── */
-const breakdowns = [
+/* ───── Fallback Breakdown Events ───── */
+const FALLBACK_BREAKDOWNS = [
   { station: "קו C — ריתוך", start: "2026-04-08 07:15", duration: "2.5 שעות", cause: "כשל במנוע סרוו", tech: "יוסי כהן", resolution: "החלפת מנוע", impact: "גבוה" },
   { station: "קו F — אריזה", start: "2026-04-08 10:30", duration: "1.0 שעות", cause: "חיישן קרבה תקול", tech: "מוחמד חסן", resolution: "החלפת חיישן", impact: "בינוני" },
   { station: "קו A — חיתוך", start: "2026-04-07 14:00", duration: "3.0 שעות", cause: "שבר להב ראשי", tech: "דוד לוי", resolution: "החלפת להב + כיול", impact: "גבוה" },
@@ -41,8 +43,8 @@ const breakdowns = [
   { station: "קו G — איכות", start: "2026-04-03 08:30", duration: "0.8 שעות", cause: "תקלת מצלמה", tech: "דוד לוי", resolution: "כיול מחדש", impact: "נמוך" },
 ];
 
-/* ───── Downtime Log ───── */
-const downtimeLog = [
+/* ───── Fallback Downtime Log ───── */
+const FALLBACK_DOWNTIME_LOG = [
   { station: "קו C — ריתוך", type: "unplanned", start: "07:15", end: "09:45", duration: "2.5h", reason: "כשל מנוע סרוו" },
   { station: "קו F — אריזה", type: "unplanned", start: "10:30", end: "11:30", duration: "1.0h", reason: "חיישן קרבה תקול" },
   { station: "קו A — חיתוך", type: "planned", start: "06:00", end: "06:30", duration: "0.5h", reason: "תחזוקה מונעת — להבים" },
@@ -53,8 +55,8 @@ const downtimeLog = [
   { station: "קו A — חיתוך", type: "unplanned", start: "14:00", end: "14:20", duration: "0.3h", reason: "אזעקת בטיחות — איפוס" },
 ];
 
-/* ───── Station Availability ───── */
-const stations = [
+/* ───── Fallback Station Availability ───── */
+const FALLBACK_STATIONS = [
   { name: "קו A — חיתוך", avail: 91, uptime: 14.6, downtime: 1.4, trend: "up" },
   { name: "קו B — כיפוף", avail: 96, uptime: 15.4, downtime: 0.6, trend: "up" },
   { name: "קו C — ריתוך", avail: 72, uptime: 11.5, downtime: 4.5, trend: "down" },
@@ -88,6 +90,17 @@ const TH = "text-right text-[10px] font-semibold";
 const TD = "text-xs";
 
 export default function MaintenanceDowntime() {
+  const { data: apiData } = useQuery({
+    queryKey: ["production-maintenance-downtime"],
+    queryFn: () => authFetch("/api/production/machines?type=downtime").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const kpis = (apiData as any)?.kpis || FALLBACK_KPIS;
+  const preventive = safeArr(apiData?.preventive).length > 0 ? safeArr(apiData.preventive) : FALLBACK_PREVENTIVE;
+  const breakdowns = safeArr(apiData?.breakdowns).length > 0 ? safeArr(apiData.breakdowns) : FALLBACK_BREAKDOWNS;
+  const downtimeLog = safeArr(apiData?.downtimeLog).length > 0 ? safeArr(apiData.downtimeLog) : FALLBACK_DOWNTIME_LOG;
+  const stations = safeArr(apiData?.stations).length > 0 ? safeArr(apiData.stations) : FALLBACK_STATIONS;
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* Header */}

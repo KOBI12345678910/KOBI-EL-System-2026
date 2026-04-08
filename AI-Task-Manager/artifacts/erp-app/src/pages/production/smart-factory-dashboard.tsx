@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,8 +10,8 @@ import {
   Activity, AlertCircle, Timer, Layers, RefreshCw, Ban
 } from "lucide-react";
 
-/* ── KPI Data ──────────────────────────────────────────────────── */
-const kpis = [
+/* ── Fallback KPI Data ──────────────────────────────────────────────────── */
+const FALLBACK_KPIS = [
   { key: "open_production_orders", label: "הזמנות ייצור פתוחות", value: 24, prev: 22, icon: Layers, color: "text-blue-400", bg: "bg-blue-500/10" },
   { key: "work_orders_in_progress", label: "פקודות עבודה פעילות", value: 14, prev: 12, icon: Activity, color: "text-emerald-400", bg: "bg-emerald-500/10" },
   { key: "delayed_jobs", label: "עבודות באיחור", value: 3, prev: 5, icon: Clock, color: "text-red-400", bg: "bg-red-500/10" },
@@ -24,8 +26,8 @@ const kpis = [
   { key: "bottleneck_station", label: "צוואר בקבוק", value: "ריתוך", icon: AlertTriangle, color: "text-red-400", bg: "bg-red-500/10", isText: true },
 ];
 
-/* ── Station Load ──────────────────────────────────────────────── */
-const stations = [
+/* ── Fallback Station Load ──────────────────────────────────────────────── */
+const FALLBACK_STATIONS = [
   { name: "חיתוך", load: 85, jobs: 6, operator: "מוחמד ח." },
   { name: "ריתוך", load: 97, jobs: 8, operator: "עוזי כ." },
   { name: "שיוף", load: 62, jobs: 4, operator: "יוסי ד." },
@@ -36,8 +38,8 @@ const stations = [
   { name: "אריזה", load: 42, jobs: 2, operator: "מרים ש." },
 ];
 
-/* ── Active Work Orders ────────────────────────────────────────── */
-const workOrders = [
+/* ── Fallback Active Work Orders ────────────────────────────────────────── */
+const FALLBACK_WORK_ORDERS = [
   { wo: "WO-1047", product: 'חלון אלומיניום 1.5×1.2 מ\'', project: "פרויקט אלון — רמת גן", station: "חיתוך", operator: "מוחמד ח.", progress: 72, eta: "12:30", status: "in_progress" },
   { wo: "WO-1048", product: "דלת הזזה כפולה 2.4 מ'", project: "מגדל הים — חיפה", station: "ריתוך", operator: "עוזי כ.", progress: 45, eta: "14:15", status: "in_progress" },
   { wo: "WO-1049", product: "ויטרינה מחוסמת 3×2.5 מ'", project: "קניון הזהב — ב\"ש", station: "זכוכית", operator: "חיים ר.", progress: 88, eta: "11:00", status: "in_progress" },
@@ -48,8 +50,8 @@ const workOrders = [
   { wo: "WO-1054", product: "חלון ציר 80×60 ס\"מ", project: "שיכון דניה — ת\"א", station: "שיוף", operator: "יוסי ד.", progress: 5, eta: "17:00", status: "pending" },
 ];
 
-/* ── Live Alerts ───────────────────────────────────────────────── */
-const alerts = [
+/* ── Fallback Live Alerts ───────────────────────────────────────────────── */
+const FALLBACK_ALERTS = [
   { time: "08:47", msg: "תחנת ריתוך — עומס קריטי 97%, שקול העברת עבודות לתחנת חיתוך", severity: "critical" },
   { time: "09:12", msg: "WO-1050 מאחר ב-35 דקות — חומר גלם עוכב בקבלה", severity: "warning" },
   { time: "09:30", msg: "מכונת חיתוך CNC-02 דורשת כיול — תחזוקה מונעת בשעה 13:00", severity: "info" },
@@ -57,8 +59,8 @@ const alerts = [
   { time: "10:05", msg: "WO-1053 סיום צפוי ב-10:30 — מוכן להעברה לאריזה", severity: "success" },
 ];
 
-/* ── OEE ───────────────────────────────────────────────────────── */
-const oee = { score: 81.4, availability: 93.2, performance: 88.7, quality: 98.5 };
+/* ── Fallback OEE ───────────────────────────────────────────────────────── */
+const FALLBACK_OEE = { score: 81.4, availability: 93.2, performance: 88.7, quality: 98.5 };
 
 function oeeColor(v: number) {
   if (v >= 85) return "text-emerald-400";
@@ -109,6 +111,17 @@ function alertBorder(severity: string) {
    Component
    ══════════════════════════════════════════════════════════════════ */
 export default function SmartFactoryDashboard() {
+  const { data: apiData } = useQuery({
+    queryKey: ["production-smart-factory"],
+    queryFn: () => authFetch("/api/production/dashboard?type=smart-factory").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const kpis = safeArr(apiData?.kpis).length > 0 ? safeArr(apiData.kpis) : FALLBACK_KPIS;
+  const stations = safeArr(apiData?.stations).length > 0 ? safeArr(apiData.stations) : FALLBACK_STATIONS;
+  const workOrders = safeArr(apiData?.workOrders).length > 0 ? safeArr(apiData.workOrders) : FALLBACK_WORK_ORDERS;
+  const alerts = safeArr(apiData?.alerts).length > 0 ? safeArr(apiData.alerts) : FALLBACK_ALERTS;
+  const oee = (apiData as any)?.oee || FALLBACK_OEE;
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-5 space-y-5" dir="rtl">
 

@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Search, Filter, Users, Mail, FileText, Target, Building2, X, ChevronDown } from "lucide-react";
 import BulkActions, { useBulkSelection, BulkCheckbox, defaultBulkActions } from "@/components/bulk-actions";
 import ActivityLog from "@/components/activity-log";
+import { authFetch } from "@/lib/utils";
 
 const fmtC = (n: number) => new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", minimumFractionDigits: 0 }).format(n);
 
@@ -18,7 +20,7 @@ interface SearchResult {
   status?: string;
 }
 
-const ALL_DATA: SearchResult[] = [
+const FALLBACK_DATA: SearchResult[] = [
   { id: 1, type: "lead", title: "דוד כהן", subtitle: "Tech Corp — ליד חדש", meta: "הפניה", value: 320000, date: "2026-03-17", status: "qualified" },
   { id: 2, type: "lead", title: "רחל לוי", subtitle: "Build Co — הצעה נשלחה", meta: "טלפון", value: 180000, date: "2026-03-16", status: "proposal" },
   { id: 3, type: "customer", title: "משה ישראלי", subtitle: "Construct Ltd — לקוח פעיל", meta: "רמת השרון", value: 650000, date: "2026-01-10", status: "active" },
@@ -42,6 +44,12 @@ const TYPE_CONFIG: Record<ResultType, { label: string; icon: any; color: string 
 };
 
 export default function AdvancedSearchPage() {
+  const { data: apiData } = useQuery<SearchResult[]>({
+    queryKey: ["crm-advanced-search"],
+    queryFn: async () => { const res = await authFetch("/api/crm/advanced-search"); if (!res.ok) throw new Error("API error"); return res.json(); },
+  });
+  const ALL_DATA = apiData ?? FALLBACK_DATA;
+
   const [query, setQuery] = useState("");
   const [filterType, setFilterType] = useState<ResultType | "all">("all");
   const [filterStatus, setFilterStatus] = useState("");

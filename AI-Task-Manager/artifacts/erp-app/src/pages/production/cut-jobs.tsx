@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -19,7 +21,7 @@ const SB: Record<string, string> = {
   "לא": "bg-red-500/20 text-red-300",
 };
 
-const queueData = [
+const FALLBACK_QUEUE = [
   { id: "CJ-1001", wo: "WO-4420", material: "פלדה ST-37", profile: "IPE 200", qty: 24, length: 28.8, station: "מסור סרט A1", priority: "דחוף", status: "בחיתוך" },
   { id: "CJ-1002", wo: "WO-4421", material: "אלומיניום 6063", profile: "קורה U 80", qty: 16, length: 19.2, station: "מסור דיסק B2", priority: "גבוה", status: "בתור" },
   { id: "CJ-1003", wo: "WO-4418", material: "נירוסטה 304", profile: "צינור 50x3", qty: 32, length: 38.4, station: "לייזר CNC", priority: "רגיל", status: "ממתין" },
@@ -30,7 +32,7 @@ const queueData = [
   { id: "CJ-1008", wo: "WO-4428", material: "אלומיניום 6063", profile: "מוט עגול 25", qty: 60, length: 36.0, station: "מסור דיסק B1", priority: "גבוה", status: "בתור" },
 ];
 
-const executionData = [
+const FALLBACK_EXECUTION = [
   { job: "CJ-0990", operator: "יוסי כהן", start: "07:15", end: "08:42", pieces: 24, scrap: 1.8, qc: "עבר" },
   { job: "CJ-0991", operator: "שרה לוי", start: "07:30", end: "09:10", pieces: 32, scrap: 2.4, qc: "עבר" },
   { job: "CJ-0992", operator: "דוד מזרחי", start: "08:00", end: "09:55", pieces: 16, scrap: 3.1, qc: "נכשל" },
@@ -41,7 +43,7 @@ const executionData = [
   { job: "CJ-0997", operator: "נועה פרידמן", start: "10:30", end: "13:00", pieces: 8, scrap: 0.5, qc: "עבר" },
 ];
 
-const remnantData = [
+const FALLBACK_REMNANTS = [
   { id: "REM-301", material: "פלדה ST-37", profile: "IPE 200", length: 1.45, usable: "כן", location: "מדף A3-7" },
   { id: "REM-302", material: "אלומיניום 6063", profile: "קורה U 80", length: 0.82, usable: "כן", location: "מדף B1-2" },
   { id: "REM-303", material: "נירוסטה 304", profile: "צינור 50x3", length: 0.35, usable: "לא", location: "מדף C2-5" },
@@ -52,7 +54,7 @@ const remnantData = [
   { id: "REM-308", material: "אלומיניום 6063", profile: "מוט עגול 25", length: 0.45, usable: "לא", location: "מדף B3-6" },
 ];
 
-const scrapData = [
+const FALLBACK_SCRAP = [
   { material: "פלדה ST-37", pieces: 34, weight: 48.2, cost: 1205, pct: 3.2 },
   { material: "פלדה ST-52", pieces: 18, weight: 31.5, cost: 945, pct: 2.8 },
   { material: "אלומיניום 6063", pieces: 22, weight: 12.8, cost: 1536, pct: 4.1 },
@@ -63,14 +65,24 @@ const scrapData = [
   { material: "אלומיניום 7075", pieces: 4, weight: 3.1, cost: 620, pct: 6.1 },
 ];
 
-const scrapTotals = {
-  pieces: scrapData.reduce((s, r) => s + r.pieces, 0),
-  weight: scrapData.reduce((s, r) => s + r.weight, 0),
-  cost: scrapData.reduce((s, r) => s + r.cost, 0),
-};
-
 export default function CutJobs() {
   const [tab, setTab] = useState<Tab>("תור חיתוך");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["production-cut-jobs"],
+    queryFn: () => authFetch("/api/production/work-orders?type=cutting").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const raw = safeArr(apiData);
+  const queueData = raw.length > 0 ? raw.filter((r: any) => r.stage === "queue") : FALLBACK_QUEUE;
+  const executionData = raw.length > 0 ? raw.filter((r: any) => r.stage === "execution") : FALLBACK_EXECUTION;
+  const remnantData = raw.length > 0 ? raw.filter((r: any) => r.stage === "remnant") : FALLBACK_REMNANTS;
+  const scrapData = raw.length > 0 ? raw.filter((r: any) => r.stage === "scrap") : FALLBACK_SCRAP;
+  const scrapTotals = {
+    pieces: scrapData.reduce((s: number, r: any) => s + (r.pieces || 0), 0),
+    weight: scrapData.reduce((s: number, r: any) => s + (r.weight || 0), 0),
+    cost: scrapData.reduce((s: number, r: any) => s + (r.cost || 0), 0),
+  };
 
   const kpis = [
     { label: "עבודות בתור", value: "14", icon: Clock, color: "text-blue-400", trend: "+3" },

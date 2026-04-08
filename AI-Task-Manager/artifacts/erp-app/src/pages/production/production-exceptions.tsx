@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -44,7 +46,7 @@ const statusLabel: Record<string, { text: string; cls: string }> = {
   resolved: { text: "נפתר", cls: "bg-green-500/15 text-green-400" },
 };
 
-const exceptions: Exception[] = [
+const FALLBACK_EXCEPTIONS: Exception[] = [
   { id: "EXC-001", type: "material_shortage", severity: "critical", title: "מחסור פלדה 304L - עצירת קו",
     description: "מלאי מספיק לשעה אחת בלבד. ספק ראשי עדכן על עיכוב של 48 שעות.", station: "מחסן-01", wo: "WO-4010",
     reportedBy: "יוסי כהן", time: "07:15", impact: "עצירת 2 קווי ייצור", resolutionStatus: "open", costImpact: 18500, lossHours: 6.0 },
@@ -83,22 +85,7 @@ const exceptions: Exception[] = [
     reportedBy: "רחל אברהם", time: "10:45", impact: "סיכון עצירה תוך 36 שעות", resolutionStatus: "resolved", costImpact: 2400, lossHours: 0 },
 ];
 
-const openExceptions = exceptions.filter(e => e.resolutionStatus !== "resolved");
-const criticalCount = openExceptions.filter(e => e.severity === "critical").length;
-const resolvedToday = exceptions.filter(e => e.resolutionStatus === "resolved").length;
-const totalLoss = exceptions.reduce((s, e) => s + e.lossHours, 0);
-const totalCost = exceptions.reduce((s, e) => s + e.costImpact, 0);
-
-const kpis = [
-  { label: "חריגות פתוחות", value: openExceptions.length, icon: AlertOctagon, color: "text-red-400", bg: "bg-red-500" },
-  { label: "קריטיות", value: criticalCount, icon: AlertTriangle, color: "text-red-400", bg: "bg-red-500" },
-  { label: "נפתרו היום", value: resolvedToday, icon: CheckCircle2, color: "text-green-400", bg: "bg-green-500" },
-  { label: "זמן פתרון ממוצע", value: "52 דק'", icon: Clock, color: "text-cyan-400", bg: "bg-cyan-500" },
-  { label: "שעות אובדן ייצור", value: totalLoss.toFixed(1), icon: TrendingDown, color: "text-orange-400", bg: "bg-orange-500" },
-  { label: "השפעת עלות ₪", value: "₪" + totalCost.toLocaleString("he-IL"), icon: DollarSign, color: "text-yellow-400", bg: "bg-yellow-500" },
-];
-
-const stations = [...new Set(exceptions.map(e => e.station))];
+/* KPIs computed inside component */
 
 function ExceptionCard({ ex }: { ex: Exception }) {
   const sev = sevCfg[ex.severity];
@@ -139,6 +126,28 @@ function ExceptionCard({ ex }: { ex: Exception }) {
 
 export default function ProductionExceptions() {
   const [tab, setTab] = useState("active");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["production-exceptions"],
+    queryFn: () => authFetch("/api/production/quality?type=exceptions").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const exceptions: Exception[] = safeArr(apiData).length > 0 ? safeArr(apiData) : FALLBACK_EXCEPTIONS;
+
+  const openExceptions = exceptions.filter((e: any) => e.resolutionStatus !== "resolved");
+  const criticalCount = openExceptions.filter((e: any) => e.severity === "critical").length;
+  const resolvedToday = exceptions.filter((e: any) => e.resolutionStatus === "resolved").length;
+  const totalLoss = exceptions.reduce((s: number, e: any) => s + e.lossHours, 0);
+  const totalCost = exceptions.reduce((s: number, e: any) => s + e.costImpact, 0);
+  const kpis = [
+    { label: "חריגות פתוחות", value: openExceptions.length, icon: AlertOctagon, color: "text-red-400", bg: "bg-red-500" },
+    { label: "קריטיות", value: criticalCount, icon: AlertTriangle, color: "text-red-400", bg: "bg-red-500" },
+    { label: "נפתרו היום", value: resolvedToday, icon: CheckCircle2, color: "text-green-400", bg: "bg-green-500" },
+    { label: "זמן פתרון ממוצע", value: "52 דק'", icon: Clock, color: "text-cyan-400", bg: "bg-cyan-500" },
+    { label: "שעות אובדן ייצור", value: totalLoss.toFixed(1), icon: TrendingDown, color: "text-orange-400", bg: "bg-orange-500" },
+    { label: "השפעת עלות ₪", value: "₪" + totalCost.toLocaleString("he-IL"), icon: DollarSign, color: "text-yellow-400", bg: "bg-yellow-500" },
+  ];
+  const stations = [...new Set(exceptions.map((e: any) => e.station))];
 
   return (
     <div dir="rtl" className="p-6 space-y-6">

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -32,7 +34,7 @@ const TrendArrow = ({ curr, prev }: { curr: number; prev: number }) => {
   return <Minus className="h-4 w-4 text-gray-400" />;
 };
 
-const efficiencyMetrics = [
+const FALLBACK_EFFICIENCY = [
   { id: "oee", name: "OEE כולל", current: 82.4, target: 85, prev: 79.1, unit: "%" },
   { id: "output_station", name: "תפוקה לתחנה", current: 147, target: 155, prev: 138, unit: "יח'" },
   { id: "output_operator", name: "תפוקה למפעיל", current: 52.3, target: 55, prev: 49.8, unit: "יח'" },
@@ -40,20 +42,20 @@ const efficiencyMetrics = [
   { id: "schedule_adherence", name: "עמידה בלו\"ז", current: 91.7, target: 95, prev: 89.3, unit: "%" },
   { id: "avg_cycle_time", name: "זמן מחזור ממוצע", current: 14.2, target: 13, prev: 15.1, unit: "דק'" },
 ];
-const qualityMetrics = [
+const FALLBACK_QUALITY = [
   { id: "first_pass_yield", name: "תקינות מעבר ראשון", current: 94.8, target: 97, prev: 93.2, unit: "%" },
   { id: "defect_rate", name: "אחוז פגמים", current: 2.1, target: 1.5, prev: 2.8, unit: "%", lowerBetter: true },
   { id: "rework_rate", name: "אחוז עיבוד חוזר", current: 3.4, target: 2.0, prev: 4.1, unit: "%", lowerBetter: true },
   { id: "scrap_rate", name: "אחוז פסולת", current: 1.8, target: 1.0, prev: 2.3, unit: "%", lowerBetter: true },
 ];
-const costMetrics = [
+const FALLBACK_COST = [
   { id: "actual_vs_est", name: "עלות בפועל מול תכנון", current: 103.2, target: 100, prev: 107.5, unit: "%", lowerBetter: true },
   { id: "labor_cost", name: "עלות עבודה/הזמנה", current: 1240, target: 1100, prev: 1380, unit: "ils", lowerBetter: true },
   { id: "machine_cost", name: "עלות מכונה/הזמנה", current: 860, target: 800, prev: 920, unit: "ils", lowerBetter: true },
   { id: "rework_cost", name: "עלות עיבוד חוזר", current: 18500, target: 12000, prev: 22400, unit: "ils", lowerBetter: true },
   { id: "waste_cost", name: "עלות פסולת", current: 9200, target: 7000, prev: 11800, unit: "ils", lowerBetter: true },
 ];
-const deliveryMetrics = [
+const FALLBACK_DELIVERY = [
   { id: "on_time", name: "אספקה בזמן", current: 89.3, target: 95, prev: 86.7, unit: "%" },
   { id: "delay_rate", name: "אחוז איחורים", current: 10.7, target: 5, prev: 13.3, unit: "%", lowerBetter: true },
 ];
@@ -180,6 +182,16 @@ function CostVarianceTable() {
 
 export default function ProductionAnalytics() {
   const [tab, setTab] = useState("efficiency");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["production-analytics"],
+    queryFn: () => authFetch("/api/production/dashboard?type=analytics").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const efficiencyMetrics = safeArr(apiData?.efficiency).length > 0 ? safeArr(apiData.efficiency) : FALLBACK_EFFICIENCY;
+  const qualityMetrics = safeArr(apiData?.quality).length > 0 ? safeArr(apiData.quality) : FALLBACK_QUALITY;
+  const costMetrics = safeArr(apiData?.cost).length > 0 ? safeArr(apiData.cost) : FALLBACK_COST;
+  const deliveryMetrics = safeArr(apiData?.delivery).length > 0 ? safeArr(apiData.delivery) : FALLBACK_DELIVERY;
 
   return (
     <div className="p-6 space-y-6" dir="rtl">

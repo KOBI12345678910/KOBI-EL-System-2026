@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,7 +34,7 @@ interface ProcRequest {
   receivedQty?: number;
 }
 
-const requests: ProcRequest[] = [
+const FALLBACK_PROC_REQUESTS: ProcRequest[] = [
   { id: "PR-2001", projectId: "EX-1001", project: "חלונות אלומיניום — מגדל הים חיפה", category: "אלומיניום", item: "פרופיל אלומיניום 6060 T5", qty: 480, unit: "מטר", requiredDate: "2026-04-18", urgency: 5, status: "ordered", linkedTask: "ייצור חלונות קומות 8-14", unitPrice: 85, supplier: "אלופרופיל בע\"מ", eta: "2026-04-15", receivedQty: 320 },
   { id: "PR-2002", projectId: "EX-1001", project: "חלונות אלומיניום — מגדל הים חיפה", category: "זכוכית", item: "זכוכית מחוסמת 8 מ\"מ שקופה", qty: 120, unit: "יח׳", requiredDate: "2026-04-20", urgency: 4, status: "received", linkedTask: "הרכבת זכוכיות קומות 8-14", unitPrice: 320, supplier: "פניציה זכוכית", eta: "2026-04-12", receivedQty: 120 },
   { id: "PR-2003", projectId: "EX-1002", project: "זכוכית חזיתית — קניון עזריאלי", category: "זכוכית", item: "זכוכית למינציה 12+12 כחול", qty: 85, unit: "יח׳", requiredDate: "2026-05-10", urgency: 4, status: "approved", linkedTask: "הרכבת חזית בלוק A", unitPrice: 980, supplier: "גארדיאן ישראל", eta: "2026-05-05" },
@@ -51,7 +53,7 @@ const requests: ProcRequest[] = [
 ];
 
 /* budget by project */
-const projectBudgets: Record<string, { budget: number }> = {
+const FALLBACK_PROJECT_BUDGETS: Record<string, { budget: number }> = {
   "EX-1001": { budget: 920000 },
   "EX-1002": { budget: 1450000 },
   "EX-1003": { budget: 380000 },
@@ -87,6 +89,13 @@ export default function ProjectProcurementHub() {
   const [tab, setTab] = useState("requests");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<ProcStatus | "all">("all");
+
+  const { data: apiProc } = useQuery({
+    queryKey: ["project-procurement-hub"],
+    queryFn: async () => { const r = await authFetch("/api/projects/procurement"); return r.json(); },
+  });
+  const requests: ProcRequest[] = apiProc?.requests ?? apiProc?.data?.requests ?? FALLBACK_PROC_REQUESTS;
+  const projectBudgets: Record<string, { budget: number }> = apiProc?.projectBudgets ?? apiProc?.data?.projectBudgets ?? FALLBACK_PROJECT_BUDGETS;
 
   /* KPIs */
   const totalRequests = requests.length;

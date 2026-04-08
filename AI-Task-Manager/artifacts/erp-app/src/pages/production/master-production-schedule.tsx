@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,11 +11,11 @@ import {
   Clock, Target, TrendingUp, Package, Gauge, ArrowRight, ShieldAlert,
 } from "lucide-react";
 
-const workCenters = ["מסור CNC","כיפוף","ריתוך","CNC פרזול","ציפוי/אנודייז","חיתוך זכוכית","הרכבה A","הרכבה B"];
-const days = ["ראשון 06/04","שני 07/04","שלישי 08/04","רביעי 09/04","חמישי 10/04"];
+const FALLBACK_WORK_CENTERS = ["מסור CNC","כיפוף","ריתוך","CNC פרזול","ציפוי/אנודייז","חיתוך זכוכית","הרכבה A","הרכבה B"];
+const FALLBACK_DAYS = ["ראשון 06/04","שני 07/04","שלישי 08/04","רביעי 09/04","חמישי 10/04"];
 const CAP = 8; // hours per center per day
 
-const jobs = [
+const FALLBACK_JOBS = [
   { id:"MPS-1001", product:"פרופיל אלומיניום Pro-X 100mm", customer:"קבוצת אלון", qty:450, center:"מסור CNC", day:0, hours:6, priority:"high", status:"in_progress", deps:["MPS-1003"] },
   { id:"MPS-1002", product:"זכוכית מחוסמת 8mm", customer:"אמות השקעות", qty:200, center:"חיתוך זכוכית", day:0, hours:8, priority:"medium", status:"in_progress", deps:[] },
   { id:"MPS-1003", product:"מסגרת ברזל דגם B", customer:"שיכון ובינוי", qty:80, center:"ריתוך", day:1, hours:5, priority:"high", status:"planned", deps:[] },
@@ -26,9 +28,9 @@ const jobs = [
   { id:"MPS-1010", product:"שלדת פלדה 2.0m", customer:"דניה סיבוס", qty:40, center:"ריתוך", day:4, hours:5, priority:"medium", status:"planned", deps:[] },
 ];
 
-const loadForCell = (center: string, dayIdx: number) => {
-  const cj = jobs.filter(j => j.center === center && j.day === dayIdx);
-  const h = cj.reduce((s, j) => s + j.hours, 0);
+const _loadForCell = (jobsArr: any[], center: string, dayIdx: number) => {
+  const cj = jobsArr.filter((j: any) => j.center === center && j.day === dayIdx);
+  const h = cj.reduce((s: number, j: any) => s + j.hours, 0);
   return { count: cj.length, hours: h, pct: Math.round((h / CAP) * 100) };
 };
 
@@ -46,7 +48,7 @@ const priBadge = (p: string) => <Badge variant="outline" className={`text-[10px]
 const stsBadge = (s: string) => <Badge className={`text-[10px] ${STS[s]?.[0]||""}`}>{STS[s]?.[1]||s}</Badge>;
 const cellColor = (pct: number) => pct === 0 ? "bg-slate-800/40" : pct <= 60 ? "bg-emerald-900/30 border-emerald-700/30" : pct <= 85 ? "bg-yellow-900/30 border-yellow-700/30" : "bg-red-900/30 border-red-700/30";
 
-const todayPlan = [
+const FALLBACK_TODAY_PLAN = [
   { station:"מסור CNC", job:"MPS-1001", product:"פרופיל אלומיניום Pro-X", op:"רועי כהן", start:"07:00", end:"13:00", pct:65, st:"active" },
   { station:"חיתוך זכוכית", job:"MPS-1002", product:"זכוכית מחוסמת 8mm", op:"אמיר לוי", start:"06:30", end:"14:30", pct:48, st:"active" },
   { station:"ריתוך", job:"—", product:"—", op:"יוסי מזרחי", start:"—", end:"—", pct:0, st:"idle" },
@@ -57,20 +59,32 @@ const todayPlan = [
   { station:"הרכבה B", job:"—", product:"—", op:"שלומי דהן", start:"—", end:"—", pct:0, st:"idle" },
 ];
 
-const scenarios = [
+const FALLBACK_SCENARIOS = [
   { id:1, name:"הוספת משמרת שנייה", desc:"הפעלת משמרת שנייה בקו ריתוך + הרכבה A", impact:"+40% קיבולת", risk:"עלות שכ\"ע +₪18K/שבוע", util:62, ok:true },
   { id:2, name:"דחיית MPS-1009", desc:"דחיית חיפוי קומפוזיט ב-3 ימים", impact:"מפנה CNC פרזול ליום ד׳", risk:"סיכון איחור מול מליסרון", util:71, ok:true },
   { id:3, name:"מיקור חוץ זכוכית", desc:"העברת MPS-1002 לקבלן חיצוני", impact:"פינוי חיתוך זכוכית 8 שעות", risk:"עלות +₪12K, אבדן שליטה על איכות", util:68, ok:false },
 ];
 
-const rushCount = jobs.filter(j => j.priority === "rush").length;
-const totalHours = jobs.reduce((s, j) => s + j.hours, 0);
-const utilizationPct = Math.round((totalHours / (workCenters.length * CAP * 5)) * 100);
-const [delayedCount, conflicts, adherence] = [1, 2, 87];
-
 export default function MasterProductionSchedule() {
   const [activeTab, setActiveTab] = useState("weekly");
   const [selectedScenario, setSelectedScenario] = useState<number | null>(null);
+
+  const { data: apiData } = useQuery({
+    queryKey: ["production-master-schedule"],
+    queryFn: () => authFetch("/api/production/scheduling").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const jobs = safeArr(apiData?.jobs).length > 0 ? safeArr(apiData.jobs) : FALLBACK_JOBS;
+  const workCenters = (apiData as any)?.workCenters || FALLBACK_WORK_CENTERS;
+  const days = (apiData as any)?.days || FALLBACK_DAYS;
+  const todayPlan = safeArr(apiData?.todayPlan).length > 0 ? safeArr(apiData.todayPlan) : FALLBACK_TODAY_PLAN;
+  const scenarios = safeArr(apiData?.scenarios).length > 0 ? safeArr(apiData.scenarios) : FALLBACK_SCENARIOS;
+  const loadForCell = (center: string, dayIdx: number) => _loadForCell(jobs, center, dayIdx);
+
+  const rushCount = jobs.filter((j: any) => j.priority === "rush").length;
+  const totalHours = jobs.reduce((s: number, j: any) => s + j.hours, 0);
+  const utilizationPct = Math.round((totalHours / (workCenters.length * CAP * 5)) * 100);
+  const [delayedCount, conflicts, adherence] = [1, 2, 87];
 
   return (
     <div className="p-6 space-y-5" dir="rtl">

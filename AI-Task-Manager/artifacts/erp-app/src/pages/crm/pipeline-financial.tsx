@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,8 +13,9 @@ import {
   Clock, AlertTriangle, CheckCircle, XCircle, Zap,
   ArrowUpRight, ArrowDownRight, Gauge, Activity, Shield
 } from "lucide-react";
+import { authFetch } from "@/lib/utils";
 
-const stages = [
+const FALLBACK_STAGES = [
   { name: "ליד חדש", deals: 45, value: 2200000, weighted: 220000, avgDays: 3, convRate: 62, color: "bg-gray-400" },
   { name: "פגישה ראשונה", deals: 28, value: 1800000, weighted: 360000, avgDays: 8, convRate: 78, color: "bg-blue-400" },
   { name: "הצעת מחיר", deals: 22, value: 1500000, weighted: 600000, avgDays: 12, convRate: 68, color: "bg-indigo-400" },
@@ -21,7 +23,7 @@ const stages = [
   { name: "אישור סופי", deals: 8, value: 1200000, weighted: 960000, avgDays: 5, convRate: 88, color: "bg-amber-400" },
 ];
 
-const deals = [
+const FALLBACK_DEALS = [
   { id: 1, name: "פרויקט מגדל A", customer: "קבוצת אלון", value: 850000, weighted: 552500, stage: "משא ומתן", prob: 65, daysInStage: 12, velocity: "normal", risk: "low", stuckDays: 0, agent: "דני כהן", predictedClose: "2026-05-15", bestCase: 920000, expectedCase: 750000, worstCase: 450000 },
   { id: 2, name: "חיפוי מגורים רמת גן", customer: "שיכון ובינוי", value: 620000, weighted: 248000, stage: "הצעת מחיר", prob: 40, daysInStage: 18, velocity: "slow", risk: "medium", stuckDays: 8, agent: "מיכל לוי", predictedClose: "2026-06-01", bestCase: 680000, expectedCase: 520000, worstCase: 0 },
   { id: 3, name: "משרדי hi-tech הרצליה", customer: "אמות השקעות", value: 480000, weighted: 408000, stage: "אישור סופי", prob: 85, daysInStage: 3, velocity: "fast", risk: "low", stuckDays: 0, agent: "דני כהן", predictedClose: "2026-04-20", bestCase: 520000, expectedCase: 480000, worstCase: 420000 },
@@ -30,18 +32,25 @@ const deals = [
   { id: 6, name: "מרכז מסחרי באר שבע", customer: "BIG", value: 1200000, weighted: 120000, stage: "ליד חדש", prob: 10, daysInStage: 5, velocity: "normal", risk: "medium", stuckDays: 0, agent: "דני כהן", predictedClose: "2026-08-01", bestCase: 1400000, expectedCase: 600000, worstCase: 0 },
 ];
 
-const totalValue = stages.reduce((s, st) => s + st.value, 0);
-const totalWeighted = stages.reduce((s, st) => s + st.weighted, 0);
-const totalDeals = stages.reduce((s, st) => s + st.deals, 0);
-const stuckDeals = deals.filter(d => d.stuckDays > 7);
-const highRiskDeals = deals.filter(d => d.risk === "high");
-const bestCaseTotal = deals.reduce((s, d) => s + d.bestCase, 0);
-const expectedTotal = deals.reduce((s, d) => s + d.expectedCase, 0);
-const worstCaseTotal = deals.reduce((s, d) => s + d.worstCase, 0);
-
 const fmt = (v: number) => v >= 1000000 ? `₪${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `₪${(v / 1000).toFixed(0)}K` : `₪${v}`;
 
 export default function PipelineFinancial() {
+  const { data: apiPipeline } = useQuery<{ stages: typeof FALLBACK_STAGES; deals: typeof FALLBACK_DEALS }>({
+    queryKey: ["crm-pipeline-financial"],
+    queryFn: async () => { const res = await authFetch("/api/crm/deals/pipeline"); if (!res.ok) throw new Error("API error"); return res.json(); },
+  });
+  const stages = apiPipeline?.stages ?? FALLBACK_STAGES;
+  const deals = apiPipeline?.deals ?? FALLBACK_DEALS;
+
+  const totalValue = stages.reduce((s, st) => s + st.value, 0);
+  const totalWeighted = stages.reduce((s, st) => s + st.weighted, 0);
+  const totalDeals = stages.reduce((s, st) => s + st.deals, 0);
+  const stuckDeals = deals.filter(d => d.stuckDays > 7);
+  const highRiskDeals = deals.filter(d => d.risk === "high");
+  const bestCaseTotal = deals.reduce((s, d) => s + d.bestCase, 0);
+  const expectedTotal = deals.reduce((s, d) => s + d.expectedCase, 0);
+  const worstCaseTotal = deals.reduce((s, d) => s + d.worstCase, 0);
+
   const [view, setView] = useState("financial");
 
   return (

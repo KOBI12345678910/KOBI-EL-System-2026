@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,8 +12,9 @@ import {
   AlertTriangle, Lightbulb, TrendingUp, TrendingDown, Clock,
   Shield, Target, Zap, Brain, Activity, Eye, Flag
 } from "lucide-react";
+import { authFetch } from "@/lib/utils";
 
-const communications = [
+const FALLBACK_COMMUNICATIONS = [
   { id: 1, date: "2026-04-08 10:30", channel: "call", direction: "outbound", customer: "קבוצת אלון", contact: "אבי כהן", agent: "דני כהן", duration: 480,
     sentiment: 0.72, sentimentLabel: "positive", intent: "negotiate", objection: null, urgency: "medium",
     riskFlag: false, opportunityFlag: true, followup: "שלח הצעה מעודכנת עד יום ראשון",
@@ -39,13 +41,15 @@ const communications = [
     summary: "שיחת היכרות ראשונה. לקוח מתעניין אבל בודק מתחרים. שאל על מחירים." },
 ];
 
-const sentimentStats = {
-  positive: communications.filter(c => c.sentimentLabel === "positive").length,
-  neutral: communications.filter(c => c.sentimentLabel === "neutral").length,
-  negative: communications.filter(c => c.sentimentLabel === "negative").length,
-  riskFlags: communications.filter(c => c.riskFlag).length,
-  oppFlags: communications.filter(c => c.opportunityFlag).length,
-};
+function computeSentimentStats(comms: typeof FALLBACK_COMMUNICATIONS) {
+  return {
+    positive: comms.filter(c => c.sentimentLabel === "positive").length,
+    neutral: comms.filter(c => c.sentimentLabel === "neutral").length,
+    negative: comms.filter(c => c.sentimentLabel === "negative").length,
+    riskFlags: comms.filter(c => c.riskFlag).length,
+    oppFlags: comms.filter(c => c.opportunityFlag).length,
+  };
+}
 
 const channelIcon = (ch: string) => {
   switch (ch) {
@@ -70,6 +74,13 @@ const formatDuration = (sec: number) => {
 };
 
 export default function CommunicationIntelligence() {
+  const { data: apiComms } = useQuery<typeof FALLBACK_COMMUNICATIONS>({
+    queryKey: ["crm-communication-intelligence"],
+    queryFn: async () => { const res = await authFetch("/api/crm/activities/communications"); if (!res.ok) throw new Error("API error"); return res.json(); },
+  });
+  const communications = apiComms ?? FALLBACK_COMMUNICATIONS;
+  const sentimentStats = useMemo(() => computeSentimentStats(communications), [communications]);
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       <div className="flex items-center justify-between">

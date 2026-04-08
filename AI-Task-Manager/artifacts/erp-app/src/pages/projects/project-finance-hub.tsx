@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,7 +17,7 @@ const fmt = (n: number) => new Intl.NumberFormat("he-IL").format(n);
 const fmtCurrency = (n: number) => "\u20AA" + new Intl.NumberFormat("he-IL").format(n);
 const fmtPct = (n: number) => n.toFixed(1) + "%";
 
-const kpis = {
+const FALLBACK_FINANCE_KPIS = {
   totalContractValue: 47850000,
   totalActualCosts: 31420000,
   overallGrossMargin: 34.3,
@@ -26,7 +28,7 @@ const kpis = {
   overdueCollections: 3280000,
 };
 
-const projectsPnL = [
+const FALLBACK_PROJECTS_PNL = [
   { id: "PRJ-001", name: "מגדל מגורים — קריית אתא", customer: "נדל\"ן פלוס בע\"מ", revenue: 8200000, costs: 5740000, margin: 30.0, budgetVariance: -2.1, status: "active" },
   { id: "PRJ-002", name: "חזית זכוכית — מגדל עזריאלי", customer: "עזריאלי קבוצה", revenue: 6400000, costs: 3840000, margin: 40.0, budgetVariance: 1.5, status: "active" },
   { id: "PRJ-003", name: "חלונות אלומיניום — שיכון דירות", customer: "שיכון ובינוי", revenue: 3200000, costs: 2560000, margin: 20.0, budgetVariance: -8.4, status: "at_risk" },
@@ -39,7 +41,7 @@ const projectsPnL = [
   { id: "PRJ-010", name: "פרגולות אלומיניום — מתחם ספורט", customer: "עיריית חיפה", revenue: 4450000, costs: 2670000, margin: 40.0, budgetVariance: 3.1, status: "active" },
 ];
 
-const invoices = [
+const FALLBACK_INVOICES = [
   { id: "INV-2601", project: "PRJ-001", customer: "נדל\"ן פלוס בע\"מ", amount: 820000, issueDate: "2026-01-15", dueDate: "2026-02-15", status: "paid" },
   { id: "INV-2602", project: "PRJ-002", customer: "עזריאלי קבוצה", amount: 1280000, issueDate: "2026-01-28", dueDate: "2026-03-01", status: "paid" },
   { id: "INV-2603", project: "PRJ-003", customer: "שיכון ובינוי", amount: 640000, issueDate: "2026-02-10", dueDate: "2026-03-10", status: "overdue" },
@@ -54,7 +56,7 @@ const invoices = [
   { id: "INV-2612", project: "PRJ-005", customer: "אפריקה ישראל", amount: 1120000, issueDate: "2026-04-01", dueDate: "2026-05-01", status: "draft" },
 ];
 
-const collections = [
+const FALLBACK_COLLECTIONS = [
   { aging: "שוטף (0-30 יום)", amount: 2570000, count: 4, pct: 32.1 },
   { aging: "30-60 יום", amount: 2040000, count: 3, pct: 25.5 },
   { aging: "60-90 יום", amount: 1640000, count: 2, pct: 20.5 },
@@ -62,7 +64,7 @@ const collections = [
   { aging: "מעל 120 יום", amount: 670000, count: 1, pct: 8.4 },
 ];
 
-const collectionsByProject = [
+const FALLBACK_COLLECTIONS_BY_PROJECT = [
   { project: "PRJ-001", name: "מגדל מגורים — קריית אתא", invoiced: 2460000, collected: 1820000, outstanding: 640000 },
   { project: "PRJ-002", name: "חזית זכוכית — מגדל עזריאלי", invoiced: 2240000, collected: 2240000, outstanding: 0 },
   { project: "PRJ-003", name: "חלונות אלומיניום — שיכון דירות", invoiced: 1280000, collected: 640000, outstanding: 640000 },
@@ -71,7 +73,7 @@ const collectionsByProject = [
   { project: "PRJ-004", name: "מערכת מסגרות — קניון הצפון", invoiced: 2250000, collected: 2250000, outstanding: 0 },
 ];
 
-const budgetCategories = [
+const FALLBACK_BUDGET_CATEGORIES = [
   { category: "חומרי גלם (אלומיניום/זכוכית/מתכת)", budget: 12800000, actual: 13120000, variance: -320000, pct: 102.5 },
   { category: "עבודה ישירה", budget: 7200000, actual: 6840000, variance: 360000, pct: 95.0 },
   { category: "קבלני משנה", budget: 5400000, actual: 5940000, variance: -540000, pct: 110.0 },
@@ -111,11 +113,22 @@ export default function ProjectFinanceHub() {
   const [search, setSearch] = useState("");
   const [invFilter, setInvFilter] = useState("all");
 
-  const totalBudget = budgetCategories.reduce((s, c) => s + c.budget, 0);
-  const totalActual = budgetCategories.reduce((s, c) => s + c.actual, 0);
+  const { data: apiFin } = useQuery({
+    queryKey: ["project-finance-hub"],
+    queryFn: async () => { const r = await authFetch("/api/projects/finance"); return r.json(); },
+  });
+  const kpis = apiFin?.kpis ?? apiFin?.data?.kpis ?? FALLBACK_FINANCE_KPIS;
+  const projectsPnL = apiFin?.projectsPnL ?? apiFin?.data?.projectsPnL ?? FALLBACK_PROJECTS_PNL;
+  const invoices = apiFin?.invoices ?? apiFin?.data?.invoices ?? FALLBACK_INVOICES;
+  const collections = apiFin?.collections ?? apiFin?.data?.collections ?? FALLBACK_COLLECTIONS;
+  const collectionsByProject = apiFin?.collectionsByProject ?? apiFin?.data?.collectionsByProject ?? FALLBACK_COLLECTIONS_BY_PROJECT;
+  const budgetCategories = apiFin?.budgetCategories ?? apiFin?.data?.budgetCategories ?? FALLBACK_BUDGET_CATEGORIES;
+
+  const totalBudget = budgetCategories.reduce((s: number, c: any) => s + c.budget, 0);
+  const totalActual = budgetCategories.reduce((s: number, c: any) => s + c.actual, 0);
   const totalVariance = totalBudget - totalActual;
 
-  const filteredProjects = projectsPnL.filter(p =>
+  const filteredProjects = projectsPnL.filter((p: any) =>
     p.name.includes(search) || p.customer.includes(search) || p.id.includes(search)
   );
 

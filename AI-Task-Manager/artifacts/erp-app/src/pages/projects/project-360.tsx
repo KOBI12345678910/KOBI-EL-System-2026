@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,13 +13,13 @@ import {
   GitBranch, MessageSquare, Lightbulb
 } from "lucide-react";
 
-const project = {
+const FALLBACK_360_PROJECT = {
   id: "PRJ-2024-0087", name: "מגדל מגורים הרצליה — חלונות אלומיניום", customer: "אאורה נדל\"ן בע\"מ",
   status: "פעיל", stage: "ייצור והתקנה", stageIndex: 11, risk: "בינוני", healthScore: 74,
   pm: "אורי כהן", startDate: "2025-09-01", endDate: "2026-07-15", contractValue: 4850000, lastUpdate: "2026-04-07",
 };
 
-const kpis = [
+const FALLBACK_360_KPIS = [
   { label: "ערך חוזה", value: "₪4,850,000", icon: Banknote, color: "text-emerald-400", bg: "bg-emerald-500/10" },
   { label: "עלות בפועל", value: "₪3,180,000", icon: DollarSign, color: "text-red-400", bg: "bg-red-500/10" },
   { label: "מרווח גולמי", value: "34.4%", icon: Percent, color: "text-blue-400", bg: "bg-blue-500/10" },
@@ -28,14 +30,14 @@ const kpis = [
   { label: "גבייה", value: "58%", icon: Banknote, color: "text-teal-400", bg: "bg-teal-500/10" },
   { label: "ציון AI", value: "74", icon: Brain, color: "text-purple-400", bg: "bg-purple-500/10" },
 ];
-const stages = ["ליד","הצעת מחיר","משא ומתן","חוזה חתום","מקדמה","מדידות שטח","תכנון הנדסי","אישור לקוח","הזמנת חומרים","קבלת חומרים","חיתוך","ייצור והתקנה","התקנה באתר","בדיקות איכות","מסירה","אחריות","סגירה"];
+const FALLBACK_360_STAGES = ["ליד","הצעת מחיר","משא ומתן","חוזה חתום","מקדמה","מדידות שטח","תכנון הנדסי","אישור לקוח","הזמנת חומרים","קבלת חומרים","חיתוך","ייצור והתקנה","התקנה באתר","בדיקות איכות","מסירה","אחריות","סגירה"];
 
-const team = [
+const FALLBACK_360_TEAM = [
   { name: "אורי כהן", role: "מנהל פרויקט", avatar: "א.כ" }, { name: "דנה לוי", role: "מהנדסת ביצוע", avatar: "ד.ל" },
   { name: "יוסי מרקוביץ", role: "מנהל רכש", avatar: "י.מ" }, { name: "מירי אביטל", role: "מנהלת איכות", avatar: "מ.א" },
   { name: "רועי שמש", role: "ראש צוות התקנות", avatar: "ר.ש" },
 ];
-const recentEvents = [
+const FALLBACK_360_EVENTS = [
   { time: "07/04 14:30", text: "התקבלה אלומיניום פרופיל מ-אלובין — 2.4 טון", icon: Package },
   { time: "06/04 10:15", text: "עודכן שינוי הנדסי CO-004 — תוספת חלון פנורמי קומה 18", icon: GitBranch },
   { time: "05/04 16:00", text: "סיום התקנה קומות 8–10 — אישור לקוח התקבל", icon: CheckCircle },
@@ -43,7 +45,7 @@ const recentEvents = [
   { time: "03/04 11:20", text: "חשבונית #INV-087-05 — ₪420,000 נשלחה ללקוח", icon: FileText },
 ];
 
-const finance = {
+const FALLBACK_360_FINANCE = {
   contractValue: 4850000, budgetApproved: 3200000, actualCost: 3180000, invoiced: 3400000,
   collected: 2813000, remaining: 2037000, grossMargin: 34.4, netMargin: 21.2, cashGap: 367000,
   budgetLines: [
@@ -54,7 +56,7 @@ const finance = {
   ],
 };
 
-const tasks = [
+const FALLBACK_360_TASKS = [
   { id: "T-001", name: "ייצור מסגרות קומות 11-14", st: "בביצוע", pr: "גבוה", who: "דנה לוי", due: "2026-04-15", pct: 72, par: null },
   { id: "T-002", name: "חיתוך פרופילים — קומות 15-18", st: "בביצוע", pr: "גבוה", who: "צוות ייצור א׳", due: "2026-04-20", pct: 45, par: null },
   { id: "T-003", name: "הזמנת זכוכית מחוסמת — ערכת 3", st: "ממתין", pr: "קריטי", who: "יוסי מרקוביץ", due: "2026-04-10", pct: 10, par: null },
@@ -67,7 +69,7 @@ const tasks = [
   { id: "T-010", name: "בדיקת איכות פרופילים — אצווה 14", st: "חסום", pr: "גבוה", who: "מירי אביטל", due: "2026-04-09", pct: 20, par: "T-002" },
 ];
 
-const procurement = [
+const FALLBACK_360_PROCUREMENT = [
   { id: "PO-301", mat: "פרופיל אלומיניום 6063-T5", qty: "2,400 מ\"א", sup: "אלובין בע\"מ", status: "התקבל", urg: "רגיל", due: "2026-04-05", cost: 380000 },
   { id: "PO-302", mat: "זכוכית מחוסמת 10 מ\"מ", qty: "850 מ\"ר", sup: "פניציה ישראל", status: "בהזמנה", urg: "דחוף", due: "2026-04-18", cost: 290000 },
   { id: "PO-303", mat: "אטמי EPDM", qty: "5,000 מ\"א", sup: "גומי-טק", status: "התקבל", urg: "רגיל", due: "2026-03-28", cost: 42000 },
@@ -78,7 +80,7 @@ const procurement = [
   { id: "PO-308", mat: "רשתות יתושים", qty: "420 יח׳", sup: "מגן-רשת", status: "מתוכנן", urg: "נמוך", due: "2026-05-10", cost: 21000 },
 ];
 
-const production = [
+const FALLBACK_360_PRODUCTION = [
   { id: "WO-501", desc: "חיתוך פרופילים — אצווה 14", wc: "מסור CNC-1", status: "בביצוע", planned: 48, actual: 38, scrap: 1.2 },
   { id: "WO-502", desc: "הרכבת מסגרות — קומות 11-12", wc: "קו הרכבה A", status: "ממתין", planned: 64, actual: 0, scrap: 0 },
   { id: "WO-503", desc: "הדבקת זכוכית — קומות 8-10", wc: "קו זיגוג", status: "הושלם", planned: 40, actual: 42, scrap: 0.8 },
@@ -86,7 +88,7 @@ const production = [
   { id: "WO-505", desc: "עיבוד CNC — חלונות פנורמיים", wc: "CNC מרכז", status: "בביצוע", planned: 32, actual: 24, scrap: 2.1 },
   { id: "WO-506", desc: "בדיקת אטימות מסגרות", wc: "מעבדת QC", status: "בביצוע", planned: 16, actual: 10, scrap: 0 },
 ];
-const installations = [
+const FALLBACK_360_INSTALLATIONS = [
   { id: "INS-01", type: "התקנה ראשית", team: "צוות א׳ — רועי", date: "2026-03-18", floors: "קומות 5-7", outcome: "הושלם בהצלחה", signoff: true },
   { id: "INS-02", type: "התקנה ראשית", team: "צוות א׳ — רועי", date: "2026-04-02", floors: "קומות 8-10", outcome: "הושלם — תיקון קל בקומה 9", signoff: true },
   { id: "INS-03", type: "תיקון", team: "צוות ב׳ — שמעון", date: "2026-04-06", floors: "קומה 6 — דירה 12", outcome: "החלפת אטם — הושלם", signoff: true },
@@ -94,7 +96,7 @@ const installations = [
   { id: "INS-05", type: "ביקורת איכות", team: "מירי אביטל", date: "2026-04-22", floors: "קומות 5-10", outcome: "מתוכנן", signoff: false },
 ];
 
-const risks = [
+const FALLBACK_360_RISKS = [
   { id: "R-001", desc: "עיכוב באספקת זכוכית LOW-E מחו\"ל", prob: 4, impact: 5, score: 20, status: "פתוח", mit: "הזמנת ספק חלופי — גארדיאן הונגריה" },
   { id: "R-002", desc: "עליית מחיר אלומיניום ב-LME", prob: 3, impact: 3, score: 9, status: "פתוח", mit: "גידור מחיר עד סוף Q2" },
   { id: "R-003", desc: "חוסר מנוף באתר — תיאום קבלן ראשי", prob: 3, impact: 4, score: 12, status: "פתוח", mit: "הזמנת מנוף עצמאי כגיבוי" },
@@ -102,7 +104,7 @@ const risks = [
   { id: "R-005", desc: "תאונת עבודה באתר התקנה", prob: 2, impact: 5, score: 10, status: "פתוח", mit: "הדרכת בטיחות שבועית + ציוד מגן" },
   { id: "R-006", desc: "פגם באצווה פרופילים — דרוש בדיקת QC", prob: 3, impact: 3, score: 9, status: "פתוח", mit: "בדיקת מדגם 10% בקבלה" },
 ];
-const changeOrders = [
+const FALLBACK_360_CHANGE_ORDERS = [
   { id: "CO-001", desc: "תוספת חלון ויטרינה — לובי כניסה", date: "2026-01-15", revenue: 85000, cost: 52000, days: 5, status: "מאושר" },
   { id: "CO-002", desc: "שדרוג זכוכית לLOW-E בקומות 15-18", date: "2026-02-20", revenue: 120000, cost: 78000, days: 8, status: "מאושר" },
   { id: "CO-003", desc: "הוספת רשתות יתושים — כל הדירות", date: "2026-03-10", revenue: 65000, cost: 42000, days: 3, status: "ממתין לאישור" },
@@ -168,6 +170,23 @@ const urgMap: Record<string, string> = { "קריטי": "bg-red-500/20 text-red-4
 const coStMap: Record<string, string> = { "מאושר": "bg-emerald-500/20 text-emerald-400", "ממתין לאישור": "bg-amber-500/20 text-amber-400", "בבדיקה": "bg-blue-500/20 text-blue-400" };
 
 export default function Project360Page() {
+  const { data: api360 } = useQuery({
+    queryKey: ["project-360"],
+    queryFn: async () => { const r = await authFetch("/api/projects/360"); return r.json(); },
+  });
+  const project = api360?.project ?? api360?.data?.project ?? FALLBACK_360_PROJECT;
+  const kpis = api360?.kpis ?? api360?.data?.kpis ?? FALLBACK_360_KPIS;
+  const stages = api360?.stages ?? api360?.data?.stages ?? FALLBACK_360_STAGES;
+  const team = api360?.team ?? api360?.data?.team ?? FALLBACK_360_TEAM;
+  const recentEvents = api360?.recentEvents ?? api360?.data?.recentEvents ?? FALLBACK_360_EVENTS;
+  const finance = api360?.finance ?? api360?.data?.finance ?? FALLBACK_360_FINANCE;
+  const tasks = api360?.tasks ?? api360?.data?.tasks ?? FALLBACK_360_TASKS;
+  const procurement = api360?.procurement ?? api360?.data?.procurement ?? FALLBACK_360_PROCUREMENT;
+  const production = api360?.production ?? api360?.data?.production ?? FALLBACK_360_PRODUCTION;
+  const installations = api360?.installations ?? api360?.data?.installations ?? FALLBACK_360_INSTALLATIONS;
+  const risks = api360?.risks ?? api360?.data?.risks ?? FALLBACK_360_RISKS;
+  const changeOrders = api360?.changeOrders ?? api360?.data?.changeOrders ?? FALLBACK_360_CHANGE_ORDERS;
+
   return (
     <div dir="rtl" className="p-6 space-y-6">
       {/* ─── Header ─── */}

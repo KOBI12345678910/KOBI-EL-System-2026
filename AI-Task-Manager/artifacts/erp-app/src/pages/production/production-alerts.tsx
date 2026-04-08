@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -40,7 +42,7 @@ const typeIcon: Record<AlertType, typeof Bell> = {
   urgent_project_not_released: Rocket, expected_finish_date_slip: CalendarClock,
 };
 
-const alerts: PAlert[] = [
+const FALLBACK_ALERTS: PAlert[] = [
   { id: "ALR-001", type: "machine_breakdown", severity: "critical", title: "תקלת מכונה CNC-03",
     description: "ציר Z נתקע - עצירה מלאה. טכנאי בדרך, ETA 45 דק'.", station: "CNC-03", wo: "WO-4010", time: "08:12", resolved: false, action: "שלח טכנאי חירום" },
   { id: "ALR-002", type: "material_shortage", severity: "critical", title: "מחסור פלדה 304L",
@@ -67,7 +69,7 @@ const alerts: PAlert[] = [
     description: "רטט חריג במשאבה. עדיין פעילה, דורשת בדיקה בסיום משמרת.", station: "CNC-05", time: "12:00", resolved: false, action: "תזמן בדיקה סוף משמרת" },
 ];
 
-const resolvedAlerts: PAlert[] = [
+const FALLBACK_RESOLVED: PAlert[] = [
   { id: "ALR-R01", type: "machine_breakdown", severity: "critical", title: "תקלת מנוע תחנת שיוף-01",
     description: "מנוע ראשי כבה. הוחלף תוך 90 דקות.", station: "שיוף-01", time: "06:30", resolved: true, action: "הוחלף מנוע" },
   { id: "ALR-R02", type: "quality_failure", severity: "high", title: "סטייה מימדית בציר SH-40",
@@ -76,7 +78,7 @@ const resolvedAlerts: PAlert[] = [
     description: "איחור של 4 שעות - הושלם. לקוח עודכן.", wo: "WO-4008", time: "14:00", resolved: true, action: "סגור + עדכן" },
 ];
 
-const rules = [
+const FALLBACK_RULES = [
   { name: "מחסור חומר", condition: "מלאי < צריכה של 2 ימים", severity: "critical" as Severity, active: true },
   { name: "עומס תחנה", condition: "ניצולת > 100%", severity: "high" as Severity, active: true },
   { name: "איחור הזמנה", condition: "חריגה > 24 שעות מלו\"ז", severity: "high" as Severity, active: true },
@@ -89,19 +91,7 @@ const rules = [
   { name: "החלקת תאריך סיום", condition: "צפי סיום > מתוכנן + 2 ימים", severity: "medium" as Severity, active: false },
 ];
 
-const activeAlerts = alerts.filter(a => !a.resolved);
-const criticalCount = activeAlerts.filter(a => a.severity === "critical").length;
-const highCount = activeAlerts.filter(a => a.severity === "high").length;
-const mediumCount = activeAlerts.filter(a => a.severity === "medium").length;
-
-const kpis = [
-  { label: "התראות פעילות", value: activeAlerts.length, icon: Bell, color: "text-red-400", bg: "bg-red-500" },
-  { label: "קריטיות", value: criticalCount, icon: AlertOctagon, color: "text-red-400", bg: "bg-red-500" },
-  { label: "גבוהות", value: highCount, icon: AlertTriangle, color: "text-orange-400", bg: "bg-orange-500" },
-  { label: "בינוניות", value: mediumCount, icon: ShieldAlert, color: "text-yellow-400", bg: "bg-yellow-500" },
-  { label: "נפתרו היום", value: resolvedAlerts.length, icon: CheckCircle2, color: "text-green-400", bg: "bg-green-500" },
-  { label: "זמן פתרון ממוצע", value: "47 דק'", icon: Timer, color: "text-cyan-400", bg: "bg-cyan-500" },
-];
+/* KPIs are computed inside the component */
 
 function AlertCard({ alert }: { alert: PAlert }) {
   const sev = sevCfg[alert.severity];
@@ -139,6 +129,29 @@ function AlertCard({ alert }: { alert: PAlert }) {
 
 export default function ProductionAlerts() {
   const [tab, setTab] = useState("active");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["production-alerts"],
+    queryFn: () => authFetch("/api/production/quality?type=alerts").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const alerts: PAlert[] = safeArr(apiData?.alerts).length > 0 ? safeArr(apiData.alerts) : FALLBACK_ALERTS;
+  const resolvedAlerts: PAlert[] = safeArr(apiData?.resolved).length > 0 ? safeArr(apiData.resolved) : FALLBACK_RESOLVED;
+  const rules = safeArr(apiData?.rules).length > 0 ? safeArr(apiData.rules) : FALLBACK_RULES;
+
+  const activeAlerts = alerts.filter((a: any) => !a.resolved);
+  const criticalCount = activeAlerts.filter((a: any) => a.severity === "critical").length;
+  const highCount = activeAlerts.filter((a: any) => a.severity === "high").length;
+  const mediumCount = activeAlerts.filter((a: any) => a.severity === "medium").length;
+
+  const kpis = [
+    { label: "התראות פעילות", value: activeAlerts.length, icon: Bell, color: "text-red-400", bg: "bg-red-500" },
+    { label: "קריטיות", value: criticalCount, icon: AlertOctagon, color: "text-red-400", bg: "bg-red-500" },
+    { label: "גבוהות", value: highCount, icon: AlertTriangle, color: "text-orange-400", bg: "bg-orange-500" },
+    { label: "בינוניות", value: mediumCount, icon: ShieldAlert, color: "text-yellow-400", bg: "bg-yellow-500" },
+    { label: "נפתרו היום", value: resolvedAlerts.length, icon: CheckCircle2, color: "text-green-400", bg: "bg-green-500" },
+    { label: "זמן פתרון ממוצע", value: "47 דק'", icon: Timer, color: "text-cyan-400", bg: "bg-cyan-500" },
+  ];
 
   return (
     <div dir="rtl" className="p-6 space-y-6">

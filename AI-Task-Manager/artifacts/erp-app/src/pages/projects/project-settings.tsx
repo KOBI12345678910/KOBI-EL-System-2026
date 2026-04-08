@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,27 +13,27 @@ import {
   ChevronLeft, FileText, Factory, Truck, Wallet, FolderOpen
 } from "lucide-react";
 
-const roles = [
+const FALLBACK_ROLES = [
   { id: "admin", label: "מנהל מערכת" }, { id: "manager", label: "מנהל כללי" },
   { id: "estimator", label: "אומדן / הצעות מחיר" }, { id: "pm", label: "מנהל פרויקט" },
   { id: "procurement", label: "רכש" }, { id: "production", label: "ייצור" },
   { id: "installation", label: "התקנות" }, { id: "finance", label: "כספים" },
   { id: "viewer", label: "צופה בלבד" },
 ];
-const permissions = [
+const FALLBACK_PERMISSIONS = [
   { id: "create", label: "יצירת פרויקט" }, { id: "edit", label: "עריכה" },
   { id: "delete", label: "מחיקה" }, { id: "assign", label: "הקצאת משאבים" },
   { id: "budget", label: "צפייה בתקציב" }, { id: "approve", label: "אישור שלבים" },
   { id: "docs", label: "ניהול מסמכים" },
 ];
-const defaultPerms: Record<string, string[]> = {
+const FALLBACK_DEFAULT_PERMS: Record<string, string[]> = {
   admin: ["create","edit","delete","assign","budget","approve","docs"],
   manager: ["create","edit","assign","budget","approve","docs"],
   estimator: ["create","edit","docs"], pm: ["create","edit","assign","budget","approve","docs"],
   procurement: ["edit","budget","docs"], production: ["edit","docs"],
   installation: ["edit","docs"], finance: ["budget","docs"], viewer: [],
 };
-const stages: { id: string; label: string; color: string }[] = [
+const FALLBACK_SETTINGS_STAGES: { id: string; label: string; color: string }[] = [
   { id: "quote", label: "הצעת מחיר", color: "bg-blue-500/20 text-blue-400" },
   { id: "planning", label: "תכנון", color: "bg-indigo-500/20 text-indigo-400" },
   { id: "procurement", label: "רכש חומרים", color: "bg-amber-500/20 text-amber-400" },
@@ -41,7 +43,7 @@ const stages: { id: string; label: string; color: string }[] = [
   { id: "installation", label: "התקנה", color: "bg-green-500/20 text-green-400" },
   { id: "acceptance", label: "מסירה ואישור", color: "bg-emerald-500/20 text-emerald-400" },
   { id: "billing", label: "חיוב", color: "bg-purple-500/20 text-purple-400" }];
-const transitions = [
+const FALLBACK_TRANSITIONS = [
   { from: "הצעת מחיר", to: "תכנון", approval: "מנהל כללי", auto: false },
   { from: "תכנון", to: "רכש חומרים", approval: "מנהל פרויקט", auto: true },
   { from: "רכש חומרים", to: "ייצור", approval: "רכש", auto: false },
@@ -50,7 +52,7 @@ const transitions = [
   { from: "משלוח", to: "התקנה", approval: "לוגיסטיקה", auto: true },
   { from: "התקנה", to: "מסירה ואישור", approval: "מנהל התקנות", auto: false },
   { from: "מסירה ואישור", to: "חיוב", approval: "מנהל כללי", auto: false }];
-const alerts = [
+const FALLBACK_SETTINGS_ALERTS = [
   { event: "פרויקט חדש נוצר", channels: ["אימייל", "מערכת"], delay: "מיידי" },
   { event: "שלב הושלם", channels: ["אימייל", "מערכת", "SMS"], delay: "מיידי" },
   { event: "חריגה מתקציב", channels: ["אימייל", "מערכת"], delay: "מיידי" },
@@ -58,7 +60,7 @@ const alerts = [
   { event: "אישור נדרש", channels: ["אימייל", "מערכת", "SMS"], delay: "מיידי" },
   { event: "תזכורת אבן דרך", channels: ["אימייל"], delay: "48 שעות לפני" },
   { event: "משימה לא הושלמה בזמן", channels: ["מערכת"], delay: "שעתיים" }];
-const integrations = [
+const FALLBACK_INTEGRATIONS = [
   { module: "CRM", icon: Users, status: "active", synced: 1240, desc: "סנכרון לקוחות, הצעות מחיר, הזדמנויות" },
   { module: "רכש", icon: FolderOpen, status: "active", synced: 890, desc: "הזמנות רכש, ספקים, מעקב אספקה" },
   { module: "ייצור", icon: Factory, status: "active", synced: 2100, desc: "פקודות עבודה, תכניות ייצור, OEE" },
@@ -68,6 +70,18 @@ const integrations = [
 
 export default function ProjectSettingsPage() {
   const [activeTab, setActiveTab] = useState("general");
+
+  const { data: apiSettings } = useQuery({
+    queryKey: ["project-settings"],
+    queryFn: async () => { const r = await authFetch("/api/projects/settings"); return r.json(); },
+  });
+  const roles = apiSettings?.roles ?? apiSettings?.data?.roles ?? FALLBACK_ROLES;
+  const permissions = apiSettings?.permissions ?? apiSettings?.data?.permissions ?? FALLBACK_PERMISSIONS;
+  const defaultPerms = apiSettings?.defaultPerms ?? apiSettings?.data?.defaultPerms ?? FALLBACK_DEFAULT_PERMS;
+  const stages = apiSettings?.stages ?? apiSettings?.data?.stages ?? FALLBACK_SETTINGS_STAGES;
+  const transitions = apiSettings?.transitions ?? apiSettings?.data?.transitions ?? FALLBACK_TRANSITIONS;
+  const alerts = apiSettings?.alerts ?? apiSettings?.data?.alerts ?? FALLBACK_SETTINGS_ALERTS;
+  const integrations = apiSettings?.integrations ?? apiSettings?.data?.integrations ?? FALLBACK_INTEGRATIONS;
   const [prefix, setPrefix] = useState("PRJ");
   const [nextNum, setNextNum] = useState("2026-0184");
   const [autoFromQuote, setAutoFromQuote] = useState(true);

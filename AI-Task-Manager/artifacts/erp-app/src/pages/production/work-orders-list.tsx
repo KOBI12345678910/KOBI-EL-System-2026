@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -49,8 +51,8 @@ const operationColor: Record<Operation, string> = {
   "אריזה": "bg-cyan-500/20 text-cyan-400",
 };
 
-/* ── Mock data — 14 work orders across all operations ── */
-const workOrders: WorkOrder[] = [
+/* ── Fallback data — 14 work orders across all operations ── */
+const FALLBACK_WORK_ORDERS: WorkOrder[] = [
   { id: "WO-4501", productionOrder: "PO-1001", product: "שער חשמלי אלומיניום 4.5 מ'", operation: "חיתוך", station: "מסור CNC-1", operator: "רועי כהן", qty: 24, progress: 88, startTime: "07:15", estimatedEnd: "10:30", actualEnd: null, status: "in_progress" },
   { id: "WO-4502", productionOrder: "PO-1001", product: "שער חשמלי אלומיניום 4.5 מ'", operation: "ריתוך", station: "ריתוך TIG-2", operator: "יוסי מזרחי", qty: 12, progress: 45, startTime: "08:00", estimatedEnd: "12:00", actualEnd: null, status: "in_progress" },
   { id: "WO-4503", productionOrder: "PO-1002", product: "חלונות ויטרינה נירוסטה", operation: "חיתוך", station: "לייזר-1", operator: "אמיר לוי", qty: 48, progress: 100, startTime: "06:30", estimatedEnd: "09:00", actualEnd: "08:45", status: "completed" },
@@ -75,6 +77,13 @@ type TabKey = "all" | "in_progress" | "waiting" | "completed";
 export default function WorkOrdersList() {
   const [tab, setTab] = useState<TabKey>("all");
   const [search, setSearch] = useState("");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["production-work-orders-list"],
+    queryFn: () => authFetch("/api/production/work-orders").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const workOrders: WorkOrder[] = safeArr(apiData).length > 0 ? safeArr(apiData) : FALLBACK_WORK_ORDERS;
 
   /* ── Filtering ── */
   const filtered = useMemo(() => {

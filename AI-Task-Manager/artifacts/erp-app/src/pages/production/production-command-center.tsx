@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,7 +10,7 @@ import {
   TrendingDown, Wrench, Package, BarChart3, Target, Zap, Shield
 } from "lucide-react";
 
-const kpis = {
+const FALLBACK_KPIS = {
   oee: 82.5, oeeTarget: 85,
   availability: 92, performance: 89, quality: 99.2,
   activeOrders: 18, completedToday: 5, behindSchedule: 3,
@@ -18,7 +20,7 @@ const kpis = {
   productionLines: 4, activelines: 4,
 };
 
-const activeOrders = [
+const FALLBACK_ORDERS = [
   { wo: "WO-002456", product: "פרופיל Pro-X 100mm", customer: "קבוצת אלון", qty: 450, completed: 320, pct: 71, dueDate: "2026-04-12", status: "on_track", line: "קו A" },
   { wo: "WO-002457", product: "זכוכית מחוסמת 8mm", customer: "אמות השקעות", qty: 200, completed: 180, pct: 90, dueDate: "2026-04-10", status: "on_track", line: "קו B" },
   { wo: "WO-002458", product: "מסגרת ברזל מדגם B", customer: "שיכון ובינוי", qty: 80, completed: 25, pct: 31, dueDate: "2026-04-11", status: "behind", line: "קו C" },
@@ -26,19 +28,29 @@ const activeOrders = [
   { wo: "WO-002460", product: "דלת הזזה 2.4m", customer: 'נדל"ן פלוס', qty: 30, completed: 12, pct: 40, dueDate: "2026-04-14", status: "on_track", line: "קו D" },
 ];
 
-const productionLines = [
+const FALLBACK_LINES = [
   { name: "קו A — אלומיניום", status: "running", oee: 88, currentWO: "WO-002456", speed: 95, quality: 99.5, uptime: 97 },
   { name: "קו B — זכוכית", status: "running", oee: 85, currentWO: "WO-002457", speed: 92, quality: 99.0, uptime: 95 },
   { name: "קו C — ברזל", status: "running", oee: 72, currentWO: "WO-002458", speed: 78, quality: 98.5, uptime: 88 },
   { name: "קו D — הרכבה", status: "running", oee: 82, currentWO: "WO-002460", speed: 88, quality: 99.8, uptime: 92 },
 ];
 
-const qualityIssues = [
+const FALLBACK_QUALITY_ISSUES = [
   { date: "2026-04-08", wo: "WO-002458", issue: "סטייה ממידות ±2mm", severity: "medium", action: "כיול מכונה + בדיקה חוזרת" },
   { date: "2026-04-07", wo: "WO-002455", issue: "שריטות על זכוכית — 3 יחידות", severity: "low", action: "החלפה + בדיקת תהליך אריזה" },
 ];
 
 export default function ProductionCommandCenter() {
+  const { data: apiData } = useQuery({
+    queryKey: ["production-command-center"],
+    queryFn: () => authFetch("/api/production/dashboard").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const kpis = (apiData as any)?.kpis || FALLBACK_KPIS;
+  const activeOrders = safeArr(apiData?.orders).length > 0 ? safeArr(apiData.orders) : FALLBACK_ORDERS;
+  const productionLines = safeArr(apiData?.lines).length > 0 ? safeArr(apiData.lines) : FALLBACK_LINES;
+  const qualityIssues = safeArr(apiData?.qualityIssues).length > 0 ? safeArr(apiData.qualityIssues) : FALLBACK_QUALITY_ISSUES;
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       <div className="flex items-center justify-between">

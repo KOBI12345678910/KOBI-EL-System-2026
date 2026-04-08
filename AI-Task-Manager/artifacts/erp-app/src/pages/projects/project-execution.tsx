@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -18,7 +20,7 @@ const stages = [
   { key: "installation", label: "התקנה", color: "bg-green-500", icon: "🔧" },
   { key: "handover", label: "מסירה", color: "bg-emerald-500", icon: "✅" },
 ];
-const projects = [
+const FALLBACK_EXEC_PROJECTS = [
   { id: "EX-1001", name: "חלונות אלומיניום — מגדל הים חיפה", client: "גולדשטיין נדל\"ן", pm: "אורי כהן", stage: "installation", pct: 82, value: 920000, due: "2026-05-10" },
   { id: "EX-1002", name: "זכוכית חזיתית — קניון עזריאלי", client: "עזריאלי קבוצה", pm: "דנה לוי", stage: "production", pct: 55, value: 1450000, due: "2026-06-20" },
   { id: "EX-1003", name: "דלתות פלדה — בית ספר אורט", client: "משרד החינוך", pm: "יוסי מרקוביץ", stage: "engineering", pct: 30, value: 380000, due: "2026-07-01" },
@@ -28,42 +30,42 @@ const projects = [
   { id: "EX-1007", name: "חלונות עץ-אלומיניום — וילה פרטית", client: "משפחת בן דוד", pm: "מירי אביטל", stage: "offer", pct: 5, value: 145000, due: "2026-09-30" },
   { id: "EX-1008", name: "קירות מסך — משרדים הרצליה", client: "אמות השקעות", pm: "יוסי מרקוביץ", stage: "production", pct: 48, value: 2100000, due: "2026-07-15" },
 ];
-const measurements = [
+const FALLBACK_MEASUREMENTS = [
   { id: "M-301", project: "EX-1004", site: "שיכון נוף, רחוב 12", date: "2026-04-10", time: "08:00", surveyor: "רמי דהן", status: "scheduled" },
   { id: "M-302", project: "EX-1007", site: "וילה בן דוד, כפר שמריהו", date: "2026-04-14", time: "10:00", surveyor: "אלי פרץ", status: "scheduled" },
   { id: "M-303", project: "EX-1001", site: "מגדל הים, חיפה", date: "2026-03-20", time: "09:00", surveyor: "רמי דהן", status: "completed" },
   { id: "M-304", project: "EX-1003", site: "אורט נתניה", date: "2026-03-25", time: "14:00", surveyor: "אלי פרץ", status: "completed" },
   { id: "M-305", project: "EX-1008", site: "משרדים הרצליה", date: "2026-04-11", time: "07:30", surveyor: "רמי דהן", status: "scheduled" },
 ];
-const releases = [
+const FALLBACK_RELEASES = [
   { id: "REL-501", project: "EX-1003", type: "engineering", desc: "שחרור שרטוטי דלתות — גרסה 2", eng: "נועם גולן", date: "2026-04-09", status: "pending" },
   { id: "REL-502", project: "EX-1008", type: "engineering", desc: "תכנית קירות מסך — בלוק A", eng: "נועם גולן", date: "2026-04-07", status: "approved" },
   { id: "REL-503", project: "EX-1002", type: "production", desc: "זכוכית מחוסמת 12 מ\"מ", eng: "שרה אבידן", date: "2026-04-06", status: "approved" },
   { id: "REL-504", project: "EX-1008", type: "production", desc: "פרופיל אלומיניום מיוחד", eng: "שרה אבידן", date: "2026-04-10", status: "pending" },
   { id: "REL-505", project: "EX-1003", type: "production", desc: "דלתות פלדה דגם A4", eng: "נועם גולן", date: "2026-04-12", status: "waiting" },
 ];
-const installs = [
+const FALLBACK_INSTALLS = [
   { id: "INS-701", project: "EX-1001", loc: "מגדל הים, קומות 8-14", team: "צוות אלפא", start: "2026-04-08", end: "2026-04-18", status: "in_progress" },
   { id: "INS-702", project: "EX-1005", loc: "סינמה סיטי — חיצוני", team: "צוות בטא", start: "2026-04-20", end: "2026-04-24", status: "scheduled" },
   { id: "INS-703", project: "EX-1006", loc: "רמת גן — חניון B2-B4", team: "צוות אלפא", start: "2026-03-28", end: "2026-04-05", status: "completed" },
 ];
-const teams = [
+const FALLBACK_EXEC_TEAMS = [
   { name: "צוות אלפא", leader: "חיים ביטון", members: 6, cur: "EX-1001", status: "active" },
   { name: "צוות בטא", leader: "משה דיין", members: 4, cur: "—", status: "available" },
   { name: "צוות גמא", leader: "עמוס רז", members: 5, cur: "EX-1006", status: "finishing" },
 ];
-const snags = [
+const FALLBACK_SNAGS = [
   { id: "SNG-01", project: "EX-1001", desc: "שריטה בזכוכית — חלון קומה 10", sev: "medium", team: "צוות אלפא", date: "2026-04-05", status: "open" },
   { id: "SNG-02", project: "EX-1006", desc: "שער חניון — חיישן לא מגיב", sev: "high", team: "צוות גמא", date: "2026-04-04", status: "in_progress" },
   { id: "SNG-03", project: "EX-1001", desc: "אטימות לקויה — חלון חדר שינה", sev: "high", team: "צוות אלפא", date: "2026-04-06", status: "open" },
   { id: "SNG-04", project: "EX-1006", desc: "גימור צבע לא אחיד — שער ראשי", sev: "low", team: "צוות גמא", date: "2026-04-02", status: "resolved" },
   { id: "SNG-05", project: "EX-1001", desc: "ידית חלון רופפת — קומה 12", sev: "low", team: "צוות אלפא", date: "2026-04-07", status: "open" },
 ];
-const handovers = [
+const FALLBACK_HANDOVERS = [
   { id: "HND-01", project: "EX-1006", client: "אלקטרה נדל\"ן", date: "2026-04-12", inspect: true, approved: false, closed: 2, total: 3, status: "pending_approval" },
   { id: "HND-02", project: "EX-1001", client: "גולדשטיין נדל\"ן", date: "2026-05-15", inspect: false, approved: false, closed: 0, total: 3, status: "not_ready" },
 ];
-const postService = [
+const FALLBACK_POST_SERVICE = [
   { id: "SVC-01", project: "EX-1006", type: "אחריות", desc: "בדיקת שערים — 3 חודשים", next: "2026-07-12", status: "scheduled" },
   { id: "SVC-02", project: "EX-1001", type: "תחזוקה", desc: "בדיקת אטימות חלונות שנתית", next: "2026-05-20", status: "pending" },
 ];
@@ -80,7 +82,7 @@ const insLabel = (s: string) => ({ in_progress: "בביצוע", scheduled: "מת
 const sngBadge = (s: string) => s === "open" ? "bg-red-500/20 text-red-400" : s === "in_progress" ? "bg-amber-500/20 text-amber-400" : "bg-emerald-500/20 text-emerald-400";
 const sngLabel = (s: string) => ({ open: "פתוח", in_progress: "בטיפול", resolved: "נסגר" }[s] || s);
 const fmt = (n: number) => "₪" + new Intl.NumberFormat("he-IL").format(n);
-const kpis = [
+const buildKpis = (projects: any[]) => [
   { label: "פרויקטים פעילים", value: projects.filter(p => p.stage !== "offer").length, icon: Rocket, color: "text-blue-400" },
   { label: "במדידה", value: projects.filter(p => p.stage === "measurement").length, icon: Ruler, color: "text-violet-400" },
   { label: "בייצור", value: projects.filter(p => p.stage === "production").length, icon: Factory, color: "text-amber-400" },
@@ -91,6 +93,20 @@ const kpis = [
 
 export default function ProjectExecution() {
   const [tab, setTab] = useState("stages");
+
+  const { data: apiExec } = useQuery({
+    queryKey: ["project-execution"],
+    queryFn: async () => { const r = await authFetch("/api/projects/execution"); return r.json(); },
+  });
+  const projects = apiExec?.projects ?? apiExec?.data?.projects ?? FALLBACK_EXEC_PROJECTS;
+  const measurements = apiExec?.measurements ?? apiExec?.data?.measurements ?? FALLBACK_MEASUREMENTS;
+  const releases = apiExec?.releases ?? apiExec?.data?.releases ?? FALLBACK_RELEASES;
+  const installs = apiExec?.installs ?? apiExec?.data?.installs ?? FALLBACK_INSTALLS;
+  const teams = apiExec?.teams ?? apiExec?.data?.teams ?? FALLBACK_EXEC_TEAMS;
+  const snags = apiExec?.snags ?? apiExec?.data?.snags ?? FALLBACK_SNAGS;
+  const handovers = apiExec?.handovers ?? apiExec?.data?.handovers ?? FALLBACK_HANDOVERS;
+  const postService = apiExec?.postService ?? apiExec?.data?.postService ?? FALLBACK_POST_SERVICE;
+  const kpis = buildKpis(projects);
   return (
     <div className="p-6 space-y-6" dir="rtl">
       <div>

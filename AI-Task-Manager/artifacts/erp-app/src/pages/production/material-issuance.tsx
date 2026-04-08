@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,8 +17,8 @@ import {
 const ils = (v: number) =>
   new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", maximumFractionDigits: 0 }).format(v);
 
-/* ── static data ── issue_to_job ────────────────────────────────── */
-const issuances = [
+/* ── Fallback data ── issue_to_job ────────────────────────────────── */
+const FALLBACK_ISSUANCES = [
   { id: "ISS-4001", wo: "WO-1021", material: "RM-110 פרופיל אלומיניום 40x40", qty: 24, unit: "מ'", issuedBy: "יוסי כהן", time: "08:15", warehouse: "מחסן A1" },
   { id: "ISS-4002", wo: "WO-1018", material: "RM-205 צינור נירוסטה 304 ø50", qty: 12, unit: "מ'", issuedBy: "דוד מזרחי", time: "08:42", warehouse: "מחסן B2" },
   { id: "ISS-4003", wo: "WO-1025", material: "RM-312 זכוכית מחוסמת 10 מ\"מ", qty: 8, unit: "יח'", issuedBy: "שרה לוי", time: "09:10", warehouse: "מחסן C1" },
@@ -27,8 +29,8 @@ const issuances = [
   { id: "ISS-4008", wo: "WO-1018", material: "RM-330 לוח HPL 18 מ\"מ", qty: 4, unit: "לוח", issuedBy: "דוד מזרחי", time: "11:25", warehouse: "מחסן C2" },
 ];
 
-/* ── return_unused ──────────────────────────────────────────────── */
-const returns = [
+/* ── Fallback return_unused ──────────────────────────────────────────────── */
+const FALLBACK_RETURNS = [
   { id: "RET-501", material: "RM-110 פרופיל אלומיניום 40x40", qty: 3, unit: "מ'", reason: "עודף מתכנון", returnedBy: "יוסי כהן", time: "14:20", condition: "תקין" },
   { id: "RET-502", material: "RM-118 ברגים נירוסטה M8x30", qty: 45, unit: "יח'", reason: "שינוי מפרט", returnedBy: "שרה לוי", time: "14:50", condition: "תקין" },
   { id: "RET-503", material: "RM-260 אטם סיליקון שחור", qty: 8, unit: "שפופרת", reason: "עודף מתכנון", returnedBy: "מיכל ברק", time: "15:10", condition: "תקין" },
@@ -39,8 +41,8 @@ const returns = [
   { id: "RET-508", material: "RM-330 לוח HPL 18 מ\"מ", qty: 1, unit: "לוח", reason: "גודל לא מתאים", returnedBy: "דוד מזרחי", time: "17:00", condition: "תקין" },
 ];
 
-/* ── shortage_reporting ─────────────────────────────────────────── */
-const shortages = [
+/* ── Fallback shortage_reporting ─────────────────────────────────────────── */
+const FALLBACK_SHORTAGES = [
   { wo: "WO-1021", material: "RM-142 ציר כבד 120 מ\"מ", needed: 16, available: 4, action: "הזמנה דחופה" },
   { wo: "WO-1018", material: "RM-205 צינור נירוסטה 304 ø50", needed: 20, available: 12, action: "העברה ממחסן B3" },
   { wo: "WO-1025", material: "RM-315 סיליקון שקוף UV", needed: 24, available: 10, action: "חלופי מאושר" },
@@ -51,8 +53,8 @@ const shortages = [
   { wo: "WO-1021", material: "RM-450 פרופיל גומי EPDM", needed: 40, available: 0, action: "הזמנה דחופה" },
 ];
 
-/* ── substitute_approval ────────────────────────────────────────── */
-const substitutes = [
+/* ── Fallback substitute_approval ────────────────────────────────────────── */
+const FALLBACK_SUBSTITUTES = [
   { id: "SUB-101", original: "RM-110 פרופיל אלומיניום 40x40", substitute: "RM-112 פרופיל אלומיניום 40x45", reason: "חוסר במלאי", approver: "עוזי אלקיים", status: "מאושר" },
   { id: "SUB-102", original: "RM-315 סיליקון שקוף UV", substitute: "RM-318 סיליקון שקוף פרימיום", reason: "עדיפות איכות", approver: "עוזי אלקיים", status: "מאושר" },
   { id: "SUB-103", original: "RM-420 פח מגולוון 1.5 מ\"מ", substitute: "RM-422 פח מגולוון 2.0 מ\"מ", reason: "חוסר במלאי", approver: "רחל אברהם", status: "ממתין" },
@@ -63,8 +65,8 @@ const substitutes = [
   { id: "SUB-108", original: "RM-450 פרופיל גומי EPDM", substitute: "RM-452 פרופיל גומי סיליקון", reason: "חוסר במלאי", approver: "עוזי אלקיים", status: "מאושר" },
 ];
 
-/* ── consumption_tracking ───────────────────────────────────────── */
-const consumption = [
+/* ── Fallback consumption_tracking ───────────────────────────────────────── */
+const FALLBACK_CONSUMPTION = [
   { material: "RM-110 פרופיל אלומיניום 40x40", planned: 500, actual: 478, unit: "מ'", cost: 28680 },
   { material: "RM-205 צינור נירוסטה 304 ø50", planned: 200, actual: 215, unit: "מ'", cost: 43000 },
   { material: "RM-312 זכוכית מחוסמת 10 מ\"מ", planned: 60, actual: 55, unit: "יח'", cost: 33000 },
@@ -75,8 +77,8 @@ const consumption = [
   { material: "RM-330 לוח HPL 18 מ\"מ", planned: 40, actual: 42, unit: "לוח", cost: 16800 },
 ];
 
-/* ── scrap_tracking ─────────────────────────────────────────────── */
-const scrap = [
+/* ── Fallback scrap_tracking ─────────────────────────────────────────────── */
+const FALLBACK_SCRAP = [
   { material: "RM-110 פרופיל אלומיניום 40x40", scrapQty: 12, unit: "מ'", reason: "חיתוך לא מדויק", value: 720, wo: "WO-1021" },
   { material: "RM-312 זכוכית מחוסמת 10 מ\"מ", scrapQty: 2, unit: "יח'", reason: "שבירה במשלוח", value: 1200, wo: "WO-1025" },
   { material: "RM-420 פח מגולוון 1.5 מ\"מ", scrapQty: 3, unit: "גיליון", reason: "קורוזיה", value: 900, wo: "WO-1030" },
@@ -114,6 +116,18 @@ type TabKey = "issues" | "returns" | "shortages" | "substitutes" | "consumption"
 export default function MaterialIssuance() {
   const [tab, setTab] = useState<TabKey>("issues");
   const [search, setSearch] = useState("");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["production-material-issuance"],
+    queryFn: () => authFetch("/api/production/work-orders?type=material-issuance").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const issuances = safeArr(apiData?.issuances).length > 0 ? safeArr(apiData.issuances) : FALLBACK_ISSUANCES;
+  const returns = safeArr(apiData?.returns).length > 0 ? safeArr(apiData.returns) : FALLBACK_RETURNS;
+  const shortages = safeArr(apiData?.shortages).length > 0 ? safeArr(apiData.shortages) : FALLBACK_SHORTAGES;
+  const substitutes = safeArr(apiData?.substitutes).length > 0 ? safeArr(apiData.substitutes) : FALLBACK_SUBSTITUTES;
+  const consumption = safeArr(apiData?.consumption).length > 0 ? safeArr(apiData.consumption) : FALLBACK_CONSUMPTION;
+  const scrap = safeArr(apiData?.scrap).length > 0 ? safeArr(apiData.scrap) : FALLBACK_SCRAP;
 
   /* KPI computations */
   const issuedToday = issuances.length;

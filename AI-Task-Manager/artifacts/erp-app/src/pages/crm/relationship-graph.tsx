@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,11 +12,12 @@ import {
   Crown, Eye, Star, Shield, Zap, Search, ChevronRight,
   ArrowRight, UserCheck, Phone, Mail
 } from "lucide-react";
+import { authFetch } from "@/lib/utils";
 
 // ============================================================
 // RELATIONSHIP DATA
 // ============================================================
-const nodes = [
+const FALLBACK_NODES = [
   // Customers
   { id: "c1", type: "customer", name: "קבוצת אלון", score: 88, value: 2850000 },
   { id: "c2", type: "customer", name: "שיכון ובינוי", score: 62, value: 4200000 },
@@ -37,7 +39,7 @@ const nodes = [
   { id: "d3", type: "deal", name: "משרדי הרצליה", value: 480000 },
 ];
 
-const edges = [
+const FALLBACK_EDGES = [
   // Customer-Contact
   { source: "c1", target: "p1", type: "works_with", strength: 95 },
   { source: "c1", target: "p5", type: "works_with", strength: 85 },
@@ -62,25 +64,27 @@ const edges = [
   { source: "c1", target: "c4", type: "referred_by", strength: 40, note: "הפניה מאבי כהן" },
 ];
 
-const hiddenInfluencers = [
+const FALLBACK_HIDDEN_INFLUENCERS = [
   { person: "משה כהן (CFO, קבוצת אלון)", influence: "מאשר סופית כל עסקה מעל ₪500K", discovered: "AI - ניתוח מיילים", strength: 85 },
   { person: "נעמי בר (רכש, שיכון ובינוי)", influence: "מכינה את ה-shortlist - בפועל מחליטה", discovered: "AI - ניתוח שיחות", strength: 80 },
   { person: "יעל גולדן (VP Ops, BIG)", influence: "הגיעה דרך הפניה מאבי כהן - רקע אישי חזק", discovered: "AI - relationship mining", strength: 70 },
 ];
 
-const networkMetrics = {
-  totalNodes: nodes.length,
-  totalEdges: edges.length,
-  avgStrength: Math.round(edges.reduce((s, e) => s + e.strength, 0) / edges.length),
-  decisionMakers: nodes.filter((n: any) => n.isDecisionMaker).length,
-  hiddenInfluencers: hiddenInfluencers.length,
-  referralPaths: edges.filter(e => e.type === "referred_by").length,
-  crossCompanyLinks: edges.filter(e => {
-    const sNode = nodes.find(n => n.id === e.source);
-    const tNode = nodes.find(n => n.id === e.target);
-    return sNode && tNode && (sNode as any).company !== (tNode as any).company;
-  }).length,
-};
+function computeNetworkMetrics(nodes: typeof FALLBACK_NODES, edges: typeof FALLBACK_EDGES, hiddenInfluencers: typeof FALLBACK_HIDDEN_INFLUENCERS) {
+  return {
+    totalNodes: nodes.length,
+    totalEdges: edges.length,
+    avgStrength: Math.round(edges.reduce((s, e) => s + e.strength, 0) / edges.length),
+    decisionMakers: nodes.filter((n: any) => n.isDecisionMaker).length,
+    hiddenInfluencers: hiddenInfluencers.length,
+    referralPaths: edges.filter(e => e.type === "referred_by").length,
+    crossCompanyLinks: edges.filter(e => {
+      const sNode = nodes.find(n => n.id === e.source);
+      const tNode = nodes.find(n => n.id === e.target);
+      return sNode && tNode && (sNode as any).company !== (tNode as any).company;
+    }).length,
+  };
+}
 
 const edgeTypeConfig: Record<string, { label: string; color: string }> = {
   works_with: { label: "עובד עם", color: "text-blue-600" },
@@ -98,6 +102,15 @@ const nodeTypeConfig: Record<string, { label: string; icon: any; color: string }
 };
 
 export default function RelationshipGraph() {
+  const { data: apiGraph } = useQuery<{ nodes: typeof FALLBACK_NODES; edges: typeof FALLBACK_EDGES; hiddenInfluencers: typeof FALLBACK_HIDDEN_INFLUENCERS }>({
+    queryKey: ["crm-relationship-graph"],
+    queryFn: async () => { const res = await authFetch("/api/crm/contacts/relationships"); if (!res.ok) throw new Error("API error"); return res.json(); },
+  });
+  const nodes = apiGraph?.nodes ?? FALLBACK_NODES;
+  const edges = apiGraph?.edges ?? FALLBACK_EDGES;
+  const hiddenInfluencers = apiGraph?.hiddenInfluencers ?? FALLBACK_HIDDEN_INFLUENCERS;
+  const networkMetrics = useMemo(() => computeNetworkMetrics(nodes, edges, hiddenInfluencers), [nodes, edges, hiddenInfluencers]);
+
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [filterType, setFilterType] = useState("all");
 

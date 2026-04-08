@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,7 +16,7 @@ import {
 type VisitOutcome = "planned" | "completed" | "partial" | "failed" | "cancelled";
 type VisitType = "measurement" | "prep" | "installation" | "repair" | "service";
 
-const visits = [
+const FALLBACK_VISITS = [
   { id: "VIS-001", project: "מגדל הים — חיפה", type: "measurement" as VisitType, teamLead: "חיים ביטון", plannedDate: "2026-03-10", actualDate: "2026-03-10", outcome: "completed" as VisitOutcome, signedOff: true, issues: "" },
   { id: "VIS-002", project: "מגדל הים — חיפה", type: "installation" as VisitType, teamLead: "חיים ביטון", plannedDate: "2026-03-25", actualDate: "2026-03-26", outcome: "completed" as VisitOutcome, signedOff: true, issues: "" },
   { id: "VIS-003", project: "קניון עזריאלי — זכוכית", type: "measurement" as VisitType, teamLead: "דנה לוי", plannedDate: "2026-03-15", actualDate: "2026-03-15", outcome: "completed" as VisitOutcome, signedOff: true, issues: "" },
@@ -29,7 +31,7 @@ const visits = [
   { id: "VIS-012", project: "מגדל הים — חיפה", type: "repair" as VisitType, teamLead: "חיים ביטון", plannedDate: "2026-04-18", actualDate: null, outcome: "planned" as VisitOutcome, signedOff: false, issues: "" },
 ];
 
-const weeklySchedule = [
+const FALLBACK_WEEKLY_SCHEDULE = [
   { day: "ראשון", date: "2026-04-05", visits: [{ time: "08:00", project: "קניון עזריאלי", type: "הכנה", team: "צוות דנה", address: "דרך מנחם בגין 132, ת״א" }] },
   { day: "שני", date: "2026-04-06", visits: [{ time: "07:30", project: "בית ספר אורט", type: "התקנה", team: "צוות עמוס", address: "רח׳ הרצל 45, נתניה" }] },
   { day: "שלישי", date: "2026-04-07", visits: [] },
@@ -41,21 +43,21 @@ const weeklySchedule = [
   { day: "שישי", date: "2026-04-10", visits: [{ time: "07:00", project: "שיכון נוף", type: "מדידה", team: "צוות משה", address: "רח׳ הגפן 3, ראשל״צ" }] },
 ];
 
-const scheduleSummary = {
+const FALLBACK_SCHEDULE_SUMMARY = {
   totalThisWeek: 6,
   teamsDeployed: 3,
   installationDays: 4,
   emptyDays: 1,
 };
 
-const teams = [
+const FALLBACK_INSTALL_TEAMS = [
   { name: "צוות חיים", leader: "חיים ביטון", members: 6, speciality: "חלונות ודלתות", currentProject: "מגדל הים — חיפה", status: "פעיל", load: 85, nextAvail: "2026-04-19", completedThisMonth: 4, phone: "050-1234567", rating: 4.8 },
   { name: "צוות דנה", leader: "דנה לוי", members: 5, speciality: "זכוכית חזיתית", currentProject: "קניון עזריאלי", status: "פעיל", load: 70, nextAvail: "2026-04-16", completedThisMonth: 2, phone: "052-9876543", rating: 4.5 },
   { name: "צוות עמוס", leader: "עמוס רז", members: 5, speciality: "פלדה ומתכת", currentProject: "בית ספר אורט", status: "פעיל", load: 60, nextAvail: "2026-04-10", completedThisMonth: 3, phone: "054-5551234", rating: 4.2 },
   { name: "צוות משה", leader: "משה דיין", members: 4, speciality: "מעקות ופרגולות", currentProject: "—", status: "זמין", load: 20, nextAvail: "2026-04-06", completedThisMonth: 1, phone: "053-7778899", rating: 4.6 },
 ];
 
-const siteIssues = [
+const FALLBACK_SITE_ISSUES = [
   { id: "ISS-001", visit: "VIS-004", project: "קניון עזריאלי", description: "גישה לקומה 3 חסומה — עבודות בטון", severity: "high", reportedBy: "דנה לוי", reportedDate: "2026-04-05", status: "open", resolution: "" },
   { id: "ISS-002", visit: "VIS-005", project: "בית ספר אורט", description: "חלק מהדלתות לא הגיעו מהמפעל", severity: "critical", reportedBy: "עמוס רז", reportedDate: "2026-04-08", status: "in_progress", resolution: "משלוח חוזר מתוכנן ל-12/04" },
   { id: "ISS-003", visit: "VIS-010", project: "משרדים הרצליה", description: "פיגומים חסרים — האתר לא מוכן", severity: "high", reportedBy: "משה דיין", reportedDate: "2026-04-02", status: "in_progress", resolution: "קבלן פיגומים מתואם ל-13/04" },
@@ -77,6 +79,16 @@ const issueStatusColor: Record<string, string> = { open: "bg-red-100 text-red-80
 export default function ProjectInstallationHub() {
   const [search, setSearch] = useState("");
   const [weekOffset, setWeekOffset] = useState(0);
+
+  const { data: apiInstall } = useQuery({
+    queryKey: ["project-installation-hub"],
+    queryFn: async () => { const r = await authFetch("/api/projects/installation"); return r.json(); },
+  });
+  const visits = apiInstall?.visits ?? apiInstall?.data?.visits ?? FALLBACK_VISITS;
+  const weeklySchedule = apiInstall?.weeklySchedule ?? apiInstall?.data?.weeklySchedule ?? FALLBACK_WEEKLY_SCHEDULE;
+  const scheduleSummary = apiInstall?.scheduleSummary ?? apiInstall?.data?.scheduleSummary ?? FALLBACK_SCHEDULE_SUMMARY;
+  const teams = apiInstall?.teams ?? apiInstall?.data?.teams ?? FALLBACK_INSTALL_TEAMS;
+  const siteIssues = apiInstall?.siteIssues ?? apiInstall?.data?.siteIssues ?? FALLBACK_SITE_ISSUES;
 
   const totalVisits = visits.length;
   const completedVisits = visits.filter(v => v.outcome === "completed").length;

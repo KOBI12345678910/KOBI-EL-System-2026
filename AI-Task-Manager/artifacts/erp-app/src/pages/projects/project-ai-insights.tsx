@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,7 +15,7 @@ import {
 } from "lucide-react";
 
 /* ───────── AI Score Gauges ───────── */
-const aiScores = [
+const FALLBACK_AI_SCORES = [
   { label: "בריאות פרויקט", score: 82, icon: Activity, color: "emerald", desc: "ציון כולל מבוסס AI" },
   { label: "סיכון עיכוב", score: 35, icon: Clock, color: "amber", desc: "הסתברות לחריגה מלו\"ז" },
   { label: "סיכון מרווח", score: 28, icon: DollarSign, color: "orange", desc: "סיכון לשחיקת רווחיות" },
@@ -57,7 +59,7 @@ function ScoreGauge({ label, score, icon: Icon, color, desc }: typeof aiScores[0
 }
 
 /* ───────── Projects Health Data ───────── */
-const projects = [
+const FALLBACK_AI_PROJECTS = [
   { id: "PRJ-101", name: "חלונות אלומיניום — מגדל הים", client: "גולדשטיין נדל\"ן", pm: "אורי כהן", health: 91, delay: 12, margin: 18, budget: 920000, spent: 710000, pct: 82, status: "active" },
   { id: "PRJ-102", name: "זכוכית חזיתית — קניון עזריאלי", client: "עזריאלי קבוצה", pm: "דנה לוי", health: 74, delay: 45, margin: 38, budget: 1450000, spent: 890000, pct: 55, status: "active" },
   { id: "PRJ-103", name: "דלתות פלדה — בית ספר אורט", client: "משרד החינוך", pm: "יוסי מרקוביץ", health: 85, delay: 20, margin: 15, budget: 380000, spent: 125000, pct: 30, status: "active" },
@@ -71,7 +73,7 @@ const projects = [
 ];
 
 /* ───────── AI Predictions ───────── */
-const predictions = [
+const FALLBACK_PREDICTIONS = [
   { id: 1, type: "budget", title: "חריגת תקציב — קירות מסך הרצליה", project: "PRJ-108", desc: "צפי לחריגה של 12% מהתקציב בשל עליית מחירי אלומיניום ושעות נוספות בייצור", confidence: 87, impact: "high", trend: "up", amount: "₪252,000" },
   { id: 2, type: "schedule", title: "עיכוב מסירה — מחיצות מגדל אלון", project: "PRJ-110", desc: "עיכוב צפוי של 3 שבועות עקב איחור באספקת זכוכית מחוסמת מהיצרן", confidence: 92, impact: "critical", trend: "up", amount: "21 יום" },
   { id: 3, type: "margin", title: "שחיקת רווח — מעקות שיכון נוף", project: "PRJ-104", desc: "מרווח הרווח צפוי לרדת מ-22% ל-14% עקב עלויות התקנה לא צפויות", confidence: 78, impact: "high", trend: "down", amount: "-8%" },
@@ -81,7 +83,7 @@ const predictions = [
 ];
 
 /* ───────── AI Recommendations ───────── */
-const recommendations = [
+const FALLBACK_RECOMMENDATIONS = [
   { id: 1, category: "resources", title: "העברת צוות בטא לפרויקט מגדל אלון", desc: "צוות בטא מסיים בסינמה סיטי ב-24/4. העברתו למגדל אלון תקצר את העיכוב ב-12 יום", impact: "high", effort: "low", confidence: 89, savings: "₪45,000" },
   { id: 2, category: "procurement", title: "הזמנת זכוכית חלופית מיצרן משני", desc: "ספק חירום בטורקיה יכול לספק זכוכית מחוסמת תוך 10 ימים במקום 28. עלות תוספת: ₪12,000", impact: "critical", effort: "medium", confidence: 82, savings: "₪95,000" },
   { id: 3, category: "collection", title: "שליחת תזכורת גבייה — גולדשטיין נדל\"ן", desc: "חשבונית PRJ-101 בסך ₪180,000 בפיגור 14 יום. היסטוריית תשלום: 92% בזמן", impact: "medium", effort: "low", confidence: 94, savings: "₪180,000" },
@@ -93,7 +95,7 @@ const recommendations = [
 ];
 
 /* ───────── Manager Weekly Brief ───────── */
-const weeklyBrief = {
+const FALLBACK_WEEKLY_BRIEF = {
   generatedAt: "08/04/2026, 08:00",
   period: "01/04 — 08/04/2026",
   topRisks: [
@@ -164,11 +166,21 @@ export default function ProjectAiInsights() {
   const [activeTab, setActiveTab] = useState("health");
   const [recFilter, setRecFilter] = useState<string>("all");
 
-  const filteredProjects = projects
-    .filter(p => p.name.includes(search) || p.client.includes(search) || p.id.includes(search))
-    .sort((a, b) => a.health - b.health);
+  const { data: apiAi } = useQuery({
+    queryKey: ["project-ai-insights"],
+    queryFn: async () => { const r = await authFetch("/api/projects/ai-insights"); return r.json(); },
+  });
+  const aiScores = apiAi?.aiScores ?? apiAi?.data?.aiScores ?? FALLBACK_AI_SCORES;
+  const projects = apiAi?.projects ?? apiAi?.data?.projects ?? FALLBACK_AI_PROJECTS;
+  const predictions = apiAi?.predictions ?? apiAi?.data?.predictions ?? FALLBACK_PREDICTIONS;
+  const recommendations = apiAi?.recommendations ?? apiAi?.data?.recommendations ?? FALLBACK_RECOMMENDATIONS;
+  const weeklyBrief = apiAi?.weeklyBrief ?? apiAi?.data?.weeklyBrief ?? FALLBACK_WEEKLY_BRIEF;
 
-  const filteredRecs = recFilter === "all" ? recommendations : recommendations.filter(r => r.category === recFilter);
+  const filteredProjects = projects
+    .filter((p: any) => p.name.includes(search) || p.client.includes(search) || p.id.includes(search))
+    .sort((a: any, b: any) => a.health - b.health);
+
+  const filteredRecs = recFilter === "all" ? recommendations : recommendations.filter((r: any) => r.category === recFilter);
 
   return (
     <div dir="rtl" className="p-6 space-y-6">

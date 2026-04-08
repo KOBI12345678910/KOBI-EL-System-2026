@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -10,7 +12,7 @@ import {
 
 const fmt = (v: number) => "₪" + v.toLocaleString("he-IL");
 
-const inspections = [
+const FALLBACK_INSPECTIONS = [
   { wo: "WO-4010", stage: "חומר נכנס", item: "פלדה 304L", qty: 500, result: "עבר", defects: 0, inspector: "יוסי כהן" },
   { wo: "WO-4011", stage: "בתהליך", item: "גליל אלומיניום 6061", qty: 200, result: "עבר", defects: 0, inspector: "שרה לוי" },
   { wo: "WO-4012", stage: "בדיקה סופית", item: "מארז בקר T-200", qty: 120, result: "נכשל", defects: 3, inspector: "דוד מזרחי" },
@@ -21,7 +23,7 @@ const inspections = [
   { wo: "WO-4017", stage: "בתהליך", item: "צינור נירוסטה DN50", qty: 150, result: "עבר", defects: 0, inspector: "נועה פרידמן" },
 ];
 
-const defects = [
+const FALLBACK_DEFECTS = [
   { type: "סדק פני שטח", station: "CNC-03", product: "מארז בקר T-200", severity: "קריטי", rootCause: "כלי שחוק", freq: 12 },
   { type: "סטייה מימדית", station: "עיבוד-01", product: "ציר הנעה SH-40", severity: "מז'ורי", rootCause: "כיול לקוי", freq: 8 },
   { type: "גימור לא אחיד", station: "צביעה-02", product: "פנל קדמי FP-15", severity: "מינורי", rootCause: "לחות גבוהה", freq: 15 },
@@ -31,7 +33,7 @@ const defects = [
   { type: "חוסר רכיב", station: "הרכבה-02", product: "בקר תעשייתי IC-55", severity: "קריטי", rootCause: "טעות BOM", freq: 3 },
 ];
 
-const ncrs = [
+const FALLBACK_NCRS = [
   { id: "NCR-001", item: "מארז בקר T-200", desc: "סדקים ב-3 יחידות אחרי בדיקה סופית", disposition: "תיקון", cost: 4500 },
   { id: "NCR-002", item: "לוח מעגל PCB-8L", desc: "הלחמות קרות בכרטיסי בקרה", disposition: "תיקון", cost: 2800 },
   { id: "NCR-003", item: "פולימר ABS-750", desc: "חומר גלם לא עומד במפרט ספיגה", disposition: "גריטה", cost: 12000 },
@@ -42,7 +44,7 @@ const ncrs = [
   { id: "NCR-008", item: "צינור נירוסטה DN50", desc: "סימני חלודה על פני השטח", disposition: "החזרה לספק", cost: 9200 },
 ];
 
-const reworkJobs = [
+const FALLBACK_REWORK = [
   { origWo: "WO-4012", reworkWo: "RW-501", reason: "סדקים במארז", station: "CNC-03", operator: "יוסי כהן", hours: 6.5, cost: 1950, status: "בעבודה" },
   { origWo: "WO-4014", reworkWo: "RW-502", reason: "הלחמות קרות", station: "SMT-01", operator: "שרה לוי", hours: 4.0, cost: 1200, status: "הושלם" },
   { origWo: "WO-4016", reworkWo: "RW-503", reason: "עיוות תרמי", station: "תנור-02", operator: "דוד מזרחי", hours: 3.0, cost: 900, status: "ממתין" },
@@ -52,7 +54,7 @@ const reworkJobs = [
   { origWo: "WO-4025", reworkWo: "RW-507", reason: "שריטות פני שטח", station: "הרכבה-04", operator: "עומר חדד", hours: 1.5, cost: 450, status: "ממתין" },
 ];
 
-const preventions = [
+const FALLBACK_PREVENTIONS = [
   { issue: "סדקי פני שטח חוזרים ב-CNC", rootCause: "כלי חיתוך שחוקים", action: "הוספת מעקב אוטומטי לשחיקת כלים", responsible: "יוסי כהן", verifyDate: "2026-04-15", status: "בוצע" },
   { issue: "הלחמות קרות ב-SMT", rootCause: "טמפרטורת ריפלו נמוכה", action: "עדכון פרופיל טמפרטורה + כיול חודשי", responsible: "שרה לוי", verifyDate: "2026-04-20", status: "בתהליך" },
   { issue: "סטייה מימדית בצירים", rootCause: "כיול מכונה לא תקין", action: "כיול שבועי + תיקון נוהל", responsible: "דוד מזרחי", verifyDate: "2026-04-10", status: "בוצע" },
@@ -78,6 +80,17 @@ const td = "p-3 text-sm";
 
 export default function QualityDefectsRework() {
   const [tab, setTab] = useState("inspections");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["production-quality-defects"],
+    queryFn: () => authFetch("/api/production/quality").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const inspections = safeArr(apiData?.inspections).length > 0 ? safeArr(apiData.inspections) : FALLBACK_INSPECTIONS;
+  const defects = safeArr(apiData?.defects).length > 0 ? safeArr(apiData.defects) : FALLBACK_DEFECTS;
+  const ncrs = safeArr(apiData?.ncrs).length > 0 ? safeArr(apiData.ncrs) : FALLBACK_NCRS;
+  const reworkJobs = safeArr(apiData?.rework).length > 0 ? safeArr(apiData.rework) : FALLBACK_REWORK;
+  const preventions = safeArr(apiData?.preventions).length > 0 ? safeArr(apiData.preventions) : FALLBACK_PREVENTIONS;
 
   const kpis = [
     { label: "בדיקות היום", value: "34", icon: ClipboardCheck, color: "text-blue-400", trend: "+8", up: true },

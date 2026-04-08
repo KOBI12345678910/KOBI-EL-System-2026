@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,11 +13,12 @@ import {
   Smile, Frown, Meh, ThumbsUp, ThumbsDown, Gauge, Heart,
   ArrowUpRight, ArrowDownRight, Calendar, Shield
 } from "lucide-react";
+import { authFetch } from "@/lib/utils";
 
 // ============================================================
 // BEHAVIORAL DATA PER CUSTOMER
 // ============================================================
-const customerBehavior = [
+const FALLBACK_CUSTOMER_BEHAVIOR = [
   {
     id: 1, name: "קבוצת אלון", segment: "VIP",
     // Signals
@@ -106,6 +108,12 @@ const intentBar = (score: number) => (
 );
 
 export default function BehavioralAnalytics() {
+  const { data: apiBehavior } = useQuery<typeof FALLBACK_CUSTOMER_BEHAVIOR>({
+    queryKey: ["crm-behavioral-analytics"],
+    queryFn: async () => { const res = await authFetch("/api/crm/analytics/behavioral"); if (!res.ok) throw new Error("API error"); return res.json(); },
+  });
+  const customerBehavior = apiBehavior ?? FALLBACK_CUSTOMER_BEHAVIOR;
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       <div className="flex items-center justify-between">

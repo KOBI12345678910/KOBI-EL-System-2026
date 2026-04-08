@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -22,7 +24,7 @@ interface Job {
   varianceNis: number; variancePct: number; status: JobStatus;
 }
 
-const jobs: Job[] = [
+const FALLBACK_JOBS: Job[] = [
   { wo: "WO-2501", product: "שער חשמלי דגם Premium", estimatedCost: 18500, actualMaterial: 7200, actualLabor: 4800, actualMachine: 2100, actualSubcontractor: 1500, actualRework: 350, totalActual: 15950, varianceNis: -2550, variancePct: -13.8, status: "under" },
   { wo: "WO-2502", product: "פרגולה אלומיניום 4x5", estimatedCost: 24000, actualMaterial: 9800, actualLabor: 6200, actualMachine: 3500, actualSubcontractor: 2800, actualRework: 2100, totalActual: 24400, varianceNis: 400, variancePct: 1.7, status: "accurate" },
   { wo: "WO-2503", product: "מעקה נירוסטה 12 מטר", estimatedCost: 14200, actualMaterial: 6100, actualLabor: 3900, actualMachine: 1800, actualSubcontractor: 0, actualRework: 1800, totalActual: 13600, varianceNis: -600, variancePct: -4.2, status: "accurate" },
@@ -35,32 +37,16 @@ const jobs: Job[] = [
   { wo: "WO-2510", product: "קונסטרוקציה תעשייתית", estimatedCost: 45000, actualMaterial: 18200, actualLabor: 11500, actualMachine: 6800, actualSubcontractor: 5200, actualRework: 4100, totalActual: 45800, varianceNis: 800, variancePct: 1.8, status: "accurate" },
 ];
 
-const totalThisMonth = jobs.reduce((s, j) => s + j.totalActual, 0);
-const avgCostPerJob = Math.round(totalThisMonth / jobs.length);
-const totalEstimated = jobs.reduce((s, j) => s + j.estimatedCost, 0);
-const overallVariancePct = ((totalThisMonth - totalEstimated) / totalEstimated * 100);
-const totalRework = jobs.reduce((s, j) => s + j.actualRework, 0);
-const totalWaste = 4850;
-const learningAccuracy = 94.2;
-
-const categoryBudgets = [
-  { name: "חומרי גלם", icon: Package, actual: jobs.reduce((s, j) => s + j.actualMaterial, 0), budget: 78000, color: "bg-blue-500" },
-  { name: "עבודה", icon: Users, actual: jobs.reduce((s, j) => s + j.actualLabor, 0), budget: 52000, color: "bg-cyan-500" },
-  { name: "מכונות", icon: Cpu, actual: jobs.reduce((s, j) => s + j.actualMachine, 0), budget: 27000, color: "bg-purple-500" },
-  { name: "קבלני משנה", icon: Wrench, actual: jobs.reduce((s, j) => s + j.actualSubcontractor, 0), budget: 18000, color: "bg-amber-500" },
-  { name: "עיבוד חוזר", icon: Hammer, actual: totalRework, budget: 8000, color: "bg-red-500" },
-];
-
-const trendData = [
+const FALLBACK_TREND_DATA = [
   { month: "נוב 2025", estimated: 168000, actual: 172000, variance: 2.4 },
   { month: "דצמ 2025", estimated: 155000, actual: 149000, variance: -3.9 },
   { month: "ינו 2026", estimated: 178000, actual: 183000, variance: 2.8 },
   { month: "פבר 2026", estimated: 162000, actual: 158000, variance: -2.5 },
   { month: "מרץ 2026", estimated: 185000, actual: 181000, variance: -2.2 },
-  { month: "אפר 2026", estimated: totalEstimated, actual: totalThisMonth, variance: Number(overallVariancePct.toFixed(1)) },
+  { month: "אפר 2026", estimated: 182500, actual: 180500, variance: -1.1 },
 ];
 
-const insights = [
+const FALLBACK_INSIGHTS = [
   { text: "ריתוך שערים עולה 8% יותר מהצפי — מומלץ לעדכן תמחור קטגוריית שערים", type: "warning" as const, impact: "₪1,200/חודש" },
   { text: "חומרי גלם מדויקים ב-96% — המודל לומד היטב", type: "success" as const, impact: "חיסכון ₪3,100" },
   { text: "עלות עיבוד חוזר בגדרות דקורטיביות חריגה — 15% מהעלות הכוללת", type: "error" as const, impact: "₪1,950 עודף" },
@@ -85,7 +71,31 @@ const insightIcon: Record<string, string> = {
 export default function ProductionCostTracking() {
   const [activeTab, setActiveTab] = useState("jobs");
 
-  const maxTrend = Math.max(...trendData.flatMap(t => [t.estimated, t.actual]));
+  const { data: apiData } = useQuery({
+    queryKey: ["production-cost-tracking"],
+    queryFn: () => authFetch("/api/production/costing").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const jobs: Job[] = safeArr(apiData?.jobs).length > 0 ? safeArr(apiData.jobs) : FALLBACK_JOBS;
+  const trendData = safeArr(apiData?.trendData).length > 0 ? safeArr(apiData.trendData) : FALLBACK_TREND_DATA;
+  const insights = safeArr(apiData?.insights).length > 0 ? safeArr(apiData.insights) : FALLBACK_INSIGHTS;
+
+  const totalThisMonth = jobs.reduce((s, j) => s + j.totalActual, 0);
+  const avgCostPerJob = Math.round(totalThisMonth / jobs.length);
+  const totalEstimated = jobs.reduce((s, j) => s + j.estimatedCost, 0);
+  const overallVariancePct = ((totalThisMonth - totalEstimated) / totalEstimated * 100);
+  const totalRework = jobs.reduce((s, j) => s + j.actualRework, 0);
+  const totalWaste = 4850;
+  const learningAccuracy = 94.2;
+  const categoryBudgets = [
+    { name: "חומרי גלם", icon: Package, actual: jobs.reduce((s, j) => s + j.actualMaterial, 0), budget: 78000, color: "bg-blue-500" },
+    { name: "עבודה", icon: Users, actual: jobs.reduce((s, j) => s + j.actualLabor, 0), budget: 52000, color: "bg-cyan-500" },
+    { name: "מכונות", icon: Cpu, actual: jobs.reduce((s, j) => s + j.actualMachine, 0), budget: 27000, color: "bg-purple-500" },
+    { name: "קבלני משנה", icon: Wrench, actual: jobs.reduce((s, j) => s + j.actualSubcontractor, 0), budget: 18000, color: "bg-amber-500" },
+    { name: "עיבוד חוזר", icon: Hammer, actual: totalRework, budget: 8000, color: "bg-red-500" },
+  ];
+
+  const maxTrend = Math.max(...trendData.flatMap((t: any) => [t.estimated, t.actual]));
 
   return (
     <div className="p-6 space-y-5" dir="rtl">

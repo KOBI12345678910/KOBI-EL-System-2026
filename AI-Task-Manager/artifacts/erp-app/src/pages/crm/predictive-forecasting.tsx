@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,11 +15,12 @@ import {
   ArrowUpRight, ArrowDownRight, Brain, Shield, Sigma,
   Gauge, Eye, RefreshCw, Layers, Calendar
 } from "lucide-react";
+import { authFetch } from "@/lib/utils";
 
 // ============================================================
 // FORECAST DATA
 // ============================================================
-const monthlyForecast = [
+const FALLBACK_MONTHLY_FORECAST = [
   { month: "אפריל 26", bestCase: 620000, expected: 485000, worstCase: 320000, actual: null, riskAdjusted: 445000, confidence: 0.88 },
   { month: "מאי 26", bestCase: 750000, expected: 580000, worstCase: 380000, actual: null, riskAdjusted: 528000, confidence: 0.82 },
   { month: "יוני 26", bestCase: 680000, expected: 520000, worstCase: 340000, actual: null, riskAdjusted: 475000, confidence: 0.78 },
@@ -27,48 +29,66 @@ const monthlyForecast = [
   { month: "ספטמבר 26", bestCase: 720000, expected: 540000, worstCase: 310000, actual: null, riskAdjusted: 486000, confidence: 0.65 },
 ];
 
-const historicalAccuracy = [
+const FALLBACK_HISTORICAL_ACCURACY = [
   { period: "ינואר 26", predicted: 420000, actual: 445000, error: 5.6, withinBand: true },
   { period: "פברואר 26", predicted: 380000, actual: 365000, error: -4.1, withinBand: true },
   { period: "מרץ 26", predicted: 510000, actual: 485000, error: -4.9, withinBand: true },
 ];
 
-const pipelineScenarios = {
+const FALLBACK_PIPELINE_SCENARIOS = {
   committed: { value: 1680000, deals: 3, label: "מחויב (P>80%)", color: "bg-emerald-500" },
   likely: { value: 1470000, deals: 4, label: "סביר (P 50-80%)", color: "bg-blue-500" },
   upside: { value: 1520000, deals: 3, label: "אפשרי (P 20-50%)", color: "bg-amber-500" },
   longShot: { value: 1200000, deals: 2, label: "סיכוי נמוך (P<20%)", color: "bg-gray-400" },
 };
 
-const churnPredictions = [
+const FALLBACK_CHURN_PREDICTIONS = [
   { customer: "סופרגז אנרגיה", probability: 0.92, ltvAtRisk: 380000, signals: ["חוב 115 ימים", "אין תקשורת 90 ימים", "health=5"], preventionAction: "גבייה משפטית" },
   { customer: "רשת פתאל", probability: 0.80, ltvAtRisk: 550000, signals: ["הפסדנו עסקה למתחרה", "health=15"], preventionAction: "פגישת הנהלה + הצעה משופרת" },
   { customer: "עיריית חולון", probability: 0.45, ltvAtRisk: 650000, signals: ["אין פעילות 60 ימים", "איחור תשלום 92 ימים"], preventionAction: "פגישת חידוש קשר" },
 ];
 
-const growthProjections = [
+const FALLBACK_GROWTH_PROJECTIONS = [
   { customer: "קבוצת אלון", currentRevenue: 485000, projected12m: 1450000, growth: 199, drivers: ["מגדל B ₪850K", "שדרוג חלונות ₪120K", "חוזה שנתי"] },
   { customer: "אמות השקעות", currentRevenue: 210000, projected12m: 680000, growth: 224, drivers: ["משרדי הרצליה ₪480K", "פרויקטים חדשים"] },
   { customer: "BIG מרכזי קניות", currentRevenue: 0, projected12m: 400000, growth: 999, drivers: ["ליד חדש ₪1.2M", "P(Close)=25%", "weighted=₪300K"] },
 ];
 
-const agentForecasts = [
+const FALLBACK_AGENT_FORECASTS = [
   { agent: "דני כהן", committed: 680000, pipeline: 1850000, weighted: 885000, target: 1500000, coverageRatio: 1.23, onTrack: true },
   { agent: "מיכל לוי", committed: 320000, pipeline: 1040000, weighted: 465000, target: 1200000, coverageRatio: 0.87, onTrack: false },
   { agent: "יוסי אברהם", committed: 112000, pipeline: 560000, weighted: 198000, target: 800000, coverageRatio: 0.70, onTrack: false },
 ];
 
-const totalBest = monthlyForecast.reduce((s, m) => s + m.bestCase, 0);
-const totalExpected = monthlyForecast.reduce((s, m) => s + m.expected, 0);
-const totalWorst = monthlyForecast.reduce((s, m) => s + m.worstCase, 0);
-const totalRiskAdj = monthlyForecast.reduce((s, m) => s + m.riskAdjusted, 0);
-const avgConfidence = monthlyForecast.reduce((s, m) => s + m.confidence, 0) / monthlyForecast.length;
-const avgAccuracy = historicalAccuracy.reduce((s, h) => s + Math.abs(h.error), 0) / historicalAccuracy.length;
-const churnAtRisk = churnPredictions.reduce((s, c) => s + c.ltvAtRisk * c.probability, 0);
-
 const fmt = (v: number) => v >= 1000000 ? `₪${(v / 1000000).toFixed(2)}M` : v >= 1000 ? `₪${(v / 1000).toFixed(0)}K` : `₪${v}`;
 
 export default function PredictiveForecasting() {
+  const { data: apiForecast } = useQuery<{
+    monthlyForecast: typeof FALLBACK_MONTHLY_FORECAST;
+    historicalAccuracy: typeof FALLBACK_HISTORICAL_ACCURACY;
+    pipelineScenarios: typeof FALLBACK_PIPELINE_SCENARIOS;
+    churnPredictions: typeof FALLBACK_CHURN_PREDICTIONS;
+    growthProjections: typeof FALLBACK_GROWTH_PROJECTIONS;
+    agentForecasts: typeof FALLBACK_AGENT_FORECASTS;
+  }>({
+    queryKey: ["crm-predictive-forecasting"],
+    queryFn: async () => { const res = await authFetch("/api/crm/forecasting"); if (!res.ok) throw new Error("API error"); return res.json(); },
+  });
+  const monthlyForecast = apiForecast?.monthlyForecast ?? FALLBACK_MONTHLY_FORECAST;
+  const historicalAccuracy = apiForecast?.historicalAccuracy ?? FALLBACK_HISTORICAL_ACCURACY;
+  const pipelineScenarios = apiForecast?.pipelineScenarios ?? FALLBACK_PIPELINE_SCENARIOS;
+  const churnPredictions = apiForecast?.churnPredictions ?? FALLBACK_CHURN_PREDICTIONS;
+  const growthProjections = apiForecast?.growthProjections ?? FALLBACK_GROWTH_PROJECTIONS;
+  const agentForecasts = apiForecast?.agentForecasts ?? FALLBACK_AGENT_FORECASTS;
+
+  const totalBest = monthlyForecast.reduce((s, m) => s + m.bestCase, 0);
+  const totalExpected = monthlyForecast.reduce((s, m) => s + m.expected, 0);
+  const totalWorst = monthlyForecast.reduce((s, m) => s + m.worstCase, 0);
+  const totalRiskAdj = monthlyForecast.reduce((s, m) => s + m.riskAdjusted, 0);
+  const avgConfidence = monthlyForecast.reduce((s, m) => s + m.confidence, 0) / monthlyForecast.length;
+  const avgAccuracy = historicalAccuracy.reduce((s, h) => s + Math.abs(h.error), 0) / historicalAccuracy.length;
+  const churnAtRisk = churnPredictions.reduce((s, c) => s + c.ltvAtRisk * c.probability, 0);
+
   const [confidenceAdj, setConfidenceAdj] = useState([80]);
 
   return (

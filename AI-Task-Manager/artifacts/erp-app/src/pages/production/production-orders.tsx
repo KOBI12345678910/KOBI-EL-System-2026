@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -56,7 +58,7 @@ const priorityMap: Record<Priority, { label: string; color: string }> = {
   low:    { label: "נמוך",   color: "bg-muted/20 text-muted-foreground" },
 };
 
-const orders: ProductionOrder[] = [
+const FALLBACK_ORDERS: ProductionOrder[] = [
   {
     id: "PO-1001", product: "שער חשמלי אלומיניום 4.5 מ'", project: "PRJ-220",
     customer: "אברהם נכסים בע\"מ", qty: 2, priority: "urgent",
@@ -143,6 +145,13 @@ type TabKey = "all" | "active" | "waiting" | "done";
 export default function ProductionOrders() {
   const [tab, setTab] = useState<TabKey>("all");
   const [search, setSearch] = useState("");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["production-orders"],
+    queryFn: () => authFetch("/api/production/work-orders").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const orders: ProductionOrder[] = safeArr(apiData).length > 0 ? safeArr(apiData) : FALLBACK_ORDERS;
 
   const filtered = useMemo(() => {
     let list = [...orders];

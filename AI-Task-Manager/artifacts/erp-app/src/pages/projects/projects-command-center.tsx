@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,7 +11,7 @@ import {
   Milestone, FileText, Briefcase, Activity, Layers, GitBranch
 } from "lucide-react";
 
-const portfolioKPIs = {
+const FALLBACK_PORTFOLIO_KPIS = {
   totalProjects: 34,
   activeProjects: 18,
   completedThisQuarter: 7,
@@ -29,7 +31,7 @@ const portfolioKPIs = {
   avgProjectHealth: 78,
 };
 
-const projectsList = [
+const FALLBACK_CC_PROJECTS_LIST = [
   { id: "PRJ-001", name: "בניין מגורים קריית אתא — שלב ב׳", pm: "אורי כהן", phase: "ביצוע", health: 92, budget: 4500000, spent: 3200000, spi: 1.02, cpi: 1.05, dueDate: "2026-08-15", status: "on_track", pct: 71 },
   { id: "PRJ-002", name: "פרויקט נדל\"ן פלוס — מגדל A", pm: "דנה לוי", phase: "ביצוע", health: 85, budget: 8200000, spent: 6100000, spi: 0.98, cpi: 0.96, dueDate: "2026-12-01", status: "on_track", pct: 58 },
   { id: "PRJ-003", name: "שיפוץ מבנה תעשייה — אזור הצפון", pm: "יוסי מרקוביץ", phase: "תכנון", health: 68, budget: 1800000, spent: 450000, spi: 0.85, cpi: 1.1, dueDate: "2026-06-30", status: "at_risk", pct: 25 },
@@ -39,7 +41,7 @@ const projectsList = [
   { id: "PRJ-007", name: "מבנה משרדים — רמת גן", pm: "יוסי מרקוביץ", phase: "תכנון", health: 55, budget: 5600000, spent: 800000, spi: 0.72, cpi: 0.9, dueDate: "2027-03-01", status: "at_risk", pct: 14 },
 ];
 
-const milestones = [
+const FALLBACK_CC_MILESTONES = [
   { project: "PRJ-001", name: "סיום שלב שלד", due: "2026-04-20", status: "on_track", daysLeft: 12 },
   { project: "PRJ-002", name: "אישור תכנית ביצוע", due: "2026-04-08", status: "today", daysLeft: 0 },
   { project: "PRJ-004", name: "מסירת חלונות קומה 8-14", due: "2026-04-05", status: "overdue", daysLeft: -3 },
@@ -48,7 +50,7 @@ const milestones = [
   { project: "PRJ-007", name: "סיום תכנון אדריכלי", due: "2026-04-30", status: "at_risk", daysLeft: 22 },
 ];
 
-const resourceAllocation = [
+const FALLBACK_RESOURCE_ALLOCATION = [
   { name: "אורי כהן", role: "מנהל פרויקט", projects: 2, utilization: 95, hours: 190, capacity: 200 },
   { name: "דנה לוי", role: "מנהלת פרויקט", projects: 2, utilization: 88, hours: 176, capacity: 200 },
   { name: "יוסי מרקוביץ", role: "מנהל פרויקט", projects: 2, utilization: 72, hours: 144, capacity: 200 },
@@ -57,14 +59,14 @@ const resourceAllocation = [
   { name: "צוות הנדסה B", role: "צוות ביצוע", projects: 2, utilization: 78, hours: 936, capacity: 1200 },
 ];
 
-const riskRegister = [
+const FALLBACK_CC_RISK_REGISTER = [
   { id: "RSK-01", project: "PRJ-004", desc: "חריגה בתקציב — צפי 112% מהמתוכנן", severity: "critical", impact: "high", probability: "high", mitigation: "בדיקת ספקים חלופיים" },
   { id: "RSK-02", project: "PRJ-003", desc: "עיכוב באישור היתר", severity: "high", impact: "high", probability: "medium", mitigation: "מעקב מול הוועדה" },
   { id: "RSK-03", project: "PRJ-007", desc: "תכנון לא סופי — שינויים תכופים", severity: "medium", impact: "medium", probability: "high", mitigation: "הקפאת תכנון עד 15/04" },
   { id: "RSK-04", project: "PRJ-002", desc: "תלות בספק יחיד לפלדה", severity: "medium", impact: "high", probability: "low", mitigation: "גיבוי ספק מאושר" },
 ];
 
-const changeOrders = [
+const FALLBACK_CC_CHANGE_ORDERS = [
   { id: "CO-041", project: "PRJ-004", desc: "שינוי סוג זכוכית לקומות עליונות", amount: 185000, status: "pending", requestedBy: "לקוח", date: "2026-04-03" },
   { id: "CO-042", project: "PRJ-001", desc: "הוספת מעלית שירות", amount: 320000, status: "approved", requestedBy: "אדריכל", date: "2026-04-01" },
   { id: "CO-043", project: "PRJ-002", desc: "שדרוג מערכת כיבוי אש", amount: 95000, status: "pending", requestedBy: "יועץ בטיחות", date: "2026-04-06" },
@@ -128,6 +130,17 @@ const fmt = (n: number) => new Intl.NumberFormat("he-IL").format(n);
 const fmtCurrency = (n: number) => "₪" + new Intl.NumberFormat("he-IL").format(n);
 
 export default function ProjectsCommandCenter() {
+  const { data: apiCC } = useQuery({
+    queryKey: ["projects-command-center"],
+    queryFn: async () => { const r = await authFetch("/api/projects/command-center"); return r.json(); },
+  });
+  const portfolioKPIs = apiCC?.portfolioKPIs ?? apiCC?.data?.portfolioKPIs ?? FALLBACK_PORTFOLIO_KPIS;
+  const projectsList = apiCC?.projectsList ?? apiCC?.data?.projectsList ?? FALLBACK_CC_PROJECTS_LIST;
+  const milestones = apiCC?.milestones ?? apiCC?.data?.milestones ?? FALLBACK_CC_MILESTONES;
+  const resourceAllocation = apiCC?.resourceAllocation ?? apiCC?.data?.resourceAllocation ?? FALLBACK_RESOURCE_ALLOCATION;
+  const riskRegister = apiCC?.riskRegister ?? apiCC?.data?.riskRegister ?? FALLBACK_CC_RISK_REGISTER;
+  const changeOrders = apiCC?.changeOrders ?? apiCC?.data?.changeOrders ?? FALLBACK_CC_CHANGE_ORDERS;
+
   return (
     <div className="p-6 space-y-6" dir="rtl">
       <div className="flex items-center justify-between">

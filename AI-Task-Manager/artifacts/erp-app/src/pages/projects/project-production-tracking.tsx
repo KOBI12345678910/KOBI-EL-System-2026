@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Factory, ClipboardList, AlertTriangle, Timer, Gauge, Search, Layers, ShieldCheck, Wrench, Scissors, Flame, Paintbrush, GlassWater, Package, ArrowUpDown } from "lucide-react";
 
 /* ─── נתוני ייצור ─── */
-const productionOrders = [
+const FALLBACK_PRODUCTION_ORDERS = [
   { id: "PO-4001", project: "מגדל הים חיפה", projectId: "PRJ-101", taskRef: "TSK-210", workCenter: "חיתוך", drawingRef: "DWG-A101", qty: 240, status: "completed", plannedHrs: 48, actualHrs: 45, scrapQty: 3, scrapCost: 1250, reworkQty: 2, reworkCost: 800 },
   { id: "PO-4002", project: "מגדל הים חיפה", projectId: "PRJ-101", taskRef: "TSK-211", workCenter: "כיפוף", drawingRef: "DWG-A102", qty: 240, status: "completed", plannedHrs: 36, actualHrs: 38, scrapQty: 1, scrapCost: 420, reworkQty: 0, reworkCost: 0 },
   { id: "PO-4003", project: "מגדל הים חיפה", projectId: "PRJ-101", taskRef: "TSK-212", workCenter: "ריתוך", drawingRef: "DWG-A103", qty: 120, status: "in-progress", plannedHrs: 60, actualHrs: 42, scrapQty: 2, scrapCost: 1800, reworkQty: 3, reworkCost: 1500 },
@@ -42,37 +44,48 @@ const statusMap: Record<string, { label: string; badge: string }> = {
 };
 const fmt = (n: number) => "₪" + new Intl.NumberFormat("he-IL").format(n);
 const pct = (a: number, b: number) => b === 0 ? 0 : Math.round((a / b) * 100);
-const activeOrders = productionOrders.filter(o => ["in-progress","qc","released"].includes(o.status)).length;
-const unitsInProduction = productionOrders.filter(o => o.status === "in-progress").reduce((s, o) => s + o.qty, 0);
-const completedOnTime = productionOrders.filter(o => o.status === "completed" && o.actualHrs <= o.plannedHrs).length;
-const totalCompleted = productionOrders.filter(o => o.status === "completed").length;
-const onTimePct = totalCompleted > 0 ? Math.round((completedOnTime / totalCompleted) * 100) : 0;
-const totalScrapCost = productionOrders.reduce((s, o) => s + o.scrapCost, 0);
-const totalReworkCost = productionOrders.reduce((s, o) => s + o.reworkCost, 0);
-const totalPlanned = productionOrders.filter(o => o.status !== "planned").reduce((s, o) => s + o.plannedHrs, 0);
-const totalActual = productionOrders.filter(o => o.status !== "planned").reduce((s, o) => s + o.actualHrs, 0);
-const utilization = totalPlanned > 0 ? Math.round((totalActual / totalPlanned) * 100) : 0;
-const kpis = [
-  { label: "הזמנות פעילות", value: activeOrders.toString(), icon: ClipboardList, color: "text-blue-400" },
-  { label: "יחידות בייצור", value: unitsInProduction.toLocaleString("he-IL"), icon: Factory, color: "text-amber-400" },
-  { label: "אחוז בזמן", value: onTimePct + "%", icon: Timer, color: "text-green-400" },
-  { label: "עלות פחת", value: fmt(totalScrapCost), icon: AlertTriangle, color: "text-red-400" },
-  { label: "עלות תיקון", value: fmt(totalReworkCost), icon: Wrench, color: "text-orange-400" },
-  { label: "ניצולת מרכזי עבודה", value: utilization + "%", icon: Gauge, color: "text-cyan-400" },
-];
+function buildProductionKpis(productionOrders: any[]) {
+  const activeOrders = productionOrders.filter(o => ["in-progress","qc","released"].includes(o.status)).length;
+  const unitsInProduction = productionOrders.filter(o => o.status === "in-progress").reduce((s: number, o: any) => s + o.qty, 0);
+  const completedOnTime = productionOrders.filter(o => o.status === "completed" && o.actualHrs <= o.plannedHrs).length;
+  const totalCompleted = productionOrders.filter(o => o.status === "completed").length;
+  const onTimePct = totalCompleted > 0 ? Math.round((completedOnTime / totalCompleted) * 100) : 0;
+  const totalScrapCost = productionOrders.reduce((s: number, o: any) => s + o.scrapCost, 0);
+  const totalReworkCost = productionOrders.reduce((s: number, o: any) => s + o.reworkCost, 0);
+  const totalPlanned = productionOrders.filter(o => o.status !== "planned").reduce((s: number, o: any) => s + o.plannedHrs, 0);
+  const totalActual = productionOrders.filter(o => o.status !== "planned").reduce((s: number, o: any) => s + o.actualHrs, 0);
+  const utilization = totalPlanned > 0 ? Math.round((totalActual / totalPlanned) * 100) : 0;
+  return [
+    { label: "הזמנות פעילות", value: activeOrders.toString(), icon: ClipboardList, color: "text-blue-400" },
+    { label: "יחידות בייצור", value: unitsInProduction.toLocaleString("he-IL"), icon: Factory, color: "text-amber-400" },
+    { label: "אחוז בזמן", value: onTimePct + "%", icon: Timer, color: "text-green-400" },
+    { label: "עלות פחת", value: fmt(totalScrapCost), icon: AlertTriangle, color: "text-red-400" },
+    { label: "עלות תיקון", value: fmt(totalReworkCost), icon: Wrench, color: "text-orange-400" },
+    { label: "ניצולת מרכזי עבודה", value: utilization + "%", icon: Gauge, color: "text-cyan-400" },
+  ];
+}
 
-/* ─── נתונים מקובצים לפי פרויקט ─── */
-const projectGroups = Object.values(
-  productionOrders.reduce((acc, o) => {
-    if (!acc[o.projectId]) acc[o.projectId] = { projectId: o.projectId, project: o.project, orders: [] };
-    acc[o.projectId].orders.push(o);
-    return acc;
-  }, {} as Record<string, { projectId: string; project: string; orders: typeof productionOrders }>)
-);
+function buildProjectGroups(productionOrders: any[]) {
+  return Object.values(
+    productionOrders.reduce((acc: any, o: any) => {
+      if (!acc[o.projectId]) acc[o.projectId] = { projectId: o.projectId, project: o.project, orders: [] };
+      acc[o.projectId].orders.push(o);
+      return acc;
+    }, {} as Record<string, any>)
+  );
+}
 
 export default function ProjectProductionTracking() {
   const [tab, setTab] = useState("orders");
   const [search, setSearch] = useState("");
+
+  const { data: apiProd } = useQuery({
+    queryKey: ["project-production-tracking"],
+    queryFn: async () => { const r = await authFetch("/api/projects/production"); return r.json(); },
+  });
+  const productionOrders = Array.isArray(apiProd) ? apiProd : (apiProd?.data ?? apiProd?.productionOrders ?? FALLBACK_PRODUCTION_ORDERS);
+  const kpis = buildProductionKpis(productionOrders);
+  const projectGroups = buildProjectGroups(productionOrders);
 
   const filtered = productionOrders.filter(o =>
     o.id.includes(search) || o.project.includes(search) || o.workCenter.includes(search) || o.drawingRef.includes(search)

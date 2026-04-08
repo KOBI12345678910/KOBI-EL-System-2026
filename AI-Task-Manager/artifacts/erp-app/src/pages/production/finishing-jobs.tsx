@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,8 +11,8 @@ import {
   TrendingUp, TrendingDown, Activity, Layers, ThermometerSun, Eye
 } from "lucide-react";
 
-/* ── grinding_jobs ── */
-const grindingJobs = [
+/* ── Fallback grinding_jobs ── */
+const FALLBACK_GRINDING = [
   { wo: "WO-4801", product: "מסגרת אלומיניום 180x90", operator: "יוסי כהן", station: "STN-301", progress: 85, quality: "תקין", grainSize: "P120", method: "שטוח" },
   { wo: "WO-4802", product: "דלת פלדה מחוזקת", operator: "דוד מזרחי", station: "STN-302", progress: 60, quality: "תקין", grainSize: "P80", method: "סרט" },
   { wo: "WO-4803", product: "מעקה נירוסטה מעוגל", operator: "אלון גולדשטיין", station: "STN-301", progress: 100, quality: "מצוין", grainSize: "P220", method: "שטוח" },
@@ -21,8 +23,8 @@ const grindingJobs = [
   { wo: "WO-4808", product: "תריס גלילה פלדה", operator: "עומר חדד", station: "STN-302", progress: 55, quality: "תקין", grainSize: "P150", method: "סרט" },
 ];
 
-/* ── galvanization_queue ── */
-const galvanizationQueue = [
+/* ── Fallback galvanization_queue ── */
+const FALLBACK_GALVANIZATION = [
   { batch: "GAL-1201", items: 24, weightKg: 186, source: "פנימי", status: "בטבילה", expected: "14:30", zincLayer: "85 מיקרון" },
   { batch: "GAL-1202", items: 12, weightKg: 340, source: "ספק - מתכת בע\"מ", status: "ממתין", expected: "16:00", zincLayer: "70 מיקרון" },
   { batch: "GAL-1203", items: 36, weightKg: 95, source: "פנימי", status: "ייבוש", expected: "13:00", zincLayer: "100 מיקרון" },
@@ -33,8 +35,8 @@ const galvanizationQueue = [
   { batch: "GAL-1208", items: 30, weightKg: 270, source: "פנימי", status: "הושלם", expected: "10:00", zincLayer: "85 מיקרון" },
 ];
 
-/* ── powder_coating_queue ── */
-const powderCoatingQueue = [
+/* ── Fallback powder_coating_queue ── */
+const FALLBACK_POWDER_COATING = [
   { batch: "PC-3301", colorCode: "RAL-9005", colorName: "שחור עמוק", items: 16, thicknessSpec: "60-80", ovenTemp: 190, status: "באפייה" },
   { batch: "PC-3302", colorCode: "RAL-9010", colorName: "לבן טהור", items: 28, thicknessSpec: "50-70", ovenTemp: 185, status: "ריסוס" },
   { batch: "PC-3303", colorCode: "RAL-7016", colorName: "אפור אנתרציט", items: 10, thicknessSpec: "70-90", ovenTemp: 200, status: "הושלם" },
@@ -45,8 +47,8 @@ const powderCoatingQueue = [
   { batch: "PC-3308", colorCode: "RAL-1015", colorName: "שנהב בהיר", items: 18, thicknessSpec: "55-75", ovenTemp: 190, status: "צינון" },
 ];
 
-/* ── painting_status_tracking ── */
-const paintingStatus = [
+/* ── Fallback painting_status_tracking ── */
+const FALLBACK_PAINTING = [
   { item: "מסגרת דלת D-220", color: "לבן מאט", coats: 2, dryingStatus: "יבש", qc: "עבר" },
   { item: "שער כניסה G-150", color: "שחור מבריק", coats: 3, dryingStatus: "בייבוש", qc: "ממתין" },
   { item: "מעקה מדרגות R-88", color: "אפור מטאלי", coats: 2, dryingStatus: "יבש", qc: "עבר" },
@@ -89,6 +91,17 @@ const progressColor = (v: number) => v === 100 ? "bg-green-500" : v >= 70 ? "bg-
 
 export default function FinishingJobs() {
   const [tab, setTab] = useState("grinding");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["production-finishing-jobs"],
+    queryFn: () => authFetch("/api/production/work-orders?type=finishing").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const raw = safeArr(apiData);
+  const grindingJobs = raw.length > 0 ? raw.filter((r: any) => r.stage === "grinding") : FALLBACK_GRINDING;
+  const galvanizationQueue = raw.length > 0 ? raw.filter((r: any) => r.stage === "galvanization") : FALLBACK_GALVANIZATION;
+  const powderCoatingQueue = raw.length > 0 ? raw.filter((r: any) => r.stage === "powder_coating") : FALLBACK_POWDER_COATING;
+  const paintingStatus = raw.length > 0 ? raw.filter((r: any) => r.stage === "painting") : FALLBACK_PAINTING;
 
   const kpis = [
     { label: "עבודות פעילות", value: "34", icon: Activity, color: "text-blue-400", trend: "+4", up: true },

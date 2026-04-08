@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,8 +12,8 @@ import {
   CheckCircle2, XCircle, Lightbulb, Activity,
 } from "lucide-react";
 
-/* ── Work Centers ── */
-const centers = [
+/* ── Fallback Work Centers ── */
+const FALLBACK_CENTERS = [
   { id: "cut", name: "חיתוך", available: 48, planned: 42, ops: ["רועי כהן", "אלי ביטון"], shift: 2 },
   { id: "weld", name: "ריתוך", available: 48, planned: 51, ops: ["יוסי מזרחי"], shift: 2 },
   { id: "grind", name: "שיוף", available: 40, planned: 28, ops: ["דני אברהם"], shift: 1 },
@@ -22,12 +24,7 @@ const centers = [
   { id: "pack", name: "אריזה", available: 40, planned: 22, ops: ["שלומי דהן"], shift: 1 },
 ];
 
-const util = (c: typeof centers[0]) => Math.round((c.planned / c.available) * 100);
-const totalAvail = centers.reduce((s, c) => s + c.available, 0);
-const totalPlanned = centers.reduce((s, c) => s + c.planned, 0);
-const overloaded = centers.filter(c => util(c) > 100);
-const bottleneck = [...centers].sort((a, b) => util(b) - util(a))[0];
-const avgUtil = Math.round(centers.reduce((s, c) => s + util(c), 0) / centers.length);
+const _util = (c: any) => Math.round((c.planned / c.available) * 100);
 
 /* ── Weekly Grid Data (Sun-Thu) ── */
 const days = ["ראשון", "שני", "שלישי", "רביעי", "חמישי"];
@@ -46,8 +43,8 @@ const dailyCap: Record<string, number> = {
   "זכוכית": 8.0, "צבע": 8.0, "הרכבה": 11.2, "אריזה": 8.0,
 };
 
-/* ── Overload Resolutions ── */
-const resolutions = [
+/* ── Fallback Overload Resolutions ── */
+const FALLBACK_RESOLUTIONS = [
   { center: "ריתוך", overflow: 3, suggestion: "הוספת משמרת שלישית חלקית (4 שעות) ביום שלישי ורביעי", impact: "עלות נוספת: ~1,200 \u20AA, חיסכון עיכוב: 2 ימים", priority: "high" },
   { center: "ריתוך", overflow: 3, suggestion: "העברת 2 הזמנות מעקות לקבלן-משנה (רתכי חוץ)", impact: "עלות קבלן: ~3,500 \u20AA, שחרור 6 שעות שבועיות", priority: "medium" },
   { center: "צבע", overflow: 4, suggestion: "הקדמת צביעה ליום ראשון במשמרת בוקר מוקדמת (05:00)", impact: "תוספת שעות: 4, ללא עלות נוספת (שעות רגילות)", priority: "high" },
@@ -55,9 +52,9 @@ const resolutions = [
   { center: "הרכבה", overflow: 2, suggestion: "שיבוץ דני אברהם (שיוף) לסיוע בהרכבה ביום רביעי", impact: "ניצול שיוף: 70% → 55%, הרכבה: 107% → 93%", priority: "high" },
 ];
 
-/* ── 4-Week Forecast ── */
-const forecast = [
-  { week: "שבוע נוכחי (14-18/04)", utilPct: avgUtil, orders: 28, risk: "בינוני", notes: "עומס יתר בריתוך וצבע" },
+/* ── Fallback 4-Week Forecast ── */
+const FALLBACK_FORECAST = [
+  { week: "שבוע נוכחי (14-18/04)", utilPct: 82, orders: 28, risk: "בינוני", notes: "עומס יתר בריתוך וצבע" },
   { week: "שבוע הבא (21-25/04)", utilPct: 82, orders: 32, risk: "גבוה", notes: "כניסת פרויקט הרצליה + הזמנת שופרסל" },
   { week: "שבוע 3 (28/04-02/05)", utilPct: 71, orders: 24, risk: "נמוך", notes: "יום העצמאות - 4 ימי עבודה" },
   { week: "שבוע 4 (05-09/05)", utilPct: 88, orders: 35, risk: "גבוה", notes: "עומס הרכבה + התקנות שטח" },
@@ -80,6 +77,22 @@ const barColor = (pct: number) =>
 /* ═══════════════ Component ═══════════════ */
 export default function CapacityPlanning() {
   const [tab, setTab] = useState("weekly");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["production-capacity-planning"],
+    queryFn: () => authFetch("/api/production/scheduling?type=capacity").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const centers = safeArr(apiData).length > 0 ? safeArr(apiData) : FALLBACK_CENTERS;
+  const resolutions = (apiData as any)?.resolutions || FALLBACK_RESOLUTIONS;
+  const forecast = (apiData as any)?.forecast || FALLBACK_FORECAST;
+
+  const util = _util;
+  const totalAvail = centers.reduce((s: number, c: any) => s + c.available, 0);
+  const totalPlanned = centers.reduce((s: number, c: any) => s + c.planned, 0);
+  const overloaded = centers.filter((c: any) => util(c) > 100);
+  const bottleneck = [...centers].sort((a: any, b: any) => util(b) - util(a))[0];
+  const avgUtil = Math.round(centers.reduce((s: number, c: any) => s + util(c), 0) / centers.length);
 
   const kpis = [
     { label: "קיבולת שבועית כוללת", value: `${totalAvail} שעות`, icon: Clock, color: "text-blue-400" },

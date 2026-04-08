@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -32,8 +34,8 @@ interface FeedEvent {
   type: "info" | "success" | "warning" | "error";
 }
 
-/* ── Station mock data ── */
-const initialStations: Station[] = [
+/* ── Station fallback data ── */
+const FALLBACK_STATIONS: Station[] = [
   { id: 1, name: "מסור 1", currentJob: "WO-4501", operator: "רועי כהן", product: "פרופיל אלומיניום 100mm", progress: 72, elapsed: "02:18:05", status: "running", target: 120, completed: 86 },
   { id: 2, name: "CNC 1", currentJob: "WO-4502", operator: "אמיר לוי", product: "מסגרת ברזל דגם B", progress: 45, elapsed: "01:33:40", status: "running", target: 80, completed: 36 },
   { id: 3, name: "ריתוך 1", currentJob: "WO-4503", operator: "יוסי מזרחי", product: "שלדת פלדה 2.0m", progress: 88, elapsed: "03:45:12", status: "running", target: 50, completed: 44 },
@@ -44,7 +46,7 @@ const initialStations: Station[] = [
   { id: 8, name: "הרכבה 2", currentJob: "—", operator: "—", product: "—", progress: 0, elapsed: "01:15:00", status: "down", target: 0, completed: 0 },
 ];
 
-const initialFeed: FeedEvent[] = [
+const FALLBACK_FEED: FeedEvent[] = [
   { id: 1, time: "14:32", station: "מסור 1", msg: "רועי כהן התחיל עבודה WO-4501", type: "info" },
   { id: 2, time: "14:28", station: "CNC 1", msg: "בדיקת QC עברה בהצלחה — 36 יח׳", type: "success" },
   { id: 3, time: "14:25", station: "ריתוך 1", msg: "דיווח התקדמות: 88% — 44/50 יח׳", type: "info" },
@@ -90,8 +92,16 @@ const actions = [
 
 /* ═══════════════ Component ═══════════════ */
 export default function ShopFloorControl() {
-  const [stations, setStations] = useState<Station[]>(initialStations);
-  const [feed, setFeed] = useState<FeedEvent[]>(initialFeed);
+  const { data: apiData } = useQuery({
+    queryKey: ["production-shop-floor"],
+    queryFn: () => authFetch("/api/production/lines?type=shop-floor").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const apiStations = safeArr(apiData?.stations).length > 0 ? safeArr(apiData.stations) : FALLBACK_STATIONS;
+  const apiFeed = safeArr(apiData?.feed).length > 0 ? safeArr(apiData.feed) : FALLBACK_FEED;
+
+  const [stations, setStations] = useState<Station[]>(apiStations);
+  const [feed, setFeed] = useState<FeedEvent[]>(apiFeed);
   const [selectedStation, setSelectedStation] = useState<number | null>(null);
   const [lastAction, setLastAction] = useState<string | null>(null);
 

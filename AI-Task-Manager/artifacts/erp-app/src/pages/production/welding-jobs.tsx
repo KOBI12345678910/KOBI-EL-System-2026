@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -8,8 +10,8 @@ import {
   Package, ShieldCheck, FlaskConical, Repeat2
 } from "lucide-react";
 
-/* ─── mock data: weld_jobs ─── */
-const weldJobs = [
+/* ─── fallback data: weld_jobs ─── */
+const FALLBACK_WELD_JOBS = [
   { id: "WJ-1001", wo: "WO-4420", product: "מסגרת פלדה 2.5מ", weldType: "MIG", welder: "אורי דהן", station: "עמדה 1", pieces: 24, done: 20, quality: "תקין" },
   { id: "WJ-1002", wo: "WO-4421", product: "קורת תמיכה H200", weldType: "TIG", welder: "משה ביטון", station: "עמדה 2", pieces: 16, done: 16, quality: "תקין" },
   { id: "WJ-1003", wo: "WO-4422", product: "צינור נירוסטה DN50", weldType: "TIG", welder: "יוסף חדד", station: "עמדה 3", pieces: 40, done: 28, quality: "חריגה" },
@@ -20,8 +22,8 @@ const weldJobs = [
   { id: "WJ-1008", wo: "WO-4427", product: "תושבת מנוע", weldType: "MIG", welder: "איתן כהן", station: "עמדה 3", pieces: 12, done: 0, quality: "ממתין" },
 ];
 
-/* ─── mock data: weld_quality_checks ─── */
-const qualityChecks = [
+/* ─── fallback data: weld_quality_checks ─── */
+const FALLBACK_QUALITY_CHECKS = [
   { id: "QC-501", job: "WJ-1001", type: "בדיקה חזותית", result: "עבר", defects: 0, inspector: "מיכל ברק" },
   { id: "QC-502", job: "WJ-1002", type: "צילום רנטגן", result: "עבר", defects: 0, inspector: "נועה פרידמן" },
   { id: "QC-503", job: "WJ-1003", type: "מבחן כיפוף", result: "נכשל", defects: 2, inspector: "מיכל ברק" },
@@ -32,8 +34,8 @@ const qualityChecks = [
   { id: "QC-508", job: "WJ-1006", type: "צילום רנטגן", result: "ממתין", defects: 0, inspector: "נועה פרידמן" },
 ];
 
-/* ─── mock data: welding_consumables_tracking ─── */
-const consumables = [
+/* ─── fallback data: welding_consumables_tracking ─── */
+const FALLBACK_CONSUMABLES = [
   { id: "C-01", wire: "ER70S-6 (1.0mm)", gas: "CO2 + Argon", usedToday: 4.2, stock: 120, reorder: false },
   { id: "C-02", wire: "ER308L (0.8mm)", gas: "Argon 100%", usedToday: 2.8, stock: 45, reorder: true },
   { id: "C-03", wire: "ER70S-6 (1.2mm)", gas: "CO2 + Argon", usedToday: 5.1, stock: 98, reorder: false },
@@ -57,27 +59,35 @@ const weldTypeBadge = (t: string) => {
   return "bg-orange-500/20 text-orange-400";
 };
 
-/* ─── KPI computation ─── */
-const activeJobs = weldJobs.filter(j => j.done < j.pieces).length;
-const completedToday = weldJobs.filter(j => j.done === j.pieces).length;
-const totalChecks = qualityChecks.filter(q => q.result !== "ממתין").length;
-const passedChecks = qualityChecks.filter(q => q.result === "עבר").length;
-const passRate = totalChecks > 0 ? Math.round((passedChecks / totalChecks) * 100) : 0;
-const consumablesUsed = consumables.reduce((s, c) => s + c.usedToday, 0).toFixed(1);
-const avgJobTime = "47 דק'";
-const reworkCount = qualityChecks.filter(q => q.result === "נכשל").length;
-
-const kpis = [
-  { label: "עבודות ריתוך פעילות", value: activeJobs, icon: Flame, color: "text-orange-400" },
-  { label: "הושלמו היום", value: completedToday, icon: CheckCircle, color: "text-green-400" },
-  { label: "אחוז עמידה באיכות", value: `${passRate}%`, icon: ShieldCheck, color: "text-cyan-400" },
-  { label: 'מתכלים (ק"ג)', value: consumablesUsed, icon: Package, color: "text-yellow-400" },
-  { label: "זמן ממוצע לעבודה", value: avgJobTime, icon: Clock, color: "text-blue-400" },
-  { label: "עבודות חוזרות", value: reworkCount, icon: Repeat2, color: "text-red-400" },
-];
-
 export default function WeldingJobs() {
   const [tab, setTab] = useState("jobs");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["production-welding-jobs"],
+    queryFn: () => authFetch("/api/production/work-orders?type=welding").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const weldJobs = safeArr(apiData?.jobs).length > 0 ? safeArr(apiData.jobs) : FALLBACK_WELD_JOBS;
+  const qualityChecks = safeArr(apiData?.qualityChecks).length > 0 ? safeArr(apiData.qualityChecks) : FALLBACK_QUALITY_CHECKS;
+  const consumables = safeArr(apiData?.consumables).length > 0 ? safeArr(apiData.consumables) : FALLBACK_CONSUMABLES;
+
+  const activeJobs = weldJobs.filter((j: any) => j.done < j.pieces).length;
+  const completedToday = weldJobs.filter((j: any) => j.done === j.pieces).length;
+  const totalChecks = qualityChecks.filter((q: any) => q.result !== "ממתין").length;
+  const passedChecks = qualityChecks.filter((q: any) => q.result === "עבר").length;
+  const passRate = totalChecks > 0 ? Math.round((passedChecks / totalChecks) * 100) : 0;
+  const consumablesUsed = consumables.reduce((s: number, c: any) => s + c.usedToday, 0).toFixed(1);
+  const avgJobTime = "47 דק'";
+  const reworkCount = qualityChecks.filter((q: any) => q.result === "נכשל").length;
+
+  const kpis = [
+    { label: "עבודות ריתוך פעילות", value: activeJobs, icon: Flame, color: "text-orange-400" },
+    { label: "הושלמו היום", value: completedToday, icon: CheckCircle, color: "text-green-400" },
+    { label: "אחוז עמידה באיכות", value: `${passRate}%`, icon: ShieldCheck, color: "text-cyan-400" },
+    { label: 'מתכלים (ק"ג)', value: consumablesUsed, icon: Package, color: "text-yellow-400" },
+    { label: "זמן ממוצע לעבודה", value: avgJobTime, icon: Clock, color: "text-blue-400" },
+    { label: "עבודות חוזרות", value: reworkCount, icon: Repeat2, color: "text-red-400" },
+  ];
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#0a0a0f] text-gray-100 p-6 space-y-6">

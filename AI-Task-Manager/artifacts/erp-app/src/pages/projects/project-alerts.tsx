@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Bell, AlertTriangle, ShieldAlert, CheckCircle2, DollarSign, Clock, TrendingDown, Package, Truck, Wrench, Home, CreditCard, Flame, Settings, Search, Eye, X, ToggleLeft, ToggleRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +27,7 @@ const typeCfg: Record<AlertType, { label: string; icon: any }> = {
   risk_escalation: { label: "הסלמת סיכון", icon: Flame },
 };
 
-const activeAlerts: Alert[] = [
+const FALLBACK_ACTIVE_ALERTS: Alert[] = [
   { id: "ALR-001", severity: "critical", type: "budget_overrun", project: "מגדלי הים - חיפה", description: "תקציב חומרי גלם חרג ב-94% מהתקציב המקורי", rule: "חריגת תקציב > 90%", timestamp: "2026-04-08 08:15" },
   { id: "ALR-002", severity: "critical", type: "schedule_overdue", project: "מרכז מסחרי רמת גן", description: "איחור של 12 ימים בשלב הייצור - מועד אספקה בסיכון", rule: "איחור > 7 ימים", timestamp: "2026-04-08 07:30" },
   { id: "ALR-003", severity: "high", type: "margin_erosion", project: "בניין משרדים הרצליה", description: "המרווח ירד ל-8.2% - מתחת לסף המינימלי", rule: "מרווח < 10%", timestamp: "2026-04-08 06:45" },
@@ -40,7 +42,7 @@ const activeAlerts: Alert[] = [
   { id: "ALR-012", severity: "low", type: "blocked_tasks", project: "בניין מגורים נתניה", description: "2 משימות ממתינות לאישור תקציב נוסף", rule: "משימות חסומות > 1", timestamp: "2026-04-06 08:20" },
 ];
 
-const historyAlerts: Alert[] = [
+const FALLBACK_HISTORY_ALERTS: Alert[] = [
   { id: "ALR-H01", severity: "critical", type: "budget_overrun", project: "תעשייה אשדוד", description: "חריגת 96% בתקציב פלדה", rule: "חריגת תקציב > 90%", timestamp: "2026-04-05 08:00", resolvedAt: "2026-04-05 14:30", resolvedBy: "עוזי כהן" },
   { id: "ALR-H02", severity: "high", type: "schedule_overdue", project: "מגורים נתניה", description: "איחור 10 ימים בשלב הרכבה", rule: "איחור > 7 ימים", timestamp: "2026-04-04 09:15", resolvedAt: "2026-04-05 11:00", resolvedBy: "דני לוי" },
   { id: "ALR-H03", severity: "medium", type: "procurement_delay", project: "מסחרי רמת גן", description: "עיכוב אספקת זכוכית מחוסמת", rule: "עיכוב רכש > 14 יום", timestamp: "2026-04-03 10:00", resolvedAt: "2026-04-04 16:00", resolvedBy: "מירב שלום" },
@@ -133,6 +135,13 @@ export default function ProjectAlertsPage() {
   const [filterSev, setFilterSev] = useState<Severity | "all">("all");
   const [selected, setSelected] = useState<Alert | null>(null);
   const [rules, setRules] = useState<RuleConfig[]>(initialRules);
+
+  const { data: apiAlerts } = useQuery({
+    queryKey: ["project-alerts"],
+    queryFn: async () => { const r = await authFetch("/api/projects/alerts"); return r.json(); },
+  });
+  const activeAlerts: Alert[] = apiAlerts?.active ?? apiAlerts?.data?.active ?? FALLBACK_ACTIVE_ALERTS;
+  const historyAlerts: Alert[] = apiAlerts?.history ?? apiAlerts?.data?.history ?? FALLBACK_HISTORY_ALERTS;
 
   const criticalCount = activeAlerts.filter(a => a.severity === "critical").length;
   const budgetCount = activeAlerts.filter(a => a.type === "budget_overrun").length;

@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   Activity, Calendar, Users, Layers, AlertTriangle, Search, FileText,
   DollarSign, CheckCircle2, ArrowUpDown, TrendingUp, Clock, User,
@@ -67,7 +69,7 @@ function generateEvents() {
   return events;
 }
 
-const ALL_EVENTS = generateEvents();
+const FALLBACK_EVENTS = generateEvents();
 
 function KpiCard({ title, value, icon: Icon, color, sub }: any) {
   return (
@@ -122,6 +124,12 @@ export default function ProjectEventsAuditPage() {
   const [activeTab, setActiveTab] = useState("timeline");
   const [typeFilter, setTypeFilter] = useState("all");
 
+  const { data: apiEvents } = useQuery({
+    queryKey: ["project-events-audit"],
+    queryFn: async () => { const r = await authFetch("/api/projects/events-audit"); return r.json(); },
+  });
+  const ALL_EVENTS: any[] = Array.isArray(apiEvents) ? apiEvents : (apiEvents?.data ?? FALLBACK_EVENTS);
+
   const filtered = useMemo(() => {
     let res = ALL_EVENTS;
     if (search) {
@@ -133,7 +141,7 @@ export default function ProjectEventsAuditPage() {
     }
     if (typeFilter !== "all") res = res.filter(e => e.eventType === typeFilter);
     return res;
-  }, [search, typeFilter]);
+  }, [search, typeFilter, ALL_EVENTS]);
 
   const todayStr = new Date(2026, 3, 8).toDateString();
   const todayEvents = ALL_EVENTS.filter(e => new Date(e.timestamp).toDateString() === todayStr);

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,11 +15,12 @@ import {
   MessageSquare, Paperclip, Activity, Target, Calendar, CreditCard,
   CheckCircle, AlertTriangle, ChevronRight, Edit2, Plus
 } from "lucide-react";
+import { authFetch } from "@/lib/utils";
 
 // ============================================================
 // CUSTOMER DATA (360 view)
 // ============================================================
-const customer = {
+const FALLBACK_CUSTOMER = {
   id: 1,
   name: "חברת אלומיניום ישראל בע\"מ",
   number: "CUS-00042",
@@ -38,7 +40,7 @@ const customer = {
   churnRisk: "low",
 };
 
-const financialSummary = {
+const FALLBACK_FINANCIAL_SUMMARY = {
   totalRevenue: 2850000,
   revenueYTD: 485000,
   openInvoices: 245000,
@@ -49,7 +51,7 @@ const financialSummary = {
   profitability: 21.3,
 };
 
-const recentDocuments = [
+const FALLBACK_DOCUMENTS = [
   { type: "חשבונית", number: "INV-000234", date: "2026-04-08", amount: 45000, status: "open" },
   { type: "הצעת מחיר", number: "QUO-000089", date: "2026-04-05", amount: 120000, status: "sent" },
   { type: "חשבונית", number: "INV-000228", date: "2026-03-25", amount: 72000, status: "paid" },
@@ -57,12 +59,12 @@ const recentDocuments = [
   { type: "הזמנה", number: "SO-002456", date: "2026-04-08", amount: 145000, status: "confirmed" },
 ];
 
-const opportunities = [
+const FALLBACK_OPPORTUNITIES = [
   { name: "פרויקט מגדל A - שלב ב'", value: 850000, stage: "משא ומתן", probability: 65, close: "2026-05-15" },
   { name: "חיפוי מגורים רמת גן", value: 620000, stage: "הצעת מחיר", probability: 40, close: "2026-06-01" },
 ];
 
-const activities = [
+const FALLBACK_ACTIVITIES = [
   { date: "2026-04-08 10:30", type: "שיחה", subject: "מעקב על הצעה QUO-089", by: "דני כהן", note: "מחכים לאישור תקציבי - מעדכן בשבוע הבא" },
   { date: "2026-04-05 14:00", type: "מייל", subject: "שליחת הצעת מחיר מעודכנת", by: "מיכל לוי", note: "הצעה עם 5% הנחה לפרויקט מגדל" },
   { date: "2026-04-02 09:00", type: "פגישה", subject: "סיור באתר מגדל A", by: "דני כהן", note: "נדרשים מדידות נוספות - מהנדס מגיע 10.04" },
@@ -70,25 +72,50 @@ const activities = [
   { date: "2026-03-20 16:00", type: "משימה", subject: "שליחת קטלוג פרופילים חדש", by: "יוסי אברהם", note: "נשלח PDF בדוא\"ל" },
 ];
 
-const projects = [
+const FALLBACK_PROJECTS = [
   { name: "בניין משרדים חולון", status: "active", value: 320000, completion: 75 },
   { name: "מפעל אור יהודה - שלב א'", status: "completed", value: 280000, completion: 100 },
 ];
 
-const contacts = [
+const FALLBACK_CONTACTS = [
   { name: "אבי כהן", title: "מנהל רכש", phone: "054-1234567", email: "avi@alumisrael.co.il", isPrimary: true },
   { name: "שרון לוי", title: "מנהל פרויקטים", phone: "052-9876543", email: "sharon@alumisrael.co.il", isPrimary: false },
   { name: "דנה גולד", title: "CFO", phone: "050-5551234", email: "dana@alumisrael.co.il", isPrimary: false },
 ];
 
-const serviceCases = [
+const FALLBACK_SERVICE_CASES = [
   { id: "TK-0038", subject: "החלפת חלון סדוק", status: "resolved", priority: "medium", created: "2026-03-15" },
   { id: "TK-0029", subject: "בעיה בנעילת דלת", status: "resolved", priority: "low", created: "2026-02-20" },
 ];
 
 const fmt = (v: number) => v >= 1000000 ? `₪${(v / 1000000).toFixed(1)}M` : `₪${v.toLocaleString("he-IL")}`;
 
+const FALLBACK_360 = {
+  customer: FALLBACK_CUSTOMER,
+  financialSummary: FALLBACK_FINANCIAL_SUMMARY,
+  recentDocuments: FALLBACK_DOCUMENTS,
+  opportunities: FALLBACK_OPPORTUNITIES,
+  activities: FALLBACK_ACTIVITIES,
+  projects: FALLBACK_PROJECTS,
+  contacts: FALLBACK_CONTACTS,
+  serviceCases: FALLBACK_SERVICE_CASES,
+};
+
 export default function Customer360() {
+  const { data: apiData } = useQuery<typeof FALLBACK_360>({
+    queryKey: ["crm-customer-360"],
+    queryFn: async () => { const res = await authFetch("/api/crm/customers/360"); if (!res.ok) throw new Error("API error"); return res.json(); },
+  });
+  const d = apiData ?? FALLBACK_360;
+  const customer = d.customer;
+  const financialSummary = d.financialSummary;
+  const recentDocuments = d.recentDocuments;
+  const opportunities = d.opportunities;
+  const activities = d.activities;
+  const projects = d.projects;
+  const contacts = d.contacts;
+  const serviceCases = d.serviceCases;
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* Header - Customer Profile */}

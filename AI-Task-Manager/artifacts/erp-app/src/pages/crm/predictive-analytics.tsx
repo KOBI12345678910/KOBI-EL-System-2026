@@ -1,12 +1,14 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { TrendingUp, TrendingDown, BarChart3, Target, AlertTriangle, DollarSign, Users, Calendar } from "lucide-react";
 import ActivityLog from "@/components/activity-log";
 import RelatedRecords from "@/components/related-records";
+import { authFetch } from "@/lib/utils";
 
 const fmtC = (n: number) => new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", minimumFractionDigits: 0 }).format(n);
 const fmt = (n: number) => new Intl.NumberFormat("he-IL").format(n);
 
-const REVENUE_FORECAST = [
+const FALLBACK_REVENUE_FORECAST = [
   { month: "ינו׳", actual: 380000, forecast: 0 },
   { month: "פבר׳", actual: 410000, forecast: 0 },
   { month: "מרץ", actual: 445000, forecast: 0 },
@@ -15,7 +17,7 @@ const REVENUE_FORECAST = [
   { month: "יוני", actual: 0, forecast: 545000 },
 ];
 
-const LEAD_TRENDS = [
+const FALLBACK_LEAD_TRENDS = [
   { week: "שבוע 1", new: 12, converted: 4 },
   { week: "שבוע 2", new: 18, converted: 6 },
   { week: "שבוע 3", new: 15, converted: 7 },
@@ -24,24 +26,33 @@ const LEAD_TRENDS = [
   { week: "שבוע 6", new: 25, converted: 11 },
 ];
 
-const CHURN_RISKS = [
+const FALLBACK_CHURN_RISKS = [
   { name: "דוד כהן — Tech Corp", risk: 72, lastPurchase: "4 חודשים", value: 85000, reason: "אי-פעילות ממושכת" },
   { name: "רחל לוי — Build Co", risk: 45, lastPurchase: "2 חודשים", value: 120000, reason: "ירידה בנפח הזמנות" },
   { name: "משה ישראלי — Construct", risk: 28, lastPurchase: "1 חודש", value: 200000, reason: "תלונות שירות פתוחות" },
   { name: "שרה גולדברג — Arch Studio", risk: 15, lastPurchase: "2 שבועות", value: 65000, reason: "מתחרה ביצע פנייה" },
 ];
 
-const DEAL_SCORES = [
+const FALLBACK_DEAL_SCORES = [
   { name: "חלונות אלומיניום — Tech Corp", score: 85, value: 320000, close: "15 אפריל" },
   { name: "מערכת זגוגית — Build Co", score: 72, value: 180000, close: "28 אפריל" },
   { name: "חיפוי חזית — Construct Ltd", score: 61, value: 450000, close: "10 מאי" },
   { name: "שיפוץ משרדים — Alpha Ltd", score: 44, value: 95000, close: "20 מאי" },
 ];
 
-const maxRevenue = Math.max(...REVENUE_FORECAST.map(r => Math.max(r.actual, r.forecast)));
-const maxLeads = Math.max(...LEAD_TRENDS.map(l => l.new));
-
 export default function PredictiveAnalyticsPage() {
+  const { data: apiAnalytics } = useQuery<{ revenueForecast: typeof FALLBACK_REVENUE_FORECAST; leadTrends: typeof FALLBACK_LEAD_TRENDS; churnRisks: typeof FALLBACK_CHURN_RISKS; dealScores: typeof FALLBACK_DEAL_SCORES }>({
+    queryKey: ["crm-predictive-analytics"],
+    queryFn: async () => { const res = await authFetch("/api/crm/analytics/predictive"); if (!res.ok) throw new Error("API error"); return res.json(); },
+  });
+  const REVENUE_FORECAST = apiAnalytics?.revenueForecast ?? FALLBACK_REVENUE_FORECAST;
+  const LEAD_TRENDS = apiAnalytics?.leadTrends ?? FALLBACK_LEAD_TRENDS;
+  const CHURN_RISKS = apiAnalytics?.churnRisks ?? FALLBACK_CHURN_RISKS;
+  const DEAL_SCORES = apiAnalytics?.dealScores ?? FALLBACK_DEAL_SCORES;
+
+  const maxRevenue = Math.max(...REVENUE_FORECAST.map(r => Math.max(r.actual, r.forecast)));
+  const maxLeads = Math.max(...LEAD_TRENDS.map(l => l.new));
+
   const [activeTab, setActiveTab] = useState("revenue");
 
   return (

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,8 +14,8 @@ import {
 const fmt = (v: number) => `₪${v.toLocaleString("he-IL")}`;
 const hrs = (v: number) => v.toFixed(1);
 
-/* ── Labor log data ── */
-const laborLog = [
+/* ── Fallback Labor log data ── */
+const FALLBACK_LABOR_LOG = [
   { id: 1, name: "רועי כהן", clockIn: "06:55", clockOut: "16:30", job: "WO-4510", jobHrs: 7.2, indirectHrs: 1.1, overtime: 1.5, total: 9.58, costPerHr: 95 },
   { id: 2, name: "אמיר לוי", clockIn: "07:00", clockOut: "16:00", job: "WO-4512", jobHrs: 6.8, indirectHrs: 1.2, overtime: 1.0, total: 9.0, costPerHr: 88 },
   { id: 3, name: "יוסי מזרחי", clockIn: "06:45", clockOut: "17:00", job: "WO-4510", jobHrs: 8.0, indirectHrs: 0.75, overtime: 2.0, total: 10.25, costPerHr: 105 },
@@ -26,8 +28,8 @@ const laborLog = [
   { id: 10, name: "טל אזולאי", clockIn: "07:30", clockOut: "15:30", job: "WO-4530", jobHrs: 5.8, indirectHrs: 1.2, overtime: 0, total: 8.0, costPerHr: 80 },
 ];
 
-/* ── Machine log data ── */
-const machineLog = [
+/* ── Fallback Machine log data ── */
+const FALLBACK_MACHINE_LOG = [
   { id: 1, station: "CNC-01 חיתוך לייזר", runtime: 7.2, setup: 0.8, idle: 0.5, downtime: 0.3, util: 81.8, costPerHr: 180 },
   { id: 2, station: "CNC-02 כיפוף", runtime: 6.5, setup: 1.2, idle: 0.8, downtime: 0.5, util: 72.2, costPerHr: 160 },
   { id: 3, station: "ריתוך רובוטי A", runtime: 8.0, setup: 0.5, idle: 0.3, downtime: 0.2, util: 88.9, costPerHr: 200 },
@@ -40,8 +42,8 @@ const machineLog = [
   { id: 10, station: "מכונת גלגור", runtime: 7.0, setup: 0.5, idle: 0.7, downtime: 0.3, util: 82.4, costPerHr: 140 },
 ];
 
-/* ── Cost allocation data ── */
-const costAllocation = [
+/* ── Fallback Cost allocation data ── */
+const FALLBACK_COST_ALLOCATION = [
   { job: "WO-4510", project: "שער חשמלי Premium", laborHrs: 22.7, laborCost: 2120, machineHrs: 14.5, machineCost: 2610, totalCost: 4730 },
   { job: "WO-4512", project: "פרגולה אלומיניום 4x5", laborHrs: 6.8, laborCost: 598, machineHrs: 5.5, machineCost: 935, totalCost: 1533 },
   { job: "WO-4515", project: "מעקה נירוסטה 12 מ׳", laborHrs: 6.5, laborCost: 533, machineHrs: 6.0, machineCost: 900, totalCost: 1433 },
@@ -51,14 +53,6 @@ const costAllocation = [
   { job: "WO-4525", project: "מדרגות ברזל ספירלה", laborHrs: 6.5, laborCost: 553, machineHrs: 5.0, machineCost: 425, totalCost: 978 },
   { job: "WO-4530", project: "תריס גלילה חשמלי", laborHrs: 5.8, laborCost: 464, machineHrs: 7.2, machineCost: 1296, totalCost: 1760 },
 ];
-
-/* ── KPI calculations ── */
-const workersClockedIn = laborLog.length;
-const totalLaborHrs = laborLog.reduce((s, w) => s + w.total, 0);
-const totalOvertimeHrs = laborLog.reduce((s, w) => s + w.overtime, 0);
-const machinesRunning = machineLog.filter(m => m.runtime > 0).length;
-const avgMachineUtil = Math.round(machineLog.reduce((s, m) => s + m.util, 0) / machineLog.length);
-const totalDowntimeHrs = machineLog.reduce((s, m) => s + m.downtime, 0);
 
 const utilColor = (v: number) => {
   if (v >= 85) return "text-green-400";
@@ -74,6 +68,22 @@ const utilBg = (v: number) => {
 /* ═══════════════ Component ═══════════════ */
 export default function LaborTimeTracking() {
   const [tab, setTab] = useState("labor");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["production-labor-time"],
+    queryFn: () => authFetch("/api/production/lines?type=labor-time").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const laborLog = safeArr(apiData?.laborLog).length > 0 ? safeArr(apiData.laborLog) : FALLBACK_LABOR_LOG;
+  const machineLog = safeArr(apiData?.machineLog).length > 0 ? safeArr(apiData.machineLog) : FALLBACK_MACHINE_LOG;
+  const costAllocation = safeArr(apiData?.costAllocation).length > 0 ? safeArr(apiData.costAllocation) : FALLBACK_COST_ALLOCATION;
+
+  const workersClockedIn = laborLog.length;
+  const totalLaborHrs = laborLog.reduce((s: number, w: any) => s + w.total, 0);
+  const totalOvertimeHrs = laborLog.reduce((s: number, w: any) => s + w.overtime, 0);
+  const machinesRunning = machineLog.filter((m: any) => m.runtime > 0).length;
+  const avgMachineUtil = Math.round(machineLog.reduce((s: number, m: any) => s + m.util, 0) / machineLog.length);
+  const totalDowntimeHrs = machineLog.reduce((s: number, m: any) => s + m.downtime, 0);
 
   const kpis = [
     { label: "עובדים מחוברים", value: workersClockedIn, icon: Users, color: "text-blue-400", bg: "bg-blue-500/10" },

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -24,8 +26,8 @@ interface FitCheckRow {
   wo: string; product: string; dimensionsOk: boolean; operationOk: boolean; finishOk: boolean; overall: "עובר" | "נכשל"; inspector: string;
 }
 
-/* ── Mock Data ── */
-const preAssemblyData: PreAssemblyRow[] = [
+/* ── Fallback Data ── */
+const FALLBACK_PRE_ASSEMBLY: PreAssemblyRow[] = [
   { wo: "WO-7201", product: 'שער חשמלי 4.0m', componentsReady: 100, missingParts: "—", station: "הכנה 1", status: "מוכן" },
   { wo: "WO-7202", product: 'חלון אלומיניום 1.2×1.5m', componentsReady: 85, missingParts: "אטם גומי (×12)", station: "הכנה 2", status: "חלקי" },
   { wo: "WO-7203", product: "מעקה בטיחות נירוסטה", componentsReady: 100, missingParts: "—", station: "הכנה 1", status: "מוכן" },
@@ -35,7 +37,7 @@ const preAssemblyData: PreAssemblyRow[] = [
   { wo: "WO-7207", product: "פרגולה אלומיניום 3×4m", componentsReady: 78, missingParts: "ברגים M8 (×40)", station: "הכנה 1", status: "חלקי" },
 ];
 
-const finalAssemblyData: FinalAssemblyRow[] = [
+const FALLBACK_FINAL_ASSEMBLY: FinalAssemblyRow[] = [
   { wo: "WO-7101", product: 'שער חשמלי 3.5m', assembler: "אלי ביטון", startTime: "07:30", progress: 90, qcStatus: "עבר" },
   { wo: "WO-7102", product: 'חלון הזזה 1.8×1.2m', assembler: "רועי כהן", startTime: "08:15", progress: 65, qcStatus: "ממתין" },
   { wo: "WO-7103", product: "מעקה מרפסת פלדה", assembler: "דני אברהם", startTime: "07:45", progress: 100, qcStatus: "עבר" },
@@ -46,7 +48,7 @@ const finalAssemblyData: FinalAssemblyRow[] = [
   { wo: "WO-7108", product: "גדר פרופילים 12m", assembler: "רועי כהן", startTime: "11:00", progress: 15, qcStatus: "ממתין" },
 ];
 
-const hardwareData: HardwareRow[] = [
+const FALLBACK_HARDWARE: HardwareRow[] = [
   { wo: "WO-7301", product: 'שער חשמלי 4.0m', hinges: true, locks: true, handles: true, motors: true, installer: "דני אברהם" },
   { wo: "WO-7302", product: 'דלת כניסה פלדה 1.0×2.1m', hinges: true, locks: true, handles: false, motors: false, installer: "אמיר לוי" },
   { wo: "WO-7303", product: 'חלון ציר 0.6×1.0m', hinges: true, locks: true, handles: true, motors: false, installer: "יוסי מזרחי" },
@@ -56,7 +58,7 @@ const hardwareData: HardwareRow[] = [
   { wo: "WO-7307", product: "שער כנף כפולה 3.0m", hinges: true, locks: true, handles: true, motors: false, installer: "יוסי מזרחי" },
 ];
 
-const fitCheckData: FitCheckRow[] = [
+const FALLBACK_FIT_CHECK: FitCheckRow[] = [
   { wo: "WO-7401", product: 'שער חשמלי 3.5m', dimensionsOk: true, operationOk: true, finishOk: true, overall: "עובר", inspector: "עמית שרון" },
   { wo: "WO-7402", product: "מעקה מרפסת פלדה", dimensionsOk: true, operationOk: true, finishOk: false, overall: "נכשל", inspector: "עמית שרון" },
   { wo: "WO-7403", product: 'חלון הזזה 1.8×1.2m', dimensionsOk: true, operationOk: true, finishOk: true, overall: "עובר", inspector: "נועה דוד" },
@@ -110,6 +112,16 @@ const tdCls = "px-3 py-2 text-sm text-gray-200 border-b border-white/5";
 /* ══════════════════════════ Component ══════════════════════════ */
 export default function AssemblyJobs() {
   const [activeTab, setActiveTab] = useState<TabKey>("pre_assembly");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["production-assembly-jobs"],
+    queryFn: () => authFetch("/api/production/work-orders?type=assembly").then(r => r.json()),
+  });
+  const safeArr = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
+  const preAssemblyData = safeArr(apiData).length > 0 ? safeArr(apiData).filter((r: any) => r.stage === "pre_assembly") : FALLBACK_PRE_ASSEMBLY;
+  const finalAssemblyData = safeArr(apiData).length > 0 ? safeArr(apiData).filter((r: any) => r.stage === "final_assembly") : FALLBACK_FINAL_ASSEMBLY;
+  const hardwareData = safeArr(apiData).length > 0 ? safeArr(apiData).filter((r: any) => r.stage === "hardware") : FALLBACK_HARDWARE;
+  const fitCheckData = safeArr(apiData).length > 0 ? safeArr(apiData).filter((r: any) => r.stage === "fit_check") : FALLBACK_FIT_CHECK;
 
   return (
     <div dir="rtl" className="min-h-screen bg-gradient-to-br from-[#0a0e1a] to-[#101829] text-white p-6 space-y-6">
