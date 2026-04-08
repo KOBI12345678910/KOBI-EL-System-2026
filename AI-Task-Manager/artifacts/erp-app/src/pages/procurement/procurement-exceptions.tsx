@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,6 +11,8 @@ import {
   AlertTriangle, Users, TrendingUp, Truck, FileWarning,
   PackageX, FileX, BarChart3, History, RefreshCw
 } from "lucide-react";
+
+const API = "/api";
 
 // ============================================================
 // TYPES & DATA — טכנו-כל עוזי Procurement Exceptions
@@ -53,7 +57,7 @@ const statusStyle: Record<Status, { label: string; cls: string }> = {
   resolved:    { label: "נסגר",     cls: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
 };
 
-const exceptions: ProcException[] = [
+const FALLBACK_EXCEPTIONS: ProcException[] = [
   {
     id: "EXC-001", type: "price_mismatch", supplier: "Foshan Glass Co.",
     description: "הפרש ₪14,200 בין מחיר מוסכם למחיר בחשבונית עבור זכוכית מחוסמת 10מ״מ. הספק חייב לפי מחירון חדש ללא הודעה מוקדמת.",
@@ -125,6 +129,17 @@ const TH = "text-right text-[10px] font-semibold";
 // ============================================================
 export default function ProcurementExceptions() {
   const [tab, setTab] = useState("active");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["procurement-exceptions"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/procurement/exceptions`);
+      if (!res.ok) throw new Error("Failed to fetch procurement exceptions");
+      return res.json();
+    },
+  });
+
+  const exceptions: ProcException[] = apiData?.exceptions ?? FALLBACK_EXCEPTIONS;
 
   const active   = exceptions.filter(e => e.status !== "resolved");
   const critical = active.filter(e => e.severity === "critical");

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,6 +9,8 @@ import {
   FileX, PackageX, TrendingUp, CheckCircle2, Timer, Settings,
   ChevronLeft, PhoneOff, ClipboardX, AlertOctagon, Eye
 } from "lucide-react";
+
+const API = "/api";
 
 // ============================================================
 // TYPES & DATA — טכנו-כל עוזי Procurement Alerts
@@ -52,7 +56,7 @@ const severityStyle: Record<Severity, { bg: string; text: string; label: string;
   medium:   { bg: "bg-amber-500/15",  text: "text-amber-400",  label: "בינוני", border: "border-amber-500/40" },
 };
 
-const alerts: ProcAlert[] = [
+const FALLBACK_ALERTS: ProcAlert[] = [
   {
     id: "AL-001", type: "delayed_delivery", severity: "critical",
     title: "איחור 12 יום – משלוח אלומיניום מ-Foshan Glass",
@@ -127,7 +131,7 @@ const alerts: ProcAlert[] = [
   },
 ];
 
-const alertRules = [
+const FALLBACK_ALERT_RULES = [
   { type: "delayed_delivery",           threshold: "עיכוב > 2 ימים", active: true },
   { type: "price_increase",             threshold: "עלייה > 5%",     active: true },
   { type: "supplier_risk",              threshold: "ציון < 75",      active: true },
@@ -143,6 +147,18 @@ const alertRules = [
 // ============================================================
 export default function ProcurementAlerts() {
   const [tab, setTab] = useState("active");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["procurement-alerts"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/procurement/alerts`);
+      if (!res.ok) throw new Error("Failed to fetch procurement alerts");
+      return res.json();
+    },
+  });
+
+  const alerts: ProcAlert[] = apiData?.alerts ?? FALLBACK_ALERTS;
+  const alertRules = apiData?.alertRules ?? FALLBACK_ALERT_RULES;
 
   const active   = alerts.filter(a => !a.resolved);
   const critical = active.filter(a => a.severity === "critical");

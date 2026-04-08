@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -11,6 +13,8 @@ import {
   ShieldAlert, ArrowDownCircle, RotateCcw, CheckCircle2, XCircle,
   AlertOctagon, Boxes, BarChart3, Truck, Search, Filter,
 } from "lucide-react";
+
+const API = "/api";
 
 const fmt = (v: number) => new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", maximumFractionDigits: 0 }).format(v);
 
@@ -41,7 +45,7 @@ interface Alert {
   action: string; createdAt: string;
 }
 
-const ALERTS: Alert[] = [
+const FALLBACK_ALERTS: Alert[] = [
   { id: 1, type: "out_of_stock", severity: "critical", item: "פלדה אל-חלד 304", sku: "RM-1001", currentQty: 0, threshold: 500, unit: 'ק"ג', warehouse: "מחסן ראשי", action: "הזמנה דחופה מספק מתכות הצפון", createdAt: "2026-04-08 08:15" },
   { id: 2, type: "low_stock", severity: "high", item: "ברגים M8x30", sku: "FP-2044", currentQty: 120, threshold: 500, unit: "יח'", warehouse: "מחסן חלפים", action: "להעלות כמות הזמנה ל-1,000 יח'", createdAt: "2026-04-08 07:30" },
   { id: 3, type: "below_reorder", severity: "high", item: "שמן הידראולי ISO 46", sku: "RM-3022", currentQty: 45, threshold: 100, unit: "ליטר", warehouse: "מחסן ראשי", action: "להפעיל הזמנה אוטומטית - ספק שמנים בע\"מ", createdAt: "2026-04-08 06:00" },
@@ -56,7 +60,7 @@ const ALERTS: Alert[] = [
   { id: 12, type: "below_reorder", severity: "medium", item: "אומים M10 גלוון", sku: "FP-2051", currentQty: 200, threshold: 500, unit: "יח'", warehouse: "מחסן חלפים", action: "הזמנה משלימה ל-1,500 יח'", createdAt: "2026-04-06 12:00" },
 ];
 
-const REORDERS = [
+const FALLBACK_REORDERS = [
   { id: 1, item: "פלדה אל-חלד 304", sku: "RM-1001", current: 0, reorderPt: 500, suggestedQty: 2000, unit: 'ק"ג', supplier: "מתכות הצפון בע\"מ", estCost: 48000, leadDays: 5 },
   { id: 2, item: "ברגים M8x30", sku: "FP-2044", current: 120, reorderPt: 500, suggestedQty: 1000, unit: "יח'", supplier: "פסטנרס ישראל", estCost: 1200, leadDays: 3 },
   { id: 3, item: "שמן הידראולי ISO 46", sku: "RM-3022", current: 45, reorderPt: 100, suggestedQty: 400, unit: "ליטר", supplier: "שמנים בע\"מ", estCost: 6800, leadDays: 4 },
@@ -66,7 +70,7 @@ const REORDERS = [
   { id: 7, item: "צינורות נחושת 15mm", sku: "RM-1088", current: 85, reorderPt: 200, suggestedQty: 500, unit: "מטר", supplier: "נחושתן בע\"מ", estCost: 22500, leadDays: 7 },
 ];
 
-const HISTORY = [
+const FALLBACK_HISTORY = [
   { id: 101, item: "אלומיניום 6061 T6", type: "low_stock" as AlertType, resolvedAt: "2026-04-05 14:30", resolvedBy: "יוסי כהן", resolution: "הוזמנו 500 ק\"ג — אספקה התקבלה" },
   { id: 102, item: "גומיות O-Ring DN50", type: "out_of_stock" as AlertType, resolvedAt: "2026-04-04 11:00", resolvedBy: "שרה לוי", resolution: "ספק חלופי סיפק 200 יח' באופן מיידי" },
   { id: 103, item: "ממס תעשייתי", type: "expiring_batch" as AlertType, resolvedAt: "2026-04-03 16:45", resolvedBy: "דוד מזרחי", resolution: "נוצל בייצור לפני תפוגה" },
@@ -74,18 +78,31 @@ const HISTORY = [
   { id: 105, item: "לוחות PVC 5mm", type: "damaged_detected" as AlertType, resolvedAt: "2026-04-01 13:00", resolvedBy: "אלון גולדשטיין", resolution: "תביעת ביטוח אושרה — פיצוי ₪8,200" },
 ];
 
-const KPI_DATA = [
-  { label: "התראות פעילות", value: ALERTS.length, icon: Bell, color: "text-red-400", bg: "bg-red-500/10" },
-  { label: "מלאי נמוך", value: ALERTS.filter(a => a.type === "low_stock").length, icon: TrendingDown, color: "text-amber-400", bg: "bg-amber-500/10" },
-  { label: "אזל מהמלאי", value: ALERTS.filter(a => a.type === "out_of_stock").length, icon: PackageX, color: "text-red-400", bg: "bg-red-500/10" },
-  { label: "מתחת לנק' הזמנה", value: ALERTS.filter(a => a.type === "below_reorder").length, icon: ArrowDownCircle, color: "text-orange-400", bg: "bg-orange-500/10" },
-  { label: "פגי תוקף", value: ALERTS.filter(a => a.type === "expiring_batch").length, icon: Clock, color: "text-purple-400", bg: "bg-purple-500/10" },
-  { label: "עודף מלאי", value: ALERTS.filter(a => a.type === "overstock").length, icon: Boxes, color: "text-blue-400", bg: "bg-blue-500/10" },
-];
-
 export default function InventoryAlerts() {
   const [search, setSearch] = useState("");
   const [sevFilter, setSevFilter] = useState<Severity | "all">("all");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["inventory-alerts"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/inventory/alerts`);
+      if (!res.ok) throw new Error("Failed to fetch inventory alerts");
+      return res.json();
+    },
+  });
+
+  const ALERTS: Alert[] = apiData?.alerts ?? FALLBACK_ALERTS;
+  const REORDERS = apiData?.reorders ?? FALLBACK_REORDERS;
+  const HISTORY = apiData?.history ?? FALLBACK_HISTORY;
+
+  const KPI_DATA = [
+    { label: "התראות פעילות", value: ALERTS.length, icon: Bell, color: "text-red-400", bg: "bg-red-500/10" },
+    { label: "מלאי נמוך", value: ALERTS.filter(a => a.type === "low_stock").length, icon: TrendingDown, color: "text-amber-400", bg: "bg-amber-500/10" },
+    { label: "אזל מהמלאי", value: ALERTS.filter(a => a.type === "out_of_stock").length, icon: PackageX, color: "text-red-400", bg: "bg-red-500/10" },
+    { label: "מתחת לנק' הזמנה", value: ALERTS.filter(a => a.type === "below_reorder").length, icon: ArrowDownCircle, color: "text-orange-400", bg: "bg-orange-500/10" },
+    { label: "פגי תוקף", value: ALERTS.filter(a => a.type === "expiring_batch").length, icon: Clock, color: "text-purple-400", bg: "bg-purple-500/10" },
+    { label: "עודף מלאי", value: ALERTS.filter(a => a.type === "overstock").length, icon: Boxes, color: "text-blue-400", bg: "bg-blue-500/10" },
+  ];
 
   const filtered = ALERTS.filter(a => {
     if (sevFilter !== "all" && a.severity !== sevFilter) return false;

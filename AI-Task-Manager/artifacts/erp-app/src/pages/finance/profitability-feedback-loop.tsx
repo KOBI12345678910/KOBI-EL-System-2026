@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -8,13 +10,13 @@ import {
 } from "@/components/ui/table";
 import {
   RefreshCcw, TrendingUp, TrendingDown, AlertTriangle, Brain,
-  Package, Wrench, HardHat, BarChart3, Lightbulb, ShieldAlert,
+  Package, Wrench, HardHat, BarChart3, Lightbulb, ShieldAlert, Loader2,
 } from "lucide-react";
 
 const fmt = (v: number) => "₪" + v.toLocaleString("he-IL");
 const pct = (v: number) => (v > 0 ? "+" : "") + v.toFixed(1) + "%";
 
-const projects = [
+const FALLBACK_PROJECTS = [
   { id: "PRJ-1041", name: "בניין מגורים — רעננה", client: "אורן נכסים",
     estMat: 185000, estLab: 92000, estInst: 48000, estTotal: 325000,
     actMat: 201000, actLab: 88000, actInst: 55000, actTotal: 344000,
@@ -49,7 +51,7 @@ const projects = [
     estProfit: 47000, actProfit: 22000, reason: "דרישות רגולציה" },
 ];
 
-const materialCategories = [
+const FALLBACK_MATERIAL_CATEGORIES = [
   { cat: "ברזל/פלדה", est: 320000, act: 348000, var: 8.8, trend: "up" },
   { cat: "בטון", est: 210000, act: 215000, var: 2.4, trend: "stable" },
   { cat: "עץ/MDF", est: 145000, act: 140000, var: -3.4, trend: "down" },
@@ -59,7 +61,7 @@ const materialCategories = [
   { cat: "אלומיניום/זכוכית", est: 115000, act: 128000, var: 11.3, trend: "up" },
 ];
 
-const laborOps = [
+const FALLBACK_LABOR_OPS = [
   { op: "עבודות שלד", estH: 1200, actH: 1280, estCost: 180000, actCost: 192000, var: 6.7 },
   { op: "טיח/ריצוף", estH: 850, actH: 820, estCost: 110500, actCost: 106600, var: -3.5 },
   { op: "חשמל", estH: 620, actH: 680, estCost: 93000, actCost: 102000, var: 9.7 },
@@ -68,7 +70,7 @@ const laborOps = [
   { op: "ניהול אתר", estH: 400, actH: 380, estCost: 80000, actCost: 76000, var: -5.0 },
 ];
 
-const installData = [
+const FALLBACK_INSTALL_DATA = [
   { type: "מזגנים/מיזוג", est: 85000, act: 92000, var: 8.2, accuracy: 91.8 },
   { type: "מעליות", est: 120000, act: 118000, var: -1.7, accuracy: 98.3 },
   { type: "מערכות אש", est: 45000, act: 52000, var: 15.6, accuracy: 84.4 },
@@ -76,7 +78,7 @@ const installData = [
   { type: "מים/ביוב", est: 38000, act: 41000, var: 7.9, accuracy: 92.1 },
 ];
 
-const aiInsights = [
+const FALLBACK_AI_INSIGHTS = [
   { pattern: "עליית מחירי ברזל מעל 8% ברבעון", confidence: 94, action: "להוסיף 10% כרית בטחון לאומדני ברזל", impact: "₪45,000 חיסכון פוטנציאלי" },
   { pattern: "עבודות חשמל חורגות ב-9%+ בממוצע", confidence: 87, action: "לעדכן תעריפי חשמלאים ב-+8%", impact: "דיוק אומדן ישתפר ב-6%" },
   { pattern: "שינויי לקוח מייקרים פרויקטים ב-12%", confidence: 91, action: "לכלול סעיף שינויים בחוזה (עד 5%)", impact: "הגנה על מרווח של ₪32,000" },
@@ -84,7 +86,7 @@ const aiInsights = [
   { pattern: "פרויקטים ממשלתיים — עיכובים ב-70% מהמקרים", confidence: 82, action: "להוסיף 20% זמן buffer לפרויקטים ממשלתיים", impact: "הפחתת קנסות ב-₪18,000" },
 ];
 
-const accuracyTrend = [
+const FALLBACK_ACCURACY_TREND = [
   { period: "Q1 2025", matAcc: 88, labAcc: 91, instAcc: 85, overall: 88 },
   { period: "Q2 2025", matAcc: 90, labAcc: 89, instAcc: 87, overall: 89 },
   { period: "Q3 2025", matAcc: 91, labAcc: 92, instAcc: 88, overall: 90 },
@@ -92,7 +94,7 @@ const accuracyTrend = [
   { period: "Q1 2026", matAcc: 94, labAcc: 94, instAcc: 92, overall: 93 },
 ];
 
-const erosionAlerts = [
+const FALLBACK_EROSION_ALERTS = [
   { project: "גן ילדים — הרצליה", erosion: 71.9, cause: "עיכובים רגולטוריים + קנסות", action: "משא ומתן על הארכה ללא קנס", severity: "critical" },
   { project: "מרפאה — פ״ת", erosion: 53.2, cause: "דרישות רגולציה לא צפויות", action: "הגשת דרישת תשלום נוסף", severity: "critical" },
   { project: "שיפוץ משרדים — ת״א", erosion: 35.6, cause: "שינויי לקוח מרובים", action: "הפעלת סעיף שינויים בחוזה", severity: "warning" },
@@ -110,11 +112,76 @@ const sevColors: Record<string, string> = {
 export default function ProfitabilityFeedbackLoop() {
   const [tab, setTab] = useState("summary");
 
-  const avgMatVar = (projects.reduce((s, p) => s + ((p.actMat - p.estMat) / p.estMat) * 100, 0) / projects.length);
-  const avgLabVar = (projects.reduce((s, p) => s + ((p.actLab - p.estLab) / p.estLab) * 100, 0) / projects.length);
-  const avgInstVar = (projects.reduce((s, p) => s + ((p.actInst - p.estInst) / p.estInst) * 100, 0) / projects.length);
-  const profitAcc = (projects.reduce((s, p) => s + (Math.min(p.actProfit, p.estProfit) / Math.max(p.actProfit, p.estProfit)) * 100, 0) / projects.length);
-  const alertCount = erosionAlerts.filter(a => a.severity === "critical" || a.severity === "warning").length;
+  const { data: projects = FALLBACK_PROJECTS, isLoading: isLoadingProjects } = useQuery({
+    queryKey: ["finance-profitability-projects"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/profitability/projects");
+      if (!r.ok) return FALLBACK_PROJECTS;
+      return r.json();
+    },
+  });
+
+  const { data: materialCategories = FALLBACK_MATERIAL_CATEGORIES, isLoading: isLoadingMaterials } = useQuery({
+    queryKey: ["finance-profitability-materials"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/profitability/materials");
+      if (!r.ok) return FALLBACK_MATERIAL_CATEGORIES;
+      return r.json();
+    },
+  });
+
+  const { data: laborOps = FALLBACK_LABOR_OPS } = useQuery({
+    queryKey: ["finance-profitability-labor"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/profitability/labor");
+      if (!r.ok) return FALLBACK_LABOR_OPS;
+      return r.json();
+    },
+  });
+
+  const { data: installData = FALLBACK_INSTALL_DATA } = useQuery({
+    queryKey: ["finance-profitability-installation"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/profitability/installation");
+      if (!r.ok) return FALLBACK_INSTALL_DATA;
+      return r.json();
+    },
+  });
+
+  const { data: aiInsights = FALLBACK_AI_INSIGHTS } = useQuery({
+    queryKey: ["finance-profitability-insights"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/profitability/ai-insights");
+      if (!r.ok) return FALLBACK_AI_INSIGHTS;
+      return r.json();
+    },
+  });
+
+  const { data: accuracyTrend = FALLBACK_ACCURACY_TREND } = useQuery({
+    queryKey: ["finance-profitability-accuracy"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/profitability/accuracy-trend");
+      if (!r.ok) return FALLBACK_ACCURACY_TREND;
+      return r.json();
+    },
+  });
+
+  const { data: erosionAlerts = FALLBACK_EROSION_ALERTS } = useQuery({
+    queryKey: ["finance-profitability-erosion"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/profitability/erosion-alerts");
+      if (!r.ok) return FALLBACK_EROSION_ALERTS;
+      return r.json();
+    },
+  });
+
+  const isLoading = isLoadingProjects || isLoadingMaterials;
+
+  const avgMatVar = (projects.reduce((s: number, p: any) => s + ((p.actMat - p.estMat) / p.estMat) * 100, 0) / projects.length);
+  const avgLabVar = (projects.reduce((s: number, p: any) => s + ((p.actLab - p.estLab) / p.estLab) * 100, 0) / projects.length);
+  const avgInstVar = (projects.reduce((s: number, p: any) => s + ((p.actInst - p.estInst) / p.estInst) * 100, 0) / projects.length);
+  const profitAcc = (projects.reduce((s: number, p: any) => s + (Math.min(p.actProfit, p.estProfit) / Math.max(p.actProfit, p.estProfit)) * 100, 0) / projects.length);
+  const alertCount = erosionAlerts.filter((a: any) => a.severity === "critical" || a.severity === "warning").length;
 
   const kpis = [
     { label: "פרויקטים מנותחים", value: projects.length.toString(), icon: BarChart3, color: "text-blue-400" },
@@ -124,6 +191,15 @@ export default function ProfitabilityFeedbackLoop() {
     { label: "דיוק רווח כולל", value: profitAcc.toFixed(1) + "%", icon: TrendingUp, color: "text-cyan-400" },
     { label: "התראות שחיקת מרווח", value: alertCount.toString(), icon: AlertTriangle, color: "text-amber-400" },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96" dir="rtl">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <span className="mr-3 text-muted-foreground">טוען נתוני רווחיות...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-4" dir="rtl">

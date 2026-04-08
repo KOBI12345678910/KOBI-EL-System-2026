@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,13 +16,13 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Users, Phone, Mail, Clock, AlertTriangle, CheckCircle, DollarSign,
   TrendingDown, Calendar, FileText, Send, Plus, Filter, Search,
-  ArrowUpRight, ArrowDownRight, MessageSquare, Bell
+  ArrowUpRight, ArrowDownRight, MessageSquare, Bell, Loader2
 } from "lucide-react";
 
 // ============================================================
-// DATA
+// FALLBACK DATA
 // ============================================================
-const agingBuckets = [
+const FALLBACK_AGING_BUCKETS = [
   { label: "שוטף (0-30)", amount: 680000, count: 24, color: "bg-emerald-500", textColor: "text-emerald-700" },
   { label: "30-60 ימים", amount: 320000, count: 12, color: "bg-amber-500", textColor: "text-amber-700" },
   { label: "60-90 ימים", amount: 185000, count: 8, color: "bg-orange-500", textColor: "text-orange-700" },
@@ -28,7 +30,7 @@ const agingBuckets = [
   { label: "120+ ימים", amount: 52000, count: 3, color: "bg-red-800", textColor: "text-red-800" },
 ];
 
-const overdueCustomers = [
+const FALLBACK_OVERDUE_CUSTOMERS = [
   { id: 1, name: "חברת אלומיניום ישראל בע\"מ", balance: 245000, overdue: 128000, overdueDays: 68, lastPayment: "2026-02-15", lastContact: "2026-04-05", nextAction: "שיחת מעקב", priority: "high", promisedDate: "2026-04-15", promisedAmount: 80000 },
   { id: 2, name: "משרד הביטחון - מחלקת תשתיות", balance: 185000, overdue: 185000, overdueDays: 92, lastPayment: "2026-01-10", lastContact: "2026-04-02", nextAction: "מכתב התראה 2", priority: "critical", promisedDate: null, promisedAmount: 0 },
   { id: 3, name: "עיריית חיפה - מחלקת הנדסה", balance: 95000, overdue: 95000, overdueDays: 45, lastPayment: "2026-03-01", lastContact: "2026-04-07", nextAction: "המתנה לאישור תקציבי", priority: "medium", promisedDate: "2026-04-20", promisedAmount: 95000 },
@@ -37,7 +39,7 @@ const overdueCustomers = [
   { id: 6, name: 'נדל"ן פלוס בע"מ', balance: 42000, overdue: 18000, overdueDays: 22, lastPayment: "2026-03-25", lastContact: "2026-04-08", nextAction: "תזכורת אוטומטית", priority: "low", promisedDate: "2026-04-18", promisedAmount: 18000 },
 ];
 
-const collectionTasks = [
+const FALLBACK_COLLECTION_TASKS = [
   { id: 1, customer: "משרד הביטחון", task: "שליחת מכתב התראה שני", dueDate: "2026-04-10", assignee: "שרה כהן", status: "overdue", amount: 185000 },
   { id: 2, customer: "חברת אלומיניום ישראל", task: "שיחת מעקב על הבטחת תשלום", dueDate: "2026-04-12", assignee: "דוד לוי", status: "pending", amount: 80000 },
   { id: 3, customer: "עיריית חיפה", task: "בדיקת סטטוס אישור תקציבי", dueDate: "2026-04-15", assignee: "שרה כהן", status: "pending", amount: 95000 },
@@ -45,7 +47,7 @@ const collectionTasks = [
   { id: 5, customer: "קבוצת שיכון ובינוי", task: "שיחת מעקב שבועית", dueDate: "2026-04-14", assignee: "דוד לוי", status: "pending", amount: 35000 },
 ];
 
-const dunningHistory = [
+const FALLBACK_DUNNING_HISTORY = [
   { date: "2026-04-07", customer: "משרד הביטחון", type: "מכתב התראה 1", channel: "email", status: "sent" },
   { date: "2026-04-05", customer: "חברת אלומיניום ישראל", type: "שיחת טלפון", channel: "phone", status: "connected" },
   { date: "2026-04-03", customer: "סופרגז אנרגיה", type: "מכתב התראה 3 (לפני משפטי)", channel: "registered_mail", status: "sent" },
@@ -53,16 +55,54 @@ const dunningHistory = [
   { date: "2026-03-28", customer: 'נדל"ן פלוס', type: "תזכורת אוטומטית", channel: "email", status: "sent" },
 ];
 
-const totalReceivables = agingBuckets.reduce((s, b) => s + b.amount, 0);
-const totalOverdue = agingBuckets.slice(1).reduce((s, b) => s + b.amount, 0);
-const totalPromised = overdueCustomers.reduce((s, c) => s + c.promisedAmount, 0);
-
 const fmt = (v: number) => `₪${v.toLocaleString("he-IL")}`;
 
 export default function CollectionsDashboard() {
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [showPromiseDialog, setShowPromiseDialog] = useState(false);
+
+  const { data: agingBuckets = FALLBACK_AGING_BUCKETS, isLoading: isLoadingAging } = useQuery({
+    queryKey: ["finance-collections-aging"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/collections/aging");
+      if (!r.ok) return FALLBACK_AGING_BUCKETS;
+      return r.json();
+    },
+  });
+
+  const { data: overdueCustomers = FALLBACK_OVERDUE_CUSTOMERS, isLoading: isLoadingOverdue } = useQuery({
+    queryKey: ["finance-collections-overdue"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/collections/overdue-customers");
+      if (!r.ok) return FALLBACK_OVERDUE_CUSTOMERS;
+      return r.json();
+    },
+  });
+
+  const { data: collectionTasks = FALLBACK_COLLECTION_TASKS, isLoading: isLoadingTasks } = useQuery({
+    queryKey: ["finance-collections-tasks"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/collections/tasks");
+      if (!r.ok) return FALLBACK_COLLECTION_TASKS;
+      return r.json();
+    },
+  });
+
+  const { data: dunningHistory = FALLBACK_DUNNING_HISTORY, isLoading: isLoadingDunning } = useQuery({
+    queryKey: ["finance-collections-dunning"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/collections/dunning-history");
+      if (!r.ok) return FALLBACK_DUNNING_HISTORY;
+      return r.json();
+    },
+  });
+
+  const isLoading = isLoadingAging || isLoadingOverdue || isLoadingTasks || isLoadingDunning;
+
+  const totalReceivables = agingBuckets.reduce((s: number, b: any) => s + b.amount, 0);
+  const totalOverdue = agingBuckets.slice(1).reduce((s: number, b: any) => s + b.amount, 0);
+  const totalPromised = overdueCustomers.reduce((s: number, c: any) => s + c.promisedAmount, 0);
 
   const priorityBadge = (p: string) => {
     switch (p) {
@@ -72,6 +112,15 @@ export default function CollectionsDashboard() {
       default: return <Badge className="bg-green-100 text-green-700 border-green-200">נמוך</Badge>;
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96" dir="rtl">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <span className="mr-3 text-muted-foreground">טוען נתוני גבייה...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-5" dir="rtl">

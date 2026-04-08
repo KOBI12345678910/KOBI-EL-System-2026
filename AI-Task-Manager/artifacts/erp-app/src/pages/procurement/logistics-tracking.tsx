@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   MapPin, Truck, Clock, AlertTriangle, CheckCircle2, Ship,
   Plane, Package, Globe, ArrowLeftRight, Timer, BarChart3
@@ -11,6 +13,8 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 
+const API = "/api";
+
 const statusMap: Record<string, { label: string; color: string; icon: any }> = {
   dispatched:  { label: "נשלח",     color: "bg-blue-500/20 text-blue-400 border-blue-500/30",    icon: Package },
   in_transit:  { label: "במעבר",    color: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",    icon: Truck },
@@ -19,7 +23,7 @@ const statusMap: Record<string, { label: string; color: string; icon: any }> = {
   delayed:     { label: "מעוכב",    color: "bg-red-500/20 text-red-400 border-red-500/30",       icon: AlertTriangle },
 };
 
-const shipments = [
+const FALLBACK_SHIPMENTS = [
   { id: "SHP-401", supplier: "אלומטל טורקיה", origin: "טורקיה", items: "פרופילי אלומיניום 6063", dispatch: "2026-03-28", eta: "2026-04-12", carrier: "צים שילוח", status: "in_transit" },
   { id: "SHP-402", supplier: "גואנגז'ו מטלס", origin: "סין", items: "לוחות זכוכית מחוסמת", dispatch: "2026-03-15", eta: "2026-04-08", carrier: "צים שילוח", status: "arrived" },
   { id: "SHP-403", supplier: "שטאל-ורק גרמניה", origin: "גרמניה", items: "פלדת נירוסטה 304", dispatch: "2026-04-01", eta: "2026-04-10", carrier: "UPS ישראל", status: "customs" },
@@ -30,7 +34,7 @@ const shipments = [
   { id: "SHP-408", supplier: "אלופרופיל טורקיה", origin: "טורקיה", items: "פרופיל תרמי אלומיניום", dispatch: "2026-04-02", eta: "2026-04-14", carrier: "UPS ישראל", status: "in_transit" },
 ];
 
-const customsItems = [
+const FALLBACK_CUSTOMS_ITEMS = [
   { id: "SHP-403", supplier: "שטאל-ורק גרמניה", items: "פלדת נירוסטה 304", declared: "₪87,400", duty: "12%", status: "בבדיקה", expected: "2026-04-10", broker: "מילגם מכס" },
   { id: "SHP-411", supplier: "אלומטל טורקיה", items: "פרופילי אלומיניום T5", declared: "₪124,000", duty: "8%", status: "ממתין לאישור", expected: "2026-04-11", broker: "שגב סחר בינ\"ל" },
   { id: "SHP-412", supplier: "גואנגז'ו מטלס", items: "אביזרי אלומיניום", declared: "₪45,200", duty: "14%", status: "אושר - ממתין לשחרור", expected: "2026-04-09", broker: "מילגם מכס" },
@@ -39,7 +43,7 @@ const customsItems = [
   { id: "SHP-415", supplier: "שטאל-ורק גרמניה", items: "ברגים תעשייתיים", declared: "₪22,100", duty: "5%", status: "אושר - ממתין לשחרור", expected: "2026-04-09", broker: "שגב סחר בינ\"ל" },
 ];
 
-const history = [
+const FALLBACK_HISTORY = [
   { id: "SHP-380", supplier: "אלומטל טורקיה", origin: "טורקיה", items: "פרופילי אלומיניום", arrived: "2026-03-25", days: 14, carrier: "צים שילוח", onTime: true },
   { id: "SHP-381", supplier: "מטל-פרו ישראל", origin: "ישראל", items: "ברזל בניין", arrived: "2026-03-22", days: 2, carrier: "דן אקספרס", onTime: true },
   { id: "SHP-382", supplier: "גואנגז'ו מטלס", origin: "סין", items: "זכוכית מחוסמת", arrived: "2026-03-18", days: 28, carrier: "צים שילוח", onTime: false },
@@ -49,7 +53,7 @@ const history = [
   { id: "SHP-386", supplier: "בייג'ינג סטיל", origin: "סין", items: "צינורות פלדה", arrived: "2026-03-05", days: 30, carrier: "צים שילוח", onTime: false },
 ];
 
-const carriers = [
+const FALLBACK_CARRIERS = [
   { name: "צים שילוח", shipments: 42, onTime: 88, avgDays: 18, rating: 4.2, type: "ימי" },
   { name: "דן אקספרס", shipments: 31, onTime: 96, avgDays: 1.5, rating: 4.7, type: "יבשתי" },
   { name: "UPS ישראל", shipments: 18, onTime: 92, avgDays: 8, rating: 4.4, type: "אווירי" },
@@ -64,7 +68,7 @@ const customsStatusColor = (s: string) => {
   return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
 };
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "משלוחים במעבר", value: "5", icon: Truck, color: "text-cyan-400" },
   { label: "הגיעו היום", value: "2", icon: CheckCircle2, color: "text-emerald-400" },
   { label: "מעוכבים", value: "1", icon: AlertTriangle, color: "text-red-400" },
@@ -75,6 +79,21 @@ const kpis = [
 
 export default function LogisticsTracking() {
   const [tab, setTab] = useState("active");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["procurement-logistics-tracking"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/procurement/logistics-tracking`);
+      if (!res.ok) throw new Error("Failed to fetch logistics tracking");
+      return res.json();
+    },
+  });
+
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const shipments = apiData?.shipments ?? FALLBACK_SHIPMENTS;
+  const customsItems = apiData?.customsItems ?? FALLBACK_CUSTOMS_ITEMS;
+  const history = apiData?.history ?? FALLBACK_HISTORY;
+  const carriers = apiData?.carriers ?? FALLBACK_CARRIERS;
 
   return (
     <div dir="rtl" className="p-6 space-y-6">

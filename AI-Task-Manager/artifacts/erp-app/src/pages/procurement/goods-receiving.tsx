@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,9 +11,11 @@ import {
   AlertTriangle, CalendarClock, ClipboardList, ArrowDownUp, Ban
 } from "lucide-react";
 
+const API = "/api";
+
 const fmt = (v: number) => new Intl.NumberFormat("he-IL").format(v);
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "התקבלו היום", value: "18", sub: "פריטים", icon: PackageCheck, color: "text-emerald-400", bg: "bg-emerald-500/10" },
   { label: "ממתין לקבלה", value: "7", sub: "משלוחים", icon: Truck, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "פריטים שנדחו", value: "3", sub: "החודש", icon: XCircle, color: "text-red-400", bg: "bg-red-500/10" },
@@ -20,7 +24,7 @@ const kpis = [
   { label: "משלוחים מאחרים", value: "4", sub: "מעל 3 ימים", icon: AlertTriangle, color: "text-amber-400", bg: "bg-amber-500/10" },
 ];
 
-const expectedArrivals = [
+const FALLBACK_EXPECTED_ARRIVALS = [
   { po: "PO-000461", supplier: "Foshan Glass Co.", expectedDate: "2026-04-09", items: "זכוכית מחוסמת 10מ״מ", qty: 120, status: "בזמן", daysUntil: 1 },
   { po: "PO-000462", supplier: "Schüco International", expectedDate: "2026-04-10", items: "פרופיל אלומיניום 6060", qty: 300, status: "בזמן", daysUntil: 2 },
   { po: "PO-000463", supplier: "מפעלי ברזל השרון", expectedDate: "2026-04-08", items: "פלדה מגולוונת 2מ״מ", qty: 80, status: "מאחר", daysUntil: 0 },
@@ -31,7 +35,7 @@ const expectedArrivals = [
   { po: "PO-000468", supplier: "מפעלי ברזל השרון", expectedDate: "2026-04-13", items: "ברזל בניין 12מ״מ", qty: 450, status: "בזמן", daysUntil: 5 },
 ];
 
-const todayReceipts = [
+const FALLBACK_TODAY_RECEIPTS = [
   { grn: "GRN-001", po: "PO-000455", supplier: "Schüco International", items: "פרופיל אלומיניום 6060", qtyOrdered: 250, qtyReceived: 250, quality: "עבר", receivedBy: "יוסי כהן", time: "07:45" },
   { grn: "GRN-002", po: "PO-000456", supplier: "Foshan Glass Co.", items: "זכוכית מחוסמת 10מ״מ", qtyOrdered: 100, qtyReceived: 98, quality: "עבר", receivedBy: "שרה לוי", time: "08:20" },
   { grn: "GRN-003", po: "PO-000457", supplier: "מפעלי ברזל השרון", items: "פלדה מגולוונת 2מ״מ", qtyOrdered: 60, qtyReceived: 60, quality: "ממתין", receivedBy: "דוד מזרחי", time: "09:10" },
@@ -42,7 +46,7 @@ const todayReceipts = [
   { grn: "GRN-008", po: "PO-000452", supplier: "מפעלי ברזל השרון", items: "ברזל בניין 12מ״מ", qtyOrdered: 300, qtyReceived: 295, quality: "עבר", receivedBy: "נועה פרידמן", time: "13:00" },
 ];
 
-const discrepancies = [
+const FALLBACK_DISCREPANCIES = [
   { grn: "GRN-002", po: "PO-000456", supplier: "Foshan Glass Co.", item: "זכוכית מחוסמת 10מ״מ", qtyOrdered: 100, qtyReceived: 98, variance: -2.0, action: "אושר חלקי – הזמנת השלמה" },
   { grn: "GRN-004", po: "PO-000458", supplier: "אלום-טק בע״מ", item: "חיבורי פינה 90°", qtyOrdered: 800, qtyReceived: 780, variance: -2.5, action: "זיכוי מספק" },
   { grn: "GRN-006", po: "PO-000450", supplier: "תעשיות זכוכית ים", item: "זכוכית שקופה 6מ״מ", qtyOrdered: 150, qtyReceived: 148, variance: -1.3, action: "אושר – סטייה מקובלת" },
@@ -51,7 +55,7 @@ const discrepancies = [
   { grn: "GRN-021", po: "PO-000442", supplier: "Foshan Glass Co.", item: "זכוכית למינציה 8מ״מ", qtyOrdered: 80, qtyReceived: 72, variance: -10.0, action: "דרישת פיצוי" },
 ];
 
-const rejections = [
+const FALLBACK_REJECTIONS = [
   { date: "2026-04-08", supplier: "Alumil SA", item: "ידיות נירוסטה L-200", reason: "פגם", qtyRejected: 400, replacement: "הוזמן חלופי" },
   { date: "2026-04-06", supplier: "Foshan Glass Co.", item: "זכוכית למינציה 8מ״מ", reason: "לא תואם מפרט", qtyRejected: 15, replacement: "ממתין לאישור ספק" },
   { date: "2026-04-04", supplier: "מפעלי ברזל השרון", item: "פלדה מגולוונת 2מ״מ", reason: "אריזה פגומה", qtyRejected: 8, replacement: "נשלח מחדש" },
@@ -82,6 +86,21 @@ const TH = "text-right text-[10px] font-semibold";
 
 export default function GoodsReceiving() {
   const [tab, setTab] = useState("expected");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["procurement-goods-receipts"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/procurement/goods-receipts`);
+      if (!res.ok) throw new Error("Failed to fetch goods receipts");
+      return res.json();
+    },
+  });
+
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const expectedArrivals = apiData?.expectedArrivals ?? FALLBACK_EXPECTED_ARRIVALS;
+  const todayReceipts = apiData?.todayReceipts ?? FALLBACK_TODAY_RECEIPTS;
+  const discrepancies = apiData?.discrepancies ?? FALLBACK_DISCREPANCIES;
+  const rejections = apiData?.rejections ?? FALLBACK_REJECTIONS;
 
   return (
     <div className="p-6 space-y-5" dir="rtl">

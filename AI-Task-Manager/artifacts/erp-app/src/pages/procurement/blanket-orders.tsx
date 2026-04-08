@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   FileStack, TrendingUp, TrendingDown, DollarSign, Percent, Clock,
   Users, Search, Filter, CheckCircle2, AlertTriangle, XCircle, FileText,
@@ -9,6 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+
+const API = "/api";
 
 const fmt = (v: number) => "₪" + new Intl.NumberFormat("he-IL").format(v);
 const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString("he-IL") : "—";
@@ -45,7 +49,7 @@ interface Release {
   amount: number;
 }
 
-const blanketOrders: BlanketOrder[] = [
+const FALLBACK_BLANKET_ORDERS: BlanketOrder[] = [
   { id: "BLK-001", supplier: "אלומיניום הגליל בע\"מ",  material: "פרופיל אלומיניום 6063",  category: "חומרי גלם", startDate: "2025-10-01", endDate: "2026-09-30", totalQty: 12000, usedQty: 7800,  unitPrice: 42,  marketPrice: 49,  status: "active" },
   { id: "BLK-002", supplier: "זכוכית שומרון בע\"מ",    material: "זכוכית מחוסמת 6 מ\"מ",   category: "חומרי גלם", startDate: "2025-07-01", endDate: "2026-06-30", totalQty: 8000,  usedQty: 6400,  unitPrice: 78,  marketPrice: 88,  status: "expiring" },
   { id: "BLK-003", supplier: "פלדת צפון תעשיות",       material: "פלדת קונסטרוקציה",       category: "חומרי גלם", startDate: "2026-01-01", endDate: "2026-12-31", totalQty: 5000,  usedQty: 1250,  unitPrice: 115, marketPrice: 132, status: "active" },
@@ -56,7 +60,7 @@ const blanketOrders: BlanketOrder[] = [
   { id: "BLK-008", supplier: "מפעלי סיליקון הדרום",    material: "סיליקון תעשייתי",         category: "חומרי עזר", startDate: "2025-08-01", endDate: "2026-07-31", totalQty: 6000,  usedQty: 4800,  unitPrice: 34,  marketPrice: 41,  status: "expiring" },
 ];
 
-const releases: Release[] = [
+const FALLBACK_RELEASES: Release[] = [
   { id: "REL-001", blanketId: "BLK-001", date: "2026-03-15", qty: 800,  poRef: "PO-2026-041", amount: 33600 },
   { id: "REL-002", blanketId: "BLK-001", date: "2026-04-02", qty: 600,  poRef: "PO-2026-058", amount: 25200 },
   { id: "REL-003", blanketId: "BLK-002", date: "2026-03-20", qty: 500,  poRef: "PO-2026-044", amount: 39000 },
@@ -72,6 +76,18 @@ const releases: Release[] = [
 export default function BlanketOrders() {
   const [tab, setTab] = useState("blankets");
   const [search, setSearch] = useState("");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["procurement-blanket-orders"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/procurement/blanket-orders`);
+      if (!res.ok) throw new Error("Failed to fetch blanket orders");
+      return res.json();
+    },
+  });
+
+  const blanketOrders: BlanketOrder[] = apiData?.blanketOrders ?? FALLBACK_BLANKET_ORDERS;
+  const releases: Release[] = apiData?.releases ?? FALLBACK_RELEASES;
 
   const util = (o: BlanketOrder) => o.totalQty > 0 ? (o.usedQty / o.totalQty) * 100 : 0;
   const saving = (o: BlanketOrder) => o.marketPrice > 0 ? ((o.marketPrice - o.unitPrice) / o.marketPrice) * 100 : 0;

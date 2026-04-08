@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,10 +11,12 @@ import {
   Settings, TrendingUp, BarChart3
 } from "lucide-react";
 
+const API = "/api";
+
 // ============================================================
 // DATA — טכנו-כל עוזי — אוטומציות רכש
 // ============================================================
-const automations = [
+const FALLBACK_AUTOMATIONS = [
   {
     id: "auto_send_rfq",
     name: "שליחת RFQ אוטומטית",
@@ -93,7 +97,7 @@ const automations = [
   },
 ];
 
-const executionLog = [
+const FALLBACK_EXECUTION_LOG = [
   { id: 1, time: "2026-04-08T10:05:00", automation: "הפקת הזמנת רכש", trigger: "PO-000462 — Foshan Glass", result: "הצלחה", duration: "1.2s" },
   { id: 2, time: "2026-04-08T09:15:00", automation: "שליחת RFQ אוטומטית", trigger: "אלומיניום 6063 — מלאי 120 ק\"ג", result: "הצלחה", duration: "3.8s" },
   { id: 3, time: "2026-04-08T08:30:00", automation: "בחירת ספק אופטימלי", trigger: "RFQ-0087 — 3 הצעות", result: "הצלחה", duration: "2.1s" },
@@ -104,7 +108,7 @@ const executionLog = [
   { id: 8, time: "2026-04-07T09:00:00", automation: "התראת עיכוב אספקה", trigger: "PO-000450 — Schüco +1 יום", result: "הצלחה", duration: "0.4s" },
 ];
 
-const rules = [
+const FALLBACK_RULES = [
   { id: 1, rule: "אישור אוטומטי עד ₪50,000", scope: "כל הספקים המאושרים", condition: "סכום ≤ 50,000 ₪ + ספק ברשימה לבנה + קיים תקציב פנוי", status: "פעיל" },
   { id: 2, rule: "שליחת RFQ ל-3 ספקים לפחות", scope: "חומרי גלם", condition: "מלאי < נקודת הזמנה → שליחה ל-3 ספקים מדורגים", status: "פעיל" },
   { id: 3, rule: "בחירת ספק — משקלות", scope: "כל הקטגוריות", condition: "מחיר 40% | זמן אספקה 25% | איכות 20% | אמינות 15%", status: "פעיל" },
@@ -119,16 +123,29 @@ const fmtDateTime = (d: string) => new Date(d).toLocaleString("he-IL");
 // COMPONENT
 // ============================================================
 export default function ProcurementAutomation() {
+  const { data: apiData } = useQuery({
+    queryKey: ["procurement-automations"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/procurement/automations`);
+      if (!res.ok) throw new Error("Failed to fetch procurement automations");
+      return res.json();
+    },
+  });
+
+  const automations = apiData?.automations ?? FALLBACK_AUTOMATIONS;
+  const executionLog = apiData?.executionLog ?? FALLBACK_EXECUTION_LOG;
+  const rules = apiData?.rules ?? FALLBACK_RULES;
+
   const [toggles, setToggles] = useState<Record<string, boolean>>(
     Object.fromEntries(automations.map(a => [a.id, a.active]))
   );
 
   const activeCount = Object.values(toggles).filter(Boolean).length;
   const triggeredToday = executionLog.filter(l => l.time.startsWith("2026-04-08")).length;
-  const ordersAutoGen = automations.find(a => a.id === "auto_generate_order")!.runs;
-  const rfqsSent = automations.find(a => a.id === "auto_send_rfq")!.runs;
+  const ordersAutoGen = automations.find(a => a.id === "auto_generate_order")?.runs ?? 0;
+  const rfqsSent = automations.find(a => a.id === "auto_send_rfq")?.runs ?? 0;
   const failCount = executionLog.filter(l => l.result === "כשלון").length;
-  const errorRate = ((failCount / executionLog.length) * 100).toFixed(1);
+  const errorRate = executionLog.length > 0 ? ((failCount / executionLog.length) * 100).toFixed(1) : "0.0";
 
   const kpis = [
     { label: "אוטומציות פעילות", value: `${activeCount} / ${automations.length}`, icon: Zap, color: "text-emerald-400" },

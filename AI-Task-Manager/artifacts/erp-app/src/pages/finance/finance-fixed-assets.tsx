@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,10 +10,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Building2, Search, Plus, Download, Eye, Edit2, Trash2,
   CheckCircle2, TrendingDown, AlertTriangle, Calendar,
-  DollarSign, Package, Wrench, MapPin, BarChart3, Landmark
+  DollarSign, Package, Wrench, MapPin, BarChart3, Landmark, Loader2
 } from "lucide-react";
 
-const assets = [
+const FALLBACK_ASSETS = [
   { id: "FA-001", name: "מכונת CNC 5 צירים Haas", category: "מכונות ייצור", location: "אולם ייצור 1", acquisitionDate: "2021-03-15", acquisitionCost: 850000, depMethod: "קו ישר", lifeYears: 10, accDepreciation: 425000, bookValue: 425000, status: "פעיל", condition: "טובה" },
   { id: "FA-002", name: "מכונת חיתוך לייזר Trumpf", category: "מכונות ייצור", location: "אולם ייצור 1", acquisitionDate: "2022-06-20", acquisitionCost: 1200000, depMethod: "קו ישר", lifeYears: 12, accDepreciation: 400000, bookValue: 800000, status: "פעיל", condition: "מצוינת" },
   { id: "FA-003", name: "מלגזה חשמלית Toyota 3 טון", category: "כלי רכב", location: "מחסן", acquisitionDate: "2020-01-10", acquisitionCost: 180000, depMethod: "קו ישר", lifeYears: 8, accDepreciation: 135000, bookValue: 45000, status: "פעיל", condition: "סבירה" },
@@ -48,8 +50,17 @@ export default function FinanceFixedAssets() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("register");
 
+  const { data: assets = FALLBACK_ASSETS, isLoading } = useQuery({
+    queryKey: ["finance-fixed-assets"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/fixed-assets");
+      if (!r.ok) return FALLBACK_ASSETS;
+      return r.json();
+    },
+  });
+
   const filtered = useMemo(() => {
-    return assets.filter(r => {
+    return assets.filter((r: any) => {
       if (categoryFilter !== "all" && r.category !== categoryFilter) return false;
       if (search) {
         const s = search.toLowerCase();
@@ -57,14 +68,14 @@ export default function FinanceFixedAssets() {
       }
       return true;
     });
-  }, [search, categoryFilter]);
+  }, [search, categoryFilter, assets]);
 
   const kpis = useMemo(() => {
-    const totalCost = assets.reduce((s, a) => s + a.acquisitionCost, 0);
-    const totalBookValue = assets.reduce((s, a) => s + a.bookValue, 0);
-    const totalDepreciation = assets.reduce((s, a) => s + a.accDepreciation, 0);
-    const activeCount = assets.filter(a => a.status === "פעיל").length;
-    const fullyDepreciated = assets.filter(a => a.bookValue === 0).length;
+    const totalCost = assets.reduce((s: number, a: any) => s + a.acquisitionCost, 0);
+    const totalBookValue = assets.reduce((s: number, a: any) => s + a.bookValue, 0);
+    const totalDepreciation = assets.reduce((s: number, a: any) => s + a.accDepreciation, 0);
+    const activeCount = assets.filter((a: any) => a.status === "פעיל").length;
+    const fullyDepreciated = assets.filter((a: any) => a.bookValue === 0).length;
     return {
       totalAssets: assets.length,
       totalCost,
@@ -73,18 +84,27 @@ export default function FinanceFixedAssets() {
       activeCount,
       fullyDepreciated,
     };
-  }, []);
+  }, [assets]);
 
   const categories = useMemo(() => {
     const cats: Record<string, { count: number; cost: number; bookValue: number }> = {};
-    assets.forEach(a => {
+    assets.forEach((a: any) => {
       if (!cats[a.category]) cats[a.category] = { count: 0, cost: 0, bookValue: 0 };
       cats[a.category].count++;
       cats[a.category].cost += a.acquisitionCost;
       cats[a.category].bookValue += a.bookValue;
     });
     return cats;
-  }, []);
+  }, [assets]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96" dir="rtl">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <span className="mr-3 text-muted-foreground">טוען רכוש קבוע...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6" dir="rtl">

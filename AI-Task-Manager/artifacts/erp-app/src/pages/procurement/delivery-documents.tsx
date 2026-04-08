@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,7 +11,9 @@ import {
   Link2, CheckCircle2, XCircle, MapPin, Package
 } from "lucide-react";
 
-const kpis = [
+const API = "/api";
+
+const FALLBACK_KPIS = [
   { label: "מסמכים היום", value: "14", sub: "תעודות משלוח", icon: FileText, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "ממתין לאימות", value: "6", sub: "מסמכים", icon: Clock, color: "text-amber-400", bg: "bg-amber-500/10" },
   { label: "חתומים", value: "38", sub: "החודש", icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/10" },
@@ -18,7 +22,7 @@ const kpis = [
   { label: "זמן עיבוד ממוצע", value: "18 דק׳", sub: "קבלה עד אישור", icon: Clock, color: "text-purple-400", bg: "bg-purple-500/10" },
 ];
 
-const deliveryNotes = [
+const FALLBACK_DELIVERY_NOTES = [
   { id: "DN-1041", supplier: "Schüco International", po: "PO-000461", items: "פרופיל אלומיניום 6060", qty: 300, date: "2026-04-08", signed: true },
   { id: "DN-1042", supplier: "Foshan Glass Co.", po: "PO-000462", items: "זכוכית מחוסמת 10מ״מ", qty: 120, date: "2026-04-08", signed: true },
   { id: "DN-1043", supplier: "מפעלי ברזל השרון", po: "PO-000463", items: "פלדה מגולוונת 2מ״מ", qty: 80, date: "2026-04-08", signed: false },
@@ -29,7 +33,7 @@ const deliveryNotes = [
   { id: "DN-1048", supplier: "מפעלי ברזל השרון", po: "PO-000468", items: "ברזל בניין 12מ״מ", qty: 450, date: "2026-04-05", signed: false },
 ];
 
-const shippingDocs = [
+const FALLBACK_SHIPPING_DOCS = [
   { id: "SHP-301", carrier: "צים שילוח", origin: "פושאן, סין", dest: "נמל חיפה", po: "PO-000462", weight: "4,200 ק״ג", eta: "2026-04-12", status: "בדרך" },
   { id: "SHP-302", carrier: "DHL Freight", origin: "ביילפלד, גרמניה", dest: "נמל אשדוד", po: "PO-000461", weight: "1,850 ק״ג", eta: "2026-04-10", status: "בדרך" },
   { id: "SHP-303", carrier: "משלוחי הגליל", origin: "קריית שמונה", dest: "מפעל ראשי", po: "PO-000463", weight: "3,600 ק״ג", eta: "2026-04-08", status: "נמסר" },
@@ -40,7 +44,7 @@ const shippingDocs = [
   { id: "SHP-308", carrier: "משלוחי הגליל", origin: "נהריה", dest: "מפעל ראשי", po: "PO-000468", weight: "7,200 ק״ג", eta: "2026-04-11", status: "בדרך" },
 ];
 
-const verificationQueue = [
+const FALLBACK_VERIFICATION_QUEUE = [
   { id: "VER-201", doc: "DN-1043", supplier: "מפעלי ברזל השרון", type: "תעודת משלוח", submitted: "2026-04-08 09:15", status: "ממתין", verifier: "—" },
   { id: "VER-202", doc: "DN-1045", supplier: "Alumil SA", type: "תעודת משלוח", submitted: "2026-04-07 14:30", status: "ממתין", verifier: "—" },
   { id: "VER-203", doc: "SHP-301", supplier: "Foshan Glass Co.", type: "מסמך שילוח", submitted: "2026-04-07 11:00", status: "אושר", verifier: "יוסי כהן" },
@@ -51,7 +55,7 @@ const verificationQueue = [
   { id: "VER-208", doc: "DN-1046", supplier: "תעשיות זכוכית ים", type: "תעודת משלוח", submitted: "2026-04-06 10:00", status: "אושר", verifier: "אלון גולדשטיין" },
 ];
 
-const trackingTimeline = [
+const FALLBACK_TRACKING_TIMELINE = [
   { id: "TRK-501", po: "PO-000462", supplier: "Foshan Glass Co.", item: "זכוכית מחוסמת 10מ״מ", steps: ["הוזמן", "נשלח", "בנמל מוצא", "בדרך"], current: 3, total: 6, eta: "2026-04-12" },
   { id: "TRK-502", po: "PO-000461", supplier: "Schüco International", item: "פרופיל אלומיניום 6060", steps: ["הוזמן", "נשלח", "בנמל מוצא", "בדרך", "בנמל יעד"], current: 4, total: 6, eta: "2026-04-10" },
   { id: "TRK-503", po: "PO-000463", supplier: "מפעלי ברזל השרון", item: "פלדה מגולוונת 2מ״מ", steps: ["הוזמן", "נשלח", "בדרך", "נמסר למפעל", "אושר קבלה", "הועבר למחסן"], current: 6, total: 6, eta: "2026-04-08" },
@@ -84,6 +88,21 @@ const TH = "text-right text-[10px] font-semibold";
 
 export default function DeliveryDocuments() {
   const [tab, setTab] = useState("notes");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["procurement-deliveries"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/procurement/deliveries`);
+      if (!res.ok) throw new Error("Failed to fetch deliveries");
+      return res.json();
+    },
+  });
+
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const deliveryNotes = apiData?.deliveryNotes ?? FALLBACK_DELIVERY_NOTES;
+  const shippingDocs = apiData?.shippingDocs ?? FALLBACK_SHIPPING_DOCS;
+  const verificationQueue = apiData?.verificationQueue ?? FALLBACK_VERIFICATION_QUEUE;
+  const trackingTimeline = apiData?.trackingTimeline ?? FALLBACK_TRACKING_TIMELINE;
 
   return (
     <div className="p-6 space-y-5" dir="rtl">

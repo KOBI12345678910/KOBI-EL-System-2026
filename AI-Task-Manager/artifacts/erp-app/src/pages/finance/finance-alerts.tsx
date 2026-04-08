@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,7 +19,7 @@ import {
   CreditCard, Globe, Target, Zap, Settings2, Plus, Search, Filter,
   ArrowUpRight, ArrowDownRight, BellRing, BellOff, Volume2, VolumeX,
   Mail, MessageSquare, Smartphone, ChevronRight, MoreHorizontal,
-  Trash2, Archive, RefreshCw, CheckCheck
+  Trash2, Archive, RefreshCw, CheckCheck, Loader2
 } from "lucide-react";
 
 // ============================================================
@@ -77,9 +79,9 @@ const SEVERITY_CONFIG: Record<AlertSeverity, { label: string; color: string; bg:
 };
 
 // ============================================================
-// ALERTS DATA
+// FALLBACK ALERTS DATA
 // ============================================================
-const alerts: FinAlert[] = [
+const FALLBACK_ALERTS: FinAlert[] = [
   {
     id: 1, title: "יתרת מזומנים מתחת לסף", description: "יתרת מזומנים בבנק לאומי ירדה מתחת ל-₪500K - הסף המינימלי שנקבע",
     category: "cashflow", severity: "critical", status: "active", source: "auto",
@@ -165,9 +167,9 @@ const alerts: FinAlert[] = [
 ];
 
 // ============================================================
-// ALERT RULES
+// FALLBACK ALERT RULES
 // ============================================================
-const alertRules = [
+const FALLBACK_ALERT_RULES = [
   { id: 1, name: "יתרת מזומנים מינימלית", category: "cashflow", condition: "cash_balance < 500000", severity: "critical", channels: ["email", "sms", "push"], isActive: true },
   { id: 2, name: "חשבונית באיחור 60+", category: "receivables", condition: "days_overdue > 60", severity: "high", channels: ["email"], isActive: true },
   { id: 3, name: "חשבונית באיחור 90+", category: "receivables", condition: "days_overdue > 90", severity: "critical", channels: ["email", "sms"], isActive: true },
@@ -228,8 +230,28 @@ export default function FinanceAlerts() {
   const [search, setSearch] = useState("");
   const [showCreateRule, setShowCreateRule] = useState(false);
 
+  const { data: alerts = FALLBACK_ALERTS, isLoading: isLoadingAlerts } = useQuery({
+    queryKey: ["finance-alerts"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/alerts");
+      if (!r.ok) return FALLBACK_ALERTS;
+      return r.json();
+    },
+  });
+
+  const { data: alertRules = FALLBACK_ALERT_RULES, isLoading: isLoadingRules } = useQuery({
+    queryKey: ["finance-alert-rules"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/alerts/rules");
+      if (!r.ok) return FALLBACK_ALERT_RULES;
+      return r.json();
+    },
+  });
+
+  const isLoading = isLoadingAlerts || isLoadingRules;
+
   const filtered = useMemo(() =>
-    alerts.filter(a => {
+    alerts.filter((a: FinAlert) => {
       if (categoryFilter !== "all" && a.category !== categoryFilter) return false;
       if (severityFilter !== "all" && a.severity !== severityFilter) return false;
       if (statusFilter !== "all" && a.status !== statusFilter) return false;
@@ -239,26 +261,35 @@ export default function FinanceAlerts() {
       const sev = { critical: 0, high: 1, medium: 2, low: 3, info: 4 };
       return sev[a.severity] - sev[b.severity];
     }),
-    [categoryFilter, severityFilter, statusFilter, search]
+    [categoryFilter, severityFilter, statusFilter, search, alerts]
   );
 
   // Summary
-  const activeAlerts = alerts.filter(a => a.status === "active");
-  const criticalCount = activeAlerts.filter(a => a.severity === "critical").length;
-  const highCount = activeAlerts.filter(a => a.severity === "high").length;
-  const acknowledgedCount = alerts.filter(a => a.status === "acknowledged").length;
-  const resolvedToday = alerts.filter(a => a.status === "resolved" && a.resolvedAt?.startsWith("2026-04-08")).length;
+  const activeAlerts = alerts.filter((a: FinAlert) => a.status === "active");
+  const criticalCount = activeAlerts.filter((a: FinAlert) => a.severity === "critical").length;
+  const highCount = activeAlerts.filter((a: FinAlert) => a.severity === "high").length;
+  const acknowledgedCount = alerts.filter((a: FinAlert) => a.status === "acknowledged").length;
+  const resolvedToday = alerts.filter((a: FinAlert) => a.status === "resolved" && a.resolvedAt?.startsWith("2026-04-08")).length;
 
   // Category summary
   const categorySummary = useMemo(() =>
     Object.entries(CATEGORIES).map(([key, cfg]) => ({
       key: key as AlertCategory,
       ...cfg,
-      count: activeAlerts.filter(a => a.category === key).length,
-      criticalCount: activeAlerts.filter(a => a.category === key && a.severity === "critical").length,
+      count: activeAlerts.filter((a: FinAlert) => a.category === key).length,
+      criticalCount: activeAlerts.filter((a: FinAlert) => a.category === key && a.severity === "critical").length,
     })).filter(c => c.count > 0).sort((a, b) => b.criticalCount - a.criticalCount || b.count - a.count),
-    []
+    [alerts]
   );
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96" dir="rtl">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <span className="mr-3 text-muted-foreground">טוען התראות פיננסיות...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-5" dir="rtl">

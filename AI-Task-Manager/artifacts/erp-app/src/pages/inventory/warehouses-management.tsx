@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -10,19 +12,21 @@ import {
   Building2, MapPin, Package, Layers, LayoutGrid, Users, TrendingUp, Box, AlertTriangle, Archive,
 } from "lucide-react";
 
+const API = "/api";
+
 const fmt = (n: number) =>
   new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", maximumFractionDigits: 0 }).format(n);
 const fmtN = (n: number) => new Intl.NumberFormat("he-IL").format(n);
 
 /* ── Warehouses ── */
-const warehouses = [
+const FALLBACK_WAREHOUSES = [
   { id: "WH-01", name: "מחסן ראשי", address: "רח׳ התעשייה 12, חולון", zones: 6, bins: 184, items: 1_247, value: 2_845_000, utilization: 78, manager: "יוסי כהן", status: "פעיל", color: "blue" },
   { id: "WH-02", name: "מחסן חומרי גלם", address: "רח׳ המלאכה 5, חולון", zones: 4, bins: 96, items: 632, value: 1_520_000, utilization: 85, manager: "שרה לוי", status: "פעיל", color: "amber" },
   { id: "WH-03", name: "מחסן מוצרים מוגמרים", address: "רח׳ הרכבת 8, חולון", zones: 5, bins: 120, items: 418, value: 3_210_000, utilization: 62, manager: "דוד מזרחי", status: "פעיל", color: "emerald" },
 ];
 
 /* ── Zones ── */
-const zones = [
+const FALLBACK_ZONES = [
   { code: "Z-01A", warehouse: "WH-01", name: "אזור אחסון כללי", type: "אחסון", bins: 48, items: 312, value: 680_000 },
   { code: "Z-01B", warehouse: "WH-01", name: "אזור מוצרים מוגמרים", type: "מוצרים", bins: 36, items: 198, value: 920_000 },
   { code: "Z-01C", warehouse: "WH-01", name: "אזור הסגר", type: "הסגר", bins: 24, items: 87, value: 245_000 },
@@ -50,7 +54,7 @@ const zoneTypeColors: Record<string, string> = {
 };
 
 /* ── Bins ── */
-const bins = [
+const FALLBACK_BINS = [
   { code: "B-01A-01", zone: "Z-01A", rack: "A1", shelf: "1", item: "ברגים נירוסטה M6", qty: 4_500, capacity: 82 },
   { code: "B-01A-02", zone: "Z-01A", rack: "A1", shelf: "2", item: "אומים M8 מגולוון", qty: 3_200, capacity: 71 },
   { code: "B-01A-03", zone: "Z-01A", rack: "A2", shelf: "1", item: "מסגרת אלומיניום 30x30", qty: 120, capacity: 45 },
@@ -102,11 +106,24 @@ export default function WarehousesManagement() {
   const [zoneWarehouse, setZoneWarehouse] = useState("all");
   const [mapWarehouse, setMapWarehouse] = useState("WH-01");
 
-  const totalItems = warehouses.reduce((s, w) => s + w.items, 0);
-  const totalValue = warehouses.reduce((s, w) => s + w.value, 0);
-  const totalBins = warehouses.reduce((s, w) => s + w.bins, 0);
+  const { data: apiData } = useQuery({
+    queryKey: ["inventory-warehouses"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/inventory/warehouses`);
+      if (!res.ok) throw new Error("Failed to fetch warehouses");
+      return res.json();
+    },
+  });
 
-  const filteredZones = zoneWarehouse === "all" ? zones : zones.filter(z => z.warehouse === zoneWarehouse);
+  const warehouses = apiData?.warehouses ?? FALLBACK_WAREHOUSES;
+  const zones = apiData?.zones ?? FALLBACK_ZONES;
+  const bins = apiData?.bins ?? FALLBACK_BINS;
+
+  const totalItems = warehouses.reduce((s: number, w: any) => s + w.items, 0);
+  const totalValue = warehouses.reduce((s: number, w: any) => s + w.value, 0);
+  const totalBins = warehouses.reduce((s: number, w: any) => s + w.bins, 0);
+
+  const filteredZones = zoneWarehouse === "all" ? zones : zones.filter((z: any) => z.warehouse === zoneWarehouse);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a0e1a] to-[#1a1f35] text-white p-6" dir="rtl">

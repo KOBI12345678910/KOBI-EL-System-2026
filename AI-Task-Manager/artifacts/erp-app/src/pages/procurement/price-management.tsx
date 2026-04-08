@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,13 +12,15 @@ import {
   Minus, Users, RefreshCw, Target
 } from "lucide-react";
 
+const API = "/api";
+
 const fmt = (v: number) => new Intl.NumberFormat("he-IL").format(v);
 const fmtCurrency = (v: number) => "\u20AA" + fmt(v);
 
 // ============================================================
 // MOCK DATA
 // ============================================================
-const priceComparisons = [
+const FALLBACK_PRICE_COMPARISONS = [
   { item: "פרופיל אלומיניום 100mm", unit: "מ' רץ", supplier1: { name: "Alumil SA", price: 48.5 }, supplier2: { name: "Schüco International", price: 52.0 }, supplier3: { name: "אלומיניום הגליל", price: 45.8 }, best: 45.8, savings: 6.2 },
   { item: "זכוכית מחוסמת 8mm", unit: "מ\"ר", supplier1: { name: "Foshan Glass Co.", price: 185.0 }, supplier2: { name: "זכוכית ירושלים", price: 210.0 }, supplier3: { name: "AGC Glass", price: 178.0 }, best: 178.0, savings: 32.0 },
   { item: 'ברזל T-45', unit: "ק\"ג", supplier1: { name: "מפעלי ברזל השרון", price: 12.3 }, supplier2: { name: "ברזל צפון", price: 13.1 }, supplier3: { name: "Metalcorp EU", price: 11.8 }, best: 11.8, savings: 1.3 },
@@ -25,7 +29,7 @@ const priceComparisons = [
   { item: "פח אלומיניום 2mm", unit: "מ\"ר", supplier1: { name: "Alumil SA", price: 95.0 }, supplier2: { name: "אלומיניום הגליל", price: 89.5 }, supplier3: { name: "Novelis", price: 92.0 }, best: 89.5, savings: 5.5 },
 ];
 
-const priceAgreements = [
+const FALLBACK_PRICE_AGREEMENTS = [
   { id: "PA-2026-001", supplier: "Alumil SA", items: "פרופילי אלומיניום (32 פריטים)", validFrom: "2026-01-01", validTo: "2026-12-31", discount: 12.0, status: "active" },
   { id: "PA-2026-002", supplier: "Foshan Glass Co.", items: "זכוכיות מחוסמות (18 פריטים)", validFrom: "2026-01-01", validTo: "2026-06-30", discount: 8.5, status: "expiring" },
   { id: "PA-2025-014", supplier: "מפעלי ברזל השרון", items: "ברזל וצינורות (45 פריטים)", validFrom: "2025-07-01", validTo: "2026-03-31", discount: 10.0, status: "expired" },
@@ -34,7 +38,7 @@ const priceAgreements = [
   { id: "PA-2026-005", supplier: "Würth", items: "ברגים ומחברים (120 פריטים)", validFrom: "2026-01-15", validTo: "2026-07-15", discount: 18.0, status: "expiring" },
 ];
 
-const priceHistory = [
+const FALLBACK_PRICE_HISTORY = [
   { item: "פרופיל אלומיניום 100mm", supplier: "Alumil SA", prices: [{ date: "2025-10", price: 52.0 }, { date: "2025-12", price: 50.5 }, { date: "2026-01", price: 48.5 }, { date: "2026-04", price: 48.5 }], trend: "down" },
   { item: "זכוכית מחוסמת 8mm", supplier: "Foshan Glass Co.", prices: [{ date: "2025-10", price: 170.0 }, { date: "2025-12", price: 175.0 }, { date: "2026-01", price: 180.0 }, { date: "2026-04", price: 185.0 }], trend: "up" },
   { item: 'ברזל T-45', supplier: "מפעלי ברזל השרון", prices: [{ date: "2025-10", price: 12.8 }, { date: "2025-12", price: 12.5 }, { date: "2026-01", price: 12.3 }, { date: "2026-04", price: 12.3 }], trend: "down" },
@@ -43,7 +47,7 @@ const priceHistory = [
   { item: "פח אלומיניום 2mm", supplier: "Alumil SA", prices: [{ date: "2025-10", price: 98.0 }, { date: "2025-12", price: 97.0 }, { date: "2026-01", price: 95.0 }, { date: "2026-04", price: 95.0 }], trend: "down" },
 ];
 
-const priceVariances = [
+const FALLBACK_PRICE_VARIANCES = [
   { po: "PO-000458", item: "זכוכית מחוסמת 8mm", supplier: "Foshan Glass Co.", agreedPrice: 178.0, actualPrice: 185.0, variance: 3.9, impact: 4200, date: "2026-04-08" },
   { po: "PO-000452", item: "פרופיל אלומיניום 100mm", supplier: "אלומיניום הגליל", agreedPrice: 45.8, actualPrice: 48.0, variance: 4.8, impact: 2640, date: "2026-04-03" },
   { po: "PO-000449", item: "אטם EPDM", supplier: "Sika AG", agreedPrice: 8.2, actualPrice: 8.9, variance: 8.5, impact: 1400, date: "2026-03-28" },
@@ -74,6 +78,20 @@ const TrendIcon = ({ trend }: { trend: string }) => {
 
 export default function PriceManagement() {
   const [activeTab, setActiveTab] = useState("comparison");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["procurement-price-management"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/procurement/price-management`);
+      if (!res.ok) throw new Error("Failed to fetch price management");
+      return res.json();
+    },
+  });
+
+  const priceComparisons = apiData?.priceComparisons ?? FALLBACK_PRICE_COMPARISONS;
+  const priceAgreements = apiData?.priceAgreements ?? FALLBACK_PRICE_AGREEMENTS;
+  const priceHistory = apiData?.priceHistory ?? FALLBACK_PRICE_HISTORY;
+  const priceVariances = apiData?.priceVariances ?? FALLBACK_PRICE_VARIANCES;
 
   return (
     <div className="p-6 space-y-6" dir="rtl">

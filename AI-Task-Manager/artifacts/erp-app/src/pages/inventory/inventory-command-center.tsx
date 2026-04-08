@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,7 +15,9 @@ import {
   Shield, Zap, Eye
 } from "lucide-react";
 
-const kpis = {
+const API = "/api";
+
+const FALLBACK_KPIS = {
   totalSKUs: 1284,
   activeSKUs: 1048,
   totalValue: 4850000,
@@ -28,7 +32,7 @@ const kpis = {
   accuracyRate: 98.2,
 };
 
-const stockAlerts = [
+const FALLBACK_STOCK_ALERTS = [
   { sku: "ALU-PRO-X100", name: "פרופיל אלומיניום Pro-X 100mm", warehouse: "מחסן ראשי", current: 45, reorder: 100, status: "critical", value: 30600, daysToStockout: 3 },
   { sku: "GLS-TMP-8MM", name: "זכוכית מחוסמת 8mm", warehouse: "מחסן ראשי", current: 82, reorder: 120, status: "low", value: 42640, daysToStockout: 8 },
   { sku: "BRZ-BAR-16", name: "מוט ברזל 16mm", warehouse: "מחסן צפון", current: 28, reorder: 50, status: "low", value: 8400, daysToStockout: 12 },
@@ -36,13 +40,13 @@ const stockAlerts = [
   { sku: "SLN-SIL-BLK", name: "סיליקון שחור", warehouse: "מחסן דרום", current: 12, reorder: 30, status: "critical", value: 2160, daysToStockout: 2 },
 ];
 
-const warehouseOverview = [
+const FALLBACK_WAREHOUSE_OVERVIEW = [
   { name: "מחסן ראשי — חולון", code: "WH-01", capacity: 85, skus: 680, value: 3200000, pendingIn: 5, pendingOut: 8, accuracy: 98.5 },
   { name: "מחסן צפון — חיפה", code: "WH-02", capacity: 62, skus: 245, value: 1100000, pendingIn: 2, pendingOut: 4, accuracy: 97.8 },
   { name: "מחסן דרום — באר שבע", code: "WH-03", capacity: 45, skus: 123, value: 550000, pendingIn: 1, pendingOut: 3, accuracy: 98.0 },
 ];
 
-const recentMovements = [
+const FALLBACK_RECENT_MOVEMENTS = [
   { date: "2026-04-08 10:30", type: "in", sku: "ALU-PRO-X100", qty: 200, warehouse: "מחסן ראשי", reference: "GR-000234", by: "יוסי לוי" },
   { date: "2026-04-08 09:15", type: "out", sku: "GLS-TMP-8MM", qty: 50, warehouse: "מחסן ראשי", reference: "SO-002456", by: "מערכת" },
   { date: "2026-04-07 16:00", type: "transfer", sku: "BRZ-BAR-16", qty: 30, warehouse: "ראשי → צפון", reference: "TR-000089", by: "דוד כהן" },
@@ -50,7 +54,7 @@ const recentMovements = [
   { date: "2026-04-07 11:00", type: "adjustment", sku: "SLN-SIL-BLK", qty: -5, warehouse: "מחסן דרום", reference: "ADJ-000012", by: "ספירת מלאי" },
 ];
 
-const topItems = [
+const FALLBACK_TOP_ITEMS = [
   { sku: "ALU-PRO-X100", name: "פרופיל Pro-X 100mm", onHand: 245, reserved: 80, available: 165, value: 166600, turnover: 12.5, doh: 18 },
   { sku: "GLS-TMP-8MM", name: "זכוכית מחוסמת 8mm", onHand: 132, reserved: 50, available: 82, value: 68640, turnover: 9.8, doh: 25 },
   { sku: "ALU-PRO-X60", name: "פרופיל Pro-X 60mm", onHand: 380, reserved: 120, available: 260, value: 193800, turnover: 8.2, doh: 30 },
@@ -61,6 +65,21 @@ const topItems = [
 const fmt = (v: number) => v >= 1000000 ? `₪${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `₪${(v / 1000).toFixed(0)}K` : `₪${v.toLocaleString()}`;
 
 export default function InventoryCommandCenter() {
+  const { data: apiData } = useQuery({
+    queryKey: ["inventory-command-center"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/inventory/dashboard`);
+      if (!res.ok) throw new Error("Failed to fetch inventory dashboard");
+      return res.json();
+    },
+  });
+
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const stockAlerts = apiData?.stockAlerts ?? FALLBACK_STOCK_ALERTS;
+  const warehouseOverview = apiData?.warehouseOverview ?? FALLBACK_WAREHOUSE_OVERVIEW;
+  const recentMovements = apiData?.recentMovements ?? FALLBACK_RECENT_MOVEMENTS;
+  const topItems = apiData?.topItems ?? FALLBACK_TOP_ITEMS;
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       <div className="flex items-center justify-between">

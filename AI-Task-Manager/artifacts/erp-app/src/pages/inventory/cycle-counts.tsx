@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -8,7 +10,9 @@ import {
   CalendarCheck, CheckCircle2, Clock, UserCheck, BarChart3,
 } from "lucide-react";
 
-const kpis = [
+const API = "/api";
+
+const FALLBACK_KPIS = [
   { label: "ספירות החודש", value: "12", icon: ClipboardCheck, color: "text-cyan-400", bg: "bg-cyan-500/10" },
   { label: "פריטים נספרו", value: "3,847", icon: Package, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "אחוז דיוק", value: "97.8%", icon: Target, color: "text-green-400", bg: "bg-green-500/10" },
@@ -24,7 +28,7 @@ const SC: Record<string, string> = {
   "מושהה": "bg-red-500/20 text-red-300",
 };
 
-const activeCounts = [
+const FALLBACK_ACTIVE_COUNTS = [
   { id: "CC-401", zone: "A-1 מדפים עליונים", items: 120, counter: "יוסי כהן", start: "08:30", progress: 85, status: "בביצוע" },
   { id: "CC-402", zone: "B-3 חומרי גלם", items: 95, counter: "שרה לוי", start: "09:15", progress: 62, status: "בביצוע" },
   { id: "CC-403", zone: "C-2 מוצרים מוגמרים", items: 200, counter: "דוד מזרחי", start: "07:45", progress: 100, status: "הושלם" },
@@ -35,7 +39,7 @@ const activeCounts = [
   { id: "CC-408", zone: "D-3 מחסן חיצוני", items: 45, counter: "נועה פרידמן", start: "—", progress: 0, status: "מושהה" },
 ];
 
-const results = [
+const FALLBACK_RESULTS = [
   { item: "חומר גלם #1042", systemQty: 500, countedQty: 498, variance: -2, pct: -0.4, adj: "בוצע", auditor: "איתן רוזנברג" },
   { item: "אריזה קרטון 40x30", systemQty: 1200, countedQty: 1185, variance: -15, pct: -1.25, adj: "בוצע", auditor: "תמר שלום" },
   { item: "בורג M8 נירוסטה", systemQty: 10000, countedQty: 10000, variance: 0, pct: 0, adj: "תקין", auditor: "יוסי כהן" },
@@ -46,7 +50,7 @@ const results = [
   { item: "תווית מודפסת XL", systemQty: 5000, countedQty: 4990, variance: -10, pct: -0.2, adj: "בוצע", auditor: "מיכל ברק" },
 ];
 
-const schedule = [
+const FALLBACK_SCHEDULE = [
   { zone: "A - מדפים ראשיים", freq: "שבועי", last: "01/04/2026", next: "08/04/2026", items: 320, assigned: "יוסי כהן" },
   { zone: "B - חומרי גלם", freq: "דו-שבועי", last: "25/03/2026", next: "08/04/2026", items: 210, assigned: "שרה לוי" },
   { zone: "C - מוצרים מוגמרים", freq: "חודשי", last: "01/03/2026", next: "01/04/2026", items: 480, assigned: "דוד מזרחי" },
@@ -57,7 +61,7 @@ const schedule = [
   { zone: "H - קו ייצור", freq: "יומי", last: "07/04/2026", next: "08/04/2026", items: 42, assigned: "נועה פרידמן" },
 ];
 
-const accuracy = [
+const FALLBACK_ACCURACY = [
   { month: "נובמבר 2025", pct: 96.2 },
   { month: "דצמבר 2025", pct: 96.8 },
   { month: "ינואר 2026", pct: 97.1 },
@@ -74,6 +78,21 @@ const ADJ: Record<string, string> = {
 
 export default function CycleCounts() {
   const [tab, setTab] = useState("active");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["inventory-cycle-counts"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/inventory/cycle-counts`);
+      if (!res.ok) throw new Error("Failed to fetch cycle counts");
+      return res.json();
+    },
+  });
+
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const activeCounts = apiData?.activeCounts ?? FALLBACK_ACTIVE_COUNTS;
+  const results = apiData?.results ?? FALLBACK_RESULTS;
+  const schedule = apiData?.schedule ?? FALLBACK_SCHEDULE;
+  const accuracy = apiData?.accuracy ?? FALLBACK_ACCURACY;
 
   return (
     <div className="p-6 space-y-4" dir="rtl">

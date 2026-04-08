@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   Settings, Building2, Users, Mail, FileText, CreditCard,
   Smartphone, Landmark, CheckCircle2, XCircle, Shield, Zap,
   Store, Layers, Link2, Database, Plus, Trash2, Phone, Edit2,
-  Download, Info, Eye
+  Download, Info, Eye, Loader2
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,7 +29,7 @@ const TABS = [
   { id: "all", label: "אסיפת ההגדרות", icon: Database },
 ];
 
-const COMPANY = {
+const FALLBACK_COMPANY = {
   name: "טכנו כל עוזי מסגרות ברזל ואלומיניום",
   shortName: "טכנו כל עוזי",
   taxId: "054227129",
@@ -35,9 +37,56 @@ const COMPANY = {
   phone: "0778048340",
 };
 
+const FALLBACK_USERS = [
+  { id: 1, name: "לינה", email: "lina@ojalvo.co.il", role: "בעלים", extraPerms: 0 },
+  { id: 2, name: "support@technokoluzi.com", email: "support@technokoluzi.com", role: "בעלים", extraPerms: 1 },
+  { id: 3, name: "קובי אלקים (את/ה)", email: "kobi.elikayam@technokoluzi.com", role: "בעלים", extraPerms: 0 },
+  { id: 4, name: "קורין ענבר", email: "korin@technokoluzi.com", role: "בעלים", extraPerms: 0 },
+];
+
+const FALLBACK_SETTINGS = {
+  authorizedEmails: ["lina@ojalvo.co.il"],
+  authorizedPhones: ["052-3266996"],
+  authorizedBusinesses: [
+    { name: "אודלנו אברהם ואייל לוי יועצי מס", id: "004804688" },
+    { name: "אוזיה אוטומציה", id: "313130080" },
+  ],
+  accountingFirm: "אודלנו אברהם ואייל לוי יועצי מס",
+};
+
 export default function AccountingSettingsPage() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("quick");
+
+  const { data: COMPANY = FALLBACK_COMPANY, isLoading: isLoadingCompany } = useQuery({
+    queryKey: ["finance-accounting-company"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/accounting-settings/company");
+      if (!r.ok) return FALLBACK_COMPANY;
+      return r.json();
+    },
+  });
+
+  const { data: users = FALLBACK_USERS, isLoading: isLoadingUsers } = useQuery({
+    queryKey: ["finance-accounting-users"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/accounting-settings/users");
+      if (!r.ok) return FALLBACK_USERS;
+      return r.json();
+    },
+  });
+
+  const { data: settings = FALLBACK_SETTINGS, isLoading: isLoadingSettings } = useQuery({
+    queryKey: ["finance-accounting-settings"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/accounting-settings");
+      if (!r.ok) return FALLBACK_SETTINGS;
+      return r.json();
+    },
+  });
+
+  const isLoading = isLoadingCompany || isLoadingUsers || isLoadingSettings;
+
   const [businessName, setBusinessName] = useState(COMPANY.shortName);
   const [businessId, setBusinessId] = useState(COMPANY.taxId);
   const [email, setEmail] = useState(COMPANY.email);
@@ -49,21 +98,19 @@ export default function AccountingSettingsPage() {
   const [addPhoneDialogOpen, setAddPhoneDialogOpen] = useState(false);
   const [addBusinessDialogOpen, setAddBusinessDialogOpen] = useState(false);
 
-  const [users] = useState([
-    { id: 1, name: "לינה", email: "lina@ojalvo.co.il", role: "בעלים", extraPerms: 0 },
-    { id: 2, name: "support@technokoluzi.com", email: "support@technokoluzi.com", role: "בעלים", extraPerms: 1 },
-    { id: 3, name: "קובי אלקים (את/ה)", email: "kobi.elikayam@technokoluzi.com", role: "בעלים", extraPerms: 0 },
-    { id: 4, name: "קורין ענבר", email: "korin@technokoluzi.com", role: "בעלים", extraPerms: 0 },
-  ]);
+  const authorizedEmails = settings.authorizedEmails;
+  const authorizedPhones = settings.authorizedPhones;
+  const authorizedBusinesses = settings.authorizedBusinesses;
+  const accountingFirm = settings.accountingFirm;
 
-  const [authorizedEmails] = useState(["lina@ojalvo.co.il"]);
-  const [authorizedPhones] = useState(["052-3266996"]);
-  const [authorizedBusinesses] = useState([
-    { name: "אודלנו אברהם ואייל לוי יועצי מס", id: "004804688" },
-    { name: "אוזיה אוטומציה", id: "313130080" },
-  ]);
-
-  const [accountingFirm] = useState("אודלנו אברהם ואייל לוי יועצי מס");
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96" dir="rtl">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <span className="mr-3 text-muted-foreground">טוען הגדרות חשבונאות...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6" dir="rtl">

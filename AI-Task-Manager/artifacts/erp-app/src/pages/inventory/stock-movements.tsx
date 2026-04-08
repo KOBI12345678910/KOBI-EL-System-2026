@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -9,6 +11,8 @@ import {
   ArrowLeftRight, PackagePlus, PackageMinus, Repeat2, SlidersHorizontal,
   TrendingUp, Warehouse, Clock, User, FileText, Search, ShieldCheck,
 } from "lucide-react";
+
+const API = "/api";
 
 /* ── helpers ── */
 const fmt = (n: number) => "₪" + n.toLocaleString("he-IL");
@@ -42,7 +46,7 @@ const TYPE_META: Record<MoveType, { color: string; icon: typeof PackagePlus }> =
   "הנפקה":  { color: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30", icon: FileText },
 };
 
-const MOVEMENTS: Movement[] = [
+const FALLBACK_MOVEMENTS: Movement[] = [
   { id: 1, timestamp: "2026-04-08T07:12:00", type: "כניסה", item: "פלדה גלוונית 2 מ\"מ", sku: "STL-G2", qty: 500, unitPrice: 28, fromWarehouse: "ספק חיצוני", fromZone: "-", toWarehouse: "מחסן מרכזי", toZone: "A-01", reference: "PO-4410", user: "דני כהן", notes: "קבלה מספק מרכזי" },
   { id: 2, timestamp: "2026-04-08T07:35:00", type: "כניסה", item: "ברגים M8x30 נירוסטה", sku: "BLT-M8", qty: 2000, unitPrice: 1.2, fromWarehouse: "ספק חיצוני", fromZone: "-", toWarehouse: "מחסן מרכזי", toZone: "C-03", reference: "PO-4412", user: "דני כהן", notes: "הזמנה חוזרת" },
   { id: 3, timestamp: "2026-04-08T08:05:00", type: "יציאה", item: "אלומיניום 6061 T6", sku: "ALU-6061", qty: 120, unitPrice: 45, fromWarehouse: "מחסן מרכזי", fromZone: "B-02", toWarehouse: "קו ייצור 1", toZone: "-", reference: "WO-7801", user: "שירה לוי", notes: "הנפקה לפקודת עבודה" },
@@ -75,6 +79,17 @@ export default function StockMovementsPage() {
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
 
+  const { data: apiData } = useQuery({
+    queryKey: ["inventory-movements"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/inventory/movements`);
+      if (!res.ok) throw new Error("Failed to fetch stock movements");
+      return res.json();
+    },
+  });
+
+  const MOVEMENTS: Movement[] = apiData?.movements ?? FALLBACK_MOVEMENTS;
+
   /* ── computed ── */
   const filtered = useMemo(() => {
     let rows = [...MOVEMENTS];
@@ -92,7 +107,7 @@ export default function StockMovementsPage() {
       );
     }
     return rows;
-  }, [activeTab, search]);
+  }, [activeTab, search, MOVEMENTS]);
 
   const receipts  = MOVEMENTS.filter((m) => m.type === "כניסה");
   const issues    = MOVEMENTS.filter((m) => m.type === "יציאה" || m.type === "הנפקה");

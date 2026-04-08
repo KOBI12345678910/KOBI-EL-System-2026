@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,17 +10,17 @@ import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Building2, DollarSign, Clock, AlertTriangle, CheckCircle,
-  Calendar, Send, Lock, Unlock, TrendingDown, Play, Pause
+  Calendar, Send, Lock, Unlock, TrendingDown, Play, Pause, Loader2
 } from "lucide-react";
 
-const agingBuckets = [
+const FALLBACK_AP_AGING = [
   { label: "שוטף (0-30)", amount: 520000, count: 18, color: "bg-emerald-500" },
   { label: "30-60 ימים", amount: 280000, count: 9, color: "bg-amber-500" },
   { label: "60-90 ימים", amount: 120000, count: 5, color: "bg-orange-500" },
   { label: "90+ ימים", amount: 45000, count: 2, color: "bg-red-500" },
 ];
 
-const duePayments = [
+const FALLBACK_DUE_PAYMENTS = [
   { id: 1, supplier: "Foshan Glass Co.", invoice: "EXI-000142", amount: 180000, currency: "USD", dueDate: "2026-04-12", daysUntilDue: 4, status: "pending", paymentMethod: "SWIFT", priority: "high" },
   { id: 2, supplier: 'Schüco International', invoice: "EXI-000138", amount: 320000, currency: "EUR", dueDate: "2026-04-15", daysUntilDue: 7, status: "approved", paymentMethod: "SWIFT", priority: "high" },
   { id: 3, supplier: "מפעלי ברזל השרון", invoice: "EXI-000145", amount: 85000, currency: "ILS", dueDate: "2026-04-18", daysUntilDue: 10, status: "pending", paymentMethod: "העברה בנקאית", priority: "medium" },
@@ -27,22 +29,69 @@ const duePayments = [
   { id: 6, supplier: "משרד רו\"ח גולדשטיין", invoice: "EXI-000150", amount: 28000, currency: "ILS", dueDate: "2026-04-30", daysUntilDue: 22, status: "pending", paymentMethod: "צ'ק", priority: "medium" },
 ];
 
-const paymentRuns = [
+const FALLBACK_PAYMENT_RUNS = [
   { id: 1, date: "2026-04-07", totalAmount: 425000, paymentCount: 8, method: "העברה בנקאית", status: "completed", approvedBy: "CFO" },
   { id: 2, date: "2026-04-01", totalAmount: 185000, paymentCount: 5, method: 'מס"ב', status: "completed", approvedBy: "CFO" },
   { id: 3, date: "2026-03-25", totalAmount: 312000, paymentCount: 12, method: "מעורב", status: "completed", approvedBy: "CFO" },
 ];
 
-const blockedPayments = [
+const FALLBACK_BLOCKED_PAYMENTS = [
   { supplier: "ספק X", invoice: "EXI-000135", amount: 42000, reason: "חריגה ממסגרת אשראי", blockedBy: "מערכת", blockedAt: "2026-04-05" },
   { supplier: "ספק Y", invoice: "EXI-000139", amount: 18000, reason: "חסר אישור מנהל", blockedBy: "workflow", blockedAt: "2026-04-06" },
 ];
 
-const totalPayables = agingBuckets.reduce((s, b) => s + b.amount, 0);
-const totalDue7Days = duePayments.filter(p => p.daysUntilDue <= 7).reduce((s, p) => s + p.amount, 0);
 const fmt = (v: number) => `₪${v.toLocaleString("he-IL")}`;
 
 export default function PayablesDashboard() {
+  const { data: agingBuckets = FALLBACK_AP_AGING, isLoading: isLoadingAging } = useQuery({
+    queryKey: ["finance-payables-aging"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/payables/aging");
+      if (!r.ok) return FALLBACK_AP_AGING;
+      return r.json();
+    },
+  });
+
+  const { data: duePayments = FALLBACK_DUE_PAYMENTS, isLoading: isLoadingDue } = useQuery({
+    queryKey: ["finance-payables-due"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/payables/due-payments");
+      if (!r.ok) return FALLBACK_DUE_PAYMENTS;
+      return r.json();
+    },
+  });
+
+  const { data: paymentRuns = FALLBACK_PAYMENT_RUNS, isLoading: isLoadingRuns } = useQuery({
+    queryKey: ["finance-payables-runs"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/payables/payment-runs");
+      if (!r.ok) return FALLBACK_PAYMENT_RUNS;
+      return r.json();
+    },
+  });
+
+  const { data: blockedPayments = FALLBACK_BLOCKED_PAYMENTS, isLoading: isLoadingBlocked } = useQuery({
+    queryKey: ["finance-payables-blocked"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/payables/blocked");
+      if (!r.ok) return FALLBACK_BLOCKED_PAYMENTS;
+      return r.json();
+    },
+  });
+
+  const isLoading = isLoadingAging || isLoadingDue || isLoadingRuns || isLoadingBlocked;
+
+  const totalPayables = agingBuckets.reduce((s: number, b: any) => s + b.amount, 0);
+  const totalDue7Days = duePayments.filter((p: any) => p.daysUntilDue <= 7).reduce((s: number, p: any) => s + p.amount, 0);
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96" dir="rtl">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <span className="mr-3 text-muted-foreground">טוען נתוני זכאים...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       <div className="flex items-center justify-between">

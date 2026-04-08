@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -10,12 +12,14 @@ import {
   BarChart3, DollarSign, Clock, PackageX, AlertTriangle, TrendingDown, Archive,
 } from "lucide-react";
 
+const API = "/api";
+
 const fmt = (n: number) =>
   new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", maximumFractionDigits: 0 }).format(n);
 const fmtN = (n: number) => new Intl.NumberFormat("he-IL").format(n);
 
 // ── KPI data ──
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "שווי מלאי כולל", value: fmt(4_872_350), icon: DollarSign, color: "text-emerald-400", bg: "bg-emerald-500/15" },
   { label: "עלות ממוצעת ליחידה", value: fmt(47), icon: BarChart3, color: "text-blue-400", bg: "bg-blue-500/15" },
   { label: "פריטים איטיים", value: "34", icon: TrendingDown, color: "text-amber-400", bg: "bg-amber-500/15" },
@@ -25,7 +29,7 @@ const kpis = [
 ];
 
 // ── Valuation by category ──
-const valuationData = [
+const FALLBACK_VALUATION = [
   { category: "חומרי גלם — מתכות", items: 142, qty: 28_400, avgCost: 38, total: 1_079_200, pct: 22.1 },
   { category: "חומרי גלם — פלסטיק", items: 96, qty: 41_200, avgCost: 12, total: 494_400, pct: 10.1 },
   { category: "רכיבים אלקטרוניים", items: 218, qty: 64_300, avgCost: 23, total: 1_478_900, pct: 30.4 },
@@ -38,7 +42,7 @@ const valuationData = [
 ];
 
 // ── Aging analysis ──
-const agingData = [
+const FALLBACK_AGING = [
   { item: "פלדה גליל 2.5mm", code: "RM-1042", qty: 1_200, value: 84_000, lastMove: "2026-03-28", days: 11, bucket: "0-30" },
   { item: "מחבר USB-C 3.1", code: "EC-2187", qty: 8_400, value: 42_000, lastMove: "2026-03-15", days: 24, bucket: "0-30" },
   { item: "ציר נירוסטה 8mm", code: "SP-0334", qty: 640, value: 19_200, lastMove: "2026-02-20", days: 47, bucket: "30-60" },
@@ -52,7 +56,7 @@ const agingData = [
 ];
 
 // ── Slow moving (>60 days) ──
-const slowData = [
+const FALLBACK_SLOW = [
   { item: "כבל שטוח 24AWG", code: "EC-1455", qty: 3_200, value: 16_000, lastMove: "2026-01-22", days: 76, reason: "ירידה בביקוש" },
   { item: "אלומיניום 6061-T6", code: "RM-0871", qty: 380, value: 22_800, lastMove: "2026-01-10", days: 88, reason: "הוחלף בגרסה חדשה" },
   { item: "צג LCD 4.3 אינץ׳", code: "EC-0923", qty: 190, value: 47_500, lastMove: "2025-12-18", days: 111, reason: "עודף הזמנה" },
@@ -65,7 +69,7 @@ const slowData = [
 ];
 
 // ── Obsolete candidates (>180 days) ──
-const obsoleteData = [
+const FALLBACK_OBSOLETE = [
   { item: "סוללה Li-Ion 2600mAh", code: "EC-0188", qty: 1_100, value: 38_500, days: 200, writeOff: 30_800, reason: "רגולציה חדשה — לא ניתן להשתמש", status: "ממתין לאישור" },
   { item: "לוח PCB דגם A3-rev1", code: "EC-0099", qty: 85, value: 21_250, days: 245, writeOff: 21_250, reason: "הוחלף בדגם A3-rev3", status: "מומלץ למחיקה" },
   { item: "מנוע צעד 42mm ישן", code: "SP-0201", qty: 64, value: 12_800, days: 312, writeOff: 12_800, reason: "אין שימוש בקווי ייצור", status: "מומלץ למחיקה" },
@@ -91,6 +95,21 @@ const statusColor: Record<string, string> = {
 
 export default function StockValuationAging() {
   const [tab, setTab] = useState("valuation");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["inventory-valuations"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/inventory/valuations`);
+      if (!res.ok) throw new Error("Failed to fetch stock valuations");
+      return res.json();
+    },
+  });
+
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const valuationData = apiData?.valuation ?? FALLBACK_VALUATION;
+  const agingData = apiData?.aging ?? FALLBACK_AGING;
+  const slowData = apiData?.slow ?? FALLBACK_SLOW;
+  const obsoleteData = apiData?.obsolete ?? FALLBACK_OBSOLETE;
 
   return (
     <div className="p-6 space-y-5" dir="rtl">

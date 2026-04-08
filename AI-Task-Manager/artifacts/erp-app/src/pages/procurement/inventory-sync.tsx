@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,11 +11,13 @@ import {
   ShieldCheck, ArrowDownToLine, Lock, Activity, TrendingUp
 } from "lucide-react";
 
+const API = "/api";
+
 // ============================================================
 // DATA — Inventory-Procurement Sync for טכנו-כל עוזי
 // ============================================================
 
-const lowStockItems = [
+const FALLBACK_LOW_STOCK_ITEMS = [
   { item: "פרופיל אלומיניום 6063-T5", currentQty: 42, unit: "מ'", minLevel: 100, reorderPoint: 120, autoRequest: "נוצרה PR-000312", supplier: "Alumil SA", status: "critical" },
   { item: "זכוכית מחוסמת 10 מ\"מ", currentQty: 18, unit: "יח'", minLevel: 50, reorderPoint: 60, autoRequest: "נוצרה PR-000313", supplier: "Foshan Glass Co.", status: "critical" },
   { item: "ברגים נירוסטה M8x25", currentQty: 340, unit: "יח'", minLevel: 500, reorderPoint: 600, autoRequest: "נוצרה PR-000314", supplier: "מפעלי ברזל השרון", status: "warning" },
@@ -24,7 +28,7 @@ const lowStockItems = [
   { item: "פרופיל ברזל 40x40x3", currentQty: 65, unit: "מ'", minLevel: 80, reorderPoint: 100, autoRequest: "ממתינה לאישור", supplier: "מפעלי ברזל השרון", status: "warning" },
 ];
 
-const reservedItems = [
+const FALLBACK_RESERVED_ITEMS = [
   { item: "פרופיל אלומיניום 6063-T5", project: "PRJ-1048", projectName: "מגדל אופיס פארק ת\"א", qtyReserved: 280, unit: "מ'", reservedBy: "יוסי כהן", date: "2026-04-06", releaseDate: "2026-04-20" },
   { item: "זכוכית מחוסמת 10 מ\"מ", project: "PRJ-1048", projectName: "מגדל אופיס פארק ת\"א", qtyReserved: 96, unit: "יח'", reservedBy: "יוסי כהן", date: "2026-04-06", releaseDate: "2026-04-22" },
   { item: "ברגים נירוסטה M8x25", project: "PRJ-1052", projectName: "בית ספר השלום ר\"ג", qtyReserved: 1200, unit: "יח'", reservedBy: "שרה לוי", date: "2026-04-04", releaseDate: "2026-04-15" },
@@ -34,7 +38,7 @@ const reservedItems = [
   { item: "סיליקון שקוף UV", project: "PRJ-1052", projectName: "בית ספר השלום ר\"ג", qtyReserved: 60, unit: "שפ'", reservedBy: "שרה לוי", date: "2026-04-05", releaseDate: "2026-04-16" },
 ];
 
-const receiptUpdates = [
+const FALLBACK_RECEIPT_UPDATES = [
   { grn: "GRN-004520", items: "פרופיל אלומיניום 6063-T5 (150 מ')", qtyAdded: 150, warehouse: "מחסן ראשי A", updatedBy: "עומר חדד", time: "08/04/2026 09:15", status: "synced" },
   { grn: "GRN-004519", items: "ברגים נירוסטה M8x25 (2,000 יח')", qtyAdded: 2000, warehouse: "מחסן חומרי עזר", updatedBy: "מיכל ברק", time: "08/04/2026 08:40", status: "synced" },
   { grn: "GRN-004518", items: "זכוכית מחוסמת 10 מ\"מ (30 יח')", qtyAdded: 30, warehouse: "מחסן זכוכית", updatedBy: "עומר חדד", time: "07/04/2026 16:20", status: "synced" },
@@ -45,7 +49,7 @@ const receiptUpdates = [
   { grn: "GRN-004513", items: "זכוכית למינציה 6+6 (15 יח')", qtyAdded: 15, warehouse: "מחסן זכוכית", updatedBy: "מיכל ברק", time: "05/04/2026 13:50", status: "error" },
 ];
 
-const syncModules = [
+const FALLBACK_SYNC_MODULES = [
   { module: "מלאי → רכש (Low Stock)", lastSync: "08/04/2026 09:00", status: "ok", records: 8, errors: 0, warnings: 0 },
   { module: "קבלות → מלאי (GRN)", lastSync: "08/04/2026 09:15", status: "ok", records: 52, errors: 0, warnings: 1 },
   { module: "שריון → פרויקטים", lastSync: "08/04/2026 08:30", status: "ok", records: 7, errors: 0, warnings: 0 },
@@ -80,6 +84,20 @@ const fmt = (n: number) => new Intl.NumberFormat("he-IL").format(n);
 
 export default function InventorySync() {
   const [activeTab, setActiveTab] = useState("low-stock");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["procurement-inventory-sync"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/procurement/inventory-sync`);
+      if (!res.ok) throw new Error("Failed to fetch inventory sync");
+      return res.json();
+    },
+  });
+
+  const lowStockItems = apiData?.lowStockItems ?? FALLBACK_LOW_STOCK_ITEMS;
+  const reservedItems = apiData?.reservedItems ?? FALLBACK_RESERVED_ITEMS;
+  const receiptUpdates = apiData?.receiptUpdates ?? FALLBACK_RECEIPT_UPDATES;
+  const syncModules = apiData?.syncModules ?? FALLBACK_SYNC_MODULES;
 
   const kpis = [
     { label: "פריטים במלאי נמוך", value: "8", icon: AlertTriangle, color: "text-red-400", bg: "bg-red-500/10" },

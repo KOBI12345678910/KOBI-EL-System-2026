@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,10 +15,12 @@ import {
   Package, Users, Award, Search
 } from "lucide-react";
 
+const API = "/api";
+
 // ============================================================
 // PROCUREMENT DATA
 // ============================================================
-const kpis = {
+const FALLBACK_KPIS = {
   totalSpendYTD: 8450000,
   totalSpendBudget: 10200000,
   savingsAchieved: 680000,
@@ -33,7 +37,7 @@ const kpis = {
   priceVarianceAvg: -2.3,
 };
 
-const topSuppliers = [
+const FALLBACK_TOP_SUPPLIERS = [
   { name: "Foshan Glass Co.", spend: 1850000, pct: 21.9, orders: 18, onTime: 82, quality: 88, risk: "medium", country: "סין", trend: "up" },
   { name: "Schüco International", spend: 1420000, pct: 16.8, orders: 12, onTime: 95, quality: 96, risk: "low", country: "גרמניה", trend: "stable" },
   { name: "מפעלי ברזל השרון", spend: 980000, pct: 11.6, orders: 24, onTime: 91, quality: 85, risk: "low", country: "ישראל", trend: "up" },
@@ -41,7 +45,7 @@ const topSuppliers = [
   { name: "חברת חשמל + בזק", spend: 420000, pct: 5.0, orders: 12, onTime: 100, quality: 100, risk: "low", country: "ישראל", trend: "stable" },
 ];
 
-const pendingApprovals = [
+const FALLBACK_PENDING_APPROVALS = [
   { id: "PR-000128", requester: "יוסי אברהם", supplier: "Foshan Glass", amount: 185000, category: "חומרי גלם", urgency: "high", waitingDays: 3, approver: "CFO" },
   { id: "PR-000129", requester: "מיכל לוי", supplier: "ספק מקומי", amount: 42000, category: "כלים", urgency: "medium", waitingDays: 1, approver: "מנהל רכש" },
   { id: "PR-000130", requester: "דני כהן", supplier: "Schüco", amount: 95000, category: "חומרי גלם", urgency: "low", waitingDays: 0, approver: "מנהל רכש" },
@@ -49,7 +53,7 @@ const pendingApprovals = [
   { id: "PR-000131", requester: "שרה גולד", supplier: "Office Depot", amount: 30000, category: "ציוד משרדי", urgency: "low", waitingDays: 0, approver: "מנהל" },
 ];
 
-const recentPOs = [
+const FALLBACK_RECENT_POS = [
   { number: "PO-000458", supplier: "Foshan Glass", date: "2026-04-08", value: 180000, status: "sent", delivery: "2026-04-25", match: "pending" },
   { number: "PO-000457", supplier: "מפעלי ברזל", date: "2026-04-07", value: 85000, status: "confirmed", delivery: "2026-04-15", match: "matched" },
   { number: "PO-000456", supplier: "Schüco", date: "2026-04-05", value: 320000, status: "pending_approval", delivery: "2026-05-01", match: "pending" },
@@ -57,7 +61,7 @@ const recentPOs = [
   { number: "PO-000454", supplier: "Foshan Glass", date: "2026-04-01", value: 145000, status: "received", delivery: "2026-04-08", match: "mismatch" },
 ];
 
-const spendByCategory = [
+const FALLBACK_SPEND_BY_CATEGORY = [
   { category: "אלומיניום", amount: 3200000, pct: 37.9, budget: 3500000, variance: -8.6 },
   { category: "זכוכית", amount: 2100000, pct: 24.9, budget: 2200000, variance: -4.5 },
   { category: "ברזל", amount: 1200000, pct: 14.2, budget: 1100000, variance: 9.1 },
@@ -71,6 +75,21 @@ const spendByCategory = [
 const fmt = (v: number) => v >= 1000000 ? `₪${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `₪${(v / 1000).toFixed(0)}K` : `₪${v.toLocaleString()}`;
 
 export default function ProcurementCommandCenter() {
+  const { data: apiData } = useQuery({
+    queryKey: ["procurement-dashboard"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/procurement/dashboard`);
+      if (!res.ok) throw new Error("Failed to fetch procurement dashboard");
+      return res.json();
+    },
+  });
+
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const topSuppliers = apiData?.topSuppliers ?? FALLBACK_TOP_SUPPLIERS;
+  const pendingApprovals = apiData?.pendingApprovals ?? FALLBACK_PENDING_APPROVALS;
+  const recentPOs = apiData?.recentPOs ?? FALLBACK_RECENT_POS;
+  const spendByCategory = apiData?.spendByCategory ?? FALLBACK_SPEND_BY_CATEGORY;
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       <div className="flex items-center justify-between">

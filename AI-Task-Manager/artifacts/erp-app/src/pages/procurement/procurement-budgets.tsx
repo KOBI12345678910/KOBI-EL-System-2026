@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   Wallet, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2,
   ShieldAlert, BarChart3, Calendar, Layers, ArrowUpRight, ArrowDownRight
@@ -11,6 +13,8 @@ import {
 } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 
+const API = "/api";
+
 const fmt = (v: number) => new Intl.NumberFormat("he-IL").format(v);
 const fmtCur = (v: number) => "\u20AA" + new Intl.NumberFormat("he-IL").format(v);
 
@@ -22,7 +26,7 @@ const statusConfig: Record<BudgetStatus, { label: string; bg: string; text: stri
   over_budget: { label: "חריגה", bg: "bg-red-500/20", text: "text-red-400", border: "border-red-500/30" },
 };
 
-const budgetCategories = [
+const FALLBACK_BUDGET_CATEGORIES = [
   { category: "חומרי גלם", key: "raw_materials", annual: 4_200_000, q1: 1_050_000, q2: 1_100_000, q3: 1_000_000, q4: 1_050_000, spent: 2_280_000, status: "on_track" as BudgetStatus },
   { category: "ייצור", key: "production", annual: 2_800_000, q1: 700_000, q2: 750_000, q3: 680_000, q4: 670_000, spent: 1_620_000, status: "at_risk" as BudgetStatus },
   { category: "שירותים", key: "services", annual: 1_500_000, q1: 375_000, q2: 380_000, q3: 370_000, q4: 375_000, spent: 810_000, status: "on_track" as BudgetStatus },
@@ -33,18 +37,21 @@ const budgetCategories = [
   { category: "ציוד בטיחות", key: "safety", annual: 340_000, q1: 85_000, q2: 88_000, q3: 82_000, q4: 85_000, spent: 195_000, status: "over_budget" as BudgetStatus },
 ];
 
-const totalAnnual = budgetCategories.reduce((s, c) => s + c.annual, 0);
-const totalSpent = budgetCategories.reduce((s, c) => s + c.spent, 0);
-const totalRemaining = totalAnnual - totalSpent;
-const utilization = Math.round((totalSpent / totalAnnual) * 100);
-const overBudgetItems = budgetCategories.filter(c => c.status === "over_budget").length;
-const underBudgetCats = budgetCategories.filter(c => {
-  const expectedPct = 50;
-  const actualPct = (c.spent / c.annual) * 100;
-  return actualPct < expectedPct - 10;
-}).length;
+function computeBudgetKpis(budgetCategories: typeof FALLBACK_BUDGET_CATEGORIES) {
+  const totalAnnual = budgetCategories.reduce((s, c) => s + c.annual, 0);
+  const totalSpent = budgetCategories.reduce((s, c) => s + c.spent, 0);
+  const totalRemaining = totalAnnual - totalSpent;
+  const utilization = Math.round((totalSpent / totalAnnual) * 100);
+  const overBudgetItems = budgetCategories.filter(c => c.status === "over_budget").length;
+  const underBudgetCats = budgetCategories.filter(c => {
+    const expectedPct = 50;
+    const actualPct = (c.spent / c.annual) * 100;
+    return actualPct < expectedPct - 10;
+  }).length;
+  return { totalAnnual, totalSpent, totalRemaining, utilization, overBudgetItems, underBudgetCats };
+}
 
-const monthlyBreakdown = [
+const FALLBACK_MONTHLY_BREAKDOWN = [
   { month: "ינואר 2026", budget: 1_004_000, actual: 985_200, variance: -1.9 },
   { month: "פברואר 2026", budget: 1_004_000, actual: 1_042_500, variance: 3.8 },
   { month: "מרץ 2026", budget: 1_004_000, actual: 1_018_700, variance: 1.5 },
@@ -53,7 +60,7 @@ const monthlyBreakdown = [
   { month: "יוני 2026", budget: 1_038_000, actual: 1_138_900, variance: 9.7 },
 ];
 
-const projectBudgets = [
+const FALLBACK_PROJECT_BUDGETS = [
   { project: "קו ייצור חדש - אלומיניום", budget: 850_000, spent: 612_000, completion: 68, owner: "אבי כהן" },
   { project: "שדרוג מערכת הצביעה", budget: 420_000, spent: 395_000, completion: 88, owner: "דנה לוי" },
   { project: "מחסן אוטומטי - שלב ב'", budget: 1_200_000, spent: 780_000, completion: 55, owner: "יוסי מזרחי" },
@@ -62,7 +69,7 @@ const projectBudgets = [
   { project: "מערכת בטיחות חדשה", budget: 380_000, spent: 410_000, completion: 100, owner: "נועם גל" },
 ];
 
-const overBudgetAlerts = [
+const FALLBACK_OVER_BUDGET_ALERTS = [
   { category: "יבוא", item: "משלוח אלומיניום מסין", budgeted: 480_000, actual: 562_000, overage: 82_000, impact: "עיכוב תזרים Q3", severity: "high" as const, date: "2026-03-28" },
   { category: "ציוד בטיחות", item: "מערכת כיבוי אש חדשה", budgeted: 85_000, actual: 118_000, overage: 33_000, impact: "חריגה מתקציב שנתי", severity: "high" as const, date: "2026-04-02" },
   { category: "ייצור", item: "חלפים למכונת CNC", budgeted: 45_000, actual: 58_200, overage: 13_200, impact: "חריגה רבעונית", severity: "medium" as const, date: "2026-03-15" },
@@ -77,17 +84,33 @@ const severityConfig = {
   low: { label: "נמוכה", bg: "bg-blue-500/20", text: "text-blue-400", border: "border-blue-500/30" },
 };
 
-const kpis = [
-  { label: "תקציב שנתי", value: fmtCur(totalAnnual), icon: Wallet, color: "from-blue-600 to-blue-800" },
-  { label: "הוצאות מצטבר YTD", value: fmtCur(totalSpent), icon: BarChart3, color: "from-purple-600 to-purple-800" },
-  { label: "יתרה", value: fmtCur(totalRemaining), icon: CheckCircle2, color: "from-emerald-600 to-emerald-800" },
-  { label: "ניצול תקציב", value: `${utilization}%`, icon: TrendingUp, color: "from-cyan-600 to-cyan-800" },
-  { label: "פריטים בחריגה", value: String(overBudgetItems), icon: AlertTriangle, color: "from-red-600 to-red-800" },
-  { label: "קטגוריות מתחת לתקציב", value: String(underBudgetCats), icon: ShieldAlert, color: "from-amber-600 to-amber-800" },
-];
-
 export default function ProcurementBudgets() {
   const [activeTab, setActiveTab] = useState("annual");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["procurement-budgets"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/procurement/budgets`);
+      if (!res.ok) throw new Error("Failed to fetch procurement budgets");
+      return res.json();
+    },
+  });
+
+  const budgetCategories = apiData?.budgetCategories ?? FALLBACK_BUDGET_CATEGORIES;
+  const monthlyBreakdown = apiData?.monthlyBreakdown ?? FALLBACK_MONTHLY_BREAKDOWN;
+  const projectBudgets = apiData?.projectBudgets ?? FALLBACK_PROJECT_BUDGETS;
+  const overBudgetAlerts = apiData?.overBudgetAlerts ?? FALLBACK_OVER_BUDGET_ALERTS;
+
+  const { totalAnnual, totalSpent, totalRemaining, utilization, overBudgetItems, underBudgetCats } = computeBudgetKpis(budgetCategories);
+
+  const kpis = [
+    { label: "תקציב שנתי", value: fmtCur(totalAnnual), icon: Wallet, color: "from-blue-600 to-blue-800" },
+    { label: "הוצאות מצטבר YTD", value: fmtCur(totalSpent), icon: BarChart3, color: "from-purple-600 to-purple-800" },
+    { label: "יתרה", value: fmtCur(totalRemaining), icon: CheckCircle2, color: "from-emerald-600 to-emerald-800" },
+    { label: "ניצול תקציב", value: `${utilization}%`, icon: TrendingUp, color: "from-cyan-600 to-cyan-800" },
+    { label: "פריטים בחריגה", value: String(overBudgetItems), icon: AlertTriangle, color: "from-red-600 to-red-800" },
+    { label: "קטגוריות מתחת לתקציב", value: String(underBudgetCats), icon: ShieldAlert, color: "from-amber-600 to-amber-800" },
+  ];
 
   return (
     <div className="p-6 space-y-6" dir="rtl">

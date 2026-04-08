@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,8 +13,10 @@ import {
   BarChart3, Layers, Target, CheckCircle, Scissors
 } from "lucide-react";
 
+const API = "/api";
+
 // ── Data ────────────────────────────────────────────────────────────────
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "סה\"כ פריטים", value: "3,842", icon: Package, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "שווי מלאי כולל", value: "₪12.4M", icon: DollarSign, color: "text-emerald-400", bg: "bg-emerald-500/10" },
   { label: "מחסנים פעילים", value: "3", icon: Warehouse, color: "text-purple-400", bg: "bg-purple-500/10" },
@@ -25,7 +29,7 @@ const kpis = [
   { label: "שאריות / רמננטים", value: "156", icon: Scissors, color: "text-teal-400", bg: "bg-teal-500/10" },
 ];
 
-const warehouses = [
+const FALLBACK_WAREHOUSES = [
   {
     name: "מחסן ראשי",
     code: "WH-01",
@@ -64,7 +68,7 @@ const warehouses = [
   },
 ];
 
-const criticalItems = [
+const FALLBACK_CRITICAL_ITEMS = [
   { sku: "ALU-6063-T5-3M", name: "פרופיל אלומיניום 6063 T5 3m", wh: "WH-01", current: 12, min: 100, max: 500, status: "critical", batch: "B-2026-0341", unit: 'מ"א', value: 18600, daysToOut: 2 },
   { sku: "GLS-TEMP-10MM", name: "זכוכית מחוסמת 10mm", wh: "WH-02", current: 0, min: 50, max: 200, status: "out", batch: "-", unit: "יח'", value: 0, daysToOut: 0 },
   { sku: "STL-FLAT-4MM", name: "פלטת פלדה 4mm", wh: "WH-02", current: 8, min: 40, max: 150, status: "critical", batch: "B-2026-0298", unit: "יח'", value: 12400, daysToOut: 3 },
@@ -75,7 +79,7 @@ const criticalItems = [
   { sku: "ALU-HNDL-EUR", name: "ידית אלומיניום אירופאית", wh: "WH-03", current: 0, min: 100, max: 400, status: "out", batch: "-", unit: "יח'", value: 0, daysToOut: 0 },
 ];
 
-const recentMovements = [
+const FALLBACK_RECENT_MOVEMENTS = [
   { date: "08/04 11:20", type: "כניסה", sku: "ALU-6063-T5-3M", qty: "+200", wh: "WH-01", ref: "GR-004521", project: "-", by: "יוסי לוי" },
   { date: "08/04 10:05", type: "יציאה", sku: "GLS-TEMP-10MM", qty: "-80", wh: "WH-02", ref: "SO-008834", project: "פרויקט מגדלי TLV", by: "מערכת" },
   { date: "08/04 09:30", type: "העברה", sku: "STL-FLAT-4MM", qty: "30", wh: "WH-02 ← WH-01", ref: "TR-001245", project: "-", by: "דוד כהן" },
@@ -85,7 +89,7 @@ const recentMovements = [
   { date: "07/04 11:30", type: "כניסה", sku: "GLS-LAM-6MM", qty: "+120", wh: "WH-02", ref: "GR-004520", project: "-", by: "נועה שלום" },
 ];
 
-const reservations = [
+const FALLBACK_RESERVATIONS = [
   { id: "RSV-00312", sku: "ACC-SEAL-BLK", name: "גומיית איטום שחורה", qty: 500, project: "פרויקט בית חולים", customer: "כללית הנדסה", date: "07/04/2026", expiry: "15/04/2026", status: "פעיל" },
   { id: "RSV-00308", sku: "ALU-6063-T5-3M", name: "פרופיל 6063 T5", qty: 150, project: "מגדלי TLV", customer: "אורבן בניה", date: "05/04/2026", expiry: "20/04/2026", status: "פעיל" },
   { id: "RSV-00305", sku: "GLS-TEMP-10MM", name: "זכוכית מחוסמת 10mm", qty: 60, project: "קניון הנגב", customer: "נגב מסחר", date: "03/04/2026", expiry: "12/04/2026", status: "חלקי" },
@@ -93,7 +97,7 @@ const reservations = [
   { id: "RSV-00298", sku: "ALU-HNDL-EUR", name: "ידית אירופאית", qty: 200, project: "פרויקט אופיס פארק", customer: "פסגות נדל\"ן", date: "28/03/2026", expiry: "08/04/2026", status: "פג תוקף" },
 ];
 
-const exceptions = [
+const FALLBACK_EXCEPTIONS = [
   { id: "DMG-0045", sku: "ALU-6063-T5-3M", name: "פרופיל 6063 T5 — שריטות", type: "פגום", qty: 8, wh: "WH-01", date: "06/04/2026", action: "ממתין להחלטה", value: 12400 },
   { id: "QRN-0019", sku: "GLS-TEMP-10MM", name: "זכוכית מחוסמת — חשד סדק", type: "הסגר", qty: 15, wh: "WH-02", date: "05/04/2026", action: "בבדיקת QC", value: 23250 },
   { id: "DMG-0044", sku: "STL-FLAT-4MM", name: "פלטת פלדה — חלודה", type: "פגום", qty: 5, wh: "WH-02", date: "04/04/2026", action: "לגריטה", value: 7750 },
@@ -133,6 +137,22 @@ const excTypeColor: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────
 export default function InventoryUltraDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["inventory-ultra-dashboard"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/inventory/dashboard`);
+      if (!res.ok) throw new Error("Failed to fetch inventory ultra dashboard");
+      return res.json();
+    },
+  });
+
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const warehouses = apiData?.warehouses ?? FALLBACK_WAREHOUSES;
+  const criticalItems = apiData?.criticalItems ?? FALLBACK_CRITICAL_ITEMS;
+  const recentMovements = apiData?.recentMovements ?? FALLBACK_RECENT_MOVEMENTS;
+  const reservations = apiData?.reservations ?? FALLBACK_RESERVATIONS;
+  const exceptions = apiData?.exceptions ?? FALLBACK_EXCEPTIONS;
 
   return (
     <div className="p-6 space-y-5 bg-[#0a0e1a] min-h-screen text-gray-100" dir="rtl">

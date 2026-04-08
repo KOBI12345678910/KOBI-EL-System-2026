@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   Settings, ShieldCheck, Tags, Layers, AlertTriangle,
   GitBranch, CheckCircle2, XCircle, Clock, TrendingUp
@@ -10,7 +12,9 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const approvalRules = [
+const API = "/api";
+
+const FALLBACK_APPROVAL_RULES = [
   { name: "אישור רכש רגיל", threshold: 5000, role: "מנהל רכש", level: 1, active: true },
   { name: "אישור רכש גבוה", threshold: 25000, role: "סמנכ\"ל תפעול", level: 2, active: true },
   { name: "אישור הזמנה חריגה", threshold: 50000, role: "מנכ\"ל", level: 3, active: true },
@@ -18,7 +22,7 @@ const approvalRules = [
   { name: "רכש ציוד קבוע", threshold: 75000, role: "סמנכ\"ל כספים", level: 3, active: false },
 ];
 
-const supplierCategories = [
+const FALLBACK_SUPPLIER_CATEGORIES = [
   { name: "ספקי מתכת", description: "פלדה, ברזל, נירוסטה וסגסוגות", count: 18, terms: "שוטף + 60" },
   { name: "ספקי אלומיניום", description: "פרופילי אלומיניום ולוחות", count: 12, terms: "שוטף + 45" },
   { name: "ספקי זכוכית", description: "זכוכית שטוחה, מחוסמת וכפולה", count: 8, terms: "שוטף + 30" },
@@ -26,7 +30,7 @@ const supplierCategories = [
   { name: "ספקי שירותים", description: "הובלה, התקנה ותחזוקה", count: 6, terms: "שוטף + 15" },
 ];
 
-const itemCategories = [
+const FALLBACK_ITEM_CATEGORIES = [
   { name: "פרופילי אלומיניום", parent: "חומרי גלם", count: 145, supplier: "אלו-גל בע\"מ" },
   { name: "לוחות זכוכית", parent: "חומרי גלם", count: 62, supplier: "זכוכית ירושלים" },
   { name: "פלדת קונסטרוקציה", parent: "חומרי גלם", count: 38, supplier: "ברזל הצפון" },
@@ -35,7 +39,7 @@ const itemCategories = [
   { name: "ברגים וחיבורים", parent: "אביזרים", count: 320, supplier: "בורג-אל בע\"מ" },
 ];
 
-const priceThresholds = [
+const FALLBACK_PRICE_THRESHOLDS = [
   { item: "פרופיל אלומיניום T5", min: 28, max: 42, deviation: 15, action: "התראה למנהל" },
   { item: "זכוכית מחוסמת 10 מ\"מ", min: 180, max: 260, deviation: 12, action: "עצירת הזמנה" },
   { item: "פלדה ST-37", min: 4200, max: 5800, deviation: 10, action: "בקשת הצעות חדשה" },
@@ -43,7 +47,7 @@ const priceThresholds = [
   { item: "סיליקון מבני 600 מ\"ל", min: 22, max: 38, deviation: 18, action: "התראה למנהל" },
 ];
 
-const riskRules = [
+const FALLBACK_RISK_RULES = [
   { rule: "ספק יחיד קריטי", trigger: "פריט עם ספק יחיד ומחזור > ₪50,000", severity: "גבוה", action: "דרישת ספק חלופי" },
   { rule: "חריגת מחיר", trigger: "עליית מחיר > 15% ברבעון", severity: "בינוני", action: "התראה אוטומטית" },
   { rule: "איחור אספקה חוזר", trigger: "3 איחורים ברצף מספק", severity: "גבוה", action: "הורדת דירוג ספק" },
@@ -51,7 +55,7 @@ const riskRules = [
   { rule: "תנאי תשלום חריגים", trigger: "תשלום מראש > ₪20,000", severity: "נמוך", action: "אישור סמנכ\"ל" },
 ];
 
-const workflowDefinitions = [
+const FALLBACK_WORKFLOW_DEFINITIONS = [
   { name: "הזמנת רכש סטנדרטית", steps: 4, duration: "2.5 ימים", status: "פעיל" },
   { name: "RFQ - בקשת הצעות מחיר", steps: 6, duration: "7 ימים", status: "פעיל" },
   { name: "אישור ספק חדש", steps: 5, duration: "14 ימים", status: "פעיל" },
@@ -80,6 +84,22 @@ const TAB_CONFIG = [
 
 export default function ProcurementSettings() {
   const [activeTab, setActiveTab] = useState("approval");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["procurement-settings"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/procurement/settings`);
+      if (!res.ok) throw new Error("Failed to fetch procurement settings");
+      return res.json();
+    },
+  });
+
+  const approvalRules = apiData?.approvalRules ?? FALLBACK_APPROVAL_RULES;
+  const supplierCategories = apiData?.supplierCategories ?? FALLBACK_SUPPLIER_CATEGORIES;
+  const itemCategories = apiData?.itemCategories ?? FALLBACK_ITEM_CATEGORIES;
+  const priceThresholds = apiData?.priceThresholds ?? FALLBACK_PRICE_THRESHOLDS;
+  const riskRules = apiData?.riskRules ?? FALLBACK_RISK_RULES;
+  const workflowDefinitions = apiData?.workflowDefinitions ?? FALLBACK_WORKFLOW_DEFINITIONS;
 
   return (
     <div className="space-y-4 sm:space-y-6" dir="rtl">

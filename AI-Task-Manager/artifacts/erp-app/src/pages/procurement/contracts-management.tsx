@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   FileSignature, Calendar, TrendingUp, Clock, PenTool, Timer,
   Search, Filter, RefreshCw, ArrowUpDown, CheckCircle2, AlertTriangle, XCircle
@@ -7,6 +9,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+
+const API = "/api";
 
 const fmt = (v: number) =>
   new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", maximumFractionDigits: 0 }).format(v);
@@ -38,7 +42,7 @@ interface Contract {
   penalty: string;
 }
 
-const contracts: Contract[] = [
+const FALLBACK_CONTRACTS: Contract[] = [
   {
     id: "CTR-001", supplier: "אלומיניום ישראל", type: "annual", value: 2850000,
     startDate: "2025-04-01", endDate: "2026-03-31", status: "active", autoRenew: true,
@@ -97,6 +101,17 @@ export default function ContractsManagement() {
   const [filterType, setFilterType] = useState("all");
   const [sortField, setSortField] = useState<keyof Contract>("endDate");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["procurement-contracts"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/procurement/contracts`);
+      if (!res.ok) throw new Error("Failed to fetch contracts");
+      return res.json();
+    },
+  });
+
+  const contracts: Contract[] = apiData?.contracts ?? FALLBACK_CONTRACTS;
 
   const toggleSort = (f: keyof Contract) => {
     if (sortField === f) setSortDir(d => d === "asc" ? "desc" : "asc");

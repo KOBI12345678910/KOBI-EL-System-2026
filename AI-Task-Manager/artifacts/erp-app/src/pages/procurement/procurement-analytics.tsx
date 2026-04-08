@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   PieChart, TrendingUp, TrendingDown, DollarSign, Clock, Target,
   BarChart3, Truck, ArrowUpRight, ArrowDownRight, Minus
@@ -11,6 +13,8 @@ import {
 } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 
+const API = "/api";
+
 const fmt = (v: number) => new Intl.NumberFormat("he-IL").format(v);
 const fmtCur = (v: number) => "₪" + new Intl.NumberFormat("he-IL").format(v);
 
@@ -19,7 +23,7 @@ const TrendIcon = ({ val }: { val: number }) =>
   val < 0 ? <ArrowDownRight className="w-4 h-4 text-emerald-400" /> :
   <Minus className="w-4 h-4 text-gray-400" />;
 
-const supplierSpending = [
+const FALLBACK_SUPPLIER_SPENDING = [
   { name: "אלומיניום ישראל בע\"מ", total: 2_847_500, pct: 28.2, orders: 142, avg: 20_053, trend: 5.2 },
   { name: "מתכות הגליל", total: 1_635_000, pct: 16.2, orders: 89, avg: 18_371, trend: -2.1 },
   { name: "זכוכית השרון", total: 1_290_400, pct: 12.8, orders: 67, avg: 19_260, trend: 8.4 },
@@ -30,7 +34,7 @@ const supplierSpending = [
   { name: "ציוד בטיחות אופק", total: 435_200, pct: 4.3, orders: 72, avg: 6_044, trend: 0.0 },
 ];
 
-const costTrend = [
+const FALLBACK_COST_TREND = [
   { month: "נובמבר 2025", materials: 620_400, services: 185_200, equipment: 94_300, total: 899_900, change: -1.2 },
   { month: "דצמבר 2025", materials: 710_800, services: 192_600, equipment: 112_500, total: 1_015_900, change: 12.9 },
   { month: "ינואר 2026", materials: 685_300, services: 178_400, equipment: 88_700, total: 952_400, change: -6.3 },
@@ -39,7 +43,7 @@ const costTrend = [
   { month: "אפריל 2026", materials: 758_400, services: 210_500, equipment: 118_900, total: 1_087_800, change: 10.8 },
 ];
 
-const efficiencyMetrics = [
+const FALLBACK_EFFICIENCY_METRICS = [
   { category: "אלומיניום גולמי", cycleTime: 4.2, approvalTime: 1.1, deliveryAccuracy: 96.5, onBudget: 92.3 },
   { category: "זכוכית מחוסמת", cycleTime: 6.8, approvalTime: 1.5, deliveryAccuracy: 89.2, onBudget: 87.1 },
   { category: "פרופילי מתכת", cycleTime: 3.5, approvalTime: 0.8, deliveryAccuracy: 97.8, onBudget: 95.4 },
@@ -50,7 +54,7 @@ const efficiencyMetrics = [
   { category: "אריזה ומשלוח", cycleTime: 2.9, approvalTime: 0.6, deliveryAccuracy: 94.8, onBudget: 93.1 },
 ];
 
-const quarterComparison = [
+const FALLBACK_QUARTER_COMPARISON = [
   { metric: "סה\"כ הוצאות רכש", q1: 2_874_500, q2: 3_117_900, change: 8.5 },
   { metric: "מספר הזמנות רכש", q1: 387, q2: 418, change: 8.0 },
   { metric: "ממוצע הזמנה", q1: 7_428, q2: 7_459, change: 0.4 },
@@ -72,6 +76,20 @@ const kpis = [
 
 export default function ProcurementAnalytics() {
   const [activeTab, setActiveTab] = useState("spending");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["procurement-analytics"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/procurement/analytics`);
+      if (!res.ok) throw new Error("Failed to fetch procurement analytics");
+      return res.json();
+    },
+  });
+
+  const supplierSpending = apiData?.supplierSpending ?? FALLBACK_SUPPLIER_SPENDING;
+  const costTrend = apiData?.costTrend ?? FALLBACK_COST_TREND;
+  const efficiencyMetrics = apiData?.efficiencyMetrics ?? FALLBACK_EFFICIENCY_METRICS;
+  const quarterComparison = apiData?.quarterComparison ?? FALLBACK_QUARTER_COMPARISON;
 
   return (
     <div className="p-6 space-y-6" dir="rtl">

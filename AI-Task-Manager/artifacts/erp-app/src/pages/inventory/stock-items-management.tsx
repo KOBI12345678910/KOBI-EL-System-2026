@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,6 +11,8 @@ import {
   TrendingUp, DollarSign, RefreshCw, ArrowUpDown, Layers,
   Filter, Download, BarChart3
 } from "lucide-react";
+
+const API = "/api";
 
 type Category = "חומרי גלם" | "מוצר מוגמר" | "מתכלים" | "אביזרים";
 type Status = "פעיל" | "מלאי נמוך" | "אזל" | "עודף";
@@ -31,7 +35,7 @@ interface StockItem {
   status: Status;
 }
 
-const stockItems: StockItem[] = [
+const FALLBACK_STOCK_ITEMS: StockItem[] = [
   { sku: "RM-ALU-100", name: "פרופיל אלומיניום 100mm", category: "חומרי גלם", warehouse: "מחסן ראשי", zoneBin: "A-01-03", unit: "מטר", onHand: 1240, allocated: 380, available: 860, min: 200, max: 3000, reorderPoint: 500, value: 186000, lastMovement: "2026-04-08", status: "פעיל" },
   { sku: "RM-STL-016", name: "מוט פלדה 16mm", category: "חומרי גלם", warehouse: "מחסן ראשי", zoneBin: "A-02-01", unit: "מטר", onHand: 48, allocated: 20, available: 28, min: 50, max: 500, reorderPoint: 80, value: 14400, lastMovement: "2026-04-07", status: "מלאי נמוך" },
   { sku: "RM-GLS-008", name: "זכוכית מחוסמת 8mm", category: "חומרי גלם", warehouse: "מחסן ראשי", zoneBin: "B-01-02", unit: "מ״ר", onHand: 320, allocated: 150, available: 170, min: 100, max: 800, reorderPoint: 200, value: 128000, lastMovement: "2026-04-08", status: "פעיל" },
@@ -76,6 +80,17 @@ const stockLevel = (onHand: number, min: number, max: number) => {
 export default function StockItemsManagement() {
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("all");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["inventory-stock-items"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/inventory/items`);
+      if (!res.ok) throw new Error("Failed to fetch stock items");
+      return res.json();
+    },
+  });
+
+  const stockItems: StockItem[] = apiData?.items ?? FALLBACK_STOCK_ITEMS;
 
   const filtered = stockItems.filter((item) => {
     const q = search.toLowerCase();

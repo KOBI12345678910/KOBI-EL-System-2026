@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,7 +11,9 @@ import {
   Clock, CalendarX, ArrowLeftRight, History, CheckCircle2
 } from "lucide-react";
 
-const reservations = [
+const API = "/api";
+
+const FALLBACK_RESERVATIONS = [
   { id: "RSV-001", item: "פרופיל אלומיניום Pro-X 100mm", sku: "ALU-PRO-X100", qty: 80, forProject: "פרויקט מגדלי חולון", wo: "WO-1120", reservedBy: "יוסי לוי", date: "2026-04-01", expiry: "2026-04-15", status: "active" },
   { id: "RSV-002", item: "זכוכית מחוסמת 8mm", sku: "GLS-TMP-8MM", qty: 50, forProject: "פרויקט מלון הרצליה", wo: "WO-1124", reservedBy: "דוד כהן", date: "2026-04-02", expiry: "2026-04-18", status: "active" },
   { id: "RSV-003", item: "ציר premium", sku: "ACC-HNG-PRE", qty: 200, forProject: "פרויקט בית ספר נתניה", wo: "WO-1098", reservedBy: "שרה מזרחי", date: "2026-03-28", expiry: "2026-04-10", status: "expiring" },
@@ -20,7 +24,7 @@ const reservations = [
   { id: "RSV-008", item: "אטם EPDM 12mm", sku: "SEL-EPDM-12", qty: 60, forProject: "פרויקט קניון ראשון", wo: "WO-1131", reservedBy: "אבי גולן", date: "2026-04-07", expiry: "2026-04-28", status: "active" },
 ];
 
-const allocations = [
+const FALLBACK_ALLOCATIONS = [
   { project: "פרויקט מגדלי חולון", items: 8, totalValue: 245000, consumption: 62, remaining: 93100 },
   { project: "פרויקט מלון הרצליה", items: 5, totalValue: 182000, consumption: 45, remaining: 100100 },
   { project: "פרויקט בית ספר נתניה", items: 6, totalValue: 128000, consumption: 78, remaining: 28160 },
@@ -31,7 +35,7 @@ const allocations = [
   { project: "פרויקט מפעל לוד", items: 5, totalValue: 156000, consumption: 12, remaining: 137280 },
 ];
 
-const conflicts = [
+const FALLBACK_CONFLICTS = [
   { item: "פרופיל אלומיניום Pro-X 100mm", sku: "ALU-PRO-X100", projects: ["מגדלי חולון", "קניון ראשון", "משרדי הייטק ת\"א"], totalDemand: 280, available: 165, gap: 115, severity: "high" },
   { item: "זכוכית מחוסמת 8mm", sku: "GLS-TMP-8MM", projects: ["מלון הרצליה", "בית ספר נתניה"], totalDemand: 130, available: 82, gap: 48, severity: "medium" },
   { item: "ציר premium", sku: "ACC-HNG-PRE", projects: ["בית ספר נתניה", "מגורי יוקרה נתניה"], totalDemand: 320, available: 180, gap: 140, severity: "high" },
@@ -42,7 +46,7 @@ const conflicts = [
   { item: "אטם EPDM 12mm", sku: "SEL-EPDM-12", projects: ["קניון ראשון", "בית חולים אשדוד"], totalDemand: 140, available: 95, gap: 45, severity: "medium" },
 ];
 
-const history = [
+const FALLBACK_HISTORY = [
   { id: "RSV-091", item: "פלדה מגולוונת 2mm", project: "פרויקט מרכז לוגיסטי", qty: 150, releasedDate: "2026-03-25", reason: "consumed", by: "יוסי לוי" },
   { id: "RSV-088", item: "אלומיניום 6063-T5", project: "פרויקט מגדל עזריאלי", qty: 300, releasedDate: "2026-03-20", reason: "expired", by: "מערכת" },
   { id: "RSV-085", item: "זכוכית למינציה 10mm", project: "פרויקט מרכז לוגיסטי", qty: 45, releasedDate: "2026-03-18", reason: "consumed", by: "דוד כהן" },
@@ -76,12 +80,26 @@ const severityMap: Record<string, { label: string; cls: string }> = {
 export default function ReservationsAllocations() {
   const [tab, setTab] = useState("reservations");
 
+  const { data: apiData } = useQuery({
+    queryKey: ["inventory-reservations"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/inventory/reservations`);
+      if (!res.ok) throw new Error("Failed to fetch reservations");
+      return res.json();
+    },
+  });
+
+  const reservations = apiData?.reservations ?? FALLBACK_RESERVATIONS;
+  const allocations = apiData?.allocations ?? FALLBACK_ALLOCATIONS;
+  const conflicts = apiData?.conflicts ?? FALLBACK_CONFLICTS;
+  const history = apiData?.history ?? FALLBACK_HISTORY;
+
   const kpis = [
-    { label: "שריונות פעילים", value: reservations.filter(r => r.status === "active").length + reservations.filter(r => r.status === "expiring").length, icon: ShieldCheck, color: "text-blue-400" },
-    { label: "פריטים משוריינים", value: reservations.reduce((s, r) => s + r.qty, 0).toLocaleString(), icon: Package, color: "text-cyan-400" },
+    { label: "שריונות פעילים", value: reservations.filter((r: any) => r.status === "active").length + reservations.filter((r: any) => r.status === "expiring").length, icon: ShieldCheck, color: "text-blue-400" },
+    { label: "פריטים משוריינים", value: reservations.reduce((s: number, r: any) => s + r.qty, 0).toLocaleString(), icon: Package, color: "text-cyan-400" },
     { label: "שווי שריונות", value: fmt(1734000), icon: Lock, color: "text-emerald-400" },
     { label: "הקצאות לפרויקטים", value: allocations.length, icon: FolderKanban, color: "text-violet-400" },
-    { label: "פג תוקף בקרוב", value: reservations.filter(r => r.status === "expiring").length, icon: Clock, color: "text-amber-400" },
+    { label: "פג תוקף בקרוב", value: reservations.filter((r: any) => r.status === "expiring").length, icon: Clock, color: "text-amber-400" },
     { label: "התנגשויות", value: conflicts.length, icon: AlertTriangle, color: "text-red-400" },
   ];
 

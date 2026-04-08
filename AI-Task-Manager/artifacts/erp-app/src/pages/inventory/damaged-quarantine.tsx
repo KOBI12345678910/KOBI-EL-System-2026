@@ -1,9 +1,13 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   AlertTriangle, ShieldAlert, Trash2, Recycle, Scissors,
   Package, DollarSign, TrendingUp, Clock, User, MapPin,
   Ruler, CheckCircle2, XCircle,
 } from "lucide-react";
+
+const API = "/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,7 +18,7 @@ import { Progress } from "@/components/ui/progress";
 
 const fmt = (v: number) => "₪" + v.toLocaleString("he-IL");
 
-const damagedItems = [
+const FALLBACK_DAMAGED = [
   { id: 1, item: "מנוע חשמלי 3HP", sku: "MTR-3HP-01", qty: 4, reason: "נפילה בהעברה", reportedDate: "2026-03-28", reportedBy: "יוסי כהן", disposition: "תיקון", valueLoss: 3200 },
   { id: 2, item: "לוח בקרה PLC S7", sku: "PLC-S7-200", qty: 2, reason: "קצר חשמלי", reportedDate: "2026-04-01", reportedBy: "דנה לוי", disposition: "גרוטאות", valueLoss: 8900 },
   { id: 3, item: "משאבה צנטריפוגלית", sku: "PMP-CF-150", qty: 1, reason: "סדק בגוף המשאבה", reportedDate: "2026-04-03", reportedBy: "אבי מזרחי", disposition: "החזרה לספק", valueLoss: 5600 },
@@ -24,7 +28,7 @@ const damagedItems = [
   { id: 7, item: "גלגל שיניים פלדה", sku: "GER-STL-40", qty: 3, reason: "שבר שיניים", reportedDate: "2026-04-06", reportedBy: "נועה פרידמן", disposition: "החזרה לספק", valueLoss: 1950 },
 ];
 
-const quarantineItems = [
+const FALLBACK_QUARANTINE = [
   { id: 1, item: "פלדת אל-חלד 316L", sku: "STL-316L-R", qty: 120, unit: "ק\"ג", reason: "בדיקת QC", entryDate: "2026-04-02", expectedRelease: "2026-04-10", status: "בבדיקה" },
   { id: 2, item: "חומר איטום סיליקון", sku: "SLN-HT-500", qty: 48, unit: "יח'", reason: "תביעה מול ספק", entryDate: "2026-03-25", expectedRelease: "2026-04-15", status: "ממתין לספק" },
   { id: 3, item: "רכיב אלקטרוני IC", sku: "IC-MCU-32F", qty: 500, unit: "יח'", reason: "חשד זיוף", entryDate: "2026-04-01", expectedRelease: "2026-04-20", status: "בדיקת מעבדה" },
@@ -34,7 +38,7 @@ const quarantineItems = [
   { id: 7, item: "ברגים M12 גרייד 8.8", sku: "BLT-M12-88", qty: 300, unit: "יח'", reason: "בדיקת QC", entryDate: "2026-04-06", expectedRelease: "2026-04-11", status: "בבדיקה" },
 ];
 
-const scrapItems = [
+const FALLBACK_SCRAP = [
   { id: 1, material: "פלדה פחמנית", qty: 850, unit: "ק\"ג", recoveryValue: 2.8, buyer: "מתכות הצפון בע\"מ", status: "ממתין לאיסוף" },
   { id: 2, material: "נחושת טהורה", qty: 120, unit: "ק\"ג", recoveryValue: 28.5, buyer: "רויכמן מיחזור", status: "נמכר" },
   { id: 3, material: "אלומיניום 6061", qty: 340, unit: "ק\"ג", recoveryValue: 5.2, buyer: "אקו-מטל", status: "ממתין להצעות" },
@@ -44,7 +48,7 @@ const scrapItems = [
   { id: 7, material: "שבבי פליז", qty: 180, unit: "ק\"ג", recoveryValue: 15.0, buyer: "רויכמן מיחזור", status: "ממתין לאיסוף" },
 ];
 
-const remnantItems = [
+const FALLBACK_REMNANTS = [
   { id: 1, material: "פלדת אל-חלד 304 פלטה", dimensions: "1200x350x6mm", usable: true, location: "מחסן A-R3", value: 420 },
   { id: 2, material: "אלומיניום 5083 גיליון", dimensions: "800x200x4mm", usable: true, location: "מחסן B-R1", value: 185 },
   { id: 3, material: "צינור פלדה 4\" SCH40", dimensions: "L=1.3m", usable: true, location: "חצר חיצונית", value: 95 },
@@ -75,12 +79,26 @@ const scrapStatusColor: Record<string, string> = {
   "בתהליך מכירה": "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
 };
 
-const totalDamagedValue = damagedItems.reduce((s, i) => s + i.valueLoss, 0);
-const totalScrapRecovery = scrapItems.reduce((s, i) => s + i.qty * i.recoveryValue, 0);
-const recoveryRate = Math.round((totalScrapRecovery / (totalDamagedValue + totalScrapRecovery)) * 100);
-
 export default function DamagedQuarantine() {
   const [tab, setTab] = useState("damaged");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["inventory-damaged-quarantine"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/inventory/items?type=damaged`);
+      if (!res.ok) throw new Error("Failed to fetch damaged/quarantine data");
+      return res.json();
+    },
+  });
+
+  const damagedItems = apiData?.damaged ?? FALLBACK_DAMAGED;
+  const quarantineItems = apiData?.quarantine ?? FALLBACK_QUARANTINE;
+  const scrapItems = apiData?.scrap ?? FALLBACK_SCRAP;
+  const remnantItems = apiData?.remnants ?? FALLBACK_REMNANTS;
+
+  const totalDamagedValue = damagedItems.reduce((s: number, i: any) => s + i.valueLoss, 0);
+  const totalScrapRecovery = scrapItems.reduce((s: number, i: any) => s + i.qty * i.recoveryValue, 0);
+  const recoveryRate = Math.round((totalScrapRecovery / (totalDamagedValue + totalScrapRecovery)) * 100);
 
   return (
     <div className="space-y-6" dir="rtl">

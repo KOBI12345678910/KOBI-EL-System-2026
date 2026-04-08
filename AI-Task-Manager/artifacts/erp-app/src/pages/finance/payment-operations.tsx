@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,10 +12,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   ArrowDownLeft, ArrowUpRight, ArrowLeftRight, CreditCard, DollarSign,
   CheckCircle, XCircle, AlertTriangle, Clock, Link2, RefreshCw,
-  Search, Filter, Download, RotateCcw
+  Search, Filter, Download, RotateCcw, Loader2
 } from "lucide-react";
 
-const allPayments = [
+const FALLBACK_PAYMENTS = [
   { id: 1, date: "2026-04-08", type: "incoming", entity: "חברת אלומיניום ישראל", document: "INV-000234", amount: 45000, method: "העברה בנקאית", reference: "TXN-88921", status: "completed", matched: true },
   { id: 2, date: "2026-04-08", type: "incoming", entity: "קבוצת שיכון ובינוי", document: "INV-000228", amount: 72000, method: "צ'ק", reference: "CHK-4421", status: "completed", matched: true },
   { id: 3, date: "2026-04-07", type: "outgoing", entity: "מפעלי ברזל השרון", document: "EXI-000145", amount: 85000, method: "העברה בנקאית", reference: "TXN-88920", status: "completed", matched: true },
@@ -24,17 +26,27 @@ const allPayments = [
   { id: 8, date: "2026-04-04", type: "incoming", entity: 'נדל"ן פלוס', document: "INV-000230", amount: 18000, method: "העברה בנקאית", reference: "TXN-88915", status: "reversed", matched: false },
 ];
 
-const totalIncoming = allPayments.filter(p => p.type === "incoming" && p.status === "completed").reduce((s, p) => s + p.amount, 0);
-const totalOutgoing = allPayments.filter(p => p.type === "outgoing" && p.status === "completed").reduce((s, p) => s + p.amount, 0);
-const unmatched = allPayments.filter(p => !p.matched);
-const failed = allPayments.filter(p => p.status === "failed");
-const reversed = allPayments.filter(p => p.status === "reversed");
 const fmt = (v: number) => `₪${v.toLocaleString("he-IL")}`;
 
 export default function PaymentOperations() {
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [search, setSearch] = useState("");
+
+  const { data: allPayments = FALLBACK_PAYMENTS, isLoading } = useQuery({
+    queryKey: ["finance-payment-operations"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/payment-operations");
+      if (!r.ok) return FALLBACK_PAYMENTS;
+      return r.json();
+    },
+  });
+
+  const totalIncoming = allPayments.filter((p: any) => p.type === "incoming" && p.status === "completed").reduce((s: number, p: any) => s + p.amount, 0);
+  const totalOutgoing = allPayments.filter((p: any) => p.type === "outgoing" && p.status === "completed").reduce((s: number, p: any) => s + p.amount, 0);
+  const unmatched = allPayments.filter((p: any) => !p.matched);
+  const failed = allPayments.filter((p: any) => p.status === "failed");
+  const reversed = allPayments.filter((p: any) => p.status === "reversed");
 
   const filtered = allPayments.filter(p => {
     if (typeFilter !== "all" && p.type !== typeFilter) return false;
@@ -56,6 +68,15 @@ export default function PaymentOperations() {
       default: return null;
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96" dir="rtl">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <span className="mr-3 text-muted-foreground">טוען תפעול תשלומים...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-5" dir="rtl">

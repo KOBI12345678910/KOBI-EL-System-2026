@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,22 +13,22 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Database, FileText, Play, CheckCircle, XCircle, Clock,
-  Download, Upload, Plus, AlertTriangle, RefreshCw, Repeat
+  Download, Upload, Plus, AlertTriangle, RefreshCw, Repeat, Loader2
 } from "lucide-react";
 
-const masavBatches = [
+const FALLBACK_MASAV_BATCHES = [
   { id: 1, number: "MSV-2026-042", date: "2026-04-08", type: "חיוב (גבייה)", total: 185000, count: 12, status: "generated", fileName: "masav_042_20260408.dat" },
   { id: 2, number: "MSV-2026-041", date: "2026-04-01", type: "זיכוי (תשלום ספקים)", total: 320000, count: 8, status: "sent", fileName: "masav_041_20260401.dat" },
   { id: 3, number: "MSV-2026-040", date: "2026-03-25", type: "חיוב (גבייה)", total: 142000, count: 15, status: "processed", fileName: "masav_040_20260325.dat", successCount: 13, failCount: 2 },
   { id: 4, number: "MSV-2026-039", date: "2026-03-18", type: "חיוב (גבייה)", total: 98000, count: 10, status: "processed", fileName: "masav_039_20260318.dat", successCount: 10, failCount: 0 },
 ];
 
-const failedDebits = [
+const FALLBACK_FAILED_DEBITS = [
   { id: 1, batch: "MSV-2026-040", customer: "לקוח X", amount: 4500, reason: "אין כיסוי", retryCount: 1, nextRetry: "2026-04-10" },
   { id: 2, batch: "MSV-2026-040", customer: "לקוח Y", amount: 2800, reason: "חשבון סגור", retryCount: 2, nextRetry: null },
 ];
 
-const mandates = [
+const FALLBACK_MANDATES = [
   { id: 1, customer: "חברת אלומיניום ישראל", bank: "לאומי", branch: "125", account: "345-67890", amount: 15000, frequency: "חודשי", status: "active", startDate: "2025-01-01", endDate: "2026-12-31" },
   { id: 2, customer: "עיריית חיפה", bank: "הפועלים", branch: "632", account: "789-12345", amount: 8500, frequency: "חודשי", status: "active", startDate: "2025-06-01", endDate: null },
   { id: 3, customer: 'נדל"ן פלוס', bank: "מזרחי", branch: "412", account: "567-89012", amount: 12000, frequency: "חודשי", status: "suspended", startDate: "2025-03-01", endDate: null },
@@ -37,6 +39,44 @@ const fmt = (v: number) => `₪${v.toLocaleString("he-IL")}`;
 
 export default function MasavManagement() {
   const [showCreateBatch, setShowCreateBatch] = useState(false);
+
+  const { data: masavBatches = FALLBACK_MASAV_BATCHES, isLoading: isLoadingBatches } = useQuery({
+    queryKey: ["finance-masav-batches"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/masav/batches");
+      if (!r.ok) return FALLBACK_MASAV_BATCHES;
+      return r.json();
+    },
+  });
+
+  const { data: failedDebits = FALLBACK_FAILED_DEBITS, isLoading: isLoadingFailed } = useQuery({
+    queryKey: ["finance-masav-failed"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/masav/failed-debits");
+      if (!r.ok) return FALLBACK_FAILED_DEBITS;
+      return r.json();
+    },
+  });
+
+  const { data: mandates = FALLBACK_MANDATES, isLoading: isLoadingMandates } = useQuery({
+    queryKey: ["finance-masav-mandates"],
+    queryFn: async () => {
+      const r = await authFetch("/api/finance/masav/mandates");
+      if (!r.ok) return FALLBACK_MANDATES;
+      return r.json();
+    },
+  });
+
+  const isLoading = isLoadingBatches || isLoadingFailed || isLoadingMandates;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96" dir="rtl">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <span className="mr-3 text-muted-foreground">טוען נתוני מס"ב...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-5" dir="rtl">

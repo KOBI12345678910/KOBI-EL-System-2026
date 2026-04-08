@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,10 +12,12 @@ import {
   ArrowUpRight, ArrowDownRight, ClipboardList, Layers
 } from "lucide-react";
 
+const API = "/api";
+
 const fmt = (v: number) => v.toLocaleString("he-IL");
 const fmtC = (v: number) => "₪" + fmt(v);
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "פריטים להזמנה מחדש", value: 14, icon: ShoppingCart, color: "text-red-400", bg: "bg-red-500/10" },
   { label: "דיוק תחזית", value: "91.3%", icon: TrendingUp, color: "text-emerald-400", bg: "bg-emerald-500/10" },
   { label: "פריטים בשיא עונתי", value: 6, icon: Sun, color: "text-amber-400", bg: "bg-amber-500/10" },
@@ -22,7 +26,7 @@ const kpis = [
   { label: "כיסוי מלאי בטחון (ימים)", value: 18, icon: Layers, color: "text-cyan-400", bg: "bg-cyan-500/10" },
 ];
 
-const forecastData = [
+const FALLBACK_FORECAST_DATA = [
   { material: "פרופיל אלומיניום 6063", stock: 2400, unit: 'ק"ג', avgMonthly: 800, m1: 850, m2: 920, m3: 780, reorderDate: "2026-04-18", suggestedQty: 2500, status: "urgent" },
   { material: "זכוכית מחוסמת 10 מ\"מ", stock: 180, unit: "יח'", avgMonthly: 65, m1: 70, m2: 80, m3: 55, reorderDate: "2026-04-22", suggestedQty: 200, status: "urgent" },
   { material: "ברגים נירוסטה M8", stock: 5000, unit: "יח'", avgMonthly: 1200, m1: 1300, m2: 1100, m3: 1250, reorderDate: "2026-05-10", suggestedQty: 4000, status: "normal" },
@@ -34,7 +38,7 @@ const forecastData = [
   { material: "רשת יתושים פיברגלס", stock: 150, unit: "מ\"ר", avgMonthly: 40, m1: 55, m2: 70, m3: 35, reorderDate: "2026-05-05", suggestedQty: 200, status: "warning" },
 ];
 
-const consumptionData = [
+const FALLBACK_CONSUMPTION_DATA = [
   { material: "פרופיל אלומיניום 6063", unit: 'ק"ג', months: [780, 820, 750, 830, 810, 800], trend: "up" },
   { material: "זכוכית מחוסמת 10 מ\"מ", unit: "יח'", months: [55, 60, 58, 70, 68, 65], trend: "up" },
   { material: "ברגים נירוסטה M8", unit: "יח'", months: [1100, 1250, 1180, 1300, 1150, 1200], trend: "stable" },
@@ -48,7 +52,7 @@ const consumptionData = [
 
 const monthLabels = ["נוב'", "דצמ'", "ינו'", "פבר'", "מרץ", "אפר'"];
 
-const seasonalData = [
+const FALLBACK_SEASONAL_DATA = [
   { category: "אלומיניום", q1: 85, q2: 110, q3: 95, q4: 70, peak: "Q2", peakLabel: "אביב-קיץ", factor: 1.29 },
   { category: "זכוכית", q1: 75, q2: 105, q3: 100, q4: 65, peak: "Q2", peakLabel: "אביב-קיץ", factor: 1.40 },
   { category: "PVC", q1: 90, q2: 115, q3: 90, q4: 60, peak: "Q2", peakLabel: "אביב-קיץ", factor: 1.28 },
@@ -62,7 +66,7 @@ const seasonalData = [
 const seasonIcons: Record<string, any> = { Q1: CloudRain, Q2: Leaf, Q3: Sun, Q4: Snowflake };
 const seasonColors: Record<string, string> = { Q1: "text-blue-400", Q2: "text-green-400", Q3: "text-amber-400", Q4: "text-cyan-400" };
 
-const projectDemand = [
+const FALLBACK_PROJECT_DEMAND = [
   { project: "מגדל הים TLV-42", materials: "אלומיניום, זכוכית, איטום", qty: "₪480,000", start: "2026-04-15", end: "2026-07-30", status: "active", priority: "high" },
   { project: "פרויקט מגורים הרצליה B", materials: "PVC, זכוכית, רשתות", qty: "₪320,000", start: "2026-05-01", end: "2026-09-15", status: "planned", priority: "high" },
   { project: "שיפוץ מלון ים המלח", materials: "אלומיניום, צבע, אביזרים", qty: "₪185,000", start: "2026-04-20", end: "2026-06-10", status: "active", priority: "medium" },
@@ -73,7 +77,7 @@ const projectDemand = [
   { project: "מפעל תעשייתי אשדוד", materials: "אלומיניום, נירוסטה, צבע", qty: "₪128,000", start: "2026-05-20", end: "2026-07-15", status: "planned", priority: "low" },
 ];
 
-const reorderSuggestions = [
+const FALLBACK_REORDER_SUGGESTIONS = [
   { material: "גומיות איטום EPDM", current: 600, minReq: 750, suggestedQty: 800, supplier: "Schüco Int.", est: "₪12,800", leadDays: 7, priority: "critical" },
   { material: "פרופיל אלומיניום 6063", current: 2400, minReq: 2800, suggestedQty: 2500, supplier: "Foshan Glass", est: "₪87,500", leadDays: 21, priority: "critical" },
   { material: "זכוכית מחוסמת 10 מ\"מ", current: 180, minReq: 200, suggestedQty: 200, supplier: "Foshan Glass", est: "₪64,000", leadDays: 18, priority: "critical" },
@@ -104,6 +108,22 @@ const statusBadge = (s: string) => {
 
 export default function DemandPlanning() {
   const [tab, setTab] = useState("forecast");
+
+  const { data: apiData } = useQuery({
+    queryKey: ["procurement-demand-planning"],
+    queryFn: async () => {
+      const res = await authFetch(`${API}/procurement/demand-planning`);
+      if (!res.ok) throw new Error("Failed to fetch demand planning");
+      return res.json();
+    },
+  });
+
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const forecastData = apiData?.forecastData ?? FALLBACK_FORECAST_DATA;
+  const consumptionData = apiData?.consumptionData ?? FALLBACK_CONSUMPTION_DATA;
+  const seasonalData = apiData?.seasonalData ?? FALLBACK_SEASONAL_DATA;
+  const projectDemand = apiData?.projectDemand ?? FALLBACK_PROJECT_DEMAND;
+  const reorderSuggestions = apiData?.reorderSuggestions ?? FALLBACK_REORDER_SUGGESTIONS;
 
   return (
     <div className="p-6 space-y-5" dir="rtl">
