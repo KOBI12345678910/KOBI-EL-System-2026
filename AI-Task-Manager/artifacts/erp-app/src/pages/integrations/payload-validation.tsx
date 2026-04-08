@@ -8,9 +8,8 @@ import { Progress } from "@/components/ui/progress";
 import {
   ShieldCheck, FileJson, FileText, ListChecks, AlertTriangle, Ban,
   CheckCircle2, XCircle, Clock, Search, RotateCcw, Eye, Trash2,
-  Fingerprint, Activity, Timer, ArrowUpDown, Filter,
+  Fingerprint, Activity, Timer, Filter,
 } from "lucide-react";
-
 /* ── KPI Data ── */
 const kpis = [
   { label: "סכמות רשומות", value: "47", icon: FileJson, color: "text-blue-600 bg-blue-100", sub: "+3 החודש" },
@@ -20,7 +19,6 @@ const kpis = [
   { label: "כשלי חתימה", value: "7", icon: Fingerprint, color: "text-rose-600 bg-rose-100", sub: "3 חסומים" },
   { label: "זמן אימות ממוצע", value: "12ms", icon: Timer, color: "text-violet-600 bg-violet-100", sub: "p99: 45ms" },
 ];
-
 /* ── Request Schemas ── */
 const requestSchemas = [
   { name: "הזמנת רכש", version: "3.2.1", endpoint: "/api/v1/purchase-orders", format: "JSON", fields: 28, required: 12, updated: "2026-04-07", rate: 99.1 },
@@ -32,10 +30,8 @@ const requestSchemas = [
   { name: "עדכון מלאי", version: "3.0.0", endpoint: "/api/v1/inventory/update", format: "JSON", fields: 14, required: 7, updated: "2026-04-08", rate: 99.5 },
   { name: "הצעת מחיר", version: "2.6.1", endpoint: "/api/v1/quotes", format: "JSON", fields: 31, required: 14, updated: "2026-04-04", rate: 97.9 },
   { name: "דיווח נוכחות", version: "1.3.0", endpoint: "/api/v1/attendance", format: "JSON", fields: 10, required: 5, updated: "2026-04-08", rate: 99.9 },
-  { name: "הזמנת התקנה", version: "2.0.4", endpoint: "/api/v1/installations", format: "XML", fields: 26, required: 13, updated: "2026-04-02", rate: 95.8 },
   { name: "פנייה לתמיכה", version: "1.5.2", endpoint: "/api/v1/tickets", format: "JSON", fields: 16, required: 6, updated: "2026-04-06", rate: 98.4 },
 ];
-
 /* ── Response Schemas ── */
 const responseSchemas = [
   { name: "תגובת הזמנה", version: "3.2.1", target: "SAP ERP", format: "JSON", compliance: 99.2, lastValidated: "2026-04-08 10:30" },
@@ -47,7 +43,6 @@ const responseSchemas = [
   { name: "תגובת מלאי", version: "3.0.0", target: "WMS מחסנים", format: "JSON", compliance: 96.3, lastValidated: "2026-04-08 10:05" },
   { name: "נתוני שכר", version: "2.8.1", target: "חילן Payroll", format: "XML", compliance: 99.9, lastValidated: "2026-04-07 23:00" },
 ];
-
 /* ── Validation Rules ── */
 const validationRules = [
   { name: "שדה חובה - מזהה לקוח", type: "required_field", entity: "לקוח", field: "customer_id", condition: "NOT NULL", severity: "error", active: true },
@@ -62,7 +57,6 @@ const validationRules = [
   { name: "ביטוי רגולרי - טלפון", type: "regex", entity: "לקוח", field: "phone", condition: "^0[2-9][0-9]{7,8}$", severity: "warning", active: true },
   { name: "ערכים מותרים - סטטוס", type: "enum", entity: "הזמנה", field: "status", condition: "draft|pending|approved|shipped|done", severity: "error", active: true },
   { name: "מותאם - תקציב לא חורג", type: "custom", entity: "פרויקט", field: "total_cost", condition: "total_cost <= budget * 1.1", severity: "error", active: true },
-  { name: "שדה חובה - כתובת", type: "required_field", entity: "התקנה", field: "address", condition: "NOT NULL & len >= 5", severity: "error", active: true },
 ];
 /* ── Malformed Queue ── */
 const malformedQueue = [
@@ -75,7 +69,6 @@ const malformedQueue = [
   { ts: "2026-04-08 08:12:09", source: "חילן Payroll", endpoint: "/api/v1/attendance", errorType: "encoding_error", preview: '{"name":"\\xC0\\xC1..."}  // קידוד UTF-8 שגוי', retry: "ממתין", attempts: 0 },
   { ts: "2026-04-08 07:35:41", source: "MES Dashboard", endpoint: "/api/v1/work-orders", errorType: "missing_field", preview: '{"wo_id":"WO-2841", ...}  // חסר metal_type חובה', retry: "תוקן", attempts: 1 },
 ];
-
 /* ── Invalid Signatures ── */
 const invalidSignatures = [
   { ts: "2026-04-08 10:35:22", sourceIp: "185.120.33.44", endpoint: "/webhooks/orders", expected: "sha256=a3f8c1...d92b", actual: "sha256=7e2b0f...11ac", blocked: true },
@@ -85,31 +78,26 @@ const invalidSignatures = [
   { ts: "2026-04-08 07:55:18", sourceIp: "192.168.1.99", endpoint: "/webhooks/quality", expected: "sha256=e8d1c4...a7b2", actual: "md5=9f3a2c...1b8e", blocked: false },
   { ts: "2026-04-08 06:42:09", sourceIp: "10.0.5.201", endpoint: "/webhooks/inventory", expected: "sha256=c3f7e9...d24a", actual: "sha256=c3f7e8...d24a", blocked: false },
 ];
-
 /* ── Helpers ── */
 const formatBadge = (f: string) =>
   f === "JSON"
     ? <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs">JSON</Badge>
     : <Badge className="bg-orange-100 text-orange-700 border-orange-200 text-xs">XML</Badge>;
-
 const rateBadge = (pct: number) => {
   if (pct >= 99) return <Badge className="bg-emerald-100 text-emerald-700">{pct}%</Badge>;
   if (pct >= 97) return <Badge className="bg-blue-100 text-blue-700">{pct}%</Badge>;
   if (pct >= 95) return <Badge className="bg-amber-100 text-amber-700">{pct}%</Badge>;
   return <Badge className="bg-red-100 text-red-700">{pct}%</Badge>;
 };
-
 const complianceColor = (pct: number) => {
   if (pct >= 99) return "[&>div]:bg-emerald-500";
   if (pct >= 97) return "[&>div]:bg-blue-500";
   return "[&>div]:bg-amber-500";
 };
-
 const severityBadge = (s: string) =>
   s === "error"
     ? <Badge className="bg-red-100 text-red-700 text-xs">שגיאה</Badge>
     : <Badge className="bg-amber-100 text-amber-700 text-xs">אזהרה</Badge>;
-
 const ruleTypeBadge = (t: string) => {
   const map: Record<string, { label: string; cls: string }> = {
     required_field: { label: "שדה חובה", cls: "bg-red-50 text-red-600 border-red-200" },
@@ -122,13 +110,11 @@ const ruleTypeBadge = (t: string) => {
   const cfg = map[t] || { label: t, cls: "bg-gray-100 text-gray-600" };
   return <Badge className={`${cfg.cls} text-xs`}>{cfg.label}</Badge>;
 };
-
 const retryBadge = (s: string) => {
   if (s === "תוקן") return <Badge className="bg-emerald-100 text-emerald-700 text-xs"><CheckCircle2 className="w-3 h-3 ml-1" />תוקן</Badge>;
   if (s === "ממתין") return <Badge className="bg-amber-100 text-amber-700 text-xs"><Clock className="w-3 h-3 ml-1" />ממתין</Badge>;
   return <Badge className="bg-red-100 text-red-700 text-xs"><XCircle className="w-3 h-3 ml-1" />נכשל</Badge>;
 };
-
 const errorTypeBadge = (t: string) => {
   const map: Record<string, { label: string; cls: string }> = {
     missing_field: { label: "שדה חסר", cls: "bg-red-100 text-red-700" },
@@ -142,9 +128,7 @@ const errorTypeBadge = (t: string) => {
   const cfg = map[t] || { label: t, cls: "bg-gray-100 text-gray-600" };
   return <Badge className={`${cfg.cls} text-xs`}>{cfg.label}</Badge>;
 };
-
 /* ══════════════════════════════════════════════════════════ */
-
 export default function PayloadValidationPage() {
   const [tab, setTab] = useState("request-schemas");
   const [search, setSearch] = useState("");
@@ -170,7 +154,6 @@ export default function PayloadValidationPage() {
           <Button variant="outline" size="sm"><Filter className="w-4 h-4 ml-1" />סינון</Button>
         </div>
       </div>
-
       {/* ── KPI Cards ── */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {kpis.map((k) => (
@@ -188,7 +171,6 @@ export default function PayloadValidationPage() {
           </Card>
         ))}
       </div>
-
       {/* ── Tabs ── */}
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList className="grid w-full grid-cols-5">
@@ -242,7 +224,6 @@ export default function PayloadValidationPage() {
             </CardContent>
           </Card>
         </TabsContent>
-
         {/* ── Tab 2: Response Schemas ── */}
         <TabsContent value="response-schemas">
           <Card>
@@ -287,7 +268,6 @@ export default function PayloadValidationPage() {
             </CardContent>
           </Card>
         </TabsContent>
-
         {/* ── Tab 3: Validation Rules ── */}
         <TabsContent value="rules">
           <Card>
@@ -339,7 +319,6 @@ export default function PayloadValidationPage() {
             </CardContent>
           </Card>
         </TabsContent>
-
         {/* ── Tab 4: Malformed Queue ── */}
         <TabsContent value="malformed">
           <Card>
@@ -387,7 +366,6 @@ export default function PayloadValidationPage() {
             </CardContent>
           </Card>
         </TabsContent>
-
         {/* ── Tab 5: Invalid Signatures ── */}
         <TabsContent value="signatures">
           <Card>

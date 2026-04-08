@@ -69,27 +69,22 @@ export default function TenderCompetitorsPage() {
     !search || c.name.includes(search) || c.spec.includes(search) || c.region.includes(search)
   );
 
-  const avgWinRateVsUs = Math.round(competitors.reduce((s, c) => s + c.winRate, 0) / competitors.length);
+  const avgWinRate = Math.round(competitors.reduce((s, c) => s + c.winRate, 0) / competitors.length);
   const avgPriceRatio = (competitors.reduce((s, c) => s + c.priceIdx, 0) / competitors.length).toFixed(2);
-  const activeInMarket = competitors.filter(c => c.recentWins > 0).length;
-  const totalMarketShare = 100;
-  const ourShare = 24;
-
+  const activeCount = competitors.filter(c => c.recentWins > 0).length;
   const kpis = [
     { label: "מתחרים במעקב", value: competitors.length, icon: Users, color: "text-blue-400" },
-    { label: "פעילים בשוק", value: activeInMarket, icon: Target, color: "text-green-400" },
-    { label: "שיעור זכייה ממוצע מול", value: `${avgWinRateVsUs}%`, icon: TrendingUp, color: "text-amber-400" },
+    { label: "פעילים בשוק", value: activeCount, icon: Target, color: "text-green-400" },
+    { label: "שיעור זכייה ממוצע מול", value: `${avgWinRate}%`, icon: TrendingUp, color: "text-amber-400" },
     { label: "יחס מחיר ממוצע", value: avgPriceRatio, icon: DollarSign, color: "text-purple-400" },
-    { label: "נתח שוק שלנו", value: `${ourShare}%`, icon: PieChart, color: "text-cyan-400" },
+    { label: "נתח שוק שלנו", value: "24%", icon: PieChart, color: "text-cyan-400" },
   ];
-
   const TrendIcon = ({ trend }: { trend: string }) => {
     if (trend === "up") return <ArrowUp className="w-4 h-4 text-green-400" />;
     if (trend === "down") return <ArrowDown className="w-4 h-4 text-red-400" />;
     return <Minus className="w-4 h-4 text-gray-400" />;
   };
-
-  const cellColor = (val: number, isPrice: boolean = false) => {
+  const cellColor = (val: number, isPrice = false) => {
     if (isPrice) return val <= 95 ? "text-green-400 font-bold" : val >= 105 ? "text-red-400" : "text-foreground";
     return val >= 90 ? "text-green-400 font-bold" : val >= 80 ? "text-amber-400" : "text-red-400";
   };
@@ -109,7 +104,6 @@ export default function TenderCompetitorsPage() {
         </div>
       </div>
 
-      {/* KPI Row */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {kpis.map(k => (
           <Card key={k.label} className="bg-card/50 border-border/50">
@@ -122,7 +116,6 @@ export default function TenderCompetitorsPage() {
         ))}
       </div>
 
-      {/* Tabs */}
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList className="grid grid-cols-4 w-full max-w-2xl">
           <TabsTrigger value="competitors">מתחרים</TabsTrigger>
@@ -131,7 +124,6 @@ export default function TenderCompetitorsPage() {
           <TabsTrigger value="pricing">דפוסי תמחור</TabsTrigger>
         </TabsList>
 
-        {/* Tab 1: Competitors */}
         <TabsContent value="competitors" className="space-y-4">
           <div className="relative max-w-sm">
             <Search className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -184,7 +176,6 @@ export default function TenderCompetitorsPage() {
           </div>
         </TabsContent>
 
-        {/* Tab 2: Head-to-Head */}
         <TabsContent value="h2h" className="space-y-4">
           <Card className="bg-card/50 border-border/50">
             <CardHeader>
@@ -226,31 +217,22 @@ export default function TenderCompetitorsPage() {
             </CardContent>
           </Card>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="bg-green-500/5 border-green-500/20">
-              <CardContent className="p-4 text-center">
-                <Award className="w-6 h-6 mx-auto text-green-400 mb-2" />
-                <div className="font-bold text-green-400 text-lg">מובילים באיכות</div>
-                <div className="text-xs text-muted-foreground mt-1">ציון 94% - הגבוה ביותר בשוק</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-amber-500/5 border-amber-500/20">
-              <CardContent className="p-4 text-center">
-                <Zap className="w-6 h-6 mx-auto text-amber-400 mb-2" />
-                <div className="font-bold text-amber-400 text-lg">מהירות אספקה #2</div>
-                <div className="text-xs text-muted-foreground mt-1">טיטאן מתכות מהירים ב-4% מאיתנו</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-blue-500/5 border-blue-500/20">
-              <CardContent className="p-4 text-center">
-                <DollarSign className="w-6 h-6 mx-auto text-blue-400 mb-2" />
-                <div className="font-bold text-blue-400 text-lg">מחיר תחרותי</div>
-                <div className="text-xs text-muted-foreground mt-1">אינדקס 92 - שלישי בזול</div>
-              </CardContent>
-            </Card>
+            {[
+              { icon: Award, color: "green", title: "מובילים באיכות", desc: "ציון 94% - הגבוה ביותר בשוק" },
+              { icon: Zap, color: "amber", title: "מהירות אספקה #2", desc: "טיטאן מתכות מהירים ב-4% מאיתנו" },
+              { icon: DollarSign, color: "blue", title: "מחיר תחרותי", desc: "אינדקס 92 - שלישי בזול" },
+            ].map(s => (
+              <Card key={s.title} className={`bg-${s.color}-500/5 border-${s.color}-500/20`}>
+                <CardContent className="p-4 text-center">
+                  <s.icon className={`w-6 h-6 mx-auto text-${s.color}-400 mb-2`} />
+                  <div className={`font-bold text-${s.color}-400 text-lg`}>{s.title}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{s.desc}</div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </TabsContent>
 
-        {/* Tab 3: Market Intelligence */}
         <TabsContent value="market" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card className="bg-card/50 border-border/50">
@@ -319,7 +301,6 @@ export default function TenderCompetitorsPage() {
           </div>
         </TabsContent>
 
-        {/* Tab 4: Pricing Patterns */}
         <TabsContent value="pricing" className="space-y-4">
           <Card className="bg-card/50 border-border/50">
             <CardHeader>
@@ -370,24 +351,18 @@ export default function TenderCompetitorsPage() {
             </CardContent>
           </Card>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="bg-green-500/5 border-green-500/20">
-              <CardContent className="p-4">
-                <div className="font-bold text-green-400 mb-1">יתרון תמחור</div>
-                <div className="text-sm text-muted-foreground">בממוצע, המחירים שלנו נמוכים ב-4% מממוצע השוק בפרויקטי מגורים ותעשייה</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-amber-500/5 border-amber-500/20">
-              <CardContent className="p-4">
-                <div className="font-bold text-amber-400 mb-1">נקודת תשומת לב</div>
-                <div className="text-sm text-muted-foreground">בפרויקטי שיפוץ ושימור המחירים שלנו גבוהים ב-5% מהממוצע - שקלו הפחתה</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-blue-500/5 border-blue-500/20">
-              <CardContent className="p-4">
-                <div className="font-bold text-blue-400 mb-1">הזדמנות</div>
-                <div className="text-sm text-muted-foreground">שוק מוסדות ציבוריים: 18 מכרזים/שנה עם פער מחיר נמוך של 3% - פוטנציאל גבוה</div>
-              </CardContent>
-            </Card>
+            {[
+              { color: "green", title: "יתרון תמחור", desc: "בממוצע, המחירים שלנו נמוכים ב-4% מממוצע השוק בפרויקטי מגורים ותעשייה" },
+              { color: "amber", title: "נקודת תשומת לב", desc: "בפרויקטי שיפוץ ושימור המחירים שלנו גבוהים ב-5% מהממוצע - שקלו הפחתה" },
+              { color: "blue", title: "הזדמנות", desc: "שוק מוסדות ציבוריים: 18 מכרזים/שנה עם פער מחיר נמוך של 3% - פוטנציאל גבוה" },
+            ].map(s => (
+              <Card key={s.title} className={`bg-${s.color}-500/5 border-${s.color}-500/20`}>
+                <CardContent className="p-4">
+                  <div className={`font-bold text-${s.color}-400 mb-1`}>{s.title}</div>
+                  <div className="text-sm text-muted-foreground">{s.desc}</div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </TabsContent>
       </Tabs>

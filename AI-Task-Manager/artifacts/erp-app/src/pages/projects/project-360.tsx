@@ -5,32 +5,18 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import {
-  Building2, DollarSign, TrendingUp, TrendingDown, Calendar, Clock,
-  AlertTriangle, CheckCircle, Shield, Users, FileText, Truck,
-  Wrench, Eye, Brain, BarChart3, Package, ClipboardList, Activity,
-  ArrowUpRight, ArrowDownRight, CircleDot, Target, Zap, Search,
-  ChevronLeft, Star, Percent, BadgeAlert, Banknote, Factory,
-  HardHat, FileCheck, GitBranch, MessageSquare, Lightbulb
+  Building2, DollarSign, TrendingUp, Clock, AlertTriangle, CheckCircle, Shield, Users, FileText,
+  Eye, Brain, Package, ClipboardList, Activity, CircleDot, Target, Zap, Search,
+  ChevronLeft, Star, Percent, BadgeAlert, Banknote, Factory, HardHat, FileCheck,
+  GitBranch, MessageSquare, Lightbulb
 } from "lucide-react";
 
-/* ─── mock: project header ─── */
 const project = {
-  id: "PRJ-2024-0087",
-  name: "מגדל מגורים הרצליה — חלונות אלומיניום",
-  customer: "אאורה נדל\"ן בע\"מ",
-  status: "פעיל",
-  stage: "ייצור והתקנה",
-  stageIndex: 11,
-  risk: "בינוני",
-  healthScore: 74,
-  pm: "אורי כהן",
-  startDate: "2025-09-01",
-  endDate: "2026-07-15",
-  contractValue: 4850000,
-  lastUpdate: "2026-04-07",
+  id: "PRJ-2024-0087", name: "מגדל מגורים הרצליה — חלונות אלומיניום", customer: "אאורה נדל\"ן בע\"מ",
+  status: "פעיל", stage: "ייצור והתקנה", stageIndex: 11, risk: "בינוני", healthScore: 74,
+  pm: "אורי כהן", startDate: "2025-09-01", endDate: "2026-07-15", contractValue: 4850000, lastUpdate: "2026-04-07",
 };
 
-/* ─── mock: KPIs ─── */
 const kpis = [
   { label: "ערך חוזה", value: "₪4,850,000", icon: Banknote, color: "text-emerald-400", bg: "bg-emerald-500/10" },
   { label: "עלות בפועל", value: "₪3,180,000", icon: DollarSign, color: "text-red-400", bg: "bg-red-500/10" },
@@ -42,13 +28,7 @@ const kpis = [
   { label: "גבייה", value: "58%", icon: Banknote, color: "text-teal-400", bg: "bg-teal-500/10" },
   { label: "ציון AI", value: "74", icon: Brain, color: "text-purple-400", bg: "bg-purple-500/10" },
 ];
-
-/* ─── mock: 17 stages pipeline ─── */
-const stages = [
-  "ליד", "הצעת מחיר", "משא ומתן", "חוזה חתום", "מקדמה", "מדידות שטח",
-  "תכנון הנדסי", "אישור לקוח", "הזמנת חומרים", "קבלת חומרים", "חיתוך",
-  "ייצור והתקנה", "התקנה באתר", "בדיקות איכות", "מסירה", "אחריות", "סגירה"
-];
+const stages = ["ליד","הצעת מחיר","משא ומתן","חוזה חתום","מקדמה","מדידות שטח","תכנון הנדסי","אישור לקוח","הזמנת חומרים","קבלת חומרים","חיתוך","ייצור והתקנה","התקנה באתר","בדיקות איכות","מסירה","אחריות","סגירה"];
 
 const team = [
   { name: "אורי כהן", role: "מנהל פרויקט", avatar: "א.כ" }, { name: "דנה לוי", role: "מהנדסת ביצוע", avatar: "ד.ל" },
@@ -74,30 +54,28 @@ const finance = {
   ],
 };
 
-/* ─── mock: tasks ─── */
 const tasks = [
-  { id: "T-001", name: "ייצור מסגרות קומות 11-14", status: "בביצוע", priority: "גבוה", assignee: "דנה לוי", start: "2026-03-20", due: "2026-04-15", pct: 72, parent: null },
-  { id: "T-002", name: "חיתוך פרופילים — קומות 15-18", status: "בביצוע", priority: "גבוה", assignee: "צוות ייצור א׳", start: "2026-04-01", due: "2026-04-20", pct: 45, parent: null },
-  { id: "T-003", name: "הזמנת זכוכית מחוסמת — ערכת 3", status: "ממתין", priority: "קריטי", assignee: "יוסי מרקוביץ", start: "2026-04-05", due: "2026-04-10", pct: 10, parent: null },
-  { id: "T-004", name: "התקנה קומות 11-12", status: "מתוכנן", priority: "בינוני", assignee: "רועי שמש", start: "2026-04-18", due: "2026-05-02", pct: 0, parent: "T-001" },
-  { id: "T-005", name: "בדיקת אטימות קומות 8-10", status: "הושלם", priority: "גבוה", assignee: "מירי אביטל", start: "2026-03-25", due: "2026-04-03", pct: 100, parent: null },
-  { id: "T-006", name: "תיאום מנוף לקומות 13-14", status: "ממתין", priority: "בינוני", assignee: "רועי שמש", start: "2026-04-12", due: "2026-04-14", pct: 0, parent: "T-001" },
-  { id: "T-007", name: "עדכון שרטוטי ביצוע — שינוי CO-004", status: "בביצוע", priority: "גבוה", assignee: "דנה לוי", start: "2026-04-06", due: "2026-04-12", pct: 60, parent: null },
-  { id: "T-008", name: "אישור דגם זכוכית מלקוח", status: "חסום", priority: "קריטי", assignee: "אורי כהן", start: "2026-04-01", due: "2026-04-08", pct: 30, parent: "T-003" },
-  { id: "T-009", name: "הכנת חשבון חלקי #6", status: "בביצוע", priority: "בינוני", assignee: "אורי כהן", start: "2026-04-05", due: "2026-04-10", pct: 50, parent: null },
-  { id: "T-010", name: "בדיקת איכות פרופילים — אצווה 14", status: "חסום", priority: "גבוה", assignee: "מירי אביטל", start: "2026-04-07", due: "2026-04-09", pct: 20, parent: "T-002" },
+  { id: "T-001", name: "ייצור מסגרות קומות 11-14", st: "בביצוע", pr: "גבוה", who: "דנה לוי", due: "2026-04-15", pct: 72, par: null },
+  { id: "T-002", name: "חיתוך פרופילים — קומות 15-18", st: "בביצוע", pr: "גבוה", who: "צוות ייצור א׳", due: "2026-04-20", pct: 45, par: null },
+  { id: "T-003", name: "הזמנת זכוכית מחוסמת — ערכת 3", st: "ממתין", pr: "קריטי", who: "יוסי מרקוביץ", due: "2026-04-10", pct: 10, par: null },
+  { id: "T-004", name: "התקנה קומות 11-12", st: "מתוכנן", pr: "בינוני", who: "רועי שמש", due: "2026-05-02", pct: 0, par: "T-001" },
+  { id: "T-005", name: "בדיקת אטימות קומות 8-10", st: "הושלם", pr: "גבוה", who: "מירי אביטל", due: "2026-04-03", pct: 100, par: null },
+  { id: "T-006", name: "תיאום מנוף לקומות 13-14", st: "ממתין", pr: "בינוני", who: "רועי שמש", due: "2026-04-14", pct: 0, par: "T-001" },
+  { id: "T-007", name: "עדכון שרטוטי ביצוע — שינוי CO-004", st: "בביצוע", pr: "גבוה", who: "דנה לוי", due: "2026-04-12", pct: 60, par: null },
+  { id: "T-008", name: "אישור דגם זכוכית מלקוח", st: "חסום", pr: "קריטי", who: "אורי כהן", due: "2026-04-08", pct: 30, par: "T-003" },
+  { id: "T-009", name: "הכנת חשבון חלקי #6", st: "בביצוע", pr: "בינוני", who: "אורי כהן", due: "2026-04-10", pct: 50, par: null },
+  { id: "T-010", name: "בדיקת איכות פרופילים — אצווה 14", st: "חסום", pr: "גבוה", who: "מירי אביטל", due: "2026-04-09", pct: 20, par: "T-002" },
 ];
 
-/* ─── mock: procurement ─── */
 const procurement = [
-  { id: "PO-301", material: "פרופיל אלומיניום 6063-T5", qty: "2,400 מ\"א", supplier: "אלובין בע\"מ", status: "התקבל", urgency: "רגיל", due: "2026-04-05", cost: 380000 },
-  { id: "PO-302", material: "זכוכית מחוסמת 10 מ\"מ", qty: "850 מ\"ר", supplier: "פניציה ישראל", status: "בהזמנה", urgency: "דחוף", due: "2026-04-18", cost: 290000 },
-  { id: "PO-303", material: "אטמי EPDM", qty: "5,000 מ\"א", supplier: "גומי-טק", status: "התקבל", urgency: "רגיל", due: "2026-03-28", cost: 42000 },
-  { id: "PO-304", material: "ברגים ואביזרי חיבור", qty: "12,000 יח׳", supplier: "בורג סנטר", status: "התקבל", urgency: "רגיל", due: "2026-03-30", cost: 28000 },
-  { id: "PO-305", material: "זכוכית LOW-E", qty: "320 מ\"ר", supplier: "גארדיאן", status: "ייצור אצל ספק", urgency: "קריטי", due: "2026-04-25", cost: 195000 },
-  { id: "PO-306", material: "ידיות ומנגנוני נעילה", qty: "680 יח׳", supplier: "רוטו ישראל", status: "בהזמנה", urgency: "בינוני", due: "2026-04-20", cost: 86000 },
-  { id: "PO-307", material: "סיליקון מבני", qty: "800 שפורפרות", supplier: "דאו קורנינג", status: "ממתין לאישור", urgency: "בינוני", due: "2026-04-22", cost: 34000 },
-  { id: "PO-308", material: "רשתות יתושים", qty: "420 יח׳", supplier: "מגן-רשת", status: "מתוכנן", urgency: "נמוך", due: "2026-05-10", cost: 21000 },
+  { id: "PO-301", mat: "פרופיל אלומיניום 6063-T5", qty: "2,400 מ\"א", sup: "אלובין בע\"מ", status: "התקבל", urg: "רגיל", due: "2026-04-05", cost: 380000 },
+  { id: "PO-302", mat: "זכוכית מחוסמת 10 מ\"מ", qty: "850 מ\"ר", sup: "פניציה ישראל", status: "בהזמנה", urg: "דחוף", due: "2026-04-18", cost: 290000 },
+  { id: "PO-303", mat: "אטמי EPDM", qty: "5,000 מ\"א", sup: "גומי-טק", status: "התקבל", urg: "רגיל", due: "2026-03-28", cost: 42000 },
+  { id: "PO-304", mat: "ברגים ואביזרי חיבור", qty: "12,000 יח׳", sup: "בורג סנטר", status: "התקבל", urg: "רגיל", due: "2026-03-30", cost: 28000 },
+  { id: "PO-305", mat: "זכוכית LOW-E", qty: "320 מ\"ר", sup: "גארדיאן", status: "ייצור אצל ספק", urg: "קריטי", due: "2026-04-25", cost: 195000 },
+  { id: "PO-306", mat: "ידיות ומנגנוני נעילה", qty: "680 יח׳", sup: "רוטו ישראל", status: "בהזמנה", urg: "בינוני", due: "2026-04-20", cost: 86000 },
+  { id: "PO-307", mat: "סיליקון מבני", qty: "800 שפורפרות", sup: "דאו קורנינג", status: "ממתין לאישור", urg: "בינוני", due: "2026-04-22", cost: 34000 },
+  { id: "PO-308", mat: "רשתות יתושים", qty: "420 יח׳", sup: "מגן-רשת", status: "מתוכנן", urg: "נמוך", due: "2026-05-10", cost: 21000 },
 ];
 
 const production = [
@@ -116,17 +94,14 @@ const installations = [
   { id: "INS-05", type: "ביקורת איכות", team: "מירי אביטל", date: "2026-04-22", floors: "קומות 5-10", outcome: "מתוכנן", signoff: false },
 ];
 
-/* ─── mock: risks ─── */
 const risks = [
-  { id: "R-001", desc: "עיכוב באספקת זכוכית LOW-E מחו\"ל", prob: 4, impact: 5, score: 20, status: "פתוח", mitigation: "הזמנת ספק חלופי — גארדיאן הונגריה" },
-  { id: "R-002", desc: "עליית מחיר אלומיניום ב-LME", prob: 3, impact: 3, score: 9, status: "פתוח", mitigation: "גידור מחיר עד סוף Q2" },
-  { id: "R-003", desc: "חוסר מנוף באתר — תיאום קבלן ראשי", prob: 3, impact: 4, score: 12, status: "פתוח", mitigation: "הזמנת מנוף עצמאי כגיבוי" },
-  { id: "R-004", desc: "שינוי דרישות לקוח באמצע ייצור", prob: 2, impact: 4, score: 8, status: "ממותן", mitigation: "הגדרת freeze date בחוזה" },
-  { id: "R-005", desc: "תאונת עבודה באתר התקנה", prob: 2, impact: 5, score: 10, status: "פתוח", mitigation: "הדרכת בטיחות שבועית + ציוד מגן" },
-  { id: "R-006", desc: "פגם באצווה פרופילים — דרוש בדיקת QC", prob: 3, impact: 3, score: 9, status: "פתוח", mitigation: "בדיקת מדגם 10% בקבלה" },
+  { id: "R-001", desc: "עיכוב באספקת זכוכית LOW-E מחו\"ל", prob: 4, impact: 5, score: 20, status: "פתוח", mit: "הזמנת ספק חלופי — גארדיאן הונגריה" },
+  { id: "R-002", desc: "עליית מחיר אלומיניום ב-LME", prob: 3, impact: 3, score: 9, status: "פתוח", mit: "גידור מחיר עד סוף Q2" },
+  { id: "R-003", desc: "חוסר מנוף באתר — תיאום קבלן ראשי", prob: 3, impact: 4, score: 12, status: "פתוח", mit: "הזמנת מנוף עצמאי כגיבוי" },
+  { id: "R-004", desc: "שינוי דרישות לקוח באמצע ייצור", prob: 2, impact: 4, score: 8, status: "ממותן", mit: "הגדרת freeze date בחוזה" },
+  { id: "R-005", desc: "תאונת עבודה באתר התקנה", prob: 2, impact: 5, score: 10, status: "פתוח", mit: "הדרכת בטיחות שבועית + ציוד מגן" },
+  { id: "R-006", desc: "פגם באצווה פרופילים — דרוש בדיקת QC", prob: 3, impact: 3, score: 9, status: "פתוח", mit: "בדיקת מדגם 10% בקבלה" },
 ];
-
-/* ─── mock: change orders ─── */
 const changeOrders = [
   { id: "CO-001", desc: "תוספת חלון ויטרינה — לובי כניסה", date: "2026-01-15", revenue: 85000, cost: 52000, days: 5, status: "מאושר" },
   { id: "CO-002", desc: "שדרוג זכוכית לLOW-E בקומות 15-18", date: "2026-02-20", revenue: 120000, cost: 78000, days: 8, status: "מאושר" },
@@ -134,53 +109,45 @@ const changeOrders = [
   { id: "CO-004", desc: "חלון פנורמי קומה 18 — שינוי אדריכלי", date: "2026-04-06", revenue: 95000, cost: 68000, days: 12, status: "בבדיקה" },
 ];
 
-/* ─── mock: documents ─── */
 const documents = [
-  { name: "חוזה חתום — אאורה נדל\"ן", type: "חוזה", version: "v2.1", date: "2025-09-01", size: "2.4 MB" },
-  { name: "מפרט טכני — חלונות אלומיניום", type: "מפרט", version: "v3.0", date: "2026-01-10", size: "4.8 MB" },
-  { name: "שרטוטי ביצוע — קומות 1-10", type: "שרטוט", version: "v2.2", date: "2026-02-28", size: "18.2 MB" },
-  { name: "שרטוטי ביצוע — קומות 11-18", type: "שרטוט", version: "v1.4", date: "2026-03-20", size: "15.6 MB" },
-  { name: "דוח בדיקת אטימות — קומות 5-7", type: "דוח איכות", version: "v1.0", date: "2026-03-22", size: "1.1 MB" },
-  { name: "אישור תקן ישראלי — ת\"י 1281", type: "תעודה", version: "v1.0", date: "2025-10-15", size: "0.8 MB" },
-  { name: "הצעת מחיר מעודכנת — CO-002", type: "הצעת מחיר", version: "v1.1", date: "2026-02-22", size: "0.5 MB" },
-  { name: "פרוטוקול ישיבה #14", type: "פרוטוקול", version: "v1.0", date: "2026-04-03", size: "0.3 MB" },
+  { name: "חוזה חתום — אאורה נדל\"ן", type: "חוזה", ver: "v2.1", date: "2025-09-01", size: "2.4 MB" },
+  { name: "מפרט טכני — חלונות אלומיניום", type: "מפרט", ver: "v3.0", date: "2026-01-10", size: "4.8 MB" },
+  { name: "שרטוטי ביצוע — קומות 1-10", type: "שרטוט", ver: "v2.2", date: "2026-02-28", size: "18.2 MB" },
+  { name: "שרטוטי ביצוע — קומות 11-18", type: "שרטוט", ver: "v1.4", date: "2026-03-20", size: "15.6 MB" },
+  { name: "דוח בדיקת אטימות — קומות 5-7", type: "דוח איכות", ver: "v1.0", date: "2026-03-22", size: "1.1 MB" },
+  { name: "אישור תקן ישראלי — ת\"י 1281", type: "תעודה", ver: "v1.0", date: "2025-10-15", size: "0.8 MB" },
+  { name: "הצעת מחיר מעודכנת — CO-002", type: "הצעת מחיר", ver: "v1.1", date: "2026-02-22", size: "0.5 MB" },
+  { name: "פרוטוקול ישיבה #14", type: "פרוטוקול", ver: "v1.0", date: "2026-04-03", size: "0.3 MB" },
 ];
-
-/* ─── mock: audit events ─── */
 const auditEvents = [
-  { time: "07/04 14:30", user: "יוסי מרקוביץ", action: "קבלת חומר", detail: "PO-301 — פרופיל אלומיניום 2,400 מ\"א התקבל במלואו" },
-  { time: "07/04 11:00", user: "אורי כהן", action: "עדכון משימה", detail: "T-009 — הכנת חשבון חלקי #6 — התקדמות 50%" },
-  { time: "06/04 16:45", user: "דנה לוי", action: "שינוי הנדסי", detail: "CO-004 — חלון פנורמי קומה 18 נוסף" },
-  { time: "06/04 10:15", user: "מערכת", action: "התראת AI", detail: "סיכון עיכוב באספקת זכוכית LOW-E עלה לרמה קריטית" },
-  { time: "05/04 16:00", user: "רועי שמש", action: "סיום התקנה", detail: "INS-02 — קומות 8-10 הושלמו — חתימת לקוח התקבלה" },
-  { time: "05/04 14:20", user: "מירי אביטל", action: "בדיקת איכות", detail: "T-005 — אטימות קומות 8-10 עברה בהצלחה" },
-  { time: "04/04 09:45", user: "מערכת", action: "עדכון סיכון", detail: "R-003 — עיכוב מנוף — ציון סיכון עלה ל-12" },
-  { time: "03/04 11:20", user: "אורי כהן", action: "חשבונית", detail: "INV-087-05 — ₪420,000 הונפקה ונשלחה" },
-  { time: "02/04 15:30", user: "יוסי מרקוביץ", action: "הזמנת רכש", detail: "PO-306 — ידיות ומנגנוני נעילה — 680 יח׳" },
-  { time: "01/04 10:00", user: "דנה לוי", action: "עדכון שרטוט", detail: "שרטוטי ביצוע קומות 11-18 — גרסה v1.4" },
-  { time: "31/03 16:20", user: "מערכת", action: "תחזית AI", detail: "צפי סיום מעודכן: 22/07/2026 (+8 ימים מהמתוכנן)" },
-  { time: "30/03 12:00", user: "רועי שמש", action: "תכנון התקנה", detail: "INS-04 — תוכנן ל-18/04 — קומות 11-12" },
-  { time: "29/03 09:30", user: "אורי כהן", action: "ישיבת פרויקט", detail: "פרוטוקול ישיבה #14 — 8 משתתפים" },
-  { time: "28/03 14:45", user: "מערכת", action: "גבייה", detail: "תשלום ₪280,000 התקבל מלקוח — חשבונית INV-087-04" },
-  { time: "27/03 11:10", user: "מירי אביטל", action: "NCR", detail: "אי-התאמה באצווה 13 — 3 מסגרות נדחו" },
+  { time: "07/04 14:30", user: "יוסי מרקוביץ", act: "קבלת חומר", detail: "PO-301 — פרופיל אלומיניום 2,400 מ\"א התקבל במלואו" },
+  { time: "07/04 11:00", user: "אורי כהן", act: "עדכון משימה", detail: "T-009 — הכנת חשבון חלקי #6 — התקדמות 50%" },
+  { time: "06/04 16:45", user: "דנה לוי", act: "שינוי הנדסי", detail: "CO-004 — חלון פנורמי קומה 18 נוסף" },
+  { time: "06/04 10:15", user: "מערכת", act: "התראת AI", detail: "סיכון עיכוב באספקת זכוכית LOW-E עלה לרמה קריטית" },
+  { time: "05/04 16:00", user: "רועי שמש", act: "סיום התקנה", detail: "INS-02 — קומות 8-10 הושלמו — חתימת לקוח התקבלה" },
+  { time: "05/04 14:20", user: "מירי אביטל", act: "בדיקת איכות", detail: "T-005 — אטימות קומות 8-10 עברה בהצלחה" },
+  { time: "04/04 09:45", user: "מערכת", act: "עדכון סיכון", detail: "R-003 — עיכוב מנוף — ציון סיכון עלה ל-12" },
+  { time: "03/04 11:20", user: "אורי כהן", act: "חשבונית", detail: "INV-087-05 — ₪420,000 הונפקה ונשלחה" },
+  { time: "02/04 15:30", user: "יוסי מרקוביץ", act: "הזמנת רכש", detail: "PO-306 — ידיות ומנגנוני נעילה — 680 יח׳" },
+  { time: "01/04 10:00", user: "דנה לוי", act: "עדכון שרטוט", detail: "שרטוטי ביצוע קומות 11-18 — גרסה v1.4" },
+  { time: "31/03 16:20", user: "מערכת", act: "תחזית AI", detail: "צפי סיום מעודכן: 22/07/2026 (+8 ימים מהמתוכנן)" },
+  { time: "30/03 12:00", user: "רועי שמש", act: "תכנון התקנה", detail: "INS-04 — תוכנן ל-18/04 — קומות 11-12" },
+  { time: "29/03 09:30", user: "אורי כהן", act: "ישיבת פרויקט", detail: "פרוטוקול ישיבה #14 — 8 משתתפים" },
+  { time: "28/03 14:45", user: "מערכת", act: "גבייה", detail: "תשלום ₪280,000 התקבל מלקוח — חשבונית INV-087-04" },
+  { time: "27/03 11:10", user: "מירי אביטל", act: "NCR", detail: "אי-התאמה באצווה 13 — 3 מסגרות נדחו" },
 ];
 
-/* ─── mock: AI insights ─── */
 const aiScores = [
-  { label: "בריאות כללית", score: 74, color: "bg-amber-500" },
-  { label: "סיכון עיכוב", score: 62, color: "bg-orange-500" },
-  { label: "שימור מרווח", score: 81, color: "bg-emerald-500" },
-  { label: "סיכוי גבייה", score: 72, color: "bg-blue-500" },
+  { label: "בריאות כללית", score: 74, color: "bg-amber-500" }, { label: "סיכון עיכוב", score: 62, color: "bg-orange-500" },
+  { label: "שימור מרווח", score: 81, color: "bg-emerald-500" }, { label: "סיכוי גבייה", score: 72, color: "bg-blue-500" },
   { label: "מורכבות", score: 58, color: "bg-purple-500" },
 ];
-
 const aiPredictions = [
   { text: "צפי סיום מעודכן: 22/07/2026 — עיכוב של 8 ימים מהמתוכנן בשל אספקת זכוכית", type: "warning" },
   { text: "סיכוי לחריגת תקציב: 18% — עליית מחיר אלומיניום וזכוכית LOW-E", type: "warning" },
   { text: "גבייה צפויה עד סוף אפריל: ₪520,000 — מבוסס על קצב התקדמות נוכחי", type: "info" },
   { text: "הזמנת PO-305 (זכוכית LOW-E) היא צוואר הבקבוק הקריטי — 85% השפעה על לו\"ז", type: "critical" },
 ];
-
 const aiRecommendations = [
   "להאיץ הזמנת זכוכית LOW-E מספק חלופי באירופה — חיסכון של 5-7 ימים",
   "להגדיל צוות התקנה ב-2 עובדים לחודש אפריל-מאי לקיצור פער הלו\"ז",
@@ -189,30 +156,16 @@ const aiRecommendations = [
   "להעביר ישיבת תיאום עם קבלן ראשי לנושא זמינות מנוף עד 10/04",
 ];
 
-/* ─── helpers ─── */
 const fmt = (n: number) => "₪" + n.toLocaleString("he-IL");
 const healthColor = (s: number) => s >= 80 ? "text-emerald-400" : s >= 60 ? "text-amber-400" : "text-red-400";
-const healthBg = (s: number) => s >= 80 ? "bg-emerald-500" : s >= 60 ? "bg-amber-500" : "bg-red-500";
-const taskStatusColor = (s: string) => {
-  const map: Record<string, string> = {
-    "הושלם": "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-    "בביצוע": "bg-blue-500/20 text-blue-400 border-blue-500/30",
-    "ממתין": "bg-amber-500/20 text-amber-400 border-amber-500/30",
-    "מתוכנן": "bg-gray-500/20 text-gray-400 border-gray-500/30",
-    "חסום": "bg-red-500/20 text-red-400 border-red-500/30",
-  };
-  return map[s] || "bg-gray-500/20 text-gray-400";
-};
-const priorityColor = (p: string) => {
-  const map: Record<string, string> = {
-    "קריטי": "bg-red-500/20 text-red-400 border-red-500/30",
-    "גבוה": "bg-orange-500/20 text-orange-400 border-orange-500/30",
-    "בינוני": "bg-blue-500/20 text-blue-400 border-blue-500/30",
-    "נמוך": "bg-gray-500/20 text-gray-400 border-gray-500/30",
-  };
-  return map[p] || "bg-gray-500/20 text-gray-400";
-};
+const stMap: Record<string, string> = { "הושלם": "bg-emerald-500/20 text-emerald-400 border-emerald-500/30", "בביצוע": "bg-blue-500/20 text-blue-400 border-blue-500/30", "ממתין": "bg-amber-500/20 text-amber-400 border-amber-500/30", "מתוכנן": "bg-gray-500/20 text-gray-400 border-gray-500/30", "חסום": "bg-red-500/20 text-red-400 border-red-500/30" };
+const taskStatusColor = (s: string) => stMap[s] || "bg-gray-500/20 text-gray-400";
+const prMap: Record<string, string> = { "קריטי": "bg-red-500/20 text-red-400 border-red-500/30", "גבוה": "bg-orange-500/20 text-orange-400 border-orange-500/30", "בינוני": "bg-blue-500/20 text-blue-400 border-blue-500/30", "נמוך": "bg-gray-500/20 text-gray-400 border-gray-500/30" };
+const priorityColor = (p: string) => prMap[p] || "bg-gray-500/20 text-gray-400";
 const riskColor = (s: number) => s >= 15 ? "bg-red-500/20 text-red-400" : s >= 9 ? "bg-amber-500/20 text-amber-400" : "bg-emerald-500/20 text-emerald-400";
+const poStMap: Record<string, string> = { "התקבל": "bg-emerald-500/20 text-emerald-400", "בהזמנה": "bg-blue-500/20 text-blue-400", "ייצור אצל ספק": "bg-purple-500/20 text-purple-400", "ממתין לאישור": "bg-amber-500/20 text-amber-400" };
+const urgMap: Record<string, string> = { "קריטי": "bg-red-500/20 text-red-400", "דחוף": "bg-orange-500/20 text-orange-400", "בינוני": "bg-blue-500/20 text-blue-400" };
+const coStMap: Record<string, string> = { "מאושר": "bg-emerald-500/20 text-emerald-400", "ממתין לאישור": "bg-amber-500/20 text-amber-400", "בבדיקה": "bg-blue-500/20 text-blue-400" };
 
 export default function Project360Page() {
   return (
@@ -334,7 +287,7 @@ export default function Project360Page() {
           </div>
         </TabsContent>
 
-        {/* ─── Tab 2: Finance ─── */}
+        {/* Tab 2: Finance */}
         <TabsContent value="finance" className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
@@ -376,27 +329,27 @@ export default function Project360Page() {
             </Card>
             <Card className="border-border/40">
               <CardHeader className="pb-2"><CardTitle className="text-sm">דוח רווח והפסד</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between p-2 bg-muted/20 rounded"><span>הכנסות (חוזה + שינויים)</span><span className="font-bold text-emerald-400">{fmt(finance.contractValue + 365000)}</span></div>
-                <div className="flex justify-between p-2 bg-muted/20 rounded"><span>עלות ישירה</span><span className="font-bold text-red-400">({fmt(finance.actualCost)})</span></div>
-                <div className="flex justify-between p-2 bg-emerald-500/10 rounded font-bold"><span>רווח גולמי</span><span className="text-emerald-400">{fmt(finance.contractValue + 365000 - finance.actualCost)} ({finance.grossMargin}%)</span></div>
-                <div className="flex justify-between p-2 bg-muted/20 rounded"><span>תקורות</span><span className="text-red-400">({fmt(680000)})</span></div>
-                <div className="flex justify-between p-2 bg-blue-500/10 rounded font-bold"><span>רווח נקי</span><span className="text-blue-400">{fmt(1355000)} ({finance.netMargin}%)</span></div>
-                <div className="flex justify-between items-center p-2 bg-red-500/10 rounded text-sm">
-                  <span>פער גבייה (חשבוניות שטרם נגבו)</span>
-                  <span className="font-bold text-red-400">{fmt(finance.cashGap)}</span>
-                </div>
+              <CardContent className="space-y-2">
+                {[
+                  { l: "הכנסות (חוזה + שינויים)", v: fmt(finance.contractValue + 365000), c: "text-emerald-400", bg: "bg-muted/20" },
+                  { l: "עלות ישירה", v: `(${fmt(finance.actualCost)})`, c: "text-red-400", bg: "bg-muted/20" },
+                  { l: "רווח גולמי", v: `${fmt(finance.contractValue + 365000 - finance.actualCost)} (${finance.grossMargin}%)`, c: "text-emerald-400", bg: "bg-emerald-500/10", bold: true },
+                  { l: "תקורות", v: `(${fmt(680000)})`, c: "text-red-400", bg: "bg-muted/20" },
+                  { l: "רווח נקי", v: `${fmt(1355000)} (${finance.netMargin}%)`, c: "text-blue-400", bg: "bg-blue-500/10", bold: true },
+                  { l: "פער גבייה", v: fmt(finance.cashGap), c: "text-red-400", bg: "bg-red-500/10" },
+                ].map((row, i) => (
+                  <div key={i} className={`flex justify-between p-2 rounded ${row.bg} ${row.bold ? "font-bold" : "text-sm"}`}><span>{row.l}</span><span className={row.c}>{row.v}</span></div>
+                ))}
               </CardContent>
             </Card>
           </div>
         </TabsContent>
-
-        {/* ─── Tab 3: Tasks ─── */}
+        {/* Tab 3: Tasks */}
         <TabsContent value="tasks" className="space-y-4">
           <div className="flex items-center gap-3 flex-wrap">
             <div className="relative flex-1 min-w-[200px]"><Search className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" /><Input placeholder="חיפוש משימות..." className="pr-9" /></div>
             <Badge variant="outline">סה״כ: {tasks.length}</Badge>
-            <Badge className="bg-red-500/20 text-red-400">חסומות: {tasks.filter(t => t.status === "חסום").length}</Badge>
+            <Badge className="bg-red-500/20 text-red-400">חסומות: {tasks.filter(t => t.st === "חסום").length}</Badge>
           </div>
           <Card className="border-border/40 overflow-hidden">
             <CardContent className="p-0">
@@ -409,12 +362,12 @@ export default function Project360Page() {
                   </tr></thead>
                   <tbody>
                     {tasks.map((t) => (
-                      <tr key={t.id} className={`border-t border-border/20 hover:bg-muted/10 ${t.parent ? "bg-muted/5" : ""}`}>
-                        <td className="p-2 text-xs text-muted-foreground">{t.parent && "└ "}{t.id}</td>
+                      <tr key={t.id} className={`border-t border-border/20 hover:bg-muted/10 ${t.par ? "bg-muted/5" : ""}`}>
+                        <td className="p-2 text-xs text-muted-foreground">{t.par && "└ "}{t.id}</td>
                         <td className="p-2 font-medium">{t.name}</td>
-                        <td className="p-2 text-center"><Badge className={`text-[10px] ${taskStatusColor(t.status)}`}>{t.status}</Badge></td>
-                        <td className="p-2 text-center"><Badge className={`text-[10px] ${priorityColor(t.priority)}`}>{t.priority}</Badge></td>
-                        <td className="p-2">{t.assignee}</td>
+                        <td className="p-2 text-center"><Badge className={`text-[10px] ${taskStatusColor(t.st)}`}>{t.st}</Badge></td>
+                        <td className="p-2 text-center"><Badge className={`text-[10px] ${priorityColor(t.pr)}`}>{t.pr}</Badge></td>
+                        <td className="p-2">{t.who}</td>
                         <td className="p-2 text-center text-xs">{t.due}</td>
                         <td className="p-2 w-28"><div className="flex items-center gap-2"><Progress value={t.pct} className="h-1.5 flex-1" /><span className="text-xs">{t.pct}%</span></div></td>
                       </tr>
@@ -425,7 +378,6 @@ export default function Project360Page() {
             </CardContent>
           </Card>
         </TabsContent>
-
         {/* ─── Tab 4: Procurement ─── */}
         <TabsContent value="procurement" className="space-y-4">
           <Card className="border-border/40 overflow-hidden">
@@ -442,22 +394,11 @@ export default function Project360Page() {
                     {procurement.map((p) => (
                       <tr key={p.id} className="border-t border-border/20 hover:bg-muted/10">
                         <td className="p-2 text-xs text-muted-foreground">{p.id}</td>
-                        <td className="p-2 font-medium">{p.material}</td>
+                        <td className="p-2 font-medium">{p.mat}</td>
                         <td className="p-2 text-center">{p.qty}</td>
-                        <td className="p-2">{p.supplier}</td>
-                        <td className="p-2 text-center"><Badge className={`text-[10px] ${
-                          p.status === "התקבל" ? "bg-emerald-500/20 text-emerald-400" :
-                          p.status === "בהזמנה" ? "bg-blue-500/20 text-blue-400" :
-                          p.status === "ייצור אצל ספק" ? "bg-purple-500/20 text-purple-400" :
-                          p.status === "ממתין לאישור" ? "bg-amber-500/20 text-amber-400" :
-                          "bg-gray-500/20 text-gray-400"
-                        }`}>{p.status}</Badge></td>
-                        <td className="p-2 text-center"><Badge className={`text-[10px] ${
-                          p.urgency === "קריטי" ? "bg-red-500/20 text-red-400" :
-                          p.urgency === "דחוף" ? "bg-orange-500/20 text-orange-400" :
-                          p.urgency === "בינוני" ? "bg-blue-500/20 text-blue-400" :
-                          "bg-gray-500/20 text-gray-400"
-                        }`}>{p.urgency}</Badge></td>
+                        <td className="p-2">{p.sup}</td>
+                        <td className="p-2 text-center"><Badge className={`text-[10px] ${poStMap[p.status] || "bg-gray-500/20 text-gray-400"}`}>{p.status}</Badge></td>
+                        <td className="p-2 text-center"><Badge className={`text-[10px] ${urgMap[p.urg] || "bg-gray-500/20 text-gray-400"}`}>{p.urg}</Badge></td>
                         <td className="p-2 text-center text-xs">{p.due}</td>
                         <td className="p-2 text-left">{fmt(p.cost)}</td>
                       </tr>
@@ -468,7 +409,6 @@ export default function Project360Page() {
             </CardContent>
           </Card>
         </TabsContent>
-
         {/* ─── Tab 5: Production ─── */}
         <TabsContent value="production" className="space-y-4">
           <Card className="border-border/40 overflow-hidden">
@@ -486,7 +426,7 @@ export default function Project360Page() {
                       <tr key={p.id} className="border-t border-border/20 hover:bg-muted/10">
                         <td className="p-2 text-xs text-muted-foreground">{p.id}</td>
                         <td className="p-2 font-medium">{p.desc}</td>
-                        <td className="p-2">{p.workCenter}</td>
+                        <td className="p-2">{p.wc}</td>
                         <td className="p-2 text-center"><Badge className={`text-[10px] ${taskStatusColor(p.status)}`}>{p.status}</Badge></td>
                         <td className="p-2 text-center">{p.planned}</td>
                         <td className="p-2 text-center">{p.actual}</td>
@@ -499,7 +439,6 @@ export default function Project360Page() {
             </CardContent>
           </Card>
         </TabsContent>
-
         {/* ─── Tab 6: Installation ─── */}
         <TabsContent value="installation" className="space-y-4">
           <Card className="border-border/40 overflow-hidden">
@@ -516,11 +455,7 @@ export default function Project360Page() {
                     {installations.map((ins) => (
                       <tr key={ins.id} className="border-t border-border/20 hover:bg-muted/10">
                         <td className="p-2 text-xs text-muted-foreground">{ins.id}</td>
-                        <td className="p-2 text-center"><Badge className={`text-[10px] ${
-                          ins.type === "התקנה ראשית" ? "bg-blue-500/20 text-blue-400" :
-                          ins.type === "תיקון" ? "bg-amber-500/20 text-amber-400" :
-                          "bg-purple-500/20 text-purple-400"
-                        }`}>{ins.type}</Badge></td>
+                        <td className="p-2 text-center"><Badge className={`text-[10px] ${ins.type === "התקנה ראשית" ? "bg-blue-500/20 text-blue-400" : ins.type === "תיקון" ? "bg-amber-500/20 text-amber-400" : "bg-purple-500/20 text-purple-400"}`}>{ins.type}</Badge></td>
                         <td className="p-2">{ins.team}</td>
                         <td className="p-2 text-center text-xs">{ins.date}</td>
                         <td className="p-2">{ins.floors}</td>
@@ -534,7 +469,6 @@ export default function Project360Page() {
             </CardContent>
           </Card>
         </TabsContent>
-
         {/* ─── Tab 7: Risks ─── */}
         <TabsContent value="risks" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -570,14 +504,13 @@ export default function Project360Page() {
                 {risks.map((r) => (
                   <div key={r.id} className="p-2 rounded-lg bg-muted/20 space-y-1">
                     <div className="flex items-center gap-2"><Badge className={`text-[10px] ${riskColor(r.score)}`}>{r.id}</Badge><span className="text-xs font-medium">{r.desc.slice(0, 35)}...</span></div>
-                    <div className="text-xs text-muted-foreground">{r.mitigation}</div>
+                    <div className="text-xs text-muted-foreground">{r.mit}</div>
                   </div>
                 ))}
               </CardContent>
             </Card>
           </div>
         </TabsContent>
-
         {/* ─── Tab 8: Change Orders ─── */}
         <TabsContent value="changes" className="space-y-4">
           <div className="grid grid-cols-3 gap-3 mb-4">
@@ -603,11 +536,7 @@ export default function Project360Page() {
                         <td className="p-2 text-left text-emerald-400">+{fmt(co.revenue)}</td>
                         <td className="p-2 text-left text-red-400">+{fmt(co.cost)}</td>
                         <td className="p-2 text-center">+{co.days}</td>
-                        <td className="p-2 text-center"><Badge className={`text-[10px] ${
-                          co.status === "מאושר" ? "bg-emerald-500/20 text-emerald-400" :
-                          co.status === "ממתין לאישור" ? "bg-amber-500/20 text-amber-400" :
-                          "bg-blue-500/20 text-blue-400"
-                        }`}>{co.status}</Badge></td>
+                        <td className="p-2 text-center"><Badge className={`text-[10px] ${coStMap[co.status] || "bg-blue-500/20 text-blue-400"}`}>{co.status}</Badge></td>
                       </tr>
                     ))}
                   </tbody>
@@ -633,7 +562,7 @@ export default function Project360Page() {
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <Badge variant="outline" className="text-[10px]">{d.type}</Badge>
-                    <Badge className="bg-muted/30 text-muted-foreground text-[10px]">{d.version}</Badge>
+                    <Badge className="bg-muted/30 text-muted-foreground text-[10px]">{d.ver}</Badge>
                   </div>
                   <div className="flex justify-between text-xs text-muted-foreground">
                     <span>{d.date}</span><span>{d.size}</span>
@@ -657,7 +586,7 @@ export default function Project360Page() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-medium text-blue-400">{e.user}</span>
-                        <Badge variant="outline" className="text-[10px]">{e.action}</Badge>
+                        <Badge variant="outline" className="text-[10px]">{e.act}</Badge>
                       </div>
                       <div className="text-sm mt-0.5">{e.detail}</div>
                     </div>

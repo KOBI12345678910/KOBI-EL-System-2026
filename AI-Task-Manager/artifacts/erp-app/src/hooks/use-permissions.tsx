@@ -92,12 +92,22 @@ export function PermissionsProvider({ userId, children }: { userId?: string; chi
           : `${API_BASE}/platform/my-permissions`;
         const r = await authFetch(url);
         if (!r.ok) {
+          // Dev fallback: if API unavailable, grant superAdmin for UI preview
+          if (import.meta.env.DEV) {
+            setPermissionsFailed(false);
+            return { ...DEFAULT_PERMISSIONS, isSuperAdmin: true, builderAccess: true, roles: ["super-admin"] };
+          }
           setPermissionsFailed(true);
           return DEFAULT_PERMISSIONS;
         }
         setPermissionsFailed(false);
         return r.json();
       } catch {
+        // Dev fallback: if API unavailable, grant superAdmin for UI preview
+        if (import.meta.env.DEV) {
+          setPermissionsFailed(false);
+          return { ...DEFAULT_PERMISSIONS, isSuperAdmin: true, builderAccess: true, roles: ["super-admin"] };
+        }
         setPermissionsFailed(true);
         return DEFAULT_PERMISSIONS;
       }

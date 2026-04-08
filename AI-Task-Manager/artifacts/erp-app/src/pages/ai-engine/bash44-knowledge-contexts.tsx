@@ -237,6 +237,32 @@ export default function Bash44KnowledgeContexts() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Quality Metrics */}
+          <Card className="bg-[#111827]/80 border-slate-700/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-cyan-400" />
+                מדדי איכות Embedding
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="p-3 rounded-lg bg-slate-800/30 text-center">
+                  <div className="text-lg font-bold text-green-400">99.2%</div>
+                  <div className="text-xs text-slate-400">דיוק חיפוש (Recall@10)</div>
+                </div>
+                <div className="p-3 rounded-lg bg-slate-800/30 text-center">
+                  <div className="text-lg font-bold text-cyan-400">0.89</div>
+                  <div className="text-xs text-slate-400">ציון MRR ממוצע</div>
+                </div>
+                <div className="p-3 rounded-lg bg-slate-800/30 text-center">
+                  <div className="text-lg font-bold text-amber-400">4.2M</div>
+                  <div className="text-xs text-slate-400">שאילתות החודש</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Tab 4: Semantic Search */}

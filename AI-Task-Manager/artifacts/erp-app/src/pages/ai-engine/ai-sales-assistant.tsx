@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import {
   Brain, Target, FileText, TrendingUp, Sparkles, Users, AlertTriangle,
   ArrowUpRight, ArrowDownRight, Zap, Search, Send, Star, ThumbsUp,
-  BarChart3, DollarSign, ShieldCheck, Clock, ChevronLeft, ChevronRight
+  BarChart3, DollarSign, ShieldCheck, Clock
 } from "lucide-react";
 
 const kpis = [
@@ -285,19 +285,10 @@ export default function AiSalesAssistant() {
                   <CardTitle className="text-sm flex items-center gap-2"><ThumbsUp className="w-4 h-4 text-green-400" />ביצועי הצעות</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">שיעור אישור</span>
-                    <span className="font-medium text-green-400">72%</span>
-                  </div>
+                  <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">שיעור אישור</span><span className="font-medium text-green-400">72%</span></div>
                   <Progress value={72} className="h-2" />
-                  <div className="flex items-center justify-between text-sm mt-2">
-                    <span className="text-muted-foreground">זמן ממוצע לאישור</span>
-                    <span className="font-medium text-foreground">4.2 ימים</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">שווי ממוצע</span>
-                    <span className="font-medium text-foreground">₪712,500</span>
-                  </div>
+                  <div className="flex items-center justify-between text-sm mt-2"><span className="text-muted-foreground">זמן ממוצע לאישור</span><span className="font-medium text-foreground">4.2 ימים</span></div>
+                  <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">שווי ממוצע</span><span className="font-medium text-foreground">₪712,500</span></div>
                 </CardContent>
               </Card>
             </div>

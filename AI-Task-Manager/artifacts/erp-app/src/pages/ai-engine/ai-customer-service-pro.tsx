@@ -9,9 +9,9 @@ import {
   Bot, Clock, ThumbsUp, ShieldCheck, Brain, DollarSign,
   ArrowUpRight, ArrowDownRight, MessageSquare, Search,
   RotateCcw, Download, Send, AlertTriangle, CheckCircle2,
-  Users, Zap, Target, BookOpen, TrendingUp, Star,
-  PhoneCall, Truck, Wrench, ShieldAlert, RefreshCw,
-  GraduationCap, Lightbulb, BarChart3, Activity
+  Users, Zap, Target, BookOpen, Star,
+  Truck, Wrench, ShieldAlert, RefreshCw, PhoneCall,
+  GraduationCap, Lightbulb, BarChart3
 } from "lucide-react";
 
 const kpis = [
@@ -42,7 +42,6 @@ const routingRules = [
   { category: "בקשת החזר > ₪500", priority: "גבוהה", team: "מנהל צוות", aiConfidence: 89, autoRoute: false, sla: "1 שעה" },
   { category: "מעקב משלוח", priority: "נמוכה", team: "AI אוטומטי", aiConfidence: 99, autoRoute: true, sla: "מיידי" },
   { category: "חשבונית / מסמך", priority: "נמוכה", team: "AI אוטומטי", aiConfidence: 98, autoRoute: true, sla: "מיידי" },
-  { category: "שדרוג / מכירה", priority: "בינונית", team: "מכירות", aiConfidence: 92, autoRoute: true, sla: "6 שעות" },
   { category: "תקלה קריטית", priority: "דחופה", team: "הנדסה + שירות", aiConfidence: 96, autoRoute: true, sla: "30 דקות" },
   { category: "ביטול חוזה", priority: "גבוהה", team: "שימור לקוחות", aiConfidence: 91, autoRoute: false, sla: "1 שעה" },
 ];
@@ -53,7 +52,6 @@ const proactiveOutreach = [
   { customer: "בניה חכמה בע\"מ", issue: "3 תלונות איכות ברבעון", type: "איכות", urgency: "גבוהה", action: "שיחת מעקב + בדיקת שורש", status: "בטיפול", icon: Wrench },
   { customer: "שיווק דיגיטלי פלוס", issue: "לא התחבר 45 ימים", type: "חוסר פעילות", urgency: "בינונית", action: "מייל שימור + הטבה", status: "ממתין", icon: Users },
   { customer: "טכנולוגיות אופק", issue: "חידוש חוזה בעוד 30 יום", type: "חידוש", urgency: "בינונית", action: "הצעת חידוש מותאמת", status: "נשלח", icon: RefreshCw },
-  { customer: "פרויקט מגדלי הים", issue: "NPS ירד ב-2 נקודות", type: "שביעות רצון", urgency: "גבוהה", action: "שיחת מנהל + תכנית שיפור", status: "ממתין", icon: TrendingUp },
   { customer: "יבואני פרמיום", issue: "4 פניות שירות בשבוע", type: "תדירות פניות", urgency: "דחופה", action: "הקצאת נציג ייעודי", status: "בטיפול", icon: PhoneCall },
 ];
 
@@ -68,7 +66,6 @@ const trainingMetrics = [
 const newPatterns = [
   { pattern: "שאלות על מדיניות ESG חדשה", occurrences: 47, since: "השבוע", gap: false },
   { pattern: "בעיות אינטגרציה עם גרסה 4.2", occurrences: 23, since: "3 ימים", gap: true },
-  { pattern: "בקשות הנפקת חשבונית ירוקה", occurrences: 35, since: "שבועיים", gap: false },
   { pattern: "שאלות על תוכנית נאמנות חדשה", occurrences: 61, since: "השבוע", gap: true },
   { pattern: "דיווח על עיכוב בהודעות SMS", occurrences: 18, since: "יומיים", gap: true },
 ];
@@ -77,7 +74,6 @@ const knowledgeGaps = [
   { topic: "מדיניות החזרות למוצרים מותאמים אישית", queries: 34, urgency: "גבוהה" },
   { topic: "תנאי אחריות לאחר העברת בעלות", queries: 28, urgency: "גבוהה" },
   { topic: "תהליך שדרוג מגרסה ישנה (< 3.0)", queries: 19, urgency: "בינונית" },
-  { topic: "זמני אספקה לאזורים מרוחקים", queries: 15, urgency: "בינונית" },
   { topic: "תאימות מוצר עם תקן ISO 2025", queries: 12, urgency: "נמוכה" },
 ];
 
@@ -91,7 +87,6 @@ const SC: Record<string, string> = {
 
 export default function AiCustomerServicePro() {
   const [search, setSearch] = useState("");
-
   return (
     <div className="p-6 space-y-6" dir="rtl">
       {/* Header */}
@@ -142,7 +137,7 @@ export default function AiCustomerServicePro() {
           <Card className="bg-card/50 border-border/50">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">שיחות שטופלו ע״י AI - 12 אחרונות</CardTitle>
+                <CardTitle className="text-lg">שיחות שטופלו ע״י AI - אחרונות</CardTitle>
                 <div className="relative w-64">
                   <Search className="absolute right-3 top-2.5 w-4 h-4 text-muted-foreground" />
                   <Input placeholder="חיפוש שיחה..." value={search} onChange={e => setSearch(e.target.value)} className="pr-9 bg-background/50" />
@@ -188,15 +183,15 @@ export default function AiCustomerServicePro() {
                           ) : <span className="text-muted-foreground text-xs">--</span>}
                         </td>
                         <td className="p-3 text-center text-muted-foreground text-xs">{c.time}</td>
-                        <td className="p-3 text-center"><Badge className={statusColors[c.status] || ""}>{c.status}</Badge></td>
+                        <td className="p-3 text-center"><Badge className={SC[c.status] || ""}>{c.status}</Badge></td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/30">
-                <span className="text-xs text-muted-foreground">שיעור פתרון אוטומטי: <strong className="text-green-400">83.3%</strong> (10 מתוך 12)</span>
-                <span className="text-xs text-muted-foreground">ציון משוב ממוצע: <strong className="text-amber-400">4.7/5</strong></span>
+              <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/30 text-xs text-muted-foreground">
+                <span>שיעור פתרון אוטומטי: <strong className="text-green-400">80%</strong> (8 מתוך 10)</span>
+                <span>ציון משוב ממוצע: <strong className="text-amber-400">4.7/5</strong></span>
               </div>
             </CardContent>
           </Card>
@@ -226,7 +221,7 @@ export default function AiCustomerServicePro() {
                       {routingRules.map((r, i) => (
                         <tr key={i} className="border-b border-border/30 hover:bg-card/30">
                           <td className="p-3 text-foreground font-medium">{r.category}</td>
-                          <td className="p-3 text-center"><Badge className={priorityColors[r.priority] || ""}>{r.priority}</Badge></td>
+                          <td className="p-3 text-center"><Badge className={SC[r.priority] || ""}>{r.priority}</Badge></td>
                           <td className="p-3 text-foreground">{r.team}</td>
                           <td className="p-3 text-center"><span className={`font-medium ${r.aiConfidence >= 95 ? "text-green-400" : r.aiConfidence >= 85 ? "text-blue-400" : "text-amber-400"}`}>{r.aiConfidence}%</span></td>
                           <td className="p-3 text-center">
@@ -246,18 +241,10 @@ export default function AiCustomerServicePro() {
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2"><BarChart3 className="w-4 h-4 text-purple-400" />חיזוי עדיפות</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  {[
-                    { label: "דחופה", pct: 8, color: "bg-red-500" },
-                    { label: "גבוהה", pct: 22, color: "bg-orange-500" },
-                    { label: "בינונית", pct: 45, color: "bg-yellow-500" },
-                    { label: "נמוכה", pct: 25, color: "bg-green-500" },
-                  ].map((p, i) => (
+                <CardContent className="space-y-2.5">
+                  {[{ label: "דחופה", pct: 8 }, { label: "גבוהה", pct: 22 }, { label: "בינונית", pct: 45 }, { label: "נמוכה", pct: 25 }].map((p, i) => (
                     <div key={i}>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-foreground">{p.label}</span>
-                        <span className="text-muted-foreground">{p.pct}%</span>
-                      </div>
+                      <div className="flex justify-between text-xs mb-1"><span className="text-foreground">{p.label}</span><span className="text-muted-foreground">{p.pct}%</span></div>
                       <Progress value={p.pct} className="h-2" />
                     </div>
                   ))}
@@ -269,17 +256,9 @@ export default function AiCustomerServicePro() {
                   <CardTitle className="text-base flex items-center gap-2"><Users className="w-4 h-4 text-cyan-400" />התאמת נציגים</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
-                  {[
-                    { agent: "דנה כ.", specialty: "טכני", load: 72, score: 4.8 },
-                    { agent: "מוטי ל.", specialty: "חשבונות", load: 58, score: 4.6 },
-                    { agent: "יעל ש.", specialty: "תלונות", load: 85, score: 4.9 },
-                    { agent: "אדם ר.", specialty: "מכירות", load: 44, score: 4.5 },
-                  ].map((a, i) => (
+                  {[{ agent: "דנה כ.", specialty: "טכני", load: 72, score: 4.8 }, { agent: "מוטי ל.", specialty: "חשבונות", load: 58, score: 4.6 }, { agent: "יעל ש.", specialty: "תלונות", load: 85, score: 4.9 }, { agent: "אדם ר.", specialty: "מכירות", load: 44, score: 4.5 }].map((a, i) => (
                     <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-background/30">
-                      <div>
-                        <span className="text-foreground font-medium">{a.agent}</span>
-                        <span className="text-muted-foreground text-xs mr-2">{a.specialty}</span>
-                      </div>
+                      <div><span className="text-foreground font-medium">{a.agent}</span><span className="text-muted-foreground text-xs mr-2">{a.specialty}</span></div>
                       <div className="flex items-center gap-3">
                         <span className={`text-xs ${a.load > 80 ? "text-red-400" : a.load > 60 ? "text-amber-400" : "text-green-400"}`}>עומס {a.load}%</span>
                         <span className="text-xs text-amber-400 flex items-center gap-0.5"><Star className="w-3 h-3 fill-amber-400" />{a.score}</span>
@@ -298,28 +277,22 @@ export default function AiCustomerServicePro() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2"><Send className="w-5 h-5 text-emerald-400" />לקוחות שזוהו לפנייה פרואקטיבית</CardTitle>
-                <Badge className="bg-emerald-500/20 text-emerald-300">{proactiveOutreach.length} לקוחות</Badge>
+                <Badge className="bg-emerald-500/20 text-emerald-300">6 לקוחות</Badge>
               </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {proactiveOutreach.map((p, i) => (
-                  <div key={i} className="border border-border/40 rounded-lg p-4 hover:bg-card/30 transition-colors">
+                  <div key={i} className="border border-border/40 rounded-lg p-3 hover:bg-card/30 transition-colors">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <div className="p-1.5 rounded-lg bg-background/50"><p.icon className="w-4 h-4 text-muted-foreground" /></div>
-                        <div>
-                          <div className="font-medium text-foreground text-sm">{p.customer}</div>
-                          <div className="text-xs text-muted-foreground">{p.issue}</div>
-                        </div>
+                        <div><div className="font-medium text-foreground text-sm">{p.customer}</div><div className="text-xs text-muted-foreground">{p.issue}</div></div>
                       </div>
-                      <Badge className={urgencyColors[p.urgency] || ""} >{p.urgency}</Badge>
+                      <Badge className={SC[p.urgency] || ""}>{p.urgency}</Badge>
                     </div>
-                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-border/20">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-xs">{p.type}</Badge>
-                        <Badge className={statusColors[p.status] || ""} >{p.status}</Badge>
-                      </div>
+                    <div className="flex items-center justify-between pt-2 border-t border-border/20">
+                      <div className="flex items-center gap-2"><Badge variant="outline" className="text-xs">{p.type}</Badge><Badge className={SC[p.status] || ""}>{p.status}</Badge></div>
                       <span className="text-xs text-muted-foreground">{p.action}</span>
                     </div>
                   </div>
@@ -341,23 +314,21 @@ export default function AiCustomerServicePro() {
                 <CardTitle className="text-lg flex items-center gap-2"><Brain className="w-5 h-5 text-purple-400" />ביצועי מודלים</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {trainingMetrics.map((m, i) => (
                     <div key={i} className="p-3 rounded-lg bg-background/30">
-                      <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center justify-between mb-1.5">
                         <span className="font-medium text-foreground text-sm">{m.model}</span>
-                        <div className="flex items-center gap-2">
-                          <span className={`text-xs ${m.trend === "up" ? "text-green-400" : "text-muted-foreground"}`}>{m.improvement}</span>
-                          {m.trend === "up" && <ArrowUpRight className="w-3 h-3 text-green-400" />}
-                        </div>
+                        <span className={`text-xs flex items-center gap-1 ${m.trend === "up" ? "text-green-400" : "text-muted-foreground"}`}>
+                          {m.improvement}{m.trend === "up" && <ArrowUpRight className="w-3 h-3" />}
+                        </span>
                       </div>
                       <div className="flex items-center gap-3">
                         <Progress value={m.accuracy} className="h-2 flex-1" />
                         <span className="text-sm font-bold text-foreground w-14 text-left">{m.accuracy}%</span>
                       </div>
-                      <div className="flex items-center justify-between mt-1.5 text-xs text-muted-foreground">
-                        <span>אומן {m.lastTrained}</span>
-                        <span>{m.samples} דגימות</span>
+                      <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                        <span>אומן {m.lastTrained}</span><span>{m.samples} דגימות</span>
                       </div>
                     </div>
                   ))}
@@ -374,15 +345,8 @@ export default function AiCustomerServicePro() {
                   <div className="space-y-2">
                     {newPatterns.map((p, i) => (
                       <div key={i} className="flex items-center justify-between p-2.5 rounded-lg bg-background/30">
-                        <div className="flex-1">
-                          <div className="text-sm text-foreground">{p.pattern}</div>
-                          <div className="text-xs text-muted-foreground mt-0.5">{p.occurrences} מופעים | {p.since}</div>
-                        </div>
-                        {p.gap ? (
-                          <Badge className="bg-red-500/20 text-red-300 text-xs">חסר ידע</Badge>
-                        ) : (
-                          <Badge className="bg-green-500/20 text-green-300 text-xs">מכוסה</Badge>
-                        )}
+                        <div className="flex-1"><div className="text-sm text-foreground">{p.pattern}</div><div className="text-xs text-muted-foreground mt-0.5">{p.occurrences} מופעים | {p.since}</div></div>
+                        <Badge className={p.gap ? "bg-red-500/20 text-red-300 text-xs" : "bg-green-500/20 text-green-300 text-xs"}>{p.gap ? "חסר ידע" : "מכוסה"}</Badge>
                       </div>
                     ))}
                   </div>
@@ -397,16 +361,13 @@ export default function AiCustomerServicePro() {
                   <div className="space-y-2">
                     {knowledgeGaps.map((g, i) => (
                       <div key={i} className="flex items-center justify-between p-2.5 rounded-lg bg-background/30">
-                        <div className="flex-1">
-                          <div className="text-sm text-foreground">{g.topic}</div>
-                          <div className="text-xs text-muted-foreground mt-0.5">{g.queries} שאילתות ללא מענה</div>
-                        </div>
-                        <Badge className={urgencyColors[g.urgency] || ""}>{g.urgency}</Badge>
+                        <div className="flex-1"><div className="text-sm text-foreground">{g.topic}</div><div className="text-xs text-muted-foreground mt-0.5">{g.queries} שאילתות ללא מענה</div></div>
+                        <Badge className={SC[g.urgency] || ""}>{g.urgency}</Badge>
                       </div>
                     ))}
                   </div>
                   <div className="mt-3 pt-3 border-t border-border/30 flex justify-between items-center">
-                    <span className="text-xs text-muted-foreground">סה״כ <strong className="text-red-400">5</strong> פערים פתוחים</span>
+                    <span className="text-xs text-muted-foreground">סה״כ <strong className="text-red-400">4</strong> פערים פתוחים</span>
                     <Button size="sm" variant="outline" className="text-xs h-7"><RotateCcw className="w-3 h-3 ml-1" />עדכון מאגר</Button>
                   </div>
                 </CardContent>

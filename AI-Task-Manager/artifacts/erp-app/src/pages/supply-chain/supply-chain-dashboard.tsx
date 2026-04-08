@@ -1,58 +1,92 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Link2, Package, Truck, AlertTriangle, TrendingUp, Globe, BarChart3, Shield } from "lucide-react";
+import {
+  Truck, Package, Clock, AlertTriangle, DollarSign, CheckCircle2,
+  TrendingUp, Link2, BarChart3, Layers, Search, ArrowLeft,
+  Shield, Warehouse, Gauge, ExternalLink, Bell, XCircle,
+  Factory, ClipboardList, Eye
+} from "lucide-react";
 import { useLocation } from "wouter";
+
+const alerts = [
+  { id: 1, type: "critical", message: "חוסר מלאי - פרופיל אלומיניום 6063-T5", source: "מחסן ראשי", time: "לפני 15 דקות" },
+  { id: 2, type: "warning", message: "עיכוב משלוח - Foshan Glass Co. (3 ימים)", source: "ספק סין", time: "לפני שעה" },
+  { id: 3, type: "info", message: "הזמנה #PO-4521 נקלטה במחסן", source: "קליטת סחורה", time: "לפני 2 שעות" },
+  { id: 4, type: "warning", message: "עלייה ב-8% במחיר אלומיניום גולמי", source: "LME מטאלס", time: "לפני 3 שעות" },
+  { id: 5, type: "critical", message: "ספק Schuco - אי עמידה באיכות, משלוח #SH-892", source: "בקרת איכות", time: "לפני 5 שעות" },
+];
+
+const quickLinks = [
+  { title: "מרכז פיקוד שרשרת אספקה", desc: "תצוגה מרכזית וניהול בזמן אמת", icon: Gauge, href: "/supply-chain/command-center", color: "text-emerald-400", bg: "bg-emerald-500/10" },
+  { title: "תכנון ביקושים", desc: "תחזיות וניתוח צרכים עתידיים", icon: BarChart3, href: "/supply-chain/demand-planning", color: "text-blue-400", bg: "bg-blue-500/10" },
+  { title: "נראות שרשרת אספקה", desc: "מעקב משלוחים ומפת ספקים", icon: Eye, href: "/supply-chain/visibility", color: "text-purple-400", bg: "bg-purple-500/10" },
+  { title: "מרכז BOM", desc: "ניהול עצי מוצר ורכיבים", icon: Layers, href: "/supply-chain/bom-center", color: "text-amber-400", bg: "bg-amber-500/10" },
+  { title: "אנליטיקה ודוחות", desc: "ביצועי שרשרת אספקה ומגמות", icon: TrendingUp, href: "/supply-chain/analytics", color: "text-cyan-400", bg: "bg-cyan-500/10" },
+];
+
+const topSuppliers = [
+  { name: "Schuco International", category: "פרופילי אלומיניום", fillRate: 94, leadTime: 12, onTime: 91 },
+  { name: "Foshan Glass Co.", category: "זכוכית מחוסמת", fillRate: 88, leadTime: 21, onTime: 82 },
+  { name: "קבוצת אלומיל", category: "אלומיניום מקומי", fillRate: 97, leadTime: 5, onTime: 96 },
+  { name: "MetalPro Turkey", category: "פלדת אל-חלד", fillRate: 91, leadTime: 14, onTime: 87 },
+  { name: "Saint-Gobain", category: "זכוכית מיוחדת", fillRate: 95, leadTime: 18, onTime: 93 },
+];
+
+const alertColors: Record<string, { badge: string; icon: string }> = {
+  critical: { badge: "bg-red-500/20 text-red-400", icon: "text-red-400" },
+  warning: { badge: "bg-amber-500/20 text-amber-400", icon: "text-amber-400" },
+  info: { badge: "bg-blue-500/20 text-blue-400", icon: "text-blue-400" },
+};
 
 export default function SupplyChainDashboard() {
   const [, navigate] = useLocation();
 
-  const metrics = [
-    { label: "אמינות אספקה", value: 92, target: 95, unit: "%", icon: Shield, color: "text-blue-600" },
-    { label: "Lead Time ממוצע", value: 8.5, target: 7, unit: "ימים", icon: Truck, color: "text-amber-600" },
-    { label: "שיעור מילוי הזמנות", value: 97, target: 98, unit: "%", icon: Package, color: "text-green-600" },
-    { label: "סיכוני שרשרת", value: 3, target: 0, unit: "פריטים", icon: AlertTriangle, color: "text-red-600" },
+  const kpis = [
+    { label: "משלוחים פעילים", value: "23", icon: Truck, color: "text-blue-400", bg: "bg-blue-500/10" },
+    { label: "שיעור מילוי ספקים", value: "93%", icon: Package, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+    { label: "זמן אספקה ממוצע", value: "14 ימים", icon: Clock, color: "text-amber-400", bg: "bg-amber-500/10" },
+    { label: "חוסרי מלאי", value: "3", icon: AlertTriangle, color: "text-red-400", bg: "bg-red-500/10" },
+    { label: "הוצאות רכש", value: "₪4.2M", icon: DollarSign, color: "text-purple-400", bg: "bg-purple-500/10" },
+    { label: "אספקה בזמן", value: "89%", icon: CheckCircle2, color: "text-cyan-400", bg: "bg-cyan-500/10" },
   ];
-
-  const risks = [
-    { supplier: "Foshan Glass Co.", risk: "עיכוב נמל בסין", severity: "high", impact: "3 הזמנות מושפעות", mitigation: "ספק חלופי זמין" },
-    { supplier: "Schüco International", risk: "עלייה ב-15% מחירי אלומיניום", severity: "medium", impact: "תקציב Q3", mitigation: "חוזה מחיר קבוע עד 06/2026" },
-    { supplier: "קבוצת אלומיל", risk: "תקלה בקו ייצור", severity: "low", impact: "עיכוב 5 ימים", mitigation: "הזמנה חלופית הוגשה" },
-  ];
-
-  const severityBadge = (severity: string) => {
-    switch (severity) {
-      case "high": return <Badge className="bg-red-500/20 text-red-600">גבוה</Badge>;
-      case "medium": return <Badge className="bg-amber-500/20 text-amber-600">בינוני</Badge>;
-      case "low": return <Badge className="bg-green-500/20 text-green-600">נמוך</Badge>;
-      default: return null;
-    }
-  };
 
   return (
     <div className="p-6 space-y-6" dir="rtl">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Link2 className="h-7 w-7" /> שרשרת אספקה
-        </h1>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate("/supply-chain/edi-dashboard")}>EDI</Button>
-          <Button variant="outline" onClick={() => navigate("/supply-chain/edi-admin")}>הגדרות EDI</Button>
+        <div>
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <Link2 className="h-7 w-7 text-emerald-400" />
+            שרשרת אספקה - טכנו-כל עוזי
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">סקירה כללית, התראות וגישה מהירה למרכזי ניהול</p>
         </div>
+        <Button
+          onClick={() => navigate("/supply-chain/command-center")}
+          className="bg-emerald-600 hover:bg-emerald-700"
+        >
+          <Gauge className="w-4 h-4 ml-1" />
+          מרכז פיקוד
+          <ExternalLink className="w-3.5 h-3.5 mr-1" />
+        </Button>
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
-        {metrics.map((m, i) => (
-          <Card key={i}>
-            <CardContent className="pt-6">
+      {/* KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {kpis.map((kpi, i) => (
+          <Card key={i} className="bg-card/80 border-border/50">
+            <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <m.icon className={`h-8 w-8 ${m.color}`} />
-                <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">{m.label}</p>
-                  <p className="text-2xl font-bold">{m.value}{m.unit === "%" ? "%" : ` ${m.unit}`}</p>
-                  <p className="text-xs text-muted-foreground">יעד: {m.target}{m.unit === "%" ? "%" : ` ${m.unit}`}</p>
+                <div className={`p-2 rounded-lg ${kpi.bg}`}>
+                  <kpi.icon className={`h-5 w-5 ${kpi.color}`} />
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground leading-tight">{kpi.label}</p>
+                  <p className={`text-lg font-bold font-mono ${kpi.color}`}>{kpi.value}</p>
                 </div>
               </div>
             </CardContent>
@@ -60,37 +94,107 @@ export default function SupplyChainDashboard() {
         ))}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-500" /> סיכונים פעילים
+      {/* Quick Links */}
+      <Card className="bg-card/60 border-border/50">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Layers className="h-5 w-5 text-purple-400" />
+            גישה מהירה
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-right">ספק</TableHead>
-                <TableHead className="text-right">סיכון</TableHead>
-                <TableHead className="text-right">חומרה</TableHead>
-                <TableHead className="text-right">השפעה</TableHead>
-                <TableHead className="text-right">מענה</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {risks.map((r, i) => (
-                <TableRow key={i}>
-                  <TableCell className="font-medium">{r.supplier}</TableCell>
-                  <TableCell>{r.risk}</TableCell>
-                  <TableCell>{severityBadge(r.severity)}</TableCell>
-                  <TableCell>{r.impact}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{r.mitigation}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            {quickLinks.map((link, idx) => (
+              <button
+                key={idx}
+                onClick={() => navigate(link.href)}
+                className="p-4 bg-muted/20 rounded-lg border border-border/30 hover:border-border/60 hover:bg-muted/40 transition-all text-right"
+              >
+                <div className={`p-2 rounded-lg ${link.bg} w-fit mb-2`}>
+                  <link.icon className={`h-5 w-5 ${link.color}`} />
+                </div>
+                <h3 className="text-sm font-medium text-foreground">{link.title}</h3>
+                <p className="text-[11px] text-muted-foreground mt-1">{link.desc}</p>
+              </button>
+            ))}
+          </div>
         </CardContent>
       </Card>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Alerts */}
+        <Card className="bg-card/60 border-border/50">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Bell className="h-5 w-5 text-amber-400" />
+                התראות אחרונות
+              </CardTitle>
+              <Badge variant="outline" className="text-red-400 border-red-500/30">
+                {alerts.filter((a) => a.type === "critical").length} קריטיות
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {alerts.map((alert) => (
+              <div
+                key={alert.id}
+                className="flex items-start gap-3 p-3 bg-muted/20 rounded-lg border border-border/30"
+              >
+                {alert.type === "critical" && <XCircle className={`h-5 w-5 mt-0.5 ${alertColors.critical.icon} shrink-0`} />}
+                {alert.type === "warning" && <AlertTriangle className={`h-5 w-5 mt-0.5 ${alertColors.warning.icon} shrink-0`} />}
+                {alert.type === "info" && <CheckCircle2 className={`h-5 w-5 mt-0.5 ${alertColors.info.icon} shrink-0`} />}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-foreground">{alert.message}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge className={alertColors[alert.type].badge + " text-[10px]"}>{alert.source}</Badge>
+                    <span className="text-[10px] text-muted-foreground">{alert.time}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Top Suppliers */}
+        <Card className="bg-card/60 border-border/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Factory className="h-5 w-5 text-blue-400" />
+              ביצועי ספקים מובילים
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {topSuppliers.map((s, idx) => (
+              <div key={idx} className="p-3 bg-muted/20 rounded-lg border border-border/30">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <h4 className="text-sm font-medium text-foreground">{s.name}</h4>
+                    <p className="text-[11px] text-muted-foreground">{s.category}</p>
+                  </div>
+                  <Badge variant="outline" className="text-xs">{s.leadTime} ימים</Badge>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <div className="flex justify-between text-[10px] mb-1">
+                      <span className="text-muted-foreground">שיעור מילוי</span>
+                      <span className={`font-mono ${s.fillRate >= 95 ? "text-green-400" : s.fillRate >= 90 ? "text-amber-400" : "text-red-400"}`}>{s.fillRate}%</span>
+                    </div>
+                    <Progress value={s.fillRate} className="h-1.5" />
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-[10px] mb-1">
+                      <span className="text-muted-foreground">אספקה בזמן</span>
+                      <span className={`font-mono ${s.onTime >= 95 ? "text-green-400" : s.onTime >= 85 ? "text-amber-400" : "text-red-400"}`}>{s.onTime}%</span>
+                    </div>
+                    <Progress value={s.onTime} className="h-1.5" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

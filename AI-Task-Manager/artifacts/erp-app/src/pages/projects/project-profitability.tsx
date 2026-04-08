@@ -48,18 +48,15 @@ const typeLabels: Record<string, string> = { residential: "מגורים", commer
 const typeIcons: Record<string, any> = { residential: Home, commercial: Building2, industrial: Factory, renovation: Wrench };
 
 function MarginBar({ actual, expected }: { actual: number; expected: number }) {
-  const color = actual >= expected ? "bg-emerald-500" : actual >= expected - 3 ? "bg-amber-500" : "bg-red-500";
+  const c = actual >= expected ? "bg-emerald-500" : actual >= expected - 3 ? "bg-amber-500" : "bg-red-500";
   return (
     <div className="flex items-center gap-2 w-full">
       <div className="flex-1 h-2.5 bg-muted rounded-full overflow-hidden relative">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${Math.min(actual * 2.5, 100)}%` }} />
+        <div className={`h-full rounded-full ${c}`} style={{ width: `${Math.min(actual * 2.5, 100)}%` }} />
         <div className="absolute top-0 h-full w-0.5 bg-white/60" style={{ right: `${100 - expected * 2.5}%` }} />
       </div>
-      <span className={`text-xs font-bold min-w-[40px] text-left ${actual >= expected ? "text-emerald-400" : "text-red-400"}`}>
-        {fmtP(actual)}
-      </span>
-    </div>
-  );
+      <span className={`text-xs font-bold min-w-[40px] text-left ${actual >= expected ? "text-emerald-400" : "text-red-400"}`}>{fmtP(actual)}</span>
+    </div>);
 }
 
 export default function ProjectProfitabilityPage() {
@@ -68,18 +65,14 @@ export default function ProjectProfitabilityPage() {
 
   const enriched = useMemo(() => projects.map(p => {
     const totalCost = p.materials + p.labor + p.sub + p.overhead;
-    const gp = p.contract - totalCost;
-    const margin = (gp / p.contract) * 100;
-    const marginDelta = margin - p.expectedMargin;
-    return { ...p, totalCost, gp, margin, marginDelta };
+    const gp = p.contract - totalCost, margin = (gp / p.contract) * 100;
+    return { ...p, totalCost, gp, margin, marginDelta: margin - p.expectedMargin };
   }), []);
 
-  const filtered = useMemo(() => {
-    let list = enriched;
-    if (typeFilter !== "all") list = list.filter(p => p.type === typeFilter);
-    if (search) list = list.filter(p => p.name.includes(search) || p.client.includes(search));
-    return list;
-  }, [enriched, search, typeFilter]);
+  const filtered = useMemo(() => enriched
+    .filter(p => typeFilter === "all" || p.type === typeFilter)
+    .filter(p => !search || p.name.includes(search) || p.client.includes(search)),
+  [enriched, search, typeFilter]);
 
   const totalGP = enriched.reduce((s, p) => s + p.gp, 0);
   const avgMargin = enriched.reduce((s, p) => s + p.margin, 0) / enriched.length;
@@ -100,14 +93,10 @@ export default function ProjectProfitabilityPage() {
   }, [enriched]);
 
   const avgCostBreakdown = useMemo(() => {
-    const totals = enriched.reduce((acc, p) => ({
-      materials: acc.materials + (p.materials / p.totalCost) * 100,
-      labor: acc.labor + (p.labor / p.totalCost) * 100,
-      sub: acc.sub + (p.sub / p.totalCost) * 100,
-      overhead: acc.overhead + (p.overhead / p.totalCost) * 100,
-    }), { materials: 0, labor: 0, sub: 0, overhead: 0 });
+    const t = enriched.reduce((a, p) => ({ m: a.m + (p.materials / p.totalCost) * 100, l: a.l + (p.labor / p.totalCost) * 100,
+      s: a.s + (p.sub / p.totalCost) * 100, o: a.o + (p.overhead / p.totalCost) * 100 }), { m: 0, l: 0, s: 0, o: 0 });
     const n = enriched.length;
-    return { materials: totals.materials / n, labor: totals.labor / n, sub: totals.sub / n, overhead: totals.overhead / n };
+    return { materials: t.m / n, labor: t.l / n, sub: t.s / n, overhead: t.o / n };
   }, [enriched]);
 
   return (
@@ -295,18 +284,13 @@ export default function ProjectProfitabilityPage() {
             <CardContent>
               <div className="space-y-3">
                 {enriched.map(p => {
-                  const mPct = (p.materials / p.totalCost) * 100;
-                  const lPct = (p.labor / p.totalCost) * 100;
-                  const sPct = (p.sub / p.totalCost) * 100;
-                  const oPct = (p.overhead / p.totalCost) * 100;
+                  const pcts = [p.materials, p.labor, p.sub, p.overhead].map(v => (v / p.totalCost) * 100);
+                  const colors = ["bg-blue-500","bg-emerald-500","bg-amber-500","bg-purple-500"];
                   return (
                     <div key={p.id} className="flex items-center gap-3">
                       <div className="min-w-[180px] text-sm text-foreground truncate">{p.name}</div>
                       <div className="flex-1 h-6 rounded-full overflow-hidden flex bg-muted">
-                        <div className="bg-blue-500 h-full" style={{ width: `${mPct}%` }} title={`חומרים ${fmtP(mPct)}`} />
-                        <div className="bg-emerald-500 h-full" style={{ width: `${lPct}%` }} title={`עבודה ${fmtP(lPct)}`} />
-                        <div className="bg-amber-500 h-full" style={{ width: `${sPct}%` }} title={`קב״מ ${fmtP(sPct)}`} />
-                        <div className="bg-purple-500 h-full" style={{ width: `${oPct}%` }} title={`תקורה ${fmtP(oPct)}`} />
+                        {pcts.map((pct, i) => <div key={i} className={`${colors[i]} h-full`} style={{ width: `${pct}%` }} />)}
                       </div>
                       <div className="min-w-[80px] text-xs text-muted-foreground text-left">{fmtC(p.totalCost)}</div>
                     </div>
@@ -354,9 +338,7 @@ export default function ProjectProfitabilityPage() {
                 </div>
                 <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
                   <span>יעד מרווח: <span className="text-foreground font-medium">{fmtP(30.5)}</span></span>
-                  <span>מגמה: <span className={`font-medium ${latestTrend >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                    {latestTrend >= 0 ? "שיפור" : "ירידה"}
-                  </span></span>
+                  <span>מגמה: <span className={`font-medium ${latestTrend >= 0 ? "text-emerald-400" : "text-red-400"}`}>{latestTrend >= 0 ? "שיפור" : "ירידה"}</span></span>
                 </div>
               </CardContent>
             </Card>

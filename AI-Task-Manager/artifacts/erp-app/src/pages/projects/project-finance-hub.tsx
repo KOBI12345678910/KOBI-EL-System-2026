@@ -63,12 +63,12 @@ const collections = [
 ];
 
 const collectionsByProject = [
-  { project: "PRJ-001", name: "מגדל מגורים — קריית אתא", invoiced: 2460000, collected: 1820000, outstanding: 640000, lastPayment: "2026-03-12" },
-  { project: "PRJ-002", name: "חזית זכוכית — מגדל עזריאלי", invoiced: 2240000, collected: 2240000, outstanding: 0, lastPayment: "2026-03-18" },
-  { project: "PRJ-003", name: "חלונות אלומיניום — שיכון דירות", invoiced: 1280000, collected: 640000, outstanding: 640000, lastPayment: "2026-02-20" },
-  { project: "PRJ-005", name: "דלתות וחלונות — פרויקט יוקרה", invoiced: 2520000, collected: 1120000, outstanding: 1400000, lastPayment: "2026-01-30" },
-  { project: "PRJ-007", name: "חיפוי אלומיניום — בניין משרדים", invoiced: 1160000, collected: 0, outstanding: 1160000, lastPayment: "—" },
-  { project: "PRJ-004", name: "מערכת מסגרות — קניון הצפון", invoiced: 2250000, collected: 2250000, outstanding: 0, lastPayment: "2026-03-25" },
+  { project: "PRJ-001", name: "מגדל מגורים — קריית אתא", invoiced: 2460000, collected: 1820000, outstanding: 640000 },
+  { project: "PRJ-002", name: "חזית זכוכית — מגדל עזריאלי", invoiced: 2240000, collected: 2240000, outstanding: 0 },
+  { project: "PRJ-003", name: "חלונות אלומיניום — שיכון דירות", invoiced: 1280000, collected: 640000, outstanding: 640000 },
+  { project: "PRJ-005", name: "דלתות וחלונות — פרויקט יוקרה", invoiced: 2520000, collected: 1120000, outstanding: 1400000 },
+  { project: "PRJ-007", name: "חיפוי אלומיניום — בניין משרדים", invoiced: 1160000, collected: 0, outstanding: 1160000 },
+  { project: "PRJ-004", name: "מערכת מסגרות — קניון הצפון", invoiced: 2250000, collected: 2250000, outstanding: 0 },
 ];
 
 const budgetCategories = [
@@ -126,23 +126,16 @@ export default function ProjectFinanceHub() {
 
   return (
     <div className="p-6 space-y-6" dir="rtl">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
             <DollarSign className="w-7 h-7 text-green-400" />
             מרכז פיננסי חוצה-פרויקטים
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            ניהול רווחיות, חשבוניות, גבייה ותקציבים — טכנו-כל עוזי
-          </p>
+          <p className="text-sm text-slate-400 mt-1">ניהול רווחיות, חשבוניות, גבייה ותקציבים — טכנו-כל עוזי</p>
         </div>
-        <Badge className="bg-green-500/20 text-green-400 text-xs border border-green-500/30">
-          אפריל 2026
-        </Badge>
+        <Badge className="bg-green-500/20 text-green-400 text-xs border border-green-500/30">אפריל 2026</Badge>
       </div>
-
-      {/* 8 KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
         {[
           { label: "סה\"כ חוזים", value: fmtCurrency(kpis.totalContractValue), icon: FileText, color: "text-blue-400" },
@@ -164,20 +157,10 @@ export default function ProjectFinanceHub() {
         ))}
       </div>
 
-      {/* Search */}
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <Input
-            placeholder="חיפוש פרויקט, לקוח, חשבונית..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="pr-10 bg-slate-800/50 border-slate-700 text-white"
-          />
-        </div>
+      <div className="relative max-w-md">
+        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <Input placeholder="חיפוש פרויקט, לקוח, חשבונית..." value={search} onChange={e => setSearch(e.target.value)} className="pr-10 bg-slate-800/50 border-slate-700 text-white" />
       </div>
-
-      {/* Tabs */}
       <Tabs defaultValue="pnl" className="space-y-4">
         <TabsList className="bg-slate-800/50 border border-slate-700">
           <TabsTrigger value="pnl" className="text-xs">רווח והפסד לפרויקט</TabsTrigger>
@@ -249,25 +232,10 @@ export default function ProjectFinanceHub() {
 
         {/* Tab 2: Invoicing */}
         <TabsContent value="invoicing" className="space-y-4">
-          <div className="flex items-center gap-2 flex-wrap">
-            <Filter className="w-4 h-4 text-slate-400" />
-            {[
-              { key: "all", label: "הכל" },
-              { key: "paid", label: "שולם" },
-              { key: "partial", label: "חלקי" },
-              { key: "sent", label: "נשלח" },
-              { key: "overdue", label: "באיחור" },
-              { key: "draft", label: "טיוטה" },
-            ].map(f => (
-              <Button
-                key={f.key}
-                size="sm"
-                variant={invFilter === f.key ? "default" : "outline"}
-                onClick={() => setInvFilter(f.key)}
-                className="text-xs h-7"
-              >
-                {f.label}
-              </Button>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Filter className="w-4 h-4 text-slate-400 ml-1" />
+            {[["all","הכל"],["paid","שולם"],["partial","חלקי"],["sent","נשלח"],["overdue","באיחור"],["draft","טיוטה"]].map(([k,l]) => (
+              <Button key={k} size="sm" variant={invFilter === k ? "default" : "outline"} onClick={() => setInvFilter(k)} className="text-xs h-7">{l}</Button>
             ))}
           </div>
           <Card className="bg-slate-800/50 border-slate-700">

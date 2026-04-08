@@ -67,7 +67,6 @@ const standards = [
     "כיפוף מינימלי: רדיוס 150 מ\"מ לפרופיל סטנדרט",
     "דיוק חיתוך CNC: סטייה מקסימלית 0.1 מ\"מ",
     "ריתוך TIG: זמין לאלומיניום 6061 ופלדת אל-חלד",
-    "עיבוד שבבי: מרכז עיבוד 5 צירים, דיוק 0.05 מ\"מ",
   ]},
 ];
 
@@ -78,7 +77,6 @@ const collaboration = [
   { id: 4, design: "DSN-006", reviewer: "לקוח - מגדלי הים", date: "2026-04-03", type: "משוב", status: "פתוח", text: "הלקוח מבקש אפשרות לתריס עם למלות רחבות יותר (120 מ\"מ)" },
   { id: 5, design: "DSN-012", reviewer: "מהנדס מבנים", date: "2026-04-02", type: "הערה", status: "טופל", text: "מסגרת הפנל צריכה לתמוך במשקל 25 ק\"ג למ\"ר - אישור חוזק" },
   { id: 6, design: "DSN-002", reviewer: "מנהל פיתוח", date: "2026-04-01", type: "בקשת שינוי", status: "פתוח", text: "לשלב מנגנון נעילה אוטומטי בחלון ההזזה - דרישת בטיחות ילדים" },
-  { id: 7, design: "DSN-010", reviewer: "יועץ בטיחות", date: "2026-03-30", type: "הערה", status: "בטיפול", text: "מעקה זכוכית בגובה 1.02 מ - תקן ישראלי מחייב 1.05 מ מינימום" },
 ];
 
 const stageColor: Record<string, string> = {
@@ -295,36 +293,6 @@ export default function ProductDesignPage() {
               </Card>
             ))}
           </div>
-
-          <Card className="bg-card border-border/50">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <Users className="w-4 h-4 text-violet-400" />
-                סיכום עמידה בתקנים
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[
-                  { label: "תקן ישראלי ת\"י 23", status: "עומד", pct: 100 },
-                  { label: "ISO 9001 - איכות", status: "עומד", pct: 95 },
-                  { label: "CE - אירופי", status: "בתהליך", pct: 78 },
-                  { label: "תקן אקוסטי ת\"י 1301", status: "עומד", pct: 88 },
-                ].map((std, i) => (
-                  <div key={i} className="space-y-2">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">{std.label}</span>
-                      <Badge className={`text-[10px] ${std.status === "עומד" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>
-                        {std.status}
-                      </Badge>
-                    </div>
-                    <Progress value={std.pct} className="h-2" />
-                    <div className="text-left text-xs text-muted-foreground">{std.pct}%</div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
         </TabsContent>
 
         {/* Tab 4: Collaboration */}

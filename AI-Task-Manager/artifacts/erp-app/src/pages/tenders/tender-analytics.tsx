@@ -75,7 +75,6 @@ const pricingInsights = [
 const resourceAllocation = [
   { resource: "צוות הנדסה", current: 78, optimal: 65, note: "עומס יתר - נדרש חיזוק" },
   { resource: "צוות תמחור", current: 62, optimal: 70, note: "ניצולת תקינה" },
-  { resource: "צוות משפטי", current: 45, optimal: 50, note: "פנוי - ניתן לקבל עוד מכרזים" },
   { resource: "ניהול פרויקטים", current: 85, optimal: 75, note: "עומס קריטי - עדיפות לזכיות בטוחות" },
 ];
 
@@ -85,12 +84,10 @@ export default function TenderAnalyticsPage() {
 
   return (
     <div className="p-6 space-y-6" dir="rtl">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <BarChart3 className="h-7 w-7 text-primary" />
-            אנליטיקת מכרזים
+            <BarChart3 className="h-7 w-7 text-primary" />אנליטיקת מכרזים
           </h1>
           <p className="text-sm text-muted-foreground mt-1">ניתוח ביצועים, מגמות ותובנות AI למכרזים - טכנו-כל עוזי</p>
         </div>
@@ -104,8 +101,6 @@ export default function TenderAnalyticsPage() {
           <Button variant="outline" size="sm"><RefreshCw className="w-4 h-4 ml-1" />רענון</Button>
         </div>
       </div>
-
-      {/* KPI Row */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {kpis.map((k, i) => (
           <Card key={i} className="bg-card/50 border-border/50">
@@ -123,7 +118,6 @@ export default function TenderAnalyticsPage() {
         ))}
       </div>
 
-      {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-4 w-full max-w-2xl">
           <TabsTrigger value="performance" className="flex items-center gap-1"><Activity className="w-4 h-4" />ביצועים</TabsTrigger>
@@ -131,10 +125,7 @@ export default function TenderAnalyticsPage() {
           <TabsTrigger value="pipeline" className="flex items-center gap-1"><Layers className="w-4 h-4" />צינור מכרזים</TabsTrigger>
           <TabsTrigger value="insights" className="flex items-center gap-1"><Brain className="w-4 h-4" />תובנות AI</TabsTrigger>
         </TabsList>
-
-        {/* Performance Tab */}
         <TabsContent value="performance" className="space-y-6 mt-4">
-          {/* Quarterly Win/Loss */}
           <Card className="bg-card/50 border-border/50">
             <CardContent className="p-5">
               <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2"><PieChart className="w-5 h-5 text-primary" />ביצועי זכייה/הפסד לפי רבעון</h3>
@@ -160,8 +151,6 @@ export default function TenderAnalyticsPage() {
               </div>
             </CardContent>
           </Card>
-
-          {/* By Project Type */}
           <Card className="bg-card/50 border-border/50">
             <CardContent className="p-5">
               <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2"><Briefcase className="w-5 h-5 text-primary" />ביצועים לפי סוג פרויקט</h3>
@@ -182,8 +171,6 @@ export default function TenderAnalyticsPage() {
               </div>
             </CardContent>
           </Card>
-
-          {/* By Client Sector */}
           <Card className="bg-card/50 border-border/50">
             <CardContent className="p-5">
               <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2"><Building2 className="w-5 h-5 text-primary" />ביצועים לפי מגזר לקוח</h3>
@@ -205,38 +192,22 @@ export default function TenderAnalyticsPage() {
             </CardContent>
           </Card>
         </TabsContent>
-
-        {/* Financial Tab */}
         <TabsContent value="financial" className="space-y-6 mt-4">
-          {/* Financial Summary */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card className="bg-card/50 border-border/50">
-              <CardContent className="p-4 text-center">
-                <div className="text-xs text-muted-foreground">סה"כ ערך הצעות</div>
-                <div className="text-xl font-bold text-foreground mt-1">₪{(finTotals.totalBid / 1000000).toFixed(1)}M</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-card/50 border-border/50">
-              <CardContent className="p-4 text-center">
-                <div className="text-xs text-muted-foreground">סה"כ זכיות</div>
-                <div className="text-xl font-bold text-green-400 mt-1">₪{(finTotals.totalWon / 1000000).toFixed(1)}M</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-card/50 border-border/50">
-              <CardContent className="p-4 text-center">
-                <div className="text-xs text-muted-foreground">מרווח ממוצע</div>
-                <div className="text-xl font-bold text-amber-400 mt-1">{finTotals.avgMargin}%</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-card/50 border-border/50">
-              <CardContent className="p-4 text-center">
-                <div className="text-xs text-muted-foreground">עלות הגשות כוללת</div>
-                <div className="text-xl font-bold text-red-400 mt-1">₪{(finTotals.totalCost / 1000).toFixed(0)}K</div>
-              </CardContent>
-            </Card>
+            {[
+              { label: "סה\"כ ערך הצעות", val: `₪${(finTotals.totalBid / 1000000).toFixed(1)}M`, cls: "text-foreground" },
+              { label: "סה\"כ זכיות", val: `₪${(finTotals.totalWon / 1000000).toFixed(1)}M`, cls: "text-green-400" },
+              { label: "מרווח ממוצע", val: `${finTotals.avgMargin}%`, cls: "text-amber-400" },
+              { label: "עלות הגשות כוללת", val: `₪${(finTotals.totalCost / 1000).toFixed(0)}K`, cls: "text-red-400" },
+            ].map((c, i) => (
+              <Card key={i} className="bg-card/50 border-border/50">
+                <CardContent className="p-4 text-center">
+                  <div className="text-xs text-muted-foreground">{c.label}</div>
+                  <div className={`text-xl font-bold mt-1 ${c.cls}`}>{c.val}</div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-
-          {/* Monthly Bid vs Won */}
           <Card className="bg-card/50 border-border/50">
             <CardContent className="p-5">
               <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2"><BarChart3 className="w-5 h-5 text-primary" />ערכי הצעות מול זכיות - 6 חודשים</h3>
@@ -269,35 +240,26 @@ export default function TenderAnalyticsPage() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Cost of Bidding */}
           <Card className="bg-card/50 border-border/50">
             <CardContent className="p-5">
               <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2"><DollarSign className="w-5 h-5 text-primary" />עלות הגשת מכרזים</h3>
               <div className="grid grid-cols-3 gap-4">
-                <div className="bg-background/40 rounded-xl p-4 border border-border/30 text-center">
-                  <div className="text-xs text-muted-foreground">עלות ממוצעת להגשה</div>
-                  <div className="text-2xl font-bold text-foreground mt-2">₪47.5K</div>
-                  <div className="text-xs text-green-400 mt-1">ירידה של 8% מהרבעון הקודם</div>
-                </div>
-                <div className="bg-background/40 rounded-xl p-4 border border-border/30 text-center">
-                  <div className="text-xs text-muted-foreground">יחס עלות/זכייה</div>
-                  <div className="text-2xl font-bold text-foreground mt-2">₪123K</div>
-                  <div className="text-xs text-muted-foreground mt-1">עלות ממוצעת לכל זכייה</div>
-                </div>
-                <div className="bg-background/40 rounded-xl p-4 border border-border/30 text-center">
-                  <div className="text-xs text-muted-foreground">ROI על הגשות</div>
-                  <div className="text-2xl font-bold text-green-400 mt-2">28.7x</div>
-                  <div className="text-xs text-muted-foreground mt-1">תשואה על כל שקל שהושקע</div>
-                </div>
+                {[
+                  { label: "עלות ממוצעת להגשה", val: "₪47.5K", sub: "ירידה של 8% מהרבעון הקודם", cls: "text-foreground", subCls: "text-green-400" },
+                  { label: "יחס עלות/זכייה", val: "₪123K", sub: "עלות ממוצעת לכל זכייה", cls: "text-foreground", subCls: "text-muted-foreground" },
+                  { label: "ROI על הגשות", val: "28.7x", sub: "תשואה על כל שקל שהושקע", cls: "text-green-400", subCls: "text-muted-foreground" },
+                ].map((c, i) => (
+                  <div key={i} className="bg-background/40 rounded-xl p-4 border border-border/30 text-center">
+                    <div className="text-xs text-muted-foreground">{c.label}</div>
+                    <div className={`text-2xl font-bold mt-2 ${c.cls}`}>{c.val}</div>
+                    <div className={`text-xs mt-1 ${c.subCls}`}>{c.sub}</div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
         </TabsContent>
-
-        {/* Pipeline Tab */}
         <TabsContent value="pipeline" className="space-y-6 mt-4">
-          {/* Funnel */}
           <Card className="bg-card/50 border-border/50">
             <CardContent className="p-5">
               <h3 className="font-semibold text-foreground mb-6 flex items-center gap-2"><Layers className="w-5 h-5 text-primary" />משפך מכרזים - צינור הזדמנויות</h3>
@@ -332,43 +294,24 @@ export default function TenderAnalyticsPage() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Pipeline Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card className="bg-card/50 border-border/50">
-              <CardContent className="p-4 text-center">
-                <Zap className="w-5 h-5 mx-auto text-amber-400 mb-1" />
-                <div className="text-xs text-muted-foreground">זמן ממוצע בצינור</div>
-                <div className="text-xl font-bold text-foreground mt-1">32 יום</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-card/50 border-border/50">
-              <CardContent className="p-4 text-center">
-                <TrendingUp className="w-5 h-5 mx-auto text-green-400 mb-1" />
-                <div className="text-xs text-muted-foreground">שיעור המרה כולל</div>
-                <div className="text-xl font-bold text-foreground mt-1">12.5%</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-card/50 border-border/50">
-              <CardContent className="p-4 text-center">
-                <Target className="w-5 h-5 mx-auto text-blue-400 mb-1" />
-                <div className="text-xs text-muted-foreground">מכרזים בהכנה</div>
-                <div className="text-xl font-bold text-foreground mt-1">28</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-card/50 border-border/50">
-              <CardContent className="p-4 text-center">
-                <Clock className="w-5 h-5 mx-auto text-red-400 mb-1" />
-                <div className="text-xs text-muted-foreground">דדליין קרוב (7 ימים)</div>
-                <div className="text-xl font-bold text-red-400 mt-1">5</div>
-              </CardContent>
-            </Card>
+            {[
+              { Icon: Zap, color: "text-amber-400", label: "זמן ממוצע בצינור", val: "32 יום", valCls: "text-foreground" },
+              { Icon: TrendingUp, color: "text-green-400", label: "שיעור המרה כולל", val: "12.5%", valCls: "text-foreground" },
+              { Icon: Target, color: "text-blue-400", label: "מכרזים בהכנה", val: "28", valCls: "text-foreground" },
+              { Icon: Clock, color: "text-red-400", label: "דדליין קרוב (7 ימים)", val: "5", valCls: "text-red-400" },
+            ].map((c, i) => (
+              <Card key={i} className="bg-card/50 border-border/50">
+                <CardContent className="p-4 text-center">
+                  <c.Icon className={`w-5 h-5 mx-auto mb-1 ${c.color}`} />
+                  <div className="text-xs text-muted-foreground">{c.label}</div>
+                  <div className={`text-xl font-bold mt-1 ${c.valCls}`}>{c.val}</div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </TabsContent>
-
-        {/* AI Insights Tab */}
         <TabsContent value="insights" className="space-y-6 mt-4">
-          {/* AI Recommendations */}
           <Card className="bg-card/50 border-border/50">
             <CardContent className="p-5">
               <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2"><Brain className="w-5 h-5 text-primary" />המלצות AI - אילו מכרזים לרדוף</h3>
@@ -393,8 +336,6 @@ export default function TenderAnalyticsPage() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Optimal Pricing */}
           <Card className="bg-card/50 border-border/50">
             <CardContent className="p-5">
               <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2"><Lightbulb className="w-5 h-5 text-primary" />תמחור אופטימלי - ניתוח AI</h3>
@@ -413,8 +354,6 @@ export default function TenderAnalyticsPage() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Resource Allocation */}
           <Card className="bg-card/50 border-border/50">
             <CardContent className="p-5">
               <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2"><Activity className="w-5 h-5 text-primary" />הקצאת משאבים - ניצולת והמלצות</h3>

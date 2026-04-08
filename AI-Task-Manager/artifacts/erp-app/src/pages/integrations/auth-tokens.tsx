@@ -86,7 +86,6 @@ const rotationPolicies = [
   { id: 6, name: "Sandbox Keys", target: "Test API Keys", interval: "30 יום", nextRotation: "2026-04-20", autoRotate: true, notifyDays: 5, compliance: "ללא", compStatus: "exempt" },
 ];
 
-/* ── Helpers ── */
 const statusBadge = (s: string) => {
   if (s === "active") return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">פעיל</Badge>;
   if (s === "expired") return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">פג תוקף</Badge>;
@@ -129,7 +128,6 @@ const complianceBadge = (s: string) => {
 
 export default function AuthTokensPage() {
   const [search, setSearch] = useState("");
-
   return (
     <div dir="rtl" className="p-6 space-y-6">
       {/* Header */}
@@ -168,21 +166,11 @@ export default function AuthTokensPage() {
       {/* Tabs */}
       <Tabs defaultValue="api-keys" className="space-y-4">
         <TabsList className="grid w-full grid-cols-5 h-auto">
-          <TabsTrigger value="api-keys" className="text-xs sm:text-sm py-2">
-            <Key className="h-4 w-4 ml-1" />מפתחות API
-          </TabsTrigger>
-          <TabsTrigger value="oauth" className="text-xs sm:text-sm py-2">
-            <Shield className="h-4 w-4 ml-1" />לקוחות OAuth
-          </TabsTrigger>
-          <TabsTrigger value="tokens" className="text-xs sm:text-sm py-2">
-            <FileKey className="h-4 w-4 ml-1" />טוקנים פעילים
-          </TabsTrigger>
-          <TabsTrigger value="service-accounts" className="text-xs sm:text-sm py-2">
-            <UserCog className="h-4 w-4 ml-1" />חשבונות שירות
-          </TabsTrigger>
-          <TabsTrigger value="rotation" className="text-xs sm:text-sm py-2">
-            <RotateCcw className="h-4 w-4 ml-1" />מדיניות סיבוב
-          </TabsTrigger>
+          <TabsTrigger value="api-keys" className="text-xs sm:text-sm py-2"><Key className="h-4 w-4 ml-1" />מפתחות API</TabsTrigger>
+          <TabsTrigger value="oauth" className="text-xs sm:text-sm py-2"><Shield className="h-4 w-4 ml-1" />לקוחות OAuth</TabsTrigger>
+          <TabsTrigger value="tokens" className="text-xs sm:text-sm py-2"><FileKey className="h-4 w-4 ml-1" />טוקנים פעילים</TabsTrigger>
+          <TabsTrigger value="service-accounts" className="text-xs sm:text-sm py-2"><UserCog className="h-4 w-4 ml-1" />חשבונות שירות</TabsTrigger>
+          <TabsTrigger value="rotation" className="text-xs sm:text-sm py-2"><RotateCcw className="h-4 w-4 ml-1" />מדיניות סיבוב</TabsTrigger>
         </TabsList>
 
         {/* Tab 1: API Keys */}
