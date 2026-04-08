@@ -366,6 +366,22 @@ const RateLimitsPage = lazyPage(() => import("@/pages/integrations/rate-limits")
 const AuthTokensPage = lazyPage(() => import("@/pages/integrations/auth-tokens"));
 const PayloadValidationPage = lazyPage(() => import("@/pages/integrations/payload-validation"));
 
+// Supply Chain + BOM System (14 pages)
+const SupplyChainCommandCenterPage = lazyPage(() => import("@/pages/supply-chain/supply-chain-command-center"));
+const DemandPlanningPage = lazyPage(() => import("@/pages/supply-chain/demand-planning"));
+const SupplyChainVisibilityPage = lazyPage(() => import("@/pages/supply-chain/supply-chain-visibility"));
+const LeadTimeManagementPage = lazyPage(() => import("@/pages/supply-chain/lead-time-management"));
+const SupplyChainAnalyticsPage = lazyPage(() => import("@/pages/supply-chain/supply-chain-analytics"));
+const SupplyChainAlertsPage = lazyPage(() => import("@/pages/supply-chain/supply-chain-alerts"));
+const SupplyChainSettingsPage = lazyPage(() => import("@/pages/supply-chain/supply-chain-settings"));
+const BomCommandCenterPage = lazyPage(() => import("@/pages/supply-chain/bom-command-center"));
+const BomVersionsPage = lazyPage(() => import("@/pages/supply-chain/bom-versions"));
+const BomCostRollupPage = lazyPage(() => import("@/pages/supply-chain/bom-cost-rollup"));
+const BomWhereUsedPage = lazyPage(() => import("@/pages/supply-chain/bom-where-used"));
+const BomComparisonPage = lazyPage(() => import("@/pages/supply-chain/bom-comparison"));
+const BomTemplatesPage = lazyPage(() => import("@/pages/supply-chain/bom-templates"));
+const EngineeringChangeOrdersPage = lazyPage(() => import("@/pages/supply-chain/engineering-change-orders"));
+
 export const OtherRoutes = (
 
     <>
@@ -778,6 +794,22 @@ export const OtherRoutes = (
       <Route path="/integrations/rate-limits" component={RateLimitsPage} />
       <Route path="/integrations/auth-tokens" component={AuthTokensPage} />
       <Route path="/integrations/payload-validation" component={PayloadValidationPage} />
+
+      {/* Supply Chain + BOM System */}
+      <Route path="/supply-chain/command-center" component={SupplyChainCommandCenterPage} />
+      <Route path="/supply-chain/demand-planning" component={DemandPlanningPage} />
+      <Route path="/supply-chain/visibility" component={SupplyChainVisibilityPage} />
+      <Route path="/supply-chain/lead-times" component={LeadTimeManagementPage} />
+      <Route path="/supply-chain/analytics" component={SupplyChainAnalyticsPage} />
+      <Route path="/supply-chain/alerts" component={SupplyChainAlertsPage} />
+      <Route path="/supply-chain/settings" component={SupplyChainSettingsPage} />
+      <Route path="/supply-chain/bom-center" component={BomCommandCenterPage} />
+      <Route path="/supply-chain/bom-versions" component={BomVersionsPage} />
+      <Route path="/supply-chain/bom-cost-rollup" component={BomCostRollupPage} />
+      <Route path="/supply-chain/bom-where-used" component={BomWhereUsedPage} />
+      <Route path="/supply-chain/bom-comparison" component={BomComparisonPage} />
+      <Route path="/supply-chain/bom-templates" component={BomTemplatesPage} />
+      <Route path="/supply-chain/eco" component={EngineeringChangeOrdersPage} />
 
     </>
 );
