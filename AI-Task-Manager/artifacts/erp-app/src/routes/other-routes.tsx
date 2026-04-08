@@ -348,6 +348,24 @@ const HRAnalyticsPage = lazyPage(() => import("@/pages/hr/hr-analytics"));
 const HRAlertsPage = lazyPage(() => import("@/pages/hr/hr-alerts"));
 const HRSettingsPage = lazyPage(() => import("@/pages/hr/hr-settings"));
 
+// Integration Hub (16 pages)
+const IntegrationDashboardPage = lazyPage(() => import("@/pages/integrations/integration-dashboard"));
+const ExternalConnectorsPage = lazyPage(() => import("@/pages/integrations/external-connectors"));
+const APIGatewayPage = lazyPage(() => import("@/pages/integrations/api-gateway"));
+const WebhookGatewayPage = lazyPage(() => import("@/pages/integrations/webhook-gateway"));
+const EventBusPage = lazyPage(() => import("@/pages/integrations/event-bus"));
+const MCPHubPage = lazyPage(() => import("@/pages/integrations/mcp-hub"));
+const SyncJobsPage = lazyPage(() => import("@/pages/integrations/sync-jobs"));
+const CredentialsVaultPage = lazyPage(() => import("@/pages/integrations/credentials-vault"));
+const RetriesDLQPage = lazyPage(() => import("@/pages/integrations/retries-dlq"));
+const TransformationEnginePage = lazyPage(() => import("@/pages/integrations/transformation-engine"));
+const IntegrationAuditPage = lazyPage(() => import("@/pages/integrations/integration-audit"));
+const IntegrationAlertsHubPage = lazyPage(() => import("@/pages/integrations/integration-alerts"));
+const IntegrationSettingsHubPage = lazyPage(() => import("@/pages/integrations/integration-settings"));
+const RateLimitsPage = lazyPage(() => import("@/pages/integrations/rate-limits"));
+const AuthTokensPage = lazyPage(() => import("@/pages/integrations/auth-tokens"));
+const PayloadValidationPage = lazyPage(() => import("@/pages/integrations/payload-validation"));
+
 export const OtherRoutes = (
 
     <>
@@ -742,6 +760,24 @@ export const OtherRoutes = (
       <Route path="/hr/analytics" component={HRAnalyticsPage} />
       <Route path="/hr/alerts" component={HRAlertsPage} />
       <Route path="/hr/settings" component={HRSettingsPage} />
+
+      {/* Integration Hub */}
+      <Route path="/integrations/dashboard" component={IntegrationDashboardPage} />
+      <Route path="/integrations/connectors" component={ExternalConnectorsPage} />
+      <Route path="/integrations/api-gateway" component={APIGatewayPage} />
+      <Route path="/integrations/webhooks" component={WebhookGatewayPage} />
+      <Route path="/integrations/event-bus" component={EventBusPage} />
+      <Route path="/integrations/mcp-hub" component={MCPHubPage} />
+      <Route path="/integrations/sync-jobs" component={SyncJobsPage} />
+      <Route path="/integrations/credentials" component={CredentialsVaultPage} />
+      <Route path="/integrations/retries-dlq" component={RetriesDLQPage} />
+      <Route path="/integrations/transformation" component={TransformationEnginePage} />
+      <Route path="/integrations/audit" component={IntegrationAuditPage} />
+      <Route path="/integrations/alerts" component={IntegrationAlertsHubPage} />
+      <Route path="/integrations/settings" component={IntegrationSettingsHubPage} />
+      <Route path="/integrations/rate-limits" component={RateLimitsPage} />
+      <Route path="/integrations/auth-tokens" component={AuthTokensPage} />
+      <Route path="/integrations/payload-validation" component={PayloadValidationPage} />
 
     </>
 );

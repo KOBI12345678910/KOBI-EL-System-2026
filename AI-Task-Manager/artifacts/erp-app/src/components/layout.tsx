@@ -506,6 +506,25 @@ export const NAV_ITEMS: NavItem[] = [
     { href: "/settings/departments", label: "מחלקות", icon: Building2, section: "מנהלת מערכת", subSection: "כלליות" },
     { href: "/settings/triggers", label: "טריגרים", icon: Zap, section: "מנהלת מערכת", subSection: "אינטגרציות" },
     { href: "/settings/israeli-integrations", label: "אינטגרציות ישראליות", icon: Plug, section: "מנהלת מערכת", subSection: "אינטגרציות" },
+
+    // ─── מרכז אינטגרציות (Integration Hub) ───
+    { href: "/integrations/dashboard", label: "דשבורד אינטגרציות", icon: Activity, section: "מנהלת מערכת", subSection: "מרכז אינטגרציות" },
+    { href: "/integrations/connectors", label: "חיבורים חיצוניים", icon: Plug, section: "מנהלת מערכת", subSection: "מרכז אינטגרציות" },
+    { href: "/integrations/api-gateway", label: "API Gateway", icon: Server, section: "מנהלת מערכת", subSection: "מרכז אינטגרציות" },
+    { href: "/integrations/webhooks", label: "Webhook Gateway", icon: Globe, section: "מנהלת מערכת", subSection: "מרכז אינטגרציות" },
+    { href: "/integrations/event-bus", label: "Event Bus", icon: Zap, section: "מנהלת מערכת", subSection: "מרכז אינטגרציות" },
+    { href: "/integrations/mcp-hub", label: "MCP Hub", icon: Bot, section: "מנהלת מערכת", subSection: "מרכז אינטגרציות" },
+    { href: "/integrations/sync-jobs", label: "עבודות סנכרון", icon: Database, section: "מנהלת מערכת", subSection: "מרכז אינטגרציות" },
+    { href: "/integrations/credentials", label: "כספת סודות", icon: Lock, section: "מנהלת מערכת", subSection: "מרכז אינטגרציות" },
+    { href: "/integrations/auth-tokens", label: "טוקנים ומפתחות", icon: Key, section: "מנהלת מערכת", subSection: "מרכז אינטגרציות" },
+    { href: "/integrations/rate-limits", label: "הגבלות קצב", icon: Gauge, section: "מנהלת מערכת", subSection: "מרכז אינטגרציות" },
+    { href: "/integrations/retries-dlq", label: "ניסיונות חוזרים ו-DLQ", icon: Shield, section: "מנהלת מערכת", subSection: "מרכז אינטגרציות" },
+    { href: "/integrations/transformation", label: "מנוע מיפוי", icon: GitMerge, section: "מנהלת מערכת", subSection: "מרכז אינטגרציות" },
+    { href: "/integrations/payload-validation", label: "אימות Payload", icon: ShieldCheck, section: "מנהלת מערכת", subSection: "מרכז אינטגרציות" },
+    { href: "/integrations/audit", label: "ביקורת אינטגרציות", icon: SearchCode, section: "מנהלת מערכת", subSection: "מרכז אינטגרציות" },
+    { href: "/integrations/alerts", label: "התראות אינטגרציות", icon: Bell, section: "מנהלת מערכת", subSection: "מרכז אינטגרציות" },
+    { href: "/integrations/settings", label: "הגדרות אינטגרציות", icon: Settings, section: "מנהלת מערכת", subSection: "מרכז אינטגרציות" },
+
     { href: "/settings/import-export", label: "ייבוא/ייצוא נתונים", icon: ArrowUpDown, section: "מנהלת מערכת", subSection: "כלים" },
     { href: "/settings/backups", label: "גיבויים", icon: Shield, section: "מנהלת מערכת", subSection: "אבטחה" },
     { href: "/governance", label: "ממשל תאגידי", icon: Scale, section: "מנהלת מערכת", subSection: "אבטחה" },
@@ -1707,6 +1726,7 @@ const SUBSECTION_ROLES_MAP: Record<string, string[]> = {
   "אבטחה": ["admin", "super-admin"],
   "פורטלים": ["admin", "super-admin", "developer"],
   "אינטגרציות": [...ADMIN_ROLES, "developer"],
+  "מרכז אינטגרציות": [...ADMIN_ROLES, "developer"],
 };
 
 
@@ -2151,6 +2171,7 @@ const OPEN_ROUTE_PREFIXES = [
   "/document-builder",
   "/integration-builder",
   "/integrations-hub",
+  "/integrations/",
   "/ai-builder",
   "/module/",
   "/ai/",
