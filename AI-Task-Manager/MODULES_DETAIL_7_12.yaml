@@ -1,0 +1,3644 @@
+# ============================================================
+# KOBI EL - ERP System Detailed Module Specification
+# Modules 7-12: Projects, Procurement, Inventory,
+#               Finance, Billing, Payments
+# ============================================================
+# Every page, form field, table column, action, tab,
+# related record, and navigation target is fully defined.
+# NO shortcuts, NO placeholders, NO "to be defined later".
+# ============================================================
+
+# ============================================================
+# MODULE 7: PROJECTS
+# ============================================================
+module_7_projects:
+  module_key: projects
+  icon: assignment
+  label: "פרויקטים"
+  route: /projects
+  priority: medium
+  purpose: "ניהול פרויקטים, משימות, אבני דרך, תקציב, רווחיות וקבצים"
+
+  # ----------------------------------------------------------
+  # 7.1 SIDEBAR SUBMENUS
+  # ----------------------------------------------------------
+  submenus:
+    - key: projects_list
+      label: "רשימת פרויקטים"
+      route: /projects/list
+      icon: list
+    - key: project_board
+      label: "לוח פרויקטים"
+      route: /projects/board
+      icon: view_kanban
+    - key: milestones
+      label: "אבני דרך"
+      route: /projects/milestones
+      icon: flag
+    - key: tasks
+      label: "משימות"
+      route: /projects/tasks
+      icon: checklist
+    - key: project_budget
+      label: "תקציב פרויקטים"
+      route: /projects/budget
+      icon: account_balance_wallet
+    - key: project_profitability
+      label: "רווחיות פרויקטים"
+      route: /projects/profitability
+      icon: trending_up
+
+  # ----------------------------------------------------------
+  # 7.2 ENTITIES
+  # ----------------------------------------------------------
+  entities:
+
+    projects:
+      table_name: projects
+      type: transactional
+      auto_number:
+        prefix: "PRJ-"
+        padding: 4
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: project_number
+          type: string
+          auto_generated: true
+          unique: true
+          format: "PRJ-0001"
+          description: "מספר פרויקט ייחודי אוטומטי"
+        - name: name
+          type: string
+          max_length: 255
+          required: true
+          description: "שם הפרויקט"
+        - name: description
+          type: text
+          required: false
+          description: "תיאור מפורט של הפרויקט"
+        - name: customer_id
+          type: uuid
+          foreign_key: customers.id
+          nullable: true
+          description: "לקוח משויך (אופציונלי)"
+        - name: start_date
+          type: date
+          required: true
+          description: "תאריך התחלה"
+        - name: end_date
+          type: date
+          nullable: true
+          description: "תאריך סיום צפוי"
+        - name: estimated_hours
+          type: decimal
+          precision: 10
+          scale: 2
+          default: 0
+          description: "שעות מוערכות"
+        - name: actual_hours
+          type: decimal
+          precision: 10
+          scale: 2
+          default: 0
+          computed: "SUM(project_tasks.actual_hours) WHERE project_id = :id"
+          description: "שעות בפועל (מחושב ממשימות)"
+        - name: budget
+          type: decimal
+          precision: 12
+          scale: 2
+          default: 0
+          description: "תקציב מאושר"
+        - name: actual_cost
+          type: decimal
+          precision: 12
+          scale: 2
+          default: 0
+          computed: "SUM(project_budget_lines.actual_amount) WHERE project_id = :id"
+          description: "עלות בפועל (מחושב משורות תקציב)"
+        - name: status_id
+          type: enum
+          values: [planning, active, on_hold, completed, cancelled]
+          default: planning
+          required: true
+          description: "סטטוס הפרויקט"
+        - name: manager
+          type: uuid
+          foreign_key: users.id
+          required: true
+          description: "מנהל הפרויקט"
+        - name: priority
+          type: enum
+          values: [low, medium, high, critical]
+          default: medium
+          required: true
+          description: "עדיפות"
+        - name: created_at
+          type: datetime
+          auto_generated: true
+          description: "תאריך יצירה"
+        - name: updated_at
+          type: datetime
+          auto_generated: true
+          on_update: true
+          description: "תאריך עדכון אחרון"
+      indexes:
+        - fields: [project_number]
+          unique: true
+        - fields: [customer_id]
+        - fields: [manager]
+        - fields: [status_id]
+        - fields: [start_date, end_date]
+      business_rules:
+        - "end_date must be >= start_date when both are set"
+        - "status changes to completed only when all milestones are completed"
+        - "actual_hours is auto-computed from sum of project_tasks.actual_hours"
+        - "actual_cost is auto-computed from sum of project_budget_lines.actual_amount"
+        - "project_number is auto-generated on creation and immutable"
+
+    project_tasks:
+      table_name: project_tasks
+      type: transactional
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: project_id
+          type: uuid
+          foreign_key: projects.id
+          required: true
+          on_delete: cascade
+          description: "פרויקט משויך"
+        - name: name
+          type: string
+          max_length: 255
+          required: true
+          description: "שם המשימה"
+        - name: description
+          type: text
+          required: false
+          description: "תיאור המשימה"
+        - name: assigned_to
+          type: uuid
+          foreign_key: users.id
+          nullable: true
+          description: "משויך לעובד"
+        - name: start_date
+          type: date
+          required: false
+          description: "תאריך התחלה"
+        - name: due_date
+          type: date
+          required: false
+          description: "תאריך יעד"
+        - name: estimated_hours
+          type: decimal
+          precision: 8
+          scale: 2
+          default: 0
+          description: "שעות מוערכות"
+        - name: actual_hours
+          type: decimal
+          precision: 8
+          scale: 2
+          default: 0
+          description: "שעות בפועל"
+        - name: status_id
+          type: enum
+          values: [todo, in_progress, review, done, cancelled]
+          default: todo
+          required: true
+          description: "סטטוס המשימה"
+        - name: priority
+          type: enum
+          values: [low, medium, high, critical]
+          default: medium
+          required: true
+          description: "עדיפות"
+        - name: parent_task_id
+          type: uuid
+          foreign_key: project_tasks.id
+          nullable: true
+          self_referencing: true
+          description: "משימת אב (למשימות מקוננות)"
+        - name: sort_order
+          type: integer
+          default: 0
+          description: "סדר מיון"
+        - name: created_at
+          type: datetime
+          auto_generated: true
+          description: "תאריך יצירה"
+        - name: updated_at
+          type: datetime
+          auto_generated: true
+          on_update: true
+          description: "תאריך עדכון אחרון"
+      indexes:
+        - fields: [project_id]
+        - fields: [assigned_to]
+        - fields: [status_id]
+        - fields: [parent_task_id]
+        - fields: [project_id, sort_order]
+      business_rules:
+        - "due_date must be >= start_date when both are set"
+        - "parent_task_id cannot reference itself"
+        - "parent_task_id must belong to same project_id"
+        - "when status changes to done, actual_hours must be > 0"
+        - "changing status updates project.actual_hours aggregate"
+
+    project_milestones:
+      table_name: project_milestones
+      type: transactional
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: project_id
+          type: uuid
+          foreign_key: projects.id
+          required: true
+          on_delete: cascade
+          description: "פרויקט משויך"
+        - name: name
+          type: string
+          max_length: 255
+          required: true
+          description: "שם אבן הדרך"
+        - name: description
+          type: text
+          required: false
+          description: "תיאור"
+        - name: due_date
+          type: date
+          required: true
+          description: "תאריך יעד"
+        - name: completed_date
+          type: date
+          nullable: true
+          description: "תאריך השלמה בפועל"
+        - name: status_id
+          type: enum
+          values: [pending, completed, overdue]
+          default: pending
+          required: true
+          description: "סטטוס"
+        - name: deliverable
+          type: text
+          required: false
+          description: "תוצר נדרש"
+        - name: notes
+          type: text
+          required: false
+          description: "הערות"
+        - name: created_at
+          type: datetime
+          auto_generated: true
+          description: "תאריך יצירה"
+      indexes:
+        - fields: [project_id]
+        - fields: [due_date]
+        - fields: [status_id]
+      business_rules:
+        - "status auto-changes to overdue when due_date < today and status = pending"
+        - "completed_date is auto-set when status changes to completed"
+        - "when all milestones are completed, project status can be set to completed"
+
+    project_budget_lines:
+      table_name: project_budget_lines
+      type: transactional
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: project_id
+          type: uuid
+          foreign_key: projects.id
+          required: true
+          on_delete: cascade
+          description: "פרויקט משויך"
+        - name: category
+          type: string
+          max_length: 100
+          required: true
+          description: "קטגוריית תקציב (חומרים, כ\"א, קבלני משנה, נסיעות, אחר)"
+        - name: description
+          type: string
+          max_length: 255
+          required: true
+          description: "תיאור שורת תקציב"
+        - name: estimated_amount
+          type: decimal
+          precision: 12
+          scale: 2
+          default: 0
+          required: true
+          description: "סכום מוערך"
+        - name: actual_amount
+          type: decimal
+          precision: 12
+          scale: 2
+          default: 0
+          description: "סכום בפועל"
+        - name: notes
+          type: text
+          required: false
+          description: "הערות"
+      indexes:
+        - fields: [project_id]
+        - fields: [category]
+      business_rules:
+        - "sum of estimated_amount updates projects.budget"
+        - "sum of actual_amount updates projects.actual_cost"
+        - "variance = estimated_amount - actual_amount (computed on read)"
+
+  # ----------------------------------------------------------
+  # 7.3 PAGES
+  # ----------------------------------------------------------
+  pages:
+
+    # === 7.3.1 PROJECTS LIST ===
+    projects_list:
+      route: /projects/list
+      title: "רשימת פרויקטים"
+      type: list_page
+      entity: projects
+      layout: table_with_filters
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש לפי שם, מספר פרויקט או לקוח..."
+            searches_fields: [name, project_number, "customer.full_name"]
+          - component: filter_dropdown
+            key: status_filter
+            label: "סטטוס"
+            options_from: projects.status_id.values
+            multi_select: true
+          - component: filter_dropdown
+            key: manager_filter
+            label: "מנהל"
+            options_from: users
+            display_field: full_name
+            value_field: id
+          - component: filter_dropdown
+            key: priority_filter
+            label: "עדיפות"
+            options_from: projects.priority.values
+            multi_select: true
+          - component: filter_dropdown
+            key: customer_filter
+            label: "לקוח"
+            options_from: customers
+            display_field: full_name
+            value_field: id
+            searchable: true
+          - component: date_range_picker
+            key: date_filter
+            label: "טווח תאריכים"
+            applies_to: start_date
+        right:
+          - component: button
+            label: "פרויקט חדש"
+            icon: add
+            action: navigate
+            target: /projects/create
+            variant: primary
+          - component: button
+            label: "ייצוא"
+            icon: download
+            action: export
+            formats: [xlsx, csv, pdf]
+          - component: view_toggle
+            options: [table, cards]
+            default: table
+
+      table_columns:
+        - key: project_number
+          label: "מספר"
+          sortable: true
+          width: 100
+          link_to: "/projects/:id"
+        - key: name
+          label: "שם פרויקט"
+          sortable: true
+          width: 250
+          link_to: "/projects/:id"
+        - key: customer
+          label: "לקוח"
+          sortable: true
+          width: 180
+          display: "customer.full_name"
+          link_to: "/customers/:customer_id"
+        - key: manager
+          label: "מנהל"
+          sortable: true
+          width: 150
+          display: "manager_user.full_name"
+        - key: start_date
+          label: "תאריך התחלה"
+          sortable: true
+          width: 120
+          format: date
+        - key: end_date
+          label: "תאריך סיום"
+          sortable: true
+          width: 120
+          format: date
+        - key: progress
+          label: "התקדמות"
+          width: 120
+          type: progress_bar
+          computed: "COUNT(tasks WHERE status=done) / COUNT(tasks) * 100"
+          format: percentage
+        - key: budget
+          label: "תקציב"
+          sortable: true
+          width: 120
+          format: currency
+        - key: actual_cost
+          label: "עלות בפועל"
+          sortable: true
+          width: 120
+          format: currency
+        - key: budget_usage
+          label: "ניצול תקציב"
+          width: 100
+          type: progress_bar
+          computed: "(actual_cost / budget) * 100"
+          format: percentage
+          color_rules:
+            - condition: "value <= 80"
+              color: green
+            - condition: "value > 80 AND value <= 100"
+              color: orange
+            - condition: "value > 100"
+              color: red
+        - key: status_id
+          label: "סטטוס"
+          sortable: true
+          width: 120
+          type: status_badge
+          color_map:
+            planning: blue
+            active: green
+            on_hold: orange
+            completed: gray
+            cancelled: red
+        - key: priority
+          label: "עדיפות"
+          sortable: true
+          width: 100
+          type: priority_badge
+          color_map:
+            low: gray
+            medium: blue
+            high: orange
+            critical: red
+
+      row_actions:
+        - action: view
+          label: "צפייה"
+          icon: visibility
+          target: "/projects/:id"
+        - action: edit
+          label: "עריכה"
+          icon: edit
+          target: "/projects/:id/edit"
+        - action: duplicate
+          label: "שכפול"
+          icon: content_copy
+          type: inline
+        - action: delete
+          label: "מחיקה"
+          icon: delete
+          type: confirm_dialog
+          confirm_message: "האם למחוק את הפרויקט?"
+          condition: "status_id = planning"
+
+      bulk_actions:
+        - action: export_selected
+          label: "ייצוא נבחרים"
+          icon: download
+        - action: change_status
+          label: "שינוי סטטוס"
+          icon: swap_horiz
+          type: dropdown_select
+          options_from: projects.status_id.values
+        - action: assign_manager
+          label: "שיוך מנהל"
+          icon: person_add
+          type: user_select
+        - action: delete_selected
+          label: "מחיקת נבחרים"
+          icon: delete
+          type: confirm_dialog
+          condition: "all selected have status_id = planning"
+
+      empty_state:
+        icon: assignment
+        title: "אין פרויקטים עדיין"
+        description: "צור את הפרויקט הראשון שלך"
+        action:
+          label: "פרויקט חדש"
+          target: /projects/create
+
+      pagination:
+        type: server_side
+        default_page_size: 25
+        page_size_options: [10, 25, 50, 100]
+
+    # === 7.3.2 PROJECT CREATE ===
+    project_create:
+      route: /projects/create
+      title: "פרויקט חדש"
+      type: form_page
+      entity: projects
+      layout: single_column_form
+
+      form_sections:
+        - section: basic_info
+          title: "פרטים בסיסיים"
+          layout: two_column
+          fields:
+            - name: name
+              label: "שם הפרויקט"
+              type: text_input
+              required: true
+              placeholder: "הזן שם פרויקט"
+              max_length: 255
+              col_span: 2
+            - name: customer_id
+              label: "לקוח"
+              type: search_select
+              entity: customers
+              display_field: full_name
+              search_fields: [full_name, customer_number, company_name, phone]
+              required: false
+              allow_clear: true
+              create_new_target: /customers/create
+              col_span: 1
+            - name: manager
+              label: "מנהל פרויקט"
+              type: select
+              entity: users
+              display_field: full_name
+              filter: "is_active = true"
+              required: true
+              col_span: 1
+            - name: priority
+              label: "עדיפות"
+              type: select
+              options:
+                - value: low
+                  label: "נמוכה"
+                - value: medium
+                  label: "בינונית"
+                - value: high
+                  label: "גבוהה"
+                - value: critical
+                  label: "קריטית"
+              default: medium
+              required: true
+              col_span: 1
+            - name: status_id
+              label: "סטטוס"
+              type: select
+              options:
+                - value: planning
+                  label: "תכנון"
+                - value: active
+                  label: "פעיל"
+              default: planning
+              required: true
+              col_span: 1
+
+        - section: dates
+          title: "תאריכים"
+          layout: two_column
+          fields:
+            - name: start_date
+              label: "תאריך התחלה"
+              type: date_picker
+              required: true
+              default: today
+              col_span: 1
+            - name: end_date
+              label: "תאריך סיום צפוי"
+              type: date_picker
+              required: false
+              validation: "must be >= start_date"
+              col_span: 1
+
+        - section: budget_hours
+          title: "תקציב ושעות"
+          layout: two_column
+          fields:
+            - name: estimated_hours
+              label: "שעות מוערכות"
+              type: number_input
+              decimal_places: 2
+              min: 0
+              default: 0
+              col_span: 1
+            - name: budget
+              label: "תקציב"
+              type: currency_input
+              currency: ILS
+              decimal_places: 2
+              min: 0
+              default: 0
+              col_span: 1
+
+        - section: description
+          title: "תיאור"
+          layout: single_column
+          fields:
+            - name: description
+              label: "תיאור הפרויקט"
+              type: rich_text_editor
+              required: false
+              placeholder: "תיאור מפורט של הפרויקט, יעדים, היקף..."
+              col_span: 2
+
+      form_actions:
+        - action: save
+          label: "שמור"
+          variant: primary
+          icon: save
+          navigates_to: "/projects/:id"
+        - action: save_and_new
+          label: "שמור וצור חדש"
+          variant: secondary
+          navigates_to: /projects/create
+        - action: cancel
+          label: "ביטול"
+          variant: text
+          navigates_to: /projects/list
+
+    # === 7.3.3 PROJECT EDIT ===
+    project_edit:
+      route: "/projects/:id/edit"
+      title: "עריכת פרויקט"
+      type: form_page
+      entity: projects
+      layout: single_column_form
+      load_data: "projects WHERE id = :id"
+      form_sections: "same as project_create with all fields pre-populated"
+      additional_fields_on_edit:
+        - name: status_id
+          label: "סטטוס"
+          type: select
+          options:
+            - value: planning
+              label: "תכנון"
+            - value: active
+              label: "פעיל"
+            - value: on_hold
+              label: "מוקפא"
+            - value: completed
+              label: "הושלם"
+            - value: cancelled
+              label: "בוטל"
+          required: true
+      form_actions:
+        - action: save
+          label: "שמור שינויים"
+          variant: primary
+          icon: save
+          navigates_to: "/projects/:id"
+        - action: cancel
+          label: "ביטול"
+          variant: text
+          navigates_to: "/projects/:id"
+
+    # === 7.3.4 PROJECT DETAILS ===
+    project_details:
+      route: "/projects/:id"
+      title: "פרטי פרויקט"
+      type: detail_page
+      entity: projects
+      load_data: "projects WHERE id = :id JOIN customer, manager_user"
+
+      header:
+        layout: detail_header
+        elements:
+          - component: back_button
+            target: /projects/list
+          - component: title
+            display: "project.name"
+            subtitle: "project.project_number"
+          - component: status_badge
+            field: status_id
+            color_map:
+              planning: blue
+              active: green
+              on_hold: orange
+              completed: gray
+              cancelled: red
+          - component: priority_badge
+            field: priority
+          - component: action_buttons
+            actions:
+              - action: edit
+                label: "עריכה"
+                icon: edit
+                target: "/projects/:id/edit"
+              - action: duplicate
+                label: "שכפול"
+                icon: content_copy
+                type: action
+              - action: change_status
+                label: "שנה סטטוס"
+                icon: swap_horiz
+                type: dropdown
+                options_from: projects.status_id.values
+              - action: delete
+                label: "מחיקה"
+                icon: delete
+                type: confirm_dialog
+                confirm_message: "האם למחוק את הפרויקט?"
+                condition: "status_id = planning"
+              - action: export_pdf
+                label: "ייצוא PDF"
+                icon: picture_as_pdf
+
+      summary_cards:
+        - card: progress
+          label: "התקדמות"
+          value: "computed: COUNT(tasks WHERE status=done) / COUNT(tasks) * 100"
+          format: percentage
+          type: circular_progress
+        - card: budget_usage
+          label: "ניצול תקציב"
+          value: "computed: (actual_cost / budget) * 100"
+          format: percentage
+          sub_value: "actual_cost / budget"
+          sub_format: "currency / currency"
+        - card: hours
+          label: "שעות"
+          value: actual_hours
+          sub_value: "actual_hours / estimated_hours"
+          format: "decimal / decimal"
+        - card: tasks_summary
+          label: "משימות"
+          value: "computed: COUNT(tasks WHERE status=done) || '/' || COUNT(tasks)"
+          sub_value: "open: COUNT(tasks WHERE status IN (todo, in_progress, review))"
+        - card: milestones_summary
+          label: "אבני דרך"
+          value: "computed: COUNT(milestones WHERE status=completed) || '/' || COUNT(milestones)"
+          sub_value: "overdue: COUNT(milestones WHERE status=overdue)"
+        - card: days_remaining
+          label: "ימים שנותרו"
+          value: "computed: end_date - today()"
+          condition: "end_date IS NOT NULL"
+
+      tabs:
+        - tab: overview
+          label: "סקירה כללית"
+          icon: info
+          content:
+            sections:
+              - section: project_info
+                title: "פרטי פרויקט"
+                layout: detail_grid
+                fields:
+                  - label: "מספר פרויקט"
+                    value: project_number
+                  - label: "שם"
+                    value: name
+                  - label: "לקוח"
+                    value: "customer.full_name"
+                    link_to: "/customers/:customer_id"
+                  - label: "מנהל"
+                    value: "manager_user.full_name"
+                  - label: "עדיפות"
+                    value: priority
+                    type: priority_badge
+                  - label: "סטטוס"
+                    value: status_id
+                    type: status_badge
+                  - label: "תאריך התחלה"
+                    value: start_date
+                    format: date
+                  - label: "תאריך סיום"
+                    value: end_date
+                    format: date
+                  - label: "שעות מוערכות"
+                    value: estimated_hours
+                    format: decimal
+                  - label: "שעות בפועל"
+                    value: actual_hours
+                    format: decimal
+                  - label: "תקציב"
+                    value: budget
+                    format: currency
+                  - label: "עלות בפועל"
+                    value: actual_cost
+                    format: currency
+              - section: description
+                title: "תיאור"
+                layout: full_width
+                content:
+                  type: rich_text_display
+                  field: description
+
+        - tab: tasks
+          label: "משימות"
+          icon: checklist
+          content:
+            view_toggle:
+              options: [kanban, list]
+              default: kanban
+
+            kanban_view:
+              group_by: status_id
+              columns:
+                - key: todo
+                  label: "לביצוע"
+                  color: gray
+                - key: in_progress
+                  label: "בביצוע"
+                  color: blue
+                - key: review
+                  label: "בבדיקה"
+                  color: orange
+                - key: done
+                  label: "הושלם"
+                  color: green
+                - key: cancelled
+                  label: "בוטל"
+                  color: red
+              card_fields:
+                - name
+                - assigned_to_display: "assigned_user.full_name"
+                - due_date
+                - priority (as badge)
+                - estimated_hours
+              drag_drop: true
+              drag_updates_field: status_id
+              on_drag_creates_activity_log: true
+
+            list_view:
+              columns:
+                - key: name
+                  label: "משימה"
+                  sortable: true
+                  width: 250
+                - key: assigned_to
+                  label: "משויך ל"
+                  sortable: true
+                  width: 150
+                  display: "assigned_user.full_name"
+                - key: start_date
+                  label: "התחלה"
+                  sortable: true
+                  width: 110
+                  format: date
+                - key: due_date
+                  label: "יעד"
+                  sortable: true
+                  width: 110
+                  format: date
+                - key: estimated_hours
+                  label: "שעות מוערכות"
+                  sortable: true
+                  width: 100
+                  format: decimal
+                - key: actual_hours
+                  label: "שעות בפועל"
+                  sortable: true
+                  width: 100
+                  format: decimal
+                - key: priority
+                  label: "עדיפות"
+                  sortable: true
+                  width: 90
+                  type: priority_badge
+                - key: status_id
+                  label: "סטטוס"
+                  sortable: true
+                  width: 110
+                  type: status_badge
+
+            actions:
+              - action: add_task
+                label: "משימה חדשה"
+                icon: add
+                type: modal_form
+                form_fields:
+                  - name: name
+                    label: "שם המשימה"
+                    type: text_input
+                    required: true
+                  - name: description
+                    label: "תיאור"
+                    type: textarea
+                    required: false
+                  - name: assigned_to
+                    label: "משויך ל"
+                    type: select
+                    entity: users
+                    display_field: full_name
+                  - name: start_date
+                    label: "תאריך התחלה"
+                    type: date_picker
+                  - name: due_date
+                    label: "תאריך יעד"
+                    type: date_picker
+                  - name: estimated_hours
+                    label: "שעות מוערכות"
+                    type: number_input
+                    decimal_places: 2
+                  - name: priority
+                    label: "עדיפות"
+                    type: select
+                    options: [low, medium, high, critical]
+                    default: medium
+                  - name: parent_task_id
+                    label: "משימת אב"
+                    type: select
+                    entity: project_tasks
+                    filter: "project_id = :project_id"
+                    display_field: name
+                    allow_clear: true
+              - action: edit_task
+                label: "עריכה"
+                icon: edit
+                type: modal_form
+              - action: delete_task
+                label: "מחיקה"
+                icon: delete
+                type: confirm_dialog
+
+        - tab: milestones
+          label: "אבני דרך"
+          icon: flag
+          content:
+            view_type: timeline
+            entity: project_milestones
+            filter: "project_id = :id"
+            sort: due_date ASC
+
+            timeline_config:
+              date_field: due_date
+              label_field: name
+              status_field: status_id
+              color_map:
+                pending: blue
+                completed: green
+                overdue: red
+              show_completed_date: true
+              show_deliverable: true
+
+            table_fallback:
+              columns:
+                - key: name
+                  label: "אבן דרך"
+                  width: 200
+                - key: description
+                  label: "תיאור"
+                  width: 200
+                - key: due_date
+                  label: "תאריך יעד"
+                  width: 120
+                  format: date
+                - key: completed_date
+                  label: "תאריך השלמה"
+                  width: 120
+                  format: date
+                - key: status_id
+                  label: "סטטוס"
+                  width: 110
+                  type: status_badge
+                  color_map:
+                    pending: blue
+                    completed: green
+                    overdue: red
+                - key: deliverable
+                  label: "תוצר"
+                  width: 200
+                - key: notes
+                  label: "הערות"
+                  width: 200
+
+            actions:
+              - action: add_milestone
+                label: "אבן דרך חדשה"
+                icon: add
+                type: modal_form
+                form_fields:
+                  - name: name
+                    label: "שם"
+                    type: text_input
+                    required: true
+                  - name: description
+                    label: "תיאור"
+                    type: textarea
+                  - name: due_date
+                    label: "תאריך יעד"
+                    type: date_picker
+                    required: true
+                  - name: deliverable
+                    label: "תוצר נדרש"
+                    type: textarea
+                  - name: notes
+                    label: "הערות"
+                    type: textarea
+              - action: mark_complete
+                label: "סמן כהושלם"
+                icon: check_circle
+                sets: "status_id = completed, completed_date = today()"
+              - action: edit_milestone
+                label: "עריכה"
+                icon: edit
+                type: modal_form
+              - action: delete_milestone
+                label: "מחיקה"
+                icon: delete
+                type: confirm_dialog
+
+        - tab: budget
+          label: "תקציב"
+          icon: account_balance_wallet
+          content:
+            layout: chart_and_table
+
+            chart:
+              type: stacked_bar
+              title: "מוערך מול בפועל לפי קטגוריה"
+              x_axis: category
+              series:
+                - name: "מוערך"
+                  field: estimated_amount
+                  color: blue
+                - name: "בפועל"
+                  field: actual_amount
+                  color: green
+
+            summary_row:
+              - label: "סה\"כ מוערך"
+                value: "SUM(estimated_amount)"
+                format: currency
+              - label: "סה\"כ בפועל"
+                value: "SUM(actual_amount)"
+                format: currency
+              - label: "סטייה"
+                value: "SUM(estimated_amount) - SUM(actual_amount)"
+                format: currency
+                color_rules:
+                  - condition: "value >= 0"
+                    color: green
+                  - condition: "value < 0"
+                    color: red
+
+            table:
+              entity: project_budget_lines
+              filter: "project_id = :id"
+              columns:
+                - key: category
+                  label: "קטגוריה"
+                  width: 150
+                - key: description
+                  label: "תיאור"
+                  width: 250
+                - key: estimated_amount
+                  label: "מוערך"
+                  width: 130
+                  format: currency
+                - key: actual_amount
+                  label: "בפועל"
+                  width: 130
+                  format: currency
+                - key: variance
+                  label: "סטייה"
+                  width: 130
+                  computed: "estimated_amount - actual_amount"
+                  format: currency
+                  color_rules:
+                    - condition: "value >= 0"
+                      color: green
+                    - condition: "value < 0"
+                      color: red
+                - key: usage_percent
+                  label: "ניצול %"
+                  width: 100
+                  computed: "(actual_amount / estimated_amount) * 100"
+                  format: percentage
+                - key: notes
+                  label: "הערות"
+                  width: 200
+
+            actions:
+              - action: add_budget_line
+                label: "שורת תקציב חדשה"
+                icon: add
+                type: modal_form
+                form_fields:
+                  - name: category
+                    label: "קטגוריה"
+                    type: select
+                    options:
+                      - value: "חומרים"
+                        label: "חומרים"
+                      - value: "כוח אדם"
+                        label: "כוח אדם"
+                      - value: "קבלני משנה"
+                        label: "קבלני משנה"
+                      - value: "נסיעות"
+                        label: "נסיעות"
+                      - value: "ציוד"
+                        label: "ציוד"
+                      - value: "אחר"
+                        label: "אחר"
+                    required: true
+                  - name: description
+                    label: "תיאור"
+                    type: text_input
+                    required: true
+                  - name: estimated_amount
+                    label: "סכום מוערך"
+                    type: currency_input
+                    required: true
+                  - name: actual_amount
+                    label: "סכום בפועל"
+                    type: currency_input
+                    default: 0
+                  - name: notes
+                    label: "הערות"
+                    type: textarea
+              - action: edit_budget_line
+                label: "עריכה"
+                icon: edit
+                type: inline_edit
+              - action: delete_budget_line
+                label: "מחיקה"
+                icon: delete
+                type: confirm_dialog
+
+        - tab: files
+          label: "קבצים"
+          icon: folder
+          content:
+            entity: attachments
+            filter: "entity_type = project AND entity_id = :id"
+            view_type: file_grid
+
+            display_fields:
+              - file_name
+              - file_type
+              - uploaded_at
+              - uploaded_by
+
+            actions:
+              - action: upload_file
+                label: "העלאת קובץ"
+                icon: upload
+                type: file_upload
+                accept: "*/*"
+                max_size_mb: 50
+                multiple: true
+              - action: download_file
+                label: "הורדה"
+                icon: download
+              - action: preview_file
+                label: "תצוגה מקדימה"
+                icon: visibility
+                supported_types: [pdf, jpg, jpeg, png, gif]
+              - action: delete_file
+                label: "מחיקה"
+                icon: delete
+                type: confirm_dialog
+
+        - tab: team
+          label: "צוות"
+          icon: group
+          content:
+            layout: cards_grid
+            data_source: "DISTINCT users FROM project_tasks WHERE project_id = :id UNION manager"
+
+            card_fields:
+              - avatar: "user.avatar_url"
+              - name: "user.full_name"
+              - role_in_project: "CASE WHEN user.id = project.manager THEN 'מנהל פרויקט' ELSE 'חבר צוות' END"
+              - tasks_assigned: "COUNT(project_tasks WHERE assigned_to = user.id AND project_id = :id)"
+              - tasks_completed: "COUNT(project_tasks WHERE assigned_to = user.id AND project_id = :id AND status_id = done)"
+              - hours_logged: "SUM(project_tasks.actual_hours WHERE assigned_to = user.id AND project_id = :id)"
+
+        - tab: activity_log
+          label: "לוג פעילות"
+          icon: history
+          content:
+            entity: activity_logs
+            filter: "entity_type = project AND entity_id = :id"
+            view_type: timeline
+            sort: created_at DESC
+
+            timeline_fields:
+              - action_type
+              - actor
+              - created_at
+              - description_computed: "user.full_name + ' ' + action_type_label + ' ' + detail"
+              - old_value_json
+              - new_value_json
+
+    # === 7.3.5 PROJECT BOARD ===
+    project_board:
+      route: /projects/board
+      title: "לוח פרויקטים"
+      type: kanban_page
+      entity: projects
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש פרויקט..."
+            searches_fields: [name, project_number]
+          - component: filter_dropdown
+            key: manager_filter
+            label: "מנהל"
+            options_from: users
+            display_field: full_name
+          - component: filter_dropdown
+            key: priority_filter
+            label: "עדיפות"
+            options_from: projects.priority.values
+          - component: filter_dropdown
+            key: customer_filter
+            label: "לקוח"
+            options_from: customers
+            display_field: full_name
+            searchable: true
+        right:
+          - component: button
+            label: "פרויקט חדש"
+            icon: add
+            action: navigate
+            target: /projects/create
+            variant: primary
+
+      kanban:
+        group_by: status_id
+        columns:
+          - key: planning
+            label: "תכנון"
+            color: blue
+          - key: active
+            label: "פעיל"
+            color: green
+          - key: on_hold
+            label: "מוקפא"
+            color: orange
+          - key: completed
+            label: "הושלם"
+            color: gray
+          - key: cancelled
+            label: "בוטל"
+            color: red
+        card_display:
+          - field: name
+            type: title
+            link_to: "/projects/:id"
+          - field: "customer.full_name"
+            type: subtitle
+            link_to: "/customers/:customer_id"
+          - field: progress
+            type: progress_bar
+            computed: "COUNT(tasks WHERE status=done) / COUNT(tasks) * 100"
+            format: percentage
+          - field: budget_usage
+            type: progress_bar
+            computed: "(actual_cost / budget) * 100"
+            format: percentage
+            color_rules:
+              - condition: "value <= 80"
+                color: green
+              - condition: "value > 80 AND value <= 100"
+                color: orange
+              - condition: "value > 100"
+                color: red
+          - field: manager
+            type: avatar
+            display: "manager_user.full_name"
+          - field: priority
+            type: priority_badge
+          - field: end_date
+            type: date
+            show_overdue_warning: true
+        drag_drop: true
+        drag_updates_field: status_id
+        on_card_click: "navigate to /projects/:id"
+
+    # === 7.3.6 ALL MILESTONES ===
+    milestones_global:
+      route: /projects/milestones
+      title: "כל אבני הדרך"
+      type: list_page
+      entity: project_milestones
+      layout: table_with_filters
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש אבן דרך..."
+            searches_fields: [name, "project.name"]
+          - component: filter_dropdown
+            key: project_filter
+            label: "פרויקט"
+            options_from: projects
+            display_field: name
+            searchable: true
+          - component: filter_dropdown
+            key: status_filter
+            label: "סטטוס"
+            options: [pending, completed, overdue]
+          - component: date_range_picker
+            key: due_date_filter
+            label: "תאריך יעד"
+            applies_to: due_date
+        right:
+          - component: view_toggle
+            options: [table, timeline]
+            default: table
+
+      table_columns:
+        - key: "project.name"
+          label: "פרויקט"
+          sortable: true
+          width: 200
+          link_to: "/projects/:project_id"
+        - key: name
+          label: "אבן דרך"
+          sortable: true
+          width: 200
+        - key: due_date
+          label: "תאריך יעד"
+          sortable: true
+          width: 120
+          format: date
+        - key: completed_date
+          label: "תאריך השלמה"
+          sortable: true
+          width: 120
+          format: date
+        - key: status_id
+          label: "סטטוס"
+          sortable: true
+          width: 110
+          type: status_badge
+          color_map:
+            pending: blue
+            completed: green
+            overdue: red
+        - key: deliverable
+          label: "תוצר"
+          width: 250
+        - key: notes
+          label: "הערות"
+          width: 200
+
+    # === 7.3.7 ALL TASKS ===
+    tasks_global:
+      route: /projects/tasks
+      title: "כל המשימות"
+      type: list_page
+      entity: project_tasks
+      layout: table_with_filters
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש משימה..."
+            searches_fields: [name, "project.name"]
+          - component: filter_dropdown
+            key: project_filter
+            label: "פרויקט"
+            options_from: projects
+            display_field: name
+            searchable: true
+          - component: filter_dropdown
+            key: status_filter
+            label: "סטטוס"
+            options: [todo, in_progress, review, done, cancelled]
+            multi_select: true
+          - component: filter_dropdown
+            key: assigned_filter
+            label: "משויך ל"
+            options_from: users
+            display_field: full_name
+          - component: filter_dropdown
+            key: priority_filter
+            label: "עדיפות"
+            options: [low, medium, high, critical]
+            multi_select: true
+          - component: date_range_picker
+            key: due_date_filter
+            label: "תאריך יעד"
+            applies_to: due_date
+        right:
+          - component: view_toggle
+            options: [table, kanban]
+            default: table
+
+      table_columns:
+        - key: "project.name"
+          label: "פרויקט"
+          sortable: true
+          width: 180
+          link_to: "/projects/:project_id"
+        - key: name
+          label: "משימה"
+          sortable: true
+          width: 220
+        - key: assigned_to
+          label: "משויך ל"
+          sortable: true
+          width: 150
+          display: "assigned_user.full_name"
+        - key: start_date
+          label: "התחלה"
+          sortable: true
+          width: 110
+          format: date
+        - key: due_date
+          label: "יעד"
+          sortable: true
+          width: 110
+          format: date
+        - key: estimated_hours
+          label: "שעות מוערכות"
+          sortable: true
+          width: 100
+        - key: actual_hours
+          label: "שעות בפועל"
+          sortable: true
+          width: 100
+        - key: priority
+          label: "עדיפות"
+          sortable: true
+          width: 90
+          type: priority_badge
+        - key: status_id
+          label: "סטטוס"
+          sortable: true
+          width: 110
+          type: status_badge
+
+    # === 7.3.8 PROJECT BUDGET OVERVIEW ===
+    project_budget_overview:
+      route: /projects/budget
+      title: "תקציב פרויקטים"
+      type: report_page
+
+      toolbar:
+        left:
+          - component: filter_dropdown
+            key: status_filter
+            label: "סטטוס פרויקט"
+            options: [planning, active, on_hold, completed, cancelled]
+            multi_select: true
+          - component: filter_dropdown
+            key: manager_filter
+            label: "מנהל"
+            options_from: users
+            display_field: full_name
+
+      summary_cards:
+        - label: "סה\"כ תקציב"
+          value: "SUM(projects.budget)"
+          format: currency
+        - label: "סה\"כ עלות בפועל"
+          value: "SUM(projects.actual_cost)"
+          format: currency
+        - label: "סטייה כוללת"
+          value: "SUM(projects.budget) - SUM(projects.actual_cost)"
+          format: currency
+        - label: "ניצול ממוצע"
+          value: "AVG(projects.actual_cost / projects.budget) * 100"
+          format: percentage
+
+      table_columns:
+        - key: project_number
+          label: "מספר"
+          sortable: true
+          width: 100
+          link_to: "/projects/:id"
+        - key: name
+          label: "פרויקט"
+          sortable: true
+          width: 200
+          link_to: "/projects/:id"
+        - key: manager
+          label: "מנהל"
+          width: 150
+          display: "manager_user.full_name"
+        - key: budget
+          label: "תקציב"
+          sortable: true
+          width: 130
+          format: currency
+        - key: actual_cost
+          label: "עלות בפועל"
+          sortable: true
+          width: 130
+          format: currency
+        - key: variance
+          label: "סטייה"
+          sortable: true
+          width: 130
+          computed: "budget - actual_cost"
+          format: currency
+          color_rules:
+            - condition: "value >= 0"
+              color: green
+            - condition: "value < 0"
+              color: red
+        - key: usage_percent
+          label: "ניצול %"
+          sortable: true
+          width: 100
+          computed: "(actual_cost / budget) * 100"
+          format: percentage
+        - key: status_id
+          label: "סטטוס"
+          sortable: true
+          width: 110
+          type: status_badge
+
+    # === 7.3.9 PROJECT PROFITABILITY ===
+    project_profitability:
+      route: /projects/profitability
+      title: "רווחיות פרויקטים"
+      type: report_page
+
+      toolbar:
+        left:
+          - component: filter_dropdown
+            key: status_filter
+            label: "סטטוס"
+            options: [active, completed]
+            multi_select: true
+          - component: filter_dropdown
+            key: customer_filter
+            label: "לקוח"
+            options_from: customers
+            display_field: full_name
+            searchable: true
+          - component: date_range_picker
+            key: date_filter
+            label: "תקופה"
+
+      summary_cards:
+        - label: "סה\"כ הכנסות"
+          value: "SUM(linked income documents.total_amount)"
+          format: currency
+        - label: "סה\"כ עלויות"
+          value: "SUM(projects.actual_cost)"
+          format: currency
+        - label: "רווח גולמי"
+          value: "SUM(income) - SUM(cost)"
+          format: currency
+        - label: "מרווח ממוצע"
+          value: "((SUM(income) - SUM(cost)) / SUM(income)) * 100"
+          format: percentage
+
+      table_columns:
+        - key: project_number
+          label: "מספר"
+          width: 100
+          link_to: "/projects/:id"
+        - key: name
+          label: "פרויקט"
+          width: 200
+          link_to: "/projects/:id"
+        - key: customer
+          label: "לקוח"
+          width: 150
+          display: "customer.full_name"
+          link_to: "/customers/:customer_id"
+        - key: revenue
+          label: "הכנסות"
+          width: 130
+          format: currency
+          computed: "SUM(linked income documents.total_amount)"
+        - key: cost
+          label: "עלויות"
+          width: 130
+          format: currency
+          value: actual_cost
+        - key: profit
+          label: "רווח"
+          width: 130
+          format: currency
+          computed: "revenue - cost"
+          color_rules:
+            - condition: "value >= 0"
+              color: green
+            - condition: "value < 0"
+              color: red
+        - key: margin
+          label: "מרווח %"
+          width: 100
+          format: percentage
+          computed: "((revenue - cost) / revenue) * 100"
+        - key: status_id
+          label: "סטטוס"
+          width: 110
+          type: status_badge
+
+  # ----------------------------------------------------------
+  # 7.4 NAVIGATION MAP
+  # ----------------------------------------------------------
+  navigation_map:
+    projects_list:
+      navigates_to:
+        - target: /projects/create
+          trigger: "click create button"
+        - target: "/projects/:id"
+          trigger: "click project row"
+        - target: "/projects/:id/edit"
+          trigger: "click edit action"
+        - target: "/customers/:customer_id"
+          trigger: "click customer name"
+    project_details:
+      navigates_to:
+        - target: "/projects/:id/edit"
+          trigger: "click edit button"
+        - target: "/customers/:customer_id"
+          trigger: "click customer name in overview"
+        - target: /projects/list
+          trigger: "click back button"
+    project_board:
+      navigates_to:
+        - target: "/projects/:id"
+          trigger: "click card"
+        - target: /projects/create
+          trigger: "click create button"
+        - target: "/customers/:customer_id"
+          trigger: "click customer on card"
+
+# ============================================================
+# MODULE 8: PROCUREMENT
+# ============================================================
+module_8_procurement:
+  module_key: procurement
+  icon: shopping_cart
+  label: "רכש"
+  route: /procurement
+  priority: high
+  purpose: "דרישות רכש, הזמנות רכש, קבלת סחורה/שירות, התאמות ומעקב"
+
+  # ----------------------------------------------------------
+  # 8.1 SIDEBAR SUBMENUS
+  # ----------------------------------------------------------
+  submenus:
+    - key: purchase_requests
+      label: "דרישות רכש"
+      route: /procurement/requests
+      icon: request_quote
+    - key: purchase_orders
+      label: "הזמנות רכש"
+      route: /procurement/orders
+      icon: shopping_cart
+    - key: goods_receipts
+      label: "קבלת סחורה"
+      route: /procurement/receipts
+      icon: inventory
+    - key: supplier_invoices
+      label: "חשבוניות ספק"
+      route: /procurement/supplier-invoices
+      icon: receipt
+    - key: procurement_approvals
+      label: "אישורים"
+      route: /procurement/approvals
+      icon: approval
+
+  # ----------------------------------------------------------
+  # 8.2 PROCUREMENT FLOW
+  # ----------------------------------------------------------
+  procurement_flow:
+    description: "תהליך רכש מלא מדרישה ועד תשלום"
+    steps:
+      - step: 1
+        entity: purchase_requests
+        label: "דרישת רכש"
+        creates: purchase_request
+        status_flow: [draft, pending_approval, approved, rejected, converted]
+      - step: 2
+        entity: purchase_orders
+        label: "הזמנת רכש"
+        created_from: purchase_request (when approved)
+        creates: purchase_order
+        status_flow: [draft, sent, confirmed, partially_received, received, cancelled]
+        linked_via: document_links (purchase_request_id on purchase_order)
+      - step: 3
+        entity: goods_receipts
+        label: "קבלת סחורה"
+        created_from: purchase_order
+        creates: goods_receipt
+        status_flow: [draft, received, inspected, accepted, rejected]
+        linked_via: document_links (purchase_order_id on goods_receipt)
+      - step: 4
+        entity: documents
+        label: "חשבונית ספק"
+        created_from: goods_receipt / purchase_order
+        creates: "document with direction=expense, document_type=expense_invoice"
+        linked_via: document_links (link_type=based_on)
+
+  # ----------------------------------------------------------
+  # 8.3 ENTITIES
+  # ----------------------------------------------------------
+  entities:
+
+    purchase_requests:
+      table_name: purchase_requests
+      type: transactional
+      auto_number:
+        prefix: "PRQ-"
+        padding: 5
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: request_number
+          type: string
+          auto_generated: true
+          unique: true
+          format: "PRQ-00001"
+          description: "מספר דרישת רכש אוטומטי"
+        - name: requested_by
+          type: uuid
+          foreign_key: users.id
+          required: true
+          description: "מבקש"
+        - name: department
+          type: string
+          max_length: 100
+          required: false
+          description: "מחלקה"
+        - name: request_date
+          type: date
+          required: true
+          default: today
+          description: "תאריך דרישה"
+        - name: needed_by
+          type: date
+          required: false
+          description: "נדרש עד תאריך"
+        - name: justification
+          type: text
+          required: false
+          description: "הצדקה / סיבת הרכש"
+        - name: total_estimated
+          type: decimal
+          precision: 12
+          scale: 2
+          default: 0
+          computed: "SUM(purchase_request_items.estimated_total)"
+          description: "סה\"כ מוערך"
+        - name: status_id
+          type: enum
+          values: [draft, pending_approval, approved, rejected, converted]
+          default: draft
+          required: true
+          description: "סטטוס"
+        - name: approved_by
+          type: uuid
+          foreign_key: users.id
+          nullable: true
+          description: "אושר על ידי"
+        - name: approved_at
+          type: datetime
+          nullable: true
+          description: "תאריך אישור"
+        - name: notes
+          type: text
+          required: false
+          description: "הערות"
+        - name: created_at
+          type: datetime
+          auto_generated: true
+        - name: updated_at
+          type: datetime
+          auto_generated: true
+          on_update: true
+      indexes:
+        - fields: [request_number]
+          unique: true
+        - fields: [requested_by]
+        - fields: [status_id]
+        - fields: [request_date]
+      business_rules:
+        - "total_estimated is auto-computed from items"
+        - "status change to pending_approval requires at least one item"
+        - "status change to approved sets approved_by and approved_at"
+        - "status change to converted creates purchase_order"
+        - "only users with approve_purchase_orders permission can approve"
+
+    purchase_request_items:
+      table_name: purchase_request_items
+      type: line_items
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: purchase_request_id
+          type: uuid
+          foreign_key: purchase_requests.id
+          required: true
+          on_delete: cascade
+        - name: product_id
+          type: uuid
+          foreign_key: products.id
+          nullable: true
+          description: "מוצר מהקטלוג (אופציונלי)"
+        - name: description
+          type: string
+          max_length: 500
+          required: true
+          description: "תיאור הפריט"
+        - name: quantity
+          type: decimal
+          precision: 10
+          scale: 2
+          required: true
+          description: "כמות"
+        - name: estimated_unit_price
+          type: decimal
+          precision: 10
+          scale: 2
+          required: true
+          description: "מחיר יחידה מוערך"
+        - name: estimated_total
+          type: decimal
+          precision: 12
+          scale: 2
+          computed: "quantity * estimated_unit_price"
+          description: "סה\"כ מוערך"
+        - name: preferred_supplier_id
+          type: uuid
+          foreign_key: suppliers.id
+          nullable: true
+          description: "ספק מועדף"
+        - name: sort_order
+          type: integer
+          default: 0
+      indexes:
+        - fields: [purchase_request_id]
+        - fields: [product_id]
+
+    purchase_orders:
+      table_name: purchase_orders
+      type: transactional
+      auto_number:
+        prefix: "PO-"
+        padding: 5
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: order_number
+          type: string
+          auto_generated: true
+          unique: true
+          format: "PO-00001"
+          description: "מספר הזמנת רכש אוטומטי"
+        - name: supplier_id
+          type: uuid
+          foreign_key: suppliers.id
+          required: true
+          description: "ספק"
+        - name: purchase_request_id
+          type: uuid
+          foreign_key: purchase_requests.id
+          nullable: true
+          description: "דרישת רכש מקורית"
+        - name: order_date
+          type: date
+          required: true
+          default: today
+          description: "תאריך הזמנה"
+        - name: expected_delivery
+          type: date
+          required: false
+          description: "תאריך אספקה צפוי"
+        - name: subtotal
+          type: decimal
+          precision: 12
+          scale: 2
+          default: 0
+          computed: "SUM(purchase_order_items.line_total)"
+          description: "סכום לפני מע\"מ"
+        - name: tax_amount
+          type: decimal
+          precision: 12
+          scale: 2
+          default: 0
+          computed: "SUM(purchase_order_items.quantity * purchase_order_items.unit_price * purchase_order_items.tax_rate / 100)"
+          description: "סכום מע\"מ"
+        - name: total_amount
+          type: decimal
+          precision: 12
+          scale: 2
+          default: 0
+          computed: "subtotal + tax_amount"
+          description: "סה\"כ כולל מע\"מ"
+        - name: status_id
+          type: enum
+          values: [draft, sent, confirmed, partially_received, received, cancelled]
+          default: draft
+          required: true
+          description: "סטטוס"
+        - name: delivery_address
+          type: text
+          required: false
+          description: "כתובת אספקה"
+        - name: notes
+          type: text
+          required: false
+          description: "הערות"
+        - name: created_by
+          type: uuid
+          foreign_key: users.id
+          required: true
+          description: "נוצר על ידי"
+        - name: created_at
+          type: datetime
+          auto_generated: true
+        - name: updated_at
+          type: datetime
+          auto_generated: true
+          on_update: true
+      indexes:
+        - fields: [order_number]
+          unique: true
+        - fields: [supplier_id]
+        - fields: [purchase_request_id]
+        - fields: [status_id]
+        - fields: [order_date]
+      business_rules:
+        - "totals auto-computed from items"
+        - "status changes to partially_received when some items received"
+        - "status changes to received when all items fully received"
+        - "creates document_link to purchase_request when purchase_request_id is set"
+
+    purchase_order_items:
+      table_name: purchase_order_items
+      type: line_items
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: purchase_order_id
+          type: uuid
+          foreign_key: purchase_orders.id
+          required: true
+          on_delete: cascade
+        - name: product_id
+          type: uuid
+          foreign_key: products.id
+          required: true
+          description: "מוצר"
+        - name: description
+          type: string
+          max_length: 500
+          required: true
+          description: "תיאור"
+        - name: quantity
+          type: decimal
+          precision: 10
+          scale: 2
+          required: true
+          description: "כמות"
+        - name: unit_price
+          type: decimal
+          precision: 10
+          scale: 2
+          required: true
+          description: "מחיר יחידה"
+        - name: tax_rate
+          type: decimal
+          precision: 5
+          scale: 2
+          default: 17.00
+          description: "אחוז מע\"מ"
+        - name: line_total
+          type: decimal
+          precision: 12
+          scale: 2
+          computed: "quantity * unit_price"
+          description: "סה\"כ שורה (לפני מע\"מ)"
+        - name: received_quantity
+          type: decimal
+          precision: 10
+          scale: 2
+          default: 0
+          description: "כמות שהתקבלה"
+        - name: sort_order
+          type: integer
+          default: 0
+      indexes:
+        - fields: [purchase_order_id]
+        - fields: [product_id]
+
+    goods_receipts:
+      table_name: goods_receipts
+      type: transactional
+      auto_number:
+        prefix: "GR-"
+        padding: 5
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: receipt_number
+          type: string
+          auto_generated: true
+          unique: true
+          format: "GR-00001"
+          description: "מספר קבלת סחורה אוטומטי"
+        - name: purchase_order_id
+          type: uuid
+          foreign_key: purchase_orders.id
+          required: true
+          description: "הזמנת רכש"
+        - name: supplier_id
+          type: uuid
+          foreign_key: suppliers.id
+          required: true
+          description: "ספק"
+        - name: receipt_date
+          type: date
+          required: true
+          default: today
+          description: "תאריך קבלה"
+        - name: warehouse_id
+          type: uuid
+          foreign_key: warehouses.id
+          required: true
+          description: "מחסן יעד"
+        - name: status_id
+          type: enum
+          values: [draft, received, inspected, accepted, rejected]
+          default: draft
+          required: true
+          description: "סטטוס"
+        - name: notes
+          type: text
+          required: false
+          description: "הערות"
+        - name: received_by
+          type: uuid
+          foreign_key: users.id
+          required: true
+          description: "התקבל על ידי"
+        - name: created_at
+          type: datetime
+          auto_generated: true
+      indexes:
+        - fields: [receipt_number]
+          unique: true
+        - fields: [purchase_order_id]
+        - fields: [supplier_id]
+        - fields: [warehouse_id]
+        - fields: [status_id]
+      business_rules:
+        - "receipt accepted updates purchase_order_items.received_quantity"
+        - "receipt accepted creates stock_movement (type=in)"
+        - "receipt accepted updates stock_levels"
+        - "when all PO items fully received, PO status changes to received"
+
+    goods_receipt_items:
+      table_name: goods_receipt_items
+      type: line_items
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: goods_receipt_id
+          type: uuid
+          foreign_key: goods_receipts.id
+          required: true
+          on_delete: cascade
+        - name: purchase_order_item_id
+          type: uuid
+          foreign_key: purchase_order_items.id
+          required: true
+          description: "שורת הזמנת רכש"
+        - name: product_id
+          type: uuid
+          foreign_key: products.id
+          required: true
+          description: "מוצר"
+        - name: quantity_ordered
+          type: decimal
+          precision: 10
+          scale: 2
+          description: "כמות שהוזמנה"
+        - name: quantity_received
+          type: decimal
+          precision: 10
+          scale: 2
+          required: true
+          description: "כמות שהתקבלה"
+        - name: quality_status
+          type: enum
+          values: [pending, passed, failed]
+          default: pending
+          description: "סטטוס בדיקת איכות"
+        - name: notes
+          type: text
+          required: false
+          description: "הערות"
+        - name: sort_order
+          type: integer
+          default: 0
+      indexes:
+        - fields: [goods_receipt_id]
+        - fields: [purchase_order_item_id]
+        - fields: [product_id]
+
+  # ----------------------------------------------------------
+  # 8.4 PAGES
+  # ----------------------------------------------------------
+  pages:
+
+    # === 8.4.1 PURCHASE REQUESTS LIST ===
+    purchase_requests_list:
+      route: /procurement/requests
+      title: "דרישות רכש"
+      type: list_page
+      entity: purchase_requests
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש לפי מספר דרישה, מבקש..."
+            searches_fields: [request_number, "requested_user.full_name", department]
+          - component: filter_dropdown
+            key: status_filter
+            label: "סטטוס"
+            options:
+              - value: draft
+                label: "טיוטה"
+              - value: pending_approval
+                label: "ממתין לאישור"
+              - value: approved
+                label: "מאושר"
+              - value: rejected
+                label: "נדחה"
+              - value: converted
+                label: "הומר להזמנה"
+            multi_select: true
+          - component: filter_dropdown
+            key: requested_by_filter
+            label: "מבקש"
+            options_from: users
+            display_field: full_name
+          - component: date_range_picker
+            key: date_filter
+            label: "תאריך דרישה"
+            applies_to: request_date
+        right:
+          - component: button
+            label: "דרישת רכש חדשה"
+            icon: add
+            action: navigate
+            target: /procurement/requests/create
+            variant: primary
+          - component: button
+            label: "ייצוא"
+            icon: download
+            action: export
+            formats: [xlsx, csv, pdf]
+
+      table_columns:
+        - key: request_number
+          label: "מספר דרישה"
+          sortable: true
+          width: 130
+          link_to: "/procurement/requests/:id"
+        - key: requested_by
+          label: "מבקש"
+          sortable: true
+          width: 150
+          display: "requested_user.full_name"
+        - key: department
+          label: "מחלקה"
+          sortable: true
+          width: 120
+        - key: request_date
+          label: "תאריך דרישה"
+          sortable: true
+          width: 120
+          format: date
+        - key: needed_by
+          label: "נדרש עד"
+          sortable: true
+          width: 120
+          format: date
+        - key: total_estimated
+          label: "סכום מוערך"
+          sortable: true
+          width: 130
+          format: currency
+        - key: status_id
+          label: "סטטוס"
+          sortable: true
+          width: 130
+          type: status_badge
+          color_map:
+            draft: gray
+            pending_approval: orange
+            approved: green
+            rejected: red
+            converted: blue
+        - key: approved_by
+          label: "אושר ע\"י"
+          width: 150
+          display: "approver_user.full_name"
+
+      row_actions:
+        - action: view
+          label: "צפייה"
+          icon: visibility
+          target: "/procurement/requests/:id"
+        - action: edit
+          label: "עריכה"
+          icon: edit
+          target: "/procurement/requests/:id/edit"
+          condition: "status_id IN (draft)"
+        - action: submit_for_approval
+          label: "שלח לאישור"
+          icon: send
+          type: action
+          sets: "status_id = pending_approval"
+          condition: "status_id = draft"
+        - action: approve
+          label: "אשר"
+          icon: check_circle
+          type: action
+          sets: "status_id = approved, approved_by = current_user, approved_at = now()"
+          condition: "status_id = pending_approval"
+          permission: approve_purchase_orders
+        - action: reject
+          label: "דחה"
+          icon: cancel
+          type: confirm_dialog
+          sets: "status_id = rejected"
+          condition: "status_id = pending_approval"
+          permission: approve_purchase_orders
+        - action: convert_to_po
+          label: "המר להזמנת רכש"
+          icon: transform
+          target: "/procurement/orders/create?from_request=:id"
+          condition: "status_id = approved"
+        - action: delete
+          label: "מחיקה"
+          icon: delete
+          type: confirm_dialog
+          condition: "status_id = draft"
+
+    # === 8.4.2 PURCHASE REQUEST CREATE ===
+    purchase_request_create:
+      route: /procurement/requests/create
+      title: "דרישת רכש חדשה"
+      type: form_page
+      entity: purchase_requests
+
+      form_sections:
+        - section: header
+          title: "פרטי דרישה"
+          layout: two_column
+          fields:
+            - name: requested_by
+              label: "מבקש"
+              type: select
+              entity: users
+              display_field: full_name
+              default: current_user
+              required: true
+              col_span: 1
+            - name: department
+              label: "מחלקה"
+              type: text_input
+              max_length: 100
+              col_span: 1
+            - name: request_date
+              label: "תאריך דרישה"
+              type: date_picker
+              default: today
+              required: true
+              col_span: 1
+            - name: needed_by
+              label: "נדרש עד תאריך"
+              type: date_picker
+              col_span: 1
+            - name: justification
+              label: "הצדקה / סיבה"
+              type: textarea
+              rows: 3
+              col_span: 2
+
+        - section: items
+          title: "פריטים"
+          layout: editable_table
+          entity: purchase_request_items
+          columns:
+            - name: product_id
+              label: "מוצר"
+              type: search_select
+              entity: products
+              display_field: name
+              search_fields: [name, sku]
+              width: 200
+              on_select_auto_fill:
+                description: "product.name"
+                estimated_unit_price: "product.default_price"
+            - name: description
+              label: "תיאור"
+              type: text_input
+              width: 250
+              required: true
+            - name: quantity
+              label: "כמות"
+              type: number_input
+              decimal_places: 2
+              width: 100
+              required: true
+            - name: estimated_unit_price
+              label: "מחיר יחידה מוערך"
+              type: currency_input
+              width: 140
+              required: true
+            - name: estimated_total
+              label: "סה\"כ"
+              type: computed
+              formula: "quantity * estimated_unit_price"
+              width: 130
+              format: currency
+              read_only: true
+            - name: preferred_supplier_id
+              label: "ספק מועדף"
+              type: search_select
+              entity: suppliers
+              display_field: full_name
+              width: 180
+          row_actions:
+            - action: add_row
+              label: "הוסף שורה"
+              icon: add
+            - action: delete_row
+              label: "מחק שורה"
+              icon: delete
+          footer:
+            - label: "סה\"כ מוערך"
+              value: "SUM(estimated_total)"
+              format: currency
+
+        - section: notes
+          title: "הערות"
+          layout: single_column
+          fields:
+            - name: notes
+              label: "הערות"
+              type: textarea
+              rows: 3
+
+      form_actions:
+        - action: save_draft
+          label: "שמור כטיוטה"
+          variant: secondary
+          sets: "status_id = draft"
+          navigates_to: "/procurement/requests/:id"
+        - action: submit_for_approval
+          label: "שלח לאישור"
+          variant: primary
+          sets: "status_id = pending_approval"
+          navigates_to: "/procurement/requests/:id"
+        - action: cancel
+          label: "ביטול"
+          variant: text
+          navigates_to: /procurement/requests
+
+    # === 8.4.3 PURCHASE REQUEST DETAILS ===
+    purchase_request_details:
+      route: "/procurement/requests/:id"
+      title: "פרטי דרישת רכש"
+      type: detail_page
+      entity: purchase_requests
+
+      header:
+        layout: detail_header
+        elements:
+          - component: back_button
+            target: /procurement/requests
+          - component: title
+            display: "request_number"
+          - component: status_badge
+            field: status_id
+            color_map:
+              draft: gray
+              pending_approval: orange
+              approved: green
+              rejected: red
+              converted: blue
+          - component: action_buttons
+            actions:
+              - action: edit
+                label: "עריכה"
+                icon: edit
+                target: "/procurement/requests/:id/edit"
+                condition: "status_id = draft"
+              - action: submit_for_approval
+                label: "שלח לאישור"
+                icon: send
+                condition: "status_id = draft"
+              - action: approve
+                label: "אשר"
+                icon: check_circle
+                condition: "status_id = pending_approval"
+                permission: approve_purchase_orders
+              - action: reject
+                label: "דחה"
+                icon: cancel
+                condition: "status_id = pending_approval"
+                permission: approve_purchase_orders
+              - action: convert_to_po
+                label: "המר להזמנת רכש"
+                icon: transform
+                target: "/procurement/orders/create?from_request=:id"
+                condition: "status_id = approved"
+              - action: print
+                label: "הדפסה"
+                icon: print
+              - action: export_pdf
+                label: "ייצוא PDF"
+                icon: picture_as_pdf
+
+      tabs:
+        - tab: general_info
+          label: "פרטים"
+          icon: info
+          content:
+            sections:
+              - section: request_details
+                title: "פרטי דרישה"
+                layout: detail_grid
+                fields:
+                  - label: "מספר דרישה"
+                    value: request_number
+                  - label: "מבקש"
+                    value: "requested_user.full_name"
+                  - label: "מחלקה"
+                    value: department
+                  - label: "תאריך דרישה"
+                    value: request_date
+                    format: date
+                  - label: "נדרש עד"
+                    value: needed_by
+                    format: date
+                  - label: "סה\"כ מוערך"
+                    value: total_estimated
+                    format: currency
+                  - label: "סטטוס"
+                    value: status_id
+                    type: status_badge
+                  - label: "אושר ע\"י"
+                    value: "approver_user.full_name"
+                  - label: "תאריך אישור"
+                    value: approved_at
+                    format: datetime
+              - section: justification
+                title: "הצדקה"
+                content:
+                  type: text_display
+                  field: justification
+
+        - tab: items
+          label: "פריטים"
+          icon: list
+          content:
+            entity: purchase_request_items
+            filter: "purchase_request_id = :id"
+            type: table
+            editable: "status_id = draft"
+            columns:
+              - key: product
+                label: "מוצר"
+                width: 200
+                display: "product.name"
+              - key: description
+                label: "תיאור"
+                width: 250
+              - key: quantity
+                label: "כמות"
+                width: 100
+                format: decimal
+              - key: estimated_unit_price
+                label: "מחיר יחידה"
+                width: 130
+                format: currency
+              - key: estimated_total
+                label: "סה\"כ"
+                width: 130
+                format: currency
+              - key: preferred_supplier
+                label: "ספק מועדף"
+                width: 180
+                display: "supplier.full_name"
+                link_to: "/suppliers/:preferred_supplier_id"
+            footer:
+              - label: "סה\"כ מוערך"
+                value: "SUM(estimated_total)"
+                format: currency
+
+        - tab: linked_documents
+          label: "מסמכים מקושרים"
+          icon: link
+          content:
+            entity: document_links
+            filter: "source_entity_type = purchase_request AND source_entity_id = :id"
+            type: table
+            columns:
+              - key: target_document_type
+                label: "סוג"
+                width: 130
+              - key: target_document_number
+                label: "מספר מסמך"
+                width: 150
+                link_to: "dynamic based on entity type"
+              - key: link_type
+                label: "סוג קשר"
+                width: 130
+              - key: created_at
+                label: "תאריך קישור"
+                width: 140
+                format: datetime
+
+        - tab: activity_log
+          label: "לוג פעילות"
+          icon: history
+          content:
+            entity: activity_logs
+            filter: "entity_type = purchase_request AND entity_id = :id"
+            view_type: timeline
+            sort: created_at DESC
+
+    # === 8.4.4 PURCHASE ORDERS LIST ===
+    purchase_orders_list:
+      route: /procurement/orders
+      title: "הזמנות רכש"
+      type: list_page
+      entity: purchase_orders
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש לפי מספר הזמנה, ספק..."
+            searches_fields: [order_number, "supplier.full_name", "supplier.company_name"]
+          - component: filter_dropdown
+            key: status_filter
+            label: "סטטוס"
+            options:
+              - value: draft
+                label: "טיוטה"
+              - value: sent
+                label: "נשלח"
+              - value: confirmed
+                label: "אושר ע\"י ספק"
+              - value: partially_received
+                label: "התקבל חלקית"
+              - value: received
+                label: "התקבל"
+              - value: cancelled
+                label: "בוטל"
+            multi_select: true
+          - component: filter_dropdown
+            key: supplier_filter
+            label: "ספק"
+            options_from: suppliers
+            display_field: full_name
+            searchable: true
+          - component: date_range_picker
+            key: date_filter
+            label: "תאריך הזמנה"
+            applies_to: order_date
+          - component: amount_range_filter
+            key: amount_filter
+            label: "סכום"
+            applies_to: total_amount
+        right:
+          - component: button
+            label: "הזמנת רכש חדשה"
+            icon: add
+            action: navigate
+            target: /procurement/orders/create
+            variant: primary
+          - component: button
+            label: "ייצוא"
+            icon: download
+            action: export
+            formats: [xlsx, csv, pdf]
+
+      table_columns:
+        - key: order_number
+          label: "מספר הזמנה"
+          sortable: true
+          width: 130
+          link_to: "/procurement/orders/:id"
+        - key: supplier
+          label: "ספק"
+          sortable: true
+          width: 200
+          display: "supplier.full_name"
+          link_to: "/suppliers/:supplier_id"
+        - key: purchase_request
+          label: "דרישת רכש"
+          width: 130
+          display: "purchase_request.request_number"
+          link_to: "/procurement/requests/:purchase_request_id"
+        - key: order_date
+          label: "תאריך הזמנה"
+          sortable: true
+          width: 120
+          format: date
+        - key: expected_delivery
+          label: "אספקה צפויה"
+          sortable: true
+          width: 120
+          format: date
+        - key: total_amount
+          label: "סה\"כ"
+          sortable: true
+          width: 130
+          format: currency
+        - key: received_percent
+          label: "% קבלה"
+          width: 100
+          type: progress_bar
+          computed: "SUM(items.received_quantity) / SUM(items.quantity) * 100"
+          format: percentage
+        - key: status_id
+          label: "סטטוס"
+          sortable: true
+          width: 130
+          type: status_badge
+          color_map:
+            draft: gray
+            sent: blue
+            confirmed: teal
+            partially_received: orange
+            received: green
+            cancelled: red
+
+      row_actions:
+        - action: view
+          label: "צפייה"
+          icon: visibility
+          target: "/procurement/orders/:id"
+        - action: edit
+          label: "עריכה"
+          icon: edit
+          target: "/procurement/orders/:id/edit"
+          condition: "status_id IN (draft)"
+        - action: send_to_supplier
+          label: "שלח לספק"
+          icon: send
+          type: action
+          sets: "status_id = sent"
+          condition: "status_id = draft"
+        - action: create_goods_receipt
+          label: "צור קבלת סחורה"
+          icon: inventory
+          target: "/procurement/receipts/create?from_po=:id"
+          condition: "status_id IN (sent, confirmed, partially_received)"
+        - action: create_supplier_invoice
+          label: "צור חשבונית ספק"
+          icon: receipt
+          target: "/finance/expenses/create?from_po=:id"
+          condition: "status_id IN (partially_received, received)"
+        - action: cancel
+          label: "ביטול"
+          icon: cancel
+          type: confirm_dialog
+          condition: "status_id IN (draft, sent)"
+
+    # === 8.4.5 PURCHASE ORDER CREATE ===
+    purchase_order_create:
+      route: /procurement/orders/create
+      title: "הזמנת רכש חדשה"
+      type: form_page
+      entity: purchase_orders
+      pre_fill_from: "purchase_request (if from_request param exists)"
+
+      form_sections:
+        - section: header
+          title: "פרטי הזמנה"
+          layout: two_column
+          fields:
+            - name: supplier_id
+              label: "ספק"
+              type: search_select
+              entity: suppliers
+              display_field: full_name
+              search_fields: [full_name, company_name, supplier_number]
+              required: true
+              create_new_target: /suppliers/create
+              col_span: 1
+            - name: purchase_request_id
+              label: "דרישת רכש"
+              type: search_select
+              entity: purchase_requests
+              display_field: request_number
+              filter: "status_id = approved"
+              allow_clear: true
+              col_span: 1
+            - name: order_date
+              label: "תאריך הזמנה"
+              type: date_picker
+              default: today
+              required: true
+              col_span: 1
+            - name: expected_delivery
+              label: "תאריך אספקה צפוי"
+              type: date_picker
+              col_span: 1
+            - name: delivery_address
+              label: "כתובת אספקה"
+              type: textarea
+              rows: 2
+              col_span: 2
+
+        - section: items
+          title: "פריטים"
+          layout: editable_table
+          entity: purchase_order_items
+          columns:
+            - name: product_id
+              label: "מוצר"
+              type: search_select
+              entity: products
+              display_field: name
+              search_fields: [name, sku]
+              width: 200
+              required: true
+              on_select_auto_fill:
+                description: "product.name"
+                unit_price: "product.default_price"
+                tax_rate: "product.tax_rate"
+            - name: description
+              label: "תיאור"
+              type: text_input
+              width: 220
+              required: true
+            - name: quantity
+              label: "כמות"
+              type: number_input
+              decimal_places: 2
+              width: 90
+              required: true
+            - name: unit_price
+              label: "מחיר יחידה"
+              type: currency_input
+              width: 130
+              required: true
+            - name: tax_rate
+              label: "מע\"מ %"
+              type: number_input
+              decimal_places: 2
+              default: 17.00
+              width: 80
+            - name: line_total
+              label: "סה\"כ"
+              type: computed
+              formula: "quantity * unit_price"
+              width: 130
+              format: currency
+              read_only: true
+          row_actions:
+            - action: add_row
+              label: "הוסף שורה"
+              icon: add
+            - action: delete_row
+              label: "מחק שורה"
+              icon: delete
+          footer:
+            - label: "סכום לפני מע\"מ"
+              value: "SUM(line_total)"
+              format: currency
+            - label: "מע\"מ"
+              value: "SUM(quantity * unit_price * tax_rate / 100)"
+              format: currency
+            - label: "סה\"כ כולל מע\"מ"
+              value: "SUM(line_total) + SUM(quantity * unit_price * tax_rate / 100)"
+              format: currency
+              bold: true
+
+        - section: notes
+          title: "הערות"
+          fields:
+            - name: notes
+              label: "הערות"
+              type: textarea
+              rows: 3
+
+      form_actions:
+        - action: save_draft
+          label: "שמור כטיוטה"
+          variant: secondary
+          sets: "status_id = draft"
+          navigates_to: "/procurement/orders/:id"
+        - action: save_and_send
+          label: "שמור ושלח לספק"
+          variant: primary
+          sets: "status_id = sent"
+          navigates_to: "/procurement/orders/:id"
+        - action: cancel
+          label: "ביטול"
+          variant: text
+          navigates_to: /procurement/orders
+
+    # === 8.4.6 PURCHASE ORDER DETAILS ===
+    purchase_order_details:
+      route: "/procurement/orders/:id"
+      title: "פרטי הזמנת רכש"
+      type: detail_page
+      entity: purchase_orders
+
+      header:
+        layout: detail_header
+        elements:
+          - component: back_button
+            target: /procurement/orders
+          - component: title
+            display: "order_number"
+          - component: status_badge
+            field: status_id
+          - component: action_buttons
+            actions:
+              - action: edit
+                label: "עריכה"
+                icon: edit
+                target: "/procurement/orders/:id/edit"
+                condition: "status_id = draft"
+              - action: send_to_supplier
+                label: "שלח לספק"
+                icon: send
+                condition: "status_id = draft"
+              - action: mark_confirmed
+                label: "סמן כאושר ע\"י ספק"
+                icon: check
+                condition: "status_id = sent"
+              - action: create_goods_receipt
+                label: "צור קבלת סחורה"
+                icon: inventory
+                target: "/procurement/receipts/create?from_po=:id"
+                condition: "status_id IN (sent, confirmed, partially_received)"
+              - action: create_supplier_invoice
+                label: "צור חשבונית ספק"
+                icon: receipt
+                target: "/finance/expenses/create?from_po=:id"
+                condition: "status_id IN (partially_received, received)"
+              - action: cancel_order
+                label: "בטל הזמנה"
+                icon: cancel
+                type: confirm_dialog
+                condition: "status_id IN (draft, sent)"
+              - action: print
+                label: "הדפסה"
+                icon: print
+              - action: export_pdf
+                label: "ייצוא PDF"
+                icon: picture_as_pdf
+
+      summary_cards:
+        - label: "סה\"כ הזמנה"
+          value: total_amount
+          format: currency
+        - label: "% קבלה"
+          value: "SUM(items.received_quantity) / SUM(items.quantity) * 100"
+          format: percentage
+        - label: "פריטים"
+          value: "COUNT(items)"
+        - label: "קבלות סחורה"
+          value: "COUNT(goods_receipts WHERE purchase_order_id = :id)"
+
+      tabs:
+        - tab: general_info
+          label: "פרטים"
+          icon: info
+          content:
+            layout: detail_grid
+            fields:
+              - label: "מספר הזמנה"
+                value: order_number
+              - label: "ספק"
+                value: "supplier.full_name"
+                link_to: "/suppliers/:supplier_id"
+              - label: "דרישת רכש"
+                value: "purchase_request.request_number"
+                link_to: "/procurement/requests/:purchase_request_id"
+              - label: "תאריך הזמנה"
+                value: order_date
+                format: date
+              - label: "אספקה צפויה"
+                value: expected_delivery
+                format: date
+              - label: "סכום לפני מע\"מ"
+                value: subtotal
+                format: currency
+              - label: "מע\"מ"
+                value: tax_amount
+                format: currency
+              - label: "סה\"כ"
+                value: total_amount
+                format: currency
+              - label: "כתובת אספקה"
+                value: delivery_address
+              - label: "נוצר על ידי"
+                value: "creator_user.full_name"
+              - label: "הערות"
+                value: notes
+
+        - tab: items
+          label: "פריטים"
+          icon: list
+          content:
+            entity: purchase_order_items
+            filter: "purchase_order_id = :id"
+            type: table
+            columns:
+              - key: product
+                label: "מוצר"
+                width: 200
+                display: "product.name"
+                link_to: "/products/:product_id"
+              - key: description
+                label: "תיאור"
+                width: 220
+              - key: quantity
+                label: "כמות"
+                width: 90
+                format: decimal
+              - key: unit_price
+                label: "מחיר יחידה"
+                width: 130
+                format: currency
+              - key: tax_rate
+                label: "מע\"מ %"
+                width: 80
+                format: percentage
+              - key: line_total
+                label: "סה\"כ שורה"
+                width: 130
+                format: currency
+              - key: received_quantity
+                label: "כמות שהתקבלה"
+                width: 120
+                format: decimal
+              - key: remaining
+                label: "נותר לקבלה"
+                width: 110
+                computed: "quantity - received_quantity"
+                format: decimal
+                color_rules:
+                  - condition: "value > 0"
+                    color: orange
+                  - condition: "value = 0"
+                    color: green
+
+        - tab: goods_receipts
+          label: "קבלות סחורה"
+          icon: inventory
+          content:
+            entity: goods_receipts
+            filter: "purchase_order_id = :id"
+            type: table
+            columns:
+              - key: receipt_number
+                label: "מספר קבלה"
+                width: 130
+                link_to: "/procurement/receipts/:id"
+              - key: receipt_date
+                label: "תאריך קבלה"
+                width: 120
+                format: date
+              - key: warehouse
+                label: "מחסן"
+                width: 150
+                display: "warehouse.name"
+              - key: status_id
+                label: "סטטוס"
+                width: 120
+                type: status_badge
+              - key: received_by
+                label: "התקבל ע\"י"
+                width: 150
+                display: "receiver_user.full_name"
+
+        - tab: linked_documents
+          label: "מסמכים מקושרים"
+          icon: link
+          content:
+            entity: document_links
+            filter: "involves purchase_order :id"
+            type: table
+            columns:
+              - key: document_type
+                label: "סוג מסמך"
+                width: 130
+              - key: document_number
+                label: "מספר"
+                width: 150
+                link_to: "dynamic"
+              - key: link_type
+                label: "סוג קשר"
+                width: 130
+              - key: total_amount
+                label: "סכום"
+                width: 130
+                format: currency
+              - key: status
+                label: "סטטוס"
+                width: 120
+                type: status_badge
+              - key: created_at
+                label: "תאריך"
+                width: 130
+                format: datetime
+
+        - tab: activity_log
+          label: "לוג פעילות"
+          icon: history
+          content:
+            entity: activity_logs
+            filter: "entity_type = purchase_order AND entity_id = :id"
+            view_type: timeline
+            sort: created_at DESC
+
+    # === 8.4.7 GOODS RECEIPTS LIST ===
+    goods_receipts_list:
+      route: /procurement/receipts
+      title: "קבלות סחורה"
+      type: list_page
+      entity: goods_receipts
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש לפי מספר קבלה, הזמנה, ספק..."
+            searches_fields: [receipt_number, "purchase_order.order_number", "supplier.full_name"]
+          - component: filter_dropdown
+            key: status_filter
+            label: "סטטוס"
+            options: [draft, received, inspected, accepted, rejected]
+            multi_select: true
+          - component: filter_dropdown
+            key: supplier_filter
+            label: "ספק"
+            options_from: suppliers
+            display_field: full_name
+            searchable: true
+          - component: filter_dropdown
+            key: warehouse_filter
+            label: "מחסן"
+            options_from: warehouses
+            display_field: name
+          - component: date_range_picker
+            key: date_filter
+            label: "תאריך קבלה"
+            applies_to: receipt_date
+        right:
+          - component: button
+            label: "קבלת סחורה חדשה"
+            icon: add
+            action: navigate
+            target: /procurement/receipts/create
+            variant: primary
+
+      table_columns:
+        - key: receipt_number
+          label: "מספר קבלה"
+          sortable: true
+          width: 130
+          link_to: "/procurement/receipts/:id"
+        - key: purchase_order
+          label: "הזמנת רכש"
+          sortable: true
+          width: 130
+          display: "purchase_order.order_number"
+          link_to: "/procurement/orders/:purchase_order_id"
+        - key: supplier
+          label: "ספק"
+          sortable: true
+          width: 180
+          display: "supplier.full_name"
+          link_to: "/suppliers/:supplier_id"
+        - key: receipt_date
+          label: "תאריך קבלה"
+          sortable: true
+          width: 120
+          format: date
+        - key: warehouse
+          label: "מחסן"
+          sortable: true
+          width: 150
+          display: "warehouse.name"
+        - key: items_count
+          label: "פריטים"
+          width: 80
+          computed: "COUNT(goods_receipt_items)"
+        - key: status_id
+          label: "סטטוס"
+          sortable: true
+          width: 120
+          type: status_badge
+          color_map:
+            draft: gray
+            received: blue
+            inspected: orange
+            accepted: green
+            rejected: red
+        - key: received_by
+          label: "התקבל ע\"י"
+          width: 150
+          display: "receiver_user.full_name"
+
+      row_actions:
+        - action: view
+          label: "צפייה"
+          icon: visibility
+          target: "/procurement/receipts/:id"
+        - action: edit
+          label: "עריכה"
+          icon: edit
+          target: "/procurement/receipts/:id/edit"
+          condition: "status_id = draft"
+        - action: accept
+          label: "אשר קבלה"
+          icon: check_circle
+          sets: "status_id = accepted"
+          condition: "status_id IN (received, inspected)"
+        - action: reject
+          label: "דחה"
+          icon: cancel
+          type: confirm_dialog
+          condition: "status_id IN (received, inspected)"
+
+    # === 8.4.8 GOODS RECEIPT CREATE ===
+    goods_receipt_create:
+      route: /procurement/receipts/create
+      title: "קבלת סחורה חדשה"
+      type: form_page
+      entity: goods_receipts
+      pre_fill_from: "purchase_order (if from_po param exists)"
+
+      form_sections:
+        - section: header
+          title: "פרטי קבלה"
+          layout: two_column
+          fields:
+            - name: purchase_order_id
+              label: "הזמנת רכש"
+              type: search_select
+              entity: purchase_orders
+              display_field: order_number
+              filter: "status_id IN (sent, confirmed, partially_received)"
+              required: true
+              col_span: 1
+              on_select_auto_fill:
+                supplier_id: "purchase_order.supplier_id"
+            - name: supplier_id
+              label: "ספק"
+              type: search_select
+              entity: suppliers
+              display_field: full_name
+              required: true
+              read_only_when: "purchase_order_id is set"
+              col_span: 1
+            - name: receipt_date
+              label: "תאריך קבלה"
+              type: date_picker
+              default: today
+              required: true
+              col_span: 1
+            - name: warehouse_id
+              label: "מחסן יעד"
+              type: select
+              entity: warehouses
+              display_field: name
+              filter: "is_active = true"
+              required: true
+              col_span: 1
+            - name: received_by
+              label: "התקבל על ידי"
+              type: select
+              entity: users
+              display_field: full_name
+              default: current_user
+              required: true
+              col_span: 1
+
+        - section: items
+          title: "פריטים"
+          layout: editable_table
+          entity: goods_receipt_items
+          auto_populate_from: "purchase_order_items WHERE purchase_order_id = :purchase_order_id"
+          columns:
+            - name: product_id
+              label: "מוצר"
+              type: display
+              display: "product.name"
+              width: 200
+              read_only: true
+            - name: purchase_order_item_id
+              type: hidden
+            - name: quantity_ordered
+              label: "כמות שהוזמנה"
+              type: display
+              width: 120
+              format: decimal
+              read_only: true
+            - name: already_received
+              label: "כמות שהתקבלה קודם"
+              type: display
+              width: 130
+              computed: "purchase_order_item.received_quantity"
+              format: decimal
+              read_only: true
+            - name: quantity_received
+              label: "כמות שהתקבלה כעת"
+              type: number_input
+              decimal_places: 2
+              width: 130
+              required: true
+              validation: "quantity_received <= quantity_ordered - already_received"
+            - name: quality_status
+              label: "בדיקת איכות"
+              type: select
+              options:
+                - value: pending
+                  label: "ממתין"
+                - value: passed
+                  label: "עבר"
+                - value: failed
+                  label: "נכשל"
+              default: pending
+              width: 120
+            - name: notes
+              label: "הערות"
+              type: text_input
+              width: 180
+
+        - section: notes
+          title: "הערות"
+          fields:
+            - name: notes
+              label: "הערות כלליות"
+              type: textarea
+              rows: 3
+
+      form_actions:
+        - action: save_draft
+          label: "שמור כטיוטה"
+          variant: secondary
+          sets: "status_id = draft"
+          navigates_to: "/procurement/receipts/:id"
+        - action: confirm_receipt
+          label: "אשר קבלה"
+          variant: primary
+          sets: "status_id = received"
+          side_effects:
+            - "update purchase_order_items.received_quantity"
+            - "create stock_movements for each item"
+            - "update stock_levels"
+            - "update purchase_order status if fully received"
+          navigates_to: "/procurement/receipts/:id"
+        - action: cancel
+          label: "ביטול"
+          variant: text
+          navigates_to: /procurement/receipts
+
+    # === 8.4.9 GOODS RECEIPT DETAILS ===
+    goods_receipt_details:
+      route: "/procurement/receipts/:id"
+      title: "פרטי קבלת סחורה"
+      type: detail_page
+      entity: goods_receipts
+
+      header:
+        layout: detail_header
+        elements:
+          - component: back_button
+            target: /procurement/receipts
+          - component: title
+            display: "receipt_number"
+          - component: status_badge
+            field: status_id
+          - component: action_buttons
+            actions:
+              - action: edit
+                label: "עריכה"
+                icon: edit
+                condition: "status_id = draft"
+              - action: accept
+                label: "אשר קבלה"
+                icon: check_circle
+                condition: "status_id IN (received, inspected)"
+              - action: reject
+                label: "דחה"
+                icon: cancel
+                condition: "status_id IN (received, inspected)"
+              - action: print
+                label: "הדפסה"
+                icon: print
+
+      tabs:
+        - tab: general_info
+          label: "פרטים"
+          icon: info
+          content:
+            layout: detail_grid
+            fields:
+              - label: "מספר קבלה"
+                value: receipt_number
+              - label: "הזמנת רכש"
+                value: "purchase_order.order_number"
+                link_to: "/procurement/orders/:purchase_order_id"
+              - label: "ספק"
+                value: "supplier.full_name"
+                link_to: "/suppliers/:supplier_id"
+              - label: "תאריך קבלה"
+                value: receipt_date
+                format: date
+              - label: "מחסן"
+                value: "warehouse.name"
+              - label: "סטטוס"
+                value: status_id
+                type: status_badge
+              - label: "התקבל ע\"י"
+                value: "receiver_user.full_name"
+              - label: "הערות"
+                value: notes
+
+        - tab: items
+          label: "פריטים"
+          icon: list
+          content:
+            entity: goods_receipt_items
+            filter: "goods_receipt_id = :id"
+            type: table
+            columns:
+              - key: product
+                label: "מוצר"
+                width: 200
+                display: "product.name"
+              - key: quantity_ordered
+                label: "כמות שהוזמנה"
+                width: 120
+                format: decimal
+              - key: quantity_received
+                label: "כמות שהתקבלה"
+                width: 120
+                format: decimal
+              - key: quality_status
+                label: "בדיקת איכות"
+                width: 120
+                type: status_badge
+                color_map:
+                  pending: orange
+                  passed: green
+                  failed: red
+              - key: notes
+                label: "הערות"
+                width: 200
+
+        - tab: activity_log
+          label: "לוג פעילות"
+          icon: history
+          content:
+            entity: activity_logs
+            filter: "entity_type = goods_receipt AND entity_id = :id"
+            view_type: timeline
+            sort: created_at DESC
+
+    # === 8.4.10 SUPPLIER INVOICES ===
+    supplier_invoices_list:
+      route: /procurement/supplier-invoices
+      title: "חשבוניות ספק"
+      type: list_page
+      entity: documents
+      base_filter: "direction = expense AND document_type_id IN (expense_invoice)"
+      description: "This page shows expense documents of type expense_invoice. Uses central documents table."
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש לפי מספר מסמך, ספק..."
+            searches_fields: [document_number, "supplier.full_name"]
+          - component: filter_dropdown
+            key: supplier_filter
+            label: "ספק"
+            options_from: suppliers
+            display_field: full_name
+            searchable: true
+          - component: filter_dropdown
+            key: status_filter
+            label: "סטטוס"
+            options: [draft, pending, open, paid, partially_paid, cancelled]
+            multi_select: true
+          - component: date_range_picker
+            key: date_filter
+            label: "תאריך"
+            applies_to: issue_date
+          - component: amount_range_filter
+            key: amount_filter
+            label: "סכום"
+            applies_to: total_amount
+        right:
+          - component: button
+            label: "חשבונית ספק חדשה"
+            icon: add
+            action: navigate
+            target: "/finance/expenses/create?document_type=expense_invoice"
+            variant: primary
+
+      table_columns:
+        - key: document_number
+          label: "מספר מסמך"
+          sortable: true
+          width: 130
+          link_to: "/finance/expenses/:id"
+        - key: supplier
+          label: "ספק"
+          sortable: true
+          width: 180
+          display: "supplier.full_name"
+          link_to: "/suppliers/:supplier_id"
+        - key: issue_date
+          label: "תאריך"
+          sortable: true
+          width: 120
+          format: date
+        - key: due_date
+          label: "לתשלום עד"
+          sortable: true
+          width: 120
+          format: date
+        - key: total_amount
+          label: "סה\"כ"
+          sortable: true
+          width: 130
+          format: currency
+        - key: paid_amount
+          label: "שולם"
+          width: 130
+          format: currency
+        - key: balance_due
+          label: "יתרה"
+          width: 130
+          format: currency
+        - key: status_id
+          label: "סטטוס"
+          sortable: true
+          width: 120
+          type: status_badge
+
+    # === 8.4.11 PROCUREMENT APPROVALS ===
+    procurement_approvals:
+      route: /procurement/approvals
+      title: "אישורים"
+      type: list_page
+      entity: purchase_requests
+      base_filter: "status_id = pending_approval"
+
+      toolbar:
+        left:
+          - component: search_input
+            placeholder: "חיפוש..."
+            searches_fields: [request_number, "requested_user.full_name"]
+          - component: filter_dropdown
+            key: department_filter
+            label: "מחלקה"
+
+      table_columns:
+        - key: request_number
+          label: "מספר דרישה"
+          sortable: true
+          width: 130
+          link_to: "/procurement/requests/:id"
+        - key: requested_by
+          label: "מבקש"
+          width: 150
+          display: "requested_user.full_name"
+        - key: department
+          label: "מחלקה"
+          width: 120
+        - key: request_date
+          label: "תאריך"
+          sortable: true
+          width: 120
+          format: date
+        - key: needed_by
+          label: "נדרש עד"
+          width: 120
+          format: date
+        - key: total_estimated
+          label: "סכום מוערך"
+          sortable: true
+          width: 130
+          format: currency
+        - key: justification
+          label: "הצדקה"
+          width: 250
+
+      row_actions:
+        - action: view
+          label: "צפייה"
+          icon: visibility
+          target: "/procurement/requests/:id"
+        - action: approve
+          label: "אשר"
+          icon: check_circle
+          type: action
+          permission: approve_purchase_orders
+        - action: reject
+          label: "דחה"
+          icon: cancel
+          type: confirm_dialog
+          permission: approve_purchase_orders
+
+  # ----------------------------------------------------------
+  # 8.5 NAVIGATION MAP
+  # ----------------------------------------------------------
+  navigation_map:
+    purchase_requests_list:
+      navigates_to:
+        - target: /procurement/requests/create
+          trigger: "click create button"
+        - target: "/procurement/requests/:id"
+          trigger: "click request row"
+        - target: "/procurement/orders/create?from_request=:id"
+          trigger: "click convert to PO"
+    purchase_request_details:
+      navigates_to:
+        - target: "/procurement/requests/:id/edit"
+          trigger: "click edit"
+        - target: "/procurement/orders/create?from_request=:id"
+          trigger: "click convert"
+        - target: /procurement/requests
+          trigger: "click back"
+    purchase_orders_list:
+      navigates_to:
+        - target: /procurement/orders/create
+          trigger: "click create button"
+        - target: "/procurement/orders/:id"
+          trigger: "click order row"
+        - target: "/suppliers/:supplier_id"
+          trigger: "click supplier name"
+        - target: "/procurement/receipts/create?from_po=:id"
+          trigger: "click create goods receipt"
+    purchase_order_details:
+      navigates_to:
+        - target: "/procurement/orders/:id/edit"
+          trigger: "click edit"
+        - target: "/suppliers/:supplier_id"
+          trigger: "click supplier"
+        - target: "/procurement/requests/:purchase_request_id"
+          trigger: "click purchase request"
+        - target: "/procurement/receipts/create?from_po=:id"
+          trigger: "click create goods receipt"
+        - target: "/finance/expenses/create?from_po=:id"
+          trigger: "click create supplier invoice"
+        - target: "/procurement/receipts/:id"
+          trigger: "click goods receipt in tab"
+    goods_receipts_list:
+      navigates_to:
+        - target: /procurement/receipts/create
+          trigger: "click create"
+        - target: "/procurement/receipts/:id"
+          trigger: "click receipt row"
+        - target: "/procurement/orders/:purchase_order_id"
+          trigger: "click PO number"
+        - target: "/suppliers/:supplier_id"
+          trigger: "click supplier"
+    goods_receipt_details:
+      navigates_to:
+        - target: "/procurement/orders/:purchase_order_id"
+          trigger: "click PO"
+        - target: "/suppliers/:supplier_id"
+          trigger: "click supplier"
+        - target: /procurement/receipts
+          trigger: "click back"
