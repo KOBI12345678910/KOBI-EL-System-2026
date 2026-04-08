@@ -2,6 +2,7 @@ import { Router } from "express";
 import finDocumentsRouter from "./fin-documents";
 import finPaymentsRouter from "./fin-payments";
 import finMasterDataRouter from "./fin-master-data";
+import finQuantRouter from "./fin-quant";
 import { seedFinancialModule } from "./fin-seed";
 
 const router = Router();
@@ -14,6 +15,9 @@ router.use("/documents", finDocumentsRouter);
 
 // Payments
 router.use("/payments", finPaymentsRouter);
+
+// Quant & Risk (ratios, Monte Carlo, stress tests, statements, treasury)
+router.use("/quant", finQuantRouter);
 
 // Seed endpoint (one-time setup)
 router.post("/seed", async (_req, res) => {
