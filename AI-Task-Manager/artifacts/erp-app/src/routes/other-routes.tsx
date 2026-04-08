@@ -426,6 +426,16 @@ const ProjectEventsAuditPage = lazyPage(() => import("@/pages/projects/project-e
 const ProjectAlertsNewPage = lazyPage(() => import("@/pages/projects/project-alerts"));
 const ProjectSettingsNewPage = lazyPage(() => import("@/pages/projects/project-settings"));
 
+// BASH44 AI Operating System (8 pages)
+const Bash44ControlCenterPage = lazyPage(() => import("@/pages/ai-engine/bash44-control-center"));
+const Bash44AgentRunsPage = lazyPage(() => import("@/pages/ai-engine/bash44-agent-runs"));
+const Bash44RecommendationsPage = lazyPage(() => import("@/pages/ai-engine/bash44-recommendations"));
+const Bash44AlertsCenterPage = lazyPage(() => import("@/pages/ai-engine/bash44-alerts-center"));
+const Bash44ApprovalQueuePage = lazyPage(() => import("@/pages/ai-engine/bash44-approval-queue"));
+const Bash44ExecutiveBriefPage = lazyPage(() => import("@/pages/ai-engine/bash44-executive-brief"));
+const Bash44AgentConfigPage = lazyPage(() => import("@/pages/ai-engine/bash44-agent-config"));
+const Bash44KnowledgeContextsPage = lazyPage(() => import("@/pages/ai-engine/bash44-knowledge-contexts"));
+
 export const OtherRoutes = (
 
     <>
@@ -898,6 +908,16 @@ export const OtherRoutes = (
       <Route path="/projects/events-audit" component={ProjectEventsAuditPage} />
       <Route path="/projects/alerts" component={ProjectAlertsNewPage} />
       <Route path="/projects/settings" component={ProjectSettingsNewPage} />
+
+      {/* BASH44 AI Operating System */}
+      <Route path="/ai-engine/bash44" component={Bash44ControlCenterPage} />
+      <Route path="/ai-engine/bash44/runs" component={Bash44AgentRunsPage} />
+      <Route path="/ai-engine/bash44/recommendations" component={Bash44RecommendationsPage} />
+      <Route path="/ai-engine/bash44/alerts" component={Bash44AlertsCenterPage} />
+      <Route path="/ai-engine/bash44/approvals" component={Bash44ApprovalQueuePage} />
+      <Route path="/ai-engine/bash44/executive-brief" component={Bash44ExecutiveBriefPage} />
+      <Route path="/ai-engine/bash44/config" component={Bash44AgentConfigPage} />
+      <Route path="/ai-engine/bash44/knowledge" component={Bash44KnowledgeContextsPage} />
 
     </>
 );
