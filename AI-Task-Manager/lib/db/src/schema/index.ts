@@ -202,3 +202,7 @@ export * from "./fin-ratios";
 export * from "./fin-risk";
 export * from "./fin-monte-carlo";
 export * from "./fin-statements";
+
+// CRM Ultra - Intelligence, Agent Control
+export * from "./crm-intelligence";
+export * from "./crm-agent-control";

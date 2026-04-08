@@ -1,0 +1,104 @@
+# ============================================================
+# CRM ULTRA SYSTEM - Institutional Grade
+# "CRM is not customer management - it's a control engine
+#  for money, risk, decisions and behavior"
+# ============================================================
+
+positioning:
+  level: "Institutional / BlackRock-grade CRM"
+  principle: "כל לקוח = נכס פיננסי | כל אינטראקציה = דאטה לחיזוי | כל הזדמנות = השקעה"
+
+modules:
+  customer_intelligence_engine:
+    models: [customer_lifetime_value_real_time, probability_to_close, probability_to_churn, expected_revenue_future, risk_score, payment_behavior_score, engagement_score, influence_score, referral_potential_score]
+    outputs: [next_best_action, next_best_offer, risk_alerts, upsell_opportunities, cross_sell_opportunities]
+    update: real_time
+
+  portfolio_management:
+    views: [by_value, by_risk, by_profitability, by_segment, by_stage]
+    metrics: [weighted_expected_revenue, weighted_risk, concentration_risk, revenue_distribution, dependency_on_top_clients]
+    features: [rebalance_recommendations, risk_heatmap, client_allocation_strategy]
+
+  pipeline_engine:
+    features: [weighted_value, probability_adjusted, stage_conversion_rates, time_in_stage, velocity, bottleneck_detection]
+    ai: [detect_stuck_deals, predict_close_date, recommend_actions, auto_prioritize]
+    views: [kanban, financial, risk, timeline]
+
+  decision_engine:
+    triggers: [lead_created, deal_stuck, no_activity, risk_increase, payment_delay, negative_interaction]
+    actions: [create_task, send_message, escalate, change_priority, suggest_discount, block_deal, notify_manager, auto_reassign]
+    ai: [next_best_action, who_should_handle, when_to_contact, what_to_offer]
+
+  ai_command_center:
+    capabilities: [natural_language_queries, create_by_prompt, update_by_prompt, generate_followups, auto_summarize, generate_strategy]
+
+  hyper_automation:
+    automations: [lead_scoring, deal_priority, followup_generation, inactivity_detection, churn_trigger, auto_task, auto_status, auto_escalation]
+    builder: visual_workflow (trigger → condition → action)
+
+  communication_intelligence:
+    inputs: [calls, whatsapp, emails, meetings]
+    analysis: [sentiment, intent, objection, urgency]
+    outputs: [risk_flag, opportunity_flag, followup_recommendation]
+
+  customer_360_ultra:
+    sections: [profile, financial, behavior, communication, active_deals, past_deals, risk_score, ltv, probability_models, projects, documents, payments]
+    special: [timeline_replay, decision_history, ai_summary]
+
+  crm_finance_fusion:
+    connections: [balance, invoices, payment_history, credit_limit, risk_score]
+    effects: [block_deal_if_risk, auto_adjust_pricing, prioritize_high_value]
+
+  predictive_models:
+    models: [lead_conversion, deal_success, churn, revenue_forecast, pipeline_scenarios, growth_projection]
+    scenarios: [best, expected, worst]
+    outputs: [expected_30_60_90, risk_adjusted_forecast]
+
+  relationship_graph:
+    nodes: [customers, contacts, employees, deals]
+    edges: [works_with, influences, decides, connected_to]
+    features: [influence_map, hidden_decision_maker, network_strength]
+
+  behavioral_crm:
+    signals: [response_time, message_length, sentiment, engagement_frequency]
+    outputs: [interest_level, hesitation_level, urgency_level, buying_intent]
+    actions: [adjust_strategy, recommend_tone]
+
+  governance:
+    controls: [rbac, field_security, audit_logs, action_tracking, approval_flows]
+    compliance: [gdpr, consent, data_access_logs]
+
+categories_14:
+  - crm_dashboard (8 submodules)
+  - leads_management (13 submodules)
+  - accounts_management (10 submodules)
+  - contacts_management (10 submodules)
+  - opportunities_management (11 submodules)
+  - activities_and_tasks (9 submodules)
+  - communication_center (8 submodules)
+  - customer_360 (11 submodules)
+  - quotations_and_commercial (6 submodules)
+  - customer_service_cases (7 submodules)
+  - crm_analytics (8 submodules)
+  - crm_ai (8 submodules)
+  - crm_integrations (8 submodules)
+  - crm_security_and_admin (9 submodules)
+
+navigation_rules:
+  - "כל שורה ברשימות ניתנת ללחיצה ל-details"
+  - "כל owner badge נלחץ לפרופיל או filtered view"
+  - "כל account/contact/opportunity מקושרים ביניהם"
+  - "כל KPI card מוביל לרשימה מסוננת"
+
+automations_11:
+  - auto_assign_lead_by_source
+  - auto_score_lead_on_create
+  - create_followup_after_call
+  - notify_owner_on_hot_lead
+  - convert_lead_to_account_contact_opportunity
+  - mark_opportunity_stalled
+  - create_task_before_close_date
+  - trigger_sla_breach_alert
+  - generate_ai_summary_after_call
+  - suggest_next_best_action
+  - duplicate_detection_on_create
