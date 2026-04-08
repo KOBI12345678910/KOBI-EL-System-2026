@@ -1,0 +1,5005 @@
+שולח לך משימות תעביר לא ותעזור לא במידת הצורך ולעשות טאסטים A B  לראות שהכל העובדמעולה. אכתוב 100+ פרומפטים — כל אחד ממוקד לבדיקה ותיקון ספציפית אחת בלבד. מוכן לריפלייט וגם לכלוד.
+
+מתחיל עכשיו — קובץ מלא.
+
+Created a file, read a file
+
+Created a file, read a file
+
+הקובץ מוכן. 62 פרומפטים ספציפיים — כל אחד בדיקה ותיקון אחת בלבד.
+
+מבנה הקובץ — 12 קטגוריות:
+
+קטגוריה A — דפים חסרים (A-01 עד A-17): Login, 404, 403, Dashboard, רשימות, טפסים, קנבן קטגוריה B — ניווט ולינקים (B-01 עד B-04): Sidebar, Breadcrumbs, כפתורי חזור, סריקת לינקים שבורים קטגוריה C — שדות וולידציה (C-01 עד C-06): ת.ז. ישראלי, טלפון, אגורות+מע"מ, שדות חובה, חישוב בזמן אמת, פורמט תאריך קטגוריה D — סינכרון נתונים (D-01 עד D-06): הצעה→עבודה→חשבונית→תשלום, עובד→משמרת→שכר, מלאי→עבודה, KPIs אמיתיים קטגוריה E — כפתורים ופעולות (E-01 עד E-06): PDF, WhatsApp, שינוי סטטוס, הקצאת עובד, עדכון מלאי, אישור חופשה קטגוריה F — API Endpoints (F-01 עד F-05): עובדים, הזמנות, כספים, מלאי, Dashboard מהיר קטגוריה G — בלוקי UI (G-01 עד G-06): DataTable, Toasts, Modal, Status Badges, Skeletons, Empty States קטגוריה H — Database (H-01 עד H-04): מספרי חשבונית אטומיים, יתרת לקוח, Soft Delete, Audit Log קטגוריה I — אבטחה (I-01 עד I-03): הגנת routes, JWT, Zod validation קטגוריה J — ביצועים (J-01 עד J-03): N+1 queries, שגיאות בעברית, Null Safety קטגוריה K — עברית ו-RTL (K-01 עד K-03): RTL layout, תרגום כל הטקסט, פורמט ₪ קטגוריה L — תיקונים ספציפיים (L-01 עד L-15): שעון נוכחות, חישוב שכר ישראלי, SSE, ייצוא Excel, PDF חשבונית, Make.com, Mobile, הגדרות, validation script# 🔍 100+ פרומפטי בדיקה ותיקון — ERP מפעל מסגרות
+
+# כל פרומפט = משימה אחת ספציפית | מוכן לריפלייט Agent + Claude
+
+---
+
+## 📁 קטגוריה A: דפים חסרים
+
+---
+
+### A-01 — בדיקת דף LOGIN
+
+```
+
+You are auditing an ERP system for a 200-employee metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix the /login page.
+
+Check and fix ALL of these:
+
+1. File src/pages/LoginPage.tsx EXISTS
+
+2. Page renders without crashing
+
+3. Has email/username input field with Hebrew label "שם משתמש / אימייל"
+
+4. Has password input with Hebrew label "סיסמה" + show/hide toggle
+
+5. Has "כניסה למערכת" submit button
+
+6. Has "שכחתי סיסמה" link → navigates to /forgot-password
+
+7. On submit: calls POST /api/auth/login
+
+8. On success: saves tokens, redirects to /dashboard
+
+9. On wrong password: shows Hebrew error "שם משתמש או סיסמה שגויים"
+
+10. On network error: shows Hebrew error "שגיאת רשת. בדוק חיבור לאינטרנט."
+
+11. Button shows loading spinner while API call is in progress
+
+12. Button is DISABLED while loading (prevents double-submit)
+
+13. Page is mobile responsive (fits 375px screen)
+
+14. RTL layout (Hebrew text flows right to left)
+
+15. Company logo or name "טכנו כל עוזי" visible on page
+
+16. Already logged in users → redirect to /dashboard automatically
+
+Fix everything that is missing or broken. Output the complete fixed LoginPage.tsx file.
+
+```
+
+---
+
+### A-02 — בדיקת דף FORGOT PASSWORD
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix the /forgot-password page.
+
+Check and fix ALL of these:
+
+1. File src/pages/ForgotPasswordPage.tsx EXISTS
+
+2. Page renders without crashing
+
+3. Has email input with Hebrew label "כתובת אימייל"
+
+4. Has submit button "שלח קישור לאיפוס סיסמה"
+
+5. Has back link "חזור לכניסה" → /login
+
+6. On submit: calls POST /api/auth/forgot-password
+
+7. On success: shows message "אם האימייל קיים במערכת, שלחנו קישור לאיפוס סיסמה"
+
+8. On success: email input hidden, only success message shown
+
+9. Loading state on button while API call in progress
+
+10. Email validation before submit (shows Hebrew error if invalid format)
+
+11. API endpoint POST /api/auth/forgot-password EXISTS on backend
+
+12. Backend generates reset token, stores hash in DB, sends email via Gmail API
+
+13. Token expires after 1 hour
+
+Fix everything missing or broken. Output fixed ForgotPasswordPage.tsx + backend route.
+
+```
+
+---
+
+### A-03 — בדיקת דף RESET PASSWORD
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix the /reset-password/:token page.
+
+Check and fix ALL of these:
+
+1. File src/pages/ResetPasswordPage.tsx EXISTS
+
+2. Page reads token from URL params: useParams()
+
+3. On load: validates token via GET /api/auth/validate-reset-token/:token
+
+4. If token invalid/expired: shows Hebrew error "הקישור פג תוקף. בקש קישור חדש." + link to /forgot-password
+
+5. If token valid: shows password reset form
+
+6. Form has "סיסמה חדשה" field with strength indicator
+
+7. Form has "אמת סיסמה" field
+
+8. Validation: passwords must match (Hebrew error if not)
+
+9. Validation: password min 8 chars, uppercase + lowercase + number required
+
+10. Submit calls POST /api/auth/reset-password with { token, newPassword }
+
+11. On success: shows "הסיסמה שונתה בהצלחה" + redirect to /login after 3 seconds
+
+12. All existing sessions invalidated after password reset
+
+13. Backend: POST /api/auth/reset-password EXISTS and works correctly
+
+Fix everything missing or broken. Output complete fixed files.
+
+```
+
+---
+
+### A-04 — בדיקת דף 404
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix the 404 Not Found page.
+
+Check and fix ALL of these:
+
+1. File src/pages/NotFoundPage.tsx EXISTS
+
+2. React Router has a catch-all route: <Route path="*" element={<NotFoundPage />} />
+
+3. Page shows Hebrew text "הדף המבוקש לא נמצא"
+
+4. Page shows the URL that was attempted
+
+5. Page has button "חזור לדף הראשי" → navigates to /dashboard
+
+6. Page has button "חזור לדף הקודם" → browser back
+
+7. Page uses the same Layout (sidebar + header) as other pages
+
+8. Page does NOT show React error boundary (it's a real 404, not a crash)
+
+9. Navigation sidebar still works on 404 page (user can navigate away)
+
+10. Browser tab title shows "404 — דף לא נמצא | טכנו כל עוזי"
+
+Fix everything missing or broken. Output complete fixed files.
+
+```
+
+---
+
+### A-05 — בדיקת דף 403 FORBIDDEN
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix the 403 Forbidden page.
+
+Check and fix ALL of these:
+
+1. File src/pages/ForbiddenPage.tsx EXISTS
+
+2. Page shows Hebrew: "אין לך הרשאה לגשת לדף זה"
+
+3. Page shows user's current role
+
+4. Page shows what role is needed (if that info is available)
+
+5. Page has "חזור לדף הראשי" button → /dashboard
+
+6. Page has "פנה למנהל המערכת" link → opens email to admin
+
+7. Protected routes redirect here on 403 (not to /login)
+
+8. Role-based redirect middleware in frontend ProtectedRoute component checks role
+
+9. ProtectedRoute component: <ProtectedRoute roles={['ADMIN']}> wraps admin-only pages
+
+10. If user is EMPLOYEE and navigates to /settings: redirected to /403
+
+Fix everything missing or broken. Output complete fixed files including ProtectedRoute.tsx.
+
+```
+
+---
+
+### A-06 — בדיקת דף 500 SERVER ERROR
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix the Error Boundary and 500 page.
+
+Check and fix ALL of these:
+
+1. File src/components/ErrorBoundary.tsx EXISTS as a class component
+
+2. ErrorBoundary wraps the entire App in src/main.tsx
+
+3. On crash: shows Hebrew "אירעה שגיאה בלתי צפויה במערכת"
+
+4. Shows "רענן את הדף" button → window.location.reload()
+
+5. Shows "חזור לדף הראשי" button → navigate('/')
+
+6. Does NOT show stack trace to user (only logs to console)
+
+7. Sends error details to Sentry (if configured) or logs to server
+
+8. Backend: global error handler in src/middleware/errorHandler.ts
+
+9. Backend error handler catches all unhandled errors
+
+10. Returns JSON: { error: "שגיאת שרת פנימית", code: 500 } (not HTML error page)
+
+11. Never returns raw Express error stack to client
+
+12. Logs full error with stack trace to server console
+
+Fix everything missing or broken. Output complete ErrorBoundary.tsx + backend errorHandler.ts.
+
+```
+
+---
+
+### A-07 — בדיקת דף DASHBOARD
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / Recharts / RTL Hebrew.
+
+TASK: Audit and fix the main Dashboard page (/dashboard or /).
+
+Check and fix ALL of these:
+
+1. File src/pages/DashboardPage.tsx EXISTS
+
+2. Page fetches data from GET /api/dashboard on mount
+
+3. Backend route GET /api/dashboard EXISTS and returns real data from DB
+
+4. Shows 4 KPI cards with REAL data (not hardcoded):
+
+   - "הכנסות החודש": sum of payments this month in ₪
+
+   - "עבודות פעילות": count of work orders with status IN (PENDING, IN_PRODUCTION, QUALITY_CHECK)
+
+   - "עובדים נוכחים": count of today's clock-ins without clock-out
+
+   - "מלאי נמוך": count of items where quantity <= min_quantity
+
+5. Each KPI card is CLICKABLE → navigates to relevant page
+
+6. Revenue bar chart renders with real monthly data (not empty)
+
+7. Work order status donut chart renders with real data
+
+8. "עבודות דחופות" list shows top 5 overdue/urgent work orders
+
+9. "חובות פתוחים" list shows top 5 customers with open balance
+
+10. Loading skeleton shown while data fetches
+
+11. Error state shown if API fails (Hebrew message + retry)
+
+12. Auto-refreshes every 5 minutes
+
+13. Hebrew labels on all chart axes
+
+14. RTL layout
+
+Fix everything missing or broken. Output complete DashboardPage.tsx + GET /api/dashboard route.
+
+```
+
+---
+
+### A-08 — בדיקת דפי רשימת עובדים
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix the Employees List page (/employees).
+
+Check and fix ALL of these:
+
+1. File src/pages/employees/EmployeesListPage.tsx EXISTS
+
+2. Fetches from GET /api/employees with pagination
+
+3. Table shows columns: מספר עובד | שם | מחלקה | תפקיד | סטטוס | טלפון | תאריך התחלה
+
+4. Search input filters by name/ID in real-time (300ms debounce, calls API)
+
+5. Filter by department dropdown (populated from /api/departments)
+
+6. Filter by status dropdown (פעיל / לא פעיל / בחופשה)
+
+7. Column headers are sortable (click to sort asc/desc)
+
+8. Pagination: shows page X of Y, Previous/Next buttons work
+
+9. Row click → navigates to /employees/:id
+
+10. "הוסף עובד חדש" button → /employees/new
+
+11. "ייצא ל-Excel" button → downloads file
+
+12. Status badge: green=פעיל, gray=לא פעיל, blue=בחופשה
+
+13. Empty state: "אין עובדים. הוסף עובד ראשון." with button
+
+14. Loading skeleton: 10 row skeleton while loading
+
+15. Mobile: table collapses to cards on small screens
+
+Fix everything missing or broken. Output complete EmployeesListPage.tsx.
+
+```
+
+---
+
+### A-09 — בדיקת דף יצירת עובד
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix the Create Employee page (/employees/new).
+
+Check EVERY field exists with correct validation:
+
+1. שם מלא* — required, min 2 chars
+
+2. תעודת זהות* — required, exactly 9 digits, Israeli ID checksum validation
+
+3. תאריך לידה* — required, must be at least 18 years ago
+
+4. טלפון* — required, Israeli format: /^05[0-9]-?[0-9]{7}$/ or /^0[2-9]-?[0-9]{7}$/
+
+5. טלפון חירום — optional, same format
+
+6. כתובת* — required
+
+7. עיר* — required
+
+8. מחלקה* — required, select populated from GET /api/departments
+
+9. תפקיד* — required text field
+
+10. סוג העסקה* — required select: משרה מלאה / משרה חלקית / קבלן
+
+11. תאריך תחילת עבודה* — required, date picker
+
+12. תאריך סיום חוזה — optional, must be after start date if provided
+
+13. שכר ברוטו* — required, positive number, shown in ₪, stored as agorot
+
+14. סטטוס* — required select: פעיל (default) / לא פעיל / בחופשה
+
+15. הערות — optional textarea
+
+16. On submit: POST /api/employees
+
+17. On success: redirect to /employees/:newId with success toast
+
+18. On validation error: red border + Hebrew error under each invalid field
+
+19. "בטל" button → back to /employees without saving
+
+20. All labels in Hebrew, RTL layout, asterisk on required fields
+
+Fix everything missing or broken. Output complete CreateEmployeePage.tsx.
+
+```
+
+---
+
+### A-10 — בדיקת דף פרופיל עובד
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix the Employee Detail page (/employees/:id).
+
+Check and fix ALL of these:
+
+1. Fetches from GET /api/employees/:id on mount
+
+2. Shows employee number, name, photo placeholder (or uploaded photo)
+
+3. Status badge visible and correct color
+
+4. Page has TABS that all work:
+
+   - "פרטים אישיים" tab — shows all employee fields, EDIT button works
+
+   - "נוכחות" tab — fetches /api/employees/:id/attendance and shows monthly data
+
+   - "משמרות" tab — fetches /api/employees/:id/shifts and shows schedule
+
+   - "תלושי שכר" tab — fetches /api/employees/:id/payslips, download PDF button works
+
+   - "ביצועים" tab — fetches /api/employees/:id/performance
+
+   - "מסמכים" tab — fetches /api/employees/:id/documents, upload button works
+
+5. Tab content does NOT show blank on switch (each fetches its own data)
+
+6. "ערוך" button → /employees/:id/edit
+
+7. "מחק עובד" button → confirmation modal → soft delete → redirect to /employees
+
+8. Breadcrumb: "דף הבית > עובדים > [שם העובד]" all clickable
+
+9. "חזור לרשימה" button → /employees
+
+10. 404 redirect if employee ID does not exist
+
+11. Loading skeleton while fetching
+
+Fix everything missing or broken. Output complete EmployeeDetailPage.tsx.
+
+```
+
+---
+
+### A-11 — בדיקת דפי הזמנות עבודה (רשימה)
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix the Work Orders List page (/work-orders).
+
+Check and fix ALL of these:
+
+1. Fetches from GET /api/work-orders with filters
+
+2. Table columns: מספר | לקוח | סוג מוצר | סטטוס | עדיפות | תאריך יעד | עובד אחראי
+
+3. Status filter dropdown: all statuses in Hebrew
+
+4. Priority filter dropdown: דחוף / רגיל / נמוך
+
+5. Search by order number or customer name
+
+6. Date range filter (from/to)
+
+7. Status badges with correct colors
+
+8. Priority badge: דחוף = red, רגיל = blue, נמוך = gray
+
+9. Overdue rows highlighted in red (past due date + not delivered)
+
+10. Row click → /work-orders/:id
+
+11. "הזמנת עבודה חדשה" button → /work-orders/new
+
+12. "לוח קנבן" button → /work-orders/kanban
+
+13. Sorting on all columns
+
+14. Pagination works
+
+15. Empty state with call to action
+
+16. Loading skeleton
+
+Fix everything missing or broken. Output complete WorkOrdersListPage.tsx.
+
+```
+
+---
+
+### A-12 — בדיקת לוח קנבן
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / @dnd-kit/core / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix the Kanban Board page (/work-orders/kanban).
+
+Check and fix ALL of these:
+
+1. File src/pages/workOrders/KanbanBoardPage.tsx EXISTS
+
+2. Fetches all active work orders from GET /api/work-orders?kanban=true
+
+3. Shows 5 columns (RTL order): ממתין | בייצור | בדיקת איכות | מוכן למסירה | נמסר
+
+4. Each column shows work order COUNT in header
+
+5. Cards show: order number, customer name, product type, due date, priority badge
+
+6. Overdue cards: red left border
+
+7. Urgent priority: yellow star icon
+
+8. DRAG AND DROP works: drag card between columns
+
+9. On drop: calls PUT /api/work-orders/:id/status to update status
+
+10. On drop: if transition is INVALID (e.g., PENDING → DELIVERED), shows Hebrew error and card snaps back
+
+11. Card click → opens drawer/modal with work order details
+
+12. Drawer has: full details, "עבור לדף מלא" link, status change buttons, assign employee button
+
+13. Filters above board: by employee, by product type, search
+
+14. On mobile (< 768px): shows vertical list with status badges instead of kanban
+
+15. Real-time updates via SSE: if another user changes status, board updates
+
+Fix everything missing or broken. Output complete KanbanBoardPage.tsx.
+
+```
+
+---
+
+### A-13 — בדיקת דפי לקוחות (רשימה + פרטים)
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix Customers pages (/customers and /customers/:id).
+
+LIST PAGE — check and fix:
+
+1. Fetches from GET /api/customers
+
+2. Columns: מספר | שם | טלפון | דרגה | יתרה פתוחה | עיר | הזמנות
+
+3. Tier badge: A=gold, B=blue, C=gray
+
+4. Open balance column: red if > 0, green if = 0
+
+5. Search by name/phone/email
+
+6. Filter by tier (A/B/C)
+
+7. Filter "לקוחות עם חוב" (has open balance)
+
+8. "לקוח חדש" button → /customers/new
+
+9. Row click → /customers/:id
+
+DETAIL PAGE — check and fix:
+
+1. Shows all customer info
+
+2. "יתרה פתוחה" shown prominently, red if > 0
+
+3. Tabs all work:
+
+   - "פרטים" — info + edit button
+
+   - "היסטוריה" — GET /api/customers/:id/timeline shows merged timeline
+
+   - "כספים" — quotes + invoices + payments list with totals
+
+   - "הזמנות עבודה" — work orders list for this customer
+
+4. Timeline shows: QUOTE / WORK_ORDER / INVOICE / PAYMENT events with icons
+
+5. "הצעת מחיר חדשה" button pre-fills customer in quote form
+
+6. "הזמנת עבודה חדשה" button pre-fills customer
+
+7. Financial summary: total revenue, open balance, last payment date
+
+Fix everything missing or broken. Output complete CustomersListPage.tsx + CustomerDetailPage.tsx.
+
+```
+
+---
+
+### A-14 — בדיקת דפי הצעות מחיר
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew / agorot.
+
+TASK: Audit and fix Quotes pages (/quotes, /quotes/new, /quotes/:id).
+
+LIST PAGE — check:
+
+1. Shows all quotes with: מספר | לקוח | סכום | סטטוס | תאריך | תקף עד
+
+2. Status filter works
+
+3. Row click → /quotes/:id
+
+CREATE FORM — check EVERY element:
+
+1. לקוח field: search-as-you-type, calls GET /api/customers?search=
+
+2. Line items table: at least 1 row required
+
+3. Each row: תיאור | כמות | יחידה | מחיר יחידה ₪ | הנחה % | סה"כ (calculated)
+
+4. "הוסף שורה" button adds new empty row
+
+5. "הסר" button removes row (min 1 remains)
+
+6. Totals UPDATE IN REAL TIME: subtotal, 18% VAT, total
+
+7. תקף עד date field (default today + 30 days)
+
+8. תנאי תשלום select
+
+9. הערות textarea
+
+10. "שמור טיוטה" → saves as DRAFT
+
+11. "שמור ושלח" → saves as SENT
+
+DETAIL PAGE — check:
+
+1. Shows all quote data correctly
+
+2. PDF download button → downloads Hebrew PDF (not blank)
+
+3. "שלח ללקוח" → modal to choose WhatsApp or Email
+
+4. "אשר הזמנה" button (only if status=SENT) → converts to work order
+
+5. After conversion: shows link "הזמנת עבודה: WO-XXX"
+
+6. "דחה" button → asks for reason → status = REJECTED
+
+Fix everything missing or broken. Output complete fixed files.
+
+```
+
+---
+
+### A-15 — בדיקת דפי חשבוניות
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew / agorot.
+
+TASK: Audit and fix Invoice pages (/invoices, /invoices/new, /invoices/:id).
+
+CHECK AND FIX:
+
+1. Invoice number: SEQUENTIAL with NO GAPS — uses atomic DB sequence
+
+2. Invoice number NEVER reused even after soft delete
+
+3. Create form pre-fills from work order or quote if ?fromWorkOrder= param
+
+4. Required field: ח.פ. / ת.ז. of customer (for legal compliance)
+
+5. VAT shown as separate line: מע"מ 18% = ₪XXX
+
+6. PDF generated in Hebrew with ALL legally required fields:
+
+   - שם + ח.פ. of seller
+
+   - שם + ח.פ./ת.ז. of buyer
+
+   - Invoice number (sequential)
+
+   - Issue date
+
+   - Item descriptions, quantities, prices
+
+   - Subtotal, VAT amount, total
+
+7. "שלח ללקוח" sends email with PDF attached
+
+8. "רשום תשלום" button opens payment modal
+
+9. Payment modal: amount (shows remaining balance), method, date, reference
+
+10. After payment: invoice status updates, customer balance decreases
+
+11. "בטל חשבונית" → creates credit note (does NOT delete invoice)
+
+12. Status badges correct colors
+
+Fix everything missing or broken. Output complete fixed invoice files.
+
+```
+
+---
+
+### A-16 — בדיקת דפי מלאי
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix Inventory pages (/inventory, /inventory/:id, /inventory/low-stock).
+
+CATALOG PAGE — check:
+
+1. Fetches from GET /api/inventory with category filter
+
+2. Columns: קוד | שם | קטגוריה | כמות | מינימום | מיקום | מחיר ממוצע ₪
+
+3. Stock level bar: green=OK, yellow=approaching min, red=below min
+
+4. Category filter dropdown
+
+5. "מלאי נמוך" filter toggle
+
+6. "פריט חדש" button → /inventory/new
+
+7. Row click → /inventory/:id
+
+ITEM DETAIL PAGE — check:
+
+1. Shows all item fields
+
+2. "עדכן כמות" button → movement modal
+
+3. Movement modal: type (כניסה/יציאה/התאמה), quantity, reason → saves movement
+
+4. Movement history tab: chronological list of all movements
+
+5. "צור הזמנת רכש" button → /purchase-orders/new?item=:id
+
+LOW STOCK PAGE — check:
+
+1. Lists all items where quantity <= min_quantity
+
+2. Sorted by urgency (0 quantity first)
+
+3. Each item: "צור הזמנת רכש" button that pre-fills PO form
+
+4. Filter by category
+
+Fix everything missing or broken. Output complete fixed inventory files.
+
+```
+
+---
+
+### A-17 — בדיקת דפי דוחות
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / Recharts / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix the Reports Home page (/reports).
+
+Check and fix ALL of these:
+
+1. File src/pages/reports/ReportsHomePage.tsx EXISTS
+
+2. Shows grid of report cards, each navigating to correct report page:
+
+   - "דוח הכנסות" → /reports/revenue
+
+   - "דוח ייצור יומי" → /reports/production
+
+   - "דוח נוכחות" → /reports/attendance
+
+   - "דוח שכר" → /reports/payroll
+
+   - "דוח מלאי" → /reports/inventory
+
+   - "דוח רווחיות" → /reports/profitability
+
+   - "דוח מכירות" → /reports/sales
+
+3. Each report page EXISTS (not 404)
+
+4. Each report page fetches real data from API
+
+5. Each report page has "ייצא ל-Excel" button that downloads real file
+
+6. Each chart in each report renders with real data (not blank/empty)
+
+7. Date filters on each report work (changing date re-fetches data)
+
+8. All chart labels in Hebrew
+
+9. All numbers formatted as ₪X,XXX
+
+Fix everything missing or broken. Output complete ReportsHomePage.tsx and verify all report routes exist.
+
+```
+
+---
+
+## 📁 קטגוריה B: ניווט ולינקים
+
+---
+
+### B-01 — תפריט צד — כל הלינקים
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / React Router / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix the Sidebar Navigation component.
+
+Check and fix EVERY sidebar item:
+
+1. File src/components/layout/Sidebar.tsx EXISTS
+
+2. EVERY menu item has a working route path (no href="#")
+
+3. Active state: current route highlighted correctly
+
+4. Sub-menus expand/collapse with animation
+
+5. Role-based visibility:
+
+   - EMPLOYEE sees: לוח מחוונים, הזמנות שלי, נוכחות שלי, הפרופיל שלי
+
+   - MANAGER sees: all above + עובדים, הזמנות עבודה, לקוחות, מלאי, דוחות
+
+   - ADMIN sees: everything + הגדרות
+
+6. Icons render correctly (no broken icon references)
+
+7. On mobile (< 768px): sidebar hidden, hamburger button shown
+
+8. Hamburger opens overlay sidebar
+
+9. Clicking overlay background closes sidebar
+
+10. Sidebar items:
+
+    - לוח מחוונים → /dashboard ✓
+
+    - עובדים → /employees ✓
+
+    - משמרות ונוכחות → /shifts ✓
+
+    - הזמנות עבודה → /work-orders ✓
+
+    - לוח קנבן → /work-orders/kanban ✓
+
+    - לקוחות → /customers ✓
+
+    - הצעות מחיר → /quotes ✓
+
+    - חשבוניות → /invoices ✓
+
+    - תשלומים → /payments ✓
+
+    - מלאי → /inventory ✓
+
+    - ספקים → /suppliers ✓
+
+    - הזמנות רכש → /purchase-orders ✓
+
+    - שכר → /payroll ✓
+
+    - דוחות → /reports ✓
+
+    - הגדרות → /settings ✓
+
+Fix everything missing or broken. Output complete fixed Sidebar.tsx.
+
+```
+
+---
+
+### B-02 — Breadcrumbs — כל הדפים
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / React Router / RTL Hebrew.
+
+TASK: Audit and fix Breadcrumb navigation across all pages.
+
+Check and fix ALL of these:
+
+1. File src/components/layout/Breadcrumb.tsx EXISTS
+
+2. Breadcrumb appears on EVERY page below the header
+
+3. All breadcrumb items are CLICKABLE links (not just plain text)
+
+4. Each page has correct breadcrumb trail:
+
+   /employees → "דף הבית > עובדים"
+
+   /employees/new → "דף הבית > עובדים > עובד חדש"
+
+   /employees/:id → "דף הבית > עובדים > [שם העובד]"
+
+   /employees/:id/edit → "דף הבית > עובדים > [שם] > עריכה"
+
+   /work-orders → "דף הבית > הזמנות עבודה"
+
+   /work-orders/new → "דף הבית > הזמנות עבודה > הזמנה חדשה"
+
+   /work-orders/:id → "דף הבית > הזמנות עבודה > [WO-XXX]"
+
+   /customers/:id → "דף הבית > לקוחות > [שם לקוח]"
+
+   /quotes/:id → "דף הבית > הצעות מחיר > [QT-XXX]"
+
+   /invoices/:id → "דף הבית > חשבוניות > [INV-XXX]"
+
+   /inventory/:id → "דף הבית > מלאי > [שם פריט]"
+
+   /reports/revenue → "דף הבית > דוחות > דוח הכנסות"
+
+   /settings/users → "דף הבית > הגדרות > ניהול משתמשים"
+
+5. Separator between items is ">" (pointing LEFT in RTL)
+
+6. Last item (current page) is NOT a link, just text
+
+7. Dynamic segments load entity name from API (/employees/:id shows actual name)
+
+Fix everything missing or broken. Output complete Breadcrumb.tsx.
+
+```
+
+---
+
+### B-03 — כפתורי חזור ו-redirect אחרי פעולות
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / React Router.
+
+TASK: Audit and fix all Back buttons and post-action redirects.
+
+Check and fix ALL of these:
+
+BACK BUTTONS — every page must have correct back navigation:
+
+1. /employees/new → "בטל" → /employees
+
+2. /employees/:id/edit → "בטל" → /employees/:id
+
+3. /work-orders/new → "בטל" → /work-orders
+
+4. /work-orders/:id/edit → "בטל" → /work-orders/:id
+
+5. /quotes/new → "בטל" → /quotes
+
+6. /quotes/:id/edit → "בטל" → /quotes/:id
+
+7. /customers/new → "בטל" → /customers
+
+8. /inventory/new → "בטל" → /inventory
+
+POST-ACTION REDIRECTS — after successful API call:
+
+9. CREATE employee → redirect to /employees/:newId
+
+10. CREATE work-order → redirect to /work-orders/:newId
+
+11. CREATE quote → redirect to /quotes/:newId
+
+12. CREATE customer → redirect to /customers/:newId
+
+13. UPDATE any entity → stay on detail page, show success toast
+
+14. DELETE entity → redirect to list page, show "נמחק בהצלחה" toast
+
+15. Quote ACCEPTED + work order created → redirect to /work-orders/:newWorkOrderId
+
+16. Invoice payment recorded → stay on invoice page, update balance display
+
+UNSAVED CHANGES WARNING:
+
+17. If form is dirty (has unsaved changes) and user tries to navigate away:
+
+    Show browser confirm: "יש שינויים שלא נשמרו. האם לעזוב?"
+
+Fix everything missing or broken. Output all navigation logic fixes.
+
+```
+
+---
+
+### B-04 — סריקת לינקים שבורים בכל הקוד
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript.
+
+TASK: Scan the entire codebase for broken links and placeholder navigation, fix all.
+
+Search for and fix EVERY instance of:
+
+1. href="#" → replace with real route or remove if not needed
+
+2. to="/todo" → replace with real route
+
+3. to="/coming-soon" → replace with real route
+
+4. to="/" when it should be a specific route
+
+5. onClick={() => {}} → empty handler → implement real action
+
+6. onClick={() => console.log(...)} → debug handler → implement real action
+
+7. onClick={alert} → implement real action
+
+8. navigate('/') when it should navigate to a specific page
+
+9. // TODO: implement → actually implement it
+
+10. {/* Coming soon */} → build the actual feature
+
+11. <button disabled> with comment "coming soon" → implement or remove
+
+12. return null; in components that should render something
+
+For each broken instance found:
+
+- Show the file name and line
+
+- Show what was there before
+
+- Show what you replaced it with
+
+Fix ALL instances. Report total count fixed.
+
+```
+
+---
+
+## 📁 קטגוריה C: שדות טפסים וולידציה
+
+---
+
+### C-01 — ולידציה של תעודת זהות ישראלית
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Zod.
+
+TASK: Implement and audit Israeli ID number validation (Luhn algorithm).
+
+Check and fix ALL of these:
+
+1. Create utility function: src/utils/israeliId.ts
+
+   Function: validateIsraeliId(id: string): boolean
+
+   Implements the standard Israeli ID checksum:
+
+   - Must be exactly 9 digits
+
+   - Luhn-style calculation:
+
+     Multiply alternating digits by 1 and 2
+
+     If result > 9, subtract 9
+
+     Sum all results must be divisible by 10
+
+2. Add to Zod schema for employee creation:
+
+   id_number: z.string()
+
+     .regex(/^\d{9}$/, 'תעודת זהות חייבת להכיל 9 ספרות')
+
+     .refine(validateIsraeliId, 'מספר תעודת הזהות אינו תקין')
+
+3. Apply validation in:
+
+   - POST /api/employees (backend Zod schema)
+
+   - CreateEmployeePage form (frontend real-time validation)
+
+   - Field shows error immediately when user finishes typing (onBlur)
+
+4. Test cases that must work:
+
+   - "123456782" → valid
+
+   - "123456789" → invalid
+
+   - "12345678" → invalid (8 digits)
+
+   - "abcdefghi" → invalid (not digits)
+
+Output complete israeliId.ts + updated schema + form field component.
+
+```
+
+---
+
+### C-02 — ולידציה של טלפון ישראלי
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / React 18.
+
+TASK: Implement and audit Israeli phone number validation.
+
+Check and fix ALL of these:
+
+1. Create utility: src/utils/israeliPhone.ts
+
+   Function: validateIsraeliPhone(phone: string): boolean
+
+   Accepts formats:
+
+   - 050-1234567 (mobile)
+
+   - 0501234567 (mobile no dash)
+
+   - 03-1234567 (landline)
+
+   - 031234567 (landline no dash)
+
+   - +972-50-1234567 (international)
+
+2. Function: formatIsraeliPhone(phone: string): string
+
+   Normalizes to: 050-123-4567 or 03-123-4567
+
+3. Zod schema:
+
+   phone: z.string()
+
+     .refine(validateIsraeliPhone, 'מספר טלפון לא תקין')
+
+4. React component: PhoneInput.tsx
+
+   - Applies format as user types
+
+   - Shows validation error: "מספר טלפון לא תקין (לדוגמה: 050-1234567)"
+
+   - Validates on blur
+
+5. Apply to ALL phone fields:
+
+   - Employee: phone + emergency_contact_phone
+
+   - Customer: phone + whatsapp_phone
+
+   - Supplier: phone
+
+Output complete israeliPhone.ts + PhoneInput.tsx + Zod integration.
+
+```
+
+---
+
+### C-03 — ולידציה של חישובי כספים (אגורות + מע"מ)
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / React 18.
+
+TASK: Audit and fix all monetary calculations to use agorot correctly.
+
+Check and fix ALL of these:
+
+1. Create utility: src/utils/money.ts
+
+   - agorotToShekel(agorot: number): string → "₪1,234.56"
+
+   - shekelToAgorot(shekel: number): number → 123456
+
+   - calculateVAT(subtotalAgorot: number): number → Math.round(subtotalAgorot * 0.18)
+
+   - calculateTotal(subtotalAgorot: number): number → subtotalAgorot + calculateVAT(subtotalAgorot)
+
+2. Quote form calculations (real-time):
+
+   - Each line item: total = quantity × unit_price × (1 - discount/100)
+
+   - All in agorot internally, displayed in ₪
+
+   - Subtotal = sum of line item totals
+
+   - VAT = Math.round(subtotal × 0.18) (rounded to nearest agorot)
+
+   - Total = subtotal + VAT
+
+   - Updates on EVERY keystroke in quantity/price/discount fields
+
+3. Invoice must match quote calculations exactly
+
+4. Payment "remaining balance" = invoice.total_agorot - sum(payments.amount_agorot)
+
+5. Customer open_balance = sum(invoice.total_agorot) - sum(payments.amount_agorot)
+
+6. NEVER use floating point arithmetic for money (always integers in agorot)
+
+7. Display always in ₪ with 2 decimal places
+
+8. Audit ALL places where money is calculated in the codebase:
+
+   - Find any uses of * 0.18 on floats (incorrect)
+
+   - Find any ₪ display without formatting function (incorrect)
+
+   - Find any division that could create floating point errors
+
+Fix everything. Output complete money.ts utility + all fixes.
+
+```
+
+---
+
+### C-04 — שדות חובה — סימון ושגיאות
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix required field marking and validation display.
+
+Check and fix ALL of these:
+
+1. Create FormField component: src/components/ui/FormField.tsx
+
+   Props: label, required, error, children
+
+   Renders:
+
+   - Label in Hebrew (right-aligned in RTL)
+
+   - Red asterisk "*" after label if required=true
+
+   - Children (the input)
+
+   - Error message in red below input if error prop provided
+
+   - Red border on input when error exists
+
+2. Every required field in EVERY form must:
+
+   - Have the red asterisk "*"
+
+   - Show red border when empty on submit attempt
+
+   - Show Hebrew error message below field
+
+   - Clear error when user starts typing in that field
+
+3. Submit button behavior:
+
+   - On click: validate ALL fields first
+
+   - If any invalid: do NOT call API, show all errors at once
+
+   - Scroll to first error field
+
+   - Show toast: "אנא תקן את השגיאות בטופס"
+
+4. Check EVERY form in the system:
+
+   - Employee create/edit
+
+   - Work order create/edit
+
+   - Quote create/edit
+
+   - Invoice create
+
+   - Customer create/edit
+
+   - Inventory item create/edit
+
+   - Shift create
+
+   - Payment record
+
+Fix everything. Output complete FormField.tsx + validation logic.
+
+```
+
+---
+
+### C-05 — חישוב שורות הצעת מחיר בזמן אמת
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / RTL Hebrew.
+
+TASK: Audit and fix real-time quote line item calculations.
+
+Check and fix ALL of these:
+
+1. LineItemsTable component in quote form
+
+2. Each row has: תיאור | כמות | יחידה | מחיר יחידה ₪ | הנחה % | סה"כ ₪
+
+3. "סה"כ" per row = qty × unit_price × (1 - discount/100) — updates on EVERY change
+
+4. Discount field: range 0-100, default 0, shows "%" suffix
+
+5. "הוסף שורה" button adds new empty row at bottom
+
+6. "הסר" button on each row removes it (minimum 1 row must remain)
+
+7. Rows can be reordered (drag handles, optional)
+
+8. TOTALS section below table:
+
+   - "סכום לפני מע"מ": sum of all row totals
+
+   - "מע"מ (18%)": Math.round(subtotal × 0.18)
+
+   - "סה"כ לתשלום": subtotal + vat
+
+   ALL update in real time
+
+9. Negative amounts not allowed (validation)
+
+10. Empty description allowed (but shows warning)
+
+11. Quantity must be > 0
+
+12. Unit price must be >= 0
+
+Fix everything missing or broken. Output complete LineItemsTable component.
+
+```
+
+---
+
+### C-06 — שדות תאריך — פורמט ישראלי
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix all date fields to use Israeli format.
+
+Check and fix ALL of these:
+
+1. Create DateInput component: src/components/ui/DateInput.tsx
+
+   - Uses native HTML <input type="date">
+
+   - Displays in DD/MM/YYYY format (Israeli standard)
+
+   - Stores as ISO string internally
+
+   - Converts display ↔ internal automatically
+
+2. Create utility: src/utils/dateFormat.ts
+
+   - formatDateIL(date): string → "15/01/2024"
+
+   - formatDateTimeIL(date): string → "15/01/2024 14:30"
+
+   - formatRelative(date): string → "לפני 3 ימים" / "מחר" / "היום"
+
+   - parseILDate(str: string): Date → parses DD/MM/YYYY
+
+3. Find EVERY date display in the system and replace with formatDateIL():
+
+   - Employee birth date, start date, contract end
+
+   - Shift date
+
+   - Work order due date, created at
+
+   - Quote valid until date
+
+   - Invoice issue date, due date
+
+   - Payment date
+
+   - Any "created_at" or "updated_at" shown to user
+
+4. Date validations in forms:
+
+   - Employee birth date: must be 18+ years ago
+
+   - Employee end date: must be after start date
+
+   - Quote valid until: must be today or future
+
+   - Work order due date: must be today or future
+
+Fix everything. Output DateInput.tsx + dateFormat.ts + all form fixes.
+
+```
+
+---
+
+## 📁 קטגוריה D: סינכרון נתונים
+
+---
+
+### D-01 — זרימה: הצעת מחיר → הזמנת עבודה
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Prisma / React 18.
+
+TASK: Audit and fix the Quote-to-WorkOrder conversion flow.
+
+Check and fix EVERY step:
+
+1. Quote detail page: "אשר הזמנה" button is VISIBLE only when quote status = SENT or ACCEPTED
+
+2. Button click: opens confirmation modal showing quote summary
+
+3. Modal has: "תאריך יעד" field (required before converting)
+
+4. On confirm: POST /api/quotes/:id/convert
+
+5. Backend /api/quotes/:id/convert:
+
+   - Validates quote status is SENT (not DRAFT, not REJECTED)
+
+   - Creates work_order with data from quote:
+
+     customer_id, description from quote notes, product_type
+
+   - Sets work_order.source_quote_id = quote.id
+
+   - Updates quote.status = ACCEPTED
+
+   - Returns { workOrderId: newId }
+
+6. Frontend: on success → navigate to /work-orders/:newWorkOrderId
+
+7. Work order detail page shows: "מבוסס על הצעת מחיר: QT-XXX" as clickable link
+
+8. Quote detail page shows: "הזמנת עבודה: WO-XXX" as clickable link (after conversion)
+
+9. If quote already converted: "אשר הזמנה" button is hidden, link shown instead
+
+10. Customer timeline: both QUOTE and WORK_ORDER events appear
+
+Fix everything. Output complete conversion endpoint + UI changes.
+
+```
+
+---
+
+### D-02 — זרימה: הזמנת עבודה → חשבונית
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Prisma / React 18.
+
+TASK: Audit and fix the WorkOrder-to-Invoice flow.
+
+Check and fix EVERY step:
+
+1. Work order detail page: "צור חשבונית" button VISIBLE only when status = DELIVERED
+
+2. Button click: navigates to /invoices/new?fromWorkOrder=:id
+
+3. Invoice new page reads ?fromWorkOrder param
+
+4. If param present: fetches work order data, PRE-FILLS:
+
+   - customer_id (customer auto-selected in customer field)
+
+   - description (from work order description)
+
+   - amount from linked quote (if exists) or empty
+
+   - work_order_id field (hidden) stores the link
+
+5. Invoice saved with work_order_id reference
+
+6. Invoice detail shows: "מבוסס על הזמנה: WO-XXX" link
+
+7. Work order detail shows: "חשבונית: INV-XXX" link (after invoice created)
+
+8. Customer open_balance_agorot INCREASES when invoice created
+
+9. Verify: if work order already has invoice, show existing invoice link (don't allow creating another)
+
+Fix everything. Output complete flow implementation.
+
+```
+
+---
+
+### D-03 — זרימה: חשבונית → תשלום → יתרה
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Prisma / React 18.
+
+TASK: Audit and fix the Invoice payment flow and balance sync.
+
+Check and fix EVERY step:
+
+1. Invoice detail: shows "יתרה לתשלום: ₪X,XXX" prominently
+
+2. "רשום תשלום" button opens modal
+
+3. Payment modal fields:
+
+   - סכום: number, max = remaining balance, shows "יתרה: ₪X,XXX"
+
+   - אמצעי תשלום: select (מזומן/העברה/צ'ק/כרטיס)
+
+   - תאריך: date picker (default today)
+
+   - מספר אסמכתא: text (optional)
+
+4. On submit: POST /api/payments
+
+5. Backend POST /api/payments:
+
+   - Records payment in payments table
+
+   - Recalculates invoice.paid_agorot = SUM of all payments for this invoice
+
+   - Updates invoice.status:
+
+     - If paid_agorot = total_agorot → PAID
+
+     - If paid_agorot > 0 and < total_agorot → PARTIALLY_PAID
+
+   - Updates customer.open_balance_agorot (recalculate from all invoices)
+
+6. After payment: modal closes, invoice page REFRESHES showing:
+
+   - Updated "שולם: ₪X,XXX"
+
+   - Updated "יתרה: ₪X,XXX" (or 0 if fully paid)
+
+   - Updated status badge
+
+7. Customer profile balance updates immediately (not stale)
+
+8. Payments list on invoice: shows all payments with date, method, amount
+
+Fix everything. Output complete payment flow.
+
+```
+
+---
+
+### D-04 — זרימה: עובד → משמרת → נוכחות
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Prisma / React 18.
+
+TASK: Audit and fix the Employee-Shift-Attendance sync.
+
+Check and fix EVERY step:
+
+1. After employee created: employee appears in shift assignment dropdown IMMEDIATELY
+
+2. Shift create form: employee search populated from GET /api/employees?status=ACTIVE
+
+3. Shift assigned: shift appears in:
+
+   - /shifts weekly view in correct day column
+
+   - Employee's profile "משמרות" tab
+
+   - Employee's own "המשמרות שלי" page
+
+4. Clock-in terminal: employee enters ID number
+
+   - GET /api/employees?id_number=XXXXXXXXX to find employee
+
+   - Shows employee photo + name for confirmation
+
+   - POST /api/attendance/clock-in saves record with employee_id + timestamp
+
+5. /attendance/today dashboard updates in near real-time (SSE or 30s refresh):
+
+   - Shows employee name as PRESENT
+
+   - Shows clock-in time
+
+6. Clock-out:
+
+   - Same terminal flow
+
+   - POST /api/attendance/clock-out
+
+   - hours_worked calculated: (clock_out - clock_in) in decimal hours
+
+   - If clock_in + 8.5 hours < clock_out → overtime hours flagged
+
+7. Monthly payroll: aggregates all attendance records for employee in that month
+
+8. Verify: if employee has no shifts assigned but clocks in, still recorded (ad-hoc attendance)
+
+Fix everything. Output complete sync implementation.
+
+```
+
+---
+
+### D-05 — זרימה: מלאי → הזמנת עבודה → עדכון מלאי
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Prisma / React 18.
+
+TASK: Audit and fix the Inventory-WorkOrder sync.
+
+Check and fix EVERY step:
+
+1. Work order create: if product_type selected, auto-loads BOM (bill of materials)
+
+2. BOM shows table: חומר | נדרש | זמין | מצב
+
+3. "זמין" = inventory.quantity_in_stock for each material
+
+4. "מצב": green=מספיק, red=חסר (needed > available)
+
+5. If any material is insufficient: warning shown but user CAN still create order
+
+6. When work order status changes to IN_PRODUCTION:
+
+   - Materials from BOM are RESERVED (not deducted yet)
+
+   - inventory.reserved_quantity increases
+
+   - inventory.available = quantity_in_stock - reserved_quantity
+
+7. When work order status changes to DELIVERED (completed):
+
+   - Reserved materials are DEDUCTED from actual stock
+
+   - inventory_movements record created: type=OUT, work_order_id=:id
+
+   - inventory.quantity_in_stock decreases
+
+   - inventory.reserved_quantity decreases
+
+8. If stock falls below min_quantity after deduction:
+
+   - Alert created in notifications table
+
+   - Manager receives in-app notification
+
+9. Purchase order received: inventory.quantity_in_stock increases
+
+10. inventory_movements record created: type=IN, purchase_order_id=:id
+
+Fix everything. Output complete inventory sync implementation.
+
+```
+
+---
+
+### D-06 — KPIs לוח מחוונים — נתונים אמיתיים
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Prisma / React 18.
+
+TASK: Audit and fix Dashboard KPIs to show REAL data.
+
+Fix backend GET /api/dashboard to return:
+
+1. "הכנסות החודש":
+
+   SELECT SUM(amount_agorot) FROM payments 
+
+   WHERE payment_date >= first day of current month
+
+   AND payment_date <= today
+
+2. "עבודות פעילות":
+
+   SELECT COUNT(*) FROM work_orders
+
+   WHERE status IN ('PENDING', 'IN_PRODUCTION', 'QUALITY_CHECK')
+
+   AND deleted_at IS NULL
+
+3. "עובדים נוכחים":
+
+   SELECT COUNT(*) FROM attendance
+
+   WHERE DATE(clock_in) = TODAY
+
+   AND clock_out IS NULL
+
+4. "מלאי נמוך":
+
+   SELECT COUNT(*) FROM inventory
+
+   WHERE quantity_in_stock <= min_quantity
+
+   AND deleted_at IS NULL
+
+5. Revenue chart data:
+
+   SELECT 
+
+     EXTRACT(MONTH FROM payment_date) as month,
+
+     SUM(amount_agorot) as total
+
+   FROM payments
+
+   WHERE EXTRACT(YEAR FROM payment_date) = current_year
+
+   GROUP BY month
+
+   ORDER BY month
+
+6. Work order status counts:
+
+   SELECT status, COUNT(*) FROM work_orders
+
+   WHERE deleted_at IS NULL
+
+   GROUP BY status
+
+7. Response time: entire endpoint < 500ms (use Promise.all for parallel queries)
+
+Fix frontend to consume real data and display correctly:
+
+- KPI cards show formatted ₪ amounts (not 0 or NaN)
+
+- Charts render with actual data points
+
+- Auto-refresh every 5 minutes
+
+Output complete /api/dashboard route + DashboardPage data consumption.
+
+```
+
+---
+
+## 📁 קטגוריה E: כפתורים ופעולות
+
+---
+
+### E-01 — כפתור הורדת PDF — הצעת מחיר
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / PDFKit or Puppeteer / React 18.
+
+TASK: Audit and fix the Quote PDF download button.
+
+Check and fix ALL of these:
+
+1. Quote detail page has "הורד PDF" button
+
+2. Button click calls GET /api/quotes/:id/pdf
+
+3. Backend route GET /api/quotes/:id/pdf EXISTS
+
+4. Backend generates Hebrew PDF using PDFKit:
+
+   - A4 page size
+
+   - RTL text direction
+
+   - Hebrew font (use embedded font or system font)
+
+   - Company header: "טכנו כל עוזי | ריבל 37, תל אביב | [phone]"
+
+   - Title: "הצעת מחיר" (large)
+
+   - Quote number + date + valid until
+
+   - Customer details block
+
+   - Items table with Hebrew column headers
+
+   - Subtotal, VAT 18%, Total rows
+
+   - Footer with payment terms + signature line
+
+5. PDF is NOT blank, NOT corrupted
+
+6. PDF downloads with filename: "הצעת-מחיר-QT-XXXX.pdf"
+
+7. Browser: file download dialog appears (not open in new tab)
+
+8. Button shows loading spinner while generating
+
+9. If generation fails: Hebrew error toast shown
+
+If PDFKit has Hebrew font issues, use Puppeteer with HTML template instead.
+
+Fix everything. Output complete PDF generation service + route.
+
+```
+
+---
+
+### E-02 — כפתור שליחת WhatsApp — הצעת מחיר
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Meta WhatsApp Business API / React 18.
+
+TASK: Audit and fix the "Send to customer via WhatsApp" button.
+
+Check and fix ALL of these:
+
+1. Quote detail page has "שלח ללקוח" button
+
+2. Click opens modal with two options: WhatsApp | אימייל
+
+3. If WhatsApp selected:
+
+   - Shows customer WhatsApp number (editable)
+
+   - Shows message preview in Hebrew
+
+   - "שלח" button calls POST /api/quotes/:id/send {channel: 'whatsapp'}
+
+4. Backend POST /api/quotes/:id/send:
+
+   - Generates PDF (or uses stored PDF URL)
+
+   - Uploads PDF to Supabase Storage if not already there
+
+   - Calls WhatsApp Business API to send document message
+
+   - WhatsApp message text: "שלום [שם לקוח], הצעת המחיר [QT-XXX] בסך ₪[סכום] מוכנה לצפייה."
+
+   - Quote status changes to SENT if was DRAFT
+
+5. On success: modal closes, success toast "הודעה נשלחה בהצלחה"
+
+6. On WhatsApp API failure:
+
+   - Shows Hebrew error: "שגיאה בשליחת WhatsApp. נסה שוב או שלח במייל."
+
+   - Does NOT crash
+
+7. If WHATSAPP_API_TOKEN not configured: shows "WhatsApp לא מוגדר. עבור להגדרות."
+
+8. Quote shows "נשלח ב-[תאריך]" after sending
+
+Fix everything. Output complete send endpoint + UI modal.
+
+```
+
+---
+
+### E-03 — כפתור שינוי סטטוס — הזמנת עבודה
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Prisma / React 18.
+
+TASK: Audit and fix Work Order status change buttons.
+
+Check and fix ALL of these:
+
+1. Work order detail page shows current status badge prominently
+
+2. Shows ONLY valid next status buttons (based on current status):
+
+   - PENDING → "התחל ייצור" button
+
+   - IN_PRODUCTION → "שלח לבדיקת איכות" + "החזר לממתין" (if issue)
+
+   - QUALITY_CHECK → "מוכן למסירה" + "החזר לייצור" (if failed)
+
+   - READY → "סמן כנמסר"
+
+   - DELIVERED → no status buttons (final state)
+
+   - CANCELLED → no status buttons
+
+3. Click status button: shows confirmation modal with notes field
+
+4. Modal: "האם לשנות סטטוס ל[X]?" + optional notes textarea
+
+5. On confirm: PUT /api/work-orders/:id/status { status: newStatus, notes: "..." }
+
+6. Backend validates transition is allowed (enforced server-side, not just UI)
+
+7. Backend records status change in work_order_status_history table
+
+8. On success: page refreshes, new status shown, history timeline updates
+
+9. Kanban board: if open in another tab, card moves column (via SSE or on next load)
+
+10. Status history timeline on work order page shows ALL past statuses with timestamp + who changed it
+
+Fix everything. Output complete status change implementation.
+
+```
+
+---
+
+### E-04 — כפתור הקצאת עובד להזמנה
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Prisma / React 18.
+
+TASK: Audit and fix the "Assign Employee" feature on work orders.
+
+Check and fix ALL of these:
+
+1. Work order detail page has "הוסף עובד לעבודה" button
+
+2. Click opens modal with employee search
+
+3. Modal: search input filters employees from /api/employees?status=ACTIVE
+
+4. Shows employee name + department + currently assigned orders count
+
+5. Select employee + role (LEAD / ASSISTANT)
+
+6. Submit: POST /api/work-orders/:id/assign { employeeId, role }
+
+7. Backend: creates record in work_order_assignments table
+
+8. Work order page: shows list of assigned employees with their roles
+
+9. Each assigned employee has "הסר" button → DELETE /api/work-orders/:id/assign/:employeeId
+
+10. Employee receives in-app notification: "שויכת להזמנה WO-XXX"
+
+11. Employee's "הזמנות שלי" page shows this work order
+
+12. Cannot assign same employee twice to same work order (validation)
+
+13. "דווח שעות" button per assigned employee: logs hours for today
+
+Fix everything. Output complete assignment implementation.
+
+```
+
+---
+
+### E-05 — כפתור עדכון כמות מלאי
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Prisma / React 18.
+
+TASK: Audit and fix inventory quantity update buttons.
+
+Check and fix ALL of these:
+
+1. Inventory list page: each row has quick "עדכן כמות" button
+
+2. Click: opens small modal (not full page navigate)
+
+3. Modal fields:
+
+   - סוג תנועה: כניסה / יציאה / התאמה ידנית
+
+   - כמות (number, > 0)
+
+   - סיבה (text, required for התאמה, optional for כניסה/יציאה)
+
+4. Submit: POST /api/inventory/:id/movement
+
+5. Backend updates inventory.quantity_in_stock:
+
+   - כניסה: quantity += amount
+
+   - יציאה: quantity -= amount (cannot go negative, show error if insufficient)
+
+   - התאמה: quantity = new absolute value
+
+6. Creates inventory_movements record
+
+7. After save: modal closes, list row updates new quantity WITHOUT page reload
+
+8. If quantity goes below min_quantity: yellow warning in row, but save still allowed
+
+9. If quantity = 0: red warning, admin notified
+
+10. Inventory item detail page: movement history tab shows new movement immediately
+
+Fix everything. Output complete quantity update modal + backend.
+
+```
+
+---
+
+### E-06 — כפתורי אישור/דחייה — בקשות חופשה
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Prisma / React 18.
+
+TASK: Audit and fix leave request approval/rejection buttons.
+
+Check and fix ALL of these:
+
+1. Manager leave management page shows pending leave requests
+
+2. Each request shows: עובד | סוג חופשה | מ | עד | ימים | יתרה | הגיש בתאריך
+
+3. "אשר" button (green):
+
+   - POST /api/leaves/:id/approve
+
+   - Backend: status = APPROVED, balance deducted
+
+   - Employee receives notification: "בקשת החופשה שלך אושרה"
+
+   - Leave appears in /shifts weekly view as "חופשה" slot
+
+4. "דחה" button (red):
+
+   - Opens modal asking for rejection reason (required)
+
+   - POST /api/leaves/:id/reject { reason: "..." }
+
+   - Employee notified with reason: "בקשת החופשה נדחתה: [reason]"
+
+5. Both buttons disabled with spinner while API call in progress
+
+6. After action: row removed from pending list (not just status change)
+
+7. Validation: cannot approve leave if employee has insufficient balance
+
+   - Show error: "יתרת החופשה של [שם] אינה מספיקה ([X] ימים נותרו)"
+
+8. Employee "בקשות החופשה שלי" page shows approved/rejected with reason
+
+Fix everything. Output complete leave approval implementation.
+
+```
+
+---
+
+## 📁 קטגוריה F: API Endpoints
+
+---
+
+### F-01 — בדיקת כל endpoints של עובדים
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / Express / TypeScript / Prisma / PostgreSQL.
+
+TASK: Audit and create/fix ALL employee-related API endpoints.
+
+Verify EACH endpoint exists, has auth middleware, and works correctly:
+
+GET /api/employees
+
+- Returns paginated list
+
+- Accepts: ?page=1&limit=25&search=&department=&status=
+
+- Returns: { data: Employee[], total, page, totalPages }
+
+- Auth: MANAGER or higher
+
+GET /api/employees/:id
+
+- Returns full employee with department name
+
+- Returns 404 if not found or soft-deleted
+
+- Auth: MANAGER or own profile
+
+POST /api/employees
+
+- Validates all required fields with Zod
+
+- Validates Israeli ID checksum
+
+- Validates unique ID number
+
+- Creates employee with auto-generated employee_number (EMP-XXX)
+
+- Auth: ADMIN or MANAGER
+
+PUT /api/employees/:id
+
+- Updates only provided fields
+
+- Same validations as POST
+
+- Returns updated employee
+
+- Auth: ADMIN or MANAGER
+
+DELETE /api/employees/:id
+
+- Sets deleted_at = now() (soft delete)
+
+- Does NOT actually delete DB row
+
+- Returns 204
+
+- Auth: ADMIN only
+
+GET /api/employees/:id/attendance?month=&year=
+
+- Returns all attendance records for that month
+
+- Calculates: total_hours, overtime_hours, absent_days
+
+- Auth: MANAGER or own record
+
+GET /api/employees/:id/shifts?week=
+
+- Returns shifts for specified week (ISO week number)
+
+- Auth: MANAGER or own shifts
+
+For any missing endpoint: CREATE it.
+
+For any broken endpoint: FIX it.
+
+Output all complete route handlers.
+
+```
+
+---
+
+### F-02 — בדיקת כל endpoints של הזמנות עבודה
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / Express / TypeScript / Prisma / PostgreSQL.
+
+TASK: Audit and create/fix ALL work order API endpoints.
+
+Verify and fix EACH:
+
+GET /api/work-orders
+
+- Filters: status, priority, customer_id, employee_id, from_date, to_date, search
+
+- Includes: customer name, assigned employee name
+
+- Pagination
+
+- Overdue flag: dueDate < today AND status NOT IN (DELIVERED, CANCELLED)
+
+- Auth: MANAGER+ sees all, EMPLOYEE sees only assigned
+
+GET /api/work-orders/stats
+
+- Returns: { byStatus: {PENDING: N, IN_PRODUCTION: N, ...}, overdue: N }
+
+- Used by dashboard
+
+GET /api/work-orders/:id
+
+- Full details including: customer, assigned employees, status history, notes, photos
+
+- Auth: MANAGER+ or assigned employee
+
+POST /api/work-orders
+
+- Required: customer_id, product_type, description, priority, due_date
+
+- Auto-generates order_number: WO-YYYY-NNN (sequential per year)
+
+- Status defaults to PENDING
+
+- Auth: MANAGER+
+
+PUT /api/work-orders/:id/status
+
+- Validates transition matrix:
+
+  PENDING → IN_PRODUCTION (allowed)
+
+  IN_PRODUCTION → QUALITY_CHECK, PENDING, CANCELLED (allowed)
+
+  QUALITY_CHECK → READY, IN_PRODUCTION (allowed)
+
+  READY → DELIVERED, QUALITY_CHECK (allowed)
+
+  DELIVERED → nothing (final)
+
+  CANCELLED → nothing (final)
+
+- Any other transition → 400 "מעבר סטטוס לא חוקי"
+
+- Records in work_order_status_history
+
+- Auth: MANAGER or assigned SHIFT_SUPERVISOR
+
+POST /api/work-orders/:id/assign
+
+- Body: { employeeId, role }
+
+- Prevents duplicate assignments
+
+- Auth: MANAGER+
+
+POST /api/work-orders/:id/notes
+
+- Body: { content, type }
+
+- Auth: any authenticated user
+
+For any missing endpoint: CREATE it with proper validation and auth.
+
+Output all route handlers.
+
+```
+
+---
+
+### F-03 — בדיקת כל endpoints של לקוחות וכספים
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / Express / TypeScript / Prisma / PostgreSQL.
+
+TASK: Audit and fix ALL customer and financial API endpoints.
+
+Verify and fix EACH:
+
+GET /api/customers
+
+- Search by name/phone/email
+
+- Filter by tier (A/B/C)
+
+- Filter has_debt (open_balance > 0)
+
+- Includes: open_balance_agorot (calculated)
+
+GET /api/customers/:id/summary
+
+Returns:
+
+{
+
+  total_revenue_agorot: sum of PAID invoices,
+
+  open_balance_agorot: sum of invoices - sum of payments,
+
+  quote_count: number,
+
+  work_order_count: number,
+
+  last_activity: most recent event date
+
+}
+
+GET /api/customers/:id/timeline
+
+Returns merged array sorted by date:
+
+- work_orders for this customer
+
+- quotes for this customer  
+
+- invoices for this customer
+
+- payments for this customer
+
+Each item has: type, date, description, amount, status
+
+POST /api/invoices
+
+- CRITICAL: invoice_number must be auto-incremented from a DB sequence (atomic!)
+
+- Never use MAX(invoice_number) + 1 (race condition!)
+
+- Use: SELECT NEXTVAL('invoice_number_seq')
+
+- Required: customer_id, line_items (array), due_date
+
+POST /api/payments
+
+- Validates amount <= remaining balance on invoice
+
+- Updates invoice.paid_agorot
+
+- Updates invoice.status (PARTIALLY_PAID or PAID)
+
+- Recalculates customer.open_balance_agorot
+
+GET /api/customers/debtors
+
+Returns: customers where open_balance_agorot > 0, sorted by balance desc
+
+Fix everything. Output all complete route handlers.
+
+```
+
+---
+
+### F-04 — בדיקת endpoints של מלאי ורכש
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / Express / TypeScript / Prisma / PostgreSQL.
+
+TASK: Audit and fix ALL inventory and purchase order endpoints.
+
+Verify and fix EACH:
+
+GET /api/inventory
+
+- Filter by category, is_low_stock
+
+- Includes: supplier name, days_of_supply (quantity / avg daily usage)
+
+- Computed field: status (OK/LOW/CRITICAL/OUT)
+
+POST /api/inventory/:id/movement
+
+Body: { type: 'IN'|'OUT'|'ADJUSTMENT', quantity, reason?, work_order_id?, purchase_order_id? }
+
+- For OUT: validates quantity <= current stock (cannot go negative)
+
+- Updates inventory.quantity_in_stock
+
+- Creates inventory_movements record
+
+- Checks if new quantity <= min_quantity → creates notification if yes
+
+- Auth: MANAGER+ for ADJUSTMENT, any for IN/OUT
+
+GET /api/inventory/:id/history
+
+Returns: all inventory_movements for this item, sorted desc by timestamp
+
+Includes: movement type, quantity change, who recorded, linked WO/PO
+
+GET /api/inventory/low-stock
+
+Returns: items where quantity_in_stock <= min_stock_level
+
+Sorted by: quantity / min_quantity ratio (most critical first)
+
+POST /api/purchase-orders/:id/receive
+
+Body: { items: [{ inventory_id, received_quantity }] }
+
+- For each item: calls inventory movement (type: IN)
+
+- If all items received: PO status = RECEIVED
+
+- If partial: PO status = PARTIAL_RECEIPT
+
+- Updates moving average cost if unit price provided
+
+GET /api/inventory/export
+
+- Generates Excel file
+
+- Returns as file download
+
+- Requires MANAGER+ role
+
+Fix everything. Output all route handlers.
+
+```
+
+---
+
+### F-05 — בדיקת dashboard endpoint ומהירות
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / Express / TypeScript / Prisma / PostgreSQL.
+
+TASK: Audit and optimize the GET /api/dashboard endpoint.
+
+The dashboard endpoint MUST:
+
+1. Run ALL queries in PARALLEL using Promise.all (not sequential)
+
+2. Return complete response within 500ms
+
+3. Return ALL data needed for dashboard in ONE request (no client-side waterfall)
+
+Fix the implementation:
+
+const [
+
+  revenueThisMonth,
+
+  activeWorkOrders,
+
+  employeesPresent,
+
+  lowStockCount,
+
+  revenueByMonth,
+
+  workOrdersByStatus,
+
+  urgentWorkOrders,
+
+  topDebtors
+
+] = await Promise.all([
+
+  // 1. Revenue this month
+
+  prisma.payment.aggregate({
+
+    where: { payment_date: { gte: firstDayOfMonth }, },
+
+    sum: { amountagorot: true }
+
+  }),
+
+  // 2. Active work orders
+
+  prisma.workOrder.count({
+
+    where: { status: { in: ['PENDING', 'IN_PRODUCTION', 'QUALITY_CHECK'] }, deleted_at: null }
+
+  }),
+
+  // 3. Employees present today
+
+  prisma.attendance.count({
+
+    where: { clock_in: { gte: startOfToday }, clock_out: null }
+
+  }),
+
+  // 4. Low stock items
+
+  prisma.$queryRaSELECT COUNT(*) FROM inventory WHERE quantity_in_stock <= min_quantity AND deleted_at IS NULL,
+
+  // 5. Revenue by month (last 12 months)
+
+  prisma.$queryRaSELECT EXTRACT(MONTH FROM payment_date) as month, SUM(amount_agorot) as total FROM payments WHERE payment_date >= NOW() - INTERVAL '12 months' GROUP BY month ORDER BY month,
+
+  // 6. Work orders by status
+
+  prisma.workOrder.groupBy({ by: ['status'], where: { deleted_at: null }, _count: true }),
+
+  // 7. Urgent work orders (overdue or priority=URGENT)
+
+  prisma.workOrder.findMany({ where: { OR: [{ priority: 'URGENT' }, { due_date: { lt: new Date() }, status: { notIn: ['DELIVERED', 'CANCELLED'] } }] }, take: 5, include: { customer: true } }),
+
+  // 8. Top debtors
+
+  prisma.customer.findMany({ where: { open_balance_agorot: { gt: 0 } }, orderBy: { open_balance_agorot: 'desc' }, take: 5 })
+
+]);
+
+Verify response shape matches what frontend Dashboard page expects.
+
+Add response caching (60 second TTL) to avoid DB load.
+
+Output complete optimized /api/dashboard route.
+
+```
+
+---
+
+## 📁 קטגוריה G: בלוקי UI
+
+---
+
+### G-01 — DataTable component מלא
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix the shared DataTable component used across all list pages.
+
+The DataTable must support ALL these features:
+
+1. Props interface:
+
+   columns: Array<{ key, label, sortable?, width?, render? }>
+
+   data: T[]
+
+   isLoading: boolean
+
+   error: string | null
+
+   totalCount: number
+
+   page: number
+
+   pageSize: number
+
+   onPageChange: (page) => void
+
+   onSort: (key, direction) => void
+
+   onRowClick?: (row) => void
+
+   emptyMessage: string
+
+   emptyAction?: { label, onClick }
+
+2. Sorting:
+
+   - Click column header to sort ascending
+
+   - Click again → descending
+
+   - Visual arrow indicator (↑ or ↓) on active sort column
+
+   - Calls onSort(key, 'asc'|'desc')
+
+3. Loading state:
+
+   - 10 skeleton rows (animated gray bars)
+
+   - Skeleton matches column widths approximately
+
+   - NOT a spinner covering the table
+
+4. Error state:
+
+   - Hebrew message "שגיאה בטעינת הנתונים"
+
+   - "נסה שוב" button that calls refetch
+
+5. Empty state:
+
+   - emptyMessage prop shown
+
+   - emptyAction prop shows button if provided
+
+6. Pagination:
+
+   - "מציג [from]-[to] מתוך [total]" text
+
+   - Previous / Next buttons
+
+   - Page size selector: 10 / 25 / 50
+
+7. RTL: columns flow right to left, text right-aligned
+
+8. Mobile (< 640px): renders as cards instead of table rows
+
+Fix the DataTable to support all features. Output complete DataTable.tsx.
+
+```
+
+---
+
+### G-02 — Toast notifications — מלא ונכון
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix the Toast notification system.
+
+Check and fix ALL of these:
+
+1. Toast component: src/components/ui/Toast.tsx
+
+2. Toast context/hook: useToast() available everywhere
+
+3. Toasts appear in top-RIGHT corner (adjusted for RTL: top-LEFT or configure)
+
+4. Types and durations:
+
+   - success: green background, 3 seconds, auto-dismiss
+
+   - error: red background, 5 seconds, has manual X button, stays until dismissed
+
+   - warning: amber background, 4 seconds, auto-dismiss
+
+   - info: blue background, 3 seconds, auto-dismiss
+
+5. Multiple toasts stack vertically (newest on top)
+
+6. Each toast has: icon + Hebrew message + X close button
+
+7. Smooth animation: slides in from right, fades out on dismiss
+
+8. Accessible: role="alert" aria-live="polite"
+
+9. Ensure toast is called after EVERY action:
+
+   - Employee created: "העובד נוצר בהצלחה" (success)
+
+   - Employee updated: "הפרטים עודכנו" (success)
+
+   - Employee deleted: "העובד הוסר" (success)
+
+   - Work order status changed: "הסטטוס עודכן ל[X]" (success)
+
+   - PDF downloaded: none needed (browser handles it)
+
+   - WhatsApp sent: "ההודעה נשלחה ללקוח" (success)
+
+   - Form validation failed: "אנא תקן את השגיאות בטופס" (error)
+
+   - Network error: "שגיאת רשת. בדוק חיבור לאינטרנט." (error)
+
+   - Server error: "שגיאת שרת. נסה שוב." (error)
+
+Output complete Toast.tsx + ToastContext.tsx + useToast.ts.
+
+```
+
+---
+
+### G-03 — Modal/Dialog component — מלא ונכון
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix the Modal/Dialog component.
+
+The Modal must handle ALL of these correctly:
+
+1. File: src/components/ui/Modal.tsx
+
+2. Props: isOpen, onClose, title, children, footer?, size? (sm/md/lg)
+
+3. Centers on screen with backdrop overlay
+
+4. Backdrop click → closes modal (unless isDismissable=false prop)
+
+5. ESC key → closes modal
+
+6. Has Hebrew title in header
+
+7. Has X close button in correct RTL position
+
+8. Content scrolls if longer than viewport (not the whole page)
+
+9. Footer area for action buttons (passed as prop)
+
+10. Focus trap: Tab key stays within modal when open
+
+11. Focus returns to trigger button when modal closes
+
+12. Body scroll locked when modal is open
+
+Check ALL existing modal usages and verify they:
+
+- Use this Modal component (not custom ad-hoc modals)
+
+- Have proper Hebrew titles
+
+- Have correct action buttons
+
+- Confirmation modals: show entity name being affected
+
+- Delete confirmation: red "מחק" button + gray "בטל" button
+
+Specific modals to verify exist and work:
+
+□ Delete employee confirmation
+
+□ Delete work order confirmation
+
+□ Change work order status confirmation (with notes field)
+
+□ Assign employee to work order modal
+
+□ Record payment modal
+
+□ Send to customer modal (WhatsApp/Email choice)
+
+□ Upload document modal
+
+□ Manual attendance override modal
+
+Fix everything. Output complete Modal.tsx.
+
+```
+
+---
+
+### G-04 — Status Badges — עקביות בכל המערכת
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix Status Badge components for consistency.
+
+Create a single StatusBadge component used EVERYWHERE:
+
+File: src/components/ui/StatusBadge.tsx
+
+Work Order statuses:
+
+PENDING → "ממתין לייצור" → gray
+
+IN_PRODUCTION → "בייצור" → blue
+
+QUALITY_CHECK → "בדיקת איכות" → amber
+
+READY → "מוכן למסירה" → teal
+
+DELIVERED → "נמסר" → green
+
+CANCELLED → "מבוטל" → red
+
+Quote statuses:
+
+DRAFT → "טיוטה" → gray
+
+SENT → "נשלח" → blue
+
+ACCEPTED → "אושר" → green
+
+REJECTED → "נדחה" → red
+
+EXPIRED → "פג תוקף" → orange
+
+Invoice statuses:
+
+DRAFT → "טיוטה" → gray
+
+ISSUED → "הונפקה" → blue
+
+PARTIALLY_PAID → "שולמה חלקית" → amber
+
+PAID → "שולמה" → green
+
+OVERDUE → "באיחור" → red (overdue = past due_date and not PAID)
+
+CANCELLED → "בוטלה" → gray
+
+Employee statuses:
+
+ACTIVE → "פעיל" → green
+
+INACTIVE → "לא פעיל" → gray
+
+ON_LEAVE → "בחופשה" → blue
+
+Priority badges:
+
+URGENT → "דחוף" → red
+
+NORMAL → "רגיל" → blue
+
+LOW → "נמוך" → gray
+
+Scan ALL pages and replace any inline status display with <StatusBadge type="workOrder" status={status} />
+
+Output complete StatusBadge.tsx + all replacements.
+
+```
+
+---
+
+### G-05 — Loading Skeletons — כל דף
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS.
+
+TASK: Audit and fix loading skeleton screens for all pages.
+
+Create base skeleton component:
+
+File: src/components/ui/Skeleton.tsx
+
+- <Skeleton className="w-full h-4" /> → animated gray bar
+
+- <SkeletonText lines={3} /> → 3 gray bars of varying widths
+
+- <SkeletonCard /> → rounded rectangle with inner bars
+
+Create page-specific skeletons:
+
+1. DashboardSkeleton:
+
+   - 4 KPI card skeletons in a row
+
+   - 2 chart area skeletons (bar + donut)
+
+   - 2 list skeletons below
+
+2. ListPageSkeleton (used for all list pages):
+
+   - Header area with title + button skeleton
+
+   - Search bar skeleton
+
+   - Table with 10 row skeletons
+
+   - Each row: 6-7 column cells as gray bars
+
+3. DetailPageSkeleton:
+
+   - Header with breadcrumb skeleton
+
+   - Name/title skeleton (wider bar)
+
+   - 3 tab skeletons
+
+   - Content area skeleton
+
+4. FormPageSkeleton:
+
+   - Title skeleton
+
+   - 5 form field skeletons (label + input)
+
+   - 2 button skeletons
+
+Verify EVERY page shows its skeleton when isLoading=true:
+
+- DashboardPage
+
+- EmployeesListPage
+
+- EmployeeDetailPage
+
+- WorkOrdersListPage
+
+- WorkOrderDetailPage
+
+- CustomersListPage
+
+- QuotesListPage
+
+- InvoicesListPage
+
+Fix every page that shows blank white during load.
+
+Output all skeleton components.
+
+```
+
+---
+
+### G-06 — Empty States — כל דף
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix Empty State displays for all list pages.
+
+Create base component:
+
+File: src/components/ui/EmptyState.tsx
+
+Props: icon, title, description, actionLabel?, onAction?
+
+Renders: icon (SVG) + title + description + optional button
+
+Create specific empty states for EACH list:
+
+1. No employees:
+
+   title: "אין עובדים במערכת"
+
+   description: "הוסף את העובד הראשון כדי להתחיל"
+
+   action: "הוסף עובד חדש" → /employees/new
+
+2. No work orders:
+
+   title: "אין הזמנות עבודה"
+
+   description: "צור הזמנת עבודה חדשה מהצעת מחיר או ישירות"
+
+   action: "הזמנת עבודה חדשה"
+
+3. No customers:
+
+   title: "אין לקוחות"
+
+   description: "הוסף לקוחות כדי להתחיל ליצור הצעות מחיר וחשבוניות"
+
+   action: "הוסף לקוח"
+
+4. No quotes:
+
+   title: "אין הצעות מחיר"
+
+   action: "צור הצעת מחיר"
+
+5. No invoices:
+
+   title: "אין חשבוניות"
+
+   description: "חשבוניות נוצרות מהצעות מחיר מאושרות"
+
+6. No inventory items:
+
+   title: "המלאי ריק"
+
+   action: "הוסף פריט מלאי"
+
+7. No notifications:
+
+   title: "אין התראות חדשות"
+
+   description: "כל ההתראות סומנו כנקראו"
+
+8. No results from search:
+
+   title: "לא נמצאו תוצאות"
+
+   description: 'לא נמצאו רשומות התואמות ל"[search term]"'
+
+   action: "נקה חיפוש"
+
+Apply to every list page that can be empty.
+
+Output EmptyState.tsx + all page integrations.
+
+```
+
+---
+
+## 📁 קטגוריה H: Database
+
+---
+
+### H-01 — מספרי חשבונית — רצף אטומי
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Prisma / PostgreSQL.
+
+TASK: Fix invoice number sequential generation to be atomic and gap-free.
+
+The problem: using MAX(invoice_number) + 1 creates race conditions and gaps.
+
+The fix: use PostgreSQL SEQUENCE.
+
+1. Create migration:
+
+CREATE SEQUENCE invoice_number_seq START 1 INCREMENT 1;
+
+2. Create function to get next invoice number:
+
+CREATE OR REPLACE FUNCTION next_invoice_number() 
+
+RETURNS TEXT AS $$
+
+BEGIN
+
+  RETURN 'INV-' || LPAD(NEXTVAL('invoice_number_seq')::TEXT, 6, '0');
+
+END;
+
+$$ LANGUAGE plpgsql;
+
+3. In Prisma schema: invoice_number has @default(dbgenerated("next_invoice_number()"))
+
+4. OR: in the POST /api/invoices endpoint:
+
+   const result = await prisma.$queryRaSELECT next_invoice_number() as num;
+
+   const invoiceNumber = result[0].num;
+
+   // Then create invoice with this number
+
+5. Verify: run 10 concurrent POST /api/invoices requests — all get UNIQUE sequential numbers with no gaps and no errors
+
+6. Also fix: quote_number, purchase_order_number, employee_number — same pattern
+
+Output complete migration SQL + Prisma schema update + endpoint fix.
+
+```
+
+---
+
+### H-02 — יתרת לקוח — חישוב נכון ועדכני
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Prisma / PostgreSQL.
+
+TASK: Fix customer open_balance_agorot to always be accurate.
+
+The problem: stored field can get out of sync with actual invoices/payments.
+
+The fix: recalculate balance from source data on every change.
+
+1. Create function: recalculateCustomerBalance(customerId: string)
+
+   Logic:
+
+   const invoiceTotal = await prisma.invoice.aggregate({
+
+     where: { customer_id: customerId, status: { notIn: ['CANCELLED', 'DRAFT'] }, deleted_at: null },
+
+     sum: { totalagorot: true }
+
+   });
+
+   const paymentsTotal = await prisma.payment.aggregate({
+
+     where: { customer_id: customerId, deleted_at: null },
+
+     sum: { amountagorot: true }
+
+   });
+
+   const balance = (invoiceTotal._sum.total_agorot ?? 0) - (paymentsTotal._sum.amount_agorot ?? 0);
+
+   await prisma.customer.update({
+
+     where: { id: customerId },
+
+     data: { open_balance_agorot: balance }
+
+   });
+
+2. Call recalculateCustomerBalance after:
+
+   - POST /api/invoices (create invoice)
+
+   - POST /api/payments (record payment)
+
+   - PUT /api/invoices/:id (update invoice)
+
+   - POST /api/invoices/:id/cancel (cancel invoice)
+
+3. Run reconciliation for all existing customers:
+
+   Create script: scripts/reconcile-balances.ts
+
+   Runs recalculateCustomerBalance for ALL customers
+
+   Reports any discrepancies found
+
+4. Add daily cron: reconcile all balances at 03:00 AM (safety net)
+
+Output complete implementation.
+
+```
+
+---
+
+### H-03 — Soft Delete — כל הטבלאות
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Prisma / PostgreSQL.
+
+TASK: Audit and fix soft delete implementation across ALL tables.
+
+Check and fix:
+
+1. Verify deleted_at column exists on ALL main tables:
+
+   employees, customers, work_orders, quotes, invoices, payments,
+
+   inventory, suppliers, purchase_orders, shifts, documents
+
+   
+
+   If missing from any table: CREATE migration to add it.
+
+2. Prisma middleware for auto-filtering:
+
+   Create src/middleware/softDelete.middleware.ts
+
+   Intercepts ALL Prisma queries and adds WHERE deleted_at IS NULL
+
+   EXCEPT when explicitly passed: { where: { deleted_at: { not: null } } }
+
+3. Verify NO query returns soft-deleted records to users:
+
+   - GET /api/employees should NOT return employees with deleted_at set
+
+   - GET /api/customers should NOT return deleted customers
+
+   - Search should NOT find deleted records
+
+   - Dropdowns should NOT include deleted options
+
+4. DELETE endpoints must use soft delete:
+
+   prisma.employee.update({ where: { id }, data: { deleted_at: new Date() } })
+
+   NOT: prisma.employee.delete({ where: { id } })
+
+5. Admin-only hard delete: POST /api/admin/purge/:model/:id
+
+   Actually deletes the record permanently
+
+   Requires SUPER_ADMIN role
+
+   Creates audit log entry
+
+6. "Recycle bin" page: GET /api/admin/deleted?model=
+
+   Shows all soft-deleted records
+
+   Restore button: sets deleted_at = null
+
+Output complete soft delete middleware + all endpoint fixes.
+
+```
+
+---
+
+### H-04 — Audit Log — כל שינוי נרשם
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Prisma / PostgreSQL.
+
+TASK: Implement and fix the audit logging system.
+
+1. Verify audit_log table exists:
+
+CREATE TABLE audit_log (
+
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  user_id UUID REFERENCES users(id),
+
+  user_name TEXT NOT NULL,
+
+  action TEXT NOT NULL, -- 'CREATE', 'UPDATE', 'DELETE', 'LOGIN', 'LOGOUT', 'EXPORT', 'STATUS_CHANGE'
+
+  entity_type TEXT NOT NULL, -- 'employee', 'work_order', 'invoice', etc.
+
+  entity_id UUID,
+
+  entity_label TEXT, -- human readable: "WO-001" or "יוסי כהן"
+
+  old_value JSONB,
+
+  new_value JSONB,
+
+  ip_address TEXT,
+
+  user_agent TEXT,
+
+  created_at TIMESTAMPTZ DEFAULT NOW()
+
+);
+
+2. Create audit service: src/services/audit.service.ts
+
+   logAction({ userId, userName, action, entityType, entityId, entityLabel, oldValue, newValue, req })
+
+3. Prisma middleware: automatically logs all mutations
+
+   Captures: model name, action, record ID, changed fields (before/after)
+
+4. Manual calls for important actions:
+
+   - Login: logAction({ action: 'LOGIN', entityType: 'user' })
+
+   - Status change: logAction({ action: 'STATUS_CHANGE', ... })
+
+   - Export: logAction({ action: 'EXPORT', entityType: 'report' })
+
+5. API endpoint:
+
+   GET /api/audit?entity_type=&entity_id=&user_id=&from=&to=&page=
+
+   - Admin only
+
+   - Returns paginated audit log
+
+6. Verify: Create employee → audit log shows CREATE entry with all field values
+
+Output complete audit log implementation.
+
+```
+
+---
+
+## 📁 קטגוריה I: אבטחה
+
+---
+
+### I-01 — הגנת routes — frontend + backend
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / Node.js / Express / JWT.
+
+TASK: Audit and fix route protection in both frontend and backend.
+
+FRONTEND — verify ProtectedRoute component:
+
+1. File: src/components/auth/ProtectedRoute.tsx
+
+2. Wraps all non-auth routes
+
+3. Checks: is user authenticated? (valid token in cookie)
+
+4. If not: redirects to /login with ?redirect= current URL
+
+5. Checks: user has required role?
+
+6. If role insufficient: redirects to /403
+
+Route protection matrix — verify EACH:
+
+□ /employees/new — requires MANAGER or ADMIN
+
+□ /payroll — requires ADMIN or MANAGER
+
+□ /settings — requires ADMIN only
+
+□ /settings/users — requires ADMIN only
+
+□ /reports — requires MANAGER or ADMIN
+
+□ /work-orders — EMPLOYEE sees own orders only
+
+BACKEND — verify auth middleware on ALL routes:
+
+7. src/middleware/auth.middleware.ts exists
+
+8. Exported: authenticateToken (verifies JWT)
+
+9. Exported: requireRole(...roles) (checks user role)
+
+10. Every router file uses: router.use(authenticateToken)
+
+11. Sensitive routes use: router.use(requireRole('ADMIN'))
+
+Test cases that MUST work:
+
+□ GET /api/employees without token → 401
+
+□ GET /api/payroll with EMPLOYEE token → 403
+
+□ GET /api/settings with MANAGER token → 403
+
+□ GET /api/settings with ADMIN token → 200
+
+Fix everything. Output ProtectedRoute.tsx + auth middleware + all route fixes.
+
+```
+
+---
+
+### I-02 — JWT Tokens — הגדרה נכונה
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Express / JWT.
+
+TASK: Audit and fix JWT token implementation.
+
+Check and fix ALL of these:
+
+1. Access token expiry: 15 minutes (not 1 day, not forever)
+
+2. Refresh token expiry: 7 days
+
+3. JWT_SECRET is set in environment (min 32 characters)
+
+4. JWT_REFRESH_SECRET is DIFFERENT from JWT_SECRET
+
+5. Tokens stored in httpOnly cookies (NOT localStorage)
+
+6. Cookie settings: Secure=true, HttpOnly=true, SameSite=Strict
+
+7. Token refresh flow:
+
+   - Axios interceptor in frontend detects 401 response
+
+   - Automatically calls POST /api/auth/refresh
+
+   - If refresh succeeds: retry original request with new token
+
+   - If refresh fails (expired): redirect to /login
+
+8. Refresh token rotation:
+
+   - Every refresh: old refresh token invalidated, new one issued
+
+   - Refresh tokens stored as HASH in DB (not plaintext)
+
+   - Table: refresh_tokens (id, user_id, token_hash, expires_at, revoked_at)
+
+9. Logout: revokes refresh token in DB (DELETE from refresh_tokens)
+
+10. On password change: revoke ALL refresh tokens for user
+
+Verify: after logout, old refresh token returns 401 if used.
+
+Fix everything. Output complete auth service + axios interceptor.
+
+```
+
+---
+
+### I-03 — Validation — כל inputs
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Zod / Express.
+
+TASK: Audit and fix input validation on ALL API endpoints.
+
+Create Zod schemas for ALL request bodies:
+
+File: src/schemas/ directory
+
+1. src/schemas/employee.schema.ts:
+
+   createEmployeeSchema = z.object({
+
+     full_name: z.string().min(2).max(100),
+
+     id_number: z.string().regex(/^\d{9}$/).refine(validateIsraeliId),
+
+     date_of_birth: z.string().datetime().refine(is18YearsOld),
+
+     phone: z.string().refine(validateIsraeliPhone),
+
+     department_id: z.string().uuid(),
+
+     role: z.string().min(2),
+
+     employment_type: z.enum(['FULL_TIME', 'PART_TIME', 'CONTRACTOR']),
+
+     start_date: z.string().datetime(),
+
+     salary_agorot: z.number().int().positive(),
+
+     status: z.enum(['ACTIVE', 'INACTIVE', 'ON_LEAVE']).default('ACTIVE'),
+
+     // ... other fields
+
+   })
+
+2. src/schemas/workOrder.schema.ts
+
+3. src/schemas/quote.schema.ts
+
+4. src/schemas/invoice.schema.ts
+
+5. src/schemas/customer.schema.ts
+
+6. src/schemas/payment.schema.ts
+
+7. src/schemas/inventory.schema.ts
+
+8. src/schemas/shift.schema.ts
+
+9. Create validate middleware:
+
+   const validate = (schema: ZodSchema) => (req, res, next) => {
+
+     const result = schema.safeParse(req.body);
+
+     if (!result.success) {
+
+       return res.status(400).json({
+
+         error: "שגיאת ולידציה",
+
+         fields: result.error.flatten().fieldErrors
+
+       });
+
+     }
+
+     req.body = result.data; // sanitized
+
+     next();
+
+   };
+
+10. Apply to EVERY POST/PUT endpoint:
+
+    router.post('/employees', authenticateToken, validate(createEmployeeSchema), createEmployee)
+
+Output all schemas + validate middleware + route applications.
+
+```
+
+---
+
+## 📁 קטגוריה J: ביצועים וחוויה
+
+---
+
+### J-01 — טעינת נתונים — אפס N+1 queries
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Prisma / PostgreSQL.
+
+TASK: Find and fix all N+1 query problems.
+
+N+1 problem: fetching a list of 200 employees and then making 200 separate
+
+queries to get each employee's department name.
+
+Find and fix ALL occurrences:
+
+1. GET /api/employees — must use include to get department in ONE query:
+
+   prisma.employee.findMany({
+
+     include: { department: { select: { name: true } } }
+
+   })
+
+   NOT: employees.map(e => prisma.department.findUnique({ where: { id: e.department_id } }))
+
+2. GET /api/work-orders — must include customer name in ONE query:
+
+   include: { customer: { select: { name: true, phone: true } } }
+
+3. GET /api/quotes — must include customer:
+
+   include: { customer: { select: { name: true } } }
+
+4. GET /api/invoices — must include customer + linked work order:
+
+   include: { customer: true, work_order: { select: { order_number: true } } }
+
+5. Dashboard: uses Promise.all to run all queries in PARALLEL
+
+Search codebase for these anti-patterns and fix:
+
+- Any .map() that calls an async Prisma query inside
+
+- Any loop with await prisma.model.findUnique() inside
+
+- Any sequential awaits that could be parallelized
+
+For each fix: show before/after, confirm query count reduced.
+
+Output all fixed query implementations.
+
+```
+
+---
+
+### J-02 — מצבי שגיאה — Hebrew error messages
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / Node.js.
+
+TASK: Audit and fix ALL error messages to be in Hebrew.
+
+BACKEND — audit every error response:
+
+Find and replace all English error messages:
+
+- "Not found" → "הרשומה לא נמצאה"
+
+- "Unauthorized" → "יש להתחבר כדי להמשיך"
+
+- "Forbidden" → "אין הרשאה לבצע פעולה זו"
+
+- "Validation error" → "שגיאת ולידציה"
+
+- "Internal server error" → "שגיאת שרת פנימית"
+
+- "Invalid credentials" → "שם משתמש או סיסמה שגויים"
+
+- "Token expired" → "פג תוקף החיבור. התחבר מחדש."
+
+- "Duplicate entry" → "הרשומה כבר קיימת במערכת"
+
+- "Too many requests" → "יותר מדי בקשות. המתן [X] שניות."
+
+FRONTEND — audit every error display:
+
+- catch(error) blocks that show error.message (might be English) → translate
+
+- API error.response.data.error → should already be Hebrew from backend
+
+- Network error: "Network Error" → "שגיאת רשת. בדוק חיבור לאינטרנט."
+
+- Timeout: → "הבקשה לקחה יותר מדי זמן. נסה שוב."
+
+NEVER show to user:
+
+- Stack traces
+
+- SQL error messages
+
+- "undefined" or "null"
+
+- JSON raw objects
+
+- English technical terms
+
+Find EVERY English user-facing string and translate to Hebrew.
+
+Output all fixes with before/after.
+
+```
+
+---
+
+### J-03 — Null Safety — אפס crashes
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript.
+
+TASK: Find and fix all potential null/undefined crashes in the UI.
+
+Common crash patterns to find and fix:
+
+1. customer.name → customer?.name ?? 'לקוח לא ידוע'
+
+2. employee.department.name → employee?.department?.name ?? 'ללא מחלקה'
+
+3. invoice.total_agorot / 100 → (invoice?.total_agorot ?? 0) / 100
+
+4. work_order.customer.phone → work_order?.customer?.phone ?? ''
+
+5. array.map() without checking array exists → (array ?? []).map()
+
+6. data[0].field where data might be empty → data?.[0]?.field
+
+Search for and fix:
+
+- Any .name, .email, .phone access without optional chaining
+
+- Any array access [0] without length check
+
+- Any division without checking denominator
+
+- Any .toString() on potentially null value
+
+- Any date formatting on potentially null date
+
+- Any toLocaleString() on undefined number
+
+Also fix:
+
+- Component that receives optional prop and doesn't handle undefined
+
+- Table that crashes if API returns empty array vs null
+
+- Chart that crashes if data array is empty (show empty state instead)
+
+Run TypeScript strict mode checks:
+
+- tsconfig.json: "strict": true, "strictNullChecks": true
+
+- Fix ALL TypeScript errors that appear
+
+Output all null safety fixes.
+
+```
+
+---
+
+## 📁 קטגוריה K: עברית ו-RTL
+
+---
+
+### K-01 — RTL — כל הדפים
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix RTL layout across all pages.
+
+Check and fix ALL RTL issues:
+
+1. HTML root: <html dir="rtl" lang="he"> in index.html
+
+2. Body: direction: rtl in global CSS
+
+3. TailwindCSS: configured for RTL (or using rtl: prefix classes)
+
+Specific RTL fixes needed:
+
+FORMS:
+
+- Labels: text-align: right (not left)
+
+- Inputs: text-align: right for Hebrew text
+
+- Error messages: appear below field, right-aligned
+
+NAVIGATION:
+
+- Sidebar: on right side of screen (not left)
+
+  OR if sidebar is on left: confirm it's intentional
+
+- Breadcrumbs: separator is ">" pointing correct direction
+
+- Back button: arrow points RIGHT (going back in RTL)
+
+TABLES:
+
+- Headers: right-aligned
+
+- Cell text: right-aligned by default
+
+- Sort arrows: on left side of header text (in RTL)
+
+ICONS:
+
+- Directional icons flipped:
+
+  - Arrow pointing right (→) in LTR should point left (←) in RTL for "back"
+
+  - Chevron direction corrected
+
+- Non-directional icons (trash, pencil, check): NOT flipped
+
+CURRENCY:
+
+- ₪ symbol: appears on RIGHT side of number
+
+  ✅ "1,234 ₪" or "₪1,234" (Hebrew convention varies — pick one and be consistent)
+
+MODALS:
+
+- Close X button: top-left (not top-right) in RTL context
+
+CHARTS (Recharts):
+
+- X-axis: left to right (dates still go left→right in Hebrew)
+
+- Y-axis: on RIGHT side
+
+- Legend: right-aligned text
+
+Search for all instances of: ml-, mr-, pl-, pr-, left-0, right-0
+
+Replace with RTL-aware versions or use logical properties (ms-, me-, ps-, pe-)
+
+Output all RTL fixes.
+
+```
+
+---
+
+### K-02 — Hebrew text — כל תוכן בעברית
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript.
+
+TASK: Find and replace ALL English user-facing text with Hebrew.
+
+Search for English text in ALL .tsx and .ts component files.
+
+For each English string found in JSX/UI: translate to Hebrew.
+
+Common patterns to find:
+
+1. Button labels: "Save" → "שמור", "Cancel" → "בטל", "Delete" → "מחק", "Edit" → "ערוך"
+
+2. Table headers: "Name" → "שם", "Status" → "סטטוס", "Date" → "תאריך"
+
+3. Placeholder text: "Search..." → "חפש...", "Enter name..." → "הכנס שם..."
+
+4. Loading text: "Loading..." → "טוען...", "Please wait" → "אנא המתן"
+
+5. Empty states: "No results" → "אין תוצאות", "No data" → "אין נתונים"
+
+6. Confirmation dialogs: "Are you sure?" → "האם אתה בטוח?"
+
+7. Success messages: "Saved successfully" → "נשמר בהצלחה"
+
+8. Error messages: "Something went wrong" → "אירעה שגיאה"
+
+9. Navigation: "Dashboard" → "לוח מחוונים", "Settings" → "הגדרות"
+
+10. Page titles: document.title in English → Hebrew
+
+Also translate:
+
+- Browser tab titles (<title> and useDocumentTitle)
+
+- Aria labels (aria-label="Close" → aria-label="סגור")
+
+- Alt text on images
+
+- Tooltip text
+
+- Dropdown option labels
+
+Keep in code (DO NOT translate):
+
+- Variable names, function names, TypeScript types
+
+- Console.log messages
+
+- API field names (snake_case keys)
+
+- Route paths (/employees stays /employees)
+
+Output list of all translations made (file, line, before, after).
+
+```
+
+---
+
+### K-03 — פורמט מספרים ומטבע — ₪ בכל מקום
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript.
+
+TASK: Audit and fix all monetary and number formatting.
+
+Create centralized formatting utilities if not already:
+
+File: src/utils/format.ts
+
+formatCurrency(agorot: number | null | undefined): string
+
+  - Converts agorot to ₪ display
+
+  - Handles null/undefined: returns "₪0.00"
+
+  - Format: "₪1,234.56" (comma thousands separator, 2 decimal places)
+
+  - Example: 123456 → "₪1,234.56"
+
+formatNumber(n: number | null | undefined): string
+
+  - "1,234" (comma thousands, no decimals)
+
+formatPercent(n: number): string
+
+  - "18%" (integer percentages)
+
+  - "18.5%" (decimal if needed)
+
+Find EVERY place in the codebase where money is displayed:
+
+- Remove: toFixed(2), Math.round(x/100), x * 100
+
+- Replace with: formatCurrency(agorot)
+
+Find EVERY place where agorot are converted:
+
+- Any / 100 for display: wrap in formatCurrency()
+
+- Any * 100 for storage: ensure result is Math.round()'d to integer
+
+Find ANY display of raw numbers that should be formatted:
+
+- Work order count: "5" → "5" (OK, small numbers don't need comma)
+
+- Revenue: "150000" → "₪1,500.00" (MUST format)
+
+- Inventory quantity: "1500" → "1,500" (comma format)
+
+Output format.ts + all display fixes.
+
+```
+
+---
+
+## 📁 קטגוריה L: תיקונים ספציפיים
+
+---
+
+### L-01 — דף שעון נוכחות — tablet mode
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix the Clock-In Terminal page (/attendance/clock-in).
+
+This page is used on a tablet at the factory entrance. Fix ALL of these:
+
+1. Large number input: employee enters 9-digit ID
+
+   - Giant numeric keyboard visible on screen (big buttons)
+
+   - Shows: "הכנס מספר עובד:" label above
+
+   - Each digit shown as: _ _ _ _ _ _ _ _ _
+
+   - Backspace button
+
+   - Clear button
+
+2. After valid ID entered (all 9 digits):
+
+   - GET /api/employees?id_number=XXXXXXXXX
+
+   - Shows: employee photo (or avatar), full name, department
+
+   - Shows current time: "16:45:22"
+
+   - If not yet clocked in today: big green "כניסה" button
+
+   - If already clocked in: big red "יציאה" button + "נכנס ב-08:30"
+
+3. On clock-in:
+
+   - POST /api/attendance/clock-in { employee_id, timestamp }
+
+   - Shows confirmation: "כניסה נרשמה! בהצלחה [שם]" for 3 seconds
+
+   - Resets to ID input screen
+
+4. On clock-out:
+
+   - POST /api/attendance/clock-out { employee_id, timestamp }
+
+   - Shows: "יציאה נרשמה! שעות היום: 7:30 [שם]" for 3 seconds
+
+   - Resets to ID input screen
+
+5. If ID not found: "עובד לא נמצא. נסה שוב." (red message, screen resets)
+
+6. Touch targets: ALL buttons minimum 80px height (factory workers with gloves)
+
+7. Works offline: queues clock-ins locally, syncs when connection restored
+
+Output complete ClockInTerminalPage.tsx.
+
+```
+
+---
+
+### L-02 — חישוב שכר — שעות נוספות
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Prisma.
+
+TASK: Audit and fix payroll calculation for Israeli labor law.
+
+Israeli overtime rules (must implement exactly):
+
+- Regular day: first 8 hours at 100% rate
+
+- Overtime hours 1-2 per day: at 125% rate
+
+- Overtime hours 3+ per day: at 150% rate
+
+- Friday all hours: at 150% rate
+
+- Holiday (חג) all hours: at 150% rate (200% in some cases)
+
+- Monthly regular hours ceiling: 182 hours per month
+
+Create/fix: src/services/payroll.service.ts
+
+calculateDailyPay(date, clockIn, clockOut, hourlyRate):
+
+  1. Calculate total hours worked that day
+
+  2. Check if Friday (getDay() === 5) → all hours at 150%
+
+  3. Check if Israeli holiday → all hours at 150%
+
+  4. Otherwise:
+
+     - Hours 1-8: hourlyRate × 1.0
+
+     - Hours 9-10: hourlyRate × 1.25
+
+     - Hours 11+: hourlyRate × 1.50
+
+calculateMonthlyPayroll(employeeId, month, year):
+
+  1. Fetch all attendance records for month
+
+  2. Calculate dailyPay for each day
+
+  3. Sum all daily pay = gross salary
+
+  4. Calculate deductions:
+
+     - Bituach Leumi employee share: 3.5% of gross (up to ceiling)
+
+     - Income tax: use Israeli tax brackets for that year
+
+     - Pension: 6% employee contribution (if has pension)
+
+  5. Net = gross - all deductions
+
+  6. Return: { gross, overtime_pay, deductions, net, hours_regular, hours_overtime }
+
+Test: employee works 10 hours on Thursday
+
+Expected: 8h × rate + 2h × rate × 1.25
+
+Output complete payroll.service.ts with correct Israeli calculations.
+
+```
+
+---
+
+### L-03 — הרשאות — RBAC מלא
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / React 18.
+
+TASK: Audit and implement complete Role-Based Access Control.
+
+Define permissions matrix:
+
+File: src/config/permissions.ts
+
+Roles: SUPER_ADMIN, ADMIN, MANAGER, SHIFT_SUPERVISOR, EMPLOYEE, VIEWER
+
+Resources and what each role can do:
+
+employees: CREATE/READ_ALL/UPDATE/DELETE → ADMIN, MANAGER
+
+           READ_OWN → EMPLOYEE (own profile only)
+
+work_orders: CREATE/READ_ALL/UPDATE/DELETE → MANAGER+
+
+             READ_OWN/UPDATE_STATUS → EMPLOYEE (assigned orders only)
+
+customers: CRUD → MANAGER+
+
+quotes: CRUD → MANAGER+
+
+invoices: CRUD → ADMIN, MANAGER
+
+payments: CREATE/READ → ADMIN, MANAGER
+
+inventory: READ → all
+
+           CREATE/UPDATE/DELETE → MANAGER+
+
+           ADJUSTMENT → ADMIN only
+
+payroll: READ/RUN → ADMIN, MANAGER
+
+reports: READ → MANAGER+
+
+settings: READ/UPDATE → ADMIN only
+
+users: CRUD → ADMIN only
+
+Backend — verify requireRole middleware on every route:
+
+router.post('/employees', requireRole('ADMIN', 'MANAGER'), ...)
+
+router.delete('/employees/:id', requireRole('ADMIN'), ...)
+
+Frontend — verify CanAccess component:
+
+<CanAccess resource="invoices" action="create">
+
+  <Button>צור חשבונית</Button>
+
+</CanAccess>
+
+(button hidden if user lacks permission)
+
+Test: EMPLOYEE user cannot see payroll, invoices, or settings in sidebar.
+
+Output permissions.ts + requireRole middleware + CanAccess component.
+
+```
+
+---
+
+### L-04 — SSE — עדכונים בזמן אמת
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / Express / TypeScript / React 18.
+
+TASK: Implement Server-Sent Events for real-time updates.
+
+1. Backend SSE endpoint: GET /api/events
+
+   - Requires authentication (JWT from cookie)
+
+   - Sends: Content-Type: text/event-stream
+
+   - Keeps connection open
+
+   - Sends heartbeat ping every 30 seconds (prevents timeout)
+
+   - On client disconnect: cleanup listener
+
+2. Event types to broadcast:
+
+   - work_order_status_changed: { workOrderId, newStatus, orderNumber }
+
+   - new_notification: { userId, title, message, type }
+
+   - attendance_update: { employeeId, action: 'clock_in'|'clock_out' }
+
+   - inventory_low: { itemId, itemName, quantity }
+
+3. SSE Manager: src/services/sse.service.ts
+
+   - Maintains Map of userId → response streams
+
+   - sendToUser(userId, event, data): sends to specific user
+
+   - sendToRole(role, event, data): sends to all users with role
+
+   - sendToAll(event, data): broadcasts to all connected users
+
+4. Frontend: useSSE hook: src/hooks/useSSE.ts
+
+   const { } = useSSE('/api/events', {
+
+     work_order_status_changed: (data) => {
+
+       // Update kanban board
+
+     },
+
+     new_notification: (data) => {
+
+       // Add to notification bell
+
+     }
+
+   });
+
+5. Kanban board: subscribes to work_order_status_changed
+
+   → moves card to correct column when another user changes status
+
+6. Dashboard: subscribes to attendance_update
+
+   → "עובדים נוכחים" counter updates in real-time
+
+Output complete SSE implementation.
+
+```
+
+---
+
+### L-05 — ייצוא Excel — כל הדוחות
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / ExcelJS.
+
+TASK: Audit and fix Excel export for all reports.
+
+Create Excel export service: src/services/excelExport.service.ts
+
+Base function: createHebrewWorkbook(title, sheets)
+
+Each sheet: { name: Hebrew, columns: [{ header, key, width }], rows: data[] }
+
+Settings for ALL sheets:
+
+- RTL direction: worksheet.views = [{ rightToLeft: true }]
+
+- Hebrew column headers (bold, background color #2D5F8A, white text)
+
+- Alternating row colors: white / #F5F5F5
+
+- Freeze first row: worksheet.views[0].state = 'frozen'
+
+- Auto-filter on all columns
+
+- Column widths set appropriately
+
+Fix/create these export endpoints:
+
+GET /api/inventory/export?category=&month=
+
+- Sheet: "מלאי נוכחי" — code, name, category, quantity, unit, min_quantity, location, avg_cost_₪
+
+GET /api/payroll/export/:month/:year
+
+- Sheet 1: "פירוט שכר" — employee_number, name, id_number, gross_₪, overtime_₪, deductions_₪, net_₪
+
+- Sheet 2: "סיכום מחלקות"
+
+GET /api/reports/attendance/:month/:year/export
+
+- Sheet: one row per employee with attendance days, hours, absences
+
+GET /api/customers/export
+
+- Sheet: all customers with balance and last activity
+
+Each export:
+
+- Returns file as attachment: Content-Disposition: attachment; filename="..."
+
+- Hebrew filename (URL-encoded)
+
+- Button in UI shows loading spinner while generating
+
+Output complete excelExport.service.ts + all export endpoints.
+
+```
+
+---
+
+### L-06 — PDF חשבונית — פורמט ישראלי
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Puppeteer or PDFKit.
+
+TASK: Fix the Israeli tax invoice PDF generator.
+
+The PDF MUST contain these fields as required by Israeli law:
+
+1. שם ועסק המוציא: "טכנו כל עוזי בע"מ"
+
+2. מספר ח.פ./ע.מ. of the issuer
+
+3. כתובת: "ריבל 37, תל אביב"
+
+4. שם הלקוח + ח.פ./ת.ז. of customer (REQUIRED by law)
+
+5. מספר חשבונית (sequential number)
+
+6. תאריך הנפקה
+
+7. פירוט הפריטים: description, quantity, unit price, total per item
+
+8. סכום לפני מע"מ
+
+9. שיעור המע"מ: 18%
+
+10. סכום המע"מ
+
+11. סכום כולל מע"מ
+
+12. תנאי תשלום
+
+Layout requirements:
+
+- A4 page, portrait
+
+- Hebrew RTL
+
+- Company logo area (top right)
+
+- Invoice type prominently: "חשבונית מס"
+
+- Items table with Hebrew headers (RTL column order)
+
+- Totals box aligned right
+
+- Footer: "תודה על עסקינו" + bank details for payment
+
+Implementation using Puppeteer + HTML template (better Hebrew support):
+
+1. Create HTML template: src/templates/invoice.html (Handlebars)
+
+2. Generate PDF: puppeteer.launch() → page.goto(templateURL) → page.pdf()
+
+3. Return Buffer to send as download
+
+Test: generate a sample invoice, verify it looks professional and contains all required fields.
+
+Output complete invoice PDF generator.
+
+```
+
+---
+
+### L-07 — Notification Bell — עובד בזמן אמת
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix the Notification Bell component.
+
+Check and fix ALL of these:
+
+1. Bell icon in header with red unread count badge
+
+2. Badge shows: 0-9 as number, 10+ as "9+"
+
+3. Badge hidden when count = 0
+
+4. Click bell: opens dropdown below bell icon
+
+5. Dropdown shows last 10 notifications, newest first:
+
+   Each item: icon by type + title + time ago ("לפני 5 דקות")
+
+   Color coding:
+
+   - INFO: blue icon
+
+   - SUCCESS: green icon
+
+   - WARNING: amber icon
+
+   - ERROR/ALERT: red icon
+
+6. "סמן הכל כנקרא" button: marks all as read → count → 0
+
+7. Click notification: navigates to action_url, marks as read
+
+8. "כל ההתראות" link at bottom → /notifications (dedicated page)
+
+9. SSE connection: new notifications appear WITHOUT page refresh
+
+10. Toast popup for URGENT notifications even if dropdown is closed
+
+11. Dropdown closes when clicking outside
+
+12. Maximum dropdown height with scroll if > 5 notifications
+
+Dedicated /notifications page:
+
+- Full list of all notifications (paginated)
+
+- Filter by type: all / unread / work_orders / inventory / payments
+
+- Each notification: larger display with full message
+
+- "מחק הכל" button (admin only)
+
+Output complete NotificationBell.tsx + NotificationsPage.tsx.
+
+```
+
+---
+
+### L-08 — דוח ייצור יומי — אוטומטי
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Prisma / node-cron / Gmail API.
+
+TASK: Implement and fix the automated daily production report.
+
+1. Create cron job: src/cron/dailyReport.cron.ts
+
+   Runs at 18:30 Israel time (Asia/Jerusalem) every weekday (Mon-Fri):
+
+2. Report data gathering:
+
+   const today = startOfDay(new Date());
+
+   const [completed, started, inProduction, overdue, attendance, payments] = await Promise.all([
+
+     // Completed today
+
+     prisma.workOrder.findMany({ where: { status: 'DELIVERED', updated_at: { gte: today } }, include: { customer: true } }),
+
+     // Started today (status changed to IN_PRODUCTION today)
+
+     prisma.workOrderStatusHistory.findMany({ where: { status: 'IN_PRODUCTION', created_at: { gte: today } } }),
+
+     // Currently in production
+
+     prisma.workOrder.findMany({ where: { status: 'IN_PRODUCTION' }, include: { customer: true } }),
+
+     // Overdue (past due date)
+
+     prisma.workOrder.findMany({ where: { due_date: { lt: today }, status: { notIn: ['DELIVERED', 'CANCELLED'] } } }),
+
+     // Today's attendance summary
+
+     prisma.attendance.count({ where: { clock_in: { gte: today } } }),
+
+     // Payments received today
+
+     prisma.payment.aggregate({ where: { payment_date: { gte: today } }, sum: { amountagorot: true } })
+
+   ]);
+
+3. Send email with Hebrew HTML report to admin recipients
+
+   (fetched from system_settings.daily_report_recipients)
+
+4. Send WhatsApp summary to Dima's number (from system_settings.operations_manager_phone):
+
+   "דוח יומי [תאריך]: הושלמו [N] עבודות, [M] בייצור, [K] באיחור. התקבלו ₪[amount] תשלומים."
+
+5. Manual trigger endpoint: POST /api/admin/run-daily-report
+
+   Returns the report data as JSON
+
+6. Settings page: configure recipients + enable/disable each section
+
+Output complete dailyReport.cron.ts + API endpoint.
+
+```
+
+---
+
+### L-09 — גיבוי DB — אוטומטי יומי
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Prisma / PostgreSQL / Supabase Storage.
+
+TASK: Implement and fix the automated daily database backup.
+
+1. Create: src/cron/backup.cron.ts
+
+   Runs daily at 02:00 AM Israel time
+
+2. Backup process:
+
+   a. Run pg_dump: 
+
+      const dumpFile = /tmp/backup_${timestamp}.sql;
+
+      execpg_dump ${DATABASE_URL} > ${dumpFile});
+
+   
+
+   b. Compress: execgzip ${dumpFile});
+
+   
+
+   c. Upload to Supabase Storage bucket "erp-backups":
+
+      const file = fs.readFileSync${dumpFile}.gz);
+
+      await supabase.storage.from('erp-backups').upload(filename, file);
+
+   
+
+   d. Delete old backups (keep last 30):
+
+      const files = await supabase.storage.from('erp-backups').list();
+
+      if (files.length > 30) delete oldest ones
+
+   
+
+   e. Send confirmation email to admin:
+
+      "גיבוי מסד הנתונים הושלם בהצלחה. גודל: [X]MB"
+
+3. On failure:
+
+   - Send urgent email: "גיבוי מסד הנתונים נכשל! [error]"
+
+   - Log error (do NOT crash server)
+
+4. API endpoints:
+
+   POST /api/admin/backup → trigger manual backup, returns { success, filename, size }
+
+   GET /api/admin/backups → list backups from Supabase with sizes and dates
+
+5. Settings page: backup section shows last backup time + "גבה עכשיו" button
+
+Output complete backup.cron.ts + API endpoints.
+
+```
+
+---
+
+### L-10 — חיפוש גלובלי Ctrl+K
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Implement the global search (Ctrl+K / Cmd+K) feature.
+
+1. GlobalSearch component: src/components/GlobalSearch.tsx
+
+   
+
+   Triggered by:
+
+   - Keyboard: Ctrl+K (Windows/Linux) or Cmd+K (Mac)
+
+   - Click on search icon in header
+
+   
+
+2. UI:
+
+   - Full-screen overlay with centered search box
+
+   - Large input: placeholder "חפש עובדים, הזמנות, לקוחות..."
+
+   - Escape key closes
+
+   - Click backdrop closes
+
+   
+
+3. Search behavior:
+
+   - Minimum 2 characters to start searching
+
+   - 300ms debounce
+
+   - Calls GET /api/search?q=:query
+
+   - Backend searches: employees (name, ID), work_orders (number, customer), customers (name, phone), inventory (name)
+
+   
+
+4. Results display:
+
+   - Grouped by category with Hebrew headers:
+
+     "👤 עובדים" | "🔧 הזמנות עבודה" | "👥 לקוחות" | "📦 מלאי"
+
+   - Max 3 results per category
+
+   - Each result: primary text (bold matching) + secondary text
+
+   - Up/Down arrow keys navigate results
+
+   - Enter opens selected result
+
+   
+
+5. No results: "לא נמצאו תוצאות עבור '[query]'"
+
+6. Recent searches:
+
+   - Stored in localStorage (max 5)
+
+   - Shown when input is empty
+
+   - "X" to remove each recent search
+
+7. Backend GET /api/search?q=:query:
+
+   Runs 4 queries in parallel, returns combined results
+
+Output complete GlobalSearch.tsx + /api/search endpoint.
+
+```
+
+---
+
+### L-11 — Session Timeout — 30 דקות
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Implement automatic session timeout after 30 minutes of inactivity.
+
+1. Create hook: src/hooks/useSessionTimeout.ts
+
+   - Tracks user activity: mouse move, keyboard, click, touch
+
+   - setTimeout: 30 minutes from last activity
+
+   - Warning at 5 minutes remaining
+
+2. Warning dialog (appears at 5 min remaining):
+
+   Title: "פג תוקף הפעילות"
+
+   Body: "הפעילות שלך תפוג בעוד 5 דקות. האם להמשיך?"
+
+   Shows countdown timer: "4:32"
+
+   Buttons:
+
+   - "המשך פעילות" (blue): resets timer, closes dialog
+
+   - "התנתק עכשיו" (gray): logs out immediately
+
+   
+
+3. On timeout (countdown reaches 0):
+
+   - Call logout() function (clears tokens)
+
+   - Save current URL to sessionStorage
+
+   - Navigate to /login?timeout=true
+
+   - /login page shows: "הפעילות שלך פגה תוקף. התחבר מחדש להמשיך."
+
+4. After re-login:
+
+   - Redirect to saved URL from sessionStorage
+
+   - Clear sessionStorage entry
+
+5. Exception: specific pages can opt out
+
+   - /attendance/clock-in terminal: no timeout (always-on screen)
+
+   - Set flag: <SessionTimeoutExcluded />
+
+6. The dialog must NOT be behind z-index issues (must appear over modals)
+
+Output complete useSessionTimeout.ts + SessionWarningDialog component.
+
+```
+
+---
+
+### L-12 — אינטגרציית Make.com — Webhooks
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Express.
+
+TASK: Implement Make.com webhook integration.
+
+1. Incoming webhook from Make.com:
+
+   POST /api/webhooks/make
+
+   - Verify signature: X-Make-Signature header matches HMAC-SHA256(body, MAKE_WEBHOOK_SECRET)
+
+   - If signature invalid: return 401
+
+   - Parse event type from body
+
+   - Route to handler
+
+2. Outgoing webhooks TO Make.com:
+
+   Create: src/services/makeWebhook.service.ts
+
+   
+
+   Triggers to send to Make.com (use Promise without await — don't block main flow):
+
+   
+
+   workOrderCreated({ id, orderNumber, customer, productType, dueDate })
+
+   workOrderDelivered({ id, orderNumber, customer, totalAmount })
+
+   invoiceIssued({ id, invoiceNumber, customer, amount })
+
+   paymentReceived({ id, amount, customer, invoice })
+
+   newEmployeeAdded({ id, name, department, startDate })
+
+   lowStockAlert({ itemId, itemName, quantity, minQuantity })
+
+3. Each webhook call:
+
+   - POST to MAKE_WEBHOOK_URL (from env)
+
+   - Body: { event: 'work_order.created', data: {...}, timestamp: ISO }
+
+   - Timeout: 5000ms
+
+   - On failure: log error but don't block main request
+
+4. Webhook log table:
+
+   webhook_logs: id, direction (IN/OUT), event, payload, status, error, created_at
+
+5. Settings page: IntegrationsPage
+
+   - Make.com webhook URL input field
+
+   - Test webhook button: sends a test event
+
+   - Webhook log: last 20 outgoing/incoming events
+
+Output complete Make.com integration.
+
+```
+
+---
+
+### L-13 — Mobile — שעון נוכחות ועבודות
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Fix mobile experience for field workers (Ozi/Uzi who work on-site).
+
+The following pages MUST work perfectly on mobile (375px width):
+
+1. My Work Orders page (/my-work-orders):
+
+   - Large cards (full width) instead of table
+
+   - Each card: order number (large), customer name, product type, status badge, due date
+
+   - Status badge prominent and color-coded
+
+   - "דווח שעות" button: large, easy to tap
+
+   - "הוסף תמונה" button: opens camera directly
+
+   - Swipe right: mark as in-progress
+
+   - No horizontal scroll
+
+2. Photo capture on work order:
+
+   - "הוסף תמונה" button → triggers file input with capture="environment"
+
+   - Opens device camera (not file picker)
+
+   - After capture: shows preview
+
+   - "שלח" uploads to Supabase
+
+   - Progress indicator during upload
+
+3. Navigation on mobile:
+
+   - Bottom tab bar with 5 main sections (not sidebar)
+
+   - Tabs: 🏠 ראשי | 🔧 עבודות | ⏰ נוכחות | 🔔 התראות | 👤 פרופיל
+
+   - Active tab highlighted
+
+   - Hamburger for less common sections
+
+4. Touch targets: ALL interactive elements minimum 44px height
+
+   
+
+5. Clock-in terminal on mobile:
+
+   - Works on iPhone/Android
+
+   - Large number pad
+
+   - Face-friendly large buttons
+
+6. Fix any overflow or horizontal scroll issues on mobile
+
+Output mobile-optimized components.
+
+```
+
+---
+
+### L-14 — הגדרות מערכת — דף מלא
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: React 18 / TypeScript / TailwindCSS / RTL Hebrew.
+
+TASK: Audit and fix the Settings pages.
+
+/settings must have working sub-pages:
+
+1. /settings/company — פרטי חברה:
+
+   - שם החברה: "טכנו כל עוזי"
+
+   - ח.פ.: [company registration number]
+
+   - כתובת: "ריבל 37, תל אביב"
+
+   - טלפון: [phone]
+
+   - אימייל: [email]
+
+   - לוגו: upload image
+
+   - שיעור מע"מ: 18% (editable, affects all calculations)
+
+   - Save button → PUT /api/settings/company
+
+2. /settings/users — ניהול משתמשים:
+
+   - Table of all users: שם | אימייל | תפקיד | סטטוס | כניסה אחרונה
+
+   - "הוסף משתמש" button
+
+   - Each user: edit role, activate/deactivate, reset password
+
+3. /settings/notifications — הגדרות התראות:
+
+   - Toggle each notification type on/off
+
+   - Edit email recipients for daily report
+
+   - Configure Slack/Teams webhook URL
+
+   - Test notification button
+
+4. /settings/integrations — אינטגרציות:
+
+   - WhatsApp: API Token field + status (connected/not)
+
+   - Gmail: OAuth status + reconnect button
+
+   - Make.com: webhook URL
+
+   - Supabase: connection status
+
+   - Each shows: configured / not configured badge
+
+   - Test connection button for each
+
+5. /settings/backup — גיבויים:
+
+   - Last backup: date + size
+
+   - "גבה עכשיו" button
+
+   - List of last 10 backups with download links
+
+   - Auto-backup: enabled/disabled toggle + time setting
+
+All settings pages:
+
+- Admin only (redirect to /403 for others)
+
+- Save changes with success toast
+
+- Cancel reverts to saved state
+
+Output complete settings pages.
+
+```
+
+---
+
+### L-15 — End-to-End Test — ולידציה סופית
+
+```
+
+You are auditing an ERP system for a metal fabrication factory in Israel.
+
+Stack: Node.js / TypeScript / Prisma.
+
+TASK: Create a comprehensive system validation script.
+
+Create: scripts/validate-system.ts
+
+This script tests the ENTIRE system end-to-end programmatically:
+
+1. Database connectivity:
+
+   await prisma.$queryRaSELECT 1
+
+   console.log('✅ DB connected')
+
+2. All tables exist:
+
+   Check existence of: employees, departments, users, shifts, attendance,
+
+   work_orders, customers, quotes, invoices, payments, inventory, 
+
+   suppliers, purchase_orders, audit_log, notifications, refresh_tokens
+
+3. Seed data exists:
+
+   const adminUser = await prisma.user.findFirst({ where: { role: 'ADMIN' } })
+
+   if (!adminUser) throw new Error('❌ No admin user found')
+
+4. API endpoints respond:
+
+   const tests = [
+
+     { method: 'GET', path: '/api/health', expectedStatus: 200 },
+
+     { method: 'POST', path: '/api/auth/login', body: { email: TEST_EMAIL, password: TEST_PASS }, expectedStatus: 200 },
+
+     // ... all critical endpoints
+
+   ]
+
+   Run each test with axios, verify status code
+
+5. Business logic:
+
+   - Create test customer → verify created
+
+   - Create test quote for customer → verify total calculations correct
+
+   - Create test inventory item with min stock
+
+   - Record movement that drops below min → verify alert created
+
+   - Clean up all test records created
+
+6. Final report:
+
+   console.log('=== VALIDATION REPORT ===')
+
+   console.log✅ Passed: ${passed})
+
+   console.log❌ Failed: ${failed})
+
+   failed.forEach(f => console.log  ❌ ${f.test}: ${f.error}))
+
+   if (failed.length > 0) process.exit(1);
+
+Run with: npm run validate
+
+Fix any failures found.
+
+Output complete validation script.
+
+```
+
+---
+
+📊 סה"כ: 62 פרומפטים מפורטים — כל אחד משימה ספציפית אחת
+
+🎯 כל פרומפט מוכן להעתקה לריפלייט Agent או לClaude
+
+📁 קטגוריות: A (דפים) | B (ניווט) | C (שדות) | D (סינכרון) | E (כפתורים) | F (API) | G (UI) | H (DB) | I (אבטחה) | J (ביצועים) | K (עברית) | L (תיקונים)
+
+
+
+סדר עבודה מומלץ: A → H → F → D → C → E → G → B → I → K → J → L

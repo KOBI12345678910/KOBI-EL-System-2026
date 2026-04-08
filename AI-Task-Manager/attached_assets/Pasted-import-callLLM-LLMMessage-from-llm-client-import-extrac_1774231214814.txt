@@ -1,0 +1,240 @@
+import { callLLM, LLMMessage } from "../llm/client";
+import { extractTextContent } from "../llm/parser";
+import { AgentMemory } from "../agent/memory";
+import * as fs from "fs";
+import * as path from "path";
+
+export interface ChatMessage {
+  id: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  timestamp: Date;
+  taskId?: string;
+  attachments?: Array<{ type: string; name: string; path: string }>;
+}
+
+export interface Conversation {
+  id: string;
+  title: string;
+  messages: ChatMessage[];
+  createdAt: Date;
+  updatedAt: Date;
+  context: Record<string, any>;
+}
+
+export class ConversationTool {
+  private conversations: Map<string, Conversation> = new Map();
+  private activeConversation: string | null = null;
+  private memory: AgentMemory;
+  private storageDir: string;
+
+  constructor(workspaceDir: string, memory: AgentMemory) {
+    this.memory = memory;
+    this.storageDir = path.join(workspaceDir, ".agent", "conversations");
+    if (!fs.existsSync(this.storageDir)) {
+      fs.mkdirSync(this.storageDir, { recursive: true });
+    }
+    this.loadConversations();
+  }
+
+  createConversation(title?: string): Conversation {
+    const id = `conv_${Date.now()}`;
+    const conv: Conversation = {
+      id,
+      title: title || `Chat ${new Date().toLocaleDateString("he-IL")}`,
+      messages: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      context: {},
+    };
+    this.conversations.set(id, conv);
+    this.activeConversation = id;
+    return conv;
+  }
+
+  async chat(
+    userMessage: string,
+    options?: {
+      conversationId?: string;
+      systemOverride?: string;
+      attachments?: Array<{ type: string; name: string; content: string }>;
+    }
+  ): Promise<ChatMessage> {
+    const convId = options?.conversationId || this.activeConversation;
+    let conv: Conversation;
+
+    if (convId && this.conversations.has(convId)) {
+      conv = this.conversations.get(convId)!;
+    } else {
+      conv = this.createConversation();
+    }
+
+    // Add user message
+    const userMsg: ChatMessage = {
+      id: `msg_${Date.now()}_u`,
+      role: "user",
+      content: userMessage,
+      timestamp: new Date(),
+    };
+    conv.messages.push(userMsg);
+
+    // Build message history for LLM (last 20 messages for context window)
+    const historyMessages: LLMMessage[] = conv.messages
+      .slice(-20)
+      .map((m) => ({
+        role: m.role === "system" ? "user" : m.role,
+        content: m.content,
+      })) as LLMMessage[];
+
+    // Build system prompt with project context
+    const projectContext = this.memory.getProjectContext();
+    const systemPrompt = options?.systemOverride || `You are Kobi Agent — an expert AI coding assistant.
+You have full access to the project workspace.
+
+${projectContext}
+
+Previous conversation context:
+${JSON.stringify(conv.context)}
+
+Instructions:
+- Help the user with coding tasks, debugging, architecture, and project management
+- When the user asks to build/create/fix something, provide the specific steps or code
+- Be concise and practical
+- Remember the conversation context
+- If you need to execute something, describe the steps clearly`;
+
+    // Call LLM
+    const response = await callLLM({
+      system: systemPrompt,
+      messages: historyMessages,
+      maxTokens: 4096,
+    });
+
+    const assistantText = extractTextContent(response.content);
+
+    // Add assistant message
+    const assistantMsg: ChatMessage = {
+      id: `msg_${Date.now()}_a`,
+      role: "assistant",
+      content: assistantText,
+      timestamp: new Date(),
+    };
+    conv.messages.push(assistantMsg);
+    conv.updatedAt = new Date();
+
+    // Auto-generate title from first message
+    if (conv.messages.length === 2) {
+      conv.title = userMessage.slice(0, 60) + (userMessage.length > 60 ? "..." : "");
+    }
+
+    // Extract and store context hints
+    this.extractContext(conv, assistantText);
+
+    // Save
+    this.saveConversation(conv);
+
+    return assistantMsg;
+  }
+
+  getConversation(id: string): Conversation | undefined {
+    return this.conversations.get(id);
+  }
+
+  getActiveConversation(): Conversation | null {
+    if (!this.activeConversation) return null;
+    return this.conversations.get(this.activeConversation) || null;
+  }
+
+  setActiveConversation(id: string): boolean {
+    if (this.conversations.has(id)) {
+      this.activeConversation = id;
+      return true;
+    }
+    return false;
+  }
+
+  listConversations(): Array<{
+    id: string;
+    title: string;
+    messageCount: number;
+    updatedAt: Date;
+  }> {
+    return Array.from(this.conversations.values())
+      .map((c) => ({
+        id: c.id,
+        title: c.title,
+        messageCount: c.messages.length,
+        updatedAt: c.updatedAt,
+      }))
+      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+  }
+
+  deleteConversation(id: string): boolean {
+    const deleted = this.conversations.delete(id);
+    if (deleted) {
+      const filePath = path.join(this.storageDir, `${id}.json`);
+      try { fs.unlinkSync(filePath); } catch {}
+      if (this.activeConversation === id) this.activeConversation = null;
+    }
+    return deleted;
+  }
+
+  searchConversations(query: string): ChatMessage[] {
+    const results: ChatMessage[] = [];
+    const lowerQuery = query.toLowerCase();
+
+    for (const conv of this.conversations.values()) {
+      for (const msg of conv.messages) {
+        if (msg.content.toLowerCase().includes(lowerQuery)) {
+          results.push(msg);
+        }
+      }
+    }
+
+    return results.slice(0, 50);
+  }
+
+  private extractContext(conv: Conversation, text: string): void {
+    // Extract mentioned files
+    const fileRefs = text.match(/`([a-zA-Z0-9_/.-]+\.[a-zA-Z]+)`/g);
+    if (fileRefs) {
+      conv.context.mentionedFiles = [
+        ...(conv.context.mentionedFiles || []),
+        ...fileRefs.map((f) => f.replace(/`/g, "")),
+      ].slice(-20);
+    }
+
+    // Extract tech mentions
+    const techPatterns = /\b(React|Next\.js|Express|TypeScript|PostgreSQL|Redis|Docker|Prisma|Drizzle|Tailwind|Node\.js)\b/gi;
+    const techs = text.match(techPatterns);
+    if (techs) {
+      conv.context.techStack = [...new Set([
+        ...(conv.context.techStack || []),
+        ...techs.map((t) => t.toLowerCase()),
+      ])];
+    }
+  }
+
+  private saveConversation(conv: Conversation): void {
+    const filePath = path.join(this.storageDir, `${conv.id}.json`);
+    fs.writeFileSync(filePath, JSON.stringify(conv, null, 2));
+  }
+
+  private loadConversations(): void {
+    try {
+      const files = fs.readdirSync(this.storageDir);
+      for (const file of files) {
+        if (!file.endsWith(".json")) continue;
+        try {
+          const data = JSON.parse(fs.readFileSync(path.join(this.storageDir, file), "utf-8"));
+          data.createdAt = new Date(data.createdAt);
+          data.updatedAt = new Date(data.updatedAt);
+          for (const msg of data.messages) {
+            msg.timestamp = new Date(msg.timestamp);
+          }
+          this.conversations.set(data.id, data);
+        } catch {}
+      }
+    } catch {}
+  }
+}

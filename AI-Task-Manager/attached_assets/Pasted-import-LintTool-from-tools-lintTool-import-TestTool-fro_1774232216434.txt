@@ -1,0 +1,280 @@
+import { LintTool } from "../tools/lintTool";
+import { TestTool } from "../tools/testTool";
+import { CodeReviewTool } from "../tools/codeReviewTool";
+import { DependencyTool } from "../tools/dependencyTool";
+import { A11yTool } from "../tools/a11yTool";
+import { SEOTool } from "../tools/seoTool";
+import { FileTool } from "../tools/fileTool";
+import { SearchTool } from "../tools/searchTool";
+import { TerminalTool } from "../tools/terminalTool";
+import { BrowserTool } from "../tools/browserTool";
+
+export interface QualityGateResult {
+  passed: boolean;
+  score: number;
+  gates: Array<{
+    name: string;
+    passed: boolean;
+    score: number;
+    weight: number;
+    details: string;
+    duration: number;
+  }>;
+  blockers: string[];
+  warnings: string[];
+  totalDuration: number;
+}
+
+export class QualityGateFlow {
+  private lintTool: LintTool;
+  private testTool: TestTool;
+  private reviewTool: CodeReviewTool;
+  private depTool: DependencyTool;
+  private a11yTool: A11yTool;
+  private seoTool: SEOTool;
+  private terminal: TerminalTool;
+  private fileTool: FileTool;
+  private searchTool: SearchTool;
+  private onLog: (msg: string) => void;
+
+  constructor(workspaceDir: string, onLog: (msg: string) => void) {
+    this.onLog = onLog;
+    this.terminal = new TerminalTool(workspaceDir);
+    this.fileTool = new FileTool(workspaceDir);
+    this.searchTool = new SearchTool(workspaceDir);
+    this.lintTool = new LintTool(workspaceDir, this.terminal, this.fileTool);
+    this.testTool = new TestTool(workspaceDir, this.terminal, this.fileTool);
+    this.reviewTool = new CodeReviewTool(this.fileTool, this.searchTool);
+    this.depTool = new DependencyTool(workspaceDir, this.terminal, this.fileTool, this.searchTool);
+    this.a11yTool = new A11yTool(this.fileTool, this.searchTool);
+    this.seoTool = new SEOTool(this.fileTool, this.searchTool, new BrowserTool(this.terminal));
+  }
+
+  /**
+   * Run ALL quality gates:
+   * 1. TypeScript compilation
+   * 2. Linting
+   * 3. Tests
+   * 4. Code review (AI)
+   * 5. Security scan
+   * 6. Dependency audit
+   * 7. Accessibility
+   * 8. Bundle size
+   * 9. Build check
+   */
+  async runAllGates(options?: {
+    gates?: string[];
+    failFast?: boolean;
+    minScore?: number;
+  }): Promise<QualityGateResult> {
+    const startTime = Date.now();
+    const gates: QualityGateResult["gates"] = [];
+    const blockers: string[] = [];
+    const warnings: string[] = [];
+    const minScore = options?.minScore || 70;
+
+    this.onLog("\n🚦 QUALITY GATE PIPELINE");
+    this.onLog("═".repeat(50));
+
+    const enabledGates = options?.gates || [
+      "typescript",
+      "lint",
+      "test",
+      "security",
+      "dependencies",
+      "accessibility",
+      "build",
+    ];
+
+    // Gate 1: TypeScript
+    if (enabledGates.includes("typescript")) {
+      const gateStart = Date.now();
+      this.onLog("\n📝 Gate: TypeScript...");
+      const result = await this.lintTool.typeCheck();
+      const errors = result.errors.length;
+      const passed = errors === 0;
+      const score = Math.max(0, 100 - errors * 5);
+
+      gates.push({
+        name: "typescript",
+        passed,
+        score,
+        weight: 20,
+        details: `${errors} type errors`,
+        duration: Date.now() - gateStart,
+      });
+
+      if (!passed) blockers.push(`TypeScript: ${errors} errors`);
+      this.onLog(`  ${passed ? "✅" : "❌"} ${errors} errors (score: ${score})`);
+
+      if (options?.failFast && !passed) return this.result(gates, blockers, warnings, startTime, minScore);
+    }
+
+    // Gate 2: Linting
+    if (enabledGates.includes("lint")) {
+      const gateStart = Date.now();
+      this.onLog("\n🔍 Gate: Linting...");
+      const result = await this.lintTool.lint();
+      const passed = result.errors === 0;
+      const score = Math.max(0, 100 - result.errors * 10 - result.warnings * 2);
+
+      gates.push({
+        name: "lint",
+        passed,
+        score,
+        weight: 15,
+        details: `${result.errors} errors, ${result.warnings} warnings`,
+        duration: Date.now() - gateStart,
+      });
+
+      if (!passed) blockers.push(`Lint: ${result.errors} errors`);
+      if (result.warnings > 5) warnings.push(`Lint: ${result.warnings} warnings`);
+      this.onLog(`  ${passed ? "✅" : "❌"} ${result.errors}E/${result.warnings}W (score: ${score})`);
+    }
+
+    // Gate 3: Tests
+    if (enabledGates.includes("test")) {
+      const gateStart = Date.now();
+      this.onLog("\n🧪 Gate: Tests...");
+      try {
+        const result = await this.testTool.runTests();
+        const passed = result.failed === 0 && result.total > 0;
+        const score = result.total > 0
+          ? Math.round((result.passed / result.total) * 100)
+          : 0;
+
+        gates.push({
+          name: "test",
+          passed,
+          score,
+          weight: 25,
+          details: `${result.passed}/${result.total} passed`,
+          duration: Date.now() - gateStart,
+        });
+
+        if (!passed) blockers.push(`Tests: ${result.failed} failing`);
+        if (result.total === 0) warnings.push("No tests found");
+        this.onLog(`  ${passed ? "✅" : "❌"} ${result.passed}/${result.total} (score: ${score})`);
+      } catch {
+        gates.push({ name: "test", passed: false, score: 0, weight: 25, details: "Tests failed to run", duration: Date.now() - gateStart });
+        warnings.push("Tests could not run");
+      }
+    }
+
+    // Gate 4: Security
+    if (enabledGates.includes("security")) {
+      const gateStart = Date.now();
+      this.onLog("\n🔒 Gate: Security...");
+      const issues = await this.reviewTool.securityScan();
+      const critical = issues.filter((i) => i.severity === "critical").length;
+      const passed = critical === 0;
+      const score = Math.max(0, 100 - critical * 20 - issues.length * 3);
+
+      gates.push({
+        name: "security",
+        passed,
+        score,
+        weight: 20,
+        details: `${issues.length} issues (${critical} critical)`,
+        duration: Date.now() - gateStart,
+      });
+
+      if (!passed) blockers.push(`Security: ${critical} critical issues`);
+      this.onLog(`  ${passed ? "✅" : "❌"} ${issues.length} issues (score: ${score})`);
+    }
+
+    // Gate 5: Dependencies
+    if (enabledGates.includes("dependencies")) {
+      const gateStart = Date.now();
+      this.onLog("\n📦 Gate: Dependencies...");
+      const vuln = await this.depTool.checkVulnerabilities();
+      const passed = vuln.critical === 0 && vuln.high === 0;
+      const score = Math.max(0, 100 - vuln.critical * 25 - vuln.high * 10 - vuln.moderate * 3);
+
+      gates.push({
+        name: "dependencies",
+        passed,
+        score,
+        weight: 10,
+        details: `${vuln.total} vulnerabilities (${vuln.critical}C/${vuln.high}H)`,
+        duration: Date.now() - gateStart,
+      });
+
+      if (!passed) blockers.push(`Deps: ${vuln.critical} critical, ${vuln.high} high vulnerabilities`);
+      this.onLog(`  ${passed ? "✅" : "❌"} ${vuln.total} vulns (score: ${score})`);
+    }
+
+    // Gate 6: Accessibility
+    if (enabledGates.includes("accessibility")) {
+      const gateStart = Date.now();
+      this.onLog("\n♿ Gate: Accessibility...");
+      const result = await this.a11yTool.audit();
+      const critical = result.issues.filter((i) => i.severity === "critical").length;
+      const passed = critical === 0;
+
+      gates.push({
+        name: "accessibility",
+        passed,
+        score: result.score,
+        weight: 5,
+        details: `${result.issues.length} issues (${critical} critical)`,
+        duration: Date.now() - gateStart,
+      });
+
+      if (critical > 0) warnings.push(`A11y: ${critical} critical issues`);
+      this.onLog(`  ${passed ? "✅" : "⚠️"} score ${result.score}/100`);
+    }
+
+    // Gate 7: Build
+    if (enabledGates.includes("build")) {
+      const gateStart = Date.now();
+      this.onLog("\n🏗️ Gate: Build...");
+      const result = await this.terminal.execute("npm run build 2>&1", { timeout: 120000 });
+      const passed = result.success;
+
+      gates.push({
+        name: "build",
+        passed,
+        score: passed ? 100 : 0,
+        weight: 5,
+        details: passed ? "Build successful" : "Build failed",
+        duration: Date.now() - gateStart,
+      });
+
+      if (!passed) blockers.push("Build fails");
+      this.onLog(`  ${passed ? "✅" : "❌"} ${passed ? "success" : "failed"}`);
+    }
+
+    return this.result(gates, blockers, warnings, startTime, minScore);
+  }
+
+  private result(
+    gates: QualityGateResult["gates"],
+    blockers: string[],
+    warnings: string[],
+    startTime: number,
+    minScore: number
+  ): QualityGateResult {
+    // Calculate weighted score
+    const totalWeight = gates.reduce((sum, g) => sum + g.weight, 0);
+    const weightedScore = totalWeight > 0
+      ? Math.round(gates.reduce((sum, g) => sum + g.score * g.weight, 0) / totalWeight)
+      : 0;
+
+    const allPassed = blockers.length === 0 && weightedScore >= minScore;
+
+    this.onLog(`\n${"═".repeat(50)}`);
+    this.onLog(`${allPassed ? "✅" : "❌"} QUALITY SCORE: ${weightedScore}/100 (min: ${minScore})`);
+    this.onLog(`  Blockers: ${blockers.length} | Warnings: ${warnings.length}`);
+    this.onLog(`${"═".repeat(50)}\n`);
+
+    return {
+      passed: allPassed,
+      score: weightedScore,
+      gates,
+      blockers,
+      warnings,
+      totalDuration: Date.now() - startTime,
+    };
+  }
+}

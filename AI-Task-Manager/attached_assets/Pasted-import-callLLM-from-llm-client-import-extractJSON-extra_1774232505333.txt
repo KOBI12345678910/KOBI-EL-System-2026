@@ -1,0 +1,140 @@
+import { callLLM } from "../llm/client";
+import { extractJSON, extractTextContent } from "../llm/parser";
+import { FileTool } from "./fileTool";
+import { TerminalTool } from "./terminalTool";
+
+export interface SpawnedAgent {
+  id: string;
+  name: string;
+  type: "telegram-bot" | "slack-bot" | "email-automation" | "cron-automation" | "webhook-agent" | "api-agent" | "custom";
+  description: string;
+  files: string[];
+  status: "created" | "deployed" | "running" | "stopped";
+  config: Record<string, any>;
+  createdAt: Date;
+}
+
+export class AgentSpawnerTool {
+  private fileTool: FileTool;
+  private terminal: TerminalTool;
+  private spawnedAgents: Map<string, SpawnedAgent> = new Map();
+
+  constructor(fileTool: FileTool, terminal: TerminalTool) {
+    this.fileTool = fileTool;
+    this.terminal = terminal;
+  }
+
+  async spawnAgent(description: string): Promise<SpawnedAgent> {
+    // Analyze what kind of agent to build
+    const response = await callLLM({
+      system: `You build autonomous agents from descriptions. Analyze the request and determine:
+1. What type of agent (telegram-bot, slack-bot, email-automation, cron-automation, webhook-agent, api-agent, custom)
+2. What files need to be created
+3. What packages are needed
+4. What environment variables are required
+
+Respond with JSON:
+{
+  "name": "agent-name",
+  "type": "type",
+  "description": "what this agent does",
+  "packages": ["list of npm packages"],
+  "envVars": { "VAR_NAME": "description" },
+  "files": {
+    "path/to/file.ts": "complete file content"
+  },
+  "entryPoint": "path/to/main.ts",
+  "cronSchedule": "if applicable"
+}`,
+      messages: [{ role: "user", content: `Build this agent: ${description}` }],
+      maxTokens: 8192,
+    });
+
+    const spec = extractJSON(extractTextContent(response.content));
+    if (!spec) throw new Error("Failed to design agent");
+
+    const agentDir = `agents/${spec.name}`;
+    const agent: SpawnedAgent = {
+      id: `agent_${Date.now()}`,
+      name: spec.name,
+      type: spec.type,
+      description: spec.description,
+      files: [],
+      status: "created",
+      config: { envVars: spec.envVars, entryPoint: spec.entryPoint },
+      createdAt: new Date(),
+    };
+
+    // Create all files
+    for (const [filePath, content] of Object.entries(spec.files)) {
+      const fullPath = `${agentDir}/${filePath}`;
+      this.fileTool.createFile(fullPath, content as string);
+      agent.files.push(fullPath);
+    }
+
+    // Create package.json for the agent
+    this.fileTool.createFile(`${agentDir}/package.json`, JSON.stringify({
+      name: spec.name,
+      version: "1.0.0",
+      scripts: {
+        start: `tsx ${spec.entryPoint}`,
+        dev: `tsx watch ${spec.entryPoint}`,
+      },
+      dependencies: Object.fromEntries((spec.packages || []).map((p: string) => [p, "latest"])),
+      devDependencies: { tsx: "latest", typescript: "latest" },
+    }, null, 2));
+
+    // Create .env template
+    if (spec.envVars) {
+      const envContent = Object.entries(spec.envVars)
+        .map(([key, desc]) => `# ${desc}\n${key}=`)
+        .join("\n\n");
+      this.fileTool.createFile(`${agentDir}/.env`, envContent);
+    }
+
+    // Create Dockerfile
+    this.fileTool.createFile(`${agentDir}/Dockerfile`, `FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+CMD ["npm", "start"]
+`);
+
+    // Install deps
+    await this.terminal.execute(`cd ${agentDir} && npm install`, { timeout: 60000 });
+
+    this.spawnedAgents.set(agent.id, agent);
+    return agent;
+  }
+
+  async deployAgent(agentId: string): Promise<{ success: boolean; output: string }> {
+    const agent = this.spawnedAgents.get(agentId);
+    if (!agent) throw new Error("Agent not found");
+
+    const agentDir = `agents/${agent.name}`;
+
+    // Start as background process
+    await this.terminal.startBackground(agentId, `cd ${agentDir} && npm start`, {
+      onOutput: (data) => {
+        if (data.includes("Error")) console.error(`[${agent.name}] ${data}`);
+      },
+    });
+
+    agent.status = "running";
+    return { success: true, output: `Agent ${agent.name} deployed and running` };
+  }
+
+  async stopAgent(agentId: string): Promise<boolean> {
+    const agent = this.spawnedAgents.get(agentId);
+    if (!agent) return false;
+
+    await this.terminal.stopBackground(agentId);
+    agent.status = "stopped";
+    return true;
+  }
+
+  getSpawnedAgents(): SpawnedAgent[] {
+    return Array.from(this.spawnedAgents.values());
+  }
+}

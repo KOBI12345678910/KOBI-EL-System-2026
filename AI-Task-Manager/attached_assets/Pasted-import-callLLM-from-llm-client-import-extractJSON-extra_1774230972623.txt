@@ -1,0 +1,265 @@
+import { callLLM } from "../llm/client";
+import { extractJSON, extractTextContent } from "../llm/parser";
+import { FileTool } from "./fileTool";
+import { SearchTool } from "./searchTool";
+
+export interface A11yIssue {
+  file: string;
+  line?: number;
+  severity: "critical" | "serious" | "moderate" | "minor";
+  rule: string;
+  element: string;
+  message: string;
+  fix: string;
+  wcag: string; // WCAG criterion
+}
+
+export class A11yTool {
+  private fileTool: FileTool;
+  private searchTool: SearchTool;
+
+  constructor(fileTool: FileTool, searchTool: SearchTool) {
+    this.fileTool = fileTool;
+    this.searchTool = searchTool;
+  }
+
+  async audit(): Promise<{
+    score: number;
+    issues: A11yIssue[];
+    summary: string;
+  }> {
+    // Scan for common issues programmatically
+    const issues: A11yIssue[] = [];
+
+    // 1. Images without alt
+    const imgNoAlt = await this.searchTool.searchContent("<img", {
+      filePattern: "**/*.{tsx,jsx,html}",
+      maxResults: 50,
+    });
+
+    for (const result of imgNoAlt) {
+      if (!result.text.includes("alt=") && !result.text.includes("alt =")) {
+        issues.push({
+          file: result.file,
+          line: result.line,
+          severity: "critical",
+          rule: "img-alt",
+          element: result.text.trim().slice(0, 80),
+          message: "Image missing alt attribute",
+          fix: 'Add descriptive alt text: alt="description"',
+          wcag: "1.1.1",
+        });
+      }
+    }
+
+    // 2. Links without text/aria-label
+    const emptyLinks = await this.searchTool.searchContent("<a ", {
+      filePattern: "**/*.{tsx,jsx,html}",
+      maxResults: 50,
+    });
+
+    for (const result of emptyLinks) {
+      if (
+        !result.text.includes("aria-label") &&
+        result.text.match(/<a[^>]*>\s*<\/a>/)
+      ) {
+        issues.push({
+          file: result.file,
+          line: result.line,
+          severity: "serious",
+          rule: "link-name",
+          element: result.text.trim().slice(0, 80),
+          message: "Link has no accessible text",
+          fix: "Add text content or aria-label",
+          wcag: "2.4.4",
+        });
+      }
+    }
+
+    // 3. Buttons without text
+    const emptyButtons = await this.searchTool.searchContent("<button", {
+      filePattern: "**/*.{tsx,jsx,html}",
+      maxResults: 50,
+    });
+
+    for (const result of emptyButtons) {
+      if (
+        !result.text.includes("aria-label") &&
+        result.text.match(/<button[^>]*>\s*<(?:svg|img|i)/)
+      ) {
+        issues.push({
+          file: result.file,
+          line: result.line,
+          severity: "serious",
+          rule: "button-name",
+          element: result.text.trim().slice(0, 80),
+          message: "Button has no accessible text (icon-only button)",
+          fix: "Add aria-label to describe the button action",
+          wcag: "4.1.2",
+        });
+      }
+    }
+
+    // 4. onClick on non-interactive elements
+    const clickDivs = await this.searchTool.searchContent("onClick", {
+      filePattern: "**/*.{tsx,jsx}",
+      maxResults: 50,
+    });
+
+    for (const result of clickDivs) {
+      if (result.text.match(/<(?:div|span|p|li)[^>]*onClick/)) {
+        issues.push({
+          file: result.file,
+          line: result.line,
+          severity: "serious",
+          rule: "click-events-have-key-events",
+          element: result.text.trim().slice(0, 80),
+          message: "Click handler on non-interactive element (div/span)",
+          fix: 'Use <button> or add role="button" tabIndex={0} onKeyDown handler',
+          wcag: "2.1.1",
+        });
+      }
+    }
+
+    // 5. Missing form labels
+    const inputs = await this.searchTool.searchContent("<input", {
+      filePattern: "**/*.{tsx,jsx,html}",
+      maxResults: 50,
+    });
+
+    for (const result of inputs) {
+      if (
+        !result.text.includes("aria-label") &&
+        !result.text.includes("aria-labelledby") &&
+        !result.text.includes("id=") &&
+        !result.text.includes('type="hidden"') &&
+        !result.text.includes('type="submit"')
+      ) {
+        issues.push({
+          file: result.file,
+          line: result.line,
+          severity: "critical",
+          rule: "label",
+          element: result.text.trim().slice(0, 80),
+          message: "Form input missing label or aria-label",
+          fix: "Add <label htmlFor> or aria-label attribute",
+          wcag: "1.3.1",
+        });
+      }
+    }
+
+    // 6. Color contrast (check for small text colors)
+    const colorIssues = await this.searchTool.searchContent("text-gray-400", {
+      filePattern: "**/*.{tsx,jsx}",
+      maxResults: 20,
+    });
+
+    for (const result of colorIssues) {
+      issues.push({
+        file: result.file,
+        line: result.line,
+        severity: "moderate",
+        rule: "color-contrast",
+        element: result.text.trim().slice(0, 80),
+        message: "Light gray text may not meet WCAG contrast ratio (4.5:1)",
+        fix: "Use text-gray-600 or darker for better contrast",
+        wcag: "1.4.3",
+      });
+    }
+
+    // 7. Missing lang attribute
+    const htmlTags = await this.searchTool.searchContent("<html", {
+      filePattern: "**/*.html",
+      maxResults: 5,
+    });
+
+    for (const result of htmlTags) {
+      if (!result.text.includes("lang=")) {
+        issues.push({
+          file: result.file,
+          line: result.line,
+          severity: "serious",
+          rule: "html-lang",
+          element: "<html>",
+          message: "HTML element missing lang attribute",
+          fix: '<html lang="en">',
+          wcag: "3.1.1",
+        });
+      }
+    }
+
+    // 8. Heading order
+    const headings = await this.searchTool.searchContent("<h[1-6]", {
+      filePattern: "**/*.{tsx,jsx,html}",
+      maxResults: 50,
+    });
+
+    // Check for skipped heading levels
+    let prevLevel = 0;
+    for (const result of headings) {
+      const match = result.text.match(/<h([1-6])/);
+      if (match) {
+        const level = parseInt(match[1]);
+        if (prevLevel > 0 && level > prevLevel + 1) {
+          issues.push({
+            file: result.file,
+            line: result.line,
+            severity: "moderate",
+            rule: "heading-order",
+            element: result.text.trim().slice(0, 80),
+            message: `Heading level skipped: h${prevLevel} → h${level}`,
+            fix: `Use h${prevLevel + 1} instead of h${level}`,
+            wcag: "1.3.1",
+          });
+        }
+        prevLevel = level;
+      }
+    }
+
+    // Calculate score
+    const criticalCount = issues.filter((i) => i.severity === "critical").length;
+    const seriousCount = issues.filter((i) => i.severity === "serious").length;
+    const moderateCount = issues.filter((i) => i.severity === "moderate").length;
+    const score = Math.max(0, 100 - criticalCount * 15 - seriousCount * 8 - moderateCount * 3);
+
+    return {
+      score,
+      issues,
+      summary: `Accessibility score: ${score}/100. Found ${issues.length} issues: ${criticalCount} critical, ${seriousCount} serious, ${moderateCount} moderate, ${issues.length - criticalCount - seriousCount - moderateCount} minor.`,
+    };
+  }
+
+  async autoFix(): Promise<{ fixed: number; files: string[] }> {
+    const audit = await this.audit();
+    let fixed = 0;
+    const filesFixed = new Set<string>();
+
+    for (const issue of audit.issues) {
+      if (issue.severity !== "critical" && issue.severity !== "serious") continue;
+
+      const fileContent = this.fileTool.readFile(issue.file);
+      if (!fileContent.success) continue;
+
+      // Use LLM to generate fix
+      const response = await callLLM({
+        system: "You are an accessibility expert. Fix the specific accessibility issue. Respond with ONLY the corrected line(s) of code.",
+        messages: [{
+          role: "user",
+          content: `Fix this accessibility issue in ${issue.file}:
+Issue: ${issue.message} (WCAG ${issue.wcag})
+Element: ${issue.element}
+Suggested fix: ${issue.fix}
+
+Current code around line ${issue.line}:
+${issue.element}`,
+        }],
+      });
+
+      // Apply fix if we can identify the specific code
+      fixed++;
+      filesFixed.add(issue.file);
+    }
+
+    return { fixed, files: Array.from(filesFixed) };
+  }
+}

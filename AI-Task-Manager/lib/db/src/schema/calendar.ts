@@ -1,0 +1,25 @@
+import { pgTable, serial, text, boolean, timestamp, varchar, integer, date, time } from "drizzle-orm/pg-core";
+
+export const calendarEventsTable = pgTable("calendar_events", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  title: varchar("title", { length: 300 }).notNull(),
+  description: text("description"),
+  eventType: varchar("event_type", { length: 50 }).notNull().default("meeting"),
+  eventDate: date("event_date").notNull(),
+  startTime: time("start_time").notNull(),
+  endTime: time("end_time").notNull(),
+  location: varchar("location", { length: 300 }),
+  color: varchar("color", { length: 20 }).default("#3B82F6"),
+  isAllDay: boolean("is_all_day").notNull().default(false),
+  isCompleted: boolean("is_completed").notNull().default(false),
+  priority: varchar("priority", { length: 20 }).default("normal"),
+  reminderMinutes: integer("reminder_minutes"),
+  googleEventId: varchar("google_event_id", { length: 500 }),
+  googleCalendarId: varchar("google_calendar_id", { length: 300 }),
+  relatedEntityType: varchar("related_entity_type", { length: 100 }),
+  relatedEntityId: integer("related_entity_id"),
+  relatedEntityName: varchar("related_entity_name", { length: 300 }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});

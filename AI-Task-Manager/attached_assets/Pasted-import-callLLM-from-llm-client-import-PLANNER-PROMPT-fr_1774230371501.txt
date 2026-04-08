@@ -1,0 +1,101 @@
+import { callLLM } from "../llm/client";
+import { PLANNER_PROMPT } from "../llm/prompts";
+import { extractJSON, extractTextContent } from "../llm/parser";
+import { AgentMemory } from "./memory";
+
+export interface Plan {
+  taskSummary: string;
+  steps: Array<{
+    id: number;
+    type: string;
+    description: string;
+    details: any;
+    dependsOn: number[];
+    validation: string;
+  }>;
+  estimatedDuration: string;
+}
+
+export class TaskPlanner {
+  private memory: AgentMemory;
+
+  constructor(memory: AgentMemory) {
+    this.memory = memory;
+  }
+
+  async createPlan(task: string, additionalContext?: string): Promise<Plan> {
+    const projectContext = this.memory.getProjectContext();
+
+    const response = await callLLM({
+      system: PLANNER_PROMPT,
+      messages: [
+        {
+          role: "user",
+          content: `Project context:\n${projectContext}\n\n${
+            additionalContext ? `Additional context:\n${additionalContext}\n\n` : ""
+          }Task:\n${task}`,
+        },
+      ],
+      maxTokens: 8192,
+    });
+
+    const text = extractTextContent(response.content);
+    const plan = extractJSON(text) as Plan;
+
+    if (!plan || !plan.steps || !Array.isArray(plan.steps)) {
+      throw new Error("Failed to parse plan from LLM response");
+    }
+
+    // Ensure step IDs are sequential
+    plan.steps = plan.steps.map((step, i) => ({
+      ...step,
+      id: i + 1,
+    }));
+
+    return plan;
+  }
+
+  async revisePlan(
+    originalPlan: Plan,
+    completedSteps: number[],
+    failedStep: { id: number; error: string },
+    task: string
+  ): Promise<Plan> {
+    const projectContext = this.memory.getProjectContext();
+
+    const response = await callLLM({
+      system: PLANNER_PROMPT,
+      messages: [
+        {
+          role: "user",
+          content: `The original plan failed at step ${failedStep.id}.
+
+Original task: ${task}
+Project context: ${projectContext}
+
+Original plan:
+${JSON.stringify(originalPlan, null, 2)}
+
+Completed steps: ${completedSteps.join(", ")}
+Failed step: ${failedStep.id} - Error: ${failedStep.error}
+
+Create a REVISED plan that:
+1. Keeps completed steps as-is (don't redo them)
+2. Fixes the issue that caused the failure
+3. Continues from where we left off
+4. Adjusts remaining steps if needed`,
+        },
+      ],
+      maxTokens: 8192,
+    });
+
+    const text = extractTextContent(response.content);
+    const plan = extractJSON(text) as Plan;
+
+    if (!plan || !plan.steps) {
+      throw new Error("Failed to parse revised plan");
+    }
+
+    return plan;
+  }
+}

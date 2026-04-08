@@ -1,0 +1,350 @@
+import { v4 as uuidv4 } from "uuid";
+import { callLLM, LLMMessage } from "../llm/client";
+import { extractJSON, extractTextContent } from "../llm/parser";
+import { AgentMemory } from "./memory";
+
+export interface SpecialistAgent {
+  id: string;
+  role: string;
+  expertise: string[];
+  systemPrompt: string;
+  status: "idle" | "working" | "done" | "error";
+  currentTask?: string;
+  result?: string;
+}
+
+export interface AgentMessage {
+  from: string;
+  to: string;
+  type: "task" | "result" | "question" | "review" | "approve" | "reject";
+  content: string;
+  timestamp: Date;
+}
+
+export class MultiAgentOrchestrator {
+  private agents: Map<string, SpecialistAgent> = new Map();
+  private messageLog: AgentMessage[] = [];
+  private memory: AgentMemory;
+  private onLog: (msg: string) => void;
+
+  constructor(memory: AgentMemory, onLog: (msg: string) => void) {
+    this.memory = memory;
+    this.onLog = onLog;
+    this.initializeAgents();
+  }
+
+  private initializeAgents() {
+    const specs: Omit<SpecialistAgent, "id" | "status">[] = [
+      {
+        role: "architect",
+        expertise: ["system design", "architecture", "patterns", "scalability", "databases"],
+        systemPrompt: `You are a senior software architect. You design systems with:
+- Clean architecture (layers, boundaries, dependency inversion)
+- Scalability patterns (CQRS, event sourcing, microservices vs monolith)
+- Database design (normalization, indexing, caching strategies)
+- API design (REST, GraphQL, WebSocket, gRPC)
+- Security architecture (auth, encryption, OWASP)
+You provide architectural decisions as structured JSON with rationale.`,
+      },
+      {
+        role: "frontend",
+        expertise: ["react", "css", "ui/ux", "accessibility", "animations", "responsive"],
+        systemPrompt: `You are a senior frontend engineer specializing in:
+- React/Next.js with TypeScript (hooks, context, server components)
+- CSS/Tailwind (responsive, animations, dark mode)
+- Component architecture (atomic design, composition patterns)
+- Performance (lazy loading, code splitting, memoization, virtual lists)
+- Accessibility (ARIA, keyboard nav, screen readers, WCAG 2.1 AA)
+- State management (zustand, jotai, react-query, server state)
+You write pixel-perfect, performant, accessible UI code.`,
+      },
+      {
+        role: "backend",
+        expertise: ["api", "database", "auth", "performance", "security", "caching"],
+        systemPrompt: `You are a senior backend engineer specializing in:
+- Node.js/Express/Fastify with TypeScript
+- Database design (PostgreSQL, Redis, migrations, queries)
+- Authentication (JWT, OAuth2, sessions, RBAC, multi-tenancy)
+- API design (validation, error handling, pagination, rate limiting)
+- Performance (caching, connection pooling, query optimization, indexing)
+- Security (input sanitization, CORS, CSRF, SQL injection prevention)
+- Background jobs, queues, WebSockets, SSE
+You write robust, secure, production-ready backend code.`,
+      },
+      {
+        role: "devops",
+        expertise: ["docker", "ci/cd", "monitoring", "deployment", "infrastructure"],
+        systemPrompt: `You are a senior DevOps engineer specializing in:
+- Docker (multi-stage builds, compose, optimization)
+- CI/CD (GitHub Actions, GitLab CI, automated testing)
+- Cloud deployment (AWS, GCP, Vercel, Railway, Fly.io)
+- Monitoring (health checks, logging, alerting, metrics)
+- Infrastructure as code, SSL, domains, DNS
+- Performance tuning, load balancing, auto-scaling
+You create production-ready deployment configurations.`,
+      },
+      {
+        role: "qa",
+        expertise: ["testing", "quality", "security", "performance", "code review"],
+        systemPrompt: `You are a senior QA engineer and code reviewer specializing in:
+- Test strategies (unit, integration, e2e, contract, load)
+- Test frameworks (Vitest, Jest, Playwright, Cypress)
+- Security testing (OWASP, penetration, vulnerability scanning)
+- Performance testing (load, stress, endurance)
+- Code quality (complexity, maintainability, test coverage)
+- Bug detection, edge cases, race conditions, error handling
+You find bugs that others miss and ensure production quality.`,
+      },
+      {
+        role: "data",
+        expertise: ["database", "schema", "migration", "optimization", "etl"],
+        systemPrompt: `You are a senior data engineer specializing in:
+- Database schema design (PostgreSQL, MySQL, MongoDB, Redis)
+- ORM configuration (Prisma, Drizzle, TypeORM, Sequelize)
+- Query optimization (indexes, explain plans, denormalization)
+- Data migrations (zero-downtime, rollback strategies)
+- ETL pipelines, data validation, seeding
+- Caching strategies (Redis, in-memory, CDN)
+You design efficient, scalable data architectures.`,
+      },
+    ];
+
+    for (const spec of specs) {
+      const id = `agent_${spec.role}`;
+      this.agents.set(id, { ...spec, id, status: "idle" });
+    }
+  }
+
+  async orchestrate(task: string): Promise<{
+    plan: any;
+    results: Map<string, string>;
+    finalOutput: string;
+  }> {
+    this.onLog("\n🧠 Multi-Agent Orchestrator activated");
+
+    // Step 1: Architect analyzes and creates the plan
+    this.onLog("📐 Architect analyzing task...");
+    const architectPlan = await this.consultAgent("agent_architect", `
+Analyze this task and create a multi-agent execution plan.
+Task: ${task}
+
+Project context:
+${this.memory.getProjectContext()}
+
+Respond with JSON:
+{
+  "architecture": {
+    "type": "monolith|microservice|serverless|static",
+    "framework": "next|express|fastapi|etc",
+    "database": "postgres|mysql|sqlite|mongodb|none",
+    "auth": "jwt|session|oauth|none",
+    "features": ["list of features"]
+  },
+  "agentTasks": [
+    {
+      "agent": "frontend|backend|devops|qa|data",
+      "task": "specific task description",
+      "dependsOn": [],
+      "priority": 1-5
+    }
+  ],
+  "executionOrder": ["agent_backend", "agent_frontend", ...],
+  "estimatedComplexity": "low|medium|high|extreme"
+}`);
+
+    const plan = extractJSON(architectPlan);
+    if (!plan) throw new Error("Architect failed to create plan");
+
+    this.onLog(`📋 Plan: ${plan.architecture?.type} with ${plan.agentTasks?.length || 0} tasks`);
+
+    // Step 2: Execute agent tasks in order
+    const results = new Map<string, string>();
+    const agentTasks = plan.agentTasks || [];
+
+    // Group by dependency level for parallel execution
+    const levels = this.topologicalSort(agentTasks);
+
+    for (const level of levels) {
+      this.onLog(`\n⚡ Executing level with ${level.length} parallel tasks`);
+
+      const levelResults = await Promise.all(
+        level.map(async (agentTask: any) => {
+          const agentId = `agent_${agentTask.agent}`;
+          const agent = this.agents.get(agentId);
+          if (!agent) return null;
+
+          // Include results from dependencies
+          let context = `Task: ${agentTask.task}\n\nMain objective: ${task}\n`;
+          for (const dep of agentTask.dependsOn || []) {
+            const depResult = results.get(`agent_${dep}`);
+            if (depResult) {
+              context += `\nResult from ${dep} agent:\n${depResult.slice(0, 2000)}\n`;
+            }
+          }
+
+          this.onLog(`  🤖 ${agent.role}: ${agentTask.task.slice(0, 80)}...`);
+          agent.status = "working";
+          agent.currentTask = agentTask.task;
+
+          try {
+            const result = await this.consultAgent(agentId, context);
+            agent.status = "done";
+            agent.result = result;
+            results.set(agentId, result);
+            this.onLog(`  ✅ ${agent.role}: Done`);
+            return { agentId, result };
+          } catch (err: any) {
+            agent.status = "error";
+            this.onLog(`  ❌ ${agent.role}: ${err.message}`);
+            return null;
+          }
+        })
+      );
+    }
+
+    // Step 3: QA reviews everything
+    this.onLog("\n🔍 QA reviewing all outputs...");
+    const allResults = Array.from(results.entries())
+      .map(([id, r]) => `[${id}]:\n${r.slice(0, 1500)}`)
+      .join("\n\n---\n\n");
+
+    const qaReview = await this.consultAgent("agent_qa", `
+Review all agent outputs for quality, consistency, and issues:
+
+Original task: ${task}
+
+${allResults}
+
+Provide:
+1. Issues found
+2. Suggestions for improvement
+3. Overall quality score (1-10)
+4. Whether the task is complete`);
+
+    results.set("agent_qa", qaReview);
+
+    // Step 4: Synthesize final output
+    const finalOutput = `## Multi-Agent Execution Complete
+
+### Architecture
+${JSON.stringify(plan.architecture, null, 2)}
+
+### Agent Results
+${Array.from(results.entries())
+  .map(([id, r]) => `#### ${id}\n${r.slice(0, 1000)}`)
+  .join("\n\n")}
+
+### QA Review
+${qaReview.slice(0, 500)}`;
+
+    this.onLog("\n✅ Multi-agent orchestration complete");
+
+    return { plan, results, finalOutput };
+  }
+
+  private async consultAgent(agentId: string, task: string): Promise<string> {
+    const agent = this.agents.get(agentId);
+    if (!agent) throw new Error(`Agent not found: ${agentId}`);
+
+    const response = await callLLM({
+      system: agent.systemPrompt,
+      messages: [{ role: "user", content: task }],
+      maxTokens: 8192,
+    });
+
+    const result = extractTextContent(response.content);
+
+    this.messageLog.push({
+      from: "orchestrator",
+      to: agentId,
+      type: "task",
+      content: task.slice(0, 200),
+      timestamp: new Date(),
+    });
+
+    this.messageLog.push({
+      from: agentId,
+      to: "orchestrator",
+      type: "result",
+      content: result.slice(0, 200),
+      timestamp: new Date(),
+    });
+
+    return result;
+  }
+
+  async agentDiscussion(topic: string, agents: string[]): Promise<AgentMessage[]> {
+    const discussion: AgentMessage[] = [];
+    let context = `Topic: ${topic}\n\n`;
+
+    for (let round = 0; round < 3; round++) {
+      for (const agentRole of agents) {
+        const agentId = `agent_${agentRole}`;
+        const agent = this.agents.get(agentId);
+        if (!agent) continue;
+
+        const response = await callLLM({
+          system: `${agent.systemPrompt}\n\nYou are in a technical discussion with other engineers. Be concise, specific, and constructive. Build on others' ideas.`,
+          messages: [
+            {
+              role: "user",
+              content: `${context}\n\nRound ${round + 1}: Share your perspective as ${agent.role}. Reference specific points from others if applicable. Be concise (max 200 words).`,
+            },
+          ],
+        });
+
+        const reply = extractTextContent(response.content);
+        const msg: AgentMessage = {
+          from: agentId,
+          to: "all",
+          type: "review",
+          content: reply,
+          timestamp: new Date(),
+        };
+
+        discussion.push(msg);
+        context += `\n[${agent.role}]: ${reply}\n`;
+      }
+    }
+
+    return discussion;
+  }
+
+  private topologicalSort(tasks: any[]): any[][] {
+    const levels: any[][] = [];
+    const completed = new Set<string>();
+
+    let remaining = [...tasks];
+    let safetyCounter = 0;
+
+    while (remaining.length > 0 && safetyCounter < 20) {
+      safetyCounter++;
+      const currentLevel = remaining.filter((t) => {
+        const deps = t.dependsOn || [];
+        return deps.every((d: string) => completed.has(d));
+      });
+
+      if (currentLevel.length === 0) {
+        // Break circular deps — just add remaining
+        levels.push(remaining);
+        break;
+      }
+
+      levels.push(currentLevel);
+      for (const t of currentLevel) {
+        completed.add(t.agent);
+      }
+      remaining = remaining.filter((t) => !completed.has(t.agent));
+    }
+
+    return levels;
+  }
+
+  getAgents(): SpecialistAgent[] {
+    return Array.from(this.agents.values());
+  }
+
+  getMessageLog(): AgentMessage[] {
+    return this.messageLog;
+  }
+}

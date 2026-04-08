@@ -1,0 +1,217 @@
+import * as fs from "fs";
+import * as path from "path";
+import { createPatch } from "diff";
+
+export interface FileToolResult {
+  success: boolean;
+  output?: string;
+  error?: string;
+  path?: string;
+}
+
+export class FileTool {
+  private workspaceDir: string;
+
+  constructor(workspaceDir: string) {
+    this.workspaceDir = workspaceDir;
+  }
+
+  private resolve(filePath: string): string {
+    if (path.isAbsolute(filePath)) return filePath;
+    return path.join(this.workspaceDir, filePath);
+  }
+
+  private ensureDir(filePath: string) {
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  }
+
+  createFile(filePath: string, content: string): FileToolResult {
+    try {
+      const fullPath = this.resolve(filePath);
+      this.ensureDir(fullPath);
+      fs.writeFileSync(fullPath, content, "utf-8");
+      return { success: true, output: `Created: ${filePath}`, path: filePath };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  }
+
+  readFile(filePath: string): FileToolResult {
+    try {
+      const fullPath = this.resolve(filePath);
+      if (!fs.existsSync(fullPath)) {
+        return { success: false, error: `File not found: ${filePath}` };
+      }
+      const content = fs.readFileSync(fullPath, "utf-8");
+      return { success: true, output: content, path: filePath };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  }
+
+  editFile(filePath: string, changes: EditChange[]): FileToolResult {
+    try {
+      const fullPath = this.resolve(filePath);
+      if (!fs.existsSync(fullPath)) {
+        return { success: false, error: `File not found: ${filePath}` };
+      }
+
+      let content = fs.readFileSync(fullPath, "utf-8");
+      const originalContent = content;
+
+      for (const change of changes) {
+        switch (change.type) {
+          case "replace": {
+            if (change.search && content.includes(change.search)) {
+              content = content.replace(change.search, change.replace || "");
+            } else if (change.line) {
+              const lines = content.split("\n");
+              if (change.line > 0 && change.line <= lines.length) {
+                lines[change.line - 1] = change.replace || "";
+                content = lines.join("\n");
+              }
+            }
+            break;
+          }
+          case "insert_after": {
+            if (change.search && content.includes(change.search)) {
+              content = content.replace(
+                change.search,
+                change.search + "\n" + (change.content || "")
+              );
+            } else if (change.line) {
+              const lines = content.split("\n");
+              lines.splice(change.line, 0, change.content || "");
+              content = lines.join("\n");
+            }
+            break;
+          }
+          case "insert_before": {
+            if (change.search && content.includes(change.search)) {
+              content = content.replace(
+                change.search,
+                (change.content || "") + "\n" + change.search
+              );
+            } else if (change.line) {
+              const lines = content.split("\n");
+              lines.splice(change.line - 1, 0, change.content || "");
+              content = lines.join("\n");
+            }
+            break;
+          }
+          case "delete": {
+            if (change.search) {
+              content = content.replace(change.search, "");
+            } else if (change.line) {
+              const lines = content.split("\n");
+              lines.splice(change.line - 1, 1);
+              content = lines.join("\n");
+            }
+            break;
+          }
+          case "full_replace": {
+            content = change.content || "";
+            break;
+          }
+        }
+      }
+
+      fs.writeFileSync(fullPath, content, "utf-8");
+
+      const diff = createPatch(filePath, originalContent, content);
+      return {
+        success: true,
+        output: `Edited: ${filePath}\n\nDiff:\n${diff}`,
+        path: filePath,
+      };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  }
+
+  deleteFile(filePath: string): FileToolResult {
+    try {
+      const fullPath = this.resolve(filePath);
+      if (!fs.existsSync(fullPath)) {
+        return { success: false, error: `File not found: ${filePath}` };
+      }
+      fs.unlinkSync(fullPath);
+      return { success: true, output: `Deleted: ${filePath}` };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  }
+
+  createDirectory(dirPath: string): FileToolResult {
+    try {
+      const fullPath = this.resolve(dirPath);
+      fs.mkdirSync(fullPath, { recursive: true });
+      return { success: true, output: `Created directory: ${dirPath}` };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  }
+
+  listDirectory(dirPath: string, recursive = false): FileToolResult {
+    try {
+      const fullPath = this.resolve(dirPath);
+      const entries: string[] = [];
+
+      const list = (dir: string, prefix = "") => {
+        const items = fs.readdirSync(dir, { withFileTypes: true });
+        for (const item of items) {
+          if (item.name.startsWith(".") || item.name === "node_modules") continue;
+          const itemPath = prefix ? `${prefix}/${item.name}` : item.name;
+          entries.push(item.isDirectory() ? `${itemPath}/` : itemPath);
+          if (item.isDirectory() && recursive) {
+            list(path.join(dir, item.name), itemPath);
+          }
+        }
+      };
+
+      list(fullPath);
+      return { success: true, output: entries.join("\n") };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  }
+
+  fileExists(filePath: string): boolean {
+    return fs.existsSync(this.resolve(filePath));
+  }
+
+  copyFile(src: string, dest: string): FileToolResult {
+    try {
+      const srcPath = this.resolve(src);
+      const destPath = this.resolve(dest);
+      this.ensureDir(destPath);
+      fs.copyFileSync(srcPath, destPath);
+      return { success: true, output: `Copied: ${src} → ${dest}` };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  }
+
+  moveFile(src: string, dest: string): FileToolResult {
+    try {
+      const srcPath = this.resolve(src);
+      const destPath = this.resolve(dest);
+      this.ensureDir(destPath);
+      fs.renameSync(srcPath, destPath);
+      return { success: true, output: `Moved: ${src} → ${dest}` };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  }
+}
+
+export interface EditChange {
+  type: "replace" | "insert_after" | "insert_before" | "delete" | "full_replace";
+  search?: string;
+  replace?: string;
+  content?: string;
+  line?: number;
+}

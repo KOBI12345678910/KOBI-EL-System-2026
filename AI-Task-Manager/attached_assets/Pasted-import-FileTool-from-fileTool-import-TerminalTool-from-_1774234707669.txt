@@ -1,0 +1,141 @@
+import { FileTool } from "./fileTool";
+import { TerminalTool } from "./terminalTool";
+
+export interface MCPServer {
+  name: string;
+  url: string;
+  transport: "stdio" | "http" | "sse";
+  tools: MCPToolDef[];
+  status: "connected" | "disconnected" | "error";
+}
+
+export interface MCPToolDef {
+  name: string;
+  description: string;
+  inputSchema: Record<string, any>;
+}
+
+export class MCPTool {
+  private fileTool: FileTool;
+  private terminal: TerminalTool;
+  private servers: Map<string, MCPServer> = new Map();
+
+  constructor(fileTool: FileTool, terminal: TerminalTool) {
+    this.fileTool = fileTool;
+    this.terminal = terminal;
+  }
+
+  async connectServer(config: {
+    name: string;
+    url: string;
+    transport: "stdio" | "http" | "sse";
+    command?: string; // for stdio
+  }): Promise<MCPServer> {
+    const server: MCPServer = {
+      name: config.name,
+      url: config.url,
+      transport: config.transport,
+      tools: [],
+      status: "disconnected",
+    };
+
+    try {
+      if (config.transport === "http") {
+        // Discover tools via HTTP
+        const result = await this.terminal.execute(
+          `curl -s "${config.url}/tools" -H "Content-Type: application/json"`,
+          { timeout: 10000 }
+        );
+        if (result.success) {
+          const tools = JSON.parse(result.stdout);
+          server.tools = tools.tools || tools;
+          server.status = "connected";
+        }
+      } else if (config.transport === "stdio" && config.command) {
+        // Start stdio server
+        const result = await this.terminal.execute(
+          `echo '{"method":"tools/list"}' | ${config.command}`,
+          { timeout: 10000 }
+        );
+        if (result.success) {
+          try {
+            const response = JSON.parse(result.stdout);
+            server.tools = response.tools || [];
+            server.status = "connected";
+          } catch {}
+        }
+      }
+    } catch {
+      server.status = "error";
+    }
+
+    this.servers.set(config.name, server);
+    return server;
+  }
+
+  async callTool(serverName: string, toolName: string, args: any): Promise<any> {
+    const server = this.servers.get(serverName);
+    if (!server || server.status !== "connected") throw new Error(`Server not connected: ${serverName}`);
+
+    if (server.transport === "http") {
+      const result = await this.terminal.execute(
+        `curl -s -X POST "${server.url}/tools/${toolName}" -H "Content-Type: application/json" -d '${JSON.stringify(args)}'`,
+        { timeout: 30000 }
+      );
+      return JSON.parse(result.stdout);
+    }
+
+    throw new Error(`Transport ${server.transport} call not implemented`);
+  }
+
+  getServers(): MCPServer[] {
+    return Array.from(this.servers.values());
+  }
+
+  getAvailableTools(): Array<{ server: string; tool: MCPToolDef }> {
+    const tools: Array<{ server: string; tool: MCPToolDef }> = [];
+    for (const [name, server] of this.servers) {
+      for (const tool of server.tools) {
+        tools.push({ server: name, tool });
+      }
+    }
+    return tools;
+  }
+
+  disconnectServer(name: string): boolean {
+    return this.servers.delete(name);
+  }
+
+  // Generate MCP server from spec
+  async generateMCPServer(spec: {
+    name: string;
+    tools: Array<{ name: string; description: string; handler: string }>;
+  }): Promise<void> {
+    this.fileTool.createFile(`mcp-servers/${spec.name}/index.ts`, `import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { ListToolsRequestSchema, CallToolRequestSchema } from "@modelcontextprotocol/sdk/types.js";
+
+const server = new Server({ name: "${spec.name}", version: "1.0.0" }, { capabilities: { tools: {} } });
+
+server.setRequestHandler(ListToolsRequestSchema, async () => ({
+  tools: ${JSON.stringify(spec.tools.map((t) => ({ name: t.name, description: t.description, inputSchema: { type: "object", properties: {} } })), null, 4)}
+}));
+
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  switch (request.params.name) {
+${spec.tools.map((t) => `    case "${t.name}":
+      ${t.handler}
+      break;`).join("\n")}
+    default:
+      throw new Error("Unknown tool: " + request.params.name);
+  }
+});
+
+const transport = new StdioServerTransport();
+server.connect(transport);
+console.error("${spec.name} MCP server running");
+`);
+
+    await this.terminal.execute(`cd mcp-servers/${spec.name} && npm init -y && npm install @modelcontextprotocol/sdk`, { timeout: 30000 });
+  }
+}

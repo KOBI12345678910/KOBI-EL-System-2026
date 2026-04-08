@@ -1,0 +1,156 @@
+Critical additional requirements:
+
+There are now 3 severe platform issues that must be treated as top priority:
+
+1. The system is too slow and keeps loading for too long before pages open.
+2. The server crashes/falls too often.
+3. I need a very comprehensive security review and hardening pass across the whole platform.
+
+Treat these as critical production issues.
+
+PHASE A — PERFORMANCE OPTIMIZATION
+
+Investigate and fix all major performance problems across the system, including:
+- slow page loads
+- excessive loading times
+- unnecessary API calls
+- duplicate fetches
+- blocking UI loads
+- unoptimized queries
+- heavy components
+- oversized payloads
+- missing pagination
+- missing lazy loading
+- bad caching strategy
+- expensive calculations on page load
+- unnecessary re-renders
+- poor state management
+- slow database operations
+- slow dashboards
+- slow lists/tables
+
+Optimize the system so pages open much faster and the app feels responsive and stable.
+
+Specifically improve:
+- route transition speed
+- page render speed
+- table/list performance
+- dashboard performance
+- query performance
+- backend response time
+- loading-state behavior
+- large-data handling
+
+Add proper:
+- pagination
+- lazy loading
+- caching where appropriate
+- query optimization
+- lighter initial page loads
+- efficient component rendering
+- loading skeletons/fallbacks where useful
+
+PHASE B — SERVER STABILITY / RELIABILITY
+
+Investigate why the server falls/crashes and harden the platform against instability.
+
+Check and fix:
+- unhandled exceptions
+- bad async handling
+- memory leaks
+- infinite loops
+- failing queries
+- unstable mutations
+- unsafe null handling
+- missing try/catch boundaries
+- bad connection handling
+- timeouts
+- resource-heavy endpoints
+- repeated crash triggers
+- weak error recovery
+- bad initialization flows
+
+Add stronger resilience:
+- defensive error handling
+- safe fallbacks
+- error boundaries
+- guarded loaders
+- retry-safe logic where appropriate
+- timeout protection
+- crash-resistant flow handling
+- better logging/diagnostics for failures
+
+The goal is a much more stable production-grade system.
+
+PHASE C — FULL SECURITY REVIEW AND HARDENING
+
+Perform a comprehensive security review across the entire application.
+
+Inspect and harden:
+- authentication flows
+- authorization / role permissions
+- route protection
+- access control by module/page/action
+- sensitive data exposure
+- insecure API access
+- missing permission checks
+- unsafe admin access
+- input validation
+- server-side validation
+- SQL/NoSQL injection risks
+- XSS risks
+- CSRF risks where relevant
+- insecure file/document handling
+- unsafe uploads
+- broken session handling
+- insecure secrets/config handling
+- weak password/auth settings where applicable
+- audit log coverage
+- privilege escalation risks
+- data leakage between modules/users/roles
+- unsafe error messages leaking internal details
+
+Make sure the platform is hardened with:
+- strict permission enforcement
+- secure validation
+- safe data access rules
+- least-privilege design
+- protected admin functionality
+- sanitized inputs/outputs
+- secure handling of documents/files
+- safer error responses
+- auditability for critical actions
+
+PHASE D — FULL SYSTEM DIAGNOSTIC PASS
+
+After performance, stability, and security work, run a comprehensive system-wide diagnostic review.
+
+Check:
+- frontend performance
+- backend performance
+- database performance
+- crash points
+- logs/errors
+- security weaknesses
+- broken permission boundaries
+- unstable workflows
+- major bottlenecks
+- high-risk modules
+- high-risk routes
+- high-risk queries
+
+PHASE E — FINAL REPORT
+
+Provide a full final report specifically for:
+1. Performance issues found
+2. Performance optimizations implemented
+3. Stability/crash issues found
+4. Stability fixes implemented
+5. Security vulnerabilities/weaknesses found
+6. Security hardening actions implemented
+7. Remaining risks or recommended next improvements
+
+IMPORTANT:
+Do not only summarize.
+Implement these fixes directly in the codebase.
+Treat performance, server stability, and security as critical production priorities.

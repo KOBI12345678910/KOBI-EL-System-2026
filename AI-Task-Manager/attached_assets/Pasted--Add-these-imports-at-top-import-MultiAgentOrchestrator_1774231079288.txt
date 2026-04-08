@@ -1,0 +1,117 @@
+// Add these imports at top:
+import { MultiAgentOrchestrator } from "./agent/multiAgent";
+import { SmartContextTool } from "./tools/smartContextTool";
+import { SelfHealTool } from "./tools/selfHealTool";
+import { BrowserTool } from "./tools/browserTool";
+
+// After existing const declarations:
+const browserTool = new BrowserTool(terminal);
+const smartContext = new SmartContextTool(WORKSPACE_DIR);
+const selfHeal = new SelfHealTool({
+  workspaceDir: WORKSPACE_DIR,
+  terminal,
+  browser: browserTool,
+  memory: (agent as any).memory, // access internal memory
+  onLog: (msg) => console.log(`[SelfHeal] ${msg}`),
+  onAlert: (alert) => {
+    console.log(`[ALERT:${alert.severity}] ${alert.message}`);
+    wsServer.broadcast({
+      type: "alert",
+      taskId: "system",
+      data: alert,
+      timestamp: new Date(),
+    });
+  },
+});
+
+// ============ ADVANCED TASK ROUTES ============
+
+app.post("/api/task/advanced", async (req, res) => {
+  const { task, context, useMultiAgent, autoSnapshot } = req.body;
+  if (!task) return res.status(400).json({ error: "Missing task" });
+
+  try {
+    const result = await (agent as any).executeTaskAdvanced(task, {
+      useMultiAgent,
+      autoSnapshot,
+      context,
+    });
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============ MULTI-AGENT ROUTES ============
+
+app.post("/api/multi-agent", async (req, res) => {
+  const { task } = req.body;
+  const multiAgent = new MultiAgentOrchestrator(
+    (agent as any).memory,
+    (msg: string) => console.log(msg)
+  );
+  const result = await multiAgent.orchestrate(task);
+  res.json({
+    plan: result.plan,
+    results: Object.fromEntries(result.results),
+    output: result.finalOutput,
+  });
+});
+
+app.post("/api/multi-agent/discuss", async (req, res) => {
+  const { topic, agents } = req.body;
+  const multiAgent = new MultiAgentOrchestrator(
+    (agent as any).memory,
+    (msg: string) => console.log(msg)
+  );
+  const discussion = await multiAgent.agentDiscussion(topic, agents);
+  res.json({ discussion });
+});
+
+// ============ SELF-HEAL ROUTES ============
+
+app.post("/api/self-heal/start", async (_, res) => {
+  await selfHeal.startMonitoring();
+  res.json({ success: true, message: "Self-healing monitor started" });
+});
+
+app.post("/api/self-heal/stop", (_, res) => {
+  selfHeal.stopMonitoring();
+  res.json({ success: true, message: "Self-healing monitor stopped" });
+});
+
+app.get("/api/self-heal/status", (_, res) => {
+  res.json({ statuses: Object.fromEntries(selfHeal.getStatus()) });
+});
+
+app.post("/api/self-heal/check", async (_, res) => {
+  const statuses = await selfHeal.runAllChecksNow();
+  res.json({ statuses: Object.fromEntries(statuses) });
+});
+
+// ============ LEARNING/STATS ROUTES ============
+
+app.get("/api/stats", (_, res) => {
+  res.json(smartContext.getStats());
+});
+
+app.post("/api/analyze", async (_, res) => {
+  const insights = await smartContext.analyzeProject();
+  res.json(insights);
+});
+
+// ============ UPDATED HEALTH ============
+
+app.get("/api/health", async (_, res) => {
+  res.json({
+    status: "ok",
+    version: "3.0.0",
+    workspace: WORKSPACE_DIR,
+    clients: wsServer.getClientCount(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    queue: taskQueue.getStats(),
+    learning: smartContext.getStats(),
+    selfHeal: Object.fromEntries(selfHeal.getStatus()),
+  });
+});

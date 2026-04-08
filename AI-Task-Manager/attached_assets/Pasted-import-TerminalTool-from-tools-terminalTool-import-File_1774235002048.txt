@@ -1,0 +1,141 @@
+import { TerminalTool } from "../tools/terminalTool";
+import { FileTool } from "../tools/fileTool";
+import { CheckpointTool } from "../tools/checkpointTool";
+import { DiagnosticFlow } from "./diagnosticFlow";
+import { QualityGateFlow } from "./qualityGateFlow";
+
+export class HotfixFlow {
+  private terminal: TerminalTool;
+  private fileTool: FileTool;
+  private checkpoints: CheckpointTool;
+  private diagnostic: DiagnosticFlow;
+  private qualityGate: QualityGateFlow;
+  private onLog: (msg: string) => void;
+
+  constructor(workspaceDir: string, onLog: (msg: string) => void) {
+    this.onLog = onLog;
+    this.terminal = new TerminalTool(workspaceDir);
+    this.fileTool = new FileTool(workspaceDir);
+    this.checkpoints = new CheckpointTool(workspaceDir, this.terminal, onLog);
+    this.diagnostic = new DiagnosticFlow(workspaceDir, onLog);
+    this.qualityGate = new QualityGateFlow(workspaceDir, onLog);
+  }
+
+  /**
+   * PRODUCTION HOTFIX FLOW:
+   * 1. Create hotfix branch
+   * 2. Create checkpoint
+   * 3. Diagnose the issue
+   * 4. Apply minimal fix
+   * 5. Run critical quality gates only (TS + Test + Build)
+   * 6. If passes → commit + tag
+   * 7. If fails → rollback
+   * 8. Provide deploy instructions
+   */
+  async hotfix(issue: string): Promise<{
+    success: boolean;
+    branch: string;
+    changes: string[];
+    deployCommand: string;
+    duration: number;
+  }> {
+    const startTime = Date.now();
+    const branch = `hotfix/${Date.now()}`;
+    const changes: string[] = [];
+
+    this.onLog(`\n🚨 HOTFIX FLOW: ${issue.slice(0, 80)}`);
+    this.onLog("═".repeat(50));
+
+    // Step 1: Create branch
+    this.onLog("\n1️⃣ Creating hotfix branch...");
+    await this.terminal.execute(`git stash && git checkout -b ${branch} main 2>/dev/null || git checkout -b ${branch}`);
+
+    // Step 2: Checkpoint
+    this.onLog("2️⃣ Creating safety checkpoint...");
+    await this.checkpoints.createCheckpoint("pre-fix", `Before hotfix: ${issue.slice(0, 80)}`);
+
+    // Step 3: Diagnose
+    this.onLog("3️⃣ Diagnosing issue...");
+    const diagnosis = await this.diagnostic.diagnoseAndFix(issue);
+
+    if (diagnosis.status !== "resolved") {
+      this.onLog("❌ Could not auto-fix. Manual intervention needed.");
+      this.onLog(`   Root cause: ${diagnosis.rootCause}`);
+      await this.terminal.execute(`git checkout - && git branch -D ${branch} 2>/dev/null`);
+      return {
+        success: false,
+        branch,
+        changes: [],
+        deployCommand: "",
+        duration: Date.now() - startTime,
+      };
+    }
+
+    // Track changes
+    const diffResult = await this.terminal.execute("git diff --name-only");
+    changes.push(...diffResult.stdout.split("\n").filter(Boolean));
+
+    // Step 4: Critical quality gates only
+    this.onLog("4️⃣ Running critical quality gates...");
+    const quality = await this.qualityGate.runAllGates({
+      gates: ["typescript", "test", "build"],
+      failFast: true,
+      minScore: 90,
+    });
+
+    if (!quality.passed) {
+      this.onLog("❌ Quality gates failed — rolling back");
+      const timeline = this.checkpoints.getTimeline();
+      if (timeline.length > 0) {
+        await this.checkpoints.travelTo(timeline[0].id);
+      }
+      await this.terminal.execute(`git checkout - && git branch -D ${branch} 2>/dev/null`);
+      return {
+        success: false,
+        branch,
+        changes,
+        deployCommand: "",
+        duration: Date.now() - startTime,
+      };
+    }
+
+    // Step 5: Commit + tag
+    this.onLog("5️⃣ Committing hotfix...");
+    await this.terminal.execute(`git add -A && git commit -m "hotfix: ${issue.slice(0, 50).replace(/"/g, "'")}""`);
+    const tag = `hotfix-${Date.now()}`;
+    await this.terminal.execute(`git tag ${tag}`);
+
+    // Step 6: Post-fix checkpoint
+    await this.checkpoints.createCheckpoint("post-fix", `After hotfix: ${issue.slice(0, 80)}`);
+
+    const deployCommand = `git checkout main && git merge ${branch} --no-ff -m "merge hotfix" && git push origin main --tags && npm run deploy`;
+
+    this.onLog(`\n✅ HOTFIX READY`);
+    this.onLog(`   Branch: ${branch}`);
+    this.onLog(`   Tag: ${tag}`);
+    this.onLog(`   Files changed: ${changes.length}`);
+    this.onLog(`   Deploy: ${deployCommand}`);
+    this.onLog(`   Duration: ${((Date.now() - startTime) / 1000).toFixed(1)}s`);
+
+    return {
+      success: true,
+      branch,
+      changes,
+      deployCommand,
+      duration: Date.now() - startTime,
+    };
+  }
+
+  async rollbackHotfix(branch: string): Promise<boolean> {
+    this.onLog(`\n🔄 Rolling back hotfix: ${branch}`);
+    const result = await this.terminal.execute(`git checkout main && git branch -D ${branch} 2>/dev/null`);
+
+    const timeline = this.checkpoints.getTimeline();
+    const preFix = timeline.find((c) => c.name.includes("pre-fix"));
+    if (preFix) {
+      await this.checkpoints.travelTo(preFix.id);
+    }
+
+    return result.success;
+  }
+}

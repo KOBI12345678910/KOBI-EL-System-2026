@@ -1,0 +1,62 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "hDZ71ftj7ps0V15G0-5dY"
+uri = "file://.local/tasks/erp-builder-modules-spec.md"
+type = "text"
+title = "מפרט מלא — 25 מודולי בנייה"
+
+[[outputs]]
+id = "7hCD58-zzPYC8BKO_5qkW"
+uri = "file://.local/final-implementation-report.md"
+type = "text"
+title = "Final Implementation Report — Techno-Kol Uzi ERP System"
+
+[[outputs]]
+id = "tWgD_KtGrvpsj6l9SKZLX"
+uri = "file://system-inventory.md"
+type = "text"
+title = "אינוונטר מלא של המערכת — System Full Inventory"
+
+[[outputs]]
+id = "nZ0b59t6Q2X20ZE3s7MTQ"
+uri = "file://validation-checklist.md"
+type = "text"
+title = "צאקליסט אימות מלא — 396 פריטי תפריט — Validation Checklist"
+
+[[outputs]]
+id = "_pnvYKe71XQbPdv02ZmW4"
+uri = "file://verification-matrix.md"
+type = "text"
+title = "Full Verification Matrix — 381 Items x 14 Columns — מטריצת אימות מלאה"
+
+[[outputs]]
+id = "FuEkXZIjWv3zBNEJtW90W"
+uri = "file://full-system-verification.md"
+type = "text"
+title = "Full Proof-Based System Verification — 1,463 Lines — אימות מערכת מלא מבוסס ראיות"
+
+[[outputs]]
+id = "LgoLRcTmVo_AKRUnllhcs"
+uri = "file://techno-kol-erp.tar.gz"
+type = "unspecified"
+title = "טכנו-כל עוזי ERP - כל קבצי הפרויקט"
+
+[[outputs]]
+id = "rVSBjR3tv7HClfxzr1fsK"
+uri = "file://techno-kol-erp.zip"
+type = "unspecified"
+title = "טכנו-כל עוזי ERP - קובץ ZIP (35MB)"
+
+[[outputs]]
+id = "YQBUAVcVPcOr2HHV_hTfT"
+uri = "file://artifacts/erp-app/ERP_FULL_SPECIFICATION.md"
+type = "text"
+title = "ספציפיקציה מלאה — מערכת ERP טכנו-כל עוזי"
+
+[[outputs]]
+id = "XmV1uL16ugl78TO8JRFkf"
+uri = "file://SYSTEM_ARCHITECTURE.md"
+type = "text"
+title = "SYSTEM ARCHITECTURE — AI Model Contributions Summary added (13,953 lines)"

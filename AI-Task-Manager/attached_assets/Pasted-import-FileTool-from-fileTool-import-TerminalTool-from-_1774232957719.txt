@@ -1,0 +1,278 @@
+import { FileTool } from "./fileTool";
+import { TerminalTool } from "./terminalTool";
+import { callLLM } from "../llm/client";
+import { extractTextContent } from "../llm/parser";
+
+export class ServerlessTool {
+  private fileTool: FileTool;
+  private terminal: TerminalTool;
+
+  constructor(fileTool: FileTool, terminal: TerminalTool) {
+    this.fileTool = fileTool;
+    this.terminal = terminal;
+  }
+
+  // ===== AWS Lambda =====
+  async generateLambda(name: string, description: string): Promise<string> {
+    const response = await callLLM({
+      system: "Generate an AWS Lambda function with TypeScript. Include handler, types, error handling, and SAM template. Respond with ONLY code.",
+      messages: [{ role: "user", content: `Lambda "${name}": ${description}` }],
+    });
+    let code = extractTextContent(response.content).replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    this.fileTool.createFile(`functions/${name}/handler.ts`, code);
+
+    this.fileTool.createFile(`functions/${name}/template.yaml`, `AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  ${name}Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handler.handler
+      Runtime: nodejs20.x
+      Timeout: 30
+      MemorySize: 256
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /${name}
+            Method: ANY
+`);
+    return code;
+  }
+
+  // ===== Cloudflare Workers =====
+  async generateWorker(name: string, description: string): Promise<string> {
+    const response = await callLLM({
+      system: "Generate a Cloudflare Worker with TypeScript. Include itty-router, error handling, CORS, and wrangler.toml. Respond with ONLY code.",
+      messages: [{ role: "user", content: `Worker "${name}": ${description}` }],
+    });
+    let code = extractTextContent(response.content).replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    this.fileTool.createFile(`workers/${name}/src/index.ts`, code);
+
+    this.fileTool.createFile(`workers/${name}/wrangler.toml`, `name = "${name}"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[vars]
+ENVIRONMENT = "production"
+`);
+    return code;
+  }
+
+  // ===== Vercel Edge Functions =====
+  async generateEdgeFunction(name: string, description: string): Promise<string> {
+    const response = await callLLM({
+      system: "Generate a Vercel Edge Function. Include Response handling, headers, streaming support. Respond with ONLY code.",
+      messages: [{ role: "user", content: `Edge function "${name}": ${description}` }],
+    });
+    let code = extractTextContent(response.content).replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    this.fileTool.createFile(`api/${name}.ts`, code);
+    return code;
+  }
+
+  // ===== Kubernetes + Helm =====
+  async generateK8sManifests(appName: string, options?: {
+    replicas?: number;
+    port?: number;
+    image?: string;
+    resources?: { cpu: string; memory: string };
+    ingress?: boolean;
+    hpa?: boolean;
+  }): Promise<Map<string, string>> {
+    const files = new Map<string, string>();
+    const replicas = options?.replicas || 2;
+    const port = options?.port || 3000;
+    const image = options?.image || `${appName}:latest`;
+    const cpu = options?.resources?.cpu || "250m";
+    const mem = options?.resources?.memory || "256Mi";
+
+    // Deployment
+    files.set(`k8s/${appName}/deployment.yaml`, `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${appName}
+  labels:
+    app: ${appName}
+spec:
+  replicas: ${replicas}
+  selector:
+    matchLabels:
+      app: ${appName}
+  template:
+    metadata:
+      labels:
+        app: ${appName}
+    spec:
+      containers:
+        - name: ${appName}
+          image: ${image}
+          ports:
+            - containerPort: ${port}
+          resources:
+            requests:
+              cpu: ${cpu}
+              memory: ${mem}
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: ${port}
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: ${port}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          envFrom:
+            - configMapRef:
+                name: ${appName}-config
+            - secretRef:
+                name: ${appName}-secrets
+`);
+
+    // Service
+    files.set(`k8s/${appName}/service.yaml`, `apiVersion: v1
+kind: Service
+metadata:
+  name: ${appName}
+spec:
+  type: ClusterIP
+  selector:
+    app: ${appName}
+  ports:
+    - port: 80
+      targetPort: ${port}
+      protocol: TCP
+`);
+
+    // Ingress
+    if (options?.ingress !== false) {
+      files.set(`k8s/${appName}/ingress.yaml`, `apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ${appName}
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - ${appName}.example.com
+      secretName: ${appName}-tls
+  rules:
+    - host: ${appName}.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ${appName}
+                port:
+                  number: 80
+`);
+    }
+
+    // HPA
+    if (options?.hpa) {
+      files.set(`k8s/${appName}/hpa.yaml`, `apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ${appName}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ${appName}
+  minReplicas: ${replicas}
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+`);
+    }
+
+    // ConfigMap
+    files.set(`k8s/${appName}/configmap.yaml`, `apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${appName}-config
+data:
+  NODE_ENV: "production"
+  PORT: "${port}"
+`);
+
+    // Kustomization
+    files.set(`k8s/${appName}/kustomization.yaml`, `apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yaml
+  - service.yaml
+${options?.ingress !== false ? '  - ingress.yaml' : ''}
+${options?.hpa ? '  - hpa.yaml' : ''}
+  - configmap.yaml
+`);
+
+    // Helm chart
+    files.set(`helm/${appName}/Chart.yaml`, `apiVersion: v2
+name: ${appName}
+description: Helm chart for ${appName}
+version: 1.0.0
+appVersion: "1.0.0"
+`);
+
+    files.set(`helm/${appName}/values.yaml`, `replicaCount: ${replicas}
+image:
+  repository: ${appName}
+  tag: latest
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 80
+ingress:
+  enabled: ${options?.ingress !== false}
+  host: ${appName}.example.com
+resources:
+  requests:
+    cpu: ${cpu}
+    memory: ${mem}
+  limits:
+    cpu: 500m
+    memory: 512Mi
+autoscaling:
+  enabled: ${!!options?.hpa}
+  minReplicas: ${replicas}
+  maxReplicas: 10
+`);
+
+    for (const [path, content] of files) {
+      this.fileTool.createFile(path, content);
+    }
+
+    return files;
+  }
+
+  // ===== Terraform =====
+  async generateTerraform(provider: "aws" | "gcp" | "azure", resources: string[]): Promise<string> {
+    const response = await callLLM({
+      system: `Generate Terraform configuration for ${provider}. Include provider setup, variables, outputs.
+Resources needed: ${resources.join(", ")}. Respond with ONLY the HCL code.`,
+      messages: [{ role: "user", content: `Generate Terraform for ${provider}: ${resources.join(", ")}` }],
+      maxTokens: 4096,
+    });
+
+    let code = extractTextContent(response.content).replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    this.fileTool.createFile("terraform/main.tf", code);
+    return code;
+  }
+}

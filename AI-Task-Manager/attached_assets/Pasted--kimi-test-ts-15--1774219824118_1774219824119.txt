@@ -1,0 +1,247 @@
+// ============================================================
+// kimi-test.ts — 15 בדיקות מלאות
+// הרצה: KIMI_API_KEY=your_key npx ts-node kimi-test.ts
+// ============================================================
+
+import {
+  KimiClient,
+  getKimiClient,
+  resetKimiClient,
+  KimiError,
+} from './kimi-client';
+
+// ─── Test runner ──────────────────────────────────────────────
+
+let passed = 0, failed = 0;
+const results: { name: string; ok: boolean; msg: string; ms: number }[] = [];
+
+async function test(name: string, fn: () => Promise<void>) {
+  const start = Date.now();
+  try {
+    await fn();
+    passed++;
+    results.push({ name, ok: true, msg: 'PASS', ms: Date.now() - start });
+  } catch (e) {
+    failed++;
+    results.push({ name, ok: false, msg: e instanceof Error ? e.message : String(e), ms: Date.now() - start });
+  }
+}
+
+function assert(cond: boolean, msg: string) {
+  if (!cond) throw new Error(`Failed: ${msg}`);
+}
+
+async function assertThrows(fn: () => Promise<unknown>, typeHint?: string) {
+  try {
+    await fn();
+    throw new Error('Expected error but none thrown');
+  } catch (e) {
+    if (e instanceof Error && e.message.startsWith('Expected')) throw e;
+    if (typeHint) {
+      const err = e as KimiError;
+      assert(err.type === typeHint, `Expected type "${typeHint}", got "${(e as KimiError).type}"`);
+    }
+  }
+}
+
+// ─── Mock helpers ─────────────────────────────────────────────
+
+function useMock(fn: (url: string, opts: unknown) => Promise<unknown>) {
+  (global as any).fetch = fn;
+}
+
+const makeOk = (content: string) => ({
+  ok: true, status: 200,
+  json: async () => ({
+    id: 'test',
+    choices: [{ message: { role: 'assistant', content }, finish_reason: 'stop' }],
+    usage: { prompt_tokens: 10, completion_tokens: 10, total_tokens: 20 },
+  }),
+  text: async () => '',
+});
+
+const makeErr = (status: number, body = '') => ({
+  ok: false, status,
+  json: async () => ({ error: body }),
+  text: async () => body,
+});
+
+// ─── Tests ────────────────────────────────────────────────────
+
+async function runTests() {
+  console.log('\n━━━ UNIT TESTS ━━━\n');
+
+  await test('throws without API key', async () => {
+    assert(
+      (() => { try { new KimiClient({ apiKey: '' }); return false; } catch { return true; } })(),
+      'Should throw'
+    );
+  });
+
+  await test('returns content on 200', async () => {
+    useMock(async () => makeOk('Hello from Kimi'));
+    const r = await new KimiClient({ apiKey: 'k', maxRetries: 1 }).ask('Hi');
+    assert(r === 'Hello from Kimi', `Got: ${r}`);
+  });
+
+  await test('auth error — no retry', async () => {
+    let calls = 0;
+    useMock(async () => { calls++; return makeErr(401); });
+    await assertThrows(
+      () => new KimiClient({ apiKey: 'bad', maxRetries: 3, retryDelayMs: 10 }).ask('Hi'),
+      'auth'
+    );
+    assert(calls === 1, `Should call once, got ${calls}`);
+  });
+
+  await test('quota error — no retry', async () => {
+    let calls = 0;
+    useMock(async () => { calls++; return makeErr(402, 'quota exceeded'); });
+    await assertThrows(
+      () => new KimiClient({ apiKey: 'k', maxRetries: 3, retryDelayMs: 10 }).ask('Hi'),
+      'quota'
+    );
+    assert(calls === 1, `Should call once, got ${calls}`);
+  });
+
+  await test('rate limit — retries and succeeds', async () => {
+    let calls = 0;
+    useMock(async () => { calls++; return calls < 3 ? makeErr(429) : makeOk('OK'); });
+    const r = await new KimiClient({ apiKey: 'k', maxRetries: 3, retryDelayMs: 10 }).ask('Hi');
+    assert(r === 'OK', `Got: ${r}`);
+    assert(calls === 3, `Expected 3, got ${calls}`);
+  });
+
+  await test('500 — retries and recovers', async () => {
+    let calls = 0;
+    useMock(async () => { calls++; return calls < 2 ? makeErr(500) : makeOk('Recovered'); });
+    const r = await new KimiClient({ apiKey: 'k', maxRetries: 3, retryDelayMs: 10 }).ask('Hi');
+    assert(r === 'Recovered', `Got: ${r}`);
+  });
+
+  await test('timeout — retries then throws', async () => {
+    let calls = 0;
+    useMock(async () => { calls++; await sleep(200); return makeOk('late'); });
+    await assertThrows(
+      () => new KimiClient({ apiKey: 'k', maxRetries: 2, retryDelayMs: 10, timeoutMs: 50 }).ask('Hi'),
+      'timeout'
+    );
+    assert(calls === 2, `Expected 2 attempts, got ${calls}`);
+  });
+
+  await test('empty response — retries then throws', async () => {
+    useMock(async () => makeOk(''));
+    await assertThrows(
+      () => new KimiClient({ apiKey: 'k', maxRetries: 2, retryDelayMs: 10 }).ask('Hi'),
+      'empty'
+    );
+  });
+
+  await test('network error — retries and recovers', async () => {
+    let calls = 0;
+    useMock(async () => { calls++; if (calls < 3) throw new Error('ECONNREFUSED'); return makeOk('Back'); });
+    const r = await new KimiClient({ apiKey: 'k', maxRetries: 3, retryDelayMs: 10 }).ask('Hi');
+    assert(r === 'Back', `Got: ${r}`);
+  });
+
+  await test('runTask — onError called, returns null', async () => {
+    useMock(async () => makeErr(401));
+    let called = false;
+    const r = await new KimiClient({ apiKey: 'bad', maxRetries: 1, retryDelayMs: 10 }).runTask({
+      systemPrompt: 'sys', userMessage: 'msg',
+      onError: () => { called = true; },
+    });
+    assert(r === null, 'Should be null');
+    assert(called, 'onError should fire');
+  });
+
+  await test('runTask — onSuccess called with result', async () => {
+    useMock(async () => makeOk('Done!'));
+    let got = '';
+    await new KimiClient({ apiKey: 'k', maxRetries: 1 }).runTask({
+      systemPrompt: 'sys', userMessage: 'msg',
+      onSuccess: async (r) => { got = r; },
+    });
+    assert(got === 'Done!', `Got: ${got}`);
+  });
+
+  await test('singleton — same instance returned', async () => {
+    resetKimiClient();
+    const a = getKimiClient({ apiKey: 'k1' });
+    const b = getKimiClient();
+    assert(a === b, 'Should be same instance');
+    resetKimiClient();
+  });
+
+  await test('correct Authorization header sent', async () => {
+    let headers: any = {};
+    useMock(async (_url, opts: any) => { headers = opts.headers; return makeOk('ok'); });
+    await new KimiClient({ apiKey: 'my-secret', maxRetries: 1 }).ask('test');
+    assert(headers['Authorization'] === 'Bearer my-secret', `Got: ${headers['Authorization']}`);
+  });
+
+  await test('healthCheck — ok=true on success', async () => {
+    useMock(async () => makeOk('OK'));
+    const h = await new KimiClient({ apiKey: 'k', maxRetries: 1 }).healthCheck();
+    assert(h.ok === true, 'Should be ok');
+    assert(typeof h.latencyMs === 'number', 'Should have latency');
+  });
+
+  await test('healthCheck — ok=false on failure', async () => {
+    useMock(async () => makeErr(500));
+    const h = await new KimiClient({ apiKey: 'k', maxRetries: 1, retryDelayMs: 10 }).healthCheck();
+    assert(h.ok === false, 'Should fail');
+    assert(typeof h.error === 'string', 'Should have error');
+  });
+
+  // ── Integration (only if real key present) ─────────────────
+  const apiKey = process.env.KIMI_API_KEY;
+  if (apiKey) {
+    console.log('\n━━━ INTEGRATION (live API) ━━━\n');
+    delete (global as any).fetch;
+
+    await test('live: healthCheck passes', async () => {
+      const h = await new KimiClient({ apiKey, debug: true }).healthCheck();
+      assert(h.ok, `Failed: ${h.error}`);
+      console.log(`  Latency: ${h.latencyMs}ms`);
+    });
+
+    await test('live: ask works', async () => {
+      const r = await new KimiClient({ apiKey }).ask('Reply with exactly: KIMI_OK');
+      assert(r.includes('KIMI_OK'), `Got: ${r}`);
+    });
+
+    await test('live: runTask works', async () => {
+      let got = '';
+      await new KimiClient({ apiKey }).runTask({
+        systemPrompt: 'Be concise.',
+        userMessage: 'What is 2+2? Reply with just the number.',
+        onSuccess: async (r) => { got = r; },
+      });
+      assert(got.includes('4'), `Got: ${got}`);
+    });
+  } else {
+    console.log('\n⚠️  Set KIMI_API_KEY to run live integration tests.\n');
+  }
+}
+
+// ─── Results ──────────────────────────────────────────────────
+
+function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
+
+async function main() {
+  await runTests();
+
+  console.log('\n' + '═'.repeat(55));
+  for (const r of results) {
+    const icon = r.ok ? '✓' : '✗';
+    console.log(`${icon} [${r.ok ? 'PASS' : 'FAIL'}] ${r.name} (${r.ms}ms)`);
+    if (!r.ok) console.log(`       → ${r.msg}`);
+  }
+  console.log('─'.repeat(55));
+  console.log(`Total: ${results.length} | ✓ ${passed} | ✗ ${failed}`);
+  console.log('═'.repeat(55) + '\n');
+  if (failed > 0) process.exit(1);
+}
+
+main();

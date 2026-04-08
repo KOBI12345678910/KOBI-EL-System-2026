@@ -1,0 +1,151 @@
+import { spawn, ChildProcess } from "child_process";
+import * as path from "path";
+import treeKill from "tree-kill";
+
+export interface TerminalResult {
+  success: boolean;
+  exitCode: number;
+  stdout: string;
+  stderr: string;
+  duration: number;
+  killed?: boolean;
+}
+
+export class TerminalTool {
+  private workspaceDir: string;
+  private runningProcesses: Map<string, ChildProcess> = new Map();
+  private defaultTimeout: number;
+
+  constructor(workspaceDir: string, defaultTimeout = 60000) {
+    this.workspaceDir = workspaceDir;
+    this.defaultTimeout = defaultTimeout;
+  }
+
+  async execute(
+    command: string,
+    options?: {
+      cwd?: string;
+      timeout?: number;
+      env?: Record<string, string>;
+      onOutput?: (data: string, stream: "stdout" | "stderr") => void;
+    }
+  ): Promise<TerminalResult> {
+    const startTime = Date.now();
+    const cwd = options?.cwd
+      ? path.resolve(this.workspaceDir, options.cwd)
+      : this.workspaceDir;
+    const timeout = options?.timeout || this.defaultTimeout;
+
+    return new Promise((resolve) => {
+      let stdout = "";
+      let stderr = "";
+      let killed = false;
+
+      const proc = spawn("bash", ["-c", command], {
+        cwd,
+        env: { ...process.env, ...options?.env },
+        stdio: ["pipe", "pipe", "pipe"],
+      });
+
+      const timer = setTimeout(() => {
+        killed = true;
+        if (proc.pid) {
+          treeKill(proc.pid, "SIGKILL");
+        }
+      }, timeout);
+
+      proc.stdout?.on("data", (data: Buffer) => {
+        const text = data.toString();
+        stdout += text;
+        options?.onOutput?.(text, "stdout");
+      });
+
+      proc.stderr?.on("data", (data: Buffer) => {
+        const text = data.toString();
+        stderr += text;
+        options?.onOutput?.(text, "stderr");
+      });
+
+      proc.on("close", (code) => {
+        clearTimeout(timer);
+        resolve({
+          success: code === 0,
+          exitCode: code || 0,
+          stdout: stdout.trim(),
+          stderr: stderr.trim(),
+          duration: Date.now() - startTime,
+          killed,
+        });
+      });
+
+      proc.on("error", (err) => {
+        clearTimeout(timer);
+        resolve({
+          success: false,
+          exitCode: -1,
+          stdout,
+          stderr: err.message,
+          duration: Date.now() - startTime,
+        });
+      });
+    });
+  }
+
+  async startBackground(
+    id: string,
+    command: string,
+    options?: {
+      cwd?: string;
+      env?: Record<string, string>;
+      onOutput?: (data: string, stream: "stdout" | "stderr") => void;
+    }
+  ): Promise<{ success: boolean; pid?: number }> {
+    const cwd = options?.cwd
+      ? path.resolve(this.workspaceDir, options.cwd)
+      : this.workspaceDir;
+
+    const proc = spawn("bash", ["-c", command], {
+      cwd,
+      env: { ...process.env, ...options?.env },
+      stdio: ["pipe", "pipe", "pipe"],
+      detached: true,
+    });
+
+    proc.stdout?.on("data", (data: Buffer) => {
+      options?.onOutput?.(data.toString(), "stdout");
+    });
+
+    proc.stderr?.on("data", (data: Buffer) => {
+      options?.onOutput?.(data.toString(), "stderr");
+    });
+
+    this.runningProcesses.set(id, proc);
+    return { success: true, pid: proc.pid };
+  }
+
+  async stopBackground(id: string): Promise<boolean> {
+    const proc = this.runningProcesses.get(id);
+    if (proc && proc.pid) {
+      return new Promise((resolve) => {
+        treeKill(proc.pid!, "SIGKILL", (err) => {
+          this.runningProcesses.delete(id);
+          resolve(!err);
+        });
+      });
+    }
+    return false;
+  }
+
+  stopAll() {
+    for (const [id, proc] of this.runningProcesses) {
+      if (proc.pid) {
+        treeKill(proc.pid, "SIGKILL");
+      }
+    }
+    this.runningProcesses.clear();
+  }
+
+  isRunning(id: string): boolean {
+    return this.runningProcesses.has(id);
+  }
+}

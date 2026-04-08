@@ -1,0 +1,153 @@
+import { callLLM } from "../llm/client";
+import { extractTextContent } from "../llm/parser";
+
+export type AgentMode = "lite" | "economy" | "power" | "turbo" | "max";
+
+export interface ModeConfig {
+  name: string;
+  description: string;
+  model: string;
+  maxTokens: number;
+  maxSteps: number;
+  maxRetries: number;
+  maxDuration: number; // minutes
+  autoTest: boolean;
+  autoLint: boolean;
+  autoOptimize: boolean;
+  autoSnapshot: boolean;
+  parallelAgents: boolean;
+  webSearch: boolean;
+  extendedThinking: boolean;
+  costMultiplier: number;
+}
+
+export const AGENT_MODES: Record<AgentMode, ModeConfig> = {
+  lite: {
+    name: "Lite",
+    description: "Quick fixes, visual tweaks, scoped features (10-60 seconds)",
+    model: "claude-haiku-4-5-20251001",
+    maxTokens: 2048,
+    maxSteps: 5,
+    maxRetries: 1,
+    maxDuration: 2,
+    autoTest: false,
+    autoLint: false,
+    autoOptimize: false,
+    autoSnapshot: false,
+    parallelAgents: false,
+    webSearch: false,
+    extendedThinking: false,
+    costMultiplier: 0.2,
+  },
+  economy: {
+    name: "Economy",
+    description: "Cost-efficient builds, good for standard tasks",
+    model: "claude-sonnet-4-20250514",
+    maxTokens: 4096,
+    maxSteps: 25,
+    maxRetries: 3,
+    maxDuration: 30,
+    autoTest: true,
+    autoLint: true,
+    autoOptimize: false,
+    autoSnapshot: true,
+    parallelAgents: false,
+    webSearch: true,
+    extendedThinking: false,
+    costMultiplier: 1,
+  },
+  power: {
+    name: "Power",
+    description: "Most capable model, complex tasks",
+    model: "claude-sonnet-4-20250514",
+    maxTokens: 8192,
+    maxSteps: 50,
+    maxRetries: 5,
+    maxDuration: 60,
+    autoTest: true,
+    autoLint: true,
+    autoOptimize: true,
+    autoSnapshot: true,
+    parallelAgents: true,
+    webSearch: true,
+    extendedThinking: true,
+    costMultiplier: 2,
+  },
+  turbo: {
+    name: "Turbo",
+    description: "2.5x faster with fastest models, large tasks",
+    model: "claude-sonnet-4-20250514",
+    maxTokens: 8192,
+    maxSteps: 50,
+    maxRetries: 3,
+    maxDuration: 60,
+    autoTest: true,
+    autoLint: true,
+    autoOptimize: true,
+    autoSnapshot: true,
+    parallelAgents: true,
+    webSearch: true,
+    extendedThinking: true,
+    costMultiplier: 6,
+  },
+  max: {
+    name: "Max",
+    description: "Long-running, hands-off, complex projects (200+ minutes)",
+    model: "claude-sonnet-4-20250514",
+    maxTokens: 8192,
+    maxSteps: 200,
+    maxRetries: 10,
+    maxDuration: 200,
+    autoTest: true,
+    autoLint: true,
+    autoOptimize: true,
+    autoSnapshot: true,
+    parallelAgents: true,
+    webSearch: true,
+    extendedThinking: true,
+    costMultiplier: 4,
+  },
+};
+
+export class AgentModeManager {
+  private currentMode: AgentMode = "power";
+  private features: { webSearch: boolean; extendedThinking: boolean; appTesting: boolean; codeOptimizations: boolean } = {
+    webSearch: true,
+    extendedThinking: false,
+    appTesting: true,
+    codeOptimizations: true,
+  };
+
+  setMode(mode: AgentMode): ModeConfig {
+    this.currentMode = mode;
+    return this.getConfig();
+  }
+
+  getMode(): AgentMode { return this.currentMode; }
+
+  getConfig(): ModeConfig {
+    const base = { ...AGENT_MODES[this.currentMode] };
+    base.webSearch = this.features.webSearch;
+    base.extendedThinking = this.features.extendedThinking;
+    base.autoTest = this.features.appTesting;
+    base.autoOptimize = this.features.codeOptimizations;
+    return base;
+  }
+
+  toggleFeature(feature: keyof typeof this.features, value?: boolean): boolean {
+    this.features[feature] = value ?? !this.features[feature];
+    return this.features[feature];
+  }
+
+  getFeatures() { return { ...this.features }; }
+
+  estimateCost(taskComplexity: "simple" | "medium" | "complex"): { tokens: number; cost: number; duration: string } {
+    const config = this.getConfig();
+    const baseTokens = { simple: 5000, medium: 25000, complex: 80000 }[taskComplexity];
+    const tokens = baseTokens * config.costMultiplier;
+    const costPer1M = config.model.includes("haiku") ? 4.8 : 18;
+    const cost = (tokens * costPer1M) / 1_000_000;
+    const minutes = { simple: 1, medium: 5, complex: 15 }[taskComplexity] * (config.costMultiplier > 3 ? 0.4 : 1);
+    return { tokens: Math.round(tokens), cost: Math.round(cost * 1000) / 1000, duration: `~${Math.round(minutes)} min` };
+  }
+}

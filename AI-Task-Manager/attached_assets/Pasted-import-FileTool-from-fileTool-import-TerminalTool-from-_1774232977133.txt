@@ -1,0 +1,389 @@
+import { FileTool } from "./fileTool";
+import { TerminalTool } from "./terminalTool";
+import { callLLM } from "../llm/client";
+import { extractTextContent } from "../llm/parser";
+
+export class IntegrationsTool {
+  private fileTool: FileTool;
+  private terminal: TerminalTool;
+
+  constructor(fileTool: FileTool, terminal: TerminalTool) {
+    this.fileTool = fileTool;
+    this.terminal = terminal;
+  }
+
+  // ===== Stripe Checkout =====
+  async setupStripe(): Promise<void> {
+    await this.terminal.execute("npm install stripe @stripe/stripe-js", { timeout: 30000 });
+
+    // Server
+    this.fileTool.createFile("src/payments/stripe.ts", `import Stripe from 'stripe';
+import { Router, Request, Response } from 'express';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-12-18.acacia' });
+
+export const paymentRouter = Router();
+
+paymentRouter.post('/create-checkout', async (req: Request, res: Response) => {
+  const { priceId, successUrl, cancelUrl } = req.body;
+  const session = await stripe.checkout.sessions.create({
+    mode: 'subscription',
+    payment_method_types: ['card'],
+    line_items: [{ price: priceId, quantity: 1 }],
+    success_url: successUrl || \`\${req.headers.origin}/success?session_id={CHECKOUT_SESSION_ID}\`,
+    cancel_url: cancelUrl || \`\${req.headers.origin}/cancel\`,
+  });
+  res.json({ url: session.url, sessionId: session.id });
+});
+
+paymentRouter.post('/webhook', async (req: Request, res: Response) => {
+  const sig = req.headers['stripe-signature'] as string;
+  let event: Stripe.Event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET!);
+  } catch (err: any) {
+    return res.status(400).send('Webhook Error: ' + err.message);
+  }
+  switch (event.type) {
+    case 'checkout.session.completed': console.log('Payment succeeded:', event.data.object); break;
+    case 'customer.subscription.updated': console.log('Subscription updated:', event.data.object); break;
+    case 'customer.subscription.deleted': console.log('Subscription cancelled:', event.data.object); break;
+  }
+  res.json({ received: true });
+});
+
+paymentRouter.post('/create-portal', async (req: Request, res: Response) => {
+  const { customerId } = req.body;
+  const session = await stripe.billingPortal.sessions.create({
+    customer: customerId,
+    return_url: \`\${req.headers.origin}/account\`,
+  });
+  res.json({ url: session.url });
+});
+`);
+
+    // Client component
+    this.fileTool.createFile("src/components/Payments/CheckoutButton.tsx", `import { useState } from 'react';
+
+export function CheckoutButton({ priceId, label = 'Subscribe' }: { priceId: string; label?: string }) {
+  const [loading, setLoading] = useState(false);
+
+  const handleCheckout = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/payments/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId }),
+      });
+      const { url } = await res.json();
+      if (url) window.location.href = url;
+    } catch (err) {
+      console.error('Checkout error:', err);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <button
+      onClick={handleCheckout}
+      disabled={loading}
+      className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-lg transition-all"
+    >
+      {loading ? 'Redirecting...' : label}
+    </button>
+  );
+}
+`);
+  }
+
+  // ===== Analytics (Mixpanel + GA4) =====
+  async setupAnalytics(provider: "mixpanel" | "ga4" | "posthog" | "plausible"): Promise<void> {
+    const configs: Record<string, { pkg: string; code: string }> = {
+      mixpanel: {
+        pkg: "mixpanel-browser",
+        code: `import mixpanel from 'mixpanel-browser';
+
+mixpanel.init(process.env.NEXT_PUBLIC_MIXPANEL_TOKEN!);
+
+export const analytics = {
+  track: (event: string, props?: Record<string, any>) => mixpanel.track(event, props),
+  identify: (userId: string, traits?: Record<string, any>) => { mixpanel.identify(userId); if (traits) mixpanel.people.set(traits); },
+  page: (name: string) => mixpanel.track('Page View', { page: name }),
+  reset: () => mixpanel.reset(),
+};`,
+      },
+      ga4: {
+        pkg: "",
+        code: `declare global { interface Window { gtag: (...args: any[]) => void; } }
+
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID!;
+
+export function initGA() {
+  const script = document.createElement('script');
+  script.src = \`https://www.googletagmanager.com/gtag/js?id=\${GA_ID}\`;
+  script.async = true;
+  document.head.appendChild(script);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function() { window.dataLayer.push(arguments); };
+  window.gtag('js', new Date());
+  window.gtag('config', GA_ID);
+}
+
+export const analytics = {
+  track: (event: string, params?: Record<string, any>) => window.gtag?.('event', event, params),
+  page: (path: string) => window.gtag?.('config', GA_ID, { page_path: path }),
+};`,
+      },
+      posthog: {
+        pkg: "posthog-js",
+        code: `import posthog from 'posthog-js';
+
+posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
+  api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
+});
+
+export const analytics = {
+  track: (event: string, props?: Record<string, any>) => posthog.capture(event, props),
+  identify: (userId: string, traits?: Record<string, any>) => posthog.identify(userId, traits),
+  page: () => posthog.capture('$pageview'),
+  reset: () => posthog.reset(),
+};`,
+      },
+      plausible: {
+        pkg: "plausible-tracker",
+        code: `import Plausible from 'plausible-tracker';
+
+const plausible = Plausible({ domain: process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN! });
+
+export const analytics = {
+  track: (event: string, props?: Record<string, any>) => plausible.trackEvent(event, { props }),
+  page: () => plausible.trackPageview(),
+};`,
+      },
+    };
+
+    const config = configs[provider];
+    if (config.pkg) await this.terminal.execute(`npm install ${config.pkg}`, { timeout: 30000 });
+    this.fileTool.createFile("src/lib/analytics.ts", config.code);
+  }
+
+  // ===== Error Tracking (Sentry) =====
+  async setupSentry(): Promise<void> {
+    await this.terminal.execute("npm install @sentry/node @sentry/react", { timeout: 30000 });
+
+    this.fileTool.createFile("src/lib/sentry.ts", `import * as Sentry from '@sentry/node';
+
+export function initSentry() {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'development',
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+    integrations: [Sentry.httpIntegration(), Sentry.expressIntegration()],
+  });
+}
+
+export function captureError(error: Error, context?: Record<string, any>) {
+  Sentry.withScope(scope => {
+    if (context) scope.setExtras(context);
+    Sentry.captureException(error);
+  });
+}
+
+// Express error handler
+export function sentryErrorHandler() {
+  return Sentry.expressErrorHandler();
+}
+
+// Express request handler
+export function sentryRequestHandler() {
+  return Sentry.expressRequestHandler();
+}
+`);
+
+    this.fileTool.createFile("src/lib/sentry-client.tsx", `import * as Sentry from '@sentry/react';
+
+export function initSentryClient() {
+  Sentry.init({
+    dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+    tracesSampleRate: 0.1,
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0,
+  });
+}
+
+export const SentryErrorBoundary = Sentry.ErrorBoundary;
+`);
+  }
+
+  // ===== Full-Text Search (Meilisearch) =====
+  async setupSearch(): Promise<void> {
+    await this.terminal.execute("npm install meilisearch", { timeout: 30000 });
+
+    this.fileTool.createFile("src/services/search.ts", `import { MeiliSearch } from 'meilisearch';
+
+const client = new MeiliSearch({
+  host: process.env.MEILISEARCH_HOST || 'http://localhost:7700',
+  apiKey: process.env.MEILISEARCH_API_KEY,
+});
+
+export class SearchService {
+  async createIndex(indexName: string, primaryKey = 'id') {
+    return client.createIndex(indexName, { primaryKey });
+  }
+
+  async indexDocuments(indexName: string, documents: any[]) {
+    const index = client.index(indexName);
+    return index.addDocuments(documents);
+  }
+
+  async search(indexName: string, query: string, options?: {
+    limit?: number;
+    offset?: number;
+    filter?: string;
+    sort?: string[];
+    facets?: string[];
+  }) {
+    const index = client.index(indexName);
+    return index.search(query, {
+      limit: options?.limit || 20,
+      offset: options?.offset || 0,
+      filter: options?.filter,
+      sort: options?.sort,
+      facets: options?.facets,
+    });
+  }
+
+  async updateSettings(indexName: string, settings: {
+    searchableAttributes?: string[];
+    filterableAttributes?: string[];
+    sortableAttributes?: string[];
+  }) {
+    const index = client.index(indexName);
+    return index.updateSettings(settings);
+  }
+
+  async deleteDocument(indexName: string, id: string | number) {
+    return client.index(indexName).deleteDocument(id);
+  }
+
+  async deleteIndex(indexName: string) {
+    return client.deleteIndex(indexName);
+  }
+}
+
+export const searchService = new SearchService();
+`);
+  }
+
+  // ===== PDF Generation =====
+  async setupPDFGen(): Promise<void> {
+    await this.terminal.execute("npm install puppeteer-core @sparticuz/chromium", { timeout: 60000 });
+
+    this.fileTool.createFile("src/services/pdf.ts", `import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
+
+export async function generatePDF(options: {
+  html?: string;
+  url?: string;
+  format?: 'A4' | 'Letter';
+  landscape?: boolean;
+  margin?: { top: string; bottom: string; left: string; right: string };
+  headerTemplate?: string;
+  footerTemplate?: string;
+}): Promise<Buffer> {
+  const browser = await puppeteer.launch({
+    args: chromium.args,
+    defaultViewport: chromium.defaultViewport,
+    executablePath: await chromium.executablePath() || '/usr/bin/chromium-browser',
+    headless: true,
+  });
+
+  const page = await browser.newPage();
+
+  if (options.url) {
+    await page.goto(options.url, { waitUntil: 'networkidle0' });
+  } else if (options.html) {
+    await page.setContent(options.html, { waitUntil: 'networkidle0' });
+  }
+
+  const pdf = await page.pdf({
+    format: options.format || 'A4',
+    landscape: options.landscape || false,
+    printBackground: true,
+    margin: options.margin || { top: '1cm', bottom: '1cm', left: '1cm', right: '1cm' },
+    displayHeaderFooter: !!(options.headerTemplate || options.footerTemplate),
+    headerTemplate: options.headerTemplate || '',
+    footerTemplate: options.footerTemplate || '<div style="font-size:8px;text-align:center;width:100%"><span class="pageNumber"></span>/<span class="totalPages"></span></div>',
+  });
+
+  await browser.close();
+  return Buffer.from(pdf);
+}
+
+// Express route
+import { Router, Request, Response } from 'express';
+export const pdfRouter = Router();
+
+pdfRouter.post('/generate', async (req: Request, res: Response) => {
+  try {
+    const pdf = await generatePDF(req.body);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="document.pdf"');
+    res.send(pdf);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+`);
+  }
+
+  // ===== Environment Stage Management =====
+  async setupEnvironments(): Promise<void> {
+    this.fileTool.createFile("src/config/environments.ts", `export type Environment = 'development' | 'staging' | 'production';
+
+export const env: Environment = (process.env.NODE_ENV as Environment) || 'development';
+
+const configs: Record<Environment, {
+  apiUrl: string;
+  dbUrl: string;
+  redisUrl: string;
+  logLevel: string;
+  debug: boolean;
+}> = {
+  development: {
+    apiUrl: 'http://localhost:3000',
+    dbUrl: process.env.DATABASE_URL || 'postgresql://localhost:5432/app_dev',
+    redisUrl: process.env.REDIS_URL || 'redis://localhost:6379',
+    logLevel: 'debug',
+    debug: true,
+  },
+  staging: {
+    apiUrl: process.env.STAGING_API_URL || 'https://staging.app.com',
+    dbUrl: process.env.STAGING_DATABASE_URL || '',
+    redisUrl: process.env.STAGING_REDIS_URL || '',
+    logLevel: 'info',
+    debug: false,
+  },
+  production: {
+    apiUrl: process.env.PRODUCTION_API_URL || 'https://app.com',
+    dbUrl: process.env.DATABASE_URL || '',
+    redisUrl: process.env.REDIS_URL || '',
+    logLevel: 'warn',
+    debug: false,
+  },
+};
+
+export const config = configs[env];
+
+export function isProduction(): boolean { return env === 'production'; }
+export function isDevelopment(): boolean { return env === 'development'; }
+export function isStaging(): boolean { return env === 'staging'; }
+`);
+
+    // Create env files per environment
+    this.fileTool.createFile(".env.development", `NODE_ENV=development\nPORT=3000\nDATABASE_URL=postgresql://localhost:5432/app_dev\nREDIS_URL=redis://localhost:6379\n`);
+    this.fileTool.createFile(".env.staging", `NODE_ENV=staging\nPORT=3000\n# Fill in staging values\n`);
+    this.fileTool.createFile(".env.production", `NODE_ENV=production\nPORT=3000\n# Fill in production values\n`);
+  }
+}

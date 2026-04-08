@@ -1,0 +1,71 @@
+// Add import:
+import { SelfCheck, runSelfCheck } from "./selfCheck";
+
+// Add route:
+app.post("/api/self-check", async (_, res) => {
+  const report = await runSelfCheck(WORKSPACE_DIR);
+  res.json(report);
+});
+
+app.get("/api/self-check/quick", async (_, res) => {
+  const checker = new SelfCheck(WORKSPACE_DIR, () => {});
+  // Run only critical checks
+  const checks = await Promise.all([
+    checker["checkNodeModules"](),
+    checker["checkTypeScript"](),
+    checker["checkBuild"](),
+    checker["checkPorts"](),
+    checker["checkAPIKey"](),
+  ]);
+  const failed = checks.filter(c => c.status === "fail").length;
+  res.json({
+    status: failed > 0 ? "issues" : "ok",
+    checks,
+  });
+});
+
+// Run self-check on startup:
+console.log("\n🔍 Running startup self-check...");
+runSelfCheck(WORKSPACE_DIR).then(report => {
+  if (report.overallStatus === "broken") {
+    console.error("⛔ System has critical issues! Check the report above.");
+  } else if (report.overallStatus === "degraded") {
+    console.warn("⚠️  System has some issues but can run.");
+  } else {
+    console.log("✅ System healthy — ready to go!");
+  }
+});
+```
+
+---
+
+## מה ה-Self-Check בודק ומתקן:
+```
+╔═══════════════════════════════════════════════════╗
+║     20 CHECKS — AUTO-FIX ON EVERY FAILURE        ║
+║                                                   ║
+║  📁 File Structure    → creates missing dirs      ║
+║  📦 package.json      → adds scripts + deps       ║
+║  📂 node_modules      → npm install if missing    ║
+║  ⚙️  tsconfig.json     → creates if missing        ║
+║  🔷 TypeScript        → installs missing modules  ║
+║  🔗 Imports           → detects broken imports     ║
+║  🔒 .env              → creates template           ║
+║  🔑 API Key           → validates format           ║
+║  📤 Exports           → verifies key exports       ║
+║  🔄 Circular Deps     → detects cycles             ║
+║  📋 Duplicates        → finds duplicate names      ║
+║  🔌 Ports             → checks port 3000           ║
+║  💾 Disk Space        → cleans if >95%             ║
+║  🟢 Node Version      → verifies v18+              ║
+║  📝 Syntax Errors     → scans all .ts files        ║
+║  🔷 Missing @types    → auto-installs              ║
+║  🔒 Security          → secrets + gitignore + audit║
+║  🏗️  Build             → verifies compilation       ║
+║  🔐 Permissions       → fixes if readonly          ║
+║  🧠 Brain             → validates/resets brain.json║
+║                                                   ║
+║  → Runs on startup automatically                  ║
+║  → Available via POST /api/self-check             ║
+║  → Auto-fixes everything it can                   ║
+╚═══════════════════════════════════════════════════╝

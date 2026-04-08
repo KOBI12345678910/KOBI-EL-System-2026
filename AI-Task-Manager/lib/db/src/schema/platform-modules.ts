@@ -1,0 +1,26 @@
+import { pgTable, serial, text, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+
+export const platformModulesTable = pgTable("platform_modules", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  nameHe: text("name_he"),
+  nameEn: text("name_en"),
+  slug: text("slug").notNull().unique(),
+  moduleKey: text("module_key").unique(),
+  description: text("description"),
+  icon: text("icon").notNull().default("Box"),
+  color: text("color").notNull().default("blue"),
+  category: text("category").notNull().default("כללי"),
+  parentModuleId: integer("parent_module_id"),
+  status: text("status").notNull().default("draft"),
+  version: integer("version").notNull().default(1),
+  settings: jsonb("settings").default({}),
+  sortOrder: integer("sort_order").notNull().default(0),
+  isSystem: boolean("is_system").notNull().default(false),
+  showInSidebar: boolean("show_in_sidebar").notNull().default(true),
+  showInDashboard: boolean("show_in_dashboard").notNull().default(false),
+  permissionsScope: text("permissions_scope"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});

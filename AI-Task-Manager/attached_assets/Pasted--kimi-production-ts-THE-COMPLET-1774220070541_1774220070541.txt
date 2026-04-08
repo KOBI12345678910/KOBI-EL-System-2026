@@ -1,0 +1,151 @@
+// ============================================================
+// kimi-production.ts — THE COMPLETE PRODUCTION SYSTEM
+// משלב: client + circuit breaker + queue + monitor + fallback
+// ============================================================
+
+import { KimiClient, getKimiClient, KimiError, KimiMessage } from './kimi-client';
+import { CircuitBreaker } from './kimi-circuit-breaker';
+import { KimiQueue }      from './kimi-queue';
+import { KimiMonitor }    from './kimi-monitor';
+import { callWithFallback, PROVIDERS } from './kimi-fallback';
+import { SYSTEM_PROMPTS, extractJSON, buildPrompt } from './kimi-prompt-engine';
+
+// ─── Config ────────────────────────────────────────────────────
+
+const CONFIG = {
+  apiKey:        process.env.KIMI_API_KEY ?? '',
+  model:         'moonshot-v1-8k',
+  timeoutMs:     30_000,
+  maxRetries:    3,
+  retryDelayMs:  1_000,
+  maxTokens:     4096,
+  temperature:   0.3,
+  debug:         process.env.NODE_ENV === 'development',
+  useFallback:   true,  // עבור ל-OpenAI/Groq אם Kimi נפל
+};
+
+// ─── System init ───────────────────────────────────────────────
+
+const client  = new KimiClient(CONFIG);
+const breaker = new CircuitBreaker(5, 60_000, 2, (from, to) => {
+  console.log(`[Circuit] ${from} → ${to}`);
+  if (to === 'OPEN') queue.pause();
+  if (to === 'CLOSED') queue.resume();
+});
+const queue   = new KimiQueue();
+const monitor = new KimiMonitor();
+
+// Wire up queue → client → breaker
+queue.setExecutor(async (task) => {
+  return breaker.call(async () => {
+    const start = Date.now();
+    let ok = false;
+    try {
+      const result = await client.ask(task.userMessage, task.systemPrompt);
+      ok = true;
+      monitor.record({ id: task.id, ts: start, durationMs: Date.now()-start, ok: true, model: CONFIG.model });
+      return result;
+    } catch (err) {
+      const e = err as KimiError;
+      monitor.record({ id: task.id, ts: start, durationMs: Date.now()-start, ok: false, errorType: e.type, model: CONFIG.model });
+      throw err;
+    }
+  });
+});
+
+monitor.onAlert(alert => {
+  // שלח לכל מקום שצריך: Slack, email, DB log וכו'
+  console.error(`🚨 KIMI ALERT [${alert.type}]: ${alert.message}`);
+});
+
+queue.on('failed', (id, err) => console.error(`[Queue] Task ${id} failed:`, err));
+queue.on('retry',  (id, n, delay) => console.warn(`[Queue] Task ${id} retry ${n} in ${delay}ms`));
+
+// ─── Public API ────────────────────────────────────────────────
+
+export const Kimi = {
+
+  // פשוט — שאל ותקבל תשובה
+  async ask(prompt: string, opts: { system?: string; priority?: 'high'|'normal'|'low' } = {}): Promise<string> {
+    try {
+      return await queue.enqueue({
+        systemPrompt: opts.system ?? SYSTEM_PROMPTS.general,
+        userMessage:  prompt,
+        priority:     opts.priority ?? 'normal',
+      });
+    } catch (err) {
+      if (CONFIG.useFallback) {
+        console.warn('[Kimi] Primary failed, trying fallback...');
+        const { result } = await callWithFallback([
+          { role: 'system', content: opts.system ?? SYSTEM_PROMPTS.general },
+          { role: 'user',   content: prompt },
+        ]);
+        return result;
+      }
+      throw err;
+    }
+  },
+
+  // מחזיר JSON מפורסר
+  async askJSON<T = unknown>(prompt: string, opts: { system?: string } = {}): Promise<T | null> {
+    const raw = await Kimi.ask(prompt, { system: opts.system ?? SYSTEM_PROMPTS.json_analyst });
+    return extractJSON<T>(raw);
+  },
+
+  // מריץ משימה עם success/error callbacks
+  async task(opts: {
+    prompt:      string;
+    system?:     string;
+    priority?:   'high' | 'normal' | 'low';
+    onSuccess?:  (r: string) => Promise<void> | void;
+    onError?:    (e: unknown) => void;
+  }): Promise<string | null> {
+    try {
+      const result = await Kimi.ask(opts.prompt, { system: opts.system, priority: opts.priority });
+      await opts.onSuccess?.(result);
+      return result;
+    } catch (e) {
+      opts.onError?.(e);
+      return null;
+    }
+  },
+
+  // בריאות המערכת
+  async health() {
+    const start = Date.now();
+    try {
+      await client.ask('OK', 'Reply: OK');
+      return {
+        ok:          true,
+        latencyMs:   Date.now() - start,
+        circuit:     breaker.getState(),
+        queueSize:   queue.size(),
+        stats:       monitor.stats(),
+      };
+    } catch (e) {
+      return {
+        ok:          false,
+        latencyMs:   Date.now() - start,
+        error:       (e as KimiError).message,
+        circuit:     breaker.getState(),
+        queueSize:   queue.size(),
+        stats:       monitor.stats(),
+      };
+    }
+  },
+
+  // סטטוס live
+  status() {
+    return {
+      circuit:    breaker.getState(),
+      failures:   breaker.getFailures(),
+      queue:      queue.stats(),
+      available:  breaker.isAvailable(),
+      providers:  PROVIDERS.filter(p => p.enabled).map(p => p.name),
+      stats:      monitor.stats(),
+    };
+  },
+};
+
+export { SYSTEM_PROMPTS, extractJSON, buildPrompt };
+export default Kimi;

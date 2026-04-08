@@ -1,0 +1,427 @@
+You are now acting as a senior full-stack architect, ERP product manager, database designer, QA lead, and UX expert.
+
+I have an ERP system already built in Replit, but currently many pages in the system fail with errors and do not open. The menu is broken, multiple routes/pages are failing, and the system is incomplete.
+
+Your task is NOT to explain in general terms. Your task is to actually inspect the codebase, diagnose the failures, repair the entire system, complete the missing business structure, and make the ERP production-ready for a factory that works with iron, aluminum, glass, and stainless steel framing.
+
+MAIN OBJECTIVE
+Fix the entire ERP system professionally from end to end:
+1. Repair all broken pages, routes, menu links, components, database connections, forms, and API calls.
+2. Make sure every menu category opens the correct page without runtime/build/database errors.
+3. Complete all missing modules and page structures required for a real manufacturing ERP.
+4. Ensure that each model/entity has the correct required fields, optional fields, relationships, validations, and correct linked pages.
+5. Add the missing data structure and reference data needed for the system to work properly.
+6. Keep the existing business intent, but reorganize and stabilize the system professionally.
+7. Preserve existing data if possible. If migration is needed, do it safely and do not break existing records.
+
+MANDATORY EXECUTION RULES
+- Do not give me a high-level summary only.
+- Do not stop after identifying issues.
+- Implement the fixes in code.
+- If something in the menu is not connected, either connect it properly or hide it until it is fully implemented.
+- If a route exists in the menu, it must open successfully.
+- If a page opens, it must contain meaningful content and the correct fields, not placeholders.
+- Add proper empty states, loading states, error boundaries, validation messages, and not-found handling.
+- Make the UI consistent and professional.
+- Keep Hebrew/RTL support where relevant and preserve a business-friendly interface.
+
+STEP 1 - FULL DIAGNOSTIC AND REPAIR
+First, inspect the entire app and fix all technical failures:
+- broken routes
+- broken menu navigation
+- missing page components
+- import/export errors
+- schema mismatches
+- frontend/backend contract mismatches
+- database query failures
+- null/undefined crashes
+- failed data fetching
+- bad form bindings
+- missing relation loading
+- auth/permission issues
+- bad redirects
+- dead links
+- broken tabs/cards/blocks
+- failing builds
+- console errors
+- server errors
+
+After that, verify EVERY menu item manually by route and confirm that it opens.
+
+STEP 2 - STANDARDIZE ALL MODULES
+For every module/entity/category in the ERP, create a complete and consistent structure.
+
+Each entity must have:
+- entity/model name
+- business purpose
+- required fields
+- optional fields
+- validation rules
+- default values
+- relations to other entities
+- statuses/stages
+- list page
+- create page
+- edit page
+- details/view page
+- linked navigation to related records
+- filters/search/sort
+- action buttons
+- proper cards/blocks/sections in the page layout
+
+On each form:
+- clearly mark required fields
+- clearly separate optional fields
+- validate input before save
+- show readable field labels
+- prevent broken submissions
+
+On each details page:
+- show the main entity summary
+- show related records
+- show linked actions to the correct pages
+- show status/history/documents if relevant
+
+STEP 3 - REQUIRED ERP MODULES FOR THIS FACTORY
+This ERP is for a factory/company that works with:
+- iron framing
+- aluminum framing
+- glass works
+- stainless steel works
+
+The system must include all core modules needed for such a business.
+
+A. CORE MASTER DATA
+Implement or complete:
+- Customers
+- Customer contacts
+- Suppliers
+- Employees
+- Roles and permissions
+- Warehouses
+- Branches/sites
+- Material categories
+- Product/system categories
+- Units of measure
+- Taxes/VAT settings
+- Payment terms
+- Price lists
+- Colors/finishes
+- Profile types
+- Glass types
+- Hardware/accessories
+- Reference statuses
+
+B. CRM / SALES
+Implement or complete:
+- Leads
+- Inquiries
+- Customer requests
+- Site visits
+- Opportunities
+- Quotations
+- Quotation revisions
+- Quotation line items
+- Approvals
+- Sales orders
+- Customer communication log
+
+C. PROJECTS / ENGINEERING
+Implement or complete:
+- Projects
+- Project sites
+- Measurements
+- Openings / openings list
+- Systems / frame systems
+- Technical specifications
+- Drawings / attachments
+- Revision history
+- Project milestones
+- Project manager assignment
+
+D. PRODUCTION / OPERATIONS
+Implement or complete:
+- Bill of materials (BOM)
+- Product configurations
+- Work orders / production orders
+- Cutting lists
+- Assembly tasks
+- Welding tasks
+- Finishing / coating tasks
+- Glazing tasks
+- Packing tasks
+- Production stages / status tracking
+- Workstations
+- Labor assignment
+- Production notes
+- Material consumption
+
+E. INVENTORY / PURCHASING
+Implement or complete:
+- Raw materials
+- Finished items
+- Stock items / SKUs
+- Stock balances
+- Stock movements
+- Purchase requests
+- Purchase orders
+- Goods receipt
+- Supplier returns
+- Reorder levels / min-max
+- Batch/lot tracking if relevant
+
+F. INSTALLATION / LOGISTICS
+Implement or complete:
+- Delivery notes
+- Shipment planning
+- Installation schedules
+- Installation teams
+- Vehicles / transport tracking if needed
+- Site checklists
+- Handover records
+- Customer sign-off
+- Service / maintenance tickets
+
+G. QUALITY / CONTROL
+Implement or complete:
+- Quality inspections
+- Defects / non-conformities
+- Corrective actions
+- Inspection checkpoints by stage
+- QA history per project/order
+
+H. MANAGEMENT / REPORTING
+Implement or complete:
+- Dashboards
+- Operational KPIs
+- Sales reports
+- Production reports
+- Inventory reports
+- Purchasing reports
+- Open projects
+- Delayed orders
+- Cost/usage views where applicable
+- Audit log / system activity log
+
+STEP 4 - REQUIRED MODEL DEFINITIONS
+For each important entity, make sure the schema is complete and practical.
+
+At minimum, implement these fields properly:
+
+1. Customers
+Required:
+- customerCode
+- customerName
+- customerType
+Optional:
+- contactPerson
+- phone
+- mobile
+- email
+- taxId
+- address
+- city
+- notes
+- paymentTerms
+
+2. Suppliers
+Required:
+- supplierCode
+- supplierName
+Optional:
+- contactPerson
+- phone
+- email
+- taxId
+- address
+- materialCategories
+- notes
+
+3. Projects
+Required:
+- projectCode
+- projectName
+- customerId
+- siteAddress
+- status
+Optional:
+- projectManager
+- startDate
+- dueDate
+- notes
+- attachments
+- systemType
+- materialType
+
+4. Quotations
+Required:
+- quoteNumber
+- customerId
+- quoteDate
+- status
+- currency
+Optional:
+- projectId
+- validUntil
+- notes
+- discount
+- tax
+- subtotal
+- total
+
+5. Quotation Line Items
+Required:
+- quotationId
+- itemDescription
+- quantity
+- unit
+- unitPrice
+Optional:
+- dimensions
+- materialType
+- finish
+- remarks
+
+6. Materials / Inventory Items
+Required:
+- sku
+- itemName
+- category
+- unit
+Optional:
+- materialType
+- dimensions
+- thickness
+- finish
+- supplierId
+- minStock
+- currentStock
+- location
+- notes
+
+7. Production Orders
+Required:
+- productionOrderNumber
+- sourceType
+- sourceId
+- status
+Optional:
+- projectId
+- quotationId
+- assignedWorkstation
+- startDate
+- dueDate
+- notes
+
+8. Installation Records
+Required:
+- projectId
+- installationDate
+- team
+- status
+Optional:
+- siteChecklist
+- customerSignature
+- remarks
+- handoverNotes
+
+9. Quality Checks
+Required:
+- relatedEntityType
+- relatedEntityId
+- inspectionStage
+- inspectionDate
+- result
+Optional:
+- inspector
+- defectType
+- correctiveAction
+- notes
+
+STEP 5 - PAGE AND MENU REQUIREMENTS
+For every category in the left/right navigation menu:
+- ensure the menu item points to an existing working route
+- ensure the page title matches the module
+- ensure breadcrumbs are correct
+- ensure the page contains usable business content
+- ensure linked buttons navigate correctly to related pages
+- ensure no broken buttons, empty tabs, or dead cards remain
+
+If a menu category contains subpages, each subpage must also be checked and repaired.
+
+STEP 6 - PAGE LAYOUT / BLOCKS
+Each page must be built with proper blocks/cards/sections, for example:
+- summary cards
+- filters/search toolbar
+- records table/grid
+- side information panel
+- related records section
+- activity/history section
+- documents/attachments section
+- actions section
+
+Do not leave pages as plain empty shells.
+Make them structured and business-usable.
+
+STEP 7 - DATA DICTIONARY / MODEL CATALOG
+Add an internal admin page called:
+“Model Catalog” or “Data Dictionary”
+
+This page must document for each model:
+- model name
+- purpose
+- required fields
+- optional fields
+- relations
+- statuses
+- related pages/routes
+- validation rules
+
+This is mandatory.
+
+STEP 8 - SEED / REFERENCE DATA
+If the system lacks base data, add safe seed/reference data so the ERP can actually function:
+- statuses
+- material categories
+- product/system categories
+- glass types
+- finish types
+- hardware/accessory categories
+- units of measure
+- sample customers
+- sample suppliers
+- sample projects
+- sample quotations
+- sample inventory items
+
+Do this carefully and realistically, without breaking existing production data.
+
+STEP 9 - QA AND VERIFICATION
+After implementing, do a real verification pass:
+- test all menu routes
+- test all create/edit pages
+- test save/update flows
+- test related links
+- test form validation
+- test data loading states
+- test empty states
+- test details pages
+- test tables and filters
+- test responsive layout where applicable
+
+STEP 10 - FINAL DELIVERY FORMAT
+At the end, provide a structured implementation report with:
+1. all issues fixed
+2. routes/pages repaired
+3. models added or updated
+4. database/schema changes
+5. seed/reference data added
+6. menu items verified
+7. any remaining low-priority improvements
+
+IMPORTANT FINAL RULE
+Do not stop at diagnosis.
+Do not leave broken menu items.
+Do not leave placeholder pages.
+Do not leave models incomplete.
+Fully repair and complete the ERP system as a real operational system for an iron/aluminum/glass/stainless steel framing factory.

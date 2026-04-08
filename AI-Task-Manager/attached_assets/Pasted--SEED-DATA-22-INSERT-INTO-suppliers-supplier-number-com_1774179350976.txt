@@ -1,0 +1,114 @@
+-- === SEED DATA ===-- ספקים (22 ספקים)
+INSERT INTO suppliers (supplier_number, company_name, supplier_type, category, phone, email, address_city, address_country, rating)
+VALUES
+('SUP-001', 'ברזל ופלדה ישראל', 'manufacturer', 'metal', '03-5551001', 'info@steel-israel.co.il', 'אשדוד', 'ישראל', 4.5),
+('SUP-002', 'זכוכית הדרום', 'manufacturer', 'glass', '08-6551002', 'sales@glass-south.co.il', 'באר שבע', 'ישראל', 4.2),
+('SUP-003', 'מתכת זהב בע"מ', 'distributor', 'metal', '03-5551003', 'orders@gold-metal.co.il', 'חולון', 'ישראל', 4.0),
+('SUP-004', 'אלומיניום הצפון', 'manufacturer', 'aluminum', '04-8551004', 'info@alu-north.co.il', 'חיפה', 'ישראל', 4.7),
+('SUP-005', 'בדיקה אלומיניום', 'manufacturer', 'aluminum', '03-5551005', 'qa@alu-test.co.il', 'נתניה', 'ישראל', 3.8),
+('SUP-006', 'חומרי ריתוך מקצועיים', 'distributor', 'welding', '03-5551006', 'info@weld-pro.co.il', 'ראשון לציון', 'ישראל', 4.1),
+('SUP-007', 'צבעים תעשייתיים', 'distributor', 'paint', '03-5551007', 'sales@ind-paint.co.il', 'פתח תקווה', 'ישראל', 4.3),
+('SUP-008', 'ברגים ואביזרים', 'distributor', 'hardware', '03-5551008', 'info@bolts.co.il', 'בני ברק', 'ישראל', 4.0),
+('SUP-009', 'נירוסטה פלוס', 'manufacturer', 'metal', '04-6551009', 'orders@stainless-plus.co.il', 'עכו', 'ישראל', 4.4),
+('SUP-010', 'יבוא ברזל סין', 'import', 'metal', '03-5551010', 'import@china-steel.co.il', 'תל אביב', 'ישראל', 3.5),
+('SUP-011', 'שמשות מתקדמות', 'manufacturer', 'glass', '09-7551011', 'info@advanced-glass.co.il', 'נתניה', 'ישראל', 4.6),
+('SUP-012', 'מסגריות השרון', 'subcontractor', 'metal', '09-7551012', 'work@sharon-metal.co.il', 'הרצליה', 'ישראל', 3.9),
+('SUP-013', 'ציפויים תעשייתיים', 'service_provider', 'paint', '03-5551013', 'coat@industrial.co.il', 'לוד', 'ישראל', 4.2),
+('SUP-014', 'הובלות הדרום', 'service_provider', 'general', '08-6551014', 'transport@south.co.il', 'אשקלון', 'ישראל', 3.7),
+('SUP-015', 'כלי עבודה מקצועיים', 'distributor', 'hardware', '03-5551015', 'tools@pro-tools.co.il', 'ראשון לציון', 'ישראל', 4.1),
+('SUP-016', 'פרופילים ישראל', 'manufacturer', 'aluminum', '04-8551016', 'info@profiles-il.co.il', 'קריית אתא', 'ישראל', 4.5),
+('SUP-017', 'איטום ובידוד', 'distributor', 'sealants', '03-5551017', 'seal@insulation.co.il', 'רמת גן', 'ישראל', 4.0),
+('SUP-018', 'חשמל תעשייתי', 'distributor', 'electrical', '03-5551018', 'elec@industrial.co.il', 'חולון', 'ישראל', 3.9),
+('SUP-019', 'אריזות מתקדמות', 'distributor', 'packaging', '03-5551019', 'pack@advanced.co.il', 'יבנה', 'ישראל', 4.0),
+('SUP-020', 'מנעולים ובריחים', 'distributor', 'hardware', '03-5551020', 'locks@secure.co.il', 'הוד השרון', 'ישראל', 4.3),
+('SUP-021', 'עץ ולמינציה', 'distributor', 'wood', '04-8551021', 'wood@laminate.co.il', 'עפולה', 'ישראל', 3.8),
+('SUP-022', 'גומי וסיליקון', 'distributor', 'sealants', '03-5551022', 'rubber@silicon.co.il', 'כפר סבא', 'ישראל', 4.1)
+ON CONFLICT (supplier_number) DO NOTHING;-- לקוחות (25 לקוחות)
+INSERT INTO customers (customer_number, company_name, customer_type, customer_group, phone, email, billing_address_city, source)
+VALUES
+('C-2026-001', 'חברת בנייה ליבי בע"מ', 'company', 'vip', '03-5552001', 'info@levi-build.co.il', 'תל אביב', 'referral'),
+('C-2026-002', 'נכסי השקעות ים', 'company', 'vip', '03-5552002', 'invest@sea-prop.co.il', 'הרצליה', 'website'),
+('C-2026-003', 'עיריית באר שבע', 'government', 'government', '08-6292003', 'tenders@beer-sheva.muni.il', 'באר שבע', 'exhibition'),
+('C-2026-004', 'קבוצת כרמל בנייה', 'company', 'vip', '04-8552004', 'projects@carmel-group.co.il', 'חיפה', 'cold_call'),
+('C-2026-005', 'מלונות הים התיכון', 'company', 'wholesale', '03-5552005', 'maintenance@med-hotels.co.il', 'נתניה', 'referral'),
+('C-2026-006', 'אלומיניום פלוס בע"מ', 'company', 'regular', '03-5552006', 'orders@alu-plus.co.il', 'ראשון לציון', 'google_ads'),
+('C-2026-007', 'פרויקטים ירוקים בע"מ', 'company', 'regular', '03-5552007', 'green@projects.co.il', 'תל אביב', 'facebook'),
+('C-2026-008', 'חברת בנייה דרומית בע"מ', 'company', 'regular', '08-6552008', 'south@building.co.il', 'אשדוד', 'cold_call'),
+('C-2026-009', 'משה כהן - קבלן פרטי', 'individual', 'regular', '050-5552009', 'moshe@cohen-build.co.il', 'פתח תקווה', 'referral'),
+('C-2026-010', 'מרכזים מסחריים בע"מ', 'company', 'wholesale', '03-5552010', 'malls@commercial.co.il', 'רמת גן', 'exhibition'),
+('C-2026-011', 'דירות יוקרה ת"א', 'company', 'vip', '03-5552011', 'luxury@tlv-apts.co.il', 'תל אביב', 'website'),
+('C-2026-012', 'קיבוץ דגניה', 'non_profit', 'regular', '04-6552012', 'build@degania.org.il', 'דגניה', 'referral'),
+('C-2026-013', 'רשת חנויות שלמה', 'company', 'wholesale', '03-5552013', 'stores@shlomo.co.il', 'בני ברק', 'cold_call'),
+('C-2026-014', 'בית ספר הרצוג', 'government', 'government', '02-5552014', 'admin@herzog-school.edu.il', 'ירושלים', 'exhibition'),
+('C-2026-015', 'וילות הכרמל', 'company', 'vip', '04-8552015', 'villas@carmel.co.il', 'חיפה', 'referral'),
+('C-2026-016', 'מפעלי מזון תנובה', 'company', 'wholesale', '03-5552016', 'facility@tnuva.co.il', 'רחובות', 'cold_call'),
+('C-2026-017', 'עיריית רמת גן', 'government', 'government', '03-6752017', 'tenders@ramat-gan.muni.il', 'רמת גן', 'exhibition'),
+('C-2026-018', 'שרון נדל"ן', 'company', 'regular', '09-7552018', 'info@sharon-realestate.co.il', 'רעננה', 'google_ads'),
+('C-2026-019', 'מלון דן פנורמה', 'company', 'vip', '03-5552019', 'maintenance@dan-panorama.co.il', 'תל אביב', 'referral'),
+('C-2026-020', 'התחדשות עירונית בע"מ', 'company', 'wholesale', '03-5552020', 'tama38@urban.co.il', 'גבעתיים', 'facebook'),
+('C-2026-021', 'בניין ירוק בע"מ', 'company', 'regular', '03-5552021', 'green@building.co.il', 'הרצליה', 'website'),
+('C-2026-022', 'אדריכלות מודרנית', 'company', 'regular', '03-5552022', 'arch@modern.co.il', 'תל אביב', 'referral'),
+('C-2026-023', 'שיפוצים ושינויים', 'individual', 'regular', '050-5552023', 'reno@changes.co.il', 'חולון', 'google_ads'),
+('C-2026-024', 'פארק תעשייה ערד', 'company', 'regular', '08-9952024', 'park@arad-industry.co.il', 'ערד', 'cold_call'),
+('C-2026-025', 'מגדלי הים בע"מ', 'company', 'vip', '03-5552025', 'towers@sea-towers.co.il', 'בת ים', 'referral')
+ON CONFLICT (customer_number) DO NOTHING;-- מוצרים (25 מוצרים)
+INSERT INTO products (product_number, name, category, material_type, product_type, standard_price, cost_price, unit_of_measure, warranty_months)
+VALUES
+('PRD-001', 'מעקה אלומיניום רגיל', 'railing', 'aluminum', 'standard', 45000, 28000, 'm', 24),
+('PRD-002', 'מעקה ברזל מעוצב', 'railing', 'iron', 'custom', 65000, 40000, 'm', 24),
+('PRD-003', 'מעקה נירוסטה + זכוכית', 'railing', 'stainless_steel', 'standard', 85000, 52000, 'm', 36),
+('PRD-004', 'שער חשמלי אלומיניום', 'gate', 'aluminum', 'standard', 1200000, 750000, 'unit', 24),
+('PRD-005', 'שער כניסה ברזל מעוצב', 'gate', 'iron', 'custom', 1800000, 1100000, 'unit', 24),
+('PRD-006', 'גדר אלומיניום 1.5מ', 'fence', 'aluminum', 'standard', 35000, 22000, 'm', 24),
+('PRD-007', 'גדר ברזל תעשייתית', 'fence', 'iron', 'standard', 28000, 17000, 'm', 12),
+('PRD-008', 'פרגולה אלומיניום 3x4', 'pergola', 'aluminum', 'standard', 2500000, 1500000, 'unit', 36),
+('PRD-009', 'פרגולה ברזל + בד', 'pergola', 'iron', 'custom', 1800000, 1100000, 'unit', 24),
+('PRD-010', 'דלת כניסה אלומיניום', 'door', 'aluminum', 'standard', 800000, 480000, 'unit', 24),
+('PRD-011', 'דלת פנים ברזל', 'door', 'iron', 'custom', 600000, 350000, 'unit', 12),
+('PRD-012', 'מדרגות ברזל מעוצבות', 'staircase', 'iron', 'custom', 3500000, 2200000, 'unit', 36),
+('PRD-013', 'מדרגות נירוסטה + עץ', 'staircase', 'stainless_steel', 'custom', 4500000, 2800000, 'unit', 36),
+('PRD-014', 'חלון אלומיניום 100x120', 'window', 'aluminum', 'standard', 250000, 150000, 'unit', 24),
+('PRD-015', 'קיר מסך אלומיניום', 'curtain_wall', 'aluminum', 'custom', 120000, 75000, 'm2', 36),
+('PRD-016', 'מעקה מרפסת זכוכית', 'railing', 'combined', 'standard', 95000, 58000, 'm', 36),
+('PRD-017', 'שער חניה ברזל', 'gate', 'iron', 'standard', 950000, 580000, 'unit', 24),
+('PRD-018', 'סורג ברזל חלון', 'accessory', 'iron', 'standard', 180000, 110000, 'unit', 12),
+('PRD-019', 'מעקה זכוכית ללא מסגרת', 'railing', 'glass', 'custom', 120000, 72000, 'm', 36),
+('PRD-020', 'תריס אלומיניום חשמלי', 'accessory', 'aluminum', 'standard', 350000, 210000, 'unit', 24),
+('PRD-021', 'דלת הזזה אלומיניום', 'door', 'aluminum', 'standard', 1100000, 660000, 'unit', 24),
+('PRD-022', 'גדר דקורטיבית ברזל', 'fence', 'iron', 'custom', 45000, 28000, 'm', 24),
+('PRD-023', 'מדרגות ספירלה ברזל', 'staircase', 'iron', 'custom', 5000000, 3100000, 'unit', 36),
+('PRD-024', 'פרגולה ביוקלימטית', 'pergola', 'aluminum', 'standard', 4500000, 2700000, 'unit', 36),
+('PRD-025', 'חיפוי קיר אלומיניום', 'curtain_wall', 'aluminum', 'standard', 85000, 52000, 'm2', 24)
+ON CONFLICT (product_number) DO NOTHING;-- הזמנות מכירה (20 הזמנות)
+INSERT INTO sales_orders (order_number, customer_id, order_date, delivery_date, status, priority, subtotal, tax_rate, tax_amount, total_amount, payment_status)
+SELECT
+'SO-2026-' || LPAD(n::text, 3, '0'),
+(SELECT id FROM customers ORDER BY random() LIMIT 1),
+CURRENT_DATE - (random() * 30)::int,
+CURRENT_DATE + (random() * 60)::int,
+(ARRAY['confirmed','in_production','ready','delivered','invoiced'])[floor(random()*5+1)],
+(ARRAY['low','medium','high','urgent'])[floor(random()*4+1)],
+(random() * 50000 + 10000)::int * 100,
+18,
+0,
+0,
+(ARRAY['unpaid','partial','paid'])[floor(random()*3+1)]
+FROM generate_series(1, 20) n
+ON CONFLICT (order_number) DO NOTHING;-- עדכון סכומי מס וסה"כ
+UPDATE sales_orders SET
+tax_amount = (subtotal * 0.18)::int,
+total_amount = subtotal + (subtotal * 0.18)::int
+WHERE tax_amount = 0;-- הוראות עבודה (15 הוראות)
+INSERT INTO work_orders (wo_number, product_id, description, department, priority, status, planned_start_date, planned_end_date, quantity)
+SELECT
+'WO-2026-' || LPAD(n::text, 3, '0'),
+(SELECT id FROM products ORDER BY random() LIMIT 1),
+'הוראת עבודה מס ' || n,
+(ARRAY['iron_production','aluminum_production','stainless_production','installation','painting'])[floor(random()*5+1)],
+(ARRAY['medium','high','urgent'])[floor(random()*3+1)],
+(ARRAY['planned','in_progress','completed'])[floor(random()*3+1)],
+CURRENT_DATE - (random() * 14)::int,
+CURRENT_DATE + (random() * 30)::int,
+(random() * 10 + 1)::int
+FROM generate_series(1, 15) n
+ON CONFLICT (wo_number) DO NOTHING;

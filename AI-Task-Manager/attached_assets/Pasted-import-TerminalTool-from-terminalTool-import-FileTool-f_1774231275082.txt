@@ -1,0 +1,263 @@
+import { TerminalTool } from "./terminalTool";
+import { FileTool } from "./fileTool";
+
+export interface TableInfo {
+  name: string;
+  columns: Array<{
+    name: string;
+    type: string;
+    nullable: boolean;
+    defaultValue: string | null;
+    isPrimaryKey: boolean;
+    isForeignKey: boolean;
+    references?: string;
+  }>;
+  rowCount: number;
+  indexes: Array<{ name: string; columns: string[]; unique: boolean }>;
+}
+
+export interface QueryResult {
+  columns: string[];
+  rows: any[][];
+  rowCount: number;
+  duration: number;
+  error?: string;
+}
+
+export class DatabaseGUITool {
+  private terminal: TerminalTool;
+  private connectionString: string;
+  private dbType: "postgres" | "sqlite" | "mysql";
+
+  constructor(terminal: TerminalTool, connectionString: string, dbType: "postgres" | "sqlite" | "mysql" = "postgres") {
+    this.terminal = terminal;
+    this.connectionString = connectionString;
+    this.dbType = dbType;
+  }
+
+  async getTables(): Promise<string[]> {
+    let query: string;
+    switch (this.dbType) {
+      case "postgres":
+        query = "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename;";
+        break;
+      case "sqlite":
+        query = "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;";
+        break;
+      case "mysql":
+        query = "SHOW TABLES;";
+        break;
+    }
+
+    const result = await this.executeRaw(query);
+    return result.rows.map((r) => r[0]);
+  }
+
+  async getTableInfo(tableName: string): Promise<TableInfo> {
+    let columnsQuery: string;
+    let indexQuery: string;
+    let countQuery = `SELECT COUNT(*) FROM "${tableName}";`;
+
+    switch (this.dbType) {
+      case "postgres":
+        columnsQuery = `SELECT 
+          c.column_name, c.data_type, c.is_nullable, c.column_default,
+          CASE WHEN pk.column_name IS NOT NULL THEN true ELSE false END as is_pk,
+          CASE WHEN fk.column_name IS NOT NULL THEN true ELSE false END as is_fk,
+          ccu.table_name || '.' || ccu.column_name as references_col
+        FROM information_schema.columns c
+        LEFT JOIN (
+          SELECT ku.column_name FROM information_schema.table_constraints tc
+          JOIN information_schema.key_column_usage ku ON tc.constraint_name = ku.constraint_name
+          WHERE tc.constraint_type = 'PRIMARY KEY' AND tc.table_name = '${tableName}'
+        ) pk ON c.column_name = pk.column_name
+        LEFT JOIN (
+          SELECT ku.column_name FROM information_schema.table_constraints tc
+          JOIN information_schema.key_column_usage ku ON tc.constraint_name = ku.constraint_name
+          WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_name = '${tableName}'
+        ) fk ON c.column_name = fk.column_name
+        LEFT JOIN information_schema.constraint_column_usage ccu ON fk.column_name IS NOT NULL
+        WHERE c.table_name = '${tableName}' AND c.table_schema = 'public'
+        ORDER BY c.ordinal_position;`;
+        indexQuery = `SELECT indexname, indexdef FROM pg_indexes WHERE tablename = '${tableName}';`;
+        break;
+
+      case "sqlite":
+        columnsQuery = `PRAGMA table_info("${tableName}");`;
+        indexQuery = `PRAGMA index_list("${tableName}");`;
+        break;
+
+      case "mysql":
+        columnsQuery = `DESCRIBE ${tableName};`;
+        indexQuery = `SHOW INDEX FROM ${tableName};`;
+        break;
+    }
+
+    const [columnsResult, indexResult, countResult] = await Promise.all([
+      this.executeRaw(columnsQuery!),
+      this.executeRaw(indexQuery!),
+      this.executeRaw(countQuery),
+    ]);
+
+    const columns = columnsResult.rows.map((row) => ({
+      name: row[0],
+      type: row[1],
+      nullable: row[2] === "YES" || row[2] === "1" || row[2] === 1,
+      defaultValue: row[3] || null,
+      isPrimaryKey: row[4] === true || row[4] === 1 || row[4] === "PRI",
+      isForeignKey: row[5] === true || row[5] === 1 || row[5] === "MUL",
+      references: row[6] || undefined,
+    }));
+
+    const indexes = indexResult.rows.map((row) => ({
+      name: row[0],
+      columns: [row[1] || ""],
+      unique: row[2] === true || row[1]?.includes("UNIQUE"),
+    }));
+
+    return {
+      name: tableName,
+      columns,
+      rowCount: parseInt(countResult.rows[0]?.[0]) || 0,
+      indexes,
+    };
+  }
+
+  async queryTable(
+    tableName: string,
+    options?: {
+      page?: number;
+      pageSize?: number;
+      orderBy?: string;
+      orderDir?: "ASC" | "DESC";
+      where?: string;
+      columns?: string[];
+    }
+  ): Promise<QueryResult> {
+    const page = options?.page || 1;
+    const pageSize = options?.pageSize || 50;
+    const offset = (page - 1) * pageSize;
+    const cols = options?.columns?.join(", ") || "*";
+    const orderClause = options?.orderBy
+      ? `ORDER BY "${options.orderBy}" ${options.orderDir || "ASC"}`
+      : "";
+    const whereClause = options?.where ? `WHERE ${options.where}` : "";
+
+    const query = `SELECT ${cols} FROM "${tableName}" ${whereClause} ${orderClause} LIMIT ${pageSize} OFFSET ${offset};`;
+    return this.executeRaw(query);
+  }
+
+  async executeRaw(query: string): Promise<QueryResult> {
+    const startTime = Date.now();
+    let result;
+
+    switch (this.dbType) {
+      case "postgres": {
+        const escaped = query.replace(/'/g, "'\\''");
+        result = await this.terminal.execute(
+          `psql "${this.connectionString}" -t -A -F '|' -c '${escaped}'`,
+          { timeout: 30000 }
+        );
+        break;
+      }
+      case "sqlite": {
+        const escaped = query.replace(/'/g, "'\\''");
+        result = await this.terminal.execute(
+          `sqlite3 -separator '|' -header "${this.connectionString}" '${escaped}'`,
+          { timeout: 15000 }
+        );
+        break;
+      }
+      case "mysql": {
+        const escaped = query.replace(/'/g, "'\\''");
+        result = await this.terminal.execute(
+          `mysql -e '${escaped}' --batch --raw`,
+          { timeout: 30000 }
+        );
+        break;
+      }
+    }
+
+    const duration = Date.now() - startTime;
+
+    if (!result!.success) {
+      return { columns: [], rows: [], rowCount: 0, duration, error: result!.stderr };
+    }
+
+    const lines = result!.stdout.trim().split("\n").filter(Boolean);
+    if (lines.length === 0) {
+      return { columns: [], rows: [], rowCount: 0, duration };
+    }
+
+    const rows = lines.map((line) => line.split("|"));
+    const columns = rows.length > 0 ? rows[0].map((_, i) => `col_${i}`) : [];
+
+    return { columns, rows, rowCount: rows.length, duration };
+  }
+
+  async insertRow(tableName: string, data: Record<string, any>): Promise<QueryResult> {
+    const columns = Object.keys(data).map((k) => `"${k}"`).join(", ");
+    const values = Object.values(data)
+      .map((v) => (typeof v === "string" ? `'${v.replace(/'/g, "''")}'` : v === null ? "NULL" : v))
+      .join(", ");
+
+    return this.executeRaw(`INSERT INTO "${tableName}" (${columns}) VALUES (${values}) RETURNING *;`);
+  }
+
+  async updateRow(
+    tableName: string,
+    id: any,
+    data: Record<string, any>,
+    idColumn = "id"
+  ): Promise<QueryResult> {
+    const setClauses = Object.entries(data)
+      .map(([k, v]) => `"${k}" = ${typeof v === "string" ? `'${v.replace(/'/g, "''")}'` : v === null ? "NULL" : v}`)
+      .join(", ");
+
+    return this.executeRaw(`UPDATE "${tableName}" SET ${setClauses} WHERE "${idColumn}" = ${typeof id === "string" ? `'${id}'` : id} RETURNING *;`);
+  }
+
+  async deleteRow(tableName: string, id: any, idColumn = "id"): Promise<QueryResult> {
+    return this.executeRaw(`DELETE FROM "${tableName}" WHERE "${idColumn}" = ${typeof id === "string" ? `'${id}'` : id};`);
+  }
+
+  async getSchema(): Promise<string> {
+    switch (this.dbType) {
+      case "postgres":
+        const result = await this.terminal.execute(
+          `pg_dump "${this.connectionString}" --schema-only --no-owner --no-privileges 2>/dev/null`,
+          { timeout: 15000 }
+        );
+        return result.stdout;
+
+      case "sqlite":
+        const sqliteResult = await this.terminal.execute(
+          `sqlite3 "${this.connectionString}" .schema`,
+          { timeout: 10000 }
+        );
+        return sqliteResult.stdout;
+
+      default:
+        return "";
+    }
+  }
+
+  async generateSeedData(tableName: string, count = 10): Promise<string> {
+    const tableInfo = await this.getTableInfo(tableName);
+
+    const response = await require("../llm/client").callLLM({
+      system: `Generate realistic seed data INSERT statements. Respond with ONLY SQL.`,
+      messages: [{
+        role: "user",
+        content: `Generate ${count} INSERT statements for table "${tableName}" with columns:
+${tableInfo.columns.map((c) => `  ${c.name} ${c.type} ${c.isPrimaryKey ? "PK" : ""} ${c.nullable ? "NULLABLE" : "NOT NULL"}`).join("\n")}
+
+Generate realistic, diverse data. Use proper SQL syntax.`,
+      }],
+    });
+
+    let sql = require("../llm/parser").extractTextContent(response.content);
+    sql = sql.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    return sql;
+  }
+}

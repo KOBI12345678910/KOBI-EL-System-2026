@@ -1,0 +1,153 @@
+import { TerminalTool } from "../tools/terminalTool";
+import { FileTool } from "../tools/fileTool";
+import { SnapshotTool } from "../tools/snapshotTool";
+import { DependencyTool } from "../tools/dependencyTool";
+import { SearchTool } from "../tools/searchTool";
+import { DiagnosticFlow } from "./diagnosticFlow";
+
+export class UpgradeFlow {
+  private terminal: TerminalTool;
+  private fileTool: FileTool;
+  private snapshotTool: SnapshotTool;
+  private depTool: DependencyTool;
+  private diagnosticFlow: DiagnosticFlow;
+  private onLog: (msg: string) => void;
+
+  constructor(workspaceDir: string, onLog: (msg: string) => void) {
+    this.onLog = onLog;
+    this.terminal = new TerminalTool(workspaceDir);
+    this.fileTool = new FileTool(workspaceDir);
+    this.snapshotTool = new SnapshotTool(workspaceDir, this.terminal);
+    const searchTool = new SearchTool(workspaceDir);
+    this.depTool = new DependencyTool(workspaceDir, this.terminal, this.fileTool, searchTool);
+    this.diagnosticFlow = new DiagnosticFlow(workspaceDir, onLog);
+  }
+
+  /**
+   * SAFE UPGRADE FLOW:
+   * 1. Snapshot current state
+   * 2. Check what's outdated
+   * 3. Update deps one by one (non-breaking first)
+   * 4. After each update: build + test
+   * 5. If fails: rollback that update
+   * 6. Fix vulnerabilities
+   * 7. Final full test
+   */
+  async upgradeAll(options?: {
+    major?: boolean;
+    dryRun?: boolean;
+    packages?: string[];
+  }): Promise<{
+    updated: string[];
+    failed: string[];
+    skipped: string[];
+    vulnerabilitiesFixed: number;
+  }> {
+    this.onLog("\n🔄 UPGRADE FLOW START");
+    this.onLog("═".repeat(50));
+
+    const updated: string[] = [];
+    const failed: string[] = [];
+    const skipped: string[] = [];
+
+    // Step 1: Snapshot
+    this.onLog("\n💾 Creating pre-upgrade snapshot...");
+    const snapshot = await this.snapshotTool.create("pre-upgrade", "Before dependency upgrade");
+
+    // Step 2: Check outdated
+    this.onLog("\n📋 Checking outdated dependencies...");
+    const outdated = await this.depTool.checkOutdated();
+    this.onLog(`  Found ${outdated.length} outdated packages`);
+
+    // Filter by options
+    let toUpdate = outdated;
+    if (options?.packages?.length) {
+      toUpdate = outdated.filter((d) => options.packages!.includes(d.name));
+    }
+    if (!options?.major) {
+      toUpdate = toUpdate.filter((d) => {
+        const current = d.version.split(".");
+        const latest = (d.latest || "").split(".");
+        return current[0] === latest[0]; // Same major version
+      });
+    }
+
+    if (options?.dryRun) {
+      this.onLog("\n🔍 DRY RUN — would update:");
+      for (const dep of toUpdate) {
+        this.onLog(`  ${dep.name}: ${dep.version} → ${dep.latest}`);
+      }
+      return { updated: [], failed: [], skipped: toUpdate.map((d) => d.name), vulnerabilitiesFixed: 0 };
+    }
+
+    // Step 3: Update one by one
+    for (const dep of toUpdate) {
+      this.onLog(`\n📦 Updating ${dep.name}: ${dep.version} → ${dep.latest}`);
+
+      // Install new version
+      const installResult = await this.terminal.execute(
+        `npm install ${dep.name}@${dep.latest} ${dep.type === "dev" ? "-D" : ""}`,
+        { timeout: 60000 }
+      );
+
+      if (!installResult.success) {
+        this.onLog(`  ❌ Install failed — skipping`);
+        failed.push(dep.name);
+        // Revert
+        await this.terminal.execute(`npm install ${dep.name}@${dep.version}`, { timeout: 30000 });
+        continue;
+      }
+
+      // Build check
+      const buildResult = await this.terminal.execute("npm run build 2>&1 | tail -5", { timeout: 60000 });
+      if (!buildResult.success) {
+        this.onLog(`  ❌ Build broke — reverting`);
+        await this.terminal.execute(`npm install ${dep.name}@${dep.version}`, { timeout: 30000 });
+        failed.push(dep.name);
+        continue;
+      }
+
+      // Quick test
+      const testResult = await this.terminal.execute("npm test 2>&1 | tail -3", { timeout: 60000 });
+      if (!testResult.success && !testResult.stdout.includes("no test")) {
+        this.onLog(`  ⚠️ Tests broke — reverting`);
+        await this.terminal.execute(`npm install ${dep.name}@${dep.version}`, { timeout: 30000 });
+        failed.push(dep.name);
+        continue;
+      }
+
+      updated.push(dep.name);
+      this.onLog(`  ✅ ${dep.name} updated successfully`);
+    }
+
+    // Step 4: Fix vulnerabilities
+    this.onLog("\n🔒 Fixing vulnerabilities...");
+    const vulnBefore = await this.depTool.checkVulnerabilities();
+    await this.depTool.fixVulnerabilities();
+    const vulnAfter = await this.depTool.checkVulnerabilities();
+    const vulnsFixed = vulnBefore.total - vulnAfter.total;
+
+    // Step 5: Final verification
+    this.onLog("\n✅ Final verification...");
+    const finalBuild = await this.terminal.execute("npm run build 2>&1 | tail -3", { timeout: 60000 });
+    if (!finalBuild.success) {
+      this.onLog("  ❌ Final build failed — full rollback");
+      await this.snapshotTool.restore(snapshot.id);
+      return { updated: [], failed: toUpdate.map((d) => d.name), skipped: [], vulnerabilitiesFixed: 0 };
+    }
+
+    // Commit
+    if (updated.length > 0) {
+      await this.terminal.execute(`git add -A && git commit -m "chore: upgrade ${updated.length} dependencies"`);
+    }
+
+    // Post-upgrade snapshot
+    await this.snapshotTool.create("post-upgrade", `Upgraded ${updated.length} packages`);
+
+    this.onLog(`\n${"═".repeat(50)}`);
+    this.onLog(`✅ UPGRADE COMPLETE: ${updated.length} updated, ${failed.length} failed, ${vulnsFixed} vulns fixed`);
+    this.onLog(`${"═".repeat(50)}\n`);
+
+    return { updated, failed, skipped: skipped, vulnerabilitiesFixed: vulnsFixed };
+  }
+}

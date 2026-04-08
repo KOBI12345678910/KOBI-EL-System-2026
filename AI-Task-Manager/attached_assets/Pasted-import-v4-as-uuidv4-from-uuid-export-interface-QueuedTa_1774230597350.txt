@@ -1,0 +1,139 @@
+import { v4 as uuidv4 } from "uuid";
+
+export interface QueuedTask {
+  id: string;
+  task: string;
+  context?: string;
+  priority: number;
+  status: "queued" | "running" | "completed" | "failed" | "cancelled";
+  createdAt: Date;
+  startedAt?: Date;
+  completedAt?: Date;
+  result?: any;
+  error?: string;
+  dependsOn?: string[];
+}
+
+export class TaskQueue {
+  private queue: QueuedTask[] = [];
+  private isProcessing = false;
+  private executor: (task: string, context?: string) => Promise<any>;
+
+  constructor(executor: (task: string, context?: string) => Promise<any>) {
+    this.executor = executor;
+  }
+
+  add(task: string, options?: {
+    context?: string;
+    priority?: number;
+    dependsOn?: string[];
+  }): string {
+    const id = uuidv4();
+    const queuedTask: QueuedTask = {
+      id,
+      task,
+      context: options?.context,
+      priority: options?.priority || 0,
+      status: "queued",
+      createdAt: new Date(),
+      dependsOn: options?.dependsOn,
+    };
+
+    this.queue.push(queuedTask);
+    this.queue.sort((a, b) => b.priority - a.priority);
+
+    return id;
+  }
+
+  async processNext(): Promise<QueuedTask | null> {
+    const next = this.queue.find((t) => {
+      if (t.status !== "queued") return false;
+      if (t.dependsOn?.length) {
+        return t.dependsOn.every((depId) => {
+          const dep = this.queue.find((q) => q.id === depId);
+          return dep && dep.status === "completed";
+        });
+      }
+      return true;
+    });
+
+    if (!next) return null;
+
+    next.status = "running";
+    next.startedAt = new Date();
+
+    try {
+      next.result = await this.executor(next.task, next.context);
+      next.status = "completed";
+    } catch (err: any) {
+      next.status = "failed";
+      next.error = err.message;
+    }
+
+    next.completedAt = new Date();
+    return next;
+  }
+
+  async processAll(): Promise<QueuedTask[]> {
+    if (this.isProcessing) return [];
+    this.isProcessing = true;
+
+    const results: QueuedTask[] = [];
+
+    while (true) {
+      const result = await this.processNext();
+      if (!result) break;
+      results.push(result);
+    }
+
+    this.isProcessing = false;
+    return results;
+  }
+
+  cancel(taskId: string): boolean {
+    const task = this.queue.find((t) => t.id === taskId);
+    if (task && task.status === "queued") {
+      task.status = "cancelled";
+      return true;
+    }
+    return false;
+  }
+
+  getStatus(taskId: string): QueuedTask | undefined {
+    return this.queue.find((t) => t.id === taskId);
+  }
+
+  getAll(): QueuedTask[] {
+    return [...this.queue];
+  }
+
+  getPending(): QueuedTask[] {
+    return this.queue.filter((t) => t.status === "queued");
+  }
+
+  getCompleted(): QueuedTask[] {
+    return this.queue.filter((t) => t.status === "completed");
+  }
+
+  clear(): void {
+    this.queue = this.queue.filter((t) => t.status === "running");
+  }
+
+  getStats(): {
+    total: number;
+    queued: number;
+    running: number;
+    completed: number;
+    failed: number;
+    cancelled: number;
+  } {
+    return {
+      total: this.queue.length,
+      queued: this.queue.filter((t) => t.status === "queued").length,
+      running: this.queue.filter((t) => t.status === "running").length,
+      completed: this.queue.filter((t) => t.status === "completed").length,
+      failed: this.queue.filter((t) => t.status === "failed").length,
+      cancelled: this.queue.filter((t) => t.status === "cancelled").length,
+    };
+  }
+}

@@ -1,0 +1,143 @@
+import { callLLM } from "../llm/client";
+import { extractJSON, extractTextContent } from "../llm/parser";
+import { FileTool } from "./fileTool";
+import { SearchTool } from "./searchTool";
+import { BrowserTool } from "./browserTool";
+
+export interface SEOAuditResult {
+  score: number;
+  issues: Array<{
+    severity: "critical" | "warning" | "info";
+    category: string;
+    message: string;
+    fix: string;
+  }>;
+  metaTags: Record<string, string>;
+  structuredData: boolean;
+  sitemap: boolean;
+  robots: boolean;
+  performance: { lcp?: number; fid?: number; cls?: number };
+}
+
+export class SEOTool {
+  private fileTool: FileTool;
+  private searchTool: SearchTool;
+  private browser: BrowserTool;
+
+  constructor(fileTool: FileTool, searchTool: SearchTool, browser: BrowserTool) {
+    this.fileTool = fileTool;
+    this.searchTool = searchTool;
+    this.browser = browser;
+  }
+
+  async audit(url?: string): Promise<SEOAuditResult> {
+    let htmlContent = "";
+
+    if (url) {
+      htmlContent = await this.browser.fetchPage(url);
+    } else {
+      // Check local files
+      const htmlFiles = await this.searchTool.searchFiles("*.html");
+      const tsxFiles = await this.searchTool.searchFiles("*.tsx");
+      const allFiles = [...htmlFiles, ...tsxFiles].slice(0, 10);
+
+      for (const file of allFiles) {
+        const content = this.fileTool.readFile(file);
+        if (content.success) htmlContent += `\n\n--- ${file} ---\n${content.output}`;
+      }
+    }
+
+    const response = await callLLM({
+      system: `You are an SEO expert. Audit the provided content and return JSON:
+{
+  "score": 0-100,
+  "issues": [{ "severity": "critical|warning|info", "category": "meta|content|technical|performance|mobile|structured-data", "message": "", "fix": "" }],
+  "metaTags": { "title": "", "description": "", "og:title": "" },
+  "structuredData": false,
+  "sitemap": false,
+  "robots": false,
+  "performance": {}
+}`,
+      messages: [{ role: "user", content: `Audit SEO for:\n${htmlContent.slice(0, 5000)}` }],
+    });
+
+    return extractJSON(extractTextContent(response.content));
+  }
+
+  async generateSitemap(pages: Array<{
+    url: string;
+    changefreq?: string;
+    priority?: number;
+    lastmod?: string;
+  }>): Promise<string> {
+    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${pages.map((page) => `  <url>
+    <loc>${page.url}</loc>
+    <lastmod>${page.lastmod || new Date().toISOString().split("T")[0]}</lastmod>
+    <changefreq>${page.changefreq || "weekly"}</changefreq>
+    <priority>${page.priority || 0.8}</priority>
+  </url>`).join("\n")}
+</urlset>`;
+
+    this.fileTool.createFile("public/sitemap.xml", sitemap);
+    return sitemap;
+  }
+
+  async generateRobotsTxt(options: {
+    sitemapUrl: string;
+    disallow?: string[];
+    allow?: string[];
+  }): Promise<string> {
+    const robots = `User-agent: *
+${(options.allow || ["/"]).map((a) => `Allow: ${a}`).join("\n")}
+${(options.disallow || ["/api/", "/admin/", "/_next/", "/private/"]).map((d) => `Disallow: ${d}`).join("\n")}
+
+Sitemap: ${options.sitemapUrl}
+`;
+
+    this.fileTool.createFile("public/robots.txt", robots);
+    return robots;
+  }
+
+  async generateMetaTags(page: {
+    title: string;
+    description: string;
+    url: string;
+    image?: string;
+    type?: string;
+  }): Promise<string> {
+    return `<head>
+  <!-- Primary -->
+  <title>${page.title}</title>
+  <meta name="title" content="${page.title}" />
+  <meta name="description" content="${page.description}" />
+  <link rel="canonical" href="${page.url}" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="${page.type || "website"}" />
+  <meta property="og:url" content="${page.url}" />
+  <meta property="og:title" content="${page.title}" />
+  <meta property="og:description" content="${page.description}" />
+  ${page.image ? `<meta property="og:image" content="${page.image}" />` : ""}
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="${page.url}" />
+  <meta property="twitter:title" content="${page.title}" />
+  <meta property="twitter:description" content="${page.description}" />
+  ${page.image ? `<meta property="twitter:image" content="${page.image}" />` : ""}
+</head>`;
+  }
+
+  async generateStructuredData(type: "website" | "article" | "product" | "organization" | "faq", data: Record<string, any>): Promise<string> {
+    const response = await callLLM({
+      system: "Generate JSON-LD structured data. Respond with ONLY the script tag.",
+      messages: [{ role: "user", content: `Generate ${type} JSON-LD for: ${JSON.stringify(data)}` }],
+    });
+
+    let jsonLd = extractTextContent(response.content);
+    jsonLd = jsonLd.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    return jsonLd;
+  }
+}

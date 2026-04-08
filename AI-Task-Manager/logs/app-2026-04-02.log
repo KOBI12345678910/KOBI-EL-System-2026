@@ -1,0 +1,149 @@
+{"level":"info","message":"sentry_disabled","reason":"SENTRY_DSN not configured","timestamp":"2026-04-02T22:31:29.840Z"}
+{"level":"warn","message":"CORS_ORIGINS not set in production - defaulting to same-origin only","timestamp":"2026-04-02T22:31:29.844Z"}
+{"level":"info","message":"server_started","port":3001,"timestamp":"2026-04-02T22:31:29.855Z"}
+{"level":"info","message":"db_backup_cron_scheduled","schedule":"0 2 * * *","timestamp":"2026-04-02T22:31:29.875Z","timezone":"Asia/Jerusalem"}
+{"attempt":1,"level":"info","message":"db_connectivity_verified","timestamp":"2026-04-02T22:31:32.879Z"}
+{"level":"info","message":"startup_migrations_begin","timestamp":"2026-04-02T22:31:32.883Z"}
+{"level":"info","message":"[Migrations] notification_routing_rules SMS/Telegram columns ensured","timestamp":"2026-04-02T22:31:33.370Z"}
+{"level":"info","message":"[Migrations] users.telegram_chat_id column ensured","timestamp":"2026-04-02T22:31:33.377Z"}
+{"level":"info","message":"[Migrations] role_permissions table ensured","timestamp":"2026-04-02T22:31:33.380Z"}
+{"level":"info","message":"[Migrations] warehouse intelligence tables ensured","timestamp":"2026-04-02T22:31:33.664Z"}
+{"level":"info","message":"[Migrations] EDI tables ensured","timestamp":"2026-04-02T22:31:33.667Z"}
+{"level":"info","message":"[Migrations] EDI default mapping templates ensured","timestamp":"2026-04-02T22:31:33.672Z"}
+{"level":"info","message":"[Migrations] EDI AS2 and API key columns ensured","timestamp":"2026-04-02T22:31:33.700Z"}
+{"level":"info","message":"[Migrations] Task 242 PM EVM columns and tables ensured","timestamp":"2026-04-02T22:31:33.832Z"}
+{"level":"info","message":"[Migrations] Task 260 Approval Chains & SLA tables ensured","timestamp":"2026-04-02T22:31:33.999Z"}
+{"level":"info","message":"[Migrations] Task 263 BI Dashboard & Report Builder tables ensured","timestamp":"2026-04-02T22:31:34.015Z"}
+{"level":"info","message":"[Migrations] Task 267 HSE Incident Reporting & Investigation tables ensured","timestamp":"2026-04-02T22:31:34.235Z"}
+{"level":"info","message":"[Migrations] Task 273 Field Operations tables ensured","timestamp":"2026-04-02T22:31:34.240Z"}
+{"level":"info","message":"[Migrations] notification engine tables ensured","timestamp":"2026-04-02T22:31:34.242Z"}
+{"level":"info","message":"[Migrations] Task 268 HSE Module tables ensured","timestamp":"2026-04-02T22:31:34.294Z"}
+{"level":"info","message":"[Migrations] Task 270 HSE Environmental/KPI/Israeli tables ensured","timestamp":"2026-04-02T22:31:34.294Z"}
+{"level":"info","message":"[Migrations] Task 266 Executive Scorecard tables ensured","timestamp":"2026-04-02T22:31:34.297Z"}
+{"level":"info","message":"[Migrations] Task 256 Contract Lifecycle Management tables ensured","timestamp":"2026-04-02T22:31:34.403Z"}
+{"level":"info","message":"[Migrations] Task 257 Contract Templates & E-Signature tables ensured","timestamp":"2026-04-02T22:31:34.412Z"}
+{"level":"info","message":"[Migrations] Task 258 Contract AI Analytics & Risk Scoring tables ensured","timestamp":"2026-04-02T22:31:34.422Z"}
+{"level":"info","message":"[Migrations] Task 259 Procurement Workflow & Matching tables ensured","timestamp":"2026-04-02T22:31:34.446Z"}
+{"level":"info","message":"[Migrations] Task 260 Supplier Intelligence & Portal tables ensured","timestamp":"2026-04-02T22:31:34.467Z"}
+{"level":"info","message":"[Migrations] Task 275 API Gateway tables ensured","timestamp":"2026-04-02T22:31:34.484Z"}
+{"level":"info","message":"[Migrations] Task 276 Israeli Business Integrations tables ensured","timestamp":"2026-04-02T22:31:34.495Z"}
+{"level":"info","message":"[Migrations] Task 277 Supplier Notifications indices ensured","timestamp":"2026-04-02T22:31:34.509Z"}
+{"level":"info","message":"[Migrations] Task 278 Contractor Payment Decision Model tables ensured","timestamp":"2026-04-02T22:31:34.512Z"}
+{"level":"info","message":"[Migrations] Task 279 Procurement Competitive Profitability Hub tables ensured","timestamp":"2026-04-02T22:31:34.529Z"}
+{"level":"info","message":"[Migrations] Task 255 DMS multi-step approval & FTS index ensured","timestamp":"2026-04-02T22:31:34.549Z"}
+{"level":"info","message":"[Migrations] Centralized lazy-init tables: hr_meetings, candidates_pipeline, three_way_match, quality_policies, crm_followup_rules","timestamp":"2026-04-02T22:31:34.555Z"}
+{"level":"info","message":"[Migrations] qc_inspections table and extended columns ensured","timestamp":"2026-04-02T22:31:34.618Z"}
+{"level":"info","message":"[Migrations] Running serialized route table initializations...","timestamp":"2026-04-02T22:31:34.618Z"}
+{"level":"info","message":"[Migrations] Serialized route table initializations complete","timestamp":"2026-04-02T22:31:34.635Z"}
+{"level":"info","message":"[Migrations] soft-delete columns ensured on main entity tables","timestamp":"2026-04-02T22:31:34.761Z"}
+{"level":"info","message":"startup_migrations_complete","timestamp":"2026-04-02T22:31:34.761Z"}
+{"level":"info","message":"[Migrations] system_settings table ensured","timestamp":"2026-04-02T22:31:34.763Z"}
+{"level":"info","message":"[Migrations] chat_channels.icon column ensured","timestamp":"2026-04-02T22:31:34.778Z"}
+{"level":"info","message":"[Migrations] chat_channels.description column ensured","timestamp":"2026-04-02T22:31:34.785Z"}
+{"level":"info","message":"[Migrations] kimi_conversations.user_id column ensured","timestamp":"2026-04-02T22:31:34.791Z"}
+{"level":"info","message":"[Migrations] detail_definitions columns ensured","timestamp":"2026-04-02T22:31:34.814Z"}
+{"level":"info","message":"[Migrations] raw_materials columns ensured","timestamp":"2026-04-02T22:31:34.836Z"}
+{"level":"info","message":"[Migrations] notification_routing_rules table ensured","timestamp":"2026-04-02T22:31:34.837Z"}
+{"level":"info","message":"[Migrations] notification_routing_rules.channel_slack ensured","timestamp":"2026-04-02T22:31:34.843Z"}
+{"level":"info","message":"[Migrations] notification_routing_rules SMS/Telegram columns ensured","timestamp":"2026-04-02T22:31:34.849Z"}
+{"level":"info","message":"[Migrations] notification_routing_rules quiet_hours columns ensured","timestamp":"2026-04-02T22:31:34.855Z"}
+{"level":"info","message":"[Migrations] notification_delivery_log table ensured","timestamp":"2026-04-02T22:31:34.856Z"}
+{"level":"info","message":"[Migrations] notification_delivery_log.notification_id made nullable","timestamp":"2026-04-02T22:31:34.862Z"}
+{"level":"info","message":"[Migrations] notification_delivery_log.external_id column ensured","timestamp":"2026-04-02T22:31:34.868Z"}
+{"level":"info","message":"[Migrations] preferred_notification_channel columns ensured on business entities","timestamp":"2026-04-02T22:31:34.941Z"}
+{"level":"info","message":"[Migrations] expense_upload table ensured","timestamp":"2026-04-02T22:31:34.942Z"}
+{"level":"info","message":"[Migrations] api_keys table ensured","timestamp":"2026-04-02T22:31:34.977Z"}
+{"level":"info","message":"[Migrations] support_tickets table ensured","timestamp":"2026-04-02T22:31:34.978Z"}
+{"level":"info","message":"[Migrations] strategic_goals table ensured","timestamp":"2026-04-02T22:31:34.979Z"}
+{"level":"info","message":"[Migrations] swot_items table ensured","timestamp":"2026-04-02T22:31:34.979Z"}
+{"level":"info","message":"[Migrations] bsc_objectives table ensured","timestamp":"2026-04-02T22:31:34.980Z"}
+{"level":"info","message":"[Migrations] competitors table ensured","timestamp":"2026-04-02T22:31:34.980Z"}
+{"level":"info","message":"[Migrations] project_risks table ensured","timestamp":"2026-04-02T22:31:34.981Z"}
+{"level":"info","message":"[Migrations] timesheet_entries table ensured","timestamp":"2026-04-02T22:31:34.981Z"}
+{"level":"info","message":"[Migrations] marketing_budgets table ensured","timestamp":"2026-04-02T22:31:34.982Z"}
+{"level":"info","message":"[Migrations] content_calendar_items table ensured","timestamp":"2026-04-02T22:31:34.983Z"}
+{"level":"info","message":"[Migrations] social_media_posts table ensured","timestamp":"2026-04-02T22:31:34.984Z"}
+{"level":"info","message":"[Migrations] email_campaigns table ensured","timestamp":"2026-04-02T22:31:34.984Z"}
+{"level":"info","message":"[Migrations] feature_requests table ensured","timestamp":"2026-04-02T22:31:34.985Z"}
+{"level":"info","message":"[Migrations] product_roadmap_items table ensured","timestamp":"2026-04-02T22:31:34.985Z"}
+{"level":"info","message":"[Migrations] qa_test_cases table ensured","timestamp":"2026-04-02T22:31:34.986Z"}
+{"level":"info","message":"[Migrations] rd_projects table ensured","timestamp":"2026-04-02T22:31:34.986Z"}
+{"level":"info","message":"[Migrations] data_flow_definitions table ensured","timestamp":"2026-04-02T22:31:34.987Z"}
+{"level":"info","message":"[Migrations] document_templates table ensured","timestamp":"2026-04-02T22:31:34.987Z"}
+{"level":"info","message":"[Migrations] cash_flow_records table ensured","timestamp":"2026-04-02T22:31:34.989Z"}
+{"level":"info","message":"[Migrations] bank_reconciliations table ensured","timestamp":"2026-04-02T22:31:34.989Z"}
+{"level":"info","message":"[Migrations] standing_orders table ensured","timestamp":"2026-04-02T22:31:34.990Z"}
+{"level":"info","message":"[Migrations] payment_anomalies table ensured","timestamp":"2026-04-02T22:31:34.995Z"}
+{"level":"info","message":"[Migrations] collection_management table ensured","timestamp":"2026-04-02T22:31:34.996Z"}
+{"level":"info","message":"[Migrations] price_lists_ent table ensured","timestamp":"2026-04-02T22:31:34.997Z"}
+{"level":"info","message":"[Migrations] cost_calculations table ensured","timestamp":"2026-04-02T22:31:34.997Z"}
+{"level":"info","message":"[Migrations] production_reports table ensured","timestamp":"2026-04-02T22:31:34.999Z"}
+{"level":"info","message":"[Migrations] crm_sla_rules table ensured","timestamp":"2026-04-02T22:31:34.999Z"}
+{"level":"info","message":"[Migrations] smart_routing_rules table ensured","timestamp":"2026-04-02T22:31:35.011Z"}
+{"level":"info","message":"[Migrations] collection_cases table ensured","timestamp":"2026-04-02T22:31:35.012Z"}
+{"level":"info","message":"[Migrations] field_agents table ensured","timestamp":"2026-04-02T22:31:35.013Z"}
+{"level":"info","message":"[Migrations] dynamic_pricing_rules table ensured","timestamp":"2026-04-02T22:31:35.014Z"}
+{"level":"info","message":"[Migrations] general_ledger table ensured","timestamp":"2026-04-02T22:31:35.015Z"}
+{"level":"info","message":"[Migrations] aging_snapshots table ensured","timestamp":"2026-04-02T22:31:35.016Z"}
+{"level":"info","message":"[Migrations] withholding_tax table ensured","timestamp":"2026-04-02T22:31:35.019Z"}
+{"level":"info","message":"[Migrations] payment_runs table ensured","timestamp":"2026-04-02T22:31:35.020Z"}
+{"level":"info","message":"[Migrations] petty_cash table ensured","timestamp":"2026-04-02T22:31:35.020Z"}
+{"level":"info","message":"[Migrations] expense_reports table ensured","timestamp":"2026-04-02T22:31:35.021Z"}
+{"level":"info","message":"[Migrations] checks table ensured","timestamp":"2026-04-02T22:31:35.022Z"}
+{"level":"info","message":"[Migrations] crm_automations table ensured","timestamp":"2026-04-02T22:31:35.023Z"}
+{"level":"info","message":"[Migrations] quotes table ensured","timestamp":"2026-04-02T22:31:35.024Z"}
+{"level":"info","message":"[Migrations] contacts table ensured","timestamp":"2026-04-02T22:31:35.025Z"}
+{"level":"info","message":"[Migrations] alerts table ensured","timestamp":"2026-04-02T22:31:35.025Z"}
+{"level":"info","message":"[Migrations] tax_records table ensured","timestamp":"2026-04-02T22:31:35.026Z"}
+{"level":"info","message":"[Migrations] crm_contacts table ensured","timestamp":"2026-04-02T22:31:35.027Z"}
+{"level":"info","message":"[Migrations] crm_opportunities table ensured","timestamp":"2026-04-02T22:31:35.027Z"}
+{"level":"info","message":"[Migrations] financial_transactions table ensured","timestamp":"2026-04-02T22:31:35.028Z"}
+{"level":"info","message":"[Migrations] production_lines table ensured","timestamp":"2026-04-02T22:31:35.029Z"}
+{"level":"info","message":"[Migrations] crm_pipeline_stages table ensured","timestamp":"2026-04-02T22:31:35.029Z"}
+{"level":"info","message":"[Migrations] marketing_campaigns table ensured","timestamp":"2026-04-02T22:31:35.031Z"}
+{"level":"info","message":"[Migrations] project_milestones table ensured","timestamp":"2026-04-02T22:31:35.036Z"}
+{"level":"info","message":"[Migrations] project_budgets table ensured","timestamp":"2026-04-02T22:31:35.037Z"}
+{"level":"info","message":"[Migrations] project_resources table ensured","timestamp":"2026-04-02T22:31:35.038Z"}
+{"level":"info","message":"[Migrations] project_resources_allocation_pct_col table ensured","timestamp":"2026-04-02T22:31:35.043Z"}
+{"level":"info","message":"[Migrations] project_tasks table ensured","timestamp":"2026-04-02T22:31:35.053Z"}
+{"level":"info","message":"[Migrations] project_portal_access table ensured","timestamp":"2026-04-02T22:31:35.055Z"}
+{"level":"info","message":"[Migrations] project_comments table ensured","timestamp":"2026-04-02T22:31:35.073Z"}
+{"level":"info","message":"[Migrations] project_work_order_links table ensured","timestamp":"2026-04-02T22:31:35.074Z"}
+{"level":"info","message":"[Migrations] inventory_transactions table ensured","timestamp":"2026-04-02T22:31:35.075Z"}
+{"level":"info","message":"[Migrations] warehouse_locations table ensured","timestamp":"2026-04-02T22:31:35.076Z"}
+{"level":"info","message":"[Migrations] sales_territories table ensured","timestamp":"2026-04-02T22:31:35.077Z"}
+{"level":"info","message":"[Migrations] sales_nurture_sequences table ensured","timestamp":"2026-04-02T22:31:35.077Z"}
+{"level":"info","message":"[Migrations] sales_commission_rules table ensured","timestamp":"2026-04-02T22:31:35.078Z"}
+{"level":"info","message":"[Migrations] sales_commission_records table ensured","timestamp":"2026-04-02T22:31:35.079Z"}
+{"level":"info","message":"[Migrations] sales_scoring_rules table ensured","timestamp":"2026-04-02T22:31:35.079Z"}
+{"level":"info","message":"[Migrations] crm_custom_reports table ensured","timestamp":"2026-04-02T22:31:35.080Z"}
+{"level":"info","message":"[Migrations] crm_cohorts table ensured","timestamp":"2026-04-02T22:31:35.081Z"}
+{"level":"info","message":"[Migrations] crm_sync_devices table ensured","timestamp":"2026-04-02T22:31:35.081Z"}
+{"level":"info","message":"[Migrations] crm_win_loss_reasons table ensured","timestamp":"2026-04-02T22:31:35.082Z"}
+{"level":"info","message":"[Migrations] crm_opportunities extended columns ensured","timestamp":"2026-04-02T22:31:35.164Z"}
+{"level":"info","message":"[Migrations] crm_pipeline_stages columns and stage_key ensured","timestamp":"2026-04-02T22:31:35.194Z"}
+{"level":"info","message":"[Migrations] inspection_plans table ensured","timestamp":"2026-04-02T22:31:35.212Z"}
+{"level":"info","message":"[Migrations] inspection_plan_items table ensured","timestamp":"2026-04-02T22:31:35.213Z"}
+{"level":"info","message":"[Migrations] qc_inspections columns expanded","timestamp":"2026-04-02T22:31:35.220Z"}
+{"level":"info","message":"[Migrations] inspection_results table ensured","timestamp":"2026-04-02T22:31:35.220Z"}
+{"level":"info","message":"[Migrations] spc_control_charts table ensured","timestamp":"2026-04-02T22:31:35.223Z"}
+{"level":"info","message":"[Migrations] spc_measurements table ensured","timestamp":"2026-04-02T22:31:35.223Z"}
+{"level":"info","message":"[Migrations] quality_certificates table ensured","timestamp":"2026-04-02T22:31:35.225Z"}
+{"level":"info","message":"[Migrations] security_ip_rules table ensured","timestamp":"2026-04-02T22:31:35.225Z"}
+{"level":"info","message":"[Migrations] security_geo_rules table ensured","timestamp":"2026-04-02T22:31:35.226Z"}
+{"level":"info","message":"[Migrations] security_blocked_attempts table ensured","timestamp":"2026-04-02T22:31:35.227Z"}
+{"level":"info","message":"[Migrations] security_vulnerabilities table ensured","timestamp":"2026-04-02T22:31:35.227Z"}
+{"level":"info","message":"[Migrations] security_rate_limit_config table ensured","timestamp":"2026-04-02T22:31:35.228Z"}
+{"level":"info","message":"[Migrations] security_cors_policy table ensured","timestamp":"2026-04-02T22:31:35.228Z"}
+{"level":"info","message":"[Migrations] security_webhook_secrets table ensured","timestamp":"2026-04-02T22:31:35.229Z"}
+{"level":"info","message":"[Migrations] Task 269 HSE Module tables ensured","timestamp":"2026-04-02T22:31:35.259Z"}
+{"error":"Failed query: \n      CREATE INDEX IF NOT EXISTS idx_customers_fts ON customers \n      USING GIN (to_tsvector('english', coalesce(customer_name, '') || ' ' || coalesce(contact_person, '') || ' ' || coalesce(email, '') || ' ' || coalesce(city, '')))\n    \nparams: ","level":"warn","message":"[Migrations] customers FTS index:","timestamp":"2026-04-02T22:31:35.261Z"}
+{"level":"info","message":"[Migrations] FTS index on employees ensured","timestamp":"2026-04-02T22:31:35.263Z"}
+{"error":"Failed query: \n      CREATE INDEX IF NOT EXISTS idx_production_work_orders_fts ON production_work_orders \n      USING GIN (to_tsvector('english', coalesce(order_number, '') || ' ' || coalesce(description, '')))\n    \nparams: ","level":"warn","message":"[Migrations] production_work_orders FTS index:","timestamp":"2026-04-02T22:31:35.270Z"}
+{"error":"Failed query: \n      CREATE INDEX IF NOT EXISTS idx_inventory_fts ON inventory \n      USING GIN (to_tsvector('english', coalesce(item_code, '') || ' ' || coalesce(name, '') || ' ' || coalesce(category, '')))\n    \nparams: ","level":"warn","message":"[Migrations] inventory FTS index:","timestamp":"2026-04-02T22:31:35.274Z"}
+{"firstRunAt":"2026-04-03T08:00:00.000Z","level":"info","message":"[EscalationEngine] Scheduling daily escalation cron","msUntilFirstRun":34103649,"timestamp":"2026-04-02T22:31:36.351Z"}
+{"level":"info","message":"[CrmFollowupEngine] Started — event listeners registered, inaction scan every 6h, pending worker every 5min","timestamp":"2026-04-02T22:31:36.351Z"}
+{"count":22,"level":"info","message":"ai_models_already_seeded","timestamp":"2026-04-02T22:31:36.362Z"}
+{"level":"info","message":"kimi_provider_exists","providerId":4,"timestamp":"2026-04-02T22:31:36.363Z"}
+{"level":"info","message":"kimi_agents_synced","timestamp":"2026-04-02T22:31:37.727Z","updated":189}
+{"level":"info","message":"graceful_shutdown_initiated","signal":"SIGTERM","timestamp":"2026-04-02T22:31:45.483Z"}

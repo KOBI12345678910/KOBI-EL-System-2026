@@ -1,0 +1,89 @@
+import { SnapshotTool, Snapshot } from "./snapshotTool";
+import { TerminalTool } from "./terminalTool";
+
+export class CheckpointTool {
+  private snapshotTool: SnapshotTool;
+  private autoTimer?: NodeJS.Timeout;
+  private checkpoints: Snapshot[] = [];
+  private maxCheckpoints = 50;
+  private onLog: (msg: string) => void;
+
+  constructor(workspaceDir: string, terminal: TerminalTool, onLog: (msg: string) => void) {
+    this.snapshotTool = new SnapshotTool(workspaceDir, terminal);
+    this.onLog = onLog;
+  }
+
+  // Auto checkpoint every N minutes
+  startAutoCheckpoints(intervalMinutes = 5): void {
+    this.stopAutoCheckpoints();
+    this.onLog(`⏱️ Auto-checkpoints: every ${intervalMinutes} min`);
+
+    this.autoTimer = setInterval(async () => {
+      await this.createCheckpoint("auto");
+    }, intervalMinutes * 60 * 1000);
+  }
+
+  stopAutoCheckpoints(): void {
+    if (this.autoTimer) { clearInterval(this.autoTimer); this.autoTimer = undefined; }
+  }
+
+  async createCheckpoint(trigger: "auto" | "manual" | "pre-task" | "post-task" | "pre-fix", description?: string): Promise<Snapshot> {
+    const name = `${trigger}-${new Date().toISOString().slice(0, 19).replace(/[T:]/g, "-")}`;
+    const snap = await this.snapshotTool.create(name, description || `${trigger} checkpoint`);
+    this.checkpoints.push(snap);
+
+    // Cleanup old
+    if (this.checkpoints.length > this.maxCheckpoints) {
+      const toRemove = this.checkpoints.splice(0, this.checkpoints.length - this.maxCheckpoints);
+      for (const old of toRemove) {
+        await this.snapshotTool.delete(old.id);
+      }
+    }
+
+    this.onLog(`📌 Checkpoint: ${snap.id} (${trigger})`);
+    return snap;
+  }
+
+  // Time travel — browse history
+  getTimeline(): Array<{
+    id: string;
+    name: string;
+    timestamp: Date;
+    description: string;
+    isCurrent: boolean;
+  }> {
+    return this.snapshotTool.list().map((s, i) => ({
+      id: s.id,
+      name: s.name,
+      timestamp: s.timestamp,
+      description: s.description,
+      isCurrent: i === 0,
+    }));
+  }
+
+  async travelTo(checkpointId: string): Promise<{ success: boolean; output: string }> {
+    // Create safety checkpoint first
+    await this.createCheckpoint("manual", "Before time travel");
+
+    this.onLog(`⏪ Time traveling to ${checkpointId}...`);
+    return this.snapshotTool.restore(checkpointId);
+  }
+
+  async compareTo(checkpointId: string): Promise<string> {
+    return this.snapshotTool.diff(checkpointId);
+  }
+
+  async getCheckpointPreview(checkpointId: string): Promise<{
+    files: string[];
+    diff: string;
+    timestamp: Date;
+  }> {
+    const diff = await this.snapshotTool.diff(checkpointId);
+    const snap = this.checkpoints.find((c) => c.id === checkpointId);
+    return {
+      files: diff.split("\n").filter((l) => l.startsWith("Only") || l.startsWith("Files")),
+      diff,
+      timestamp: snap?.timestamp || new Date(),
+    };
+  }
+}

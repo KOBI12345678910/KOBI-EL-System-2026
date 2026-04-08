@@ -1,0 +1,87 @@
+// ════════════════════════════════════════════════════════════════════
+// claude-routes.ts — Express routes עם SSE streaming
+// ════════════════════════════════════════════════════════════════════
+
+import { Router, Request, Response } from 'express';
+import { runAgent } from './claude-agent';
+import { saveMessage, loadHistory, getERPContext, clearSession } from './claude-memory';
+
+const router = Router();
+
+// ── POST /api/claude/chat — הודעה + streaming ────────────────────
+router.post('/chat', async (req: Request, res: Response) => {
+  const { message, sessionId = 'default' } = req.body;
+
+  if (!message?.trim()) {
+    res.status(400).json({ ok: false, error: 'message required' });
+    return;
+  }
+
+  // SSE headers
+  res.setHeader('Content-Type',                'text/event-stream');
+  res.setHeader('Cache-Control',               'no-cache');
+  res.setHeader('Connection',                  'keep-alive');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.flushHeaders();
+
+  const send = (event: string, data: unknown) => {
+    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+  };
+
+  try {
+    // הכן קונטקסט
+    const [history, erpContext] = await Promise.all([
+      loadHistory(sessionId),
+      getERPContext(),
+    ]);
+
+    const fullMessage = `${message}\n\n[ERP Context]\n${erpContext}`;
+
+    // שמור הודעת משתמש
+    await saveMessage(sessionId, 'user', message);
+
+    // הרץ agent
+    const finalResponse = await runAgent(
+      history,
+      fullMessage,
+      (event) => send(event.type, event),
+    );
+
+    // שמור תשובת assistant
+    if (finalResponse) {
+      await saveMessage(sessionId, 'assistant', finalResponse);
+    }
+
+    send('done', { content: finalResponse });
+  } catch (e) {
+    send('error', { content: (e as Error).message });
+  } finally {
+    res.end();
+  }
+});
+
+// ── GET /api/claude/history ──────────────────────────────────────
+router.get('/history', async (req: Request, res: Response) => {
+  const { sessionId = 'default' } = req.query;
+  const history = await loadHistory(String(sessionId));
+  res.json({ ok: true, history });
+});
+
+// ── DELETE /api/claude/session ───────────────────────────────────
+router.delete('/session', async (req: Request, res: Response) => {
+  const { sessionId = 'default' } = req.body;
+  await clearSession(sessionId);
+  res.json({ ok: true });
+});
+
+// ── GET /api/claude/health ───────────────────────────────────────
+router.get('/health', (_req, res) => {
+  res.json({
+    ok:      true,
+    model:   'claude-sonnet-4-5',
+    tools:   14,
+    version: '1.0.0',
+  });
+});
+
+export default router;

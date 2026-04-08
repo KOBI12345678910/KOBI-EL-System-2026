@@ -1,0 +1,162 @@
+import { callLLM } from "../llm/client";
+import { extractJSON, extractTextContent } from "../llm/parser";
+import { FileTool } from "./fileTool";
+import { SearchTool } from "./searchTool";
+
+export interface ReviewIssue {
+  file: string;
+  line?: number;
+  severity: "critical" | "warning" | "suggestion" | "info";
+  category: string;
+  message: string;
+  suggestion?: string;
+}
+
+export interface ReviewResult {
+  score: number; // 0-100
+  issues: ReviewIssue[];
+  summary: string;
+  strengths: string[];
+  improvements: string[];
+}
+
+export class CodeReviewTool {
+  private fileTool: FileTool;
+  private searchTool: SearchTool;
+
+  constructor(fileTool: FileTool, searchTool: SearchTool) {
+    this.fileTool = fileTool;
+    this.searchTool = searchTool;
+  }
+
+  async reviewFile(filePath: string): Promise<ReviewResult> {
+    const content = this.fileTool.readFile(filePath);
+    if (!content.success) throw new Error(`Cannot read: ${filePath}`);
+
+    const response = await callLLM({
+      system: `You are a senior code reviewer. Review the code for:
+1. Bugs and logic errors
+2. Security vulnerabilities (SQL injection, XSS, auth issues, exposed secrets)
+3. Performance issues (N+1 queries, memory leaks, unnecessary re-renders)
+4. Code quality (naming, structure, DRY, SOLID principles)
+5. Error handling (missing try/catch, unhandled promises)
+6. TypeScript best practices (proper typing, no unnecessary 'any')
+7. Testing gaps
+
+Respond ONLY with JSON:
+{
+  "score": 0-100,
+  "issues": [{ "file": "", "line": null, "severity": "critical|warning|suggestion|info", "category": "", "message": "", "suggestion": "" }],
+  "summary": "",
+  "strengths": ["..."],
+  "improvements": ["..."]
+}`,
+      messages: [
+        {
+          role: "user",
+          content: `Review this file (${filePath}):\n\n\`\`\`\n${content.output}\n\`\`\``,
+        },
+      ],
+    });
+
+    const text = extractTextContent(response.content);
+    const result = extractJSON(text) as ReviewResult;
+    return result || {
+      score: 0,
+      issues: [],
+      summary: "Could not parse review",
+      strengths: [],
+      improvements: [],
+    };
+  }
+
+  async reviewProject(options?: {
+    filePattern?: string;
+    maxFiles?: number;
+  }): Promise<{
+    overallScore: number;
+    fileReviews: Array<{ file: string; score: number; issueCount: number }>;
+    topIssues: ReviewIssue[];
+    summary: string;
+  }> {
+    const pattern = options?.filePattern || "**/*.{ts,tsx,js,jsx,py}";
+    const maxFiles = options?.maxFiles || 20;
+    const files = await this.searchTool.searchFiles("", { maxResults: maxFiles });
+
+    const codeFiles = files.filter((f) =>
+      /\.(ts|tsx|js|jsx|py|go|rs|rb|java|cs)$/.test(f)
+    ).slice(0, maxFiles);
+
+    const fileReviews: Array<{ file: string; score: number; issueCount: number }> = [];
+    const allIssues: ReviewIssue[] = [];
+
+    for (const file of codeFiles) {
+      try {
+        const review = await this.reviewFile(file);
+        fileReviews.push({
+          file,
+          score: review.score,
+          issueCount: review.issues.length,
+        });
+        allIssues.push(...review.issues.map((i) => ({ ...i, file })));
+      } catch {}
+    }
+
+    // Sort by severity
+    const severityOrder = { critical: 0, warning: 1, suggestion: 2, info: 3 };
+    allIssues.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
+
+    const avgScore = fileReviews.length > 0
+      ? Math.round(fileReviews.reduce((sum, r) => sum + r.score, 0) / fileReviews.length)
+      : 0;
+
+    return {
+      overallScore: avgScore,
+      fileReviews,
+      topIssues: allIssues.slice(0, 20),
+      summary: `Reviewed ${fileReviews.length} files. Average score: ${avgScore}/100. Found ${allIssues.length} issues (${allIssues.filter((i) => i.severity === "critical").length} critical).`,
+    };
+  }
+
+  async securityScan(): Promise<ReviewIssue[]> {
+    const patterns = [
+      { query: "password", category: "Hardcoded Credentials" },
+      { query: "api_key", category: "Exposed API Key" },
+      { query: "secret", category: "Exposed Secret" },
+      { query: "eval(", category: "Code Injection" },
+      { query: "innerHTML", category: "XSS Risk" },
+      { query: "dangerouslySetInnerHTML", category: "XSS Risk" },
+      { query: "exec(", category: "Command Injection" },
+      { query: "SELECT.*FROM.*WHERE.*\\+", category: "SQL Injection" },
+      { query: "console.log", category: "Debug Logging" },
+      { query: "TODO", category: "Unfinished Code" },
+      { query: "FIXME", category: "Known Bug" },
+      { query: "HACK", category: "Technical Debt" },
+    ];
+
+    const issues: ReviewIssue[] = [];
+
+    for (const pattern of patterns) {
+      const results = await this.searchTool.searchContent(pattern.query, {
+        filePattern: "**/*.{ts,tsx,js,jsx,py}",
+        maxResults: 20,
+      });
+
+      for (const result of results) {
+        // Skip node_modules, tests, and config files
+        if (result.file.includes("node_modules") || result.file.includes(".test.") || result.file.includes(".spec.")) continue;
+
+        issues.push({
+          file: result.file,
+          line: result.line,
+          severity: ["Hardcoded Credentials", "Exposed API Key", "Exposed Secret", "SQL Injection", "Code Injection"].includes(pattern.category) ? "critical" : "warning",
+          category: pattern.category,
+          message: `Found '${pattern.query}' - potential ${pattern.category.toLowerCase()}`,
+          suggestion: `Review and secure this usage of ${pattern.query}`,
+        });
+      }
+    }
+
+    return issues;
+  }
+}

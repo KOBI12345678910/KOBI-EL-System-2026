@@ -1,0 +1,323 @@
+import { v4 as uuidv4 } from "uuid";
+import { AgentMemory, StepResult } from "./memory";
+import { TaskPlanner, Plan } from "./planner";
+import { StepExecutor, StepDef } from "./executor";
+import { ErrorHandler } from "./errorHandler";
+
+export interface AgentConfig {
+  workspaceDir: string;
+  maxRetries: number;
+  maxSteps: number;
+}
+
+export interface AgentEvent {
+  type: "status" | "step_start" | "step_complete" | "step_failed" | "log" | "plan" | "error" | "complete";
+  taskId: string;
+  data: any;
+  timestamp: Date;
+}
+
+export type EventHandler = (event: AgentEvent) => void;
+
+export class Agent {
+  private config: AgentConfig;
+  private memory: AgentMemory;
+  private planner: TaskPlanner;
+  private executor: StepExecutor;
+  private errorHandler: ErrorHandler;
+  private eventHandlers: EventHandler[] = [];
+  private isRunning = false;
+  private currentTaskId: string | null = null;
+
+  constructor(config: AgentConfig) {
+    this.config = config;
+    this.memory = new AgentMemory(config.workspaceDir);
+    this.planner = new TaskPlanner(this.memory);
+
+    const logFn = (msg: string) => {
+      if (this.currentTaskId) {
+        this.emit({
+          type: "log",
+          taskId: this.currentTaskId,
+          data: { message: msg },
+          timestamp: new Date(),
+        });
+      }
+    };
+
+    this.executor = new StepExecutor(config.workspaceDir, this.memory, logFn);
+    this.errorHandler = new ErrorHandler(config.workspaceDir, this.memory, logFn);
+  }
+
+  onEvent(handler: EventHandler) {
+    this.eventHandlers.push(handler);
+  }
+
+  private emit(event: AgentEvent) {
+    for (const handler of this.eventHandlers) {
+      try {
+        handler(event);
+      } catch {}
+    }
+  }
+
+  async executeTask(task: string, context?: string): Promise<{
+    taskId: string;
+    success: boolean;
+    summary: string;
+    results: StepResult[];
+  }> {
+    const taskId = uuidv4();
+    this.currentTaskId = taskId;
+    this.isRunning = true;
+
+    const taskMemory = this.memory.createTask(taskId, task);
+
+    try {
+      // ====== PHASE 1: PLANNING ======
+      this.emit({
+        type: "status",
+        taskId,
+        data: { status: "planning", message: "Creating execution plan..." },
+        timestamp: new Date(),
+      });
+
+      let plan: Plan;
+      try {
+        plan = await this.planner.createPlan(task, context);
+      } catch (err: any) {
+        this.emit({
+          type: "error",
+          taskId,
+          data: { message: `Planning failed: ${err.message}` },
+          timestamp: new Date(),
+        });
+        return {
+          taskId,
+          success: false,
+          summary: `Planning failed: ${err.message}`,
+          results: [],
+        };
+      }
+
+      taskMemory.plan = plan;
+      this.emit({
+        type: "plan",
+        taskId,
+        data: { plan },
+        timestamp: new Date(),
+      });
+
+      // ====== PHASE 2: EXECUTION ======
+      this.memory.updateTaskStatus(taskId, "executing");
+      this.emit({
+        type: "status",
+        taskId,
+        data: {
+          status: "executing",
+          message: `Executing ${plan.steps.length} steps...`,
+          totalSteps: plan.steps.length,
+        },
+        timestamp: new Date(),
+      });
+
+      const completedSteps: number[] = [];
+      let totalStepsExecuted = 0;
+      let currentPlan = plan;
+
+      for (let i = 0; i < currentPlan.steps.length; i++) {
+        if (!this.isRunning) break;
+        if (totalStepsExecuted >= this.config.maxSteps) {
+          this.emit({
+            type: "error",
+            taskId,
+            data: { message: `Max steps (${this.config.maxSteps}) reached` },
+            timestamp: new Date(),
+          });
+          break;
+        }
+
+        const step = currentPlan.steps[i];
+        totalStepsExecuted++;
+
+        // Check dependencies
+        const depsOk = step.dependsOn.every((depId) =>
+          completedSteps.includes(depId)
+        );
+        if (!depsOk) {
+          this.emit({
+            type: "step_failed",
+            taskId,
+            data: { stepId: step.id, reason: "Dependencies not met" },
+            timestamp: new Date(),
+          });
+          continue;
+        }
+
+        // Execute step
+        this.emit({
+          type: "step_start",
+          taskId,
+          data: {
+            stepId: step.id,
+            description: step.description,
+            type: step.type,
+            progress: `${i + 1}/${currentPlan.steps.length}`,
+          },
+          timestamp: new Date(),
+        });
+
+        const startTime = Date.now();
+        let result = await this.executor.executeStep(step as StepDef);
+
+        // ====== PHASE 3: ERROR HANDLING & RETRY ======
+        if (!result.success) {
+          let fixed = false;
+
+          for (let retry = 1; retry <= this.config.maxRetries; retry++) {
+            this.memory.updateTaskStatus(taskId, "fixing");
+            this.emit({
+              type: "status",
+              taskId,
+              data: {
+                status: "fixing",
+                message: `Fixing error (attempt ${retry}/${this.config.maxRetries})...`,
+              },
+              timestamp: new Date(),
+            });
+
+            const fixResult = await this.errorHandler.analyzeAndFix({
+              error: result.error || result.output,
+              command: step.details.command,
+              filePath: step.details.path,
+              stepDescription: step.description,
+              taskId,
+              attempt: retry,
+            });
+
+            if (fixResult.success) {
+              // Retry the step
+              this.memory.updateTaskStatus(taskId, "executing");
+              result = await this.executor.executeStep(step as StepDef);
+
+              if (result.success) {
+                fixed = true;
+                break;
+              }
+            }
+          }
+
+          if (!fixed) {
+            // Try to revise the plan
+            this.emit({
+              type: "status",
+              taskId,
+              data: { status: "replanning", message: "Revising execution plan..." },
+              timestamp: new Date(),
+            });
+
+            try {
+              const revisedPlan = await this.planner.revisePlan(
+                currentPlan,
+                completedSteps,
+                { id: step.id, error: result.error || result.output },
+                task
+              );
+
+              // Find where to continue
+              const newSteps = revisedPlan.steps.filter(
+                (s) => !completedSteps.includes(s.id)
+              );
+
+              if (newSteps.length > 0) {
+                currentPlan = { ...revisedPlan, steps: newSteps };
+                i = -1; // Reset loop to start of new plan
+                this.memory.updateTaskStatus(taskId, "executing");
+                this.emit({
+                  type: "plan",
+                  taskId,
+                  data: { plan: currentPlan, revised: true },
+                  timestamp: new Date(),
+                });
+                continue;
+              }
+            } catch {
+              // Plan revision failed, continue with remaining steps
+            }
+          }
+        }
+
+        // Record result
+        const stepResult: StepResult = {
+          stepId: step.id,
+          type: step.type,
+          status: result.success ? "success" : "failed",
+          output: result.output,
+          error: result.error,
+          duration: Date.now() - startTime,
+          filesChanged: result.filesChanged,
+        };
+
+        this.memory.addStepResult(taskId, stepResult);
+
+        if (result.success) {
+          completedSteps.push(step.id);
+        }
+
+        this.emit({
+          type: result.success ? "step_complete" : "step_failed",
+          taskId,
+          data: {
+            stepId: step.id,
+            result: stepResult,
+            progress: `${completedSteps.length}/${currentPlan.steps.length}`,
+          },
+          timestamp: new Date(),
+        });
+      }
+
+      // ====== PHASE 4: COMPLETION ======
+      const allResults = taskMemory.stepResults;
+      const successCount = allResults.filter((r) => r.status === "success").length;
+      const failCount = allResults.filter((r) => r.status === "failed").length;
+      const success = failCount === 0;
+
+      this.memory.updateTaskStatus(taskId, success ? "completed" : "failed");
+
+      const summary = `Task ${success ? "completed" : "partially completed"}: ${successCount}/${allResults.length} steps succeeded, ${failCount} failed. Duration: ${(Date.now() - taskMemory.startTime.getTime()) / 1000}s`;
+
+      this.emit({
+        type: "complete",
+        taskId,
+        data: { success, summary, results: allResults },
+        timestamp: new Date(),
+      });
+
+      return { taskId, success, summary, results: allResults };
+    } catch (err: any) {
+      this.memory.updateTaskStatus(taskId, "failed");
+      return {
+        taskId,
+        success: false,
+        summary: `Fatal error: ${err.message}`,
+        results: taskMemory.stepResults,
+      };
+    } finally {
+      this.isRunning = false;
+      this.currentTaskId = null;
+    }
+  }
+
+  stop() {
+    this.isRunning = false;
+    this.executor.cleanup();
+  }
+
+  getTaskSummary(taskId: string): string {
+    return this.memory.getTaskSummary(taskId);
+  }
+
+  getProjectContext(): string {
+    return this.memory.getProjectContext();
+  }
+}

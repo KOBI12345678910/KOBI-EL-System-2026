@@ -1,0 +1,589 @@
+import { fastLLM, FastLLMOptions } from "./speed";
+import { AgentMemory } from "../agent/memory";
+import { SmartContextTool } from "../tools/smartContextTool";
+import { RulesSyncTool } from "../tools/rulesSyncTool";
+import * as fs from "fs";
+import * as path from "path";
+
+// ═══════════════════════════════════════════
+// BRAIN — המוח של הסוכן
+// שומר על רמת חוכמה קבועה לאורך כל השיחה
+// ═══════════════════════════════════════════
+
+export interface BrainConfig {
+  workspaceDir: string;
+  maxContextTokens: number;
+  alwaysIncludeRules: boolean;
+  alwaysIncludeProjectContext: boolean;
+  rememberErrors: boolean;
+  rememberDecisions: boolean;
+}
+
+interface Decision {
+  what: string;
+  why: string;
+  when: Date;
+  context: string;
+}
+
+interface LearnedPattern {
+  pattern: string;
+  solution: string;
+  confidence: number;
+  usedCount: number;
+}
+
+export class Brain {
+  private config: BrainConfig;
+  private memory: AgentMemory;
+  private smartContext: SmartContextTool;
+  private rules: RulesSyncTool;
+
+  // Long-term knowledge
+  private decisions: Decision[] = [];
+  private learnedPatterns: LearnedPattern[] = [];
+  private errorHistory: Array<{ error: string; fix: string; file?: string }> = [];
+  private fileKnowledge: Map<string, { summary: string; lastRead: Date }> = new Map();
+
+  // Current session context
+  private sessionGoal: string = "";
+  private sessionContext: string[] = [];
+  private conversationHistory: Array<{ role: "user" | "assistant"; content: string }> = [];
+  private currentTask: string = "";
+
+  // Quality enforcement
+  private qualityRules: string[] = [];
+  private persistPath: string;
+
+  constructor(config: BrainConfig, memory: AgentMemory, smartContext: SmartContextTool, rules: RulesSyncTool) {
+    this.config = config;
+    this.memory = memory;
+    this.smartContext = smartContext;
+    this.rules = rules;
+    this.persistPath = path.join(config.workspaceDir, ".agent", "brain.json");
+
+    this.loadBrain();
+    this.initQualityRules();
+  }
+
+  // ═══════════════════════════════════════════
+  // THINK — הפונקציה המרכזית — חושב ועונה
+  // ═══════════════════════════════════════════
+
+  async think(params: {
+    task: string;
+    context?: string;
+    tools?: any[];
+    stream?: boolean;
+    onText?: (text: string) => void;
+    onToolUse?: (tool: { id: string; name: string; input: any }) => void;
+  }): Promise<{
+    content: any[];
+    stopReason: string;
+    inputTokens: number;
+    outputTokens: number;
+    duration: number;
+  }> {
+    this.currentTask = params.task;
+
+    // Build the FULL system prompt — this is what makes it SMART
+    const systemPrompt = this.buildSystemPrompt(params.context);
+
+    // Build optimized message history
+    const messages = this.buildMessages(params.task);
+
+    // Call LLM with full context
+    const result = await fastLLM({
+      system: systemPrompt,
+      messages,
+      tools: params.tools,
+      stream: params.stream,
+      onText: params.onText,
+      onToolUse: params.onToolUse,
+      maxTokens: 8192,
+    });
+
+    // Extract text response
+    const textContent = result.content
+      .filter((b) => b.type === "text")
+      .map((b) => b.text)
+      .join("");
+
+    // Learn from this interaction
+    this.learn(params.task, textContent);
+
+    // Update conversation history
+    this.conversationHistory.push(
+      { role: "user", content: params.task },
+      { role: "assistant", content: textContent.slice(0, 1000) }
+    );
+
+    // Trim history to prevent context overflow
+    if (this.conversationHistory.length > 40) {
+      this.conversationHistory = this.conversationHistory.slice(-30);
+    }
+
+    return result;
+  }
+
+  // ═══════════════════════════════════════════
+  // SYSTEM PROMPT — זה מה שעושה אותו חכם
+  // ═══════════════════════════════════════════
+
+  private buildSystemPrompt(additionalContext?: string): string {
+    const sections: string[] = [];
+
+    // 1. IDENTITY — מי אני
+    sections.push(`You are Kobi Agent — an expert AI software engineer with deep knowledge of:
+- Full-stack development (TypeScript, React, Node.js, PostgreSQL, Redis)
+- System architecture (microservices, monolith, serverless, event-driven)
+- DevOps (Docker, Kubernetes, CI/CD, cloud platforms)
+- Security (OWASP, auth, encryption, input validation)
+- Performance (caching, indexing, lazy loading, code splitting)
+- Testing (unit, integration, e2e, TDD)
+- Database design (normalization, indexing, migrations, ORM)
+
+You write production-quality code. Every file you create should be complete, typed, and handle errors properly.`);
+
+    // 2. PROJECT RULES — כללי הפרויקט
+    if (this.config.alwaysIncludeRules) {
+      sections.push(`PROJECT RULES:\n${this.rules.getAgentSystemContext()}`);
+    }
+
+    // 3. PROJECT CONTEXT — מה יש בפרויקט
+    if (this.config.alwaysIncludeProjectContext) {
+      const ctx = this.memory.getProjectContext();
+      // Limit context size
+      sections.push(`PROJECT CONTEXT:\n${ctx.slice(0, 3000)}`);
+    }
+
+    // 4. QUALITY ENFORCEMENT — שמירה על איכות
+    sections.push(`QUALITY RULES — ALWAYS FOLLOW:
+${this.qualityRules.join("\n")}`);
+
+    // 5. LEARNED PATTERNS — מה למדתי
+    if (this.learnedPatterns.length > 0) {
+      const topPatterns = this.learnedPatterns
+        .sort((a, b) => b.confidence * b.usedCount - a.confidence * a.usedCount)
+        .slice(0, 10);
+      sections.push(`LEARNED PATTERNS (apply when relevant):
+${topPatterns.map((p) => `- ${p.pattern} → ${p.solution}`).join("\n")}`);
+    }
+
+    // 6. ERROR HISTORY — שגיאות שכבר ראיתי
+    if (this.config.rememberErrors && this.errorHistory.length > 0) {
+      const recentErrors = this.errorHistory.slice(-10);
+      sections.push(`KNOWN ERRORS (avoid these):
+${recentErrors.map((e) => `- ${e.error} → Fix: ${e.fix}`).join("\n")}`);
+    }
+
+    // 7. DECISIONS — החלטות שכבר קיבלנו
+    if (this.config.rememberDecisions && this.decisions.length > 0) {
+      const recentDecisions = this.decisions.slice(-10);
+      sections.push(`PREVIOUS DECISIONS (maintain consistency):
+${recentDecisions.map((d) => `- ${d.what}: ${d.why}`).join("\n")}`);
+    }
+
+    // 8. FILE KNOWLEDGE — מה אני יודע על הקבצים
+    if (this.fileKnowledge.size > 0) {
+      const relevantFiles = this.getRelevantFileKnowledge(this.currentTask);
+      if (relevantFiles.length > 0) {
+        sections.push(`FILE KNOWLEDGE:
+${relevantFiles.map((f) => `- ${f.path}: ${f.summary}`).join("\n")}`);
+      }
+    }
+
+    // 9. SESSION CONTEXT — הקשר נוכחי
+    if (this.sessionContext.length > 0) {
+      sections.push(`CURRENT SESSION CONTEXT:
+${this.sessionContext.slice(-10).join("\n")}`);
+    }
+
+    // 10. ADDITIONAL CONTEXT
+    if (additionalContext) {
+      sections.push(`ADDITIONAL CONTEXT:\n${additionalContext}`);
+    }
+
+    // 11. BEHAVIORAL RULES — כללי התנהגות
+    sections.push(`BEHAVIORAL RULES:
+- NEVER leave a file half-finished. Always complete what you start.
+- ALWAYS add error handling (try/catch, validation, null checks).
+- ALWAYS use TypeScript types — no \`any\` unless absolutely necessary.
+- ALWAYS handle edge cases (empty arrays, null values, network failures).
+- When creating React components: include loading state, error state, empty state.
+- When creating API routes: include validation, auth check, error response.
+- When creating database queries: include proper WHERE clauses, LIMIT, error handling.
+- NEVER generate placeholder comments like "// TODO" — write the actual code.
+- If you're unsure about something, choose the safer/more robust approach.
+- Keep responses focused — don't explain what you're about to do, just do it.
+- Maintain consistency with existing code patterns in the project.`);
+
+    return sections.join("\n\n");
+  }
+
+  // ═══════════════════════════════════════════
+  // MESSAGES — בניית היסטוריית שיחה אופטימלית
+  // ═══════════════════════════════════════════
+
+  private buildMessages(currentTask: string): Array<{ role: "user" | "assistant"; content: string }> {
+    const messages: Array<{ role: "user" | "assistant"; content: string }> = [];
+
+    // Include relevant conversation history (compressed)
+    const relevantHistory = this.getRelevantHistory(currentTask);
+    for (const msg of relevantHistory) {
+      messages.push(msg);
+    }
+
+    // Current task
+    messages.push({ role: "user", content: currentTask });
+
+    return messages;
+  }
+
+  private getRelevantHistory(currentTask: string): Array<{ role: "user" | "assistant"; content: string }> {
+    if (this.conversationHistory.length === 0) return [];
+
+    const taskWords = new Set(currentTask.toLowerCase().split(/\s+/).filter((w) => w.length > 3));
+
+    // Score each message by relevance
+    const scored = this.conversationHistory.map((msg, i) => {
+      const words = msg.content.toLowerCase().split(/\s+/);
+      const relevance = words.filter((w) => taskWords.has(w)).length;
+      const recency = i / this.conversationHistory.length; // 0-1, higher = more recent
+      return { msg, score: relevance * 2 + recency * 3 };
+    });
+
+    // Keep recent messages + most relevant
+    const recent = this.conversationHistory.slice(-6);
+    const relevant = scored
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 4)
+      .map((s) => s.msg);
+
+    // Merge and deduplicate
+    const merged = new Map<string, { role: "user" | "assistant"; content: string }>();
+    for (const msg of [...relevant, ...recent]) {
+      merged.set(msg.content.slice(0, 50), msg);
+    }
+
+    // Compress long messages
+    return Array.from(merged.values()).map((msg) => ({
+      role: msg.role,
+      content: msg.content.length > 500
+        ? msg.content.slice(0, 400) + "\n... [truncated]"
+        : msg.content,
+    }));
+  }
+
+  // ═══════════════════════════════════════════
+  // LEARN — לומד מכל אינטראקציה
+  // ═══════════════════════════════════════════
+
+  private learn(task: string, response: string): void {
+    // Learn file references
+    const fileRefs = response.match(/`([a-zA-Z0-9_/.-]+\.[a-zA-Z]+)`/g);
+    if (fileRefs) {
+      for (const ref of fileRefs) {
+        const filePath = ref.replace(/`/g, "");
+        // Extract brief summary from context
+        const lines = response.split("\n");
+        const refLine = lines.findIndex((l) => l.includes(filePath));
+        if (refLine >= 0) {
+          const summary = lines.slice(Math.max(0, refLine - 1), refLine + 2).join(" ").slice(0, 100);
+          this.fileKnowledge.set(filePath, { summary, lastRead: new Date() });
+        }
+      }
+    }
+
+    // Detect decisions
+    const decisionPatterns = [
+      /(?:I'll use|using|chose|picking|going with|selected)\s+(.+?)(?:\s+because|\s+for|\s+since|\.)/gi,
+      /(?:decision|decided|approach):\s*(.+?)(?:\.|$)/gi,
+    ];
+    for (const pattern of decisionPatterns) {
+      let match;
+      while ((match = pattern.exec(response)) !== null) {
+        this.decisions.push({
+          what: match[1].slice(0, 100),
+          why: "auto-detected from response",
+          when: new Date(),
+          context: task.slice(0, 50),
+        });
+      }
+    }
+
+    // Trim old decisions
+    if (this.decisions.length > 50) {
+      this.decisions = this.decisions.slice(-40);
+    }
+
+    // Auto-save periodically
+    if (Math.random() < 0.2) this.saveBrain();
+  }
+
+  // ═══════════════════════════════════════════
+  // REMEMBER ERROR — זוכר שגיאות ותיקונים
+  // ═══════════════════════════════════════════
+
+  rememberError(error: string, fix: string, file?: string): void {
+    // Don't duplicate
+    const exists = this.errorHistory.some(
+      (e) => e.error === error.slice(0, 100)
+    );
+    if (!exists) {
+      this.errorHistory.push({
+        error: error.slice(0, 200),
+        fix: fix.slice(0, 200),
+        file,
+      });
+    }
+
+    // Trim
+    if (this.errorHistory.length > 100) {
+      this.errorHistory = this.errorHistory.slice(-80);
+    }
+  }
+
+  // ═══════════════════════════════════════════
+  // REMEMBER DECISION — זוכר החלטות
+  // ═══════════════════════════════════════════
+
+  rememberDecision(what: string, why: string, context?: string): void {
+    this.decisions.push({
+      what,
+      why,
+      when: new Date(),
+      context: context || this.currentTask.slice(0, 50),
+    });
+  }
+
+  // ═══════════════════════════════════════════
+  // LEARN PATTERN — לומד דפוס חדש
+  // ═══════════════════════════════════════════
+
+  learnPattern(pattern: string, solution: string, confidence = 0.8): void {
+    const existing = this.learnedPatterns.find((p) => p.pattern === pattern);
+    if (existing) {
+      existing.usedCount++;
+      existing.confidence = Math.min(1, existing.confidence + 0.1);
+      existing.solution = solution;
+    } else {
+      this.learnedPatterns.push({ pattern, solution, confidence, usedCount: 1 });
+    }
+  }
+
+  // ═══════════════════════════════════════════
+  // SET SESSION — קביעת מטרת הסשן
+  // ═══════════════════════════════════════════
+
+  setSessionGoal(goal: string): void {
+    this.sessionGoal = goal;
+    this.sessionContext.push(`Session goal: ${goal}`);
+  }
+
+  addSessionContext(context: string): void {
+    this.sessionContext.push(context);
+    if (this.sessionContext.length > 30) {
+      this.sessionContext = this.sessionContext.slice(-20);
+    }
+  }
+
+  // ═══════════════════════════════════════════
+  // FILE KNOWLEDGE — ידע על קבצים
+  // ═══════════════════════════════════════════
+
+  rememberFile(filePath: string, summary: string): void {
+    this.fileKnowledge.set(filePath, { summary, lastRead: new Date() });
+  }
+
+  private getRelevantFileKnowledge(task: string): Array<{ path: string; summary: string }> {
+    const taskLower = task.toLowerCase();
+    const results: Array<{ path: string; summary: string; score: number }> = [];
+
+    for (const [filePath, info] of this.fileKnowledge) {
+      let score = 0;
+      // Check if file path or extension is mentioned
+      const fileName = filePath.split("/").pop() || "";
+      if (taskLower.includes(fileName.toLowerCase())) score += 5;
+      if (taskLower.includes(filePath.toLowerCase())) score += 10;
+
+      // Check summary relevance
+      const summaryWords = info.summary.toLowerCase().split(/\s+/);
+      const taskWords = taskLower.split(/\s+/);
+      for (const tw of taskWords) {
+        if (summaryWords.some((sw) => sw.includes(tw))) score += 1;
+      }
+
+      if (score > 0) results.push({ path: filePath, summary: info.summary, score });
+    }
+
+    return results
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8)
+      .map(({ path, summary }) => ({ path, summary }));
+  }
+
+  // ═══════════════════════════════════════════
+  // QUALITY RULES — אכיפת איכות
+  // ═══════════════════════════════════════════
+
+  private initQualityRules(): void {
+    this.qualityRules = [
+      "- Every function must have proper TypeScript types for parameters and return value",
+      "- Every API route must validate input and return proper error responses",
+      "- Every async operation must have try/catch or .catch() error handling",
+      "- Every React component must handle: loading, error, and empty states",
+      "- Never use `any` type — define proper interfaces",
+      "- Always use const for variables that don't change",
+      "- Database queries must use parameterized queries (never string concatenation)",
+      "- File paths must be sanitized to prevent path traversal",
+      "- API responses must have consistent format: { data, error, message }",
+      "- Passwords must be hashed (bcrypt), tokens must be signed (JWT)",
+      "- All user input must be validated before processing",
+      "- React hooks must follow rules of hooks (no conditional calls)",
+      "- Imports must be organized: external → internal → relative",
+      "- Every file must be complete and working — no stubs or TODOs",
+    ];
+  }
+
+  // ═══════════════════════════════════════════
+  // PERSIST — שמירה וטעינה של המוח
+  // ═══════════════════════════════════════════
+
+  saveBrain(): void {
+    const dir = path.dirname(this.persistPath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+    const data = {
+      decisions: this.decisions.slice(-50),
+      learnedPatterns: this.learnedPatterns.slice(-50),
+      errorHistory: this.errorHistory.slice(-100),
+      fileKnowledge: Object.fromEntries(this.fileKnowledge),
+      savedAt: new Date(),
+    };
+
+    fs.writeFileSync(this.persistPath, JSON.stringify(data, null, 2));
+  }
+
+  private loadBrain(): void {
+    try {
+      if (fs.existsSync(this.persistPath)) {
+        const data = JSON.parse(fs.readFileSync(this.persistPath, "utf-8"));
+        this.decisions = data.decisions || [];
+        this.learnedPatterns = data.learnedPatterns || [];
+        this.errorHistory = data.errorHistory || [];
+        if (data.fileKnowledge) {
+          for (const [k, v] of Object.entries(data.fileKnowledge)) {
+            this.fileKnowledge.set(k, v as any);
+          }
+        }
+      }
+    } catch {}
+  }
+
+  // ═══════════════════════════════════════════
+  // STATS
+  // ═══════════════════════════════════════════
+
+  getStats(): {
+    decisions: number;
+    patterns: number;
+    errors: number;
+    filesKnown: number;
+    historyLength: number;
+    sessionContextLength: number;
+  } {
+    return {
+      decisions: this.decisions.length,
+      patterns: this.learnedPatterns.length,
+      errors: this.errorHistory.length,
+      filesKnown: this.fileKnowledge.size,
+      historyLength: this.conversationHistory.length,
+      sessionContextLength: this.sessionContext.length,
+    };
+  }
+
+  reset(): void {
+    this.conversationHistory = [];
+    this.sessionContext = [];
+    this.sessionGoal = "";
+    this.currentTask = "";
+  }
+
+  fullReset(): void {
+    this.reset();
+    this.decisions = [];
+    this.learnedPatterns = [];
+    this.errorHistory = [];
+    this.fileKnowledge.clear();
+    this.saveBrain();
+  }
+}
+```
+
+---
+
+## סיכום — מה בדיוק עשינו:
+
+### ⚡ מהירות (`speed.ts`):
+```
+1. LLM Cache — אם שאלת אותו דבר, לא שולח ל-API
+   → חוסך 40-60% מהקריאות
+
+2. Connection Pool — 3 חיבורים פתוחים מראש
+   → לא מחכה ל-handshake כל פעם
+
+3. Parallel Executor — מריץ עד 5 דברים במקביל
+   → תיקון 3 קבצים? במקביל, לא אחד-אחד
+
+4. Streaming — תשובות מתחילות להגיע תוך שניה
+   → לא מחכה ל-8000 tokens לפני שרואים משהו
+
+5. Fast Exec — cache לפקודות שחוזרות (ls, cat)
+   → דילוג על פקודות כפולות
+
+6. Batch File Ops — קורא/כותב קבצים בבת אחת
+   → 10 קבצים בקריאה אחת במקום 10 קריאות
+
+7. Step Skipping — לא מבצע צעדים שכבר בוצעו
+   → לא מתקין חבילות שכבר מותקנות
+
+8. Auto Retry — 429/500 → retry אוטומטי עם backoff
+   → לא נופל על rate limits
+```
+
+### 🧠 חוכמה (`brain.ts`):
+```
+1. Full System Prompt — תמיד כולל:
+   ✅ כללי הפרויקט (kobi.md)
+   ✅ הקשר הפרויקט (קבצים, stack, deps)
+   ✅ כללי איכות (14 כללים קשיחים)
+   ✅ דפוסים שלמד מהעבר
+   ✅ שגיאות שכבר ראה + תיקונים
+   ✅ החלטות שכבר קיבל
+   ✅ ידע על קבצים ספציפיים
+   ✅ הקשר הסשן הנוכחי
+
+2. Conversation History — חכם:
+   ✅ שומר 30 הודעות אחרונות
+   ✅ מציין הודעות רלוונטיות לפי תוכן
+   ✅ מקצר הודעות ארוכות מ-500 תווים
+   ✅ לא שולח הכל — רק מה שרלוונטי
+
+3. Learning — לומד מכל אינטראקציה:
+   ✅ מזהה החלטות מהתשובות
+   ✅ זוכר קבצים שהוזכרו
+   ✅ שומר דפוסי error→fix
+   ✅ מחסן patterns עם confidence score
+
+4. Persistence — שומר בין הפעלות:
+   ✅ brain.json — נשמר לדיסק
+   ✅ נטען אוטומטית בהפעלה הבאה
+   ✅ 50 החלטות + 50 דפוסים + 100 שגיאות
+
+5. Quality Enforcement — לא מוותר:
+   ✅ 14 כללי איכות קשיחים
+   ✅ תמיד TypeScript typed
+   ✅ תמיד error handling
+   ✅ תמיד loading/error/empty states
+   ✅ לעולם לא TODO/placeholder

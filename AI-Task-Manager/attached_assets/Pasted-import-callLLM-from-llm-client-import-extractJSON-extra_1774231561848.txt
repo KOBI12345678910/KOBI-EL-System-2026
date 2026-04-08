@@ -1,0 +1,469 @@
+import { callLLM } from "../llm/client";
+import { extractJSON, extractTextContent } from "../llm/parser";
+import { FileTool } from "./fileTool";
+import { SearchTool } from "./searchTool";
+import { TerminalTool } from "./terminalTool";
+
+export class RefactorTool {
+  private fileTool: FileTool;
+  private searchTool: SearchTool;
+  private terminal: TerminalTool;
+
+  constructor(fileTool: FileTool, searchTool: SearchTool, terminal: TerminalTool) {
+    this.fileTool = fileTool;
+    this.searchTool = searchTool;
+    this.terminal = terminal;
+  }
+
+  // ===== Rename Symbol Across Project =====
+  async renameSymbol(
+    oldName: string,
+    newName: string,
+    options?: { filePattern?: string; dryRun?: boolean }
+  ): Promise<{
+    filesChanged: string[];
+    totalReplacements: number;
+    preview: Array<{ file: string; line: number; before: string; after: string }>;
+  }> {
+    const pattern = options?.filePattern || "**/*.{ts,tsx,js,jsx}";
+    const results = await this.searchTool.searchContent(oldName, {
+      filePattern: pattern,
+      maxResults: 200,
+    });
+
+    const preview: Array<{ file: string; line: number; before: string; after: string }> = [];
+    const filesAffected = new Set<string>();
+
+    for (const result of results) {
+      // Smart rename — only rename actual identifiers, not substrings
+      const wordBoundaryRegex = new RegExp(`\\b${this.escapeRegex(oldName)}\\b`, "g");
+      if (!wordBoundaryRegex.test(result.text)) continue;
+
+      const before = result.text.trim();
+      const after = result.text.replace(wordBoundaryRegex, newName).trim();
+
+      preview.push({
+        file: result.file,
+        line: result.line,
+        before,
+        after,
+      });
+      filesAffected.add(result.file);
+    }
+
+    if (!options?.dryRun) {
+      const replaceResults = await this.searchTool.findAndReplace(oldName, newName, {
+        filePattern: pattern,
+      });
+
+      // Also update imports
+      const importPatterns = [
+        `from './${oldName}'`,
+        `from "./${oldName}"`,
+        `from '../${oldName}'`,
+        `from "${oldName}"`,
+        `require('./${oldName}')`,
+        `require("./${oldName}")`,
+      ];
+
+      for (const importPattern of importPatterns) {
+        const newImport = importPattern.replace(oldName, newName);
+        await this.searchTool.findAndReplace(importPattern, newImport, { filePattern: pattern });
+      }
+
+      // Rename file if it matches
+      const fileMatch = await this.searchTool.searchFiles(oldName);
+      for (const file of fileMatch) {
+        const newPath = file.replace(oldName, newName);
+        if (file !== newPath) {
+          this.fileTool.moveFile(file, newPath);
+        }
+      }
+    }
+
+    return {
+      filesChanged: Array.from(filesAffected),
+      totalReplacements: preview.length,
+      preview: preview.slice(0, 50),
+    };
+  }
+
+  // ===== Extract Function =====
+  async extractFunction(
+    filePath: string,
+    startLine: number,
+    endLine: number,
+    functionName: string
+  ): Promise<string> {
+    const content = this.fileTool.readFile(filePath);
+    if (!content.success) throw new Error(`Cannot read: ${filePath}`);
+
+    const lines = (content.output || "").split("\n");
+    const selectedCode = lines.slice(startLine - 1, endLine).join("\n");
+
+    const response = await callLLM({
+      system: `You are an expert refactoring tool. Extract the selected code into a new function.
+Rules:
+- Identify all variables used from outer scope → make them parameters
+- Identify the return value
+- Create a properly typed TypeScript function
+- Replace the original code with a call to the new function
+- Add proper JSDoc
+
+Respond with JSON:
+{
+  "newFunction": "the extracted function code",
+  "replacement": "the code that replaces the selection (function call)",
+  "imports": ["any new imports needed"]
+}`,
+      messages: [{
+        role: "user",
+        content: `File: ${filePath}
+Function name: ${functionName}
+
+Full file:
+\`\`\`
+${content.output}
+\`\`\`
+
+Selected code (lines ${startLine}-${endLine}):
+\`\`\`
+${selectedCode}
+\`\`\``,
+      }],
+    });
+
+    const result = extractJSON(extractTextContent(response.content));
+    if (!result) throw new Error("Failed to extract function");
+
+    // Apply changes
+    const newLines = [...lines];
+    newLines.splice(startLine - 1, endLine - startLine + 1, result.replacement);
+
+    // Add extracted function before the containing function or at end
+    newLines.push("", result.newFunction);
+
+    this.fileTool.createFile(filePath, newLines.join("\n"));
+    return result.newFunction;
+  }
+
+  // ===== Extract Component (React) =====
+  async extractComponent(
+    filePath: string,
+    jsxCode: string,
+    componentName: string
+  ): Promise<{ componentFile: string; componentCode: string }> {
+    const content = this.fileTool.readFile(filePath);
+    if (!content.success) throw new Error(`Cannot read: ${filePath}`);
+
+    const response = await callLLM({
+      system: `Extract JSX into a new React component. Identify props from the JSX.
+Respond with JSON:
+{
+  "componentCode": "full component file code with imports, types, and export",
+  "replacement": "the <ComponentName ... /> that replaces the original JSX",
+  "propsInterface": "the Props interface",
+  "importStatement": "import { ComponentName } from './ComponentName';"
+}`,
+      messages: [{
+        role: "user",
+        content: `Extract this JSX as component "${componentName}":
+\`\`\`tsx
+${jsxCode}
+\`\`\`
+
+From file ${filePath}:
+\`\`\`tsx
+${content.output}
+\`\`\``,
+      }],
+    });
+
+    const result = extractJSON(extractTextContent(response.content));
+    if (!result) throw new Error("Failed to extract component");
+
+    const dir = filePath.substring(0, filePath.lastIndexOf("/"));
+    const componentFile = `${dir}/${componentName}.tsx`;
+
+    // Create component file
+    this.fileTool.createFile(componentFile, result.componentCode);
+
+    // Update original file
+    let updatedContent = (content.output || "")
+      .replace(jsxCode, result.replacement);
+
+    // Add import
+    const importLine = result.importStatement;
+    const firstImportIdx = updatedContent.indexOf("import ");
+    if (firstImportIdx >= 0) {
+      const lineEnd = updatedContent.indexOf("\n", firstImportIdx);
+      updatedContent = updatedContent.slice(0, lineEnd + 1) + importLine + "\n" + updatedContent.slice(lineEnd + 1);
+    } else {
+      updatedContent = importLine + "\n\n" + updatedContent;
+    }
+
+    this.fileTool.createFile(filePath, updatedContent);
+
+    return { componentFile, componentCode: result.componentCode };
+  }
+
+  // ===== Move Function to New File =====
+  async moveToFile(
+    sourceFile: string,
+    symbolName: string,
+    targetFile: string
+  ): Promise<void> {
+    const content = this.fileTool.readFile(sourceFile);
+    if (!content.success) throw new Error(`Cannot read: ${sourceFile}`);
+
+    const response = await callLLM({
+      system: `Move the specified symbol to a new file. Handle:
+1. Extract the function/class/type and its dependencies
+2. Add proper exports in the new file
+3. Add proper imports in the new file
+4. Update the source file to import from new location
+5. Update all other files that import this symbol
+
+Respond with JSON:
+{
+  "extractedCode": "code to put in new file (with imports)",
+  "sourceFileUpdated": "updated source file content",
+  "reExport": "export { symbolName } from './newFile';  // if needed"
+}`,
+      messages: [{
+        role: "user",
+        content: `Move "${symbolName}" from ${sourceFile} to ${targetFile}:
+\`\`\`
+${content.output}
+\`\`\``,
+      }],
+    });
+
+    const result = extractJSON(extractTextContent(response.content));
+    if (!result) throw new Error("Failed to move symbol");
+
+    this.fileTool.createFile(targetFile, result.extractedCode);
+    this.fileTool.createFile(sourceFile, result.sourceFileUpdated);
+
+    // Update all imports across the project
+    const oldImportPath = sourceFile.replace(/\.tsx?$/, "").replace(/^src\//, "./");
+    const newImportPath = targetFile.replace(/\.tsx?$/, "").replace(/^src\//, "./");
+
+    await this.searchTool.findAndReplace(
+      `from '${oldImportPath}'`,
+      `from '${newImportPath}'`,
+      { filePattern: "**/*.{ts,tsx}" }
+    );
+  }
+
+  // ===== Auto-Import =====
+  async autoImport(filePath: string): Promise<{ added: string[]; removed: string[] }> {
+    const content = this.fileTool.readFile(filePath);
+    if (!content.success) throw new Error(`Cannot read: ${filePath}`);
+
+    const response = await callLLM({
+      system: `Analyze the file and fix all imports:
+1. Add missing imports (find them in the project or node_modules)
+2. Remove unused imports
+3. Sort imports (external first, then internal, then relative)
+4. Use proper import style (named vs default)
+
+Respond with JSON:
+{
+  "fixedImports": "the corrected import section",
+  "added": ["list of imports added"],
+  "removed": ["list of imports removed"]
+}`,
+      messages: [{
+        role: "user",
+        content: `Fix imports in ${filePath}:\n\`\`\`\n${content.output}\n\`\`\``,
+      }],
+    });
+
+    const result = extractJSON(extractTextContent(response.content));
+    if (!result) return { added: [], removed: [] };
+
+    // Replace the import section
+    const code = content.output || "";
+    const lastImportIdx = code.lastIndexOf("\nimport ");
+    const lastImportEnd = code.indexOf("\n", lastImportIdx + 1);
+
+    if (lastImportIdx >= 0) {
+      const firstImportIdx = code.indexOf("import ");
+      const before = code.slice(0, firstImportIdx);
+      const after = code.slice(lastImportEnd + 1);
+      this.fileTool.createFile(filePath, before + result.fixedImports + "\n" + after);
+    }
+
+    return { added: result.added || [], removed: result.removed || [] };
+  }
+
+  // ===== AI Commit Message =====
+  async generateCommitMessage(options?: {
+    type?: "conventional" | "simple" | "detailed";
+  }): Promise<string> {
+    const diffResult = await this.terminal.execute("git diff --staged --stat && echo '---DIFF---' && git diff --staged", {
+      timeout: 15000,
+    });
+
+    if (!diffResult.stdout.trim()) {
+      // Try unstaged
+      const unstaged = await this.terminal.execute("git diff --stat && echo '---DIFF---' && git diff", {
+        timeout: 15000,
+      });
+      if (!unstaged.stdout.trim()) return "chore: minor updates";
+      diffResult.stdout = unstaged.stdout;
+    }
+
+    const type = options?.type || "conventional";
+    const response = await callLLM({
+      system: `Generate a git commit message from the diff.
+
+${type === "conventional" ? `Use Conventional Commits format:
+<type>(<scope>): <description>
+
+[optional body]
+
+Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore
+Scope: the module/area affected` :
+  type === "detailed" ? `Write a detailed commit message:
+Subject line (50 chars max)
+
+Body explaining what changed and why (wrap at 72 chars)` :
+  `Write a simple, clear one-line commit message.`}
+
+Respond with ONLY the commit message text.`,
+      messages: [{
+        role: "user",
+        content: `Generate commit message for:\n${diffResult.stdout.slice(0, 5000)}`,
+      }],
+    });
+
+    return extractTextContent(response.content).trim();
+  }
+
+  // ===== Auto-commit =====
+  async autoCommit(): Promise<{ success: boolean; message: string }> {
+    // Stage all changes
+    await this.terminal.execute("git add -A");
+
+    // Generate message
+    const message = await this.generateCommitMessage();
+
+    // Commit
+    const result = await this.terminal.execute(
+      `git commit -m "${message.replace(/"/g, '\\"')}"`,
+      { timeout: 10000 }
+    );
+
+    return { success: result.success, message };
+  }
+
+  // ===== Merge Conflict Resolution =====
+  async resolveConflicts(): Promise<{
+    resolved: string[];
+    manual: string[];
+  }> {
+    const conflictResult = await this.terminal.execute(
+      "git diff --name-only --diff-filter=U",
+      { timeout: 5000 }
+    );
+
+    const conflictFiles = conflictResult.stdout.trim().split("\n").filter(Boolean);
+    const resolved: string[] = [];
+    const manual: string[] = [];
+
+    for (const file of conflictFiles) {
+      const content = this.fileTool.readFile(file);
+      if (!content.success) continue;
+
+      if (!(content.output || "").includes("<<<<<<<")) {
+        continue;
+      }
+
+      const response = await callLLM({
+        system: `You are resolving a git merge conflict. Analyze both versions and produce the best merged result.
+Rules:
+- Keep all functionality from both sides
+- Resolve logically — don't just pick one side
+- Ensure the result compiles and is correct
+- Remove ALL conflict markers (<<<<<<<, =======, >>>>>>>)
+
+Respond with ONLY the resolved file content.`,
+        messages: [{
+          role: "user",
+          content: `Resolve conflicts in ${file}:\n\`\`\`\n${content.output}\n\`\`\``,
+        }],
+      });
+
+      let resolvedContent = extractTextContent(response.content);
+      resolvedContent = resolvedContent.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+
+      // Verify no conflict markers remain
+      if (!resolvedContent.includes("<<<<<<<") && !resolvedContent.includes(">>>>>>>")) {
+        this.fileTool.createFile(file, resolvedContent);
+        await this.terminal.execute(`git add "${file}"`);
+        resolved.push(file);
+      } else {
+        manual.push(file);
+      }
+    }
+
+    return { resolved, manual };
+  }
+
+  // ===== Dead Code Detection =====
+  async findDeadCode(): Promise<Array<{
+    file: string;
+    symbol: string;
+    type: string;
+    line: number;
+  }>> {
+    const results: Array<{ file: string; symbol: string; type: string; line: number }> = [];
+
+    // Find all exports
+    const exports = await this.searchTool.searchContent("export ", {
+      filePattern: "**/*.{ts,tsx}",
+      maxResults: 200,
+    });
+
+    for (const exp of exports) {
+      // Extract exported name
+      const match = exp.text.match(
+        /export\s+(?:default\s+)?(?:function|class|const|let|var|type|interface|enum)\s+(\w+)/
+      );
+      if (!match) continue;
+
+      const symbolName = match[1];
+
+      // Search for usages (excluding the export itself)
+      const usages = await this.searchTool.searchContent(symbolName, {
+        filePattern: "**/*.{ts,tsx}",
+        maxResults: 5,
+      });
+
+      // Filter out the definition file
+      const externalUsages = usages.filter(
+        (u) => u.file !== exp.file || u.line !== exp.line
+      );
+
+      if (externalUsages.length === 0) {
+        results.push({
+          file: exp.file,
+          symbol: symbolName,
+          type: match[0].includes("function") ? "function" :
+                match[0].includes("class") ? "class" :
+                match[0].includes("type") || match[0].includes("interface") ? "type" :
+                "variable",
+          line: exp.line,
+        });
+      }
+    }
+
+    return results;
+  }
+
+  private escapeRegex(str: string): string {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+}

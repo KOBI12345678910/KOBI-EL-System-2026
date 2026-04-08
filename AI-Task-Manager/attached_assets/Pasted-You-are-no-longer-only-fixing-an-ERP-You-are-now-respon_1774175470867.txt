@@ -1,0 +1,199 @@
+You are no longer only fixing an ERP.
+
+You are now responsible for transforming this platform into the most advanced industrial-financial AI ERP operating system possible for a metal fabrication company working with iron, aluminum, glass, and stainless steel.
+
+This must become a world-class platform combining:
+- ERP
+- MES
+- CRM
+- Finance
+- Procurement
+- Inventory
+- Projects
+- Installations
+- HR
+- Executive control
+- AI intelligence layer
+
+MISSION
+
+Take the existing system and upgrade it into a deeply structured, enterprise-grade, production-ready platform with exceptional completeness, operational realism, financial depth, and AI-driven intelligence.
+
+This is not a cosmetic improvement task.
+This is not a narrow repair task.
+This is a full platform transformation task.
+
+TARGET STANDARD
+
+The system should feel like a combination of:
+- SAP-grade ERP discipline
+- manufacturing execution depth
+- institutional-grade financial control
+- AI-native operating intelligence
+- executive war-room visibility
+
+CORE RULES
+
+1. Treat the entire existing menu architecture as in-scope.
+2. Every existing model/page/module must be repaired, completed, expanded, and professionalized.
+3. No placeholders, empty shells, thin pages, or broken links may remain.
+4. Every module must become business-usable, deeply connected, and operationally realistic.
+5. Build the system as one integrated operating system, not as disconnected pages.
+
+PLATFORM OBJECTIVES
+
+Build these layers across the whole platform:
+
+LAYER 1 — CORE PLATFORM
+- authentication
+- roles and permissions
+- audit logs
+- notifications
+- workflow engine
+- approvals engine
+- document engine
+- task engine
+- integrations layer
+- admin configuration
+- system health and diagnostics
+
+LAYER 2 — BUSINESS OPERATIONS
+- CRM
+- quotations
+- customers
+- suppliers
+- products
+- raw materials
+- warehouses
+- purchasing
+- import
+- production
+- quality
+- projects
+- installers
+- service
+- HR
+- finance
+
+LAYER 3 — FACTORY DEPTH
+- BOM
+- work orders
+- production stages
+- cutting
+- welding
+- assembly
+- coating
+- glazing
+- packing
+- delivery preparation
+- installation workflow
+- site measurements
+- QC per stage
+- traceability
+- consumption and waste tracking
+
+LAYER 4 — FINANCIAL INTELLIGENCE
+- full revenue/expense structure
+- AR/AP
+- journal entries
+- cashflow
+- margin analysis
+- budget control
+- project profitability
+- customer profitability
+- supplier cost analysis
+- scenario modeling
+- treasury overview
+
+LAYER 5 — AI INTELLIGENCE
+- AI sales assistant
+- AI customer service
+- AI quoting assistant
+- AI lead scoring
+- AI predictive analytics
+- AI procurement optimization
+- AI production optimization
+- AI anomaly detection
+- AI financial insights
+- AI executive copilots
+
+IMPLEMENTATION STANDARD FOR EVERY MODEL
+
+Each model must include:
+- business purpose
+- schema
+- required fields
+- optional fields
+- statuses
+- relations
+- validations
+- defaults
+- list/create/edit/details pages
+- search/filter/sort
+- related records
+- documents
+- history/activity
+- meaningful actions
+
+PAGE STANDARD
+
+Each page must include:
+- title
+- breadcrumbs
+- summary cards
+- action bar
+- filters/search
+- grid or structured form
+- related records blocks
+- history/activity
+- documents/attachments
+- alerts/warnings
+- loading/empty/error states
+
+EXECUTIVE STANDARD
+
+Add a world-class executive control layer:
+- CEO dashboard
+- company health dashboard
+- financial risk dashboard
+- operational bottlenecks dashboard
+- procurement risk dashboard
+- production risk dashboard
+- delayed orders dashboard
+- margin erosion dashboard
+- live KPI board
+- alerts center
+
+DATA GOVERNANCE
+
+Enforce:
+- single source of truth
+- strong relations
+- clean master data
+- lookup/reference tables
+- approval logic
+- auditability
+- safe migrations
+- validation guards
+
+MODEL CATALOG
+
+Create a full internal Model Catalog / Data Dictionary page documenting all system models, fields, relations, statuses, routes, and implementation state.
+
+QA REQUIREMENT
+
+After upgrading, run full QA:
+- route testing
+- menu testing
+- create/edit/view testing
+- relation testing
+- save/update testing
+- loading/error/empty state testing
+- layout consistency review
+- regression testing
+- workflow validation
+
+FINAL RULE
+
+Do not stop at diagnosis or planning.
+Implement directly in the codebase and transform the entire platform into a much deeper, stronger, more complete, more intelligent system.

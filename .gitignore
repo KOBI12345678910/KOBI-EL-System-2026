@@ -18,3 +18,5 @@ Thumbs.db
 
 # Replit local
 .local/
+*/.config/
+*/.local/

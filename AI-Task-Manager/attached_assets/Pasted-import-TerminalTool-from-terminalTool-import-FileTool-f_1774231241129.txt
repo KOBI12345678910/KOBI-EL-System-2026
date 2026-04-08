@@ -1,0 +1,250 @@
+import { TerminalTool } from "./terminalTool";
+import { FileTool } from "./fileTool";
+import { callLLM } from "../llm/client";
+import { extractJSON, extractTextContent } from "../llm/parser";
+
+export interface Breakpoint {
+  id: string;
+  file: string;
+  line: number;
+  condition?: string;
+  enabled: boolean;
+}
+
+export interface StackFrame {
+  file: string;
+  function: string;
+  line: number;
+  column: number;
+  variables: Record<string, any>;
+}
+
+export interface DebugSession {
+  id: string;
+  status: "running" | "paused" | "stopped" | "error";
+  breakpoints: Breakpoint[];
+  currentFrame?: StackFrame;
+  callStack: StackFrame[];
+  watches: Record<string, any>;
+  output: string[];
+}
+
+export class DebuggerTool {
+  private terminal: TerminalTool;
+  private fileTool: FileTool;
+  private sessions: Map<string, DebugSession> = new Map();
+  private onLog: (msg: string) => void;
+
+  constructor(terminal: TerminalTool, fileTool: FileTool, onLog: (msg: string) => void) {
+    this.terminal = terminal;
+    this.fileTool = fileTool;
+    this.onLog = onLog;
+  }
+
+  async startDebug(
+    command: string,
+    options?: { breakpoints?: Array<{ file: string; line: number }> }
+  ): Promise<DebugSession> {
+    const id = `debug_${Date.now()}`;
+    const session: DebugSession = {
+      id,
+      status: "running",
+      breakpoints: (options?.breakpoints || []).map((bp, i) => ({
+        id: `bp_${i}`,
+        file: bp.file,
+        line: bp.line,
+        enabled: true,
+      })),
+      callStack: [],
+      watches: {},
+      output: [],
+    };
+
+    this.sessions.set(id, session);
+
+    // Add debugger statements at breakpoints
+    for (const bp of session.breakpoints) {
+      if (bp.enabled) {
+        await this.injectBreakpoint(bp);
+      }
+    }
+
+    // Start with Node.js inspector
+    const inspectCmd = command.replace(
+      /^(node|tsx|ts-node)/,
+      "$1 --inspect-brk=9229"
+    );
+
+    await this.terminal.startBackground(id, inspectCmd, {
+      onOutput: (data) => {
+        session.output.push(data);
+        this.onLog(`[Debug] ${data.trim()}`);
+      },
+    });
+
+    this.onLog(`🐛 Debug session started: ${id}`);
+    return session;
+  }
+
+  async stopDebug(sessionId: string): Promise<void> {
+    const session = this.sessions.get(sessionId);
+    if (!session) return;
+
+    await this.terminal.stopBackground(sessionId);
+    session.status = "stopped";
+
+    // Remove injected breakpoints
+    for (const bp of session.breakpoints) {
+      await this.removeBreakpoint(bp);
+    }
+
+    this.onLog("🐛 Debug session stopped");
+  }
+
+  async addBreakpoint(
+    sessionId: string,
+    file: string,
+    line: number,
+    condition?: string
+  ): Promise<Breakpoint> {
+    const session = this.sessions.get(sessionId);
+    if (!session) throw new Error("No debug session");
+
+    const bp: Breakpoint = {
+      id: `bp_${Date.now()}`,
+      file,
+      line,
+      condition,
+      enabled: true,
+    };
+
+    session.breakpoints.push(bp);
+    await this.injectBreakpoint(bp);
+    return bp;
+  }
+
+  async removeBreakpointById(sessionId: string, bpId: string): Promise<void> {
+    const session = this.sessions.get(sessionId);
+    if (!session) return;
+
+    const bpIndex = session.breakpoints.findIndex((bp) => bp.id === bpId);
+    if (bpIndex >= 0) {
+      await this.removeBreakpoint(session.breakpoints[bpIndex]);
+      session.breakpoints.splice(bpIndex, 1);
+    }
+  }
+
+  async addWatch(sessionId: string, expression: string): Promise<any> {
+    const session = this.sessions.get(sessionId);
+    if (!session) return null;
+
+    // Use Node inspector protocol via curl
+    const result = await this.terminal.execute(
+      `curl -s http://localhost:9229/json/evaluate -d '{"expression":"${expression}"}' 2>/dev/null || echo "{}"`,
+      { timeout: 5000 }
+    );
+
+    let value;
+    try {
+      value = JSON.parse(result.stdout);
+    } catch {
+      value = result.stdout;
+    }
+
+    session.watches[expression] = value;
+    return value;
+  }
+
+  async analyzeError(error: string, context?: string): Promise<{
+    rootCause: string;
+    stackAnalysis: string;
+    suggestedFix: string;
+    relatedFiles: string[];
+  }> {
+    const response = await callLLM({
+      system: `You are an expert debugger. Analyze the error and provide:
+1. Root cause analysis
+2. Stack trace analysis
+3. Specific fix with code
+4. Related files to check
+
+Respond with JSON:
+{
+  "rootCause": "",
+  "stackAnalysis": "",
+  "suggestedFix": "",
+  "relatedFiles": []
+}`,
+      messages: [{
+        role: "user",
+        content: `Error:\n${error}\n\n${context ? `Context:\n${context}` : ""}`,
+      }],
+    });
+
+    return extractJSON(extractTextContent(response.content));
+  }
+
+  async profileCode(file: string): Promise<{
+    hotspots: Array<{ line: number; function: string; time: string; calls: number }>;
+    memoryLeaks: string[];
+    recommendations: string[];
+  }> {
+    // Run with profiling
+    const result = await this.terminal.execute(
+      `node --prof ${file} 2>&1; node --prof-process isolate-*.log 2>/dev/null | head -100`,
+      { timeout: 30000 }
+    );
+
+    // Clean up prof files
+    await this.terminal.execute("rm -f isolate-*.log");
+
+    const response = await callLLM({
+      system: `Analyze this Node.js profiling output. Respond with JSON:
+{
+  "hotspots": [{ "line": 0, "function": "", "time": "", "calls": 0 }],
+  "memoryLeaks": [],
+  "recommendations": []
+}`,
+      messages: [{ role: "user", content: result.stdout + result.stderr }],
+    });
+
+    return extractJSON(extractTextContent(response.content)) || {
+      hotspots: [],
+      memoryLeaks: [],
+      recommendations: [],
+    };
+  }
+
+  private async injectBreakpoint(bp: Breakpoint): Promise<void> {
+    const content = this.fileTool.readFile(bp.file);
+    if (!content.success) return;
+
+    const lines = (content.output || "").split("\n");
+    if (bp.line > 0 && bp.line <= lines.length) {
+      const condition = bp.condition ? `if(${bp.condition})` : "";
+      const debugLine = `${condition} debugger; // KOBI_BP_${bp.id}`;
+      lines.splice(bp.line - 1, 0, debugLine);
+      this.fileTool.createFile(bp.file, lines.join("\n"));
+    }
+  }
+
+  private async removeBreakpoint(bp: Breakpoint): Promise<void> {
+    const content = this.fileTool.readFile(bp.file);
+    if (!content.success) return;
+
+    const cleaned = (content.output || "")
+      .split("\n")
+      .filter((line) => !line.includes(`KOBI_BP_${bp.id}`))
+      .join("\n");
+
+    this.fileTool.createFile(bp.file, cleaned);
+  }
+
+  getSession(id: string): DebugSession | undefined {
+    return this.sessions.get(id);
+  }
+
+  getAllSessions(): DebugSession[] {
+    return Array.from(this.sessions.values());
+  }
+}

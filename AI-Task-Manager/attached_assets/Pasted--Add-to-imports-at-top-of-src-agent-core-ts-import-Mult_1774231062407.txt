@@ -1,0 +1,85 @@
+// Add to imports at top of src/agent/core.ts:
+import { MultiAgentOrchestrator } from "./multiAgent";
+import { SmartContextTool } from "../tools/smartContextTool";
+import { SnapshotTool } from "../tools/snapshotTool";
+import { TerminalTool } from "../tools/terminalTool";
+
+// Add to Agent class constructor, after existing tools:
+  private multiAgent: MultiAgentOrchestrator;
+  private smartContext: SmartContextTool;
+  private snapshotTool: SnapshotTool;
+
+  // Inside constructor, after existing init:
+  this.multiAgent = new MultiAgentOrchestrator(this.memory, logFn);
+  this.smartContext = new SmartContextTool(config.workspaceDir);
+  this.snapshotTool = new SnapshotTool(config.workspaceDir, new TerminalTool(config.workspaceDir));
+
+// Add new method to Agent class:
+  async executeTaskAdvanced(task: string, options?: {
+    useMultiAgent?: boolean;
+    autoSnapshot?: boolean;
+    context?: string;
+  }): Promise<any> {
+    const taskId = require("uuid").v4();
+    this.currentTaskId = taskId;
+    this.isRunning = true;
+
+    try {
+      // Auto-snapshot before major changes
+      if (options?.autoSnapshot) {
+        this.emit({ type: "status", taskId, data: { status: "snapshot", message: "Creating checkpoint..." }, timestamp: new Date() });
+        await this.snapshotTool.create(`pre-task-${taskId.slice(0, 8)}`, `Before: ${task.slice(0, 100)}`);
+      }
+
+      // Get smart context (learned patterns, history)
+      const smartCtx = this.smartContext.getContextForTask(task);
+      const fullContext = `${smartCtx}\n${options?.context || ""}`;
+
+      let result;
+
+      if (options?.useMultiAgent) {
+        // Multi-agent mode: multiple specialist AIs work together
+        this.emit({ type: "status", taskId, data: { status: "multi-agent", message: "Activating specialist agents..." }, timestamp: new Date() });
+        const multiResult = await this.multiAgent.orchestrate(task);
+
+        // Convert multi-agent output to executable steps
+        this.emit({ type: "status", taskId, data: { status: "executing", message: "Executing multi-agent plan..." }, timestamp: new Date() });
+        result = await this.executeTask(task, multiResult.finalOutput + "\n\n" + fullContext);
+      } else {
+        result = await this.executeTask(task, fullContext);
+      }
+
+      // Record task for learning
+      this.smartContext.recordTask({
+        taskId,
+        task,
+        success: result.success,
+        stepsCount: result.results.length,
+        errorsCount: result.results.filter((r: any) => r.status === "failed").length,
+        duration: 0,
+        fixesApplied: [],
+        timestamp: new Date(),
+      });
+
+      // Auto-snapshot after success
+      if (options?.autoSnapshot && result.success) {
+        await this.snapshotTool.create(`post-task-${taskId.slice(0, 8)}`, `After: ${task.slice(0, 100)}`);
+      }
+
+      return result;
+    } catch (err: any) {
+      // If task failed completely, offer rollback
+      if (options?.autoSnapshot) {
+        this.emit({ type: "error", taskId, data: { message: `Task failed: ${err.message}. Snapshot available for rollback.` }, timestamp: new Date() });
+      }
+      throw err;
+    } finally {
+      this.isRunning = false;
+      this.currentTaskId = null;
+    }
+  }
+
+  // Get learning stats
+  getStats() {
+    return this.smartContext.getStats();
+  }

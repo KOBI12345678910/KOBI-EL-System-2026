@@ -1,0 +1,230 @@
+import express from "express";
+import http from "http";
+import path from "path";
+import fs from "fs";
+import { config } from "dotenv";
+import { Agent, AgentConfig } from "./agent/core";
+import { AgentWebSocket } from "./ws/socket";
+import { TaskQueue } from "./tools/taskQueueTool";
+import { SnapshotTool } from "./tools/snapshotTool";
+import { TerminalTool } from "./tools/terminalTool";
+import { FileTool } from "./fileTool";
+import { EnvTool } from "./tools/envTool";
+import { PortManager } from "./tools/portManager";
+
+config();
+
+const PORT = parseInt(process.env.PORT || "3000");
+const WORKSPACE_DIR = path.resolve(process.env.WORKSPACE_DIR || "./workspace");
+
+if (!fs.existsSync(WORKSPACE_DIR)) {
+  fs.mkdirSync(WORKSPACE_DIR, { recursive: true });
+}
+
+const app = express();
+app.use(express.json({ limit: "50mb" }));
+app.use(express.static(path.join(__dirname, "../src/ui")));
+
+const server = http.createServer(app);
+const wsServer = new AgentWebSocket(server);
+
+const agentConfig: AgentConfig = {
+  workspaceDir: WORKSPACE_DIR,
+  maxRetries: parseInt(process.env.MAX_RETRIES || "5"),
+  maxSteps: parseInt(process.env.MAX_STEPS || "50"),
+};
+
+const agent = new Agent(agentConfig);
+const terminal = new TerminalTool(WORKSPACE_DIR);
+const fileTool = new FileTool(WORKSPACE_DIR);
+const snapshotTool = new SnapshotTool(WORKSPACE_DIR, terminal);
+const envTool = new EnvTool(WORKSPACE_DIR, fileTool);
+const portManager = new PortManager(terminal);
+
+const taskQueue = new TaskQueue(async (task, context) => {
+  return agent.executeTask(task, context);
+});
+
+agent.onEvent((event) => {
+  wsServer.broadcast(event);
+  if (event.type === "log") console.log(event.data.message);
+  else if (event.type === "status") console.log(`\n[${event.data.status.toUpperCase()}] ${event.data.message}`);
+  else if (event.type === "complete") console.log(`\n${event.data.summary}`);
+});
+
+// ============ CORE ROUTES ============
+
+app.post("/api/task", async (req, res) => {
+  const { task, context } = req.body;
+  if (!task) return res.status(400).json({ error: "Missing task" });
+  try {
+    const result = await agent.executeTask(task, context);
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/stop", (_, res) => {
+  agent.stop();
+  res.json({ success: true });
+});
+
+app.get("/api/context", (_, res) => {
+  res.json({ context: agent.getProjectContext() });
+});
+
+// ============ QUEUE ROUTES ============
+
+app.post("/api/queue/add", (req, res) => {
+  const { task, context, priority, dependsOn } = req.body;
+  const id = taskQueue.add(task, { context, priority, dependsOn });
+  res.json({ id });
+});
+
+app.post("/api/queue/process", async (_, res) => {
+  const results = await taskQueue.processAll();
+  res.json({ results });
+});
+
+app.get("/api/queue", (_, res) => {
+  res.json({ tasks: taskQueue.getAll(), stats: taskQueue.getStats() });
+});
+
+app.delete("/api/queue/:id", (req, res) => {
+  const cancelled = taskQueue.cancel(req.params.id);
+  res.json({ cancelled });
+});
+
+// ============ SNAPSHOT ROUTES ============
+
+app.post("/api/snapshot", async (req, res) => {
+  const { name, description } = req.body;
+  const snapshot = await snapshotTool.create(name || "manual", description);
+  res.json(snapshot);
+});
+
+app.get("/api/snapshots", (_, res) => {
+  res.json({ snapshots: snapshotTool.list() });
+});
+
+app.post("/api/snapshot/:id/restore", async (req, res) => {
+  const result = await snapshotTool.restore(req.params.id);
+  res.json(result);
+});
+
+app.delete("/api/snapshot/:id", async (req, res) => {
+  const deleted = await snapshotTool.delete(req.params.id);
+  res.json({ deleted });
+});
+
+app.get("/api/snapshot/:id/diff", async (req, res) => {
+  const diff = await snapshotTool.diff(req.params.id);
+  res.json({ diff });
+});
+
+// ============ ENV ROUTES ============
+
+app.get("/api/env", (_, res) => {
+  res.json({ env: envTool.parseEnvFile() });
+});
+
+app.post("/api/env", (req, res) => {
+  const { key, value } = req.body;
+  envTool.setEnvVar(key, value);
+  res.json({ success: true });
+});
+
+app.delete("/api/env/:key", (req, res) => {
+  envTool.removeEnvVar(req.params.key);
+  res.json({ success: true });
+});
+
+// ============ PORT ROUTES ============
+
+app.get("/api/ports", async (_, res) => {
+  const ports = await portManager.listUsedPorts();
+  res.json({ ports });
+});
+
+app.post("/api/ports/:port/kill", async (req, res) => {
+  const killed = await portManager.killPort(parseInt(req.params.port));
+  res.json({ killed });
+});
+
+app.get("/api/ports/free", async (req, res) => {
+  const start = parseInt(req.query.start as string) || 3000;
+  const port = await portManager.findFreePort(start);
+  res.json({ port });
+});
+
+// ============ FILE ROUTES ============
+
+app.get("/api/files", (req, res) => {
+  const dir = (req.query.path as string) || ".";
+  const recursive = req.query.recursive === "true";
+  const result = fileTool.listDirectory(dir, recursive);
+  res.json(result);
+});
+
+app.get("/api/files/read", (req, res) => {
+  const filePath = req.query.path as string;
+  if (!filePath) return res.status(400).json({ error: "Missing path" });
+  const result = fileTool.readFile(filePath);
+  res.json(result);
+});
+
+app.post("/api/files/write", (req, res) => {
+  const { path: filePath, content } = req.body;
+  const result = fileTool.createFile(filePath, content);
+  res.json(result);
+});
+
+app.post("/api/terminal", async (req, res) => {
+  const { command, timeout, cwd } = req.body;
+  const result = await terminal.execute(command, { timeout, cwd });
+  res.json(result);
+});
+
+// ============ HEALTH ============
+
+app.get("/api/health", (_, res) => {
+  res.json({
+    status: "ok",
+    workspace: WORKSPACE_DIR,
+    clients: wsServer.getClientCount(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    queue: taskQueue.getStats(),
+  });
+});
+
+// ============ START ============
+
+server.listen(PORT, () => {
+  console.log(`
+╔════════════════════════════════════════════════╗
+║            🤖 KOBI AGENT v2.0.0               ║
+║                                                ║
+║  API:        http://localhost:${PORT}              ║
+║  WebSocket:  ws://localhost:${PORT}/ws             ║
+║  UI:         http://localhost:${PORT}              ║
+║  Workspace:  ${WORKSPACE_DIR.padEnd(33)}║
+║                                                ║
+║  Tools: File | Terminal | Git | DB | Search    ║
+║         Deploy | Test | Lint | Preview         ║
+║         Snapshot | Queue | Env | Ports         ║
+║         DocGen | Performance | Network         ║
+║         Scaffold | CodeReview | Watcher        ║
+║         Dependencies                           ║
+╚════════════════════════════════════════════════╝
+  `);
+});
+
+process.on("SIGINT", () => {
+  console.log("\nShutting down...");
+  agent.stop();
+  terminal.stopAll();
+  server.close();
+  process.exit(0);
+});

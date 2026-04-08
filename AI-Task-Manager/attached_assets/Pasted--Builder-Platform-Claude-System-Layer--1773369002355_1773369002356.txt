@@ -1,0 +1,561 @@
+בנוסף ל-Builder Platform, אני רוצה שתתכנן ותבנה גם שכבת Claude System Layer מלאה בתוך המערכת.
+
+חשוב מאוד:
+אני לא רוצה רק חיבור API קטן ל-Claude.
+אני לא רוצה רק "צ'אט AI".
+אני לא רוצה רק endpoint אחד כללי.
+
+אני רוצה תשתית Claude ארגונית, מודולרית, מסודרת, metadata-aware, בטוחה, ועתידית, כך ש-Claude יוכל בעתיד לעבוד בתוך המערכת בצורה אמיתית, דרך APIs פנימיים נפרדים לפי אחריות ותפקיד.
+
+==================================================
+1. המטרה הכללית
+==================================================
+
+המטרה היא ש-Claude לא יהיה רק מודל חיצוני שמחזיר תשובות,
+אלא שכבת AI פנימית של המערכת, עם חיבור אמיתי, בדיקות אמיתיות, והפרדה ברורה בין תחומי אחריות.
+
+אני רוצה ש-Claude יקבל תשתית שמאפשרת לו בעתיד:
+
+1. להתחבר למערכת בפועל
+2. לבדוק שהחיבור באמת עובד
+3. לבנות מודולים ויכולות דרך ה-Builder
+4. להמשיך לפתח את המערכת מבפנים
+5. להבין את מצב המערכת
+6. לנהל את המערכת
+7. לזהות בעיות
+8. להציע תיקונים
+9. לתקן בעיות בצורה מבוקרת
+10. להבין את זרימת הנתונים של כל המערכת
+11. להבין את ה-metadata של כל המערכת
+12. לפעול רק דרך APIs בטוחים ומבוקרים
+13. להיות מוכן לעתיד כ-internal system builder
+
+==================================================
+2. עיקרון חשוב מאוד
+==================================================
+
+אני לא רוצה API אחד גדול שעושה הכול.
+
+אני רוצה ארכיטקטורה של APIs / internal services נפרדים,
+כאשר לכל מטרה יש API משלה, תחום אחריות משלה, הרשאות משלה, ולוגים משלה.
+
+כלומר:
+- API לחיבור למודל
+- API לבדיקה שהחיבור עובד
+- API לקריאת המערכת
+- API לבניית המערכת
+- API לניהול המערכת
+- API לפיתוח המערכת
+- API לזיהוי בעיות
+- API לתיקון בעיות
+- API להבנת זרימת נתונים
+- API להרשאות ואבטחה
+- API ללוגים ואודיט
+- API לקונטקסט ריצה
+- API ל-gap analysis
+- API ל-preview / draft / publish
+- ועוד שכבות נחוצות שתוסיף מהידע שלך
+
+==================================================
+3. דרישה 1 - חיבור Claude API אמיתי + בדיקה אמיתית
+==================================================
+
+אני רוצה שתבנה Claude Provider API אמיתי.
+
+ה-API הזה צריך לכלול:
+- provider configuration
+- model selection
+- secure API key storage
+- connection test
+- health check
+- request logging
+- response logging
+- status display
+
+וחובה:
+אני רוצה שתבדוק בפועל שהחיבור באמת עובד.
+
+תהליך הבדיקה חייב לכלול:
+1. שמירת API key מאובטחת
+2. שליחת test request אמיתי ל-Claude
+3. קבלת response אמיתי
+4. שמירת log של הבדיקה
+5. הצגת סטטוס חיבור
+6. טיפול בשגיאות אם יש
+
+אני לא רוצה "מוכן תיאורטית".
+אני רוצה אישור מפורש שנשלחה בקשה אמיתית והתקבלה תשובה אמיתית.
+
+==================================================
+4. דרישה 2 - תשתית Builder API עבור Claude
+==================================================
+
+אני רוצה API נפרד שיאפשר ל-Claude לבנות את המערכת מבפנים.
+
+שם מוצע:
+Builder API / Meta Builder API
+
+Claude לא צריך לכתוב קוד raw.
+Claude צריך להשתמש ב-Builder הפנימי של המערכת.
+
+לכן אני רוצה API שמאפשר ל-Claude:
+- ליצור מודול
+- ליצור ישות
+- ליצור שדה
+- ליצור קשר
+- ליצור form
+- ליצור list view
+- ליצור detail page
+- ליצור category set
+- ליצור status set
+- ליצור button
+- ליצור action
+- ליצור dashboard widget
+- ליצור workflow definition
+- ליצור template
+- ליצור draft config
+- לעדכן metadata קיים
+
+זה אומר:
+Claude בעתיד יבנה את המערכת דרך metadata ולא דרך hardcoded code changes.
+
+==================================================
+5. דרישה 3 - Development Support API
+==================================================
+
+אני רוצה API נפרד שייתן ל-Claude הבנה מסודרת של מבנה המערכת,
+כדי שיוכל להמשיך לפתח אותה מבפנים.
+
+ה-API הזה צריך לאפשר:
+- לקרוא מודולים קיימים
+- לקרוא ישויות
+- לקרוא שדות
+- לקרוא קשרים
+- לקרוא forms
+- לקרוא views
+- לקרוא detail pages
+- לקרוא buttons
+- לקרוא actions
+- לקרוא categories
+- לקרוא status sets
+- לקרוא permissions
+- לקרוא menu items
+- לקרוא dashboards
+- לקרוא workflows
+- לקרוא templates
+- לקרוא versions
+- לקרוא runtime summary
+- לקרוא schema summary
+
+המטרה:
+Claude יוכל להבין את המערכת מבפנים ולא לעבוד על ניחושים.
+
+==================================================
+6. דרישה 4 - System Management API
+==================================================
+
+אני רוצה API נפרד שייתן ל-Claude יכולת להבין ולנהל את מצב המערכת.
+
+ה-API הזה צריך לאפשר:
+- לראות אילו מודולים פעילים
+- לראות אילו מודולים ב-draft
+- לראות אילו מודולים לא שלמים
+- לראות health של המערכת
+- לראות אילו entities חסרות
+- לראות אילו entities בלי forms
+- לראות אילו entities בלי views
+- לראות אילו entities בלי detail pages
+- לראות אילו permissions חסרות
+- לראות אילו configs broken
+- לראות אילו menu bindings חסרים
+- לראות אילו status sets לא תקינים
+- לראות אילו category sets לא שלמים
+- לראות אילו dependencies שבורות
+
+המטרה:
+Claude יקבל שכבת ניהול מערכת ולא רק שכבת שיחה.
+
+==================================================
+7. דרישה 5 - Development Governance API
+==================================================
+
+אני רוצה שתבנה ל-Claude שכבת פיתוח נכונה ובטוחה.
+
+Claude לא יכול לשנות את המערכת איך שבא לו.
+
+אני רוצה Development Governance API שיכלול:
+- draft only mode
+- preview mode
+- validate before publish
+- dependency checks
+- conflict detection
+- schema safety checks
+- required component checks
+- publish flow
+- publish logs
+- future rollback readiness
+- change approvals future-ready
+
+כלומר:
+Claude מייצר draft,
+המערכת בודקת,
+מציגה preview,
+ורק אחר כך אפשר publish.
+
+==================================================
+8. דרישה 6 - Diagnostics API
+==================================================
+
+אני רוצה API נפרד לזיהוי בעיות ותקלות.
+
+הוא צריך לדעת לזהות:
+- broken metadata
+- missing relations
+- missing required fields
+- broken forms
+- broken list views
+- broken detail pages
+- invalid button bindings
+- invalid action bindings
+- orphan menu items
+- orphan metadata objects
+- invalid status configuration
+- invalid category configuration
+- permission gaps
+- runtime rendering errors
+- dependency breaks
+- schema mismatches
+
+Claude צריך לדעת לשאול את המערכת:
+מה שבור? מה חסר? מה לא תקין?
+
+==================================================
+9. דרישה 7 - Repair API
+==================================================
+
+אני רוצה API נפרד לתיקון בעיות בצורה מבוקרת.
+
+ה-API הזה צריך לאפשר:
+- repair metadata references
+- disable broken config
+- regenerate missing config
+- rebuild form config
+- rebuild list config
+- rebuild detail page config
+- fix relation bindings
+- repair menu bindings
+- repair ordering
+- repair default status/category assignments
+- repair missing dependencies
+
+חשוב:
+Claude לא צריך לתקן ישר.
+התהליך צריך להיות:
+1. diagnosis
+2. explanation
+3. proposed fix
+4. validation
+5. apply repair
+6. audit log
+
+==================================================
+10. דרישה 8 - Data Flow API
+==================================================
+
+אני רוצה API נפרד להבנת זרימת הנתונים במערכת.
+
+Claude צריך להבין:
+- איך נתונים זורמים בין מודולים
+- מה source of truth לכל entity
+- איך form כותב ל-entity
+- איך entity מזין view
+- איך entity מזין detail page
+- איך entity מזין dashboard
+- איך status transitions משפיעים על flow
+- איך relations משפיעות על flow
+- איך workflow מחובר ל-entities
+- איך automations מחוברות ל-entities
+- איך metadata מרונדר למסכים
+
+אני רוצה שיהיה Data Map / System Graph אמיתי,
+כדי ש-Claude לא יעבוד עיוור.
+
+==================================================
+11. דרישה 9 - Runtime Context API
+==================================================
+
+אני רוצה API נפרד שייתן ל-Claude קונטקסט ריצה.
+
+כאשר משתמש נמצא במסך מסוים,
+Claude צריך לדעת:
+- current module
+- current entity
+- current page
+- current record id
+- visible fields
+- available buttons
+- allowed actions
+- permissions
+- status info
+- related entities
+- active filters
+- current draft/published state
+
+כך Claude יוכל להבין איפה הוא פועל.
+
+==================================================
+12. דרישה 10 - Security & Permissions API
+==================================================
+
+אני רוצה שכבת אבטחה והרשאות נפרדת ל-Claude.
+
+היא חייבת לכלול:
+- role-based access
+- user-scoped execution
+- permission checks before action
+- config protection
+- sensitive action protection
+- audit logging
+- future rate limiting
+- future approval requirements
+- no unsafe direct writes
+- API key protection
+
+Claude לא יכול לקבל גישה חופשית.
+
+==================================================
+13. דרישה 11 - Audit & Logs API
+==================================================
+
+אני רוצה API נפרד לכל לוגי Claude.
+
+יש לשמור:
+- מי הפעיל את Claude
+- באיזה מסך
+- עם איזה context
+- מה Claude ביקש לעשות
+- איזה API הוא הפעיל
+- מה היתה התוצאה
+- מה תוקן
+- איזה draft נוצר
+- איזה publish נעשה
+- אילו שגיאות קרו
+
+כל פעולה של Claude חייבת להיות auditable.
+
+==================================================
+14. דרישה 12 - Knowledge / Schema API
+==================================================
+
+אני רוצה API נפרד לידע מובנה על המערכת.
+
+ה-API הזה צריך להחזיר:
+- schema summary
+- module summary
+- entity summary
+- field summary
+- relation graph
+- status map
+- category map
+- workflow map
+- screen map
+- menu map
+- permission map
+- metadata dependency map
+
+כך Claude יוכל להבין את המערכת ברמה סמנטית.
+
+==================================================
+15. דרישה 13 - Gap Analysis API
+==================================================
+
+אני רוצה API נפרד שמזהה מה חסר במערכת.
+
+לדוגמה:
+- module without entities
+- entity without fields
+- entity without form
+- entity without view
+- entity without detail page
+- entity without permissions
+- entity without status/category if required
+- action without button
+- screen without publish
+- metadata object without dependency completion
+
+אני רוצה ש-Claude יוכל לדעת לא רק מה קיים,
+אלא גם מה חסר.
+
+==================================================
+16. דרישה 14 - Preview / Simulation / Dry Run API
+==================================================
+
+אני רוצה API נפרד שיאפשר ל-Claude לבדוק שינוי לפני ביצוע אמיתי.
+
+הוא צריך לאפשר:
+- simulate metadata change
+- preview rendered effect
+- preview form impact
+- preview view impact
+- preview dependencies impact
+- dry run repair
+- dry run publish
+
+זה קריטי כדי ש-Claude לא ישבור את המערכת.
+
+==================================================
+17. דרישה 15 - Change Set / Diff API
+==================================================
+
+אני רוצה API נפרד לניהול שינויים.
+
+Claude צריך להיות מסוגל לראות:
+- מה השתנה
+- מה נוסף
+- מה הוסר
+- מה הושפע
+- מה תלוי במה
+- איזה change set נוצר
+- איזה diff קיים בין draft ל-published
+
+==================================================
+18. דרישה 16 - Tool Registry / Capability Registry
+==================================================
+
+אני רוצה API או שכבה שמנהלת אילו capabilities קיימות עבור Claude.
+
+למשל:
+- create_module capability
+- create_entity capability
+- create_field capability
+- repair_form capability
+- view_dataflow capability
+- publish_draft capability
+
+כך בעתיד נוכל לשלוט מה Claude יודע ויכול לעשות.
+
+==================================================
+19. תוסיף שכבות נוספות מהידע שלך
+==================================================
+
+אני רוצה שתוסיף לפי הידע שלך שכבות נוספות אם צריך, למשל:
+- Schema Registry
+- Dependency Graph Service
+- Config Linter
+- Metadata Validation Engine
+- Publish Pipeline API
+- Health Check API
+- Recovery / Fail-safe Layer
+- Context Packaging Layer
+- Suggestion Engine
+- Execution Policy Layer
+- Migration Safety Layer
+
+אם לדעתך צריך, תכנן גם אותן.
+
+==================================================
+20. חלוקה לפאזות
+==================================================
+
+אני לא רוצה שתבנה הכול בבת אחת.
+
+אני רוצה חלוקה לפאזות:
+
+Phase 1:
+Claude Provider API + test connection working
+
+Phase 2:
+System Read API + Knowledge/Schema API + Runtime Context API
+
+Phase 3:
+Builder API foundation + Development Support API
+
+Phase 4:
+Development Governance API + Preview/Simulation API + Change Set API
+
+Phase 5:
+Diagnostics API + Gap Analysis API + Repair API
+
+Phase 6:
+System Management API + Audit & Logs API + Capability Registry
+
+אל תעבור פאזה בלי אישור ממני.
+
+==================================================
+21. מה אני רוצה עכשיו
+==================================================
+
+כרגע אני לא רוצה את כל המימוש.
+
+אני רוצה קודם:
+1. Architecture מלאה של Claude System Layer
+2. רשימת כל ה-APIs / services
+3. האחריות של כל API
+4. אילו טבלאות צריך
+5. איך כל API מתחבר ל-Builder ולמערכת
+6. מה חובה ב-Phase 1 בלבד
+7. איך תבדוק בפועל ש-Claude connection באמת עובד
+8. איך תשמור על אבטחה, הרשאות ו-audit
+
+==================================================
+22. פורמט תשובה חובה
+==================================================
+
+אני רוצה שתענה כך:
+
+מה הולכים לבנות:
+- ...
+
+למה צריך Claude System Layer נפרד:
+- ...
+
+אילו APIs / services יהיו:
+- ...
+
+מה האחריות של כל API:
+- ...
+
+איך החיבור ל-Claude ייבדק בפועל:
+- ...
+
+איך Claude יבנה את המערכת מבפנים:
+- ...
+
+איך Claude ימשיך לפתח את המערכת:
+- ...
+
+איך Claude ינהל את המערכת:
+- ...
+
+איך Claude יזהה בעיות:
+- ...
+
+איך Claude יתקן בעיות:
+- ...
+
+איך Claude יבין את זרימת הנתונים:
+- ...
+
+אילו טבלאות / metadata צריך:
+- ...
+
+אילו שכבות אבטחה צריך:
+- ...
+
+אילו שכבות נוספות הוספת מהידע שלך:
+- ...
+
+מה נבנה ב-Phase 1 בלבד:
+- ...
+
+מה עדיין לא נבנה ב-Phase 1:
+- ...
+
+האם לכל מטרה יש API נפרד:
+- כן / לא
+
+האם הארכיטקטורה מודולרית:
+- כן / לא
+
+האם זה AI-ready ו-future-ready:
+- כן / לא

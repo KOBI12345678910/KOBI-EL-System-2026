@@ -1,0 +1,168 @@
+import * as fs from "fs";
+import * as path from "path";
+import { TerminalTool } from "./terminalTool";
+
+export interface Snapshot {
+  id: string;
+  name: string;
+  timestamp: Date;
+  description: string;
+  files: number;
+  size: number;
+}
+
+export class SnapshotTool {
+  private terminal: TerminalTool;
+  private workspaceDir: string;
+  private snapshotDir: string;
+
+  constructor(workspaceDir: string, terminal: TerminalTool) {
+    this.workspaceDir = workspaceDir;
+    this.terminal = terminal;
+    this.snapshotDir = path.join(workspaceDir, ".snapshots");
+
+    if (!fs.existsSync(this.snapshotDir)) {
+      fs.mkdirSync(this.snapshotDir, { recursive: true });
+    }
+  }
+
+  async create(name: string, description = ""): Promise<Snapshot> {
+    const id = `snap_${Date.now()}`;
+    const snapPath = path.join(this.snapshotDir, id);
+
+    // Create snapshot using tar (excludes node_modules, .git, etc.)
+    await this.terminal.execute(
+      `mkdir -p "${snapPath}" && tar -czf "${snapPath}/files.tar.gz" \
+        --exclude='node_modules' \
+        --exclude='.git' \
+        --exclude='dist' \
+        --exclude='build' \
+        --exclude='.snapshots' \
+        --exclude='__pycache__' \
+        --exclude='.next' \
+        -C "${this.workspaceDir}" .`,
+      { timeout: 30000 }
+    );
+
+    // Get snapshot size
+    const statResult = await this.terminal.execute(`du -sb "${snapPath}" | cut -f1`);
+    const size = parseInt(statResult.stdout.trim()) || 0;
+
+    // Count files
+    const countResult = await this.terminal.execute(
+      `tar -tzf "${snapPath}/files.tar.gz" | wc -l`
+    );
+    const files = parseInt(countResult.stdout.trim()) || 0;
+
+    const snapshot: Snapshot = {
+      id,
+      name,
+      timestamp: new Date(),
+      description,
+      files,
+      size,
+    };
+
+    // Save metadata
+    fs.writeFileSync(
+      path.join(snapPath, "meta.json"),
+      JSON.stringify(snapshot, null, 2)
+    );
+
+    return snapshot;
+  }
+
+  async restore(snapshotId: string): Promise<{ success: boolean; output: string }> {
+    const snapPath = path.join(this.snapshotDir, snapshotId);
+    const tarFile = path.join(snapPath, "files.tar.gz");
+
+    if (!fs.existsSync(tarFile)) {
+      return { success: false, output: `Snapshot not found: ${snapshotId}` };
+    }
+
+    // Create a backup of current state first
+    await this.create("auto-backup-before-restore", `Auto backup before restoring ${snapshotId}`);
+
+    // Clean workspace (preserve snapshots and node_modules)
+    await this.terminal.execute(
+      `find "${this.workspaceDir}" -maxdepth 1 -not -name '.snapshots' -not -name 'node_modules' -not -name '.' -exec rm -rf {} +`,
+      { timeout: 15000 }
+    );
+
+    // Extract snapshot
+    const result = await this.terminal.execute(
+      `tar -xzf "${tarFile}" -C "${this.workspaceDir}"`,
+      { timeout: 30000 }
+    );
+
+    return {
+      success: result.success,
+      output: result.success ? `Restored snapshot: ${snapshotId}` : result.stderr,
+    };
+  }
+
+  list(): Snapshot[] {
+    if (!fs.existsSync(this.snapshotDir)) return [];
+
+    const snapshots: Snapshot[] = [];
+    const dirs = fs.readdirSync(this.snapshotDir, { withFileTypes: true });
+
+    for (const dir of dirs) {
+      if (!dir.isDirectory()) continue;
+      const metaPath = path.join(this.snapshotDir, dir.name, "meta.json");
+      if (fs.existsSync(metaPath)) {
+        try {
+          const meta = JSON.parse(fs.readFileSync(metaPath, "utf-8"));
+          meta.timestamp = new Date(meta.timestamp);
+          snapshots.push(meta);
+        } catch {}
+      }
+    }
+
+    return snapshots.sort(
+      (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+    );
+  }
+
+  async delete(snapshotId: string): Promise<boolean> {
+    const snapPath = path.join(this.snapshotDir, snapshotId);
+    if (!fs.existsSync(snapPath)) return false;
+
+    const result = await this.terminal.execute(`rm -rf "${snapPath}"`);
+    return result.success;
+  }
+
+  async diff(snapshotId: string): Promise<string> {
+    const snapPath = path.join(this.snapshotDir, snapshotId);
+    const tmpDir = path.join(this.snapshotDir, "_tmp_diff");
+
+    await this.terminal.execute(`rm -rf "${tmpDir}" && mkdir -p "${tmpDir}"`);
+    await this.terminal.execute(
+      `tar -xzf "${snapPath}/files.tar.gz" -C "${tmpDir}"`
+    );
+
+    const result = await this.terminal.execute(
+      `diff -rq "${tmpDir}" "${this.workspaceDir}" \
+        --exclude=node_modules --exclude=.git --exclude=.snapshots --exclude=dist --exclude=.next`,
+      { timeout: 15000 }
+    );
+
+    await this.terminal.execute(`rm -rf "${tmpDir}"`);
+    return result.stdout || "No differences found";
+  }
+
+  async cleanOld(keepCount = 10): Promise<number> {
+    const snapshots = this.list();
+    let removed = 0;
+
+    if (snapshots.length > keepCount) {
+      const toRemove = snapshots.slice(keepCount);
+      for (const snap of toRemove) {
+        await this.delete(snap.id);
+        removed++;
+      }
+    }
+
+    return removed;
+  }
+}

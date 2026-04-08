@@ -1,0 +1,558 @@
+import { FileTool, EditChange } from "../tools/fileTool";
+import { TerminalTool } from "../tools/terminalTool";
+import { SearchTool } from "../tools/searchTool";
+import { PackageTool } from "../tools/packageTool";
+import { GitTool } from "../tools/gitTool";
+import { DbTool } from "../tools/dbTool";
+import { BrowserTool } from "../tools/browserTool";
+import { callLLM, LLMMessage, ToolDef } from "../llm/client";
+import { fillPrompt, EXECUTOR_PROMPT, EDIT_FILE_PROMPT } from "../llm/prompts";
+import { extractJSON, extractTextContent } from "../llm/parser";
+import { AgentMemory } from "./memory";
+
+export interface StepDef {
+  id: number;
+  type: string;
+  description: string;
+  details: any;
+  dependsOn: number[];
+  validation: string;
+}
+
+export interface ExecutionResult {
+  success: boolean;
+  output: string;
+  filesChanged: string[];
+  error?: string;
+}
+
+export class StepExecutor {
+  private fileTool: FileTool;
+  private terminal: TerminalTool;
+  private searchTool: SearchTool;
+  private packageTool: PackageTool;
+  private gitTool: GitTool;
+  private dbTool: DbTool;
+  private browserTool: BrowserTool;
+  private memory: AgentMemory;
+  private onLog: (msg: string) => void;
+
+  constructor(
+    workspaceDir: string,
+    memory: AgentMemory,
+    onLog: (msg: string) => void
+  ) {
+    this.memory = memory;
+    this.onLog = onLog;
+    this.fileTool = new FileTool(workspaceDir);
+    this.terminal = new TerminalTool(workspaceDir);
+    this.searchTool = new SearchTool(workspaceDir);
+    this.packageTool = new PackageTool(workspaceDir, this.terminal);
+    this.gitTool = new GitTool(this.terminal);
+    this.dbTool = new DbTool(this.terminal);
+    this.browserTool = new BrowserTool(this.terminal);
+  }
+
+  async executeStep(step: StepDef): Promise<ExecutionResult> {
+    this.onLog(`\n🔄 Step ${step.id}: ${step.description}`);
+
+    switch (step.type) {
+      case "create_file":
+        return this.executeCreateFile(step);
+      case "edit_file":
+        return this.executeEditFile(step);
+      case "run_command":
+        return this.executeRunCommand(step);
+      case "install_package":
+        return this.executeInstallPackage(step);
+      case "read_file":
+        return this.executeReadFile(step);
+      case "search_code":
+        return this.executeSearchCode(step);
+      case "create_directory":
+        return this.executeCreateDirectory(step);
+      case "delete_file":
+        return this.executeDeleteFile(step);
+      case "git_operation":
+        return this.executeGitOperation(step);
+      case "db_operation":
+        return this.executeDbOperation(step);
+      default:
+        return this.executeLLMStep(step);
+    }
+  }
+
+  private async executeCreateFile(step: StepDef): Promise<ExecutionResult> {
+    const { path: filePath, content } = step.details;
+
+    // If content is not provided, generate it via LLM
+    let fileContent = content;
+    if (!fileContent) {
+      const context = this.memory.getProjectContext();
+      const response = await callLLM({
+        system: fillPrompt(EXECUTOR_PROMPT, {
+          WORKSPACE_DIR: "",
+          CONTEXT: context,
+          STEP: JSON.stringify(step),
+        }),
+        messages: [
+          {
+            role: "user",
+            content: `Generate the complete file content for: ${step.description}\nFile path: ${filePath}\n\nRespond with ONLY the file content, no markdown code blocks, no explanation.`,
+          },
+        ],
+      });
+      fileContent = extractTextContent(response.content);
+      // Strip markdown code blocks if present
+      fileContent = fileContent
+        .replace(/^```\w*\n/, "")
+        .replace(/\n```$/, "")
+        .trim();
+    }
+
+    const result = this.fileTool.createFile(filePath, fileContent);
+    this.onLog(result.success ? `  ✅ Created ${filePath}` : `  ❌ ${result.error}`);
+
+    return {
+      success: result.success,
+      output: result.output || result.error || "",
+      filesChanged: result.success ? [filePath] : [],
+      error: result.error,
+    };
+  }
+
+  private async executeEditFile(step: StepDef): Promise<ExecutionResult> {
+    const { path: filePath, instructions, changes } = step.details;
+
+    // If explicit changes are provided, apply directly
+    if (changes && Array.isArray(changes)) {
+      const result = this.fileTool.editFile(filePath, changes);
+      this.onLog(result.success ? `  ✅ Edited ${filePath}` : `  ❌ ${result.error}`);
+      return {
+        success: result.success,
+        output: result.output || "",
+        filesChanged: result.success ? [filePath] : [],
+        error: result.error,
+      };
+    }
+
+    // Otherwise, use LLM to generate changes
+    const readResult = this.fileTool.readFile(filePath);
+    if (!readResult.success) {
+      return {
+        success: false,
+        output: "",
+        filesChanged: [],
+        error: readResult.error,
+      };
+    }
+
+    const response = await callLLM({
+      system: EDIT_FILE_PROMPT,
+      messages: [
+        {
+          role: "user",
+          content: fillPrompt(
+            "File: {{PATH}}\n\nContent:\n```\n{{CONTENT}}\n```\n\nInstructions: {{INSTRUCTIONS}}",
+            {
+              PATH: filePath,
+              CONTENT: readResult.output || "",
+              INSTRUCTIONS: instructions || step.description,
+            }
+          ),
+        },
+      ],
+    });
+
+    const parsed = extractJSON(extractTextContent(response.content));
+    if (!parsed || !parsed.changes) {
+      // Fallback: treat LLM output as full file replacement
+      const newContent = extractTextContent(response.content)
+        .replace(/^```\w*\n/, "")
+        .replace(/\n```$/, "")
+        .trim();
+      const result = this.fileTool.editFile(filePath, [
+        { type: "full_replace", content: newContent },
+      ]);
+      return {
+        success: result.success,
+        output: result.output || "",
+        filesChanged: result.success ? [filePath] : [],
+        error: result.error,
+      };
+    }
+
+    const result = this.fileTool.editFile(filePath, parsed.changes);
+    this.onLog(result.success ? `  ✅ Edited ${filePath}` : `  ❌ ${result.error}`);
+
+    return {
+      success: result.success,
+      output: result.output || "",
+      filesChanged: result.success ? [filePath] : [],
+      error: result.error,
+    };
+  }
+
+  private async executeRunCommand(step: StepDef): Promise<ExecutionResult> {
+    const { command, cwd, timeout, background } = step.details;
+
+    this.onLog(`  🖥️  Running: ${command}`);
+
+    if (background) {
+      const bgResult = await this.terminal.startBackground(
+        `step-${step.id}`,
+        command,
+        {
+          cwd,
+          onOutput: (data) => this.onLog(`  [bg] ${data.trim()}`),
+        }
+      );
+      // Wait a bit to check for immediate crash
+      await new Promise((r) => setTimeout(r, 3000));
+      return {
+        success: bgResult.success,
+        output: `Background process started (PID: ${bgResult.pid})`,
+        filesChanged: [],
+      };
+    }
+
+    const result = await this.terminal.execute(command, {
+      cwd,
+      timeout: timeout || 60000,
+      onOutput: (data) => this.onLog(`  ${data.trim()}`),
+    });
+
+    if (!result.success) {
+      this.onLog(`  ❌ Command failed (exit ${result.exitCode})`);
+      if (result.stderr) this.onLog(`  stderr: ${result.stderr.slice(0, 500)}`);
+    } else {
+      this.onLog(`  ✅ Command succeeded`);
+    }
+
+    return {
+      success: result.success,
+      output: result.stdout + (result.stderr ? `\nSTDERR: ${result.stderr}` : ""),
+      filesChanged: [],
+      error: result.success ? undefined : result.stderr || `Exit code: ${result.exitCode}`,
+    };
+  }
+
+  private async executeInstallPackage(step: StepDef): Promise<ExecutionResult> {
+    const { packages, dev } = step.details;
+    this.onLog(`  📦 Installing: ${packages.join(", ")}`);
+
+    const result = await this.packageTool.install(packages, {
+      dev,
+      onOutput: (data) => this.onLog(`  ${data.trim()}`),
+    });
+
+    return {
+      success: result.success,
+      output: result.stdout,
+      filesChanged: ["package.json", "package-lock.json"],
+      error: result.success ? undefined : result.stderr,
+    };
+  }
+
+  private async executeReadFile(step: StepDef): Promise<ExecutionResult> {
+    const result = this.fileTool.readFile(step.details.path);
+    return {
+      success: result.success,
+      output: result.output || "",
+      filesChanged: [],
+      error: result.error,
+    };
+  }
+
+  private async executeSearchCode(step: StepDef): Promise<ExecutionResult> {
+    const { query, filePattern } = step.details;
+    const results = await this.searchTool.searchContent(query, { filePattern });
+    const output = results
+      .map(
+        (r) =>
+          `${r.file}:${r.line} - ${r.text}`
+      )
+      .join("\n");
+    return {
+      success: true,
+      output: output || "No results found",
+      filesChanged: [],
+    };
+  }
+
+  private async executeCreateDirectory(step: StepDef): Promise<ExecutionResult> {
+    const result = this.fileTool.createDirectory(step.details.path);
+    return {
+      success: result.success,
+      output: result.output || "",
+      filesChanged: [],
+      error: result.error,
+    };
+  }
+
+  private async executeDeleteFile(step: StepDef): Promise<ExecutionResult> {
+    const result = this.fileTool.deleteFile(step.details.path);
+    return {
+      success: result.success,
+      output: result.output || "",
+      filesChanged: result.success ? [step.details.path] : [],
+      error: result.error,
+    };
+  }
+
+  private async executeGitOperation(step: StepDef): Promise<ExecutionResult> {
+    const { operation, args } = step.details;
+    let result;
+
+    switch (operation) {
+      case "init": result = await this.gitTool.init(); break;
+      case "add": result = await this.gitTool.add(args?.files); break;
+      case "commit": result = await this.gitTool.commit(args?.message || "Auto-commit"); break;
+      case "status": result = await this.gitTool.status(); break;
+      case "log": result = await this.gitTool.log(args?.count); break;
+      case "push": result = await this.gitTool.push(args?.remote, args?.branch); break;
+      case "pull": result = await this.gitTool.pull(args?.remote, args?.branch); break;
+      case "branch": result = await this.gitTool.branch(args?.name); break;
+      case "checkout": result = await this.gitTool.checkout(args?.branch); break;
+      case "clone": result = await this.gitTool.clone(args?.url, args?.dir); break;
+      default:
+        return { success: false, output: "", filesChanged: [], error: `Unknown git op: ${operation}` };
+    }
+
+    return {
+      success: result.success,
+      output: result.stdout,
+      filesChanged: [],
+      error: result.success ? undefined : result.stderr,
+    };
+  }
+
+  private async executeDbOperation(step: StepDef): Promise<ExecutionResult> {
+    const { type, query, command } = step.details;
+    let result;
+
+    switch (type) {
+      case "postgres": result = await this.dbTool.queryPostgres(query); break;
+      case "sqlite": result = await this.dbTool.querySqlite(step.details.dbPath, query); break;
+      case "prisma_generate": result = await this.dbTool.prismaGenerate(); break;
+      case "prisma_migrate": result = await this.dbTool.prismaMigrate(step.details.name); break;
+      case "prisma_push": result = await this.dbTool.prismaPush(); break;
+      case "drizzle_push": result = await this.dbTool.drizzlePush(); break;
+      case "drizzle_generate": result = await this.dbTool.drizzleGenerate(); break;
+      case "drizzle_migrate": result = await this.dbTool.drizzleMigrate(); break;
+      case "seed": result = await this.dbTool.seedDatabase(command); break;
+      case "migration": result = await this.dbTool.runMigration(command); break;
+      default:
+        return { success: false, output: "", filesChanged: [], error: `Unknown db op: ${type}` };
+    }
+
+    return {
+      success: result.success,
+      output: result.stdout,
+      filesChanged: [],
+      error: result.success ? undefined : result.stderr,
+    };
+  }
+
+  // Fallback: use LLM with tools for complex/custom steps
+  private async executeLLMStep(step: StepDef): Promise<ExecutionResult> {
+    const context = this.memory.getProjectContext();
+    const tools: ToolDef[] = this.getToolDefinitions();
+
+    const messages: LLMMessage[] = [
+      {
+        role: "user",
+        content: `Execute this step: ${JSON.stringify(step)}\n\nUse the available tools to complete it.`,
+      },
+    ];
+
+    let allOutput = "";
+    let filesChanged: string[] = [];
+    let attempts = 0;
+    const maxAttempts = 10;
+
+    while (attempts < maxAttempts) {
+      attempts++;
+      const response = await callLLM({
+        system: fillPrompt(EXECUTOR_PROMPT, {
+          WORKSPACE_DIR: "",
+          CONTEXT: context,
+          STEP: JSON.stringify(step),
+        }),
+        messages,
+        tools,
+      });
+
+      // Process tool calls
+      const toolCalls = response.content.filter((b) => b.type === "tool_use");
+      if (toolCalls.length === 0) {
+        allOutput += extractTextContent(response.content);
+        break;
+      }
+
+      // Add assistant message
+      messages.push({ role: "assistant", content: response.content as any });
+
+      // Execute tools and collect results
+      const toolResults: any[] = [];
+      for (const call of toolCalls) {
+        const result = await this.executeToolCall(call.name!, call.input);
+        if (result.filesChanged) filesChanged.push(...result.filesChanged);
+        allOutput += result.output + "\n";
+
+        toolResults.push({
+          type: "tool_result",
+          tool_use_id: call.id,
+          content: result.output || result.error || "Done",
+          is_error: !result.success,
+        });
+      }
+
+      messages.push({ role: "user", content: toolResults as any });
+
+      if (response.stopReason === "end_turn") break;
+    }
+
+    return { success: true, output: allOutput, filesChanged };
+  }
+
+  private async executeToolCall(
+    name: string,
+    input: any
+  ): Promise<{ success: boolean; output: string; error?: string; filesChanged?: string[] }> {
+    switch (name) {
+      case "create_file": {
+        const r = this.fileTool.createFile(input.path, input.content);
+        return { success: r.success, output: r.output || "", error: r.error, filesChanged: [input.path] };
+      }
+      case "read_file": {
+        const r = this.fileTool.readFile(input.path);
+        return { success: r.success, output: r.output || "", error: r.error };
+      }
+      case "edit_file": {
+        const r = this.fileTool.editFile(input.path, input.changes);
+        return { success: r.success, output: r.output || "", error: r.error, filesChanged: [input.path] };
+      }
+      case "delete_file": {
+        const r = this.fileTool.deleteFile(input.path);
+        return { success: r.success, output: r.output || "", error: r.error, filesChanged: [input.path] };
+      }
+      case "list_directory": {
+        const r = this.fileTool.listDirectory(input.path, input.recursive);
+        return { success: r.success, output: r.output || "", error: r.error };
+      }
+      case "run_command": {
+        const r = await this.terminal.execute(input.command, { cwd: input.cwd });
+        return { success: r.success, output: r.stdout + "\n" + r.stderr, error: r.stderr };
+      }
+      case "search_code": {
+        const results = await this.searchTool.searchContent(input.query, { filePattern: input.filePattern });
+        return { success: true, output: results.map((r) => `${r.file}:${r.line} ${r.text}`).join("\n") };
+      }
+      default:
+        return { success: false, output: "", error: `Unknown tool: ${name}` };
+    }
+  }
+
+  getToolDefinitions(): ToolDef[] {
+    return [
+      {
+        name: "create_file",
+        description: "Create a new file with content",
+        input_schema: {
+          type: "object",
+          properties: {
+            path: { type: "string", description: "File path relative to workspace" },
+            content: { type: "string", description: "File content" },
+          },
+          required: ["path", "content"],
+        },
+      },
+      {
+        name: "read_file",
+        description: "Read file content",
+        input_schema: {
+          type: "object",
+          properties: {
+            path: { type: "string", description: "File path" },
+          },
+          required: ["path"],
+        },
+      },
+      {
+        name: "edit_file",
+        description: "Edit a file with search/replace changes",
+        input_schema: {
+          type: "object",
+          properties: {
+            path: { type: "string" },
+            changes: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  type: { type: "string", enum: ["replace", "insert_after", "insert_before", "delete", "full_replace"] },
+                  search: { type: "string" },
+                  replace: { type: "string" },
+                  content: { type: "string" },
+                  line: { type: "number" },
+                },
+                required: ["type"],
+              },
+            },
+          },
+          required: ["path", "changes"],
+        },
+      },
+      {
+        name: "delete_file",
+        description: "Delete a file",
+        input_schema: {
+          type: "object",
+          properties: { path: { type: "string" } },
+          required: ["path"],
+        },
+      },
+      {
+        name: "run_command",
+        description: "Run a shell command",
+        input_schema: {
+          type: "object",
+          properties: {
+            command: { type: "string" },
+            cwd: { type: "string", description: "Working directory (relative)" },
+          },
+          required: ["command"],
+        },
+      },
+      {
+        name: "search_code",
+        description: "Search for text in the codebase",
+        input_schema: {
+          type: "object",
+          properties: {
+            query: { type: "string" },
+            filePattern: { type: "string" },
+          },
+          required: ["query"],
+        },
+      },
+      {
+        name: "list_directory",
+        description: "List directory contents",
+        input_schema: {
+          type: "object",
+          properties: {
+            path: { type: "string" },
+            recursive: { type: "boolean" },
+          },
+          required: ["path"],
+        },
+      },
+    ];
+  }
+
+  cleanup() {
+    this.terminal.stopAll();
+  }
+}

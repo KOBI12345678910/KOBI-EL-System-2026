@@ -1,0 +1,598 @@
+**דוגמה לAPI route נכון:**
+```typescript
+// routes/customers.ts
+import { Router, Request, Response } from 'express';
+import { db } from '../db';
+
+const router = Router();
+
+// GET /api/customers - List with pagination, search, filter
+router.get('/', async (req: Request, res: Response) => {
+  try {
+    const {
+      page = '1',
+      limit = '20',
+      search = '',
+      sort = 'created_at',
+      order = 'desc',
+      status,
+      customer_group,
+      customer_type
+    } = req.query;
+
+    const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
+    let query = `SELECT * FROM customers WHERE is_active = true`;
+    let countQuery = `SELECT COUNT(*) FROM customers WHERE is_active = true`;
+    const params: any[] = [];
+    let paramIndex = 1;
+
+    if (search) {
+      const searchCondition = ` AND (company_name ILIKE $${paramIndex} OR first_name ILIKE $${paramIndex} OR last_name ILIKE $${paramIndex} OR email ILIKE $${paramIndex} OR phone ILIKE $${paramIndex} OR customer_number ILIKE $${paramIndex})`;
+      query += searchCondition;
+      countQuery += searchCondition;
+      params.push(`%${search}%`);
+      paramIndex++;
+    }
+
+    if (status) {
+      query += ` AND lifecycle_stage = $${paramIndex}`;
+      countQuery += ` AND lifecycle_stage = $${paramIndex}`;
+      params.push(status);
+      paramIndex++;
+    }
+
+    if (customer_group) {
+      query += ` AND customer_group = $${paramIndex}`;
+      countQuery += ` AND customer_group = $${paramIndex}`;
+      params.push(customer_group);
+      paramIndex++;
+    }
+
+    const allowedSorts = ['created_at', 'company_name', 'customer_number', 'current_balance'];
+    const sortField = allowedSorts.includes(sort as string) ? sort : 'created_at';
+    const sortOrder = order === 'asc' ? 'ASC' : 'DESC';
+
+    query += ` ORDER BY ${sortField} ${sortOrder} LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(parseInt(limit as string), offset);
+
+    const [results, countResult] = await Promise.all([
+      db.query(query, params),
+      db.query(countQuery, params.slice(0, paramIndex - 1))
+    ]);
+
+    const total = parseInt(countResult.rows[0].count);
+
+    res.json({
+      success: true,
+      data: results.rows,
+      pagination: {
+        page: parseInt(page as string),
+        limit: parseInt(limit as string),
+        total,
+        pages: Math.ceil(total / parseInt(limit as string))
+      }
+    });
+  } catch (error: any) {
+    console.error('Error fetching customers:', error);
+    res.status(500).json({ success: false, error: 'שגיאה בטעינת לקוחות', details: error.message });
+  }
+});
+
+// GET /api/customers/:id
+router.get('/:id', async (req: Request, res: Response) => {
+  try {
+    const result = await db.query('SELECT * FROM customers WHERE id = $1 AND is_active = true', [req.params.id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'לקוח לא נמצא' });
+    }
+    res.json({ success: true, data: result.rows[0] });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: 'שגיאה', details: error.message });
+  }
+});
+
+// POST /api/customers
+router.post('/', async (req: Request, res: Response) => {
+  try {
+    const { company_name, customer_type, email, phone, ...rest } = req.body;
+
+    if (!company_name && !rest.first_name) {
+      return res.status(400).json({ success: false, error: 'שם חברה או שם פרטי חובה' });
+    }
+
+    // Auto-generate customer number
+    const lastCustomer = await db.query("SELECT customer_number FROM customers ORDER BY created_at DESC LIMIT 1");
+    let nextNum = 1;
+    if (lastCustomer.rows.length > 0) {
+      const match = lastCustomer.rows[0].customer_number?.match(/(\d+)$/);
+      if (match) nextNum = parseInt(match[1]) + 1;
+    }
+    const customer_number = `C-2026-${String(nextNum).padStart(3, '0')}`;
+
+    const fields = { customer_number, company_name, customer_type, email, phone, ...rest };
+    const keys = Object.keys(fields).filter(k => fields[k] !== undefined);
+    const values = keys.map(k => fields[k]);
+    const placeholders = keys.map((_, i) => `$${i + 1}`);
+
+    const result = await db.query(
+      `INSERT INTO customers (${keys.join(',')}) VALUES (${placeholders.join(',')}) RETURNING *`,
+      values
+    );
+
+    // Audit log
+    await db.query(
+      `INSERT INTO audit_log (action, entity_type, entity_id, new_values) VALUES ('create', 'customer', $1, $2)`,
+      [result.rows[0].id, JSON.stringify(result.rows[0])]
+    );
+
+    res.status(201).json({ success: true, data: result.rows[0] });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: 'שגיאה ביצירת לקוח', details: error.message });
+  }
+});
+
+// PUT /api/customers/:id
+router.put('/:id', async (req: Request, res: Response) => {
+  try {
+    const old = await db.query('SELECT * FROM customers WHERE id = $1', [req.params.id]);
+    if (old.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'לקוח לא נמצא' });
+    }
+
+    const fields = req.body;
+    fields.updated_at = new Date();
+    const keys = Object.keys(fields).filter(k => fields[k] !== undefined);
+    const values = keys.map(k => fields[k]);
+    const setClause = keys.map((k, i) => `${k} = $${i + 1}`).join(', ');
+
+    const result = await db.query(
+      `UPDATE customers SET ${setClause} WHERE id = $${keys.length + 1} RETURNING *`,
+      [...values, req.params.id]
+    );
+
+    // Audit log
+    await db.query(
+      `INSERT INTO audit_log (action, entity_type, entity_id, old_values, new_values) VALUES ('update', 'customer', $1, $2, $3)`,
+      [req.params.id, JSON.stringify(old.rows[0]), JSON.stringify(result.rows[0])]
+    );
+
+    res.json({ success: true, data: result.rows[0] });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: 'שגיאה בעדכון', details: error.message });
+  }
+});
+
+// DELETE /api/customers/:id (soft delete)
+router.delete('/:id', async (req: Request, res: Response) => {
+  try {
+    const result = await db.query(
+      'UPDATE customers SET is_active = false, updated_at = NOW() WHERE id = $1 RETURNING *',
+      [req.params.id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'לקוח לא נמצא' });
+    }
+
+    await db.query(
+      `INSERT INTO audit_log (action, entity_type, entity_id, old_values) VALUES ('delete', 'customer', $1, $2)`,
+      [req.params.id, JSON.stringify(result.rows[0])]
+    );
+
+    res.json({ success: true, message: 'לקוח נמחק בהצלחה' });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: 'שגיאה במחיקה', details: error.message });
+  }
+});
+
+// GET /api/customers/stats
+router.get('/stats', async (req: Request, res: Response) => {
+  try {
+    const stats = await db.query(`
+      SELECT
+        COUNT(*) FILTER (WHERE is_active = true) as total_active,
+        COUNT(*) FILTER (WHERE lifecycle_stage = 'active') as active,
+        COUNT(*) FILTER (WHERE lifecycle_stage = 'lead') as leads,
+        COUNT(*) FILTER (WHERE customer_group = 'vip') as vip,
+        COALESCE(SUM(current_balance) FILTER (WHERE is_active = true), 0) as total_balance
+      FROM customers
+    `);
+    res.json({ success: true, data: stats.rows[0] });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: 'שגיאה', details: error.message });
+  }
+});
+
+export default router;
+```
+
+**עשה את אותו דבר לכל entity:**
+customers, contacts, suppliers, raw_materials, products, sales_orders, sales_order_items, quotes, quote_items, work_orders, purchase_orders, employees, expenses, leads, alerts
+
+---
+
+### שלב 5: תיקון Navigation / Sidebar
+
+ודא שה-Navigation עובד עם **כל** הקטגוריות:
+```typescript
+// config/navigation.ts
+export const navigationConfig = [
+  {
+    title: 'ראשי',
+    icon: 'Home',
+    children: [
+      { title: 'דשבורד מנהלים', path: '/dashboard', icon: 'LayoutDashboard' },
+      { title: 'סקירת פלטפורמה', path: '/platform', icon: 'Grid' },
+      { title: 'צ\'אט ארגוני', path: '/org-chat', icon: 'MessageCircle' },
+      { title: 'עוזי AI צ\'אט', path: '/claude-chat', icon: 'Bot' },
+      { title: 'דוח מצב החברה', path: '/company-report', icon: 'BarChart3' },
+      { title: 'מרכז בקרה ותפעול', path: '/control-center', icon: 'Settings2' },
+      { title: 'מרכזית התראות', path: '/alerts', icon: 'Bell' },
+    ]
+  },
+  {
+    title: 'AI וטכנולוגיה',
+    icon: 'Brain',
+    children: [
+      { title: 'AI Engine Hub', path: '/ai/hub', icon: 'Cpu' },
+      { title: 'עיבוד מסמכים AI', path: '/ai/documents', icon: 'FileSearch' },
+      { title: 'דשבורד הייטק', path: '/ai/dashboard', icon: 'Monitor' },
+    ]
+  },
+  {
+    title: 'לקוחות ומכירות',
+    icon: 'Users',
+    children: [
+      { title: 'דשבורד CRM', path: '/crm/dashboard', icon: 'Activity' },
+      { title: 'ניהול לקוחות', path: '/crm/customers', icon: 'Building' },
+      { title: 'הזמנות מכירה', path: '/sales/orders', icon: 'ShoppingCart' },
+      { title: 'הצעות מחיר', path: '/sales/quotes', icon: 'FileText' },
+      { title: 'חשבוניות מכירה', path: '/sales/invoices', icon: 'Receipt' },
+      { title: 'לידים', path: '/crm/leads', icon: 'Target' },
+      { title: 'צינור CRM', path: '/crm/pipeline', icon: 'GitBranch' },
+      { title: 'אנשי קשר', path: '/crm/contacts', icon: 'UserCheck' },
+      { title: 'שירות לקוחות', path: '/crm/service', icon: 'Headphones' },
+      { title: 'פורטל לקוחות', path: '/crm/portal', icon: 'Globe' },
+      { title: 'WhatsApp / SMS', path: '/crm/messaging', icon: 'MessageSquare' },
+    ]
+  },
+  {
+    title: 'תמחור וגבייה',
+    icon: 'DollarSign',
+    children: [
+      { title: 'מחירונים', path: '/pricing/price-lists', icon: 'List' },
+      { title: 'חישובי עלות', path: '/pricing/cost-calc', icon: 'Calculator' },
+      { title: 'ניהול גבייה', path: '/pricing/collections', icon: 'Wallet' },
+      { title: 'תמחור דינמי', path: '/pricing/dynamic', icon: 'TrendingUp' },
+    ]
+  },
+  {
+    title: 'רכש ומלאי',
+    icon: 'Package',
+    children: [
+      { title: 'ספקים', path: '/procurement/suppliers', icon: 'Truck' },
+      { title: 'קטלוג חומרי גלם', path: '/procurement/raw-materials', icon: 'Layers' },
+      { title: 'חומרי גלם במלאי', path: '/procurement/stock', icon: 'Database' },
+      { title: 'מוצרים', path: '/procurement/products', icon: 'Box' },
+      { title: 'מחסן', path: '/procurement/warehouses', icon: 'Warehouse' },
+      { title: 'תנועות מלאי', path: '/procurement/movements', icon: 'ArrowLeftRight' },
+      { title: 'הזמנות רכש', path: '/procurement/purchase-orders', icon: 'ClipboardList' },
+      { title: 'דרישות רכש', path: '/procurement/requisitions', icon: 'FileInput' },
+      { title: 'קבלה מחורה', path: '/procurement/goods-receipt', icon: 'PackageCheck' },
+      { title: 'הערכת ספקים', path: '/procurement/supplier-eval', icon: 'Star' },
+      { title: 'דשבורד רכש', path: '/procurement/dashboard', icon: 'BarChart' },
+    ]
+  },
+  {
+    title: 'ניתוח עסקי',
+    icon: 'PieChart',
+    children: [
+      { title: 'לוח רווחיות', path: '/analytics/profitability', icon: 'TrendingUp' },
+      { title: 'ניתוח מתחרים', path: '/analytics/competitors', icon: 'Users' },
+      { title: 'סיכון וגידור', path: '/analytics/risk', icon: 'Shield' },
+    ]
+  },
+  {
+    title: 'יבוא',
+    icon: 'Ship',
+    children: [
+      { title: 'דשבורד יבוא', path: '/import/dashboard', icon: 'BarChart' },
+      { title: 'הזמנות יבוא', path: '/import/orders', icon: 'FileText' },
+      { title: 'ספקי חו"ל', path: '/import/overseas', icon: 'Globe' },
+      { title: 'מעקב משלוחים', path: '/import/tracking', icon: 'Navigation' },
+      { title: 'עמילות מכס', path: '/import/customs', icon: 'Shield' },
+      { title: 'מסמכי יבוא', path: '/import/documents', icon: 'File' },
+      { title: 'שערי חליפין', path: '/import/exchange-rates', icon: 'RefreshCw' },
+    ]
+  },
+  {
+    title: 'ייצור',
+    icon: 'Factory',
+    children: [
+      { title: 'MES', path: '/production/mes', icon: 'Monitor' },
+      { title: 'Kanban Board', path: '/production/kanban', icon: 'Columns' },
+      { title: 'Gantt Chart', path: '/production/gantt', icon: 'Calendar' },
+      { title: 'הוראות עבודה', path: '/production/work-orders', icon: 'ClipboardList' },
+      { title: 'עצי מוצר BOM', path: '/production/bom', icon: 'GitBranch' },
+      { title: 'קווי ייצור', path: '/production/lines', icon: 'Layers' },
+      { title: 'בקרת איכות', path: '/production/quality', icon: 'CheckCircle' },
+      { title: 'ציוד ומכונות', path: '/production/equipment', icon: 'Wrench' },
+      { title: 'תחזוקה', path: '/production/maintenance', icon: 'Tool' },
+      { title: 'בטיחות', path: '/production/safety', icon: 'AlertTriangle' },
+    ]
+  },
+  {
+    title: 'מתקינים והתקנות',
+    icon: 'HardHat',
+    children: [
+      { title: 'מתקינים', path: '/installation/installers', icon: 'Users' },
+      { title: 'התקנות שטח', path: '/installation/field', icon: 'MapPin' },
+      { title: 'מדידות שטח', path: '/installation/measurements', icon: 'Ruler' },
+      { title: 'הוראות עבודה למתקינים', path: '/installation/wo', icon: 'ClipboardList' },
+    ]
+  },
+  {
+    title: 'כספים והנהלת חשבונות',
+    icon: 'Landmark',
+    children: [
+      { title: 'דשבורד חשבונאות', path: '/finance/dashboard', icon: 'DollarSign' },
+      { title: 'הכנסות', path: '/finance/revenues', icon: 'TrendingUp' },
+      { title: 'הוצאות', path: '/finance/expenses', icon: 'TrendingDown' },
+      { title: 'פקודות יומן', path: '/finance/journal', icon: 'BookOpen' },
+      { title: 'מפת חשבונות', path: '/finance/accounts', icon: 'Map' },
+      { title: 'חשבונות בנק', path: '/finance/banks', icon: 'Building2' },
+      { title: 'תשלומים', path: '/finance/payments', icon: 'CreditCard' },
+      { title: 'שיקים', path: '/finance/checks', icon: 'FileCheck' },
+      { title: 'תזרים מזומנים', path: '/finance/cash-flow', icon: 'Activity' },
+      { title: 'מעקב תקציב', path: '/finance/budget', icon: 'Target' },
+      { title: 'רכוש קבוע', path: '/finance/assets', icon: 'Landmark' },
+      { title: 'דוחות כספיים', path: '/finance/reports', icon: 'BarChart3' },
+    ]
+  },
+  {
+    title: 'משאבי אנוש',
+    icon: 'UserCog',
+    children: [
+      { title: 'דשבורד HR', path: '/hr/dashboard', icon: 'BarChart' },
+      { title: 'ניהול עובדים', path: '/hr/employees', icon: 'Users' },
+      { title: 'נוכחות ושעון', path: '/hr/attendance', icon: 'Clock' },
+      { title: 'חישוב שכר', path: '/hr/payroll', icon: 'DollarSign' },
+      { title: 'חופשות', path: '/hr/leaves', icon: 'Calendar' },
+      { title: 'משמרות', path: '/hr/shifts', icon: 'RefreshCw' },
+      { title: 'הכשרות', path: '/hr/training', icon: 'GraduationCap' },
+    ]
+  },
+  {
+    title: 'פרויקטים',
+    icon: 'FolderKanban',
+    children: [
+      { title: 'פרויקטים', path: '/projects', icon: 'Folder' },
+      { title: 'תוכניות עבודה', path: '/projects/plans', icon: 'ListChecks' },
+      { title: 'ניתוח פרויקטים', path: '/projects/analytics', icon: 'BarChart3' },
+    ]
+  },
+  {
+    title: 'שיווק',
+    icon: 'Megaphone',
+    children: [
+      { title: 'דשבורד שיווק', path: '/marketing/dashboard', icon: 'BarChart' },
+      { title: 'קמפיינים', path: '/marketing/campaigns', icon: 'Zap' },
+      { title: 'קמפייני אימייל', path: '/marketing/email', icon: 'Mail' },
+    ]
+  },
+  {
+    title: 'מסמכים וחתימות',
+    icon: 'FileSignature',
+    children: [
+      { title: 'מסמכים', path: '/documents', icon: 'File' },
+      { title: 'חוזים', path: '/documents/contracts', icon: 'FileText' },
+      { title: 'צ\'קליסט', path: '/documents/checklists', icon: 'CheckSquare' },
+      { title: 'ארכיב דיגיטלי', path: '/documents/archive', icon: 'Archive' },
+    ]
+  },
+  {
+    title: 'הגדרות מערכת',
+    icon: 'Settings',
+    children: [
+      { title: 'הגדרות חברה', path: '/settings/company', icon: 'Building' },
+      { title: 'משתמשים והרשאות', path: '/settings/users', icon: 'Shield' },
+      { title: 'אינטגרציות', path: '/settings/integrations', icon: 'Plug' },
+      { title: 'גיבוי ושחזור', path: '/settings/backup', icon: 'HardDrive' },
+    ]
+  },
+];
+```
+
+---
+
+### שלב 6: תיקון UI Pages
+
+עבור על כל דף וודא:
+1. ✅ טעינה עובדת (loading state עם skeleton)
+2. ✅ Empty state עם כפתור "צור רשומה ראשונה"
+3. ✅ טבלה עם pagination, search, sort
+4. ✅ טופס יצירה/עריכה עם validation
+5. ✅ כפתור מחיקה (soft delete)
+6. ✅ ייצוא CSV/Excel
+7. ✅ עברית RTL בכל מקום
+8. ✅ Dark theme consistent
+
+אם דף שבור — תקן אותו.
+אם דף חסר — צור אותו.
+
+---
+
+### שלב 7: בדיקות QA
+
+הרץ את הבדיקות הבאות:
+```bash
+# 1. בדוק שכל ה-API routes מחזירים 200
+echo "=== API Health Check ==="
+for endpoint in customers suppliers products sales-orders quotes work-orders purchase-orders employees expenses leads; do
+  STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/$endpoint)
+  if [ "$STATUS" = "200" ]; then
+    echo "✅ /api/$endpoint — $STATUS"
+  else
+    echo "❌ /api/$endpoint — $STATUS"
+  fi
+done
+
+# 2. בדוק CRUD operations
+echo ""
+echo "=== CRUD Tests ==="
+
+# Create
+RESULT=$(curl -s -X POST http://localhost:3000/api/customers \
+  -H "Content-Type: application/json" \
+  -d '{"company_name":"חברת בדיקה","email":"test@test.co.il","phone":"03-1234567"}')
+echo "CREATE: $RESULT"
+
+# Read
+ID=$(echo $RESULT | jq -r '.data.id')
+curl -s http://localhost:3000/api/customers/$ID | jq .
+
+# Update
+curl -s -X PUT http://localhost:3000/api/customers/$ID \
+  -H "Content-Type: application/json" \
+  -d '{"company_name":"חברת בדיקה מעודכנת"}' | jq .
+
+# Delete
+curl -s -X DELETE http://localhost:3000/api/customers/$ID | jq .
+
+# 3. בדוק שכל הדפים נטענים
+echo ""
+echo "=== Page Load Tests ==="
+for page in / /platform /crm/customers /sales/orders /sales/quotes /procurement/suppliers /procurement/products /production/work-orders /finance/dashboard /hr/employees; do
+  STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000$page)
+  if [ "$STATUS" = "200" ]; then
+    echo "✅ $page — $STATUS"
+  else
+    echo "❌ $page — $STATUS"
+  fi
+done
+```
+
+---
+
+### שלב 8: אופטימיזציה ושדרוגים
+
+1. **הוסף Indexes לDB:**
+```sql
+CREATE INDEX IF NOT EXISTS idx_customers_number ON customers(customer_number);
+CREATE INDEX IF NOT EXISTS idx_customers_active ON customers(is_active);
+CREATE INDEX IF NOT EXISTS idx_customers_group ON customers(customer_group);
+CREATE INDEX IF NOT EXISTS idx_customers_search ON customers USING gin(to_tsvector('simple', coalesce(company_name,'') || ' ' || coalesce(first_name,'') || ' ' || coalesce(last_name,'')));
+CREATE INDEX IF NOT EXISTS idx_sales_orders_number ON sales_orders(order_number);
+CREATE INDEX IF NOT EXISTS idx_sales_orders_status ON sales_orders(status);
+CREATE INDEX IF NOT EXISTS idx_sales_orders_customer ON sales_orders(customer_id);
+CREATE INDEX IF NOT EXISTS idx_work_orders_number ON work_orders(wo_number);
+CREATE INDEX IF NOT EXISTS idx_work_orders_status ON work_orders(status);
+CREATE INDEX IF NOT EXISTS idx_products_number ON products(product_number);
+CREATE INDEX IF NOT EXISTS idx_suppliers_number ON suppliers(supplier_number);
+CREATE INDEX IF NOT EXISTS idx_employees_number ON employees(employee_number);
+CREATE INDEX IF NOT EXISTS idx_audit_log_entity ON audit_log(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_audit_log_date ON audit_log(created_at);
+```
+
+2. **הוסף Auto-numbering trigger:**
+```sql
+CREATE OR REPLACE FUNCTION generate_next_number(prefix TEXT, table_name TEXT, column_name TEXT)
+RETURNS TEXT AS $$
+DECLARE
+  last_num INTEGER;
+  next_num TEXT;
+BEGIN
+  EXECUTE format('SELECT COALESCE(MAX(CAST(SUBSTRING(%I FROM ''[0-9]+$'') AS INTEGER)), 0) + 1 FROM %I WHERE %I IS NOT NULL', column_name, table_name, column_name) INTO last_num;
+  next_num := prefix || LPAD(last_num::TEXT, 3, '0');
+  RETURN next_num;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+3. **הוסף Updated_at trigger:**
+```sql
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Apply to all tables
+DO $$
+DECLARE
+  t TEXT;
+BEGIN
+  FOR t IN
+    SELECT table_name FROM information_schema.tables
+    WHERE table_schema = 'public'
+    AND table_type = 'BASE TABLE'
+    AND EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_name = tables.table_name AND column_name = 'updated_at'
+    )
+  LOOP
+    EXECUTE format('DROP TRIGGER IF EXISTS trg_updated_at ON %I', t);
+    EXECUTE format('CREATE TRIGGER trg_updated_at BEFORE UPDATE ON %I FOR EACH ROW EXECUTE FUNCTION update_updated_at()', t);
+  END LOOP;
+END;
+$$;
+```
+
+---
+
+### שלב 9: תיקון בעיות RTL/Theme
+```css
+/* ודא שכל ה-CSS עובד RTL */
+:root {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #1e293b;
+  --bg-hover: #334155;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent: #38bdf8;
+  --accent-hover: #0ea5e9;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --border: #334155;
+}
+
+html {
+  direction: rtl;
+}
+
+body {
+  font-family: 'Rubik', 'Assistant', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.sidebar {
+  right: 0;
+  left: auto;
+  border-left: 1px solid var(--border);
+  border-right: none;
+}
+
+.main-content {
+  margin-right: 280px;
+  margin-left: 0;
+}
+
+table {
+  text-align: right;
+}
+
+input, select, textarea {
+  text-align: right;
+  direction: rtl;
+}
+```
+
+---
+
+### שלב 10: דוח סופי
+
+אחרי שסיימת את כל השלבים, כתוב דוח סופי בפורמט הזה:

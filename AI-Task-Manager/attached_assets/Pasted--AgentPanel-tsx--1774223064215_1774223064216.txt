@@ -1,0 +1,282 @@
+// ════════════════════════════════════════════════════════════════════
+// AgentPanel.tsx — ממשק הצ'אט של קובי AI בתוך ה-ERP
+// ════════════════════════════════════════════════════════════════════
+
+import { useState, useRef, useEffect, useCallback } from 'react';
+
+interface Message {
+  id:      string;
+  role:    'user' | 'assistant' | 'tool';
+  content: string;
+  tool?:   string;
+  status?: 'running' | 'done' | 'error';
+}
+
+const SESSION_ID = 'kobi-erp-main';
+
+export function AgentPanel() {
+  const [messages, setMessages]   = useState<Message[]>([]);
+  const [input,    setInput]      = useState('');
+  const [loading,  setLoading]    = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const addMsg = (msg: Partial<Message> & { role: Message['role']; content: string }) => {
+    const full: Message = { id: Date.now() + Math.random() + '', ...msg };
+    setMessages(prev => [...prev, full]);
+    return full.id;
+  };
+
+  const updateMsg = (id: string, patch: Partial<Message>) => {
+    setMessages(prev => prev.map(m => m.id === id ? { ...m, ...patch } : m));
+  };
+
+  const send = useCallback(async () => {
+    const text = input.trim();
+    if (!text || loading) return;
+
+    setInput('');
+    setLoading(true);
+    addMsg({ role: 'user', content: text });
+
+    let assistantId = '';
+    let assistantText = '';
+
+    try {
+      const res = await fetch('/api/claude/chat', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ message: text, sessionId: SESSION_ID }),
+      });
+
+      const reader  = res.body!.getReader();
+      const decoder = new TextDecoder();
+      let   buffer  = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split('\n\n');
+        buffer = parts.pop() ?? '';
+
+        for (const part of parts) {
+          const eventLine = part.match(/^event: (.+)$/m)?.[1];
+          const dataLine  = part.match(/^data: (.+)$/m)?.[1];
+          if (!eventLine || !dataLine) continue;
+
+          try {
+            const data = JSON.parse(dataLine);
+
+            if (eventLine === 'text') {
+              assistantText = data.content;
+              if (!assistantId) {
+                assistantId = Date.now() + '';
+                setMessages(prev => [...prev, {
+                  id: assistantId, role: 'assistant', content: assistantText
+                }]);
+              } else {
+                updateMsg(assistantId, { content: assistantText });
+              }
+            }
+
+            if (eventLine === 'tool_start') {
+              addMsg({
+                role:    'tool',
+                content: data.content,
+                tool:    data.tool,
+                status:  'running',
+              });
+            }
+
+            if (eventLine === 'tool_result') {
+              setMessages(prev => {
+                const last = [...prev].reverse().find(m => m.tool === data.tool && m.status === 'running');
+                if (last) return prev.map(m => m.id === last.id
+                  ? { ...m, status: 'done', content: `${m.content}\n→ ${data.content.slice(0, 200)}` }
+                  : m
+                );
+                return prev;
+              });
+            }
+
+            if (eventLine === 'error') {
+              addMsg({ role: 'tool', content: `Error: ${data.content}`, status: 'error' });
+            }
+          } catch {}
+        }
+      }
+    } catch (e) {
+      addMsg({ role: 'tool', content: `Connection error: ${(e as Error).message}`, status: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  }, [input, loading]);
+
+  const handleKey = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+  };
+
+  const clearChat = async () => {
+    await fetch('/api/claude/session', {
+      method:  'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ sessionId: SESSION_ID }),
+    });
+    setMessages([]);
+  };
+
+  return (
+    <div style={{
+      display:       'flex',
+      flexDirection: 'column',
+      height:        '100%',
+      background:    'var(--color-background-primary)',
+      borderLeft:    '0.5px solid var(--color-border-tertiary)',
+    }}>
+
+      {/* Header */}
+      <div style={{
+        padding:       '12px 16px',
+        borderBottom:  '0.5px solid var(--color-border-tertiary)',
+        display:       'flex',
+        alignItems:    'center',
+        gap:           '8px',
+      }}>
+        <div style={{
+          width: 8, height: 8, borderRadius: '50%',
+          background: loading ? 'var(--color-text-warning)' : 'var(--color-text-success)',
+        }}/>
+        <span style={{ fontSize: 14, fontWeight: 500 }}>קובי AI</span>
+        <span style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginLeft: 4 }}>
+          claude-sonnet-4-5
+        </span>
+        <button onClick={clearChat} style={{
+          marginLeft:  'auto',
+          fontSize:    12,
+          padding:     '3px 8px',
+          borderRadius: 6,
+          border:      '0.5px solid var(--color-border-secondary)',
+          background:  'transparent',
+          cursor:      'pointer',
+          color:       'var(--color-text-secondary)',
+        }}>נקה</button>
+      </div>
+
+      {/* Messages */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {messages.length === 0 && (
+          <div style={{ textAlign: 'center', marginTop: 40, color: 'var(--color-text-secondary)', fontSize: 13 }}>
+            <div style={{ fontSize: 32, marginBottom: 12 }}>⚡</div>
+            <div style={{ fontWeight: 500, marginBottom: 6 }}>קובי AI מוכן</div>
+            <div>תגיד לי מה לבנות, לתקן, או לנהל</div>
+          </div>
+        )}
+
+        {messages.map(msg => (
+          <div key={msg.id} style={{
+            display:   'flex',
+            justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
+          }}>
+            {msg.role === 'tool' ? (
+              <div style={{
+                background:   msg.status === 'error'
+                  ? 'var(--color-background-danger)'
+                  : msg.status === 'running'
+                  ? 'var(--color-background-warning)'
+                  : 'var(--color-background-success)',
+                color:        msg.status === 'error'
+                  ? 'var(--color-text-danger)'
+                  : msg.status === 'running'
+                  ? 'var(--color-text-warning)'
+                  : 'var(--color-text-success)',
+                borderRadius: 8,
+                padding:      '6px 10px',
+                fontSize:     12,
+                fontFamily:   'var(--font-mono)',
+                maxWidth:     '90%',
+                whiteSpace:   'pre-wrap',
+                wordBreak:    'break-word',
+              }}>
+                {msg.status === 'running' && <span style={{ marginRight: 6 }}>⟳</span>}
+                {msg.content}
+              </div>
+            ) : (
+              <div style={{
+                background:   msg.role === 'user'
+                  ? 'var(--color-background-info)'
+                  : 'var(--color-background-secondary)',
+                color:        msg.role === 'user'
+                  ? 'var(--color-text-info)'
+                  : 'var(--color-text-primary)',
+                borderRadius: msg.role === 'user' ? '12px 12px 4px 12px' : '12px 12px 12px 4px',
+                padding:      '8px 12px',
+                fontSize:     14,
+                lineHeight:   1.6,
+                maxWidth:     '85%',
+                whiteSpace:   'pre-wrap',
+                wordBreak:    'break-word',
+              }}>
+                {msg.content}
+              </div>
+            )}
+          </div>
+        ))}
+        <div ref={bottomRef}/>
+      </div>
+
+      {/* Input */}
+      <div style={{
+        padding:      '12px 16px',
+        borderTop:    '0.5px solid var(--color-border-tertiary)',
+        display:      'flex',
+        gap:          8,
+        alignItems:   'flex-end',
+      }}>
+        <textarea
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={handleKey}
+          placeholder="תגיד לי מה לעשות..."
+          disabled={loading}
+          rows={1}
+          style={{
+            flex:       1,
+            resize:     'none',
+            fontSize:   14,
+            padding:    '8px 12px',
+            borderRadius: 8,
+            border:     '0.5px solid var(--color-border-secondary)',
+            background: 'var(--color-background-primary)',
+            color:      'var(--color-text-primary)',
+            minHeight:  36,
+            maxHeight:  120,
+            fontFamily: 'var(--font-sans)',
+            direction:  'rtl',
+          }}
+        />
+        <button
+          onClick={send}
+          disabled={loading || !input.trim()}
+          style={{
+            padding:      '8px 16px',
+            borderRadius: 8,
+            border:       'none',
+            background:   loading ? 'var(--color-border-secondary)' : 'var(--color-text-primary)',
+            color:        'var(--color-background-primary)',
+            fontSize:     14,
+            cursor:       loading ? 'not-allowed' : 'pointer',
+            fontWeight:   500,
+            minWidth:     64,
+          }}
+        >
+          {loading ? '...' : 'שלח'}
+        </button>
+      </div>
+    </div>
+  );
+}

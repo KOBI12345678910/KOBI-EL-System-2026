@@ -1,0 +1,21 @@
+
+> @workspace/erp-app@0.0.0 typecheck
+> tsc -p tsconfig.json --noEmit
+
+src/components/SupplierCard.tsx(12,51): error TS1109: Expression expected.
+src/components/SupplierCard.tsx(12,54): error TS1005: ')' expected.
+src/components/SupplierCard.tsx(16,3): error TS1128: Declaration or statement expected.
+src/components/SupplierCard.tsx(21,18): error TS1005: '}' expected.
+src/components/SupplierCard.tsx(21,50): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/components/SupplierCard.tsx(22,18): error TS1005: '}' expected.
+src/components/SupplierCard.tsx(22,51): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/pages/finance/vat-report-page.tsx(284,107): error TS1005: ':' expected.
+src/pages/kimi-task-challenges.tsx(13,29): error TS1109: Expression expected.
+src/pages/kimi-task-challenges.tsx(26,24): error TS1005: '}' expected.
+src/pages/kimi-task-challenges.tsx(26,79): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/pages/kimi-task-challenges.tsx(26,80): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/pages/kimi-task-challenges.tsx(27,33): error TS1109: Expression expected.
+src/pages/kimi-task-challenges.tsx(27,36): error TS1005: ')' expected.
+src/pages/kimi-task-challenges.tsx(29,11): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/pages/kimi-task-challenges.tsx(37,23): error TS1005: '}' expected.
+src/pages/kimi-task-challenges.tsx(44,12): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?

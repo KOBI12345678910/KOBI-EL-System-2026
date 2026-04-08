@@ -1,0 +1,223 @@
+import { callLLM } from "../llm/client";
+import { extractJSON, extractTextContent } from "../llm/parser";
+import { FileTool } from "./fileTool";
+import { SearchTool } from "./searchTool";
+import { TerminalTool } from "./terminalTool";
+
+export class MigrationTool {
+  private fileTool: FileTool;
+  private searchTool: SearchTool;
+  private terminal: TerminalTool;
+  private onLog: (msg: string) => void;
+
+  constructor(
+    fileTool: FileTool,
+    searchTool: SearchTool,
+    terminal: TerminalTool,
+    onLog: (msg: string) => void
+  ) {
+    this.fileTool = fileTool;
+    this.searchTool = searchTool;
+    this.terminal = terminal;
+    this.onLog = onLog;
+  }
+
+  async migrateFramework(from: string, to: string): Promise<{
+    plan: any;
+    filesChanged: string[];
+    warnings: string[];
+  }> {
+    this.onLog(`🔄 Migrating from ${from} to ${to}...`);
+
+    // Analyze current codebase
+    const codeFiles = await this.searchTool.searchFiles("*.{ts,tsx,js,jsx}");
+    const sampleCode: Record<string, string> = {};
+
+    for (const file of codeFiles.slice(0, 20)) {
+      const content = this.fileTool.readFile(file);
+      if (content.success) sampleCode[file] = (content.output || "").slice(0, 1500);
+    }
+
+    // Create migration plan
+    const planResponse = await callLLM({
+      system: `You are a migration expert. Create a detailed migration plan from ${from} to ${to}.
+Respond with JSON:
+{
+  "steps": [
+    { "order": 1, "description": "", "type": "config|dependency|code|file_rename|file_delete|file_create", "risk": "low|medium|high", "details": {} }
+  ],
+  "breakingChanges": ["list of breaking changes"],
+  "newDependencies": ["packages to install"],
+  "removeDependencies": ["packages to remove"],
+  "configChanges": ["config file changes needed"],
+  "warnings": ["things to watch out for"]
+}`,
+      messages: [{
+        role: "user",
+        content: `Migrate this project from ${from} to ${to}:
+
+Files:\n${codeFiles.join("\n")}
+
+Sample code:\n${Object.entries(sampleCode)
+          .map(([f, c]) => `--- ${f} ---\n${c}`)
+          .join("\n")}`,
+      }],
+      maxTokens: 4096,
+    });
+
+    const plan = extractJSON(extractTextContent(planResponse.content));
+    if (!plan) throw new Error("Failed to create migration plan");
+
+    const filesChanged: string[] = [];
+    const warnings: string[] = plan.warnings || [];
+
+    // Execute migration steps
+    for (const step of plan.steps || []) {
+      this.onLog(`  Step ${step.order}: ${step.description}`);
+
+      switch (step.type) {
+        case "dependency": {
+          if (plan.removeDependencies?.length) {
+            await this.terminal.execute(`npm uninstall ${plan.removeDependencies.join(" ")}`, { timeout: 30000 });
+          }
+          if (plan.newDependencies?.length) {
+            await this.terminal.execute(`npm install ${plan.newDependencies.join(" ")}`, { timeout: 60000 });
+          }
+          break;
+        }
+        case "code": {
+          // Use LLM to transform code files
+          for (const file of codeFiles) {
+            const content = this.fileTool.readFile(file);
+            if (!content.success) continue;
+
+            const transformResponse = await callLLM({
+              system: `You are migrating code from ${from} to ${to}. Transform the code, keeping functionality identical.
+Respond with ONLY the transformed code, no explanation.`,
+              messages: [{
+                role: "user",
+                content: `Transform this file from ${from} to ${to}:\n\n\`\`\`\n${content.output}\n\`\`\``,
+              }],
+            });
+
+            let newCode = extractTextContent(transformResponse.content);
+            newCode = newCode.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+
+            if (newCode !== content.output) {
+              this.fileTool.createFile(file, newCode);
+              filesChanged.push(file);
+            }
+          }
+          break;
+        }
+        case "config": {
+          // Generate new config files
+          const configResponse = await callLLM({
+            system: `Generate the ${to} configuration file. Respond with ONLY the code.`,
+            messages: [{
+              role: "user",
+              content: `Generate ${to} config based on migration from ${from}. Details: ${JSON.stringify(step.details)}`,
+            }],
+          });
+
+          let configCode = extractTextContent(configResponse.content);
+          configCode = configCode.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+
+          if (step.details?.file) {
+            this.fileTool.createFile(step.details.file, configCode);
+            filesChanged.push(step.details.file);
+          }
+          break;
+        }
+        case "file_rename": {
+          if (step.details?.from && step.details?.to) {
+            this.fileTool.moveFile(step.details.from, step.details.to);
+            filesChanged.push(step.details.to);
+          }
+          break;
+        }
+        case "file_delete": {
+          if (step.details?.file) {
+            this.fileTool.deleteFile(step.details.file);
+          }
+          break;
+        }
+      }
+    }
+
+    this.onLog(`✅ Migration complete. Changed ${filesChanged.length} files.`);
+    return { plan, filesChanged, warnings };
+  }
+
+  async migrateDatabase(from: "prisma" | "typeorm" | "sequelize" | "raw", to: "drizzle" | "prisma"): Promise<string[]> {
+    this.onLog(`🔄 Migrating ORM from ${from} to ${to}...`);
+    const schemaFiles = await this.searchTool.searchFiles(
+      from === "prisma" ? "*.prisma" : "*.ts"
+    );
+
+    const filesChanged: string[] = [];
+
+    for (const file of schemaFiles) {
+      const content = this.fileTool.readFile(file);
+      if (!content.success) continue;
+
+      // Check if it's actually a schema/model file
+      const isRelevant =
+        content.output?.includes("@Entity") ||
+        content.output?.includes("model ") ||
+        content.output?.includes("define(") ||
+        content.output?.includes("CREATE TABLE");
+
+      if (!isRelevant) continue;
+
+      const response = await callLLM({
+        system: `Convert ${from} ORM schema/models to ${to}. Maintain all fields, relations, constraints, and indexes. Respond with ONLY the code.`,
+        messages: [{
+          role: "user",
+          content: `Convert to ${to}:\n\n\`\`\`\n${content.output}\n\`\`\``,
+        }],
+      });
+
+      let newCode = extractTextContent(response.content);
+      newCode = newCode.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+
+      const newExt = to === "prisma" ? ".prisma" : ".ts";
+      const newFile = file.replace(/\.\w+$/, newExt);
+      this.fileTool.createFile(newFile, newCode);
+      filesChanged.push(newFile);
+    }
+
+    return filesChanged;
+  }
+
+  async migrateCSS(from: "css" | "scss" | "styled-components" | "css-modules", to: "tailwind" | "css-modules" | "styled-components"): Promise<string[]> {
+    this.onLog(`🎨 Migrating styles from ${from} to ${to}...`);
+
+    const styleFiles = await this.searchTool.searchFiles(
+      from === "scss" ? "*.scss" : from === "css-modules" ? "*.module.css" : "*.{css,tsx,jsx}"
+    );
+
+    const filesChanged: string[] = [];
+
+    for (const file of styleFiles.slice(0, 30)) {
+      const content = this.fileTool.readFile(file);
+      if (!content.success) continue;
+
+      const response = await callLLM({
+        system: `Convert ${from} styles to ${to}. If converting to Tailwind, apply utility classes directly in JSX/TSX. Respond with ONLY the code.`,
+        messages: [{
+          role: "user",
+          content: `Convert to ${to}:\n\n\`\`\`\n${content.output}\n\`\`\``,
+        }],
+      });
+
+      let newCode = extractTextContent(response.content);
+      newCode = newCode.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+
+      this.fileTool.createFile(file, newCode);
+      filesChanged.push(file);
+    }
+
+    return filesChanged;
+  }
+}

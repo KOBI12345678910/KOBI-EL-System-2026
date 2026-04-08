@@ -1,0 +1,144 @@
+import { FileTool } from "./fileTool";
+import * as fs from "fs";
+import * as path from "path";
+
+export class EnvTool {
+  private fileTool: FileTool;
+  private workspaceDir: string;
+
+  constructor(workspaceDir: string, fileTool: FileTool) {
+    this.workspaceDir = workspaceDir;
+    this.fileTool = fileTool;
+  }
+
+  parseEnvFile(filePath = ".env"): Record<string, string> {
+    const result = this.fileTool.readFile(filePath);
+    if (!result.success) return {};
+
+    const env: Record<string, string> = {};
+    for (const line of (result.output || "").split("\n")) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+      const eqIndex = trimmed.indexOf("=");
+      if (eqIndex === -1) continue;
+      const key = trimmed.slice(0, eqIndex).trim();
+      let value = trimmed.slice(eqIndex + 1).trim();
+      // Remove quotes
+      if ((value.startsWith('"') && value.endsWith('"')) ||
+          (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
+      env[key] = value;
+    }
+    return env;
+  }
+
+  setEnvVar(key: string, value: string, filePath = ".env"): void {
+    const env = this.parseEnvFile(filePath);
+    env[key] = value;
+    this.writeEnvFile(env, filePath);
+  }
+
+  removeEnvVar(key: string, filePath = ".env"): void {
+    const env = this.parseEnvFile(filePath);
+    delete env[key];
+    this.writeEnvFile(env, filePath);
+  }
+
+  getEnvVar(key: string, filePath = ".env"): string | undefined {
+    return this.parseEnvFile(filePath)[key];
+  }
+
+  private writeEnvFile(env: Record<string, string>, filePath: string): void {
+    const content = Object.entries(env)
+      .map(([key, value]) => {
+        const needsQuotes = value.includes(" ") || value.includes("#") || value.includes("=");
+        return `${key}=${needsQuotes ? `"${value}"` : value}`;
+      })
+      .join("\n") + "\n";
+    this.fileTool.createFile(filePath, content);
+  }
+
+  generateEnvExample(envFile = ".env"): string {
+    const env = this.parseEnvFile(envFile);
+    const example = Object.entries(env)
+      .map(([key, value]) => {
+        // Mask sensitive values
+        const sensitive = ["key", "secret", "password", "token", "api"].some(
+          (s) => key.toLowerCase().includes(s)
+        );
+        return `${key}=${sensitive ? "your_value_here" : value}`;
+      })
+      .join("\n") + "\n";
+
+    this.fileTool.createFile(".env.example", example);
+    return example;
+  }
+
+  validateEnv(schema: Record<string, { required?: boolean; type?: string; default?: string }>): {
+    valid: boolean;
+    missing: string[];
+    invalid: string[];
+  } {
+    const env = this.parseEnvFile();
+    const missing: string[] = [];
+    const invalid: string[] = [];
+
+    for (const [key, rules] of Object.entries(schema)) {
+      const value = env[key];
+
+      if (!value && rules.required && !rules.default) {
+        missing.push(key);
+        continue;
+      }
+
+      const actualValue = value || rules.default;
+      if (actualValue && rules.type) {
+        switch (rules.type) {
+          case "number":
+            if (isNaN(Number(actualValue))) invalid.push(`${key} should be a number`);
+            break;
+          case "boolean":
+            if (!["true", "false", "1", "0"].includes(actualValue.toLowerCase()))
+              invalid.push(`${key} should be boolean`);
+            break;
+          case "url":
+            try { new URL(actualValue); } catch { invalid.push(`${key} should be a URL`); }
+            break;
+        }
+      }
+    }
+
+    return { valid: missing.length === 0 && invalid.length === 0, missing, invalid };
+  }
+
+  generateEnvTypes(filePath = ".env"): string {
+    const env = this.parseEnvFile(filePath);
+    
+    let types = `declare namespace NodeJS {\n  interface ProcessEnv {\n`;
+    for (const key of Object.keys(env)) {
+      types += `    ${key}: string;\n`;
+    }
+    types += `  }\n}\n`;
+
+    this.fileTool.createFile("env.d.ts", types);
+    return types;
+  }
+
+  ensureGitignore(): void {
+    const gitignorePath = path.join(this.workspaceDir, ".gitignore");
+    let content = "";
+
+    if (fs.existsSync(gitignorePath)) {
+      content = fs.readFileSync(gitignorePath, "utf-8");
+    }
+
+    const requiredEntries = [".env", ".env.local", ".env.*.local"];
+    const missing = requiredEntries.filter((entry) => !content.includes(entry));
+
+    if (missing.length > 0) {
+      content += "\n# Environment variables\n" + missing.join("\n") + "\n";
+      fs.writeFileSync(gitignorePath, content);
+    }
+  }
+}

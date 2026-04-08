@@ -1,0 +1,117 @@
+// ============================================================
+// kimi-express-routes.ts
+// הוסף ל-Express app שלך ב-Replit
+// ============================================================
+
+import { Router, Request, Response } from 'express';
+import Kimi, { SYSTEM_PROMPTS } from './kimi-production';
+
+const router = Router();
+
+// ── Health endpoint ──────────────────────────────────────────
+router.get('/api/kimi/health', async (_req: Request, res: Response) => {
+  const health = await Kimi.health();
+  res.status(health.ok ? 200 : 503).json(health);
+});
+
+// ── Status endpoint ──────────────────────────────────────────
+router.get('/api/kimi/status', (_req: Request, res: Response) => {
+  res.json(Kimi.status());
+});
+
+// ── Ask endpoint ─────────────────────────────────────────────
+router.post('/api/kimi/ask', async (req: Request, res: Response) => {
+  const { prompt, system, priority } = req.body;
+
+  if (!prompt?.trim()) {
+    res.status(400).json({ error: 'prompt is required' });
+    return;
+  }
+
+  try {
+    const result = await Kimi.ask(prompt, { system, priority });
+    res.json({ ok: true, result });
+  } catch (e: unknown) {
+    const err = e as { type?: string; message?: string };
+    res.status(503).json({ ok: false, error: err.message, type: err.type });
+  }
+});
+
+// ── Task endpoint (fire-and-forget with webhook) ──────────────
+router.post('/api/kimi/task', async (req: Request, res: Response) => {
+  const { prompt, system, priority, webhookUrl } = req.body;
+
+  if (!prompt?.trim()) {
+    res.status(400).json({ error: 'prompt is required' });
+    return;
+  }
+
+  // Respond immediately
+  const taskId = `task_${Date.now()}`;
+  res.json({ ok: true, taskId, queued: true });
+
+  // Run in background
+  Kimi.task({
+    prompt,
+    system,
+    priority,
+    onSuccess: async (result) => {
+      if (webhookUrl) {
+        await fetch(webhookUrl, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ taskId, ok: true, result }),
+        }).catch(console.error);
+      }
+    },
+    onError: async (err) => {
+      if (webhookUrl) {
+        await fetch(webhookUrl, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ taskId, ok: false, error: String(err) }),
+        }).catch(console.error);
+      }
+    },
+  });
+});
+
+// ── ERP-specific endpoints ────────────────────────────────────
+
+router.post('/api/kimi/erp/analyze', async (req: Request, res: Response) => {
+  const { data, task } = req.body;
+  const prompt = `Task: ${task}\n\nData:\n${JSON.stringify(data, null, 2)}\n\nReturn JSON only.`;
+  try {
+    const result = await Kimi.askJSON(prompt, { system: SYSTEM_PROMPTS.json_analyst });
+    res.json({ ok: true, result });
+  } catch (e: unknown) {
+    res.status(503).json({ ok: false, error: (e as Error).message });
+  }
+});
+
+router.post('/api/kimi/erp/code', async (req: Request, res: Response) => {
+  const { requirement } = req.body;
+  try {
+    const result = await Kimi.ask(requirement, { system: SYSTEM_PROMPTS.coder, priority: 'high' });
+    res.json({ ok: true, result });
+  } catch (e: unknown) {
+    res.status(503).json({ ok: false, error: (e as Error).message });
+  }
+});
+
+router.post('/api/kimi/erp/debug', async (req: Request, res: Response) => {
+  const { error, code } = req.body;
+  const prompt = `Error:\n${error}\n\nCode:\n${code ?? '(not provided)'}`;
+  try {
+    const result = await Kimi.ask(prompt, { system: SYSTEM_PROMPTS.error_analyst, priority: 'high' });
+    res.json({ ok: true, result });
+  } catch (e: unknown) {
+    res.status(503).json({ ok: false, error: (e as Error).message });
+  }
+});
+
+export default router;
+
+// ── איך מוסיפים לאפליקציה ─────────────────────────────────────
+// import kimiRouter from './kimi-express-routes';
+// app.use(kimiRouter);

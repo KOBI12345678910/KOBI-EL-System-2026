@@ -1,0 +1,201 @@
+import { TerminalTool } from "./terminalTool";
+import { BrowserTool } from "./browserTool";
+
+export interface PerfMetrics {
+  cpu: number;
+  memory: { used: number; total: number; percent: number };
+  disk: { used: number; total: number; percent: number };
+  nodeProcesses: Array<{ pid: number; cpu: number; memory: number; command: string }>;
+}
+
+export interface LoadTestResult {
+  totalRequests: number;
+  successfulRequests: number;
+  failedRequests: number;
+  avgResponseTime: number;
+  minResponseTime: number;
+  maxResponseTime: number;
+  requestsPerSecond: number;
+  duration: number;
+}
+
+export class PerformanceTool {
+  private terminal: TerminalTool;
+  private browser: BrowserTool;
+
+  constructor(terminal: TerminalTool, browser: BrowserTool) {
+    this.terminal = terminal;
+    this.browser = browser;
+  }
+
+  async getSystemMetrics(): Promise<PerfMetrics> {
+    const cpuResult = await this.terminal.execute(
+      `top -bn1 | grep "Cpu(s)" | awk '{print $2}' | cut -d'%' -f1`,
+      { timeout: 5000 }
+    );
+
+    const memResult = await this.terminal.execute(
+      `free -m | awk 'NR==2{printf "%s %s %.2f", $3, $2, $3*100/$2}'`,
+      { timeout: 3000 }
+    );
+
+    const diskResult = await this.terminal.execute(
+      `df -m / | awk 'NR==2{printf "%s %s %s", $3, $2, $5}'`,
+      { timeout: 3000 }
+    );
+
+    const nodeProcs = await this.terminal.execute(
+      `ps aux | grep -E 'node|npm|tsx' | grep -v grep | awk '{printf "%s %.1f %.1f %s\\n", $2, $3, $4, $11}'`,
+      { timeout: 3000 }
+    );
+
+    const memParts = memResult.stdout.trim().split(" ");
+    const diskParts = diskResult.stdout.trim().split(" ");
+
+    const processes = nodeProcs.stdout
+      .trim()
+      .split("\n")
+      .filter(Boolean)
+      .map((line) => {
+        const parts = line.split(" ");
+        return {
+          pid: parseInt(parts[0]) || 0,
+          cpu: parseFloat(parts[1]) || 0,
+          memory: parseFloat(parts[2]) || 0,
+          command: parts.slice(3).join(" "),
+        };
+      });
+
+    return {
+      cpu: parseFloat(cpuResult.stdout.trim()) || 0,
+      memory: {
+        used: parseInt(memParts[0]) || 0,
+        total: parseInt(memParts[1]) || 0,
+        percent: parseFloat(memParts[2]) || 0,
+      },
+      disk: {
+        used: parseInt(diskParts[0]) || 0,
+        total: parseInt(diskParts[1]) || 0,
+        percent: parseFloat(diskParts[2]) || 0,
+      },
+      nodeProcesses: processes,
+    };
+  }
+
+  async bundleAnalysis(): Promise<{
+    totalSize: number;
+    files: Array<{ file: string; size: number; gzipped: number }>;
+  }> {
+    // Build first
+    await this.terminal.execute("npm run build", { timeout: 120000 });
+
+    const result = await this.terminal.execute(
+      `find dist build .next/static -type f \\( -name "*.js" -o -name "*.css" \\) 2>/dev/null | head -50`,
+      { timeout: 10000 }
+    );
+
+    const files: Array<{ file: string; size: number; gzipped: number }> = [];
+    let totalSize = 0;
+
+    for (const file of result.stdout.split("\n").filter(Boolean)) {
+      const sizeResult = await this.terminal.execute(`wc -c < "${file}"`);
+      const gzipResult = await this.terminal.execute(
+        `gzip -c "${file}" | wc -c`
+      );
+
+      const size = parseInt(sizeResult.stdout.trim()) || 0;
+      const gzipped = parseInt(gzipResult.stdout.trim()) || 0;
+
+      files.push({ file, size, gzipped });
+      totalSize += size;
+    }
+
+    files.sort((a, b) => b.size - a.size);
+    return { totalSize, files };
+  }
+
+  async simpleLoadTest(
+    url: string,
+    options: { requests?: number; concurrency?: number } = {}
+  ): Promise<LoadTestResult> {
+    const requests = options.requests || 100;
+    const concurrency = options.concurrency || 10;
+
+    // Use curl-based simple load test
+    const script = `
+      total=0; success=0; failed=0; total_time=0; min_time=999999; max_time=0
+      for i in $(seq 1 ${requests}); do
+        start=$(date +%s%N)
+        status=$(curl -s -o /dev/null -w "%{http_code}" "${url}")
+        end=$(date +%s%N)
+        time=$(( (end - start) / 1000000 ))
+        total=$((total + 1))
+        total_time=$((total_time + time))
+        if [ "$status" -ge 200 ] && [ "$status" -lt 400 ]; then
+          success=$((success + 1))
+        else
+          failed=$((failed + 1))
+        fi
+        if [ "$time" -lt "$min_time" ]; then min_time=$time; fi
+        if [ "$time" -gt "$max_time" ]; then max_time=$time; fi
+      done
+      echo "$total $success $failed $total_time $min_time $max_time"
+    `;
+
+    const startTime = Date.now();
+    const result = await this.terminal.execute(`bash -c '${script}'`, {
+      timeout: 300000,
+    });
+    const duration = Date.now() - startTime;
+
+    const parts = result.stdout.trim().split(" ");
+
+    return {
+      totalRequests: parseInt(parts[0]) || requests,
+      successfulRequests: parseInt(parts[1]) || 0,
+      failedRequests: parseInt(parts[2]) || 0,
+      avgResponseTime: parseInt(parts[3]) / (parseInt(parts[0]) || 1),
+      minResponseTime: parseInt(parts[4]) || 0,
+      maxResponseTime: parseInt(parts[5]) || 0,
+      requestsPerSecond: (parseInt(parts[0]) || 0) / (duration / 1000),
+      duration,
+    };
+  }
+
+  async lighthouseAudit(url: string): Promise<string> {
+    const result = await this.terminal.execute(
+      `npx lighthouse "${url}" --output=json --chrome-flags="--headless --no-sandbox" 2>/dev/null | head -c 50000`,
+      { timeout: 120000 }
+    );
+    return result.stdout;
+  }
+
+  async analyzeNodeModules(): Promise<{
+    totalSize: string;
+    topPackages: Array<{ name: string; size: string }>;
+  }> {
+    const totalResult = await this.terminal.execute(
+      `du -sh node_modules 2>/dev/null | cut -f1`
+    );
+
+    const topResult = await this.terminal.execute(
+      `du -sh node_modules/*/ 2>/dev/null | sort -rh | head -20`
+    );
+
+    const topPackages = topResult.stdout
+      .split("\n")
+      .filter(Boolean)
+      .map((line) => {
+        const [size, pkg] = line.split("\t");
+        return {
+          name: pkg?.replace("node_modules/", "").replace("/", "") || "",
+          size: size?.trim() || "0",
+        };
+      });
+
+    return {
+      totalSize: totalResult.stdout.trim(),
+      topPackages,
+    };
+  }
+}

@@ -1,0 +1,312 @@
+import { v4 as uuidv4 } from "uuid";
+import { callLLM } from "../llm/client";
+import { extractJSON, extractTextContent } from "../llm/parser";
+import { StepExecutor, StepDef } from "../agent/executor";
+import { AgentMemory } from "../agent/memory";
+
+export type TaskStatus = "draft" | "queued" | "active" | "review" | "ready" | "merged" | "failed";
+
+export interface ParallelTask {
+  id: string;
+  title: string;
+  description: string;
+  status: TaskStatus;
+  agentId: string;
+  steps: StepDef[];
+  currentStep: number;
+  progress: number;
+  output: string;
+  error?: string;
+  startedAt?: Date;
+  completedAt?: Date;
+  dependsOn: string[];
+  filesChanged: string[];
+}
+
+export interface KanbanBoard {
+  columns: Record<TaskStatus, ParallelTask[]>;
+  totalTasks: number;
+  activeTasks: number;
+  completedTasks: number;
+}
+
+export class ParallelAgentFlow {
+  private tasks: Map<string, ParallelTask> = new Map();
+  private executors: Map<string, StepExecutor> = new Map();
+  private memory: AgentMemory;
+  private workspaceDir: string;
+  private maxParallel: number;
+  private onLog: (msg: string) => void;
+  private onTaskUpdate: (task: ParallelTask) => void;
+  private runningCount = 0;
+
+  constructor(params: {
+    workspaceDir: string;
+    memory: AgentMemory;
+    maxParallel?: number;
+    onLog: (msg: string) => void;
+    onTaskUpdate: (task: ParallelTask) => void;
+  }) {
+    this.workspaceDir = params.workspaceDir;
+    this.memory = params.memory;
+    this.maxParallel = params.maxParallel || 4;
+    this.onLog = params.onLog;
+    this.onTaskUpdate = params.onTaskUpdate;
+  }
+
+  async splitIntoParallelTasks(task: string): Promise<ParallelTask[]> {
+    this.onLog("\n🔀 Splitting task into parallel work items...");
+
+    const context = this.memory.getProjectContext();
+    const response = await callLLM({
+      system: `You are a project manager. Break this task into independent sub-tasks that can run in parallel.
+Each sub-task should be independently executable with minimal dependencies.
+
+Respond with JSON:
+{
+  "tasks": [
+    {
+      "title": "short title",
+      "description": "detailed description with specific instructions",
+      "category": "backend|frontend|database|auth|design|config|test",
+      "dependsOn": [],
+      "priority": 1-5,
+      "estimatedSteps": 3-15,
+      "steps": [
+        { "id": 1, "type": "create_file|edit_file|run_command|install_package", "description": "", "details": {} }
+      ]
+    }
+  ],
+  "executionStrategy": "description of optimal execution order"
+}`,
+      messages: [{
+        role: "user",
+        content: `Project:\n${context}\n\nTask: ${task}`,
+      }],
+      maxTokens: 8192,
+    });
+
+    const parsed = extractJSON(extractTextContent(response.content));
+    if (!parsed?.tasks) throw new Error("Failed to split task");
+
+    const parallelTasks: ParallelTask[] = [];
+
+    for (const t of parsed.tasks) {
+      const id = uuidv4().slice(0, 8);
+      const pt: ParallelTask = {
+        id,
+        title: t.title,
+        description: t.description,
+        status: "draft",
+        agentId: `agent_${t.category || "general"}`,
+        steps: (t.steps || []).map((s: any, i: number) => ({ ...s, id: i + 1, dependsOn: [], validation: "" })),
+        currentStep: 0,
+        progress: 0,
+        output: "",
+        dependsOn: t.dependsOn || [],
+        filesChanged: [],
+      };
+
+      this.tasks.set(id, pt);
+      parallelTasks.push(pt);
+    }
+
+    this.onLog(`  Split into ${parallelTasks.length} parallel tasks`);
+    return parallelTasks;
+  }
+
+  async executeAll(): Promise<Map<string, ParallelTask>> {
+    this.onLog("\n⚡ Executing parallel tasks...");
+
+    // Move all drafts to queued
+    for (const [, task] of this.tasks) {
+      if (task.status === "draft") {
+        task.status = "queued";
+        this.onTaskUpdate(task);
+      }
+    }
+
+    // Process queue
+    while (this.hasUnfinished()) {
+      // Find tasks ready to run (dependencies met, under parallel limit)
+      const ready = this.getReadyTasks();
+
+      if (ready.length === 0) {
+        if (this.runningCount === 0) break; // Deadlock or all done
+        await new Promise((r) => setTimeout(r, 1000));
+        continue;
+      }
+
+      // Start tasks up to parallel limit
+      const toStart = ready.slice(0, this.maxParallel - this.runningCount);
+
+      const promises = toStart.map((task) => this.executeTask(task));
+      
+      // Don't await all — check for newly ready tasks periodically
+      await Promise.race([
+        Promise.all(promises),
+        new Promise((r) => setTimeout(r, 5000)),
+      ]);
+    }
+
+    return this.tasks;
+  }
+
+  private async executeTask(task: ParallelTask): Promise<void> {
+    task.status = "active";
+    task.startedAt = new Date();
+    this.runningCount++;
+    this.onTaskUpdate(task);
+
+    this.onLog(`  🏃 [${task.id}] Started: ${task.title}`);
+
+    const executor = new StepExecutor(this.workspaceDir, this.memory, (msg) => {
+      this.onLog(`    [${task.id}] ${msg}`);
+    });
+
+    try {
+      for (let i = 0; i < task.steps.length; i++) {
+        task.currentStep = i + 1;
+        task.progress = Math.round(((i + 1) / task.steps.length) * 100);
+        this.onTaskUpdate(task);
+
+        const result = await executor.executeStep(task.steps[i]);
+        task.output += result.output + "\n";
+        task.filesChanged.push(...result.filesChanged);
+
+        if (!result.success) {
+          // Try once more
+          const retry = await executor.executeStep(task.steps[i]);
+          if (!retry.success) {
+            throw new Error(result.error || "Step failed");
+          }
+        }
+      }
+
+      task.status = "ready";
+      task.progress = 100;
+      this.onLog(`  ✅ [${task.id}] Complete: ${task.title}`);
+    } catch (err: any) {
+      task.status = "failed";
+      task.error = err.message;
+      this.onLog(`  ❌ [${task.id}] Failed: ${err.message}`);
+    }
+
+    task.completedAt = new Date();
+    this.runningCount--;
+    this.onTaskUpdate(task);
+    executor.cleanup();
+  }
+
+  async mergeTasks(): Promise<{ success: boolean; conflicts: string[] }> {
+    this.onLog("\n🔀 Merging completed tasks...");
+    const conflicts: string[] = [];
+
+    // Check for file conflicts between tasks
+    const fileMap = new Map<string, string[]>();
+    for (const [, task] of this.tasks) {
+      if (task.status !== "ready") continue;
+      for (const file of task.filesChanged) {
+        if (!fileMap.has(file)) fileMap.set(file, []);
+        fileMap.get(file)!.push(task.id);
+      }
+    }
+
+    for (const [file, taskIds] of fileMap) {
+      if (taskIds.length > 1) {
+        conflicts.push(`${file} modified by tasks: ${taskIds.join(", ")}`);
+      }
+    }
+
+    if (conflicts.length > 0) {
+      this.onLog(`  ⚠️ ${conflicts.length} file conflicts detected`);
+      // Use AI to resolve conflicts
+      for (const conflict of conflicts) {
+        this.onLog(`  🔧 Resolving: ${conflict}`);
+      }
+    }
+
+    // Mark all as merged
+    for (const [, task] of this.tasks) {
+      if (task.status === "ready") {
+        task.status = "merged";
+        this.onTaskUpdate(task);
+      }
+    }
+
+    return { success: conflicts.length === 0, conflicts };
+  }
+
+  // ===== KANBAN BOARD =====
+  getBoard(): KanbanBoard {
+    const columns: Record<TaskStatus, ParallelTask[]> = {
+      draft: [],
+      queued: [],
+      active: [],
+      review: [],
+      ready: [],
+      merged: [],
+      failed: [],
+    };
+
+    for (const [, task] of this.tasks) {
+      columns[task.status].push(task);
+    }
+
+    return {
+      columns,
+      totalTasks: this.tasks.size,
+      activeTasks: columns.active.length,
+      completedTasks: columns.ready.length + columns.merged.length,
+    };
+  }
+
+  addTask(task: Omit<ParallelTask, "id" | "status" | "currentStep" | "progress" | "output" | "filesChanged">): ParallelTask {
+    const id = uuidv4().slice(0, 8);
+    const pt: ParallelTask = {
+      ...task,
+      id,
+      status: "draft",
+      currentStep: 0,
+      progress: 0,
+      output: "",
+      filesChanged: [],
+    };
+    this.tasks.set(id, pt);
+    this.onTaskUpdate(pt);
+    return pt;
+  }
+
+  moveTask(taskId: string, newStatus: TaskStatus): boolean {
+    const task = this.tasks.get(taskId);
+    if (!task) return false;
+    task.status = newStatus;
+    this.onTaskUpdate(task);
+    return true;
+  }
+
+  getTask(taskId: string): ParallelTask | undefined {
+    return this.tasks.get(taskId);
+  }
+
+  getAllTasks(): ParallelTask[] {
+    return Array.from(this.tasks.values());
+  }
+
+  private getReadyTasks(): ParallelTask[] {
+    return Array.from(this.tasks.values()).filter((task) => {
+      if (task.status !== "queued") return false;
+      // Check dependencies are complete
+      return task.dependsOn.every((depId) => {
+        const dep = this.tasks.get(depId);
+        return dep && (dep.status === "ready" || dep.status === "merged");
+      });
+    });
+  }
+
+  private hasUnfinished(): boolean {
+    return Array.from(this.tasks.values()).some(
+      (t) => t.status === "queued" || t.status === "active"
+    );
+  }
+}

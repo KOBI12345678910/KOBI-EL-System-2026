@@ -1,0 +1,125 @@
+// ============================================================
+// kimi-prompt-engine.ts
+// פרומפטים מוכנים לכל מקרה ב-ERP
+// ============================================================
+
+export const SYSTEM_PROMPTS = {
+
+  // ── כללי ────────────────────────────────────────────────────
+  general: `
+    You are an intelligent ERP assistant for Techno-Kol, a metalwork manufacturing company.
+    You help with: inventory, orders, customers, finance, production.
+    Always respond in Hebrew unless asked otherwise.
+    Be concise and action-oriented.
+    If you need more info, ask ONE specific question.
+  `.trim(),
+
+  // ── ניתוח + JSON ────────────────────────────────────────────
+  json_analyst: `
+    You are a data analyst for an ERP system.
+    CRITICAL: Return ONLY valid JSON. No markdown, no explanation, no backticks.
+    Always validate your JSON before responding.
+    If data is missing, use null for the field value.
+  `.trim(),
+
+  // ── כתיבת קוד ───────────────────────────────────────────────
+  coder: `
+    You are a senior full-stack developer.
+    Stack: Node.js, TypeScript, React, PostgreSQL, Drizzle ORM.
+    Write production-ready code only. No placeholder comments like "// add your logic here".
+    Include proper error handling and TypeScript types.
+    Format: code block first, brief explanation after.
+  `.trim(),
+
+  // ── מנהל משימות ─────────────────────────────────────────────
+  task_manager: `
+    You are an autonomous task manager for an ERP system.
+    When given a task:
+    1. Break it into concrete steps
+    2. Execute each step
+    3. Report result clearly
+    Never ask clarifying questions — make reasonable assumptions and state them.
+    Format your response as: STEPS: [...] | RESULT: ... | STATUS: done/failed/partial
+  `.trim(),
+
+  // ── ניתוח שגיאות ────────────────────────────────────────────
+  error_analyst: `
+    You are a debugging expert.
+    When given an error:
+    1. Identify root cause (not symptoms)
+    2. Provide exact fix (code, not description)
+    3. Explain WHY it happened in 1 sentence
+    4. Add one prevention tip
+    Be direct. No preamble.
+  `.trim(),
+};
+
+// ── Token estimator (rough, 1 token ≈ 4 chars in English, 2.5 in Hebrew) ───
+
+export function estimateTokens(text: string): number {
+  const hebrewChars  = (text.match(/[\u0590-\u05FF]/g) ?? []).length;
+  const otherChars   = text.length - hebrewChars;
+  return Math.ceil(hebrewChars / 2.5 + otherChars / 4);
+}
+
+// ── Prompt builder ─────────────────────────────────────────────
+
+export function buildPrompt(opts: {
+  task:       string;
+  context?:   Record<string, unknown>;
+  examples?:  Array<{ input: string; output: string }>;
+  format?:    string;
+  maxLength?: number;
+}): string {
+  const parts: string[] = [opts.task];
+
+  if (opts.context && Object.keys(opts.context).length) {
+    parts.push('\nContext:\n' + JSON.stringify(opts.context, null, 2));
+  }
+
+  if (opts.examples?.length) {
+    parts.push('\nExamples:');
+    opts.examples.forEach((ex, i) => {
+      parts.push(`Example ${i + 1}:\nInput: ${ex.input}\nOutput: ${ex.output}`);
+    });
+  }
+
+  if (opts.format) {
+    parts.push(`\nRequired output format: ${opts.format}`);
+  }
+
+  let prompt = parts.join('\n');
+
+  if (opts.maxLength && prompt.length > opts.maxLength) {
+    prompt = prompt.slice(0, opts.maxLength) + '\n[...truncated for length]';
+  }
+
+  return prompt;
+}
+
+// ── JSON extractor — מוציא JSON גם אם Kimi הוסיף טקסט מסביב ──
+
+export function extractJSON<T = unknown>(text: string): T | null {
+  // 1. Try direct parse
+  try { return JSON.parse(text) as T; } catch {}
+
+  // 2. Try to find JSON block in markdown
+  const mdMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (mdMatch) { try { return JSON.parse(mdMatch[1]) as T; } catch {} }
+
+  // 3. Try to find first { } block
+  const start = text.indexOf('{');
+  const end   = text.lastIndexOf('}');
+  if (start !== -1 && end > start) {
+    try { return JSON.parse(text.slice(start, end + 1)) as T; } catch {}
+  }
+
+  // 4. Try to find first [ ] block
+  const arrStart = text.indexOf('[');
+  const arrEnd   = text.lastIndexOf(']');
+  if (arrStart !== -1 && arrEnd > arrStart) {
+    try { return JSON.parse(text.slice(arrStart, arrEnd + 1)) as T; } catch {}
+  }
+
+  return null;
+}

@@ -1,0 +1,74 @@
+// ============================================================
+// kimi-circuit-breaker.ts
+// אם Kimi נכשל X פעמים ברצף — מפסיק לקרוא ומחכה
+// ============================================================
+
+type CircuitState = 'CLOSED' | 'OPEN' | 'HALF_OPEN';
+
+export class CircuitBreaker {
+  private state:        CircuitState = 'CLOSED';
+  private failures:     number       = 0;
+  private lastFailTime: number       = 0;
+  private successes:    number       = 0;
+
+  constructor(
+    private failureThreshold:  number = 5,       // כמה כשלונות עד OPEN
+    private recoveryTimeMs:    number = 60_000,  // כמה זמן ממתינים
+    private halfOpenSuccesses: number = 2,       // כמה הצלחות לסגירה מחדש
+    private onStateChange?: (from: CircuitState, to: CircuitState) => void
+  ) {}
+
+  async call<T>(fn: () => Promise<T>): Promise<T> {
+    if (this.state === 'OPEN') {
+      const elapsed = Date.now() - this.lastFailTime;
+      if (elapsed < this.recoveryTimeMs) {
+        const wait = Math.ceil((this.recoveryTimeMs - elapsed) / 1000);
+        throw { type: 'circuit_open', message: `Circuit OPEN. Retry in ${wait}s.`, retryAfterMs: this.recoveryTimeMs - elapsed };
+      }
+      this.transition('HALF_OPEN');
+    }
+
+    try {
+      const result = await fn();
+      this.onSuccess();
+      return result;
+    } catch (e) {
+      this.onFailure();
+      throw e;
+    }
+  }
+
+  private onSuccess() {
+    this.failures = 0;
+    if (this.state === 'HALF_OPEN') {
+      this.successes++;
+      if (this.successes >= this.halfOpenSuccesses) {
+        this.successes = 0;
+        this.transition('CLOSED');
+      }
+    }
+  }
+
+  private onFailure() {
+    this.failures++;
+    this.lastFailTime = Date.now();
+    if (this.state === 'HALF_OPEN' || this.failures >= this.failureThreshold) {
+      this.successes = 0;
+      this.transition('OPEN');
+    }
+  }
+
+  private transition(to: CircuitState) {
+    const from = this.state;
+    if (from !== to) {
+      this.state = to;
+      console.log(`[CircuitBreaker] ${from} → ${to}`);
+      this.onStateChange?.(from, to);
+    }
+  }
+
+  getState()       { return this.state; }
+  getFailures()    { return this.failures; }
+  isAvailable()    { return this.state !== 'OPEN'; }
+  reset()          { this.state = 'CLOSED'; this.failures = 0; this.successes = 0; }
+}

@@ -1,0 +1,16 @@
+/* K-01: RTL Stylesheet - Hebrew layout fixes */
+html[dir="rtl"] {
+  direction: rtl;
+}
+
+[dir="rtl"] .justify-start { justify-content: flex-end; }
+[dir="rtl"] .justify-end { justify-content: flex-start; }
+[dir="rtl"] .pl-4 { padding-left: 0; padding-right: 1rem; }
+[dir="rtl"] .pr-4 { padding-right: 0; padding-left: 1rem; }
+[dir="rtl"] .ml-4 { margin-left: 0; margin-right: 1rem; }
+[dir="rtl"] .mr-4 { margin-right: 0; margin-left: 1rem; }
+[dir="rtl"] aside { border-left: none; border-right: 1px solid var(--border); }
+[dir="rtl"] aside { right: 0; left: auto; }
+[dir="rtl"] input:not([dir="ltr"]), [dir="rtl"] textarea, [dir="rtl"] select { direction: rtl; text-align: right; }
+[dir="rtl"] input[dir="ltr"] { direction: ltr; text-align: left; }
+[dir="rtl"] ul, [dir="rtl"] ol { padding-right: 1.5rem; padding-left: 0; }

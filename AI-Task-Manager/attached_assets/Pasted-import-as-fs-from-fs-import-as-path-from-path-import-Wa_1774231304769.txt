@@ -1,0 +1,239 @@
+import * as fs from "fs";
+import * as path from "path";
+import { WatcherTool } from "./watcherTool";
+
+export interface LogEntry {
+  timestamp: Date;
+  level: "debug" | "info" | "warn" | "error" | "fatal";
+  message: string;
+  source?: string;
+  metadata?: Record<string, any>;
+  stackTrace?: string;
+}
+
+export interface LogFilter {
+  level?: string[];
+  source?: string;
+  search?: string;
+  from?: Date;
+  to?: Date;
+  limit?: number;
+}
+
+export class LogViewerTool {
+  private workspaceDir: string;
+  private watcher: WatcherTool;
+  private logs: LogEntry[] = [];
+  private maxLogs = 10000;
+  private onNewLog?: (log: LogEntry) => void;
+  private logFiles: string[];
+
+  constructor(workspaceDir: string) {
+    this.workspaceDir = workspaceDir;
+    this.watcher = new WatcherTool(workspaceDir);
+    this.logFiles = [
+      "logs/app.log",
+      "logs/error.log",
+      "logs/combined.log",
+      ".next/server/logs",
+      "tmp/development.log",
+    ];
+  }
+
+  startWatching(callback?: (log: LogEntry) => void): void {
+    this.onNewLog = callback;
+
+    // Watch for log file changes
+    this.watcher.watch("log-viewer", ["**/*.log", "**/logs/**"], (event, filePath) => {
+      if (event === "change" || event === "add") {
+        this.parseLogFile(filePath);
+      }
+    });
+  }
+
+  stopWatching(): void {
+    this.watcher.unwatch("log-viewer");
+  }
+
+  parseLogLine(line: string, source?: string): LogEntry | null {
+    if (!line.trim()) return null;
+
+    // Try JSON log format
+    try {
+      const json = JSON.parse(line);
+      return {
+        timestamp: new Date(json.timestamp || json.time || json.date || Date.now()),
+        level: this.normalizeLevel(json.level || json.severity || "info"),
+        message: json.message || json.msg || json.text || line,
+        source: source || json.service || json.source,
+        metadata: json,
+      };
+    } catch {}
+
+    // Try common log formats
+    // Format: [2024-01-15T12:00:00.000Z] [ERROR] message
+    const bracketMatch = line.match(
+      /\[(\d{4}[-/]\d{2}[-/]\d{2}[T\s]\d{2}:\d{2}:\d{2}[.\d]*Z?)\]\s*\[(\w+)\]\s*(.*)/
+    );
+    if (bracketMatch) {
+      return {
+        timestamp: new Date(bracketMatch[1]),
+        level: this.normalizeLevel(bracketMatch[2]),
+        message: bracketMatch[3],
+        source,
+      };
+    }
+
+    // Format: 2024-01-15 12:00:00 ERROR message
+    const spaceMatch = line.match(
+      /(\d{4}[-/]\d{2}[-/]\d{2}\s\d{2}:\d{2}:\d{2})\s+(DEBUG|INFO|WARN|ERROR|FATAL)\s+(.*)/i
+    );
+    if (spaceMatch) {
+      return {
+        timestamp: new Date(spaceMatch[1]),
+        level: this.normalizeLevel(spaceMatch[2]),
+        message: spaceMatch[3],
+        source,
+      };
+    }
+
+    // Stack trace detection
+    if (line.match(/^\s+at\s+/) || line.match(/^Error:/)) {
+      return {
+        timestamp: new Date(),
+        level: "error",
+        message: line,
+        source,
+        stackTrace: line,
+      };
+    }
+
+    // Fallback
+    return {
+      timestamp: new Date(),
+      level: "info",
+      message: line,
+      source,
+    };
+  }
+
+  parseLogFile(filePath: string): LogEntry[] {
+    const entries: LogEntry[] = [];
+    try {
+      const fullPath = path.join(this.workspaceDir, filePath);
+      const content = fs.readFileSync(fullPath, "utf-8");
+      const lines = content.split("\n");
+
+      for (const line of lines) {
+        const entry = this.parseLogLine(line, filePath);
+        if (entry) {
+          entries.push(entry);
+          this.addLog(entry);
+        }
+      }
+    } catch {}
+    return entries;
+  }
+
+  addLog(entry: LogEntry): void {
+    this.logs.push(entry);
+    if (this.logs.length > this.maxLogs) {
+      this.logs = this.logs.slice(-this.maxLogs);
+    }
+    this.onNewLog?.(entry);
+  }
+
+  captureConsole(data: string, stream: "stdout" | "stderr"): void {
+    const lines = data.split("\n").filter(Boolean);
+    for (const line of lines) {
+      const entry: LogEntry = {
+        timestamp: new Date(),
+        level: stream === "stderr" ? "error" : "info",
+        message: line,
+        source: "console",
+      };
+
+      // Detect log levels in output
+      if (line.match(/\b(error|ERR|Error)\b/i)) entry.level = "error";
+      else if (line.match(/\b(warn|WARNING|Warn)\b/i)) entry.level = "warn";
+      else if (line.match(/\b(debug|DEBUG|Debug)\b/i)) entry.level = "debug";
+
+      this.addLog(entry);
+    }
+  }
+
+  query(filter: LogFilter): LogEntry[] {
+    let results = [...this.logs];
+
+    if (filter.level?.length) {
+      results = results.filter((l) => filter.level!.includes(l.level));
+    }
+
+    if (filter.source) {
+      results = results.filter((l) =>
+        l.source?.toLowerCase().includes(filter.source!.toLowerCase())
+      );
+    }
+
+    if (filter.search) {
+      const lower = filter.search.toLowerCase();
+      results = results.filter((l) => l.message.toLowerCase().includes(lower));
+    }
+
+    if (filter.from) {
+      results = results.filter((l) => l.timestamp >= filter.from!);
+    }
+
+    if (filter.to) {
+      results = results.filter((l) => l.timestamp <= filter.to!);
+    }
+
+    if (filter.limit) {
+      results = results.slice(-filter.limit);
+    }
+
+    return results;
+  }
+
+  getStats(): {
+    total: number;
+    byLevel: Record<string, number>;
+    errorsLast5Min: number;
+    avgPerMinute: number;
+  } {
+    const byLevel: Record<string, number> = {};
+    for (const log of this.logs) {
+      byLevel[log.level] = (byLevel[log.level] || 0) + 1;
+    }
+
+    const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const errorsLast5Min = this.logs.filter(
+      (l) => l.level === "error" && l.timestamp >= fiveMinAgo
+    ).length;
+
+    const timeRange =
+      this.logs.length > 1
+        ? (this.logs[this.logs.length - 1].timestamp.getTime() - this.logs[0].timestamp.getTime()) / 60000
+        : 1;
+
+    return {
+      total: this.logs.length,
+      byLevel,
+      errorsLast5Min,
+      avgPerMinute: Math.round(this.logs.length / Math.max(timeRange, 1)),
+    };
+  }
+
+  clear(): void {
+    this.logs = [];
+  }
+
+  private normalizeLevel(level: string): LogEntry["level"] {
+    const l = level.toLowerCase();
+    if (l.includes("fatal") || l.includes("critical")) return "fatal";
+    if (l.includes("err")) return "error";
+    if (l.includes("warn")) return "warn";
+    if (l.includes("debug") || l.includes("trace") || l.includes("verbose")) return "debug";
+    return "info";
+  }
+}

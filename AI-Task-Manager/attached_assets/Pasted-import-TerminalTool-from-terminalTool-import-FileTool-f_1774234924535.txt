@@ -1,0 +1,120 @@
+import { TerminalTool } from "./terminalTool";
+import { FileTool } from "./fileTool";
+import { callLLM } from "../llm/client";
+import { extractTextContent } from "../llm/parser";
+
+export class MobileDeployTool {
+  private terminal: TerminalTool;
+  private fileTool: FileTool;
+
+  constructor(terminal: TerminalTool, fileTool: FileTool) {
+    this.terminal = terminal;
+    this.fileTool = fileTool;
+  }
+
+  async setupExpo(): Promise<void> {
+    await this.terminal.execute("npx create-expo-app@latest mobile --template blank-typescript", { timeout: 180000 });
+    await this.terminal.execute("cd mobile && npx expo install expo-router expo-linking expo-constants expo-status-bar react-native-safe-area-context react-native-screens", { timeout: 120000 });
+
+    this.fileTool.createFile("mobile/app.json", JSON.stringify({
+      expo: {
+        name: "KobiApp",
+        slug: "kobi-app",
+        version: "1.0.0",
+        orientation: "portrait",
+        icon: "./assets/icon.png",
+        userInterfaceStyle: "automatic",
+        splash: { image: "./assets/splash.png", resizeMode: "contain", backgroundColor: "#0d1117" },
+        ios: { supportsTablet: true, bundleIdentifier: "com.kobi.app" },
+        android: { adaptiveIcon: { foregroundImage: "./assets/adaptive-icon.png", backgroundColor: "#0d1117" }, package: "com.kobi.app" },
+        web: { favicon: "./assets/favicon.png" },
+        plugins: ["expo-router"],
+        scheme: "kobi-app",
+      },
+    }, null, 2));
+  }
+
+  async generateMobileScreen(name: string, description: string): Promise<string> {
+    const response = await callLLM({
+      system: `Generate a React Native (Expo) screen component with TypeScript.
+Rules:
+- Use React Native components (View, Text, ScrollView, TouchableOpacity, FlatList, etc.)
+- Use StyleSheet for styling (NOT Tailwind — React Native doesn't support it)
+- Include SafeAreaView
+- Handle both iOS and Android
+- Include loading and error states
+- Make it look modern and clean
+- Use proper navigation typing
+
+Respond with ONLY the complete TSX code.`,
+      messages: [{ role: "user", content: `Screen "${name}": ${description}` }],
+      maxTokens: 4096,
+    });
+
+    let code = extractTextContent(response.content);
+    code = code.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+
+    const filePath = `mobile/app/${name.toLowerCase()}.tsx`;
+    this.fileTool.createFile(filePath, code);
+    return code;
+  }
+
+  async buildForPlatform(platform: "ios" | "android" | "web"): Promise<{
+    success: boolean;
+    output: string;
+    buildUrl?: string;
+  }> {
+    let command: string;
+
+    switch (platform) {
+      case "ios":
+        command = "cd mobile && npx eas build --platform ios --non-interactive";
+        break;
+      case "android":
+        command = "cd mobile && npx eas build --platform android --non-interactive";
+        break;
+      case "web":
+        command = "cd mobile && npx expo export --platform web";
+        break;
+    }
+
+    const result = await this.terminal.execute(command, { timeout: 600000 });
+
+    // Extract build URL from EAS output
+    const urlMatch = result.stdout.match(/https:\/\/expo\.dev\/.*\/builds\/.*/);
+
+    return {
+      success: result.success,
+      output: result.stdout + result.stderr,
+      buildUrl: urlMatch?.[0],
+    };
+  }
+
+  async setupEAS(): Promise<void> {
+    await this.terminal.execute("npm install -g eas-cli", { timeout: 30000 });
+
+    this.fileTool.createFile("mobile/eas.json", JSON.stringify({
+      cli: { version: ">= 12.0.0" },
+      build: {
+        development: {
+          developmentClient: true,
+          distribution: "internal",
+        },
+        preview: {
+          distribution: "internal",
+        },
+        production: {
+          autoIncrement: true,
+        },
+      },
+      submit: {
+        production: {
+          ios: { appleId: "your@email.com", ascAppId: "YOUR_APP_ID", appleTeamId: "YOUR_TEAM_ID" },
+          android: { serviceAccountKeyPath: "./google-services.json", track: "production" },
+        },
+      },
+    }, null, 2));
+  }
+
+  async setupPushNotifications(): Promise<void> {
+    await this.terminal.execute("cd mobile && npx expo install

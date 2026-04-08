@@ -1,0 +1,367 @@
+import { callLLM } from "../llm/client";
+import { extractJSON, extractTextContent } from "../llm/parser";
+import { FileTool } from "../tools/fileTool";
+import { TerminalTool } from "../tools/terminalTool";
+import { SearchTool } from "../tools/searchTool";
+
+export interface ModelDefinition {
+  name: string;
+  table: string;
+  fields: Array<{
+    name: string;
+    type: string;
+    required: boolean;
+    unique: boolean;
+    default?: any;
+    relation?: { type: "one-to-one" | "one-to-many" | "many-to-many"; target: string; field: string };
+    validation?: string;
+    index?: boolean;
+  }>;
+  timestamps: boolean;
+  softDelete: boolean;
+}
+
+export interface DataMigration {
+  id: string;
+  name: string;
+  up: string;
+  down: string;
+  appliedAt?: Date;
+}
+
+export class DataFlow {
+  private fileTool: FileTool;
+  private terminal: TerminalTool;
+  private searchTool: SearchTool;
+  private onLog: (msg: string) => void;
+  private models: Map<string, ModelDefinition> = new Map();
+
+  constructor(workspaceDir: string, onLog: (msg: string) => void) {
+    this.fileTool = new FileTool(workspaceDir);
+    this.terminal = new TerminalTool(workspaceDir);
+    this.searchTool = new SearchTool(workspaceDir);
+    this.onLog = onLog;
+  }
+
+  // ===== BUILD COMPLETE MODEL FROM DESCRIPTION =====
+  async createModel(description: string): Promise<{
+    model: ModelDefinition;
+    files: Map<string, string>;
+  }> {
+    this.onLog(`\n📦 Creating model from: ${description.slice(0, 60)}`);
+
+    const response = await callLLM({
+      system: `You are a database architect. Create a complete model definition from the description.
+Respond with JSON:
+{
+  "name": "ModelName",
+  "table": "table_name",
+  "fields": [
+    {
+      "name": "fieldName",
+      "type": "string|number|boolean|date|json|text|enum|uuid|float|decimal",
+      "required": true,
+      "unique": false,
+      "default": null,
+      "relation": null,
+      "validation": "min:3,max:255",
+      "index": false
+    }
+  ],
+  "timestamps": true,
+  "softDelete": false
+}`,
+      messages: [{ role: "user", content: description }],
+    });
+
+    const model = extractJSON(extractTextContent(response.content)) as ModelDefinition;
+    if (!model) throw new Error("Failed to generate model");
+
+    this.models.set(model.name, model);
+
+    // Generate all related files
+    const files = new Map<string, string>();
+
+    // 1. Drizzle Schema
+    files.set(
+      `src/db/schema/${model.table}.ts`,
+      await this.generateDrizzleSchema(model)
+    );
+
+    // 2. Zod Validators
+    files.set(
+      `src/validators/${model.table}.ts`,
+      await this.generateValidators(model)
+    );
+
+    // 3. Service Layer
+    files.set(
+      `src/services/${model.table}Service.ts`,
+      await this.generateService(model)
+    );
+
+    // 4. API Routes
+    files.set(
+      `src/routes/${model.table}.ts`,
+      await this.generateRoutes(model)
+    );
+
+    // 5. Types
+    files.set(
+      `src/types/${model.name}.ts`,
+      await this.generateTypes(model)
+    );
+
+    // Save all files
+    for (const [path, content] of files) {
+      this.fileTool.createFile(path, content);
+      this.onLog(`  ✅ Created ${path}`);
+    }
+
+    return { model, files };
+  }
+
+  // ===== ADD FIELD TO EXISTING MODEL =====
+  async addField(modelName: string, field: ModelDefinition["fields"][0]): Promise<string> {
+    const model = this.models.get(modelName);
+    if (!model) {
+      // Try to find it in files
+      const schemaFiles = await this.searchTool.searchContent(modelName, {
+        filePattern: "src/db/schema/*.ts",
+        maxResults: 1,
+      });
+      if (schemaFiles.length === 0) throw new Error(`Model not found: ${modelName}`);
+    }
+
+    // Generate migration
+    const migration = this.generateAddFieldMigration(modelName, field);
+
+    // Update schema file
+    const schemaFile = `src/db/schema/${modelName.toLowerCase()}.ts`;
+    const content = this.fileTool.readFile(schemaFile);
+    if (content.success) {
+      const response = await callLLM({
+        system: "Add a new field to the Drizzle schema. Respond with ONLY the updated file content.",
+        messages: [{
+          role: "user",
+          content: `Add field ${field.name} (${field.type}) to:\n\`\`\`\n${content.output}\n\`\`\``,
+        }],
+      });
+      let updated = extractTextContent(response.content);
+      updated = updated.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+      this.fileTool.createFile(schemaFile, updated);
+    }
+
+    return migration;
+  }
+
+  // ===== REMOVE FIELD =====
+  async removeField(modelName: string, fieldName: string): Promise<string> {
+    const schemaFile = `src/db/schema/${modelName.toLowerCase()}.ts`;
+    const content = this.fileTool.readFile(schemaFile);
+    if (!content.success) throw new Error(`Schema not found: ${schemaFile}`);
+
+    const response = await callLLM({
+      system: "Remove the specified field from the Drizzle schema. Respond with ONLY the updated file.",
+      messages: [{
+        role: "user",
+        content: `Remove field "${fieldName}" from:\n\`\`\`\n${content.output}\n\`\`\``,
+      }],
+    });
+
+    let updated = extractTextContent(response.content);
+    updated = updated.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    this.fileTool.createFile(schemaFile, updated);
+
+    return `ALTER TABLE ${modelName.toLowerCase()} DROP COLUMN ${fieldName};`;
+  }
+
+  // ===== SEED DATA =====
+  async seedModel(modelName: string, count: number = 10): Promise<string> {
+    const model = this.models.get(modelName);
+
+    const response = await callLLM({
+      system: `Generate realistic seed data as an array of JSON objects. Make data diverse and realistic.
+Respond with ONLY a JSON array.`,
+      messages: [{
+        role: "user",
+        content: `Generate ${count} records for "${modelName}" with fields:\n${JSON.stringify(model?.fields || [], null, 2)}`,
+      }],
+    });
+
+    let seedData = extractTextContent(response.content);
+    seedData = seedData.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+
+    const seedFile = `src/db/seeds/${modelName.toLowerCase()}.ts`;
+    this.fileTool.createFile(seedFile, `import { db } from '../index';
+import { ${modelName.toLowerCase()} } from '../schema/${modelName.toLowerCase()}';
+
+export async function seed${modelName}() {
+  const data = ${seedData};
+
+  console.log('Seeding ${modelName}...');
+  for (const item of data) {
+    await db.insert(${modelName.toLowerCase()}).values(item);
+  }
+  console.log(\`Seeded \${data.length} ${modelName} records\`);
+}
+`);
+
+    return seedFile;
+  }
+
+  // ===== DATA CLEANUP =====
+  async cleanupData(modelName: string, criteria: {
+    olderThan?: string;
+    status?: string;
+    orphaned?: boolean;
+    duplicates?: boolean;
+  }): Promise<{ deleted: number; output: string }> {
+    let query = "";
+    const table = modelName.toLowerCase();
+
+    if (criteria.olderThan) {
+      query = `DELETE FROM ${table} WHERE created_at < NOW() - INTERVAL '${criteria.olderThan}'`;
+    } else if (criteria.status) {
+      query = `DELETE FROM ${table} WHERE status = '${criteria.status}'`;
+    } else if (criteria.duplicates) {
+      query = `DELETE FROM ${table} a USING ${table} b WHERE a.id > b.id AND a.email = b.email`;
+    } else if (criteria.orphaned) {
+      query = `DELETE FROM ${table} WHERE id NOT IN (SELECT DISTINCT ${table}_id FROM related_table)`;
+    }
+
+    if (!query) return { deleted: 0, output: "No criteria matched" };
+
+    this.onLog(`  🗑️ Running: ${query}`);
+    const result = await this.terminal.execute(
+      `psql "$DATABASE_URL" -c "${query}" 2>&1`,
+      { timeout: 30000 }
+    );
+
+    const countMatch = result.stdout.match(/DELETE\s+(\d+)/);
+    return {
+      deleted: countMatch ? parseInt(countMatch[1]) : 0,
+      output: result.stdout,
+    };
+  }
+
+  // ===== DATA FLOW BETWEEN MODELS =====
+  async createDataFlow(config: {
+    source: string;
+    target: string;
+    transform?: string;
+    trigger: "on-create" | "on-update" | "scheduled" | "manual";
+  }): Promise<string> {
+    const response = await callLLM({
+      system: `Generate a data flow/pipeline function that moves and transforms data between models.
+Include error handling, logging, and batch processing.
+Respond with ONLY TypeScript code.`,
+      messages: [{
+        role: "user",
+        content: `Data flow:
+Source: ${config.source}
+Target: ${config.target}
+Transform: ${config.transform || "direct copy"}
+Trigger: ${config.trigger}`,
+      }],
+    });
+
+    let code = extractTextContent(response.content);
+    code = code.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+
+    const filePath = `src/flows/${config.source}-to-${config.target}.ts`;
+    this.fileTool.createFile(filePath, code);
+    return code;
+  }
+
+  // ===== VALIDATE ALL DATA INTEGRITY =====
+  async validateDataIntegrity(): Promise<{
+    valid: boolean;
+    issues: Array<{
+      table: string;
+      issue: string;
+      severity: "error" | "warning";
+      count: number;
+    }>;
+  }> {
+    const issues: Array<{ table: string; issue: string; severity: "error" | "warning"; count: number }> = [];
+
+    // Check for orphaned foreign keys
+    const fkCheck = await this.terminal.execute(`psql "$DATABASE_URL" -c "
+      SELECT conrelid::regclass AS table_name, conname AS constraint_name
+      FROM pg_constraint WHERE contype = 'f'
+    " 2>/dev/null`, { timeout: 15000 });
+
+    // Check for NULL in NOT NULL columns
+    const nullCheck = await this.terminal.execute(`psql "$DATABASE_URL" -c "
+      SELECT table_name, column_name
+      FROM information_schema.columns
+      WHERE is_nullable = 'NO' AND table_schema = 'public'
+    " 2>/dev/null`, { timeout: 15000 });
+
+    // Check for duplicates in unique columns
+    const tables = await this.terminal.execute(`psql "$DATABASE_URL" -c "
+      SELECT tablename FROM pg_tables WHERE schemaname = 'public'
+    " -t 2>/dev/null`, { timeout: 10000 });
+
+    return {
+      valid: issues.filter((i) => i.severity === "error").length === 0,
+      issues,
+    };
+  }
+
+  // ===== PRIVATE GENERATORS =====
+  private async generateDrizzleSchema(model: ModelDefinition): Promise<string> {
+    const response = await callLLM({
+      system: "Generate Drizzle ORM pgTable schema. Include all fields, indexes, and relations. Respond with ONLY TypeScript code.",
+      messages: [{ role: "user", content: JSON.stringify(model, null, 2) }],
+    });
+    return extractTextContent(response.content).replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+  }
+
+  private async generateValidators(model: ModelDefinition): Promise<string> {
+    const response = await callLLM({
+      system: "Generate Zod validation schemas: createSchema, updateSchema, querySchema. Respond with ONLY TypeScript code.",
+      messages: [{ role: "user", content: JSON.stringify(model, null, 2) }],
+    });
+    return extractTextContent(response.content).replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+  }
+
+  private async generateService(model: ModelDefinition): Promise<string> {
+    const response = await callLLM({
+      system: "Generate full CRUD service with Drizzle ORM: getAll (paginated), getById, create, update, delete, search. Respond with ONLY TypeScript code.",
+      messages: [{ role: "user", content: JSON.stringify(model, null, 2) }],
+    });
+    return extractTextContent(response.content).replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+  }
+
+  private async generateRoutes(model: ModelDefinition): Promise<string> {
+    const response = await callLLM({
+      system: "Generate Express routes for full CRUD with validation middleware. Respond with ONLY TypeScript code.",
+      messages: [{ role: "user", content: JSON.stringify(model, null, 2) }],
+    });
+    return extractTextContent(response.content).replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+  }
+
+  private async generateTypes(model: ModelDefinition): Promise<string> {
+    const response = await callLLM({
+      system: "Generate TypeScript types/interfaces for the model: Entity, CreateInput, UpdateInput, QueryParams, ListResponse. Respond with ONLY TypeScript code.",
+      messages: [{ role: "user", content: JSON.stringify(model, null, 2) }],
+    });
+    return extractTextContent(response.content).replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+  }
+
+  private generateAddFieldMigration(model: string, field: ModelDefinition["fields"][0]): string {
+    const typeMap: Record<string, string> = {
+      string: "VARCHAR(255)", text: "TEXT", number: "INTEGER", float: "REAL",
+      decimal: "DECIMAL(10,2)", boolean: "BOOLEAN", date: "TIMESTAMP", json: "JSONB",
+      uuid: "UUID", enum: "VARCHAR(50)",
+    };
+
+    const sqlType = typeMap[field.type] || "VARCHAR(255)";
+    const nullable = field.required ? "NOT NULL" : "";
+    const defaultVal = field.default !== undefined ? `DEFAULT '${field.default}'` : "";
+
+    return `ALTER TABLE ${model.toLowerCase()} ADD COLUMN ${field.name} ${sqlType} ${nullable} ${defaultVal};`;
+  }
+}

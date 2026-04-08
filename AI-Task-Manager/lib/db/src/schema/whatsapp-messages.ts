@@ -1,0 +1,25 @@
+import { pgTable, serial, text, integer, timestamp, boolean, varchar, jsonb } from "drizzle-orm/pg-core";
+
+export const whatsappMessagesTable = pgTable("whatsapp_messages", {
+  id: serial("id").primaryKey(),
+  externalId: text("external_id"),
+  direction: varchar("direction", { length: 10 }).notNull().default("outbound"),
+  recipientPhone: varchar("recipient_phone", { length: 30 }).notNull(),
+  recipientName: text("recipient_name"),
+  senderPhone: varchar("sender_phone", { length: 30 }),
+  templateName: varchar("template_name", { length: 100 }),
+  messageType: varchar("message_type", { length: 30 }).default("text"),
+  content: text("content"),
+  mediaUrl: text("media_url"),
+  status: varchar("status", { length: 30 }).default("pending"),
+  errorCode: varchar("error_code", { length: 50 }),
+  errorMessage: text("error_message"),
+  relatedEntity: varchar("related_entity", { length: 50 }),
+  relatedId: integer("related_id"),
+  metadata: jsonb("metadata"),
+  sentAt: timestamp("sent_at"),
+  deliveredAt: timestamp("delivered_at"),
+  readAt: timestamp("read_at"),
+  sentBy: integer("sent_by"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});

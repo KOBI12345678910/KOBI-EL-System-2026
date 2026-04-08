@@ -1,0 +1,267 @@
+import { TerminalTool } from "./terminalTool";
+import { SelfHealTool } from "./selfHealTool";
+import { TokenTracker } from "./tokenTracker";
+import { SmartContextTool } from "./smartContextTool";
+import { LogViewerTool } from "./logViewerTool";
+import * as os from "os";
+
+export interface SystemHealth {
+  status: "healthy" | "degraded" | "critical";
+  uptime: number;
+  timestamp: Date;
+  system: {
+    platform: string;
+    nodeVersion: string;
+    cpuUsage: number;
+    memoryUsage: { used: number; total: number; percent: number };
+    diskUsage: { used: string; total: string; percent: string };
+    loadAvg: number[];
+  };
+  services: Array<{
+    name: string;
+    status: "up" | "down" | "degraded";
+    responseTime?: number;
+    lastCheck: Date;
+    details?: string;
+  }>;
+  agent: {
+    status: "idle" | "working" | "error";
+    currentTask?: string;
+    tasksCompleted: number;
+    successRate: number;
+    tokensUsed: number;
+    totalCost: number;
+    avgTaskDuration: number;
+  };
+  errors: {
+    last5min: number;
+    last1hr: number;
+    last24hr: number;
+    topErrors: Array<{ message: string; count: number }>;
+  };
+  performance: {
+    avgResponseTime: number;
+    requestsPerMinute: number;
+    p95ResponseTime: number;
+  };
+}
+
+export class HealthDashboardTool {
+  private terminal: TerminalTool;
+  private tokenTracker: TokenTracker;
+  private smartContext: SmartContextTool;
+  private logViewer: LogViewerTool;
+  private startTime: Date;
+
+  constructor(params: {
+    terminal: TerminalTool;
+    tokenTracker: TokenTracker;
+    smartContext: SmartContextTool;
+    logViewer: LogViewerTool;
+  }) {
+    this.terminal = params.terminal;
+    this.tokenTracker = params.tokenTracker;
+    this.smartContext = params.smartContext;
+    this.logViewer = params.logViewer;
+    this.startTime = new Date();
+  }
+
+  async getFullHealth(): Promise<SystemHealth> {
+    const [cpu, memory, disk, services] = await Promise.all([
+      this.getCPU(),
+      this.getMemory(),
+      this.getDisk(),
+      this.checkServices(),
+    ]);
+
+    const tokenStats = this.tokenTracker.getStats();
+    const agentStats = this.smartContext.getStats();
+    const logStats = this.logViewer.getStats();
+
+    const errorLogs = this.logViewer.query({ level: ["error", "fatal"] });
+    const now = Date.now();
+    const errors5min = errorLogs.filter((l) => now - l.timestamp.getTime() < 5 * 60 * 1000).length;
+    const errors1hr = errorLogs.filter((l) => now - l.timestamp.getTime() < 60 * 60 * 1000).length;
+    const errors24hr = errorLogs.filter((l) => now - l.timestamp.getTime() < 24 * 60 * 60 * 1000).length;
+
+    // Top errors
+    const errorCounts = new Map<string, number>();
+    for (const log of errorLogs.slice(-100)) {
+      const msg = log.message.slice(0, 80);
+      errorCounts.set(msg, (errorCounts.get(msg) || 0) + 1);
+    }
+    const topErrors = Array.from(errorCounts.entries())
+      .map(([message, count]) => ({ message, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    // Overall status
+    const criticalServices = services.filter((s) => s.status === "down");
+    const status: SystemHealth["status"] =
+      criticalServices.length > 0 ? "critical" :
+      memory.percent > 90 || errors5min > 10 ? "degraded" : "healthy";
+
+    return {
+      status,
+      uptime: Date.now() - this.startTime.getTime(),
+      timestamp: new Date(),
+      system: {
+        platform: `${os.platform()} ${os.arch()}`,
+        nodeVersion: process.version,
+        cpuUsage: cpu,
+        memoryUsage: memory,
+        diskUsage: disk,
+        loadAvg: os.loadavg(),
+      },
+      services,
+      agent: {
+        status: "idle",
+        tasksCompleted: agentStats.totalTasks,
+        successRate: agentStats.successRate,
+        tokensUsed: tokenStats.totalTokens,
+        totalCost: tokenStats.totalCost,
+        avgTaskDuration: agentStats.avgDuration,
+      },
+      errors: {
+        last5min: errors5min,
+        last1hr: errors1hr,
+        last24hr: errors24hr,
+        topErrors,
+      },
+      performance: {
+        avgResponseTime: 0,
+        requestsPerMinute: logStats.avgPerMinute,
+        p95ResponseTime: 0,
+      },
+    };
+  }
+
+  async getQuickStatus(): Promise<{
+    status: string;
+    cpu: number;
+    memory: number;
+    errors: number;
+    uptime: string;
+  }> {
+    const mem = this.getMemorySync();
+    const errors = this.logViewer.query({ level: ["error"], limit: 10 }).length;
+    const uptimeMs = Date.now() - this.startTime.getTime();
+    const hours = Math.floor(uptimeMs / 3600000);
+    const minutes = Math.floor((uptimeMs % 3600000) / 60000);
+
+    return {
+      status: errors > 5 ? "degraded" : "healthy",
+      cpu: os.loadavg()[0],
+      memory: mem,
+      errors,
+      uptime: `${hours}h ${minutes}m`,
+    };
+  }
+
+  private async getCPU(): Promise<number> {
+    const result = await this.terminal.execute(
+      "top -bn1 | grep 'Cpu' | awk '{print $2}' | head -1",
+      { timeout: 3000 }
+    );
+    return parseFloat(result.stdout.trim()) || 0;
+  }
+
+  private async getMemory(): Promise<{ used: number; total: number; percent: number }> {
+    const total = os.totalmem();
+    const free = os.freemem();
+    const used = total - free;
+    return {
+      used: Math.round(used / 1024 / 1024),
+      total: Math.round(total / 1024 / 1024),
+      percent: Math.round((used / total) * 100),
+    };
+  }
+
+  private getMemorySync(): number {
+    return Math.round(((os.totalmem() - os.freemem()) / os.totalmem()) * 100);
+  }
+
+  private async getDisk(): Promise<{ used: string; total: string; percent: string }> {
+    const result = await this.terminal.execute("df -h / | tail -1 | awk '{print $3, $2, $5}'", { timeout: 3000 });
+    const parts = result.stdout.trim().split(/\s+/);
+    return { used: parts[0] || "?", total: parts[1] || "?", percent: parts[2] || "?" };
+  }
+
+  private async checkServices(): Promise<SystemHealth["services"]> {
+    const services: SystemHealth["services"] = [];
+
+    // Check web server
+    const webStart = Date.now();
+    const webResult = await this.terminal.execute(
+      'curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/health 2>/dev/null || echo "0"',
+      { timeout: 5000 }
+    );
+    const webStatus = parseInt(webResult.stdout.trim());
+    services.push({
+      name: "web-server",
+      status: webStatus >= 200 && webStatus < 400 ? "up" : "down",
+      responseTime: Date.now() - webStart,
+      lastCheck: new Date(),
+      details: `HTTP ${webStatus || "N/A"}`,
+    });
+
+    // Check database
+    const dbStart = Date.now();
+    const dbResult = await this.terminal.execute(
+      'psql "$DATABASE_URL" -c "SELECT 1" 2>/dev/null && echo "OK" || echo "FAIL"',
+      { timeout: 5000 }
+    );
+    services.push({
+      name: "database",
+      status: dbResult.stdout.includes("OK") ? "up" : "down",
+      responseTime: Date.now() - dbStart,
+      lastCheck: new Date(),
+    });
+
+    // Check Redis
+    const redisStart = Date.now();
+    const redisResult = await this.terminal.execute(
+      'redis-cli ping 2>/dev/null || echo "FAIL"',
+      { timeout: 3000 }
+    );
+    services.push({
+      name: "redis",
+      status: redisResult.stdout.includes("PONG") ? "up" : "down",
+      responseTime: Date.now() - redisStart,
+      lastCheck: new Date(),
+    });
+
+    // Check Node.js
+    services.push({
+      name: "node",
+      status: "up",
+      responseTime: 0,
+      lastCheck: new Date(),
+      details: process.version,
+    });
+
+    return services;
+  }
+
+  // Express routes
+  getRoutes() {
+    const dashboard = this;
+    const router = require("express").Router();
+
+    router.get("/health", async (_: any, res: any) => {
+      const health = await dashboard.getFullHealth();
+      const statusCode = health.status === "critical" ? 503 : health.status === "degraded" ? 200 : 200;
+      res.status(statusCode).json(health);
+    });
+
+    router.get("/health/quick", async (_: any, res: any) => {
+      res.json(await dashboard.getQuickStatus());
+    });
+
+    router.get("/health/services", async (_: any, res: any) => {
+      res.json(await dashboard.checkServices());
+    });
+
+    return router;
+  }
+}

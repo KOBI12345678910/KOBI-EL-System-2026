@@ -1,0 +1,193 @@
+import { callLLM } from "../llm/client";
+import { extractJSON, extractTextContent } from "../llm/parser";
+import { FileTool } from "./fileTool";
+
+export interface ArchitectureDecision {
+  area: string;
+  decision: string;
+  rationale: string;
+  alternatives: string[];
+  tradeoffs: string;
+}
+
+export interface SystemDesign {
+  overview: string;
+  architecture: ArchitectureDecision[];
+  components: Array<{
+    name: string;
+    type: string;
+    responsibility: string;
+    dependencies: string[];
+    interfaces: string[];
+  }>;
+  dataModel: Array<{
+    entity: string;
+    fields: Array<{ name: string; type: string; constraints: string }>;
+    relations: string[];
+  }>;
+  apiDesign: Array<{
+    method: string;
+    path: string;
+    description: string;
+    auth: boolean;
+    request?: string;
+    response?: string;
+  }>;
+  infrastructure: {
+    hosting: string;
+    database: string;
+    cache: string;
+    cdn: string;
+    monitoring: string;
+  };
+  securityPlan: string[];
+  scalingStrategy: string;
+  estimatedCost: string;
+}
+
+export class AIArchitectTool {
+  private fileTool: FileTool;
+
+  constructor(fileTool: FileTool) {
+    this.fileTool = fileTool;
+  }
+
+  async designSystem(requirements: string): Promise<SystemDesign> {
+    const response = await callLLM({
+      system: `You are a world-class software architect with 20+ years experience.
+Design complete systems from requirements. Consider: scalability, security, maintainability, cost, developer experience.
+
+Always respond with a complete JSON SystemDesign object:
+{
+  "overview": "2-3 sentence summary",
+  "architecture": [{ "area": "", "decision": "", "rationale": "", "alternatives": [], "tradeoffs": "" }],
+  "components": [{ "name": "", "type": "service|module|library|ui", "responsibility": "", "dependencies": [], "interfaces": [] }],
+  "dataModel": [{ "entity": "", "fields": [{ "name": "", "type": "", "constraints": "" }], "relations": [] }],
+  "apiDesign": [{ "method": "GET|POST|PUT|DELETE", "path": "", "description": "", "auth": true, "request": "", "response": "" }],
+  "infrastructure": { "hosting": "", "database": "", "cache": "", "cdn": "", "monitoring": "" },
+  "securityPlan": [],
+  "scalingStrategy": "",
+  "estimatedCost": ""
+}`,
+      messages: [{ role: "user", content: `Design a complete system for:\n\n${requirements}` }],
+      maxTokens: 8192,
+    });
+
+    const text = extractTextContent(response.content);
+    return extractJSON(text) as SystemDesign;
+  }
+
+  async generateSchemaFromDesign(design: SystemDesign, orm: "prisma" | "drizzle" | "typeorm"): Promise<string> {
+    const response = await callLLM({
+      system: `You are a database expert. Generate a complete ${orm} schema from the data model.
+Include: all entities, fields, relations, indexes, constraints, enums.
+Respond with ONLY the schema code, no explanation.`,
+      messages: [
+        {
+          role: "user",
+          content: `Generate ${orm} schema for:\n\n${JSON.stringify(design.dataModel, null, 2)}\n\nRelations and constraints should be complete and production-ready.`,
+        },
+      ],
+      maxTokens: 8192,
+    });
+
+    let schema = extractTextContent(response.content);
+    schema = schema.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+
+    const ext = orm === "prisma" ? "prisma" : "ts";
+    const filename = orm === "prisma" ? "prisma/schema.prisma" : `src/db/schema.${ext}`;
+    this.fileTool.createFile(filename, schema);
+    return schema;
+  }
+
+  async generateAPIFromDesign(design: SystemDesign): Promise<Map<string, string>> {
+    const files = new Map<string, string>();
+
+    // Group endpoints by resource
+    const resources = new Map<string, typeof design.apiDesign>();
+    for (const endpoint of design.apiDesign) {
+      const resource = endpoint.path.split("/")[2] || "root";
+      if (!resources.has(resource)) resources.set(resource, []);
+      resources.get(resource)!.push(endpoint);
+    }
+
+    for (const [resource, endpoints] of resources) {
+      const response = await callLLM({
+        system: `You are an expert API developer. Generate a complete Express.js TypeScript route file.
+Include: proper validation (zod), error handling, authentication middleware, pagination, TypeScript types.
+Respond with ONLY the code.`,
+        messages: [
+          {
+            role: "user",
+            content: `Generate route file for resource "${resource}" with endpoints:\n${JSON.stringify(endpoints, null, 2)}`,
+          },
+        ],
+      });
+
+      let code = extractTextContent(response.content);
+      code = code.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+
+      const filename = `src/routes/${resource}.ts`;
+      this.fileTool.createFile(filename, code);
+      files.set(filename, code);
+    }
+
+    return files;
+  }
+
+  async reviewArchitecture(projectContext: string): Promise<{
+    score: number;
+    strengths: string[];
+    weaknesses: string[];
+    recommendations: Array<{
+      priority: "critical" | "high" | "medium" | "low";
+      area: string;
+      issue: string;
+      recommendation: string;
+    }>;
+  }> {
+    const response = await callLLM({
+      system: `You are a senior architecture reviewer. Review the project for:
+1. Architecture patterns and anti-patterns
+2. Scalability concerns
+3. Security vulnerabilities
+4. Performance bottlenecks
+5. Maintainability
+6. Testing strategy
+7. Error handling
+8. Separation of concerns
+
+Respond with JSON:
+{
+  "score": 0-100,
+  "strengths": [],
+  "weaknesses": [],
+  "recommendations": [{ "priority": "critical|high|medium|low", "area": "", "issue": "", "recommendation": "" }]
+}`,
+      messages: [{ role: "user", content: `Review this architecture:\n\n${projectContext}` }],
+    });
+
+    return extractJSON(extractTextContent(response.content));
+  }
+
+  async generateMermaidDiagram(design: SystemDesign, type: "architecture" | "erd" | "sequence" | "flow"): Promise<string> {
+    const response = await callLLM({
+      system: `Generate a Mermaid diagram. Respond with ONLY the mermaid code (no code blocks).`,
+      messages: [
+        {
+          role: "user",
+          content: `Generate a ${type} diagram for:\n${JSON.stringify(
+            type === "erd" ? design.dataModel : type === "architecture" ? design.components : design.apiDesign,
+            null,
+            2
+          )}`,
+        },
+      ],
+    });
+
+    let diagram = extractTextContent(response.content);
+    diagram = diagram.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    this.fileTool.createFile(`docs/diagrams/${type}.mmd`, diagram);
+    return diagram;
+  }
+}

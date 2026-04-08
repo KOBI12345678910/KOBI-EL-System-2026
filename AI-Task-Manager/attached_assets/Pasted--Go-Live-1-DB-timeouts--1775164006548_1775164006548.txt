@@ -1,0 +1,78 @@
+⚠️ בעיות שצריך לתקן (לפי עדיפות)
+🔴 קריטי — חייב לתקן לפני Go-Live
+#	בעיה	פירוט
+1	DB timeouts חמורים	הלוגים מראים "DB query timeout (3s)", "Connection terminated due to connection timeout" — מרובים. זה ישפיע על כל משתמשי הייצור
+2	Connection pooling חלש	ה-DB מתנתק תחת עומס. צריך PgBouncer או הגדרת pool חזקה יותר ל-200 עובדים
+3	אין backup אוטומטי	אין מנגנון גיבוי יומי למסד הנתונים. אם משהו קורס — המידע אבוד
+4	חסר /api/health endpoint ציבורי	ה-health מחזיר 401 (דורש אימות) — צריך להיות פתוח ל-monitoring
+5	Migrations ללא סדר	הטבלאות נוצרות ב-app.ts (94 CREATE TABLE IF NOT EXISTS) — אין מנגנון migrations מסודר. שינויי סכמה עלולים להתנגש
+6	secrets בקוד	צריך לוודא שאין credentials/API keys hardcoded — הכל חייב לעבור ב-env vars
+7	404 על /api/materials	endpoint חומרי גלם לא קיים — חסר נתיב חשוב למפעל מתכת
+🟡 גבוה — חשוב מאוד
+#	בעיה	פירוט
+8	חסר Rate Limiting	אין הגנה על API מפני DDoS או brute force
+9	חסר Input Validation מרכזי	אין middleware אחיד ל-Zod validation על כל הנקודות
+10	Balance Sheet endpoint — 404	/api/reports/financial/balance-sheet מחזיר 404 — דף הפרונטאנד קיים אבל ה-API חסר
+11	חסר 2FA	למנהלים חייב אימות דו-שלבי (TOTP/SMS)
+12	חסר WhatsApp API	הצעות מחיר, תזכורות תשלום, עדכוני עבודה — עדיין לא מחובר
+13	חסר PDF הצעות מחיר/חשבוניות	אין יצירת PDF עם לוגו לשליחה ללקוחות
+14	חסר חישוב שכר ישראלי מלא	מס הכנסה, ביטוח לאומי, פנסיה, קרן השתלמות — צריך לוודא שזה עובד end-to-end
+15	חסר BOM	Bill of Materials — חשבון חומרים לכל מוצר סטנדרטי
+🟠 בינוני — שיפורים חשובים
+#	בעיה	פירוט
+16	חסר שעון נוכחות	כניסה/יציאה + חישוב שעות אוטומטי לעובדים
+17	חסר ניהול משמרות	שיבוץ שבועי + יומי + alerts לחוסרים
+18	חסר Kanban לרצפת ייצור	גרירת הזמנות עבודה בין שלבים
+19	חסר QR/ברקוד להזמנות עבודה	סריקה מהירה ברצפה
+20	חסר Load Testing	לא נבדק עומס של 200 משתמשים בו-זמנית
+21	חסר Unit/Integration Tests	אין בדיקות אוטומטיות
+22	חסר CORS מוגדר	צריך להגדיר domains מאושרים בלבד
+23	מובייל — מסך לבן ב-Web	הפונטים איטיים לטעינה ב-web preview, המובייל עובד על device
+📋 רשימת משימות מומלצות — סדר ביצוע
+שלב 1 — תיקונים קריטיים (חייב לפני Go-Live)
+תיקון DB Connection Pooling + Timeouts — הגדרת pool חזק, timeout ארוך יותר, reconnect אוטומטי
+הוספת Backup אוטומטי יומי — cron job שמגבה את ה-DB
+Health Check ציבורי — /api/health ללא auth לניטור
+Migrations מסודרים — העברת 94 CREATE TABLE מ-app.ts לקובצי migration נפרדים
+סריקת Secrets — לוודא שאין credentials בקוד
+שלב 2 — אבטחה
+Rate Limiting — הגנה על כל ה-API
+Input Validation — Zod middleware מרכזי
+2FA למנהלים — TOTP/SMS
+CORS Config — domains מאושרים בלבד
+Session Timeout — 30 דקות idle
+שלב 3 — פיצ'רים עסקיים חסרים
+WhatsApp Business API — הצעות, תזכורות, עדכונים
+PDF Generator — הצעות מחיר + חשבוניות עם לוגו
+חישוב שכר ישראלי — מס, ביטוח לאומי, פנסיה
+שעון נוכחות — כניסה/יציאה
+ניהול משמרות — שיבוץ + alerts
+BOM — חשבון חומרים
+Kanban ייצור — גרירה בין שלבים
+שלב 4 — Testing + Go-Live
+Load Testing — k6 עם 200 משתמשים
+E2E Tests — Playwright לזרימות עיקריות
+UAT — בדיקה עם עובדים אמיתיים
+Parallel Run — שבועיים לצד המערכת הישנה
+הדרכת משתמשים — מדריך בעברית
+📊 סיכום מספרי
+מדד	ערך
+שורות קוד כולל	~585,000
+טבלאות DB	94
+API Routes	4,567
+דפי Frontend	612
+מסכי מובייל	68
+Endpoints שעובדים	12/14 שנבדקו (86%)
+Endpoints שנכשלו	2 (materials 404, balance-sheet 404)
+השורה התחתונה: המערכת מרשימה מאוד בגודל ובכיסוי. רוב הדפים והנקודות עובדים. הבעיה הכי דחופה היא ה-DB timeouts — זה יגרום לבעיות חמורות עם 200 עובדים. אחרי זה — backup, אבטחה, ואז הפיצ'רים העסקיים החסרים.
+
+רוצה שאתחיל לעבוד על אחת מהמשימות?
+
+Time worked
+1 minute
+Work done
+8 actions
+Agent Usage
+$4.76
+תתקן
+

@@ -1,0 +1,928 @@
+import * as fs from "fs";
+import * as path from "path";
+import { TerminalTool } from "./tools/terminalTool";
+import { FileTool } from "./fileTool";
+import { fastExec } from "./core/speed";
+
+// ═══════════════════════════════════════════════════
+// SELF-CHECK — בודק את כל המערכת ומתקן בעיות
+// ═══════════════════════════════════════════════════
+
+export interface CheckResult {
+  name: string;
+  status: "pass" | "fail" | "warn" | "fixed";
+  message: string;
+  details?: string;
+  autoFixed?: boolean;
+  duration: number;
+}
+
+export interface FullCheckReport {
+  timestamp: Date;
+  totalChecks: number;
+  passed: number;
+  failed: number;
+  warnings: number;
+  autoFixed: number;
+  checks: CheckResult[];
+  overallStatus: "healthy" | "degraded" | "broken";
+  totalDuration: number;
+}
+
+export class SelfCheck {
+  private workspaceDir: string;
+  private terminal: TerminalTool;
+  private fileTool: FileTool;
+  private onLog: (msg: string) => void;
+
+  constructor(workspaceDir: string, onLog: (msg: string) => void) {
+    this.workspaceDir = workspaceDir;
+    this.terminal = new TerminalTool(workspaceDir);
+    this.fileTool = new FileTool(workspaceDir);
+    this.onLog = onLog;
+  }
+
+  /**
+   * FULL SYSTEM CHECK — בודק הכל ומתקן
+   */
+  async runFullCheck(): Promise<FullCheckReport> {
+    const startTime = Date.now();
+    const checks: CheckResult[] = [];
+
+    this.onLog("\n╔══════════════════════════════════════╗");
+    this.onLog("║    🔍 SYSTEM SELF-CHECK STARTING     ║");
+    this.onLog("╚══════════════════════════════════════╝\n");
+
+    // ═══ 1. FILE STRUCTURE ═══
+    checks.push(await this.checkFileStructure());
+
+    // ═══ 2. PACKAGE.JSON ═══
+    checks.push(await this.checkPackageJson());
+
+    // ═══ 3. NODE_MODULES ═══
+    checks.push(await this.checkNodeModules());
+
+    // ═══ 4. TSCONFIG ═══
+    checks.push(await this.checkTsConfig());
+
+    // ═══ 5. TYPESCRIPT COMPILATION ═══
+    checks.push(await this.checkTypeScript());
+
+    // ═══ 6. IMPORTS — כל import מצביע לקובץ שקיים ═══
+    checks.push(...await this.checkImports());
+
+    // ═══ 7. ENV FILE ═══
+    checks.push(await this.checkEnvFile());
+
+    // ═══ 8. API KEY ═══
+    checks.push(await this.checkAPIKey());
+
+    // ═══ 9. EXPORTS — כל קובץ מייצא מה שצריך ═══
+    checks.push(await this.checkExports());
+
+    // ═══ 10. CIRCULAR DEPENDENCIES ═══
+    checks.push(await this.checkCircularDeps());
+
+    // ═══ 11. DUPLICATE CODE ═══
+    checks.push(await this.checkDuplicates());
+
+    // ═══ 12. PORT AVAILABILITY ═══
+    checks.push(await this.checkPorts());
+
+    // ═══ 13. DISK SPACE ═══
+    checks.push(await this.checkDiskSpace());
+
+    // ═══ 14. NODE VERSION ═══
+    checks.push(await this.checkNodeVersion());
+
+    // ═══ 15. SYNTAX ERRORS ═══
+    checks.push(await this.checkSyntax());
+
+    // ═══ 16. MISSING TYPES ═══
+    checks.push(await this.checkMissingTypes());
+
+    // ═══ 17. SECURITY ═══
+    checks.push(await this.checkSecurity());
+
+    // ═══ 18. BUILD ═══
+    checks.push(await this.checkBuild());
+
+    // ═══ 19. WORKSPACE PERMISSIONS ═══
+    checks.push(await this.checkPermissions());
+
+    // ═══ 20. AGENT BRAIN FILE ═══
+    checks.push(await this.checkBrainFile());
+
+    // Calculate totals
+    const passed = checks.filter((c) => c.status === "pass").length;
+    const failed = checks.filter((c) => c.status === "fail").length;
+    const warnings = checks.filter((c) => c.status === "warn").length;
+    const autoFixed = checks.filter((c) => c.status === "fixed").length;
+
+    const overallStatus: FullCheckReport["overallStatus"] =
+      failed > 3 ? "broken" : failed > 0 || warnings > 5 ? "degraded" : "healthy";
+
+    this.onLog("\n╔══════════════════════════════════════╗");
+    this.onLog(`║  ✅ Passed:    ${String(passed).padStart(3)}                    ║`);
+    this.onLog(`║  ❌ Failed:    ${String(failed).padStart(3)}                    ║`);
+    this.onLog(`║  ⚠️  Warnings:  ${String(warnings).padStart(3)}                    ║`);
+    this.onLog(`║  🔧 Auto-fixed: ${String(autoFixed).padStart(3)}                   ║`);
+    this.onLog(`║  Status: ${overallStatus.toUpperCase().padEnd(28)}║`);
+    this.onLog("╚══════════════════════════════════════╝\n");
+
+    return {
+      timestamp: new Date(),
+      totalChecks: checks.length,
+      passed,
+      failed,
+      warnings,
+      autoFixed,
+      checks,
+      overallStatus,
+      totalDuration: Date.now() - startTime,
+    };
+  }
+
+  // ═══════════════════════════════════════════
+  // CHECK 1: File Structure
+  // ═══════════════════════════════════════════
+
+  private async checkFileStructure(): Promise<CheckResult> {
+    const start = Date.now();
+    this.onLog("📁 Checking file structure...");
+
+    const requiredDirs = [
+      "src",
+      "src/agent",
+      "src/tools",
+      "src/llm",
+      "src/flows",
+      "src/core",
+      "src/ws",
+      "src/ui",
+    ];
+
+    const requiredFiles = [
+      "src/index.ts",
+      "src/agent/core.ts",
+      "src/agent/planner.ts",
+      "src/agent/executor.ts",
+      "src/agent/errorHandler.ts",
+      "src/agent/memory.ts",
+      "src/llm/client.ts",
+      "src/llm/prompts.ts",
+      "src/llm/parser.ts",
+      "src/core/speed.ts",
+      "src/core/brain.ts",
+      "src/ws/socket.ts",
+      "src/ui/index.html",
+      "package.json",
+      "tsconfig.json",
+    ];
+
+    const missingDirs: string[] = [];
+    const missingFiles: string[] = [];
+
+    for (const dir of requiredDirs) {
+      const fullPath = path.join(this.workspaceDir, dir);
+      if (!fs.existsSync(fullPath)) {
+        missingDirs.push(dir);
+        fs.mkdirSync(fullPath, { recursive: true });
+        this.onLog(`  🔧 Created missing dir: ${dir}`);
+      }
+    }
+
+    for (const file of requiredFiles) {
+      const fullPath = path.join(this.workspaceDir, file);
+      if (!fs.existsSync(fullPath)) {
+        missingFiles.push(file);
+      }
+    }
+
+    if (missingFiles.length > 0) {
+      return {
+        name: "file-structure",
+        status: missingDirs.length > 0 ? "fixed" : "fail",
+        message: `Missing ${missingFiles.length} files: ${missingFiles.slice(0, 5).join(", ")}`,
+        details: missingFiles.join("\n"),
+        autoFixed: missingDirs.length > 0,
+        duration: Date.now() - start,
+      };
+    }
+
+    this.onLog("  ✅ All files and dirs present");
+    return { name: "file-structure", status: "pass", message: `${requiredDirs.length} dirs, ${requiredFiles.length} files OK`, duration: Date.now() - start };
+  }
+
+  // ═══════════════════════════════════════════
+  // CHECK 2: package.json
+  // ═══════════════════════════════════════════
+
+  private async checkPackageJson(): Promise<CheckResult> {
+    const start = Date.now();
+    this.onLog("📦 Checking package.json...");
+
+    const pkgPath = path.join(this.workspaceDir, "package.json");
+    if (!fs.existsSync(pkgPath)) {
+      // Auto-fix: create it
+      this.onLog("  🔧 Creating package.json...");
+      await this.terminal.execute("npm init -y", { timeout: 10000 });
+      return { name: "package-json", status: "fixed", message: "Created package.json", autoFixed: true, duration: Date.now() - start };
+    }
+
+    try {
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
+      const issues: string[] = [];
+
+      // Check required scripts
+      if (!pkg.scripts?.dev) {
+        pkg.scripts = pkg.scripts || {};
+        pkg.scripts.dev = "tsx watch src/index.ts";
+        issues.push("Added missing 'dev' script");
+      }
+      if (!pkg.scripts?.build) {
+        pkg.scripts.build = "tsc";
+        issues.push("Added missing 'build' script");
+      }
+      if (!pkg.scripts?.start) {
+        pkg.scripts.start = "node dist/index.js";
+        issues.push("Added missing 'start' script");
+      }
+
+      // Check required dependencies
+      const requiredDeps = ["@anthropic-ai/sdk", "express", "ws", "dotenv", "uuid"];
+      const missingDeps: string[] = [];
+      for (const dep of requiredDeps) {
+        if (!pkg.dependencies?.[dep] && !pkg.devDependencies?.[dep]) {
+          missingDeps.push(dep);
+        }
+      }
+
+      if (issues.length > 0) {
+        fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
+        this.onLog(`  🔧 Fixed: ${issues.join(", ")}`);
+      }
+
+      if (missingDeps.length > 0) {
+        this.onLog(`  📦 Installing missing deps: ${missingDeps.join(", ")}`);
+        await this.terminal.execute(`npm install ${missingDeps.join(" ")}`, { timeout: 120000 });
+        return { name: "package-json", status: "fixed", message: `Installed ${missingDeps.length} missing deps`, autoFixed: true, duration: Date.now() - start };
+      }
+
+      if (issues.length > 0) {
+        return { name: "package-json", status: "fixed", message: issues.join("; "), autoFixed: true, duration: Date.now() - start };
+      }
+
+      this.onLog("  ✅ package.json OK");
+      return { name: "package-json", status: "pass", message: `${Object.keys(pkg.dependencies || {}).length} deps OK`, duration: Date.now() - start };
+    } catch (err: any) {
+      return { name: "package-json", status: "fail", message: `Invalid JSON: ${err.message}`, duration: Date.now() - start };
+    }
+  }
+
+  // ═══════════════════════════════════════════
+  // CHECK 3: node_modules
+  // ═══════════════════════════════════════════
+
+  private async checkNodeModules(): Promise<CheckResult> {
+    const start = Date.now();
+    this.onLog("📂 Checking node_modules...");
+
+    const nmPath = path.join(this.workspaceDir, "node_modules");
+    if (!fs.existsSync(nmPath)) {
+      this.onLog("  🔧 Running npm install...");
+      const result = await this.terminal.execute("npm install", { timeout: 180000 });
+      return {
+        name: "node-modules",
+        status: result.success ? "fixed" : "fail",
+        message: result.success ? "Installed dependencies" : "npm install failed",
+        autoFixed: result.success,
+        duration: Date.now() - start,
+      };
+    }
+
+    // Check for integrity
+    const result = await this.terminal.execute("npm ls --depth=0 2>&1 | grep -c 'MISSING\\|ERR'", { timeout: 30000 });
+    const errorCount = parseInt(result.stdout.trim()) || 0;
+
+    if (errorCount > 0) {
+      this.onLog(`  🔧 ${errorCount} broken deps, reinstalling...`);
+      await this.terminal.execute("rm -rf node_modules package-lock.json && npm install", { timeout: 180000 });
+      return { name: "node-modules", status: "fixed", message: `Reinstalled ${errorCount} broken deps`, autoFixed: true, duration: Date.now() - start };
+    }
+
+    this.onLog("  ✅ node_modules OK");
+    return { name: "node-modules", status: "pass", message: "Dependencies intact", duration: Date.now() - start };
+  }
+
+  // ═══════════════════════════════════════════
+  // CHECK 4: tsconfig.json
+  // ═══════════════════════════════════════════
+
+  private async checkTsConfig(): Promise<CheckResult> {
+    const start = Date.now();
+    this.onLog("⚙️  Checking tsconfig.json...");
+
+    const tscPath = path.join(this.workspaceDir, "tsconfig.json");
+    if (!fs.existsSync(tscPath)) {
+      this.onLog("  🔧 Creating tsconfig.json...");
+      this.fileTool.createFile("tsconfig.json", JSON.stringify({
+        compilerOptions: {
+          target: "ES2022",
+          module: "commonjs",
+          lib: ["ES2022"],
+          outDir: "./dist",
+          rootDir: "./src",
+          strict: true,
+          esModuleInterop: true,
+          skipLibCheck: true,
+          forceConsistentCasingInFileNames: true,
+          resolveJsonModule: true,
+          declaration: true,
+          sourceMap: true,
+        },
+        include: ["src/**/*"],
+        exclude: ["node_modules", "dist"],
+      }, null, 2));
+      return { name: "tsconfig", status: "fixed", message: "Created tsconfig.json", autoFixed: true, duration: Date.now() - start };
+    }
+
+    try {
+      JSON.parse(fs.readFileSync(tscPath, "utf-8"));
+      this.onLog("  ✅ tsconfig.json OK");
+      return { name: "tsconfig", status: "pass", message: "Valid", duration: Date.now() - start };
+    } catch (err: any) {
+      return { name: "tsconfig", status: "fail", message: `Invalid: ${err.message}`, duration: Date.now() - start };
+    }
+  }
+
+  // ═══════════════════════════════════════════
+  // CHECK 5: TypeScript Compilation
+  // ═══════════════════════════════════════════
+
+  private async checkTypeScript(): Promise<CheckResult> {
+    const start = Date.now();
+    this.onLog("🔷 Checking TypeScript compilation...");
+
+    const result = await this.terminal.execute("npx tsc --noEmit 2>&1 | tail -20", { timeout: 60000 });
+    const errorLines = result.stdout.split("\n").filter((l) => l.includes("error TS"));
+    const errorCount = errorLines.length;
+
+    if (errorCount === 0 && result.success) {
+      this.onLog("  ✅ TypeScript clean");
+      return { name: "typescript", status: "pass", message: "0 errors", duration: Date.now() - start };
+    }
+
+    if (errorCount > 0) {
+      this.onLog(`  ⚠️  ${errorCount} type errors`);
+
+      // Try to auto-fix common issues
+      let fixed = 0;
+
+      // Fix: missing type imports
+      for (const line of errorLines.slice(0, 20)) {
+        const fileMatch = line.match(/^(.+?)\(\d+,\d+\):/);
+        const errorMatch = line.match(/error TS(\d+):/);
+
+        if (!fileMatch || !errorMatch) continue;
+        const file = fileMatch[1];
+        const errorCode = errorMatch[1];
+
+        // TS2307: Cannot find module
+        if (errorCode === "2307") {
+          const moduleMatch = line.match(/Cannot find module '([^']+)'/);
+          if (moduleMatch) {
+            const mod = moduleMatch[1];
+            if (!mod.startsWith(".")) {
+              // External module — install it
+              this.onLog(`  🔧 Installing missing module: ${mod}`);
+              const installResult = await this.terminal.execute(`npm install ${mod} 2>/dev/null || npm install @types/${mod} -D 2>/dev/null`, { timeout: 30000 });
+              if (installResult.success) fixed++;
+            } else {
+              // Local module — check if file exists
+              const targetPath = path.join(path.dirname(file), mod);
+              const extensions = [".ts", ".tsx", ".js", "/index.ts", "/index.tsx"];
+              const exists = extensions.some((ext) => fs.existsSync(path.join(this.workspaceDir, targetPath + ext)));
+              if (!exists) {
+                this.onLog(`  ⚠️  Missing local module: ${mod} (from ${file})`);
+              }
+            }
+          }
+        }
+
+        // TS7016: Could not find declaration file
+        if (errorCode === "7016") {
+          const modMatch = line.match(/'([^']+)'/);
+          if (modMatch) {
+            this.onLog(`  🔧 Installing @types/${modMatch[1]}...`);
+            await this.terminal.execute(`npm install -D @types/${modMatch[1]} 2>/dev/null`, { timeout: 15000 });
+            fixed++;
+          }
+        }
+
+        // TS2304: Cannot find name (often missing import)
+        if (errorCode === "2304") {
+          const nameMatch = line.match(/Cannot find name '([^']+)'/);
+          if (nameMatch) {
+            this.onLog(`  ⚠️  Missing name: ${nameMatch[1]} in ${file}`);
+          }
+        }
+      }
+
+      if (fixed > 0) {
+        return {
+          name: "typescript",
+          status: "fixed",
+          message: `${errorCount} errors, auto-fixed ${fixed}`,
+          details: errorLines.slice(0, 10).join("\n"),
+          autoFixed: true,
+          duration: Date.now() - start,
+        };
+      }
+
+      return {
+        name: "typescript",
+        status: errorCount > 10 ? "fail" : "warn",
+        message: `${errorCount} type errors`,
+        details: errorLines.slice(0, 10).join("\n"),
+        duration: Date.now() - start,
+      };
+    }
+
+    return { name: "typescript", status: "warn", message: "Compilation issues", details: result.stderr, duration: Date.now() - start };
+  }
+
+  // ═══════════════════════════════════════════
+  // CHECK 6: Imports
+  // ═══════════════════════════════════════════
+
+  private async checkImports(): Promise<CheckResult[]> {
+    const start = Date.now();
+    this.onLog("🔗 Checking imports...");
+
+    const results: CheckResult[] = [];
+    const brokenImports: string[] = [];
+
+    // Find all .ts files
+    const findResult = await this.terminal.execute(
+      "find src -name '*.ts' -not -path '*/node_modules/*' 2>/dev/null | head -100",
+      { timeout: 10000 }
+    );
+
+    const files = findResult.stdout.split("\n").filter(Boolean);
+    let totalImports = 0;
+    let brokenCount = 0;
+
+    for (const file of files) {
+      const fullPath = path.join(this.workspaceDir, file);
+      if (!fs.existsSync(fullPath)) continue;
+
+      const content = fs.readFileSync(fullPath, "utf-8");
+      const importRegex = /from\s+['"](\.[^'"]+)['"]/g;
+      let match;
+
+      while ((match = importRegex.exec(content)) !== null) {
+        totalImports++;
+        const importPath = match[1];
+        const fileDir = path.dirname(fullPath);
+        const resolvedBase = path.resolve(fileDir, importPath);
+
+        const extensions = [".ts", ".tsx", ".js", ".jsx", "/index.ts", "/index.tsx", "/index.js"];
+        const exists = extensions.some((ext) => fs.existsSync(resolvedBase + ext)) || fs.existsSync(resolvedBase);
+
+        if (!exists) {
+          brokenCount++;
+          brokenImports.push(`${file}: import "${importPath}" — NOT FOUND`);
+        }
+      }
+    }
+
+    if (brokenCount > 0) {
+      this.onLog(`  ⚠️  ${brokenCount} broken imports found`);
+      results.push({
+        name: "imports",
+        status: brokenCount > 10 ? "fail" : "warn",
+        message: `${brokenCount}/${totalImports} imports broken`,
+        details: brokenImports.slice(0, 20).join("\n"),
+        duration: Date.now() - start,
+      });
+    } else {
+      this.onLog(`  ✅ All ${totalImports} imports valid`);
+      results.push({
+        name: "imports",
+        status: "pass",
+        message: `${totalImports} imports OK`,
+        duration: Date.now() - start,
+      });
+    }
+
+    return results;
+  }
+
+  // ═══════════════════════════════════════════
+  // CHECK 7: .env
+  // ═══════════════════════════════════════════
+
+  private async checkEnvFile(): Promise<CheckResult> {
+    const start = Date.now();
+    this.onLog("🔒 Checking .env...");
+
+    const envPath = path.join(this.workspaceDir, ".env");
+    if (!fs.existsSync(envPath)) {
+      this.onLog("  🔧 Creating .env template...");
+      this.fileTool.createFile(".env", `ANTHROPIC_API_KEY=
+PORT=3000
+WORKSPACE_DIR=./workspace
+MAX_RETRIES=5
+MAX_STEPS=50
+MODEL=claude-sonnet-4-20250514
+NODE_ENV=development
+`);
+      return { name: "env-file", status: "fixed", message: "Created .env template — add your API key", autoFixed: true, duration: Date.now() - start };
+    }
+
+    const content = fs.readFileSync(envPath, "utf-8");
+    if (!content.includes("ANTHROPIC_API_KEY") || content.includes("ANTHROPIC_API_KEY=\n") || content.includes("ANTHROPIC_API_KEY= ")) {
+      return { name: "env-file", status: "warn", message: "ANTHROPIC_API_KEY is empty", duration: Date.now() - start };
+    }
+
+    this.onLog("  ✅ .env OK");
+    return { name: "env-file", status: "pass", message: "Environment configured", duration: Date.now() - start };
+  }
+
+  // ═══════════════════════════════════════════
+  // CHECK 8: API Key
+  // ═══════════════════════════════════════════
+
+  private async checkAPIKey(): Promise<CheckResult> {
+    const start = Date.now();
+    this.onLog("🔑 Checking API key...");
+
+    const key = process.env.ANTHROPIC_API_KEY;
+    if (!key) {
+      return { name: "api-key", status: "fail", message: "ANTHROPIC_API_KEY not set", duration: Date.now() - start };
+    }
+    if (!key.startsWith("sk-ant-")) {
+      return { name: "api-key", status: "warn", message: "API key format looks wrong (should start with sk-ant-)", duration: Date.now() - start };
+    }
+
+    this.onLog("  ✅ API key present");
+    return { name: "api-key", status: "pass", message: "Key configured", duration: Date.now() - start };
+  }
+
+  // ═══════════════════════════════════════════
+  // CHECK 9: Exports
+  // ═══════════════════════════════════════════
+
+  private async checkExports(): Promise<CheckResult> {
+    const start = Date.now();
+    this.onLog("📤 Checking exports...");
+
+    // Check that key files export what they should
+    const keyExports: Array<{ file: string; expected: string[] }> = [
+      { file: "src/agent/core.ts", expected: ["Agent", "AgentConfig"] },
+      { file: "src/agent/memory.ts", expected: ["AgentMemory"] },
+      { file: "src/core/speed.ts", expected: ["fastLLM", "fastExec", "ParallelExecutor"] },
+      { file: "src/core/brain.ts", expected: ["Brain"] },
+    ];
+
+    const missing: string[] = [];
+
+    for (const { file, expected } of keyExports) {
+      const fullPath = path.join(this.workspaceDir, file);
+      if (!fs.existsSync(fullPath)) continue;
+
+      const content = fs.readFileSync(fullPath, "utf-8");
+      for (const exp of expected) {
+        if (!content.includes(`export`) || (!content.includes(`export class ${exp}`) && !content.includes(`export function ${exp}`) && !content.includes(`export async function ${exp}`) && !content.includes(`export interface ${exp}`) && !content.includes(`export { ${exp}`))) {
+          missing.push(`${file}: missing export "${exp}"`);
+        }
+      }
+    }
+
+    if (missing.length > 0) {
+      return {
+        name: "exports",
+        status: "warn",
+        message: `${missing.length} missing exports`,
+        details: missing.join("\n"),
+        duration: Date.now() - start,
+      };
+    }
+
+    this.onLog("  ✅ Key exports OK");
+    return { name: "exports", status: "pass", message: "All key exports present", duration: Date.now() - start };
+  }
+
+  // ═══════════════════════════════════════════
+  // CHECK 10: Circular Dependencies
+  // ═══════════════════════════════════════════
+
+  private async checkCircularDeps(): Promise<CheckResult> {
+    const start = Date.now();
+    this.onLog("🔄 Checking circular dependencies...");
+
+    const result = await this.terminal.execute(
+      "npx madge --circular --extensions ts src/ 2>/dev/null | head -20",
+      { timeout: 30000 }
+    );
+
+    if (result.stdout.trim() && !result.stdout.includes("No circular")) {
+      const cycles = result.stdout.split("\n").filter(Boolean).length;
+      return {
+        name: "circular-deps",
+        status: cycles > 5 ? "warn" : "pass",
+        message: `${cycles} circular dependency chains`,
+        details: result.stdout,
+        duration: Date.now() - start,
+      };
+    }
+
+    this.onLog("  ✅ No circular dependencies");
+    return { name: "circular-deps", status: "pass", message: "No cycles", duration: Date.now() - start };
+  }
+
+  // ═══════════════════════════════════════════
+  // CHECK 11: Duplicates
+  // ═══════════════════════════════════════════
+
+  private async checkDuplicates(): Promise<CheckResult> {
+    const start = Date.now();
+    this.onLog("📋 Checking for duplicate interfaces...");
+
+    const result = await this.terminal.execute(
+      "grep -rn 'export interface\\|export class\\|export function' src/ 2>/dev/null | awk -F'[ {(]' '{print $NF}' | sort | uniq -d | head -10",
+      { timeout: 10000 }
+    );
+
+    const dupes = result.stdout.trim().split("\n").filter(Boolean);
+    if (dupes.length > 0) {
+      return { name: "duplicates", status: "warn", message: `${dupes.length} duplicate names: ${dupes.join(", ")}`, duration: Date.now() - start };
+    }
+
+    this.onLog("  ✅ No duplicates");
+    return { name: "duplicates", status: "pass", message: "No duplicate exports", duration: Date.now() - start };
+  }
+
+  // ═══════════════════════════════════════════
+  // CHECK 12: Ports
+  // ═══════════════════════════════════════════
+
+  private async checkPorts(): Promise<CheckResult> {
+    const start = Date.now();
+    this.onLog("🔌 Checking port 3000...");
+
+    const result = await this.terminal.execute("lsof -ti:3000 2>/dev/null", { timeout: 3000 });
+    if (result.stdout.trim()) {
+      return { name: "ports", status: "warn", message: `Port 3000 in use (PID: ${result.stdout.trim()})`, duration: Date.now() - start };
+    }
+
+    this.onLog("  ✅ Port 3000 free");
+    return { name: "ports", status: "pass", message: "Port 3000 available", duration: Date.now() - start };
+  }
+
+  // ═══════════════════════════════════════════
+  // CHECK 13: Disk Space
+  // ═══════════════════════════════════════════
+
+  private async checkDiskSpace(): Promise<CheckResult> {
+    const start = Date.now();
+    this.onLog("💾 Checking disk space...");
+
+    const result = await this.terminal.execute("df -h / | tail -1 | awk '{print $5}'", { timeout: 3000 });
+    const usage = parseInt(result.stdout.replace("%", "")) || 0;
+
+    if (usage > 95) {
+      // Auto-fix: clean up
+      this.onLog("  🔧 Cleaning up disk space...");
+      await this.terminal.execute("npm cache clean --force 2>/dev/null; find /tmp -type f -mtime +1 -delete 2>/dev/null");
+      return { name: "disk-space", status: "fixed", message: `Disk was ${usage}% full, cleaned`, autoFixed: true, duration: Date.now() - start };
+    }
+
+    if (usage > 85) {
+      return { name: "disk-space", status: "warn", message: `Disk ${usage}% full`, duration: Date.now() - start };
+    }
+
+    this.onLog(`  ✅ Disk ${usage}% used`);
+    return { name: "disk-space", status: "pass", message: `${usage}% used`, duration: Date.now() - start };
+  }
+
+  // ═══════════════════════════════════════════
+  // CHECK 14: Node Version
+  // ═══════════════════════════════════════════
+
+  private async checkNodeVersion(): Promise<CheckResult> {
+    const start = Date.now();
+    this.onLog("🟢 Checking Node.js version...");
+
+    const result = await this.terminal.execute("node -v", { timeout: 3000 });
+    const version = result.stdout.trim();
+    const major = parseInt(version.replace("v", ""));
+
+    if (major < 18) {
+      return { name: "node-version", status: "fail", message: `Node ${version} too old (need 18+)`, duration: Date.now() - start };
+    }
+
+    this.onLog(`  ✅ Node ${version}`);
+    return { name: "node-version", status: "pass", message: version, duration: Date.now() - start };
+  }
+
+  // ═══════════════════════════════════════════
+  // CHECK 15: Syntax Errors
+  // ═══════════════════════════════════════════
+
+  private async checkSyntax(): Promise<CheckResult> {
+    const start = Date.now();
+    this.onLog("📝 Checking for syntax errors...");
+
+    const result = await this.terminal.execute(
+      "find src -name '*.ts' -exec node -e 'try{require(\"typescript\").transpileModule(require(\"fs\").readFileSync(process.argv[1],\"utf-8\"),{});console.log(\"OK:\"+process.argv[1])}catch(e){console.log(\"ERR:\"+process.argv[1]+\":\"+e.message)}' {} \\; 2>/dev/null | grep '^ERR:' | head -10",
+      { timeout: 30000 }
+    );
+
+    const errors = result.stdout.split("\n").filter((l) => l.startsWith("ERR:"));
+    if (errors.length > 0) {
+      return {
+        name: "syntax",
+        status: "warn",
+        message: `${errors.length} files with syntax issues`,
+        details: errors.join("\n"),
+        duration: Date.now() - start,
+      };
+    }
+
+    this.onLog("  ✅ No syntax errors");
+    return { name: "syntax", status: "pass", message: "All files valid", duration: Date.now() - start };
+  }
+
+  // ═══════════════════════════════════════════
+  // CHECK 16: Missing Types
+  // ═══════════════════════════════════════════
+
+  private async checkMissingTypes(): Promise<CheckResult> {
+    const start = Date.now();
+    this.onLog("🔷 Checking for missing @types...");
+
+    const result = await this.terminal.execute(
+      "npx tsc --noEmit 2>&1 | grep 'TS7016' | grep -oP \"'[^']+'\"|sort -u | head -10",
+      { timeout: 30000 }
+    );
+
+    const missingTypes = result.stdout.split("\n").filter(Boolean).map((t) => t.replace(/'/g, ""));
+    if (missingTypes.length > 0) {
+      this.onLog(`  🔧 Installing ${missingTypes.length} missing type packages...`);
+      for (const mod of missingTypes) {
+        await this.terminal.execute(`npm install -D @types/${mod} 2>/dev/null`, { timeout: 15000 });
+      }
+      return { name: "missing-types", status: "fixed", message: `Installed @types for: ${missingTypes.join(", ")}`, autoFixed: true, duration: Date.now() - start };
+    }
+
+    this.onLog("  ✅ All types present");
+    return { name: "missing-types", status: "pass", message: "No missing types", duration: Date.now() - start };
+  }
+
+  // ═══════════════════════════════════════════
+  // CHECK 17: Security
+  // ═══════════════════════════════════════════
+
+  private async checkSecurity(): Promise<CheckResult> {
+    const start = Date.now();
+    this.onLog("🔒 Checking security...");
+
+    const issues: string[] = [];
+
+    // Check for hardcoded secrets
+    const secretResult = await this.terminal.execute(
+      "grep -rn 'sk-ant-\\|password\\s*=\\s*[\"\\x27][^\"\\x27]\\+' src/ 2>/dev/null | grep -v '.env' | grep -v 'process.env' | head -5",
+      { timeout: 10000 }
+    );
+    if (secretResult.stdout.trim()) {
+      issues.push("Possible hardcoded secrets found");
+    }
+
+    // Check .gitignore includes .env
+    const gitignorePath = path.join(this.workspaceDir, ".gitignore");
+    if (fs.existsSync(gitignorePath)) {
+      const gi = fs.readFileSync(gitignorePath, "utf-8");
+      if (!gi.includes(".env")) {
+        // Auto-fix
+        fs.appendFileSync(gitignorePath, "\n.env\n.env.local\n");
+        issues.push("Added .env to .gitignore");
+      }
+    } else {
+      this.fileTool.createFile(".gitignore", "node_modules/\ndist/\n.env\n.env.local\ncoverage/\n.next/\n.agent/\n");
+      issues.push("Created .gitignore");
+    }
+
+    // Check npm audit
+    const auditResult = await this.terminal.execute("npm audit --json 2>/dev/null | head -c 500", { timeout: 15000 });
+    try {
+      const audit = JSON.parse(auditResult.stdout);
+      const criticals = audit.metadata?.vulnerabilities?.critical || 0;
+      if (criticals > 0) {
+        issues.push(`${criticals} critical vulnerabilities — run 'npm audit fix'`);
+      }
+    } catch {}
+
+    if (issues.length > 0) {
+      return {
+        name: "security",
+        status: issues.some((i) => i.includes("hardcoded")) ? "warn" : "fixed",
+        message: issues.join("; "),
+        autoFixed: issues.some((i) => i.includes("Added") || i.includes("Created")),
+        duration: Date.now() - start,
+      };
+    }
+
+    this.onLog("  ✅ Security OK");
+    return { name: "security", status: "pass", message: "No issues", duration: Date.now() - start };
+  }
+
+  // ═══════════════════════════════════════════
+  // CHECK 18: Build
+  // ═══════════════════════════════════════════
+
+  private async checkBuild(): Promise<CheckResult> {
+    const start = Date.now();
+    this.onLog("🏗️  Checking build...");
+
+    const result = await this.terminal.execute("npx tsc --noEmit 2>&1 | grep -c 'error' || echo '0'", { timeout: 60000 });
+    const errors = parseInt(result.stdout.trim()) || 0;
+
+    if (errors === 0) {
+      this.onLog("  ✅ Build clean");
+      return { name: "build", status: "pass", message: "Compiles without errors", duration: Date.now() - start };
+    }
+
+    return {
+      name: "build",
+      status: errors > 20 ? "fail" : "warn",
+      message: `${errors} compilation errors`,
+      duration: Date.now() - start,
+    };
+  }
+
+  // ═══════════════════════════════════════════
+  // CHECK 19: Permissions
+  // ═══════════════════════════════════════════
+
+  private async checkPermissions(): Promise<CheckResult> {
+    const start = Date.now();
+    this.onLog("🔐 Checking permissions...");
+
+    const result = await this.terminal.execute(
+      `test -w "${this.workspaceDir}" && echo "OK" || echo "READONLY"`,
+      { timeout: 3000 }
+    );
+
+    if (result.stdout.includes("READONLY")) {
+      await this.terminal.execute(`chmod -R 755 "${this.workspaceDir}" 2>/dev/null`);
+      return { name: "permissions", status: "fixed", message: "Fixed workspace permissions", autoFixed: true, duration: Date.now() - start };
+    }
+
+    this.onLog("  ✅ Permissions OK");
+    return { name: "permissions", status: "pass", message: "Workspace writable", duration: Date.now() - start };
+  }
+
+  // ═══════════════════════════════════════════
+  // CHECK 20: Brain File
+  // ═══════════════════════════════════════════
+
+  private async checkBrainFile(): Promise<CheckResult> {
+    const start = Date.now();
+    this.onLog("🧠 Checking brain persistence...");
+
+    const brainDir = path.join(this.workspaceDir, ".agent");
+    if (!fs.existsSync(brainDir)) {
+      fs.mkdirSync(brainDir, { recursive: true });
+      return { name: "brain", status: "fixed", message: "Created .agent/ directory", autoFixed: true, duration: Date.now() - start };
+    }
+
+    const brainPath = path.join(brainDir, "brain.json");
+    if (fs.existsSync(brainPath)) {
+      try {
+        const data = JSON.parse(fs.readFileSync(brainPath, "utf-8"));
+        const patterns = data.learnedPatterns?.length || 0;
+        const decisions = data.decisions?.length || 0;
+        this.onLog(`  ✅ Brain: ${patterns} patterns, ${decisions} decisions`);
+        return { name: "brain", status: "pass", message: `${patterns} patterns, ${decisions} decisions loaded`, duration: Date.now() - start };
+      } catch {
+        // Corrupted — reset
+        fs.writeFileSync(brainPath, JSON.stringify({ decisions: [], learnedPatterns: [], errorHistory: [], fileKnowledge: {} }));
+        return { name: "brain", status: "fixed", message: "Reset corrupted brain.json", autoFixed: true, duration: Date.now() - start };
+      }
+    }
+
+    this.onLog("  ✅ Brain dir ready (no data yet)");
+    return { name: "brain", status: "pass", message: "Brain directory ready", duration: Date.now() - start };
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// QUICK API FOR USE IN INDEX.TS
+// ═══════════════════════════════════════════════════
+
+export async function runSelfCheck(workspaceDir: string): Promise<FullCheckReport> {
+  const checker = new SelfCheck(workspaceDir, console.log);
+  return checker.runFullCheck();
+}

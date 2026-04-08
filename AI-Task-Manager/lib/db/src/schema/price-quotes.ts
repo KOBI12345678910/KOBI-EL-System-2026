@@ -1,0 +1,40 @@
+import { pgTable, serial, text, numeric, integer, boolean, date, timestamp } from "drizzle-orm/pg-core";
+
+export const priceQuotesTable = pgTable("price_quotes", {
+  id: serial("id").primaryKey(),
+  quoteNumber: text("quote_number").notNull().unique(),
+  supplierId: integer("supplier_id").notNull(),
+  requestId: integer("request_id"),
+  status: text("status").notNull().default("טיוטה"),
+  quoteDate: date("quote_date").defaultNow(),
+  validityDate: date("validity_date"),
+  totalAmount: numeric("total_amount").default("0"),
+  totalBeforeTax: numeric("total_before_tax").default("0"),
+  taxAmount: numeric("tax_amount").default("0"),
+  currency: text("currency").default("ILS"),
+  paymentTerms: text("payment_terms"),
+  deliveryDays: integer("delivery_days"),
+  isRecommended: boolean("is_recommended").default(false),
+  comparisonGroup: text("comparison_group"),
+  notes: text("notes"),
+  createdBy: text("created_by"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at"),
+});
+
+export const priceQuoteItemsTable = pgTable("price_quote_items", {
+  id: serial("id").primaryKey(),
+  quoteId: integer("quote_id").notNull(),
+  materialId: integer("material_id"),
+  itemCode: text("item_code"),
+  itemDescription: text("item_description").notNull(),
+  quantity: numeric("quantity").notNull().default("1"),
+  unit: text("unit").default("יחידה"),
+  unitPrice: numeric("unit_price").notNull().default("0"),
+  discountPercent: numeric("discount_percent").default("0"),
+  taxPercent: numeric("tax_percent").default("18"),
+  totalPrice: numeric("total_price").notNull().default("0"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});

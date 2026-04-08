@@ -1,0 +1,458 @@
+You are now acting as the lead architect, lead ERP product owner, lead database designer, QA lead, and full-stack implementation engineer for this system.
+
+This is NOT a narrow bug-fix task.
+This is a full-system ERP development, completion, stabilization, expansion, and validation task.
+
+I have already provided the full menu structure through screenshots. The system contains a large number of existing menu categories, modules, submodules, and pages. You must treat the ENTIRE existing system as in scope.
+
+PRIMARY GOAL
+
+Transform the current platform into a professional, production-grade ERP system for a factory/company working in:
+- iron works
+- aluminum works
+- glass works
+- stainless steel works
+
+The system must become deeply structured, fully connected, operationally realistic, and professionally usable — with seriousness and completeness comparable in mindset to SAP-grade ERP systems.
+
+GLOBAL EXECUTION RULE
+
+Do not only diagnose.
+Do not only summarize.
+Do not only fix a few routes.
+Do not only improve a few example modules.
+
+You must:
+1. inspect the whole existing codebase and menu architecture
+2. repair all broken pages/routes/components/data flows
+3. complete all incomplete modules/pages/forms/tables/details views
+4. expand weak or shallow modules so they become real ERP modules
+5. connect all relations and navigation properly
+6. add missing business structure, fields, states, workflows, and reference data
+7. validate the whole platform with a full QA pass
+
+FULL SCOPE
+
+Treat every existing category, model, submenu, route, and page in the current menu as in scope.
+
+If it exists in the menu, it must be:
+- opened
+- inspected
+- repaired
+- completed
+- upgraded
+- connected
+- validated
+
+No existing menu item should remain:
+- broken
+- empty
+- placeholder-only
+- shallow
+- partially connected
+- missing critical business structure
+
+STEP 1 — SYSTEM-WIDE TECHNICAL REPAIR
+
+Inspect and fix across the entire codebase:
+- broken routes
+- broken menu navigation
+- missing page components
+- import/export errors
+- build errors
+- runtime crashes
+- null/undefined crashes
+- invalid data fetches
+- broken form bindings
+- database schema mismatches
+- frontend/backend contract mismatches
+- failed mutations
+- missing loaders
+- broken tabs/cards/sections
+- dead links
+- incorrect redirects
+- unsafe state handling
+- missing error handling
+
+Every menu item and submenu item must open a valid working page.
+
+STEP 2 — PAGE COMPLETION STANDARD
+
+Every meaningful model/page/module must be completed professionally.
+
+Each module should include where relevant:
+- list page
+- create page
+- edit page
+- details/view page
+- summary section
+- related records section
+- history/activity section
+- documents/attachments section
+- actions section
+- search/filter/sort
+- correct navigation to related records
+
+Do not leave empty shells or placeholder pages.
+
+STEP 3 — MODEL COMPLETION STANDARD
+
+For every model/entity/module, define and implement properly:
+- business purpose
+- required fields
+- optional fields
+- field types
+- validation rules
+- default values
+- statuses/stages
+- relations to other entities
+- lookup/reference values
+- linked parent/child records
+- table columns
+- form layout
+- detail layout
+- action buttons
+- business logic
+
+Clearly mark required vs optional fields in forms.
+
+STEP 4 — PROFESSIONAL PAGE LAYOUT
+
+Each page must have proper business-ready blocks/cards/sections such as:
+- page title/header
+- breadcrumbs
+- summary cards
+- filters/search toolbar
+- main data table or structured form
+- related entities block
+- activity/history block
+- attachments/documents block
+- alerts/warnings
+- loading states
+- empty states
+- validation messages
+- error states
+
+The UI must be consistent and professional.
+Do not keep flat, thin, or unfinished layouts.
+
+STEP 5 — BUSINESS DOMAINS TO COMPLETE DEEPLY
+
+You must fully build, complete, and professionalize all existing modules under these domains across the current menu architecture:
+
+A. Management / Executive / Control
+- executive dashboard
+- company overview
+- company health
+- central control and operations
+- alerts center
+- KPI dashboards
+- operational command center
+
+B. AI / Automation / Intelligence
+- AI engine hub
+- lead scoring
+- NLP/call analysis
+- predictive analytics
+- chatbot settings
+- AI agents
+- AI workflows
+- AI logs
+- AI settings
+- AI governance and permissions
+
+C. CRM / Sales / Customer Operations
+- leads
+- inquiries
+- customer tasks
+- SLA
+- quotations
+- opportunities
+- follow-ups
+- calls
+- customer communication
+- AI customer service
+- digital customers
+- sales workflow
+- quote revisions
+- activity history
+
+D. Products / Inventory / Purchasing / Suppliers
+- raw material catalogs
+- raw materials in stock
+- warehouses
+- inventory movements
+- stock counts
+- minimum/maximum stock
+- products
+- variants/specs
+- suppliers
+- supplier RFQs
+- supplier quotations
+- supplier contracts
+- purchase orders
+- purchase approvals
+- goods receipt
+- purchase returns
+- inventory alerts
+- supplier alerts
+- procurement optimization
+
+E. Import
+- import dashboard
+- overseas suppliers
+- import orders
+- shipment tracking
+- customs cost
+- landed cost
+- insurance
+- documents
+- letters of credit
+- exchange rates
+- import reliability / certificates
+
+F. Production / MES / Factory Operations
+- MES
+- SCADA / robotics integration
+- kanban board
+- gantt chart
+- workstations
+- bill of materials (BOM)
+- production lines
+- work orders
+- work instructions
+- quality control
+- NCR / non-conformities
+- maintenance
+- asset management
+- industrial safety
+- production KPIs
+- machine status
+- production consumption
+- batches / traceability
+
+G. Installers / Site / Measurements / Installation
+- installers
+- field measurements
+- measurement forms
+- installer assignments
+- field tasks
+- installations
+- site teams
+- subcontractors
+- checklists
+- handover
+- customer sign-off
+- service follow-up
+
+H. Finance / Accounting / Treasury
+- revenues
+- expenses
+- expense details
+- budget
+- petty cash / cashbox
+- bank accounts
+- general ledger
+- journal entries
+- AR
+- AP
+- debit notes
+- credit notes
+- payments
+- payment terms
+- bank reconciliation
+- cashflow
+- trial balance
+- balance sheet
+- financial reports
+- financial analysis
+- management reports
+
+I. HR / Workforce
+- employees
+- temporary workers
+- contractors
+- attendance
+- time clock
+- shifts
+- payroll
+- vacations
+- employee documents
+- certifications/permissions
+- training
+- performance
+- employee feedback
+- workforce journals
+
+J. Projects
+- projects
+- work plans
+- project analysis
+- milestones
+- site information
+- dependencies
+- revisions
+- deadlines
+- linked documents
+
+K. Marketing
+- marketing hub
+- campaigns
+- dynamic campaigns
+- marketing analytics
+- budgets
+- content calendar
+- email campaigns
+- lead generation
+- attribution
+- conversions
+
+L. Product Development
+- product roadmap
+- R&D projects
+- feature requests
+- QA
+- product planning
+- backlog / release planning
+
+M. Documents / Templates / Archive
+- documents
+- managed documents
+- digital archive
+- templates
+- versioning
+- document links
+- controlled documents
+
+N. Approvals / Governance / Audit
+- approval requests
+- approval workflows
+- approval matrix
+- audit log
+- escalation rules
+- sign-off logic
+
+STEP 6 — FACTORY-SPECIFIC ERP DEPTH
+
+This is not a generic ERP.
+It is for a fabrication/manufacturing business.
+
+Therefore add or complete business structure for:
+- iron materials
+- aluminum materials
+- stainless steel materials
+- glass materials
+- profiles
+- finishes
+- colors
+- thickness
+- hardware/accessories
+- glass types
+- measurement units
+- project/site workflows
+- quotation costing
+- BOM-based costing
+- installation costing
+- labor costing
+- coating/painting costing
+- transport costing
+- dynamic pricing
+- stage-based production logic
+
+STEP 7 — REQUIRED MODEL QUALITY FOR EVERY ENTITY
+
+Each existing entity/model should become a real operational model with:
+- complete schema
+- useful fields
+- proper required/optional split
+- realistic statuses
+- linked relations
+- usable table columns
+- usable forms
+- details pages
+- meaningful actions
+- filters and search
+- clear business display
+
+STEP 8 — REFERENCE DATA / MASTER DATA
+
+Where missing, add safe and realistic master/reference data:
+- statuses
+- categories
+- subcategories
+- material types
+- profile types
+- finish types
+- glass types
+- units of measure
+- tax/VAT settings
+- payment terms
+- workflow states
+- quality states
+- sample suppliers/customers/projects/items when needed for functionality
+
+Preserve existing data where possible.
+If migration is needed, do it safely.
+
+STEP 9 — DATA DICTIONARY / MODEL CATALOG
+
+Create an internal admin page called “Model Catalog” or “Data Dictionary”.
+
+For every model in the system, document:
+- model name
+- business purpose
+- required fields
+- optional fields
+- statuses
+- relations
+- related routes/pages
+- validation rules
+- implementation status
+
+This is mandatory.
+
+STEP 10 — SYSTEM MATRIX / IMPLEMENTATION REPORT
+
+Create a structured implementation matrix for ALL existing models/modules/pages showing:
+- model/category/page name
+- current condition
+- issues found
+- missing fields
+- missing pages
+- missing relations
+- fixes implemented
+- upgrade actions completed
+- validation status
+
+STEP 11 — QA / VALIDATION
+
+After implementation, perform a full QA pass:
+- route testing
+- menu navigation testing
+- create/edit/view testing
+- form validation testing
+- save/update testing
+- related-link testing
+- loading state testing
+- error state testing
+- empty state testing
+- layout consistency testing
+- regression testing on key flows
+
+Add defensive protections where needed:
+- error boundaries
+- null guards
+- safe loaders
+- fallback UI
+- no-data states
+- validation guards
+
+FINAL EXECUTION RULE
+
+Do not stop at diagnosis.
+Do not leave broken menu items.
+Do not leave placeholders.
+Do not leave shallow modules.
+Do not only repair a subset.
+
+Continue until the system becomes significantly more complete, professional, connected, and validated across the entire existing menu architecture.

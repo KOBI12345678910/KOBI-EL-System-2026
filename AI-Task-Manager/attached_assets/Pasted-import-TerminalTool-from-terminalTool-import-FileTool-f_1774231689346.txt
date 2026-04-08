@@ -1,0 +1,100 @@
+import { TerminalTool } from "./terminalTool";
+import { FileTool } from "./fileTool";
+
+export class CacheSetupTool {
+  private terminal: TerminalTool;
+  private fileTool: FileTool;
+
+  constructor(terminal: TerminalTool, fileTool: FileTool) {
+    this.terminal = terminal;
+    this.fileTool = fileTool;
+  }
+
+  async setup(): Promise<void> {
+    await this.terminal.execute("npm install ioredis", { timeout: 30000 });
+
+    this.fileTool.createFile("src/cache/index.ts", `import Redis from 'ioredis';
+
+const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+
+export class Cache {
+  private prefix: string;
+  private defaultTTL: number;
+
+  constructor(prefix = 'app', defaultTTL = 3600) {
+    this.prefix = prefix;
+    this.defaultTTL = defaultTTL;
+  }
+
+  private key(k: string): string {
+    return \`\${this.prefix}:\${k}\`;
+  }
+
+  async get<T>(key: string): Promise<T | null> {
+    const data = await redis.get(this.key(key));
+    if (!data) return null;
+    try { return JSON.parse(data) as T; } catch { return data as any; }
+  }
+
+  async set<T>(key: string, value: T, ttl?: number): Promise<void> {
+    const serialized = typeof value === 'string' ? value : JSON.stringify(value);
+    if (ttl || this.defaultTTL) {
+      await redis.setex(this.key(key), ttl || this.defaultTTL, serialized);
+    } else {
+      await redis.set(this.key(key), serialized);
+    }
+  }
+
+  async del(key: string): Promise<void> {
+    await redis.del(this.key(key));
+  }
+
+  async exists(key: string): Promise<boolean> {
+    return (await redis.exists(this.key(key))) === 1;
+  }
+
+  async getOrSet<T>(key: string, factory: () => Promise<T>, ttl?: number): Promise<T> {
+    const cached = await this.get<T>(key);
+    if (cached !== null) return cached;
+    const value = await factory();
+    await this.set(key, value, ttl);
+    return value;
+  }
+
+  async invalidatePattern(pattern: string): Promise<number> {
+    const keys = await redis.keys(this.key(pattern));
+    if (keys.length === 0) return 0;
+    return redis.del(...keys);
+  }
+
+  async flush(): Promise<void> {
+    const keys = await redis.keys(this.key('*'));
+    if (keys.length > 0) await redis.del(...keys);
+  }
+
+  // Cache middleware for Express
+  middleware(ttl?: number) {
+    return async (req: any, res: any, next: any) => {
+      if (req.method !== 'GET') return next();
+      
+      const key = \`route:\${req.originalUrl}\`;
+      const cached = await this.get(key);
+      if (cached) {
+        return res.json(cached);
+      }
+
+      const originalJson = res.json.bind(res);
+      res.json = (body: any) => {
+        this.set(key, body, ttl || this.defaultTTL).catch(() => {});
+        return originalJson(body);
+      };
+      next();
+    };
+  }
+}
+
+export const cache = new Cache();
+export { redis };
+`);
+  }
+}
