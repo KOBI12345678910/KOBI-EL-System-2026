@@ -1,0 +1,492 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: locations
+    description: Location tracking and sharing
+  - name: savedPlaces
+    description: Saved/favorite places
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /locations:
+    post:
+      operationId: saveLocation
+      tags: [locations]
+      summary: Save a location update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateLocation"
+      responses:
+        "201":
+          description: Location saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Location"
+    get:
+      operationId: getLocationHistory
+      tags: [locations]
+      summary: Get location history
+      parameters:
+        - name: sessionId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: Location history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Location"
+
+  /locations/share:
+    post:
+      operationId: createShareSession
+      tags: [locations]
+      summary: Create a location sharing session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateShareSession"
+      responses:
+        "201":
+          description: Share session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShareSession"
+
+  /locations/share/{shareCode}:
+    get:
+      operationId: getSharedLocation
+      tags: [locations]
+      summary: Get shared location by share code
+      parameters:
+        - name: shareCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Shared location data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SharedLocationData"
+        "404":
+          description: Share session not found
+
+  /locations/share/{shareCode}/update:
+    post:
+      operationId: updateSharedLocation
+      tags: [locations]
+      summary: Update location in a share session
+      parameters:
+        - name: shareCode
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSharedLocation"
+      responses:
+        "200":
+          description: Location updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SharedLocationData"
+
+  /saved-places:
+    get:
+      operationId: getSavedPlaces
+      tags: [savedPlaces]
+      summary: Get all saved places
+      responses:
+        "200":
+          description: List of saved places
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SavedPlace"
+    post:
+      operationId: createSavedPlace
+      tags: [savedPlaces]
+      summary: Save a favorite place
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSavedPlace"
+      responses:
+        "201":
+          description: Place saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedPlace"
+
+  /saved-places/{id}:
+    delete:
+      operationId: deleteSavedPlace
+      tags: [savedPlaces]
+      summary: Delete a saved place
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Place deleted
+
+  /locations/stats:
+    get:
+      operationId: getLocationStats
+      tags: [locations]
+      summary: Get location tracking statistics
+      responses:
+        "200":
+          description: Location stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LocationStats"
+
+  /locations/recent-sessions:
+    get:
+      operationId: getRecentSessions
+      tags: [locations]
+      summary: Get recent tracking sessions
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Recent sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TrackingSession"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    Location:
+      type: object
+      properties:
+        id:
+          type: integer
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        accuracy:
+          type: number
+          format: double
+        speed:
+          type: number
+          format: double
+          nullable: true
+        heading:
+          type: number
+          format: double
+          nullable: true
+        sessionId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - latitude
+        - longitude
+        - accuracy
+        - sessionId
+        - timestamp
+        - createdAt
+
+    CreateLocation:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        accuracy:
+          type: number
+          format: double
+        speed:
+          type: number
+          format: double
+          nullable: true
+        heading:
+          type: number
+          format: double
+          nullable: true
+        sessionId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - latitude
+        - longitude
+        - accuracy
+        - sessionId
+        - timestamp
+
+    ShareSession:
+      type: object
+      properties:
+        id:
+          type: integer
+        shareCode:
+          type: string
+        name:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        expiresAt:
+          type: string
+          format: date-time
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - shareCode
+        - name
+        - latitude
+        - longitude
+        - expiresAt
+        - active
+        - createdAt
+
+    CreateShareSession:
+      type: object
+      properties:
+        name:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        durationMinutes:
+          type: integer
+          default: 60
+      required:
+        - name
+        - latitude
+        - longitude
+
+    SharedLocationData:
+      type: object
+      properties:
+        shareCode:
+          type: string
+        name:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        updatedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        active:
+          type: boolean
+      required:
+        - shareCode
+        - name
+        - latitude
+        - longitude
+        - updatedAt
+        - expiresAt
+        - active
+
+    UpdateSharedLocation:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+      required:
+        - latitude
+        - longitude
+
+    SavedPlace:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        address:
+          type: string
+          nullable: true
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        category:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - latitude
+        - longitude
+        - createdAt
+
+    CreateSavedPlace:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+          nullable: true
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        category:
+          type: string
+          nullable: true
+      required:
+        - name
+        - latitude
+        - longitude
+
+    LocationStats:
+      type: object
+      properties:
+        totalLocationsTracked:
+          type: integer
+        totalSessions:
+          type: integer
+        totalSavedPlaces:
+          type: integer
+        activeShareSessions:
+          type: integer
+        totalDistanceKm:
+          type: number
+          format: double
+      required:
+        - totalLocationsTracked
+        - totalSessions
+        - totalSavedPlaces
+        - activeShareSessions
+        - totalDistanceKm
+
+    TrackingSession:
+      type: object
+      properties:
+        sessionId:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        locationCount:
+          type: integer
+        distanceKm:
+          type: number
+          format: double
+      required:
+        - sessionId
+        - startTime
+        - endTime
+        - locationCount
+        - distanceKm

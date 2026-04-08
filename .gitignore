@@ -1,0 +1,17 @@
+# Large ZIP files (exceed GitHub 100MB limit)
+AI-Task-Manager.zip
+Location-Finder.zip
+
+# Node modules
+node_modules/
+
+# Environment files
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Replit local
+.local/
