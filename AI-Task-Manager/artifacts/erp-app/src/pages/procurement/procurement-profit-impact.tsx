@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -17,7 +19,7 @@ const pct = (v: number) => `${v >= 0 ? "+" : ""}${v.toFixed(1)}%`;
 const pctAbs = (v: number) => `${v.toFixed(1)}%`;
 
 /* ── project data ───────────────────────────────────────────────── */
-const projects = [
+const FALLBACK_PROJECTS = [
   { id: "PRJ-2601", name: "מבנה תעשייתי - נתניה", revenue: 2800000, plannedCost: 1680000, actualCost: 1610000, savings: 70000,  increase: 0,      marginPlanned: 40.0, marginActual: 42.5 },
   { id: "PRJ-2602", name: "חזית אלומיניום - רמת גן", revenue: 1950000, plannedCost: 1170000, actualCost: 1230000, savings: 0,      increase: 60000,  marginPlanned: 40.0, marginActual: 36.9 },
   { id: "PRJ-2603", name: "מעקות נירוסטה - הרצליה", revenue: 680000,  plannedCost: 408000,  actualCost: 385000,  savings: 23000,  increase: 0,      marginPlanned: 40.0, marginActual: 43.4 },
@@ -32,6 +34,14 @@ const projects = [
 
 /* ================================================================ */
 export default function ProcurementProfitImpact() {
+  const { data: procurementprofitimpactData } = useQuery({
+    queryKey: ["procurement-profit-impact"],
+    queryFn: () => authFetch("/api/procurement/procurement_profit_impact"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const projects = procurementprofitimpactData ?? FALLBACK_PROJECTS;
+
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState<string>("marginActual");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");

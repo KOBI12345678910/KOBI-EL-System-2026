@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -7,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ShieldCheck, FileText, AlertTriangle, RefreshCw, Scale, Lock, ClipboardCheck, Gavel, BookOpen, CalendarX2 } from "lucide-react";
 
 /* ── mock data ── */
-const retentionPolicies = [
+const FALLBACK_RETENTION_POLICIES = [
   { type: "חשבוניות מס", period: "7 שנים", basis: "חוק מע\"מ, תשל\"ו-1975", count: 620, nextExpiry: "2026-05-18", status: "תקין" },
   { type: "דוחות כספיים שנתיים", period: "7 שנים", basis: "הוראות רשות המיסים", count: 84, nextExpiry: "2026-08-01", status: "תקין" },
   { type: "חוזי עבודה", period: "7 שנים", basis: "חוק הגנת השכר, תשי\"ח-1958", count: 312, nextExpiry: "2026-06-10", status: "אזהרה" },
@@ -19,7 +21,7 @@ const retentionPolicies = [
   { type: "רישומי שכר ונוכחות", period: "7 שנים", basis: "חוק הגנת הפרטיות + רשות המיסים", count: 485, nextExpiry: "2026-07-22", status: "חריגה" },
   { type: "שרטוטים הנדסיים", period: "3 שנים", basis: "תקן ISO 9001 / נוהל פנימי", count: 212, nextExpiry: "2026-05-05", status: "תקין" },
 ];
-const expiringDocuments = [
+const FALLBACK_EXPIRING_DOCUMENTS = [
   { name: "חשבונית מס 41022", type: "חשבונית מס", expiry: "2026-04-15", daysLeft: 7, action: "העברה לארכיון קבוע" },
   { name: "אישור ISO 9001 — מפעל צפון", type: "אישורי ISO", expiry: "2026-04-20", daysLeft: 12, action: "חידוש תעודה דחוף" },
   { name: "חוזה עבודה — דוד מזרחי", type: "חוזי עבודה", expiry: "2026-04-25", daysLeft: 17, action: "הארכת שימור" },
@@ -29,17 +31,17 @@ const expiringDocuments = [
   { name: "רישום נוכחות 03/2019", type: "רישומי שכר", expiry: "2026-05-08", daysLeft: 30, action: "אישור השמדה מסודרת" },
   { name: "חשבונית מס 41135", type: "חשבונית מס", expiry: "2026-05-10", daysLeft: 32, action: "העברה לארכיון קבוע" },
 ];
-const legalHolds = [
+const FALLBACK_LEGAL_HOLDS = [
   { caseRef: "תב\"ע 2024/5582 — תביעת עובד", docsAffected: 34, holdStart: "2025-11-10", authorizedBy: "עו\"ד רחל אברהם" },
   { caseRef: "מכס/2025/112 — ערעור מיסוי יבוא", docsAffected: 18, holdStart: "2026-01-05", authorizedBy: "עו\"ד יוסי כהן" },
   { caseRef: "אז/2026/008 — סכסוך ספק", docsAffected: 12, holdStart: "2026-03-18", authorizedBy: "עו\"ד נועה פרידמן" },
 ];
-const auditFindings = [
+const FALLBACK_AUDIT_FINDINGS = [
   { id: "F-01", finding: "3 חשבוניות מס ללא חותמת זמן דיגיטלית", severity: "בינונית", corrective: "הוספת חותמת זמן רטרואקטיבית", status: "בטיפול" },
   { id: "F-02", finding: "רישומי שכר 2019 לא הועברו לארכיון במועד", severity: "גבוהה", corrective: "העברה דחופה + עדכון נוהל", status: "הושלם" },
   { id: "F-03", finding: "חסר תיעוד הסכמה לפי חוק הגנת הפרטיות ב-2 חוזים", severity: "גבוהה", corrective: "השלמת טפסי הסכמה", status: "בטיפול" },
 ];
-const israeliRegulations = [
+const FALLBACK_ISRAELI_REGULATIONS = [
   { law: "חוק מע\"מ, תשל\"ו-1975", requirement: "שימור חשבוניות ותיעוד עסקאות", period: "7 שנים", scope: "חשבוניות מס, קבלות, תיעוד פנימי", docs: 620 },
   { law: "פקודת מס הכנסה [נוסח חדש]", requirement: "שמירת ספרים ורישומים חשבונאיים", period: "7 שנים", scope: "דוחות כספיים, ספר הזמנות, תקבולים", docs: 84 },
   { law: "חוק הגנת השכר, תשי\"ח-1958", requirement: "שמירת רישומי שכר ונוכחות", period: "7 שנים", scope: "תלושי שכר, נוכחות, חוזי עבודה", docs: 797 },
@@ -54,7 +56,7 @@ const severityColor: Record<string, string> = { "גבוהה": "bg-red-900/60 tex
 const auditStatusColor: Record<string, string> = { "בטיפול": "bg-amber-900/60 text-amber-300", "הושלם": "bg-emerald-900/60 text-emerald-300" };
 const daysLeftBadge = (d: number) => <Badge className={d <= 7 ? "bg-red-900/60 text-red-300" : d <= 21 ? "bg-amber-900/60 text-amber-300" : "bg-emerald-900/60 text-emerald-300"}>{d} ימים</Badge>;
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "מסמכים בשימור", value: "2,450", icon: <FileText className="w-5 h-5" />, color: "text-blue-400" },
   { label: "פגי תוקף", value: "8", icon: <CalendarX2 className="w-5 h-5" />, color: "text-red-400" },
   { label: "דורשים חידוש", value: "12", icon: <RefreshCw className="w-5 h-5" />, color: "text-amber-400" },
@@ -63,6 +65,19 @@ const kpis = [
 ];
 
 export default function RetentionCompliance() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["retention_compliance"],
+    queryFn: () => authFetch("/api/documents/retention-compliance").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const retentionPolicies = apiData?.retentionPolicies ?? FALLBACK_RETENTION_POLICIES;
+  const expiringDocuments = apiData?.expiringDocuments ?? FALLBACK_EXPIRING_DOCUMENTS;
+  const legalHolds = apiData?.legalHolds ?? FALLBACK_LEGAL_HOLDS;
+  const auditFindings = apiData?.auditFindings ?? FALLBACK_AUDIT_FINDINGS;
+  const israeliRegulations = apiData?.israeliRegulations ?? FALLBACK_ISRAELI_REGULATIONS;
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
   const [tab, setTab] = useState("policies");
 
   return (

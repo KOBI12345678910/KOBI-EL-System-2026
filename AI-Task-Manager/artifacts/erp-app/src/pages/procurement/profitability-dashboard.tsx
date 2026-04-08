@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { TrendingUp, AlertCircle } from "lucide-react";
@@ -13,6 +15,12 @@ interface ProfitabilitySummary {
 }
 
 export default function ProfitabilityDashboard() {
+  const { data: profitabilitydashboardData } = useQuery({
+    queryKey: ["profitability-dashboard"],
+    queryFn: () => authFetch("/api/procurement/profitability_dashboard"),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [summary, setSummary] = useState<ProfitabilitySummary | null>(null);
   const [loading, setLoading] = useState(false);
 

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, FolderOpen, Search, TrendingUp, Eye, Users, Clock, Star, FileText, Plus, Download } from "lucide-react";
 
-const articles = [
+const FALLBACK_ARTICLES = [
   { id: 1, title: "מדריך התקנת חלונות אלומיניום", category: "מדריכי התקנה", author: "יוסי כהן", views: 1245, rating: 4.8, updated: "2026-03-28", status: "פורסם" },
   { id: 2, title: "מפרט חומר אלומיניום 6063-T5", category: "מפרטי חומרים", author: "דוד לוי", views: 987, rating: 4.6, updated: "2026-04-01", status: "פורסם" },
   { id: 3, title: "פתרון בעיות דליפת מים בחלונות", category: "פתרון תקלות", author: "משה אברהם", views: 2340, rating: 4.9, updated: "2026-03-15", status: "פורסם" },
@@ -35,7 +37,7 @@ const categories = [
   { name: "תקנות ורגולציה", count: 4, icon: "bg-pink-500/20 text-pink-400", description: "תקני ISO ורגולציה" },
 ];
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "סה\"כ מאמרים", value: "156", icon: BookOpen, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "קטגוריות", value: "8", icon: FolderOpen, color: "text-emerald-400", bg: "bg-emerald-500/10" },
   { label: "צפיות החודש", value: "12,450", icon: Eye, color: "text-purple-400", bg: "bg-purple-500/10" },
@@ -44,7 +46,7 @@ const kpis = [
   { label: "מאמר פופולרי", value: "פתרון דליפות", icon: Star, color: "text-pink-400", bg: "bg-pink-500/10" },
 ];
 
-const popularArticles = [
+const FALLBACK_POPULAR_ARTICLES = [
   { rank: 1, title: "פתרון בעיות דליפת מים בחלונות", views: 2340, trend: "+12%" },
   { rank: 2, title: "עבודה בגובה - נוהלי בטיחות", views: 2100, trend: "+8%" },
   { rank: 3, title: "תקלות נפוצות בתריסי גלילה", views: 1890, trend: "+15%" },
@@ -58,6 +60,14 @@ const popularArticles = [
 ];
 
 export default function KnowledgeBase() {
+  const { data: knowledgebaseData } = useQuery({
+    queryKey: ["knowledge-base"],
+    queryFn: () => authFetch("/api/knowledge/knowledge_base"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const articles = knowledgebaseData ?? FALLBACK_ARTICLES;
+
   const [search, setSearch] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");

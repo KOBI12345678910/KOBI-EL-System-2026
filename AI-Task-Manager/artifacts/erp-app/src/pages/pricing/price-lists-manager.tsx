@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,7 +23,7 @@ import {
   ArrowDownRight,
 } from "lucide-react";
 
-const priceLists = [
+const FALLBACK_PRICE_LISTS = [
   { id: 1, name: "מחירון כללי 2026", type: "כללי", currency: "₪", validFrom: "2026-01-01", validTo: "2026-12-31", products: 245, status: "פעיל", lastUpdate: "2026-03-15" },
   { id: 2, name: "מחירון קבלנים", type: "קבלנים", currency: "₪", validFrom: "2026-01-01", validTo: "2026-06-30", products: 180, status: "פעיל", lastUpdate: "2026-03-20" },
   { id: 3, name: "מחירון פרויקטים גדולים", type: "פרויקטים", currency: "₪", validFrom: "2026-01-01", validTo: "2026-12-31", products: 120, status: "פעיל", lastUpdate: "2026-04-01" },
@@ -32,7 +34,7 @@ const priceLists = [
   { id: 8, name: "מחירון 2025 (ארכיון)", type: "כללי", currency: "₪", validFrom: "2025-01-01", validTo: "2025-12-31", products: 230, status: "לא פעיל", lastUpdate: "2025-12-15" },
 ];
 
-const sampleProducts = [
+const FALLBACK_SAMPLE_PRODUCTS = [
   { name: "חלון אלומיניום דו-כנפי 120x150", general: 2800, contractor: 2380, vip: 2240, project: 2100 },
   { name: "דלת כניסה אלומיניום 100x220", general: 4500, contractor: 3825, vip: 3600, project: 3375 },
   { name: "ויטרינה זכוכית מחוסמת 200x250", general: 6200, contractor: 5270, vip: 4960, project: 4650 },
@@ -43,7 +45,7 @@ const sampleProducts = [
   { name: "פרגולת אלומיניום 3x4 מ'", general: 12000, contractor: 10200, vip: 9600, project: 9000 },
 ];
 
-const priceChanges = [
+const FALLBACK_PRICE_CHANGES = [
   { date: "2026-04-01", product: "חלון אלומיניום דו-כנפי", list: "מחירון כללי", oldPrice: 2650, newPrice: 2800, reason: "עליית מחיר אלומיניום" },
   { date: "2026-03-20", product: "דלת כניסה אלומיניום", list: "מחירון קבלנים", oldPrice: 3600, newPrice: 3825, reason: "עדכון שנתי" },
   { date: "2026-03-15", product: "ויטרינה זכוכית מחוסמת", list: "מחירון כללי", oldPrice: 5900, newPrice: 6200, reason: "עליית מחיר זכוכית" },
@@ -53,6 +55,16 @@ const priceChanges = [
 ];
 
 export default function PriceListsManager() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["price_lists_manager"],
+    queryFn: () => authFetch("/api/pricing/price-lists-manager").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const priceLists = apiData?.priceLists ?? FALLBACK_PRICE_LISTS;
+  const sampleProducts = apiData?.sampleProducts ?? FALLBACK_SAMPLE_PRODUCTS;
+  const priceChanges = apiData?.priceChanges ?? FALLBACK_PRICE_CHANGES;
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("lists");
 

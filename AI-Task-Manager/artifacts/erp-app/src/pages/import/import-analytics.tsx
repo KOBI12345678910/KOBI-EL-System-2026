@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,7 +12,7 @@ import {
 } from "lucide-react";
 
 // ── 1. Spend by supplier ─────────────────────────────────────────────
-const spendBySupplier = [
+const FALLBACK_SPEND_BY_SUPPLIER = [
   { supplier: "Zhongshan Glass Ltd.", country: "סין", spend: "$312,000", pct: 28, trend: "+12%", up: true },
   { supplier: "Schüco International KG", country: "גרמניה", spend: "$248,000", pct: 22, trend: "+5%", up: true },
   { supplier: "Alumil S.A.", country: "טורקיה", spend: "$195,000", pct: 17, trend: "-3%", up: false },
@@ -20,7 +22,7 @@ const spendBySupplier = [
 ];
 
 // ── 2. Spend by country ──────────────────────────────────────────────
-const spendByCountry = [
+const FALLBACK_SPEND_BY_COUNTRY = [
   { country: "סין", flag: "\u{1F1E8}\u{1F1F3}", spend: "$312,000", orders: 14, avgLead: "32 יום" },
   { country: "גרמניה", flag: "\u{1F1E9}\u{1F1EA}", spend: "$248,000", orders: 8, avgLead: "18 יום" },
   { country: "טורקיה", flag: "\u{1F1F9}\u{1F1F7}", spend: "$195,000", orders: 11, avgLead: "14 יום" },
@@ -30,7 +32,7 @@ const spendByCountry = [
 ];
 
 // ── 3. Landed cost trend ─────────────────────────────────────────────
-const landedCostTrend = [
+const FALLBACK_LANDED_COST_TREND = [
   { month: "נוב 2025", total: "₪1,850K", freight: "₪185K", customs: "₪148K", insurance: "₪37K", overhead: "₪92K" },
   { month: "דצמ 2025", total: "₪2,010K", freight: "₪201K", customs: "₪161K", insurance: "₪40K", overhead: "₪100K" },
   { month: "ינו 2026", total: "₪1,920K", freight: "₪192K", customs: "₪154K", insurance: "₪38K", overhead: "₪96K" },
@@ -40,7 +42,7 @@ const landedCostTrend = [
 ];
 
 // ── 4. Freight trend ─────────────────────────────────────────────────
-const freightTrend = [
+const FALLBACK_FREIGHT_TREND = [
   { route: "סין → אשדוד (ימי)", q1: "$4,200/TEU", q2: "$4,800/TEU", change: "+14%", up: true },
   { route: "גרמניה → חיפה (אווירי)", q1: "$8.50/kg", q2: "$9.20/kg", change: "+8%", up: true },
   { route: "טורקיה → אשדוד (ימי)", q1: "$1,800/TEU", q2: "$1,650/TEU", change: "-8%", up: false },
@@ -49,7 +51,7 @@ const freightTrend = [
 ];
 
 // ── 5. Customs analysis ──────────────────────────────────────────────
-const customsAnalysis = [
+const FALLBACK_CUSTOMS_ANALYSIS = [
   { category: "זכוכית שטוחה", hsCode: "7005.29", dutyRate: "8%", totalDuty: "₪86,400", exemptions: "הסכם EU" },
   { category: "פרופילי אלומיניום", hsCode: "7604.29", dutyRate: "6%", totalDuty: "₪62,100", exemptions: "—" },
   { category: "חומרי אטימה", hsCode: "3214.10", dutyRate: "12%", totalDuty: "₪18,700", exemptions: "—" },
@@ -58,7 +60,7 @@ const customsAnalysis = [
 ];
 
 // ── 6. Delay analysis ────────────────────────────────────────────────
-const delayAnalysis = [
+const FALLBACK_DELAY_ANALYSIS = [
   { cause: "עיכוב בנמל מוצא", count: 7, avgDays: 4.2, impact: "₪38,500" },
   { cause: "מסמכים חסרים/שגויים", count: 5, avgDays: 3.1, impact: "₪24,000" },
   { cause: "בדיקת מכס ישראל", count: 4, avgDays: 2.8, impact: "₪19,200" },
@@ -67,7 +69,7 @@ const delayAnalysis = [
 ];
 
 // ── 7. Supplier performance ──────────────────────────────────────────
-const supplierPerformance = [
+const FALLBACK_SUPPLIER_PERFORMANCE = [
   { supplier: "Zhongshan Glass Ltd.", onTime: 82, quality: 94, docAccuracy: 88, score: 88, grade: "A-" },
   { supplier: "Schüco International KG", onTime: 96, quality: 99, docAccuracy: 97, score: 97, grade: "A+" },
   { supplier: "Alumil S.A.", onTime: 90, quality: 91, docAccuracy: 85, score: 89, grade: "A-" },
@@ -77,7 +79,7 @@ const supplierPerformance = [
 ];
 
 // ── 8. Cycle time ────────────────────────────────────────────────────
-const cycleTime = [
+const FALLBACK_CYCLE_TIME = [
   { stage: "הזמנה → יציאה מספק", avg: "8.2 ימים", best: "5 ימים", worst: "14 ימים" },
   { stage: "מעבר ימי/אווירי", avg: "18.5 ימים", best: "4 ימים", worst: "35 ימים" },
   { stage: "הגעה → שחרור מכס", avg: "3.1 ימים", best: "1 יום", worst: "7 ימים" },
@@ -86,7 +88,7 @@ const cycleTime = [
 ];
 
 // ── 9. Actual vs estimated ───────────────────────────────────────────
-const actualVsEstimated = [
+const FALLBACK_ACTUAL_VS_ESTIMATED = [
   { order: "PO-5498", estimated: "$65,000", actual: "$67,200", diff: "+$2,200", pct: "+3.4%", over: true },
   { order: "PO-5497", estimated: "$33,700", actual: "$32,900", diff: "-$800", pct: "-2.4%", over: false },
   { order: "PO-5494", estimated: "$91,000", actual: "$98,500", diff: "+$7,500", pct: "+8.2%", over: true },
@@ -95,7 +97,7 @@ const actualVsEstimated = [
 ];
 
 // ── 10. Profitability impact ─────────────────────────────────────────
-const profitabilityImpact = [
+const FALLBACK_PROFITABILITY_IMPACT = [
   { product: "חלון אלומיניום 160x120", importCost: "₪1,250", landedCost: "₪1,680", salePrice: "₪2,800", margin: "40%" },
   { product: "דלת זכוכית מחוסמת", importCost: "₪2,800", landedCost: "₪3,640", salePrice: "₪5,900", margin: "38%" },
   { product: "ויטרינה קבועה 200x250", importCost: "₪3,400", landedCost: "₪4,420", salePrice: "₪7,200", margin: "39%" },
@@ -111,6 +113,127 @@ const gradeColor = (g: string) => {
 };
 
 export default function ImportAnalytics() {
+  const { data: spendBySupplier = FALLBACK_SPEND_BY_SUPPLIER } = useQuery({
+    queryKey: ["import-spend-by-supplier"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-analytics/spend-by-supplier");
+      if (!res.ok) return FALLBACK_SPEND_BY_SUPPLIER;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SPEND_BY_SUPPLIER;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: spendByCountry = FALLBACK_SPEND_BY_COUNTRY } = useQuery({
+    queryKey: ["import-spend-by-country"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-analytics/spend-by-country");
+      if (!res.ok) return FALLBACK_SPEND_BY_COUNTRY;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SPEND_BY_COUNTRY;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: landedCostTrend = FALLBACK_LANDED_COST_TREND } = useQuery({
+    queryKey: ["import-landed-cost-trend"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-analytics/landed-cost-trend");
+      if (!res.ok) return FALLBACK_LANDED_COST_TREND;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_LANDED_COST_TREND;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: freightTrend = FALLBACK_FREIGHT_TREND } = useQuery({
+    queryKey: ["import-freight-trend"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-analytics/freight-trend");
+      if (!res.ok) return FALLBACK_FREIGHT_TREND;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_FREIGHT_TREND;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: customsAnalysis = FALLBACK_CUSTOMS_ANALYSIS } = useQuery({
+    queryKey: ["import-customs-analysis"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-analytics/customs-analysis");
+      if (!res.ok) return FALLBACK_CUSTOMS_ANALYSIS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_CUSTOMS_ANALYSIS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: delayAnalysis = FALLBACK_DELAY_ANALYSIS } = useQuery({
+    queryKey: ["import-delay-analysis"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-analytics/delay-analysis");
+      if (!res.ok) return FALLBACK_DELAY_ANALYSIS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DELAY_ANALYSIS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: supplierPerformance = FALLBACK_SUPPLIER_PERFORMANCE } = useQuery({
+    queryKey: ["import-supplier-performance"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-analytics/supplier-performance");
+      if (!res.ok) return FALLBACK_SUPPLIER_PERFORMANCE;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SUPPLIER_PERFORMANCE;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: cycleTime = FALLBACK_CYCLE_TIME } = useQuery({
+    queryKey: ["import-cycle-time"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-analytics/cycle-time");
+      if (!res.ok) return FALLBACK_CYCLE_TIME;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_CYCLE_TIME;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: actualVsEstimated = FALLBACK_ACTUAL_VS_ESTIMATED } = useQuery({
+    queryKey: ["import-actual-vs-estimated"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-analytics/actual-vs-estimated");
+      if (!res.ok) return FALLBACK_ACTUAL_VS_ESTIMATED;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_ACTUAL_VS_ESTIMATED;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: profitabilityImpact = FALLBACK_PROFITABILITY_IMPACT } = useQuery({
+    queryKey: ["import-profitability-impact"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-analytics/profitability-impact");
+      if (!res.ok) return FALLBACK_PROFITABILITY_IMPACT;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_PROFITABILITY_IMPACT;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div className="p-6 space-y-6" dir="rtl">
       {/* ── Header ──────────────────────────────────────────────── */}

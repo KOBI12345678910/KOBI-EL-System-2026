@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -48,7 +50,7 @@ const statusConfig: Record<Status, { label: string; color: string }> = {
 
 const currencySymbol: Record<string, string> = { USD: "$", EUR: "\u20AC", ILS: "\u20AA", TRY: "\u20BA", CNY: "\u00A5" };
 
-const orders: ImportOrder[] = [
+const FALLBACK_ORDERS: ImportOrder[] = [
   { id: "IPO-001", supplier: "Istanbul Aluminyum A.S.",     country: "טורקיה",  countryFlag: "TR", currency: "USD", totalForeign: 87500,  landedCostILS: 342000,  incoterm: "CIF",  status: "in_transit",            expectedArrival: "2026-04-18", items: 14 },
   { id: "IPO-002", supplier: "Guangzhou Fittings Ltd.",     country: "סין",     countryFlag: "CN", currency: "USD", totalForeign: 124000, landedCostILS: 496000,  incoterm: "FOB",  status: "production_in_progress", expectedArrival: "2026-05-10", items: 38 },
   { id: "IPO-003", supplier: "Schuco International KG",    country: "גרמניה",  countryFlag: "DE", currency: "EUR", totalForeign: 215000, landedCostILS: 875000,  incoterm: "DAP",  status: "approved",               expectedArrival: "2026-05-25", items: 22 },
@@ -64,11 +66,60 @@ const orders: ImportOrder[] = [
 const fmt = (n: number) => n.toLocaleString("he-IL");
 const fmtCurrency = (amount: number, cur: string) => `${currencySymbol[cur] || cur}${fmt(amount)}`;
 
-const inTransitStatuses: Status[] = ["shipped", "in_transit"];
-const waitingStatuses: Status[] = ["draft", "pending_approval", "approved", "sent_to_supplier", "supplier_confirmed", "production_in_progress", "ready_to_ship"];
-const receivedStatuses: Status[] = ["arrived", "partially_received", "fully_received", "closed"];
+const FALLBACK_IN_TRANSIT_STATUSES: Status[] = ["shipped", "in_transit"];
+const FALLBACK_WAITING_STATUSES: Status[] = ["draft", "pending_approval", "approved", "sent_to_supplier", "supplier_confirmed", "production_in_progress", "ready_to_ship"];
+const FALLBACK_RECEIVED_STATUSES: Status[] = ["arrived", "partially_received", "fully_received", "closed"];
 
 export default function ImportPurchaseOrders() {
+  const { data: orders = FALLBACK_ORDERS } = useQuery({
+    queryKey: ["import-orders"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-purchase-orders/orders");
+      if (!res.ok) return FALLBACK_ORDERS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_ORDERS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: inTransitStatuses = FALLBACK_IN_TRANSIT_STATUSES } = useQuery({
+    queryKey: ["import-in-transit-statuses"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-purchase-orders/in-transit-statuses");
+      if (!res.ok) return FALLBACK_IN_TRANSIT_STATUSES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_IN_TRANSIT_STATUSES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: waitingStatuses = FALLBACK_WAITING_STATUSES } = useQuery({
+    queryKey: ["import-waiting-statuses"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-purchase-orders/waiting-statuses");
+      if (!res.ok) return FALLBACK_WAITING_STATUSES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_WAITING_STATUSES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: receivedStatuses = FALLBACK_RECEIVED_STATUSES } = useQuery({
+    queryKey: ["import-received-statuses"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-purchase-orders/received-statuses");
+      if (!res.ok) return FALLBACK_RECEIVED_STATUSES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_RECEIVED_STATUSES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [tab, setTab] = useState("all");
 
   const openOrders = orders.filter(o => !["fully_received", "closed", "cancelled"].includes(o.status));

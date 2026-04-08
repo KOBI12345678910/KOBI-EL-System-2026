@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +18,7 @@ import {
 */
 
 // ── Drawings ──
-const drawings = [
+const FALLBACK_DRAWINGS = [
   { id: "DWG-101", project: "בניין משרדים רמת גן", type: "שרטוט ייצור", rev: "C", status: "approved", designer: "יוסי כהן" },
   { id: "DWG-102", project: "מפעל אלקטרוניקה חיפה", type: "שרטוט התקנה", rev: "B", status: "review", designer: "שרה לוי" },
   { id: "DWG-103", project: "מרכז מסחרי באר שבע", type: "שרטוט מדידות", rev: "A", status: "draft", designer: "דוד מזרחי" },
@@ -28,7 +30,7 @@ const drawings = [
 ];
 
 // ── Site Measurements ──
-const measurements = [
+const FALLBACK_MEASUREMENTS = [
   { project: "בניין משרדים רמת גן", date: "2026-04-01", technician: "יוסי כהן", status: "הושלם", linkedDwg: "DWG-101" },
   { project: "מפעל אלקטרוניקה חיפה", date: "2026-04-03", technician: "שרה לוי", status: "ממתין לאישור", linkedDwg: "DWG-102" },
   { project: "מרכז מסחרי באר שבע", date: "2026-04-05", technician: "דוד מזרחי", status: "בתהליך", linkedDwg: "DWG-103" },
@@ -40,7 +42,7 @@ const measurements = [
 ];
 
 // ── Change Orders ──
-const changeOrders = [
+const FALLBACK_CHANGEORDERS = [
   { id: "ECO-001", project: "בניין משרדים רמת גן", desc: "שינוי מידות חלון ראשי", impact: "גבוה", requester: "לקוח", status: "אושר" },
   { id: "ECO-002", project: "מפעל אלקטרוניקה חיפה", desc: "החלפת סוג פרופיל דלתות", impact: "בינוני", requester: "הנדסה", status: "בבדיקה" },
   { id: "ECO-003", project: "מרכז מסחרי באר שבע", desc: "הוספת חלון נוסף בקומה 3", impact: "גבוה", requester: "אדריכל", status: "ממתין" },
@@ -52,7 +54,7 @@ const changeOrders = [
 ];
 
 // ── Engineering Tasks ──
-const tasks = [
+const FALLBACK_TASKS = [
   { task: "עדכון מפרט טכני פרויקט רמת גן", project: "בניין משרדים רמת גן", assignee: "יוסי כהן", priority: "גבוהה", due: "2026-04-10", status: "בעבודה" },
   { task: "בדיקת תאימות שרטוטים לתקן", project: "מפעל אלקטרוניקה חיפה", assignee: "שרה לוי", priority: "דחופה", due: "2026-04-09", status: "בעבודה" },
   { task: "הכנת הוראות חיתוך אצווה 45", project: "מרכז מסחרי באר שבע", assignee: "דוד מזרחי", priority: "רגילה", due: "2026-04-15", status: "ממתין" },
@@ -103,6 +105,33 @@ const th = "p-3 text-right text-muted-foreground font-medium text-xs";
 const td = "p-3 text-sm";
 
 export default function EngineeringOffice() {
+  const { data: apidrawings } = useQuery({
+    queryKey: ["/api/engineering/engineering-office/drawings"],
+    queryFn: () => authFetch("/api/engineering/engineering-office/drawings").then(r => r.json()).catch(() => null),
+  });
+  const drawings = Array.isArray(apidrawings) ? apidrawings : (apidrawings?.data ?? apidrawings?.items ?? FALLBACK_DRAWINGS);
+
+
+  const { data: apimeasurements } = useQuery({
+    queryKey: ["/api/engineering/engineering-office/measurements"],
+    queryFn: () => authFetch("/api/engineering/engineering-office/measurements").then(r => r.json()).catch(() => null),
+  });
+  const measurements = Array.isArray(apimeasurements) ? apimeasurements : (apimeasurements?.data ?? apimeasurements?.items ?? FALLBACK_MEASUREMENTS);
+
+
+  const { data: apichangeOrders } = useQuery({
+    queryKey: ["/api/engineering/engineering-office/changeorders"],
+    queryFn: () => authFetch("/api/engineering/engineering-office/changeorders").then(r => r.json()).catch(() => null),
+  });
+  const changeOrders = Array.isArray(apichangeOrders) ? apichangeOrders : (apichangeOrders?.data ?? apichangeOrders?.items ?? FALLBACK_CHANGEORDERS);
+
+
+  const { data: apitasks } = useQuery({
+    queryKey: ["/api/engineering/engineering-office/tasks"],
+    queryFn: () => authFetch("/api/engineering/engineering-office/tasks").then(r => r.json()).catch(() => null),
+  });
+  const tasks = Array.isArray(apitasks) ? apitasks : (apitasks?.data ?? apitasks?.items ?? FALLBACK_TASKS);
+
   const [tab, setTab] = useState("drawings");
 
   const kpis = [

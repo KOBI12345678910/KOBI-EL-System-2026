@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +14,7 @@ import {
   Zap, Star, Package, RefreshCw, Eye
 } from "lucide-react";
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "הצעות שנוצרו", value: "1,247", change: "+18%", up: true, icon: FileText, color: "from-blue-500 to-cyan-500" },
   { label: "זמן תגובה ממוצע", value: "2.4 דק׳", change: "-35%", up: true, icon: Clock, color: "from-emerald-500 to-green-500" },
   { label: "שיפור שיעור זכייה", value: "+23%", change: "+5.2%", up: true, icon: TrendingUp, color: "from-violet-500 to-purple-500" },
@@ -21,7 +23,7 @@ const kpis = [
   { label: "הכנסות מהצעות AI", value: "₪4.8M", change: "+28%", up: true, icon: DollarSign, color: "from-teal-500 to-cyan-500" },
 ];
 
-const aiQuotes = [
+const FALLBACK_AI_QUOTES = [
   { id: "QAI-1001", customer: "אלביט מערכות", products: "חיישנים תעשייתיים x50", aiPrice: "₪245,000", margin: "32%", confidence: 94, status: "accepted" },
   { id: "QAI-1002", customer: "רפאל מערכות", products: "מודולי תקשורת x120", aiPrice: "₪512,000", margin: "28%", confidence: 91, status: "sent" },
   { id: "QAI-1003", customer: "IAI תעשייה אווירית", products: "בקרי טמפרטורה x80", aiPrice: "₪178,000", margin: "35%", confidence: 88, status: "draft" },
@@ -41,7 +43,7 @@ const statusMap: Record<string, { label: string; color: string; icon: React.Elem
   rejected: { label: "נדחה", color: "bg-red-500/20 text-red-300 border-red-500/30", icon: XCircle },
 };
 
-const pricingIntel = [
+const FALLBACK_PRICING_INTEL = [
   { product: "חיישנים תעשייתיים", ourPrice: "₪4,900", marketAvg: "₪5,200", competitorLow: "₪4,600", competitorHigh: "₪5,800", winRate: 72, trend: "up" },
   { product: "מודולי תקשורת", ourPrice: "₪4,267", marketAvg: "₪4,500", competitorLow: "₪3,900", competitorHigh: "₪5,100", winRate: 65, trend: "down" },
   { product: "בקרי טמפרטורה", ourPrice: "₪2,225", marketAvg: "₪2,400", competitorLow: "₪2,000", competitorHigh: "₪2,900", winRate: 78, trend: "up" },
@@ -49,7 +51,7 @@ const pricingIntel = [
   { product: "משאבות תעשייתיות", ourPrice: "₪19,133", marketAvg: "₪18,500", competitorLow: "₪16,000", competitorHigh: "₪22,000", winRate: 54, trend: "down" },
 ];
 
-const recommendations = [
+const FALLBACK_RECOMMENDATIONS = [
   { customer: "אלביט מערכות", currentProducts: "חיישנים", suggestion: "מודולי תקשורת + בקרי טמפרטורה", potential: "₪320,000", confidence: 91, reason: "רכישות דומות ע״י לקוחות בענף הביטחון" },
   { customer: "טבע תעשיות", currentProducts: "ציוד מעבדה", suggestion: "חיישני לחות + מערכות סינון", potential: "₪185,000", confidence: 87, reason: "היסטוריית רכישות מעבדתיות משלימות" },
   { customer: "חברת חשמל", currentProducts: "שנאי מתח", suggestion: "מערכות הגנה + כבלי מתח גבוה", potential: "₪520,000", confidence: 94, reason: "פרויקט הרחבת רשת ידוע" },
@@ -57,7 +59,7 @@ const recommendations = [
   { customer: "נתיבי ישראל", currentProducts: "תאורת LED", suggestion: "חיישני תנועה + בקרי תאורה חכמים", potential: "₪145,000", confidence: 85, reason: "פרויקט כבישים חכמים 2026" },
 ];
 
-const templates = [
+const FALLBACK_TEMPLATES = [
   { name: "פרויקט ביטחוני", winRate: 78, avgMargin: "31%", uses: 142, optimized: true, components: ["חיישנים", "תקשורת", "בקרה"], lastUpdated: "לפני 3 ימים" },
   { name: "תשתיות אנרגיה", winRate: 82, avgMargin: "27%", uses: 98, optimized: true, components: ["שנאים", "כבלים", "הגנה"], lastUpdated: "לפני שבוע" },
   { name: "ציוד מעבדה", winRate: 74, avgMargin: "34%", uses: 67, optimized: false, components: ["מכשור", "כימיקלים", "ריהוט"], lastUpdated: "לפני 2 שבועות" },
@@ -67,6 +69,18 @@ const templates = [
 ];
 
 export default function AiQuotationAssistant() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["ai_quotation_assistant"],
+    queryFn: () => authFetch("/api/ai/ai-quotation-assistant").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const aiQuotes = apiData?.aiQuotes ?? FALLBACK_AI_QUOTES;
+  const pricingIntel = apiData?.pricingIntel ?? FALLBACK_PRICING_INTEL;
+  const recommendations = apiData?.recommendations ?? FALLBACK_RECOMMENDATIONS;
+  const templates = apiData?.templates ?? FALLBACK_TEMPLATES;
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("quotes");
 

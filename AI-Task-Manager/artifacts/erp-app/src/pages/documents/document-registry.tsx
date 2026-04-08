@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -13,7 +15,7 @@ import {
 
 /* ── mock data: 20 documents ── */
 
-const documents = [
+const FALLBACK_DOCUMENTS = [
   { id: "DOC-10201", name: "הזמנת רכש PO-2456", type: "הזמנה", dept: "רכש", version: "v1.0", status: "מאושר", author: "יוסי כהן", created: "2026-01-12", updated: "2026-01-12", size: "245 KB", format: "PDF", access: "מחלקתי", tags: ["רכש", "ספקים"] },
   { id: "DOC-10202", name: "תעודת משלוח DN-1234", type: "תעודה", dept: "ייצור", version: "v1.2", status: "פעיל", author: "שרה מזרחי", created: "2026-01-18", updated: "2026-02-05", size: "132 KB", format: "PDF", access: "ציבורי", tags: ["משלוח", "לוגיסטיקה"] },
   { id: "DOC-10203", name: "פרוטוקול בדיקת איכות QC-890", type: "פרוטוקול", dept: "איכות", version: "v2.3", status: "מאושר", author: "דוד מזרחי", created: "2025-11-03", updated: "2026-03-20", size: "1.8 MB", format: "PDF", access: "מוגבל", tags: ["איכות", "בדיקה", "ISO"] },
@@ -38,13 +40,13 @@ const documents = [
 
 /* ── version history for selected doc ── */
 
-const versionHistory = [
+const FALLBACK_VERSION_HISTORY = [
   { version: "v2.3", date: "2026-03-20", author: "דוד מזרחי", notes: "עדכון קריטריוני בדיקה לפי ISO 9001:2025" },
   { version: "v2.2", date: "2026-01-15", author: "דוד מזרחי", notes: "הוספת בדיקת חוזק מתיחה לחומרי גלם" },
   { version: "v2.1", date: "2025-11-28", author: "מיכל ברק", notes: "תיקון סף דחייה ל-0.02 מ\"מ" },
 ];
 
-const linkedEntities = [
+const FALLBACK_LINKED_ENTITIES = [
   { type: "פרויקט", id: "PRJ-2026-015", name: "פרויקט מסגרת דלתא" },
   { type: "הזמנה", id: "PO-2456", name: "הזמנת חומרי גלם פלדה" },
   { type: "התקנה", id: "INS-078", name: "התקנת קו ייצור 4" },
@@ -52,7 +54,7 @@ const linkedEntities = [
 
 /* ── statistics data ── */
 
-const docsByType = [
+const FALLBACK_DOCS_BY_TYPE = [
   { type: "הזמנה", count: 342, color: "bg-blue-500" },
   { type: "תעודה", count: 218, color: "bg-emerald-500" },
   { type: "פרוטוקול", count: 156, color: "bg-purple-500" },
@@ -64,9 +66,9 @@ const docsByType = [
   { type: "הנחיה", count: 42, color: "bg-pink-500" },
   { type: "אישור", count: 30, color: "bg-teal-500" },
 ];
-const totalDocs = docsByType.reduce((s, d) => s + d.count, 0);
+const totalDocs = FALLBACK_DOCS_BY_TYPE.reduce((s, d) => s + d.count, 0);
 
-const docsByDept = [
+const FALLBACK_DOCS_BY_DEPT = [
   { dept: "ייצור", count: 310 },
   { dept: "רכש", count: 245 },
   { dept: "כספים", count: 198 },
@@ -76,9 +78,9 @@ const docsByDept = [
   { dept: "שירות", count: 67 },
   { dept: "הנהלה", count: 38 },
 ];
-const maxDept = Math.max(...docsByDept.map((d) => d.count));
+const maxDept = Math.max(...FALLBACK_DOCS_BY_DEPT.map((d) => d.count));
 
-const monthlyUploads = [
+const FALLBACK_MONTHLY_UPLOADS = [
   { month: "אוק 25", count: 78 },
   { month: "נוב 25", count: 92 },
   { month: "דצמ 25", count: 64 },
@@ -86,7 +88,7 @@ const monthlyUploads = [
   { month: "פבר 26", count: 118 },
   { month: "מרץ 26", count: 134 },
 ];
-const maxUpload = Math.max(...monthlyUploads.map((m) => m.count));
+const maxUpload = Math.max(...FALLBACK_MONTHLY_UPLOADS.map((m) => m.count));
 
 /* ── helpers ── */
 
@@ -126,6 +128,19 @@ type Filters = {
 /* ── component ── */
 
 export default function DocumentRegistry() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["document_registry"],
+    queryFn: () => authFetch("/api/documents/document-registry").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const documents = apiData?.documents ?? FALLBACK_DOCUMENTS;
+  const versionHistory = apiData?.versionHistory ?? FALLBACK_VERSION_HISTORY;
+  const linkedEntities = apiData?.linkedEntities ?? FALLBACK_LINKED_ENTITIES;
+  const docsByType = apiData?.docsByType ?? FALLBACK_DOCS_BY_TYPE;
+  const docsByDept = apiData?.docsByDept ?? FALLBACK_DOCS_BY_DEPT;
+  const monthlyUploads = apiData?.monthlyUploads ?? FALLBACK_MONTHLY_UPLOADS;
   const [tab, setTab] = useState("table");
   const [selectedDoc, setSelectedDoc] = useState(documents[2]); // QC-890 as default
   const [filters, setFilters] = useState<Filters>({

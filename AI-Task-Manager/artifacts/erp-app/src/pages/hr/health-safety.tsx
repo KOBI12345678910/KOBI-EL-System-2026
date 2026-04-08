@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { translateStatus } from "@/lib/status-labels";
 import {
   Shield, Search, Plus, Edit2, Trash2, X, Save, AlertTriangle,
@@ -20,7 +22,7 @@ const token = () => localStorage.getItem("erp_token") || "";
 const headers = () => ({ Authorization: `Bearer ${token()}`, "Content-Type": "application/json" });
 
 // 10 incident types
-const incidentTypes = [
+const FALLBACK_INCIDENT_TYPES = [
   { value: "slip_fall", label: "\u05D4\u05D7\u05DC\u05E7\u05D4/\u05E0\u05E4\u05D9\u05DC\u05D4", icon: AlertTriangle },
   { value: "machinery", label: "\u05EA\u05D0\u05D5\u05E0\u05EA \u05DE\u05DB\u05D5\u05E0\u05D5\u05EA", icon: Wrench },
   { value: "fire", label: "\u05E9\u05E8\u05D9\u05E4\u05D4/\u05E4\u05D9\u05E6\u05D5\u05E5", icon: Flame },
@@ -46,6 +48,14 @@ const conditionOptions = ["\u05EA\u05E7\u05D9\u05DF", "\u05D8\u05D5\u05D1", "\u0
 const trainingTypes = ["\u05D1\u05D8\u05D9\u05D7\u05D5\u05EA \u05DB\u05DC\u05DC\u05D9\u05EA", "\u05DB\u05D9\u05D1\u05D5\u05D9 \u05D0\u05E9", "\u05E2\u05D1\u05D5\u05D3\u05D4 \u05D1\u05D2\u05D5\u05D1\u05D4", "\u05E2\u05D6\u05E8\u05D4 \u05E8\u05D0\u05E9\u05D5\u05E0\u05D4", "\u05D7\u05D5\u05DE\u05E8\u05D9\u05DD \u05DE\u05E1\u05D5\u05DB\u05E0\u05D9\u05DD", "\u05E2\u05D1\u05D5\u05D3\u05D4 \u05D1\u05DE\u05DB\u05D5\u05E0\u05D5\u05EA", "\u05D0\u05E8\u05D2\u05D5\u05E0\u05D5\u05DE\u05D9\u05D4", "\u05D7\u05D9\u05E8\u05D5\u05DD"];
 
 export default function HealthSafetyPage() {
+  const { data: healthsafetyData } = useQuery({
+    queryKey: ["health-safety"],
+    queryFn: () => authFetch("/api/hr/health_safety"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const incidentTypes = healthsafetyData ?? FALLBACK_INCIDENT_TYPES;
+
   const [activeTab, setActiveTab] = useState("incidents");
 
   // Incidents state

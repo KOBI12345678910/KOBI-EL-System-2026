@@ -1,4 +1,6 @@
 import ReactMarkdown from "react-markdown";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import remarkGfm from "remark-gfm";
 
 export interface ChartData { type: "bar" | "pie"; title?: string; data: Array<{ label: string; value: number }>; }
@@ -75,6 +77,13 @@ export function extractChartBlocks(text: string): Array<{ chart: ChartData; plac
 }
 
 export default function RenderContentWithCharts({ content }: { content: string }) {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["render_content_with_charts"],
+    queryFn: () => authFetch("/api/ai/render-content-with-charts").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
   const chartBlocks = extractChartBlocks(content);
   if (chartBlocks.length === 0) {
     return <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>;

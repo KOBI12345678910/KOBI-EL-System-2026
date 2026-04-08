@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -16,7 +18,7 @@ import {
 const fmt = (n: number) => "₪" + n.toLocaleString("he-IL");
 const fmtKg = (n: number) => n.toLocaleString("he-IL") + " ק\"ג";
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "פסולת החודש", value: fmtKg(3_420), icon: Trash2, color: "text-red-400", bg: "bg-red-600/20 border-red-500/30" },
   { label: "שווי פסולת", value: fmt(48_750), icon: DollarSign, color: "text-amber-400", bg: "bg-amber-600/20 border-amber-500/30" },
   { label: "שחזור גרוטאות", value: fmt(18_200), icon: Recycle, color: "text-green-400", bg: "bg-green-600/20 border-green-500/30" },
@@ -35,7 +37,7 @@ interface WasteByMaterial {
   netCost: number;
 }
 
-const wasteByMaterial: WasteByMaterial[] = [
+const FALLBACK_WASTE_BY_MATERIAL: WasteByMaterial[] = [
   { material: "פרופיל ברזל 40x40", qtyProduced: 12_400, wasteKg: 620, wastePct: 5.0, recoveryValue: 3_100, netCost: 5_580 },
   { material: "פרופיל אלומיניום תרמי", qtyProduced: 8_600, wasteKg: 344, wastePct: 4.0, recoveryValue: 4_816, netCost: 3_024 },
   { material: "נירוסטה 304 פס 30x3", qtyProduced: 4_200, wasteKg: 168, wastePct: 4.0, recoveryValue: 2_520, netCost: 2_280 },
@@ -55,7 +57,7 @@ interface ScrapItem {
   buyer: string;
 }
 
-const scrapInventory: ScrapItem[] = [
+const FALLBACK_SCRAP_INVENTORY: ScrapItem[] = [
   { type: "ברזל", qtyKg: 2_840, valuePerKg: 2.5, totalValue: 7_100, buyer: "מתכות השרון בע\"מ" },
   { type: "אלומיניום", qtyKg: 1_260, valuePerKg: 7.0, totalValue: 8_820, buyer: "רימון מיחזור" },
   { type: "נירוסטה", qtyKg: 680, valuePerKg: 12.0, totalValue: 8_160, buyer: "Stainless Recyclers Ltd" },
@@ -76,7 +78,7 @@ interface MonthlyTrend {
   wastePct: number;
 }
 
-const monthlyTrends: MonthlyTrend[] = [
+const FALLBACK_MONTHLY_TRENDS: MonthlyTrend[] = [
   { month: "נובמבר 2025", totalWasteKg: 4_100, wasteValue: 58_200, recoveryValue: 14_800, netCost: 43_400, wastePct: 4.6 },
   { month: "דצמבר 2025", totalWasteKg: 3_850, wasteValue: 54_600, recoveryValue: 15_200, netCost: 39_400, wastePct: 4.3 },
   { month: "ינואר 2026", totalWasteKg: 3_780, wasteValue: 53_100, recoveryValue: 16_500, netCost: 36_600, wastePct: 4.2 },
@@ -95,7 +97,7 @@ interface Opportunity {
   priority: "גבוהה" | "בינונית" | "נמוכה";
 }
 
-const opportunities: Opportunity[] = [
+const FALLBACK_OPPORTUNITIES: Opportunity[] = [
   { material: "זכוכית מחוסמת 10מ\"מ", currentPct: 5.0, targetPct: 3.0, savingsPotential: 37_920, action: "שדרוג CNC חיתוך + אופטימיזציית nesting", priority: "גבוהה" },
   { material: "פרופיל ברזל 40x40", currentPct: 5.0, targetPct: 3.5, savingsPotential: 16_740, action: "תוכנת ניתוב חיתוך אוטומטית", priority: "גבוהה" },
   { material: "אלומיניום יצוק A356", currentPct: 5.0, targetPct: 3.0, savingsPotential: 12_960, action: "שיפור תבניות יציקה", priority: "בינונית" },
@@ -117,6 +119,14 @@ const priorityColor = (p: Opportunity["priority"]) => {
 // ============================================================
 
 export default function ScrapWaste() {
+  const { data: scrapwasteData } = useQuery({
+    queryKey: ["scrap-waste"],
+    queryFn: () => authFetch("/api/procurement/scrap_waste"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = scrapwasteData ?? FALLBACK_KPIS;
+
   const [tab, setTab] = useState("by-material");
 
   return (

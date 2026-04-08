@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +20,7 @@ import {
 */
 
 // ── Documents ──
-const documents = [
+const FALLBACK_DOCUMENTS = [
   { id: "DOC-1001", title: "מפרט טכני פרופיל אלומיניום 6063-T5", type: "מפרט טכני", version: "3.2", status: "פעיל", owner: "יוסי כהן", updated: "2026-04-05" },
   { id: "DOC-1002", title: "מדריך התקנת קירות מסך מערכת XP-200", type: "מדריך התקנה", version: "2.1", status: "פעיל", owner: "שרה לוי", updated: "2026-04-03" },
   { id: "DOC-1003", title: "דף נתוני חומר -- זכוכית מחוסמת 10 מ\"מ", type: "דף נתוני חומר", version: "1.4", status: "פעיל", owner: "דוד מזרחי", updated: "2026-03-28" },
@@ -37,7 +39,7 @@ const documents = [
 ];
 
 // ── Templates ──
-const templates = [
+const FALLBACK_TEMPLATES = [
   { id: "TPL-01", name: "תבנית מפרט טכני", category: "מפרט", format: "DOCX", pages: 12, lastUsed: "2026-04-05", usageCount: 34 },
   { id: "TPL-02", name: "תבנית דוח בדיקה", category: "בדיקה", format: "DOCX", pages: 8, lastUsed: "2026-04-07", usageCount: 28 },
   { id: "TPL-03", name: "תבנית גיליון חישוב", category: "חישוב", format: "XLSX", pages: 5, lastUsed: "2026-04-01", usageCount: 19 },
@@ -49,7 +51,7 @@ const templates = [
 ];
 
 // ── Expiring Documents ──
-const expiringDocs = [
+const FALLBACK_EXPIRINGDOCS = [
   { id: "DOC-1007", title: "תוכנית איכות -- פרויקט בית חולים אשדוד", reviewDate: "2025-12-15", daysOverdue: 114, owner: "עומר חדד", severity: "קריטי" },
   { id: "DOC-1013", title: "גיליון חישוב בידוד תרמי -- קניון ירושלים", reviewDate: "2025-11-10", daysOverdue: 149, owner: "אלון גולדשטיין", severity: "קריטי" },
   { id: "DOC-1006", title: "הוראות עבודה -- ריתוך פרופילי אלומיניום", reviewDate: "2026-04-20", daysOverdue: -12, owner: "מיכל ברק", severity: "אזהרה" },
@@ -89,6 +91,26 @@ const th = "p-3 text-right text-muted-foreground font-medium text-xs";
 const td = "p-3 text-sm";
 
 export default function EngineeringDocumentsPage() {
+  const { data: apidocuments } = useQuery({
+    queryKey: ["/api/engineering/engineering-documents/documents"],
+    queryFn: () => authFetch("/api/engineering/engineering-documents/documents").then(r => r.json()).catch(() => null),
+  });
+  const documents = Array.isArray(apidocuments) ? apidocuments : (apidocuments?.data ?? apidocuments?.items ?? FALLBACK_DOCUMENTS);
+
+
+  const { data: apitemplates } = useQuery({
+    queryKey: ["/api/engineering/engineering-documents/templates"],
+    queryFn: () => authFetch("/api/engineering/engineering-documents/templates").then(r => r.json()).catch(() => null),
+  });
+  const templates = Array.isArray(apitemplates) ? apitemplates : (apitemplates?.data ?? apitemplates?.items ?? FALLBACK_TEMPLATES);
+
+
+  const { data: apiexpiringDocs } = useQuery({
+    queryKey: ["/api/engineering/engineering-documents/expiringdocs"],
+    queryFn: () => authFetch("/api/engineering/engineering-documents/expiringdocs").then(r => r.json()).catch(() => null),
+  });
+  const expiringDocs = Array.isArray(apiexpiringDocs) ? apiexpiringDocs : (apiexpiringDocs?.data ?? apiexpiringDocs?.items ?? FALLBACK_EXPIRINGDOCS);
+
   const [tab, setTab] = useState("documents");
   const [searchQuery, setSearchQuery] = useState("");
 

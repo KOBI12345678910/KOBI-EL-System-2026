@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -40,7 +42,7 @@ interface UserRecord {
 
 // ─── Mock Data ─────────────────────────────────────────────────────────────────
 
-const PERMISSION_CATALOG: PermissionCatalogItem[] = [
+const FALLBACK_PERMISSION_CATALOG: PermissionCatalogItem[] = [
   { code: "FIN.GL.POST", name: "רישום פקודות יומן", module: "כספים" },
   { code: "FIN.GL.VIEW", name: "צפייה בספר חשבונות", module: "כספים" },
   { code: "FIN.GL.CLOSE", name: "סגירת תקופה", module: "כספים" },
@@ -70,7 +72,7 @@ const PERMISSION_CATALOG: PermissionCatalogItem[] = [
   { code: "REPORT.FINANCIAL", name: "דוחות כספיים", module: "דוחות" },
 ];
 
-const MOCK_USERS: UserRecord[] = [
+const FALLBACK_MOCK_USERS: UserRecord[] = [
   {
     id: "U001", name: "אבי כהן", email: "avi.cohen@company.co.il", department: "כספים",
     overrides: [
@@ -131,6 +133,14 @@ const fmt = Intl.DateTimeFormat("he-IL", { day: "2-digit", month: "2-digit", yea
 // ─── Component ─────────────────────────────────────────────────────────────────
 
 export default function UserPermissionOverride() {
+  const { data: userpermissionoverrideData } = useQuery({
+    queryKey: ["user-permission-override"],
+    queryFn: () => authFetch("/api/system/user_permission_override"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const PERMISSION_CATALOG = userpermissionoverrideData ?? FALLBACK_PERMISSION_CATALOG;
+
   const [users, setUsers] = useState<UserRecord[]>(MOCK_USERS);
   const [selectedUserId, setSelectedUserId] = useState<string>("U001");
   const [moduleFilter, setModuleFilter] = useState("");

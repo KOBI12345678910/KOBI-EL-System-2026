@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,7 +22,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 
-const certificates = [
+const FALLBACK_CERTIFICATES = [
   { id: 1, material: "אלומיניום 6063-T5 פרופיל", standard: "EN 573-3", issuer: "TUV Rheinland", issued: "2025-08-15", expiry: "2026-08-15", status: "בתוקף", supplier: "אלומיל ישראל" },
   { id: 2, material: "אלומיניום 6060-T6 יציקה", standard: "EN 755-2", issuer: "Bureau Veritas", issued: "2025-06-01", expiry: "2026-06-01", status: "בתוקף", supplier: "אלומיל ישראל" },
   { id: 3, material: "זכוכית מחוסמת 8 מ\"מ", standard: "EN 12150-1", issuer: "BSI", issued: "2025-09-20", expiry: "2026-09-20", status: "בתוקף", supplier: "פניציה זכוכית" },
@@ -38,7 +40,7 @@ const certificates = [
   { id: 15, material: "משקוף פלדה חסין אש", standard: "EN 1634-1", issuer: "Warringtonfire", issued: "2025-01-15", expiry: "2026-01-15", status: "פג תוקף", supplier: "מתכת הנגב" },
 ];
 
-const suppliers = [
+const FALLBACK_SUPPLIERS = [
   { name: "אלומיל ישראל", totalCerts: 3, valid: 3, expiring: 0, expired: 0 },
   { name: "פניציה זכוכית", totalCerts: 3, valid: 1, expiring: 1, expired: 1 },
   { name: "מתכת הנגב", totalCerts: 3, valid: 1, expiring: 1, expired: 1 },
@@ -69,6 +71,14 @@ const statusIcon = (status: string) => {
 };
 
 export default function MaterialCerts() {
+  const { data: materialcertsData } = useQuery({
+    queryKey: ["material-certs"],
+    queryFn: () => authFetch("/api/quality/material_certs"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const certificates = materialcertsData ?? FALLBACK_CERTIFICATES;
+
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("certificates");
 

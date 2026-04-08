@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,7 +27,7 @@ interface BomLine {
   delta: Delta;
 }
 
-const bomLines: BomLine[] = [
+const FALLBACK_BOMLINES: BomLine[] = [
   { name: "פרופיל אלומיניום ראשי 6063-T5", sku: "ALU-6063-100", qtyLeft: 4, qtyRight: 4, costLeft: 128.00, costRight: 128.00, unit: 'מ"ט', delta: "unchanged" },
   { name: "פרופיל אלומיניום חיזוק", sku: "ALU-6063-RNF", qtyLeft: 2, qtyRight: 3, costLeft: 64.00, costRight: 96.00, unit: 'מ"ט', delta: "changed" },
   { name: "זכוכית מחוסמת 5 מ\"מ", sku: "GLS-TMP-005", qtyLeft: 1, qtyRight: 1, costLeft: 185.00, costRight: 185.00, unit: "יח'", delta: "unchanged" },
@@ -53,6 +55,12 @@ const deltaConfig: Record<Delta, { label: string; color: string; bg: string; ico
 };
 
 export default function BomComparisonPage() {
+  const { data: apibomLines } = useQuery({
+    queryKey: ["/api/supply-chain/bom-comparison/bomlines"],
+    queryFn: () => authFetch("/api/supply-chain/bom-comparison/bomlines").then(r => r.json()).catch(() => null),
+  });
+  const bomLines = Array.isArray(apibomLines) ? apibomLines : (apibomLines?.data ?? apibomLines?.items ?? FALLBACK_BOMLINES);
+
   const [search, setSearch] = useState("");
 
   const filtered = bomLines.filter(

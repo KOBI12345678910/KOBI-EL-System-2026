@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +13,7 @@ import {
   CalendarDays, AlertTriangle, Activity, Gauge, Factory, Eye
 } from "lucide-react";
 
-const assets = [
+const FALLBACK_ASSETS = [
   { id: "A-001", name: "מסור CNC אלומיניום 600", category: "חיתוך", value: 285000, location: "אולם A - קו 1", status: "פעיל", acquired: "2021-03-15", depreciation: 57000, maintenance: 12400 },
   { id: "A-002", name: "מרכז עיבוד שבבי DMG", category: "עיבוד", value: 520000, location: "אולם A - קו 2", status: "פעיל", acquired: "2020-07-20", depreciation: 130000, maintenance: 18700 },
   { id: "A-003", name: "תנור ציפוי אלקטרוסטטי", category: "ציפוי", value: 340000, location: "אולם B - ציפוי", status: "פעיל", acquired: "2022-01-10", depreciation: 51000, maintenance: 8900 },
@@ -29,13 +31,13 @@ const assets = [
   { id: "A-015", name: "מדחס בורגי 30HP גיבוי", category: "תשתית", value: 78000, location: "חדר מדחסים", status: "פעיל", acquired: "2024-01-15", depreciation: 5850, maintenance: 1800 },
 ];
 
-const depreciationSchedule = [
+const FALLBACK_DEPRECIATION_SCHEDULE = [
   { year: "2024", opening: 3543000, addition: 78000, depreciation: 776100, closing: 2844900 },
   { year: "2025", opening: 2844900, addition: 0, depreciation: 710000, closing: 2134900 },
   { year: "2026", opening: 2134900, addition: 150000, depreciation: 680000, closing: 1604900 },
 ];
 
-const maintenanceHistory = [
+const FALLBACK_MAINTENANCE_HISTORY = [
   { id: "M-301", asset: "מסור CNC אלומיניום 600", type: "מונעת", date: "2026-03-15", cost: 3200, tech: "יוסי כהן", status: "הושלם" },
   { id: "M-302", asset: "תחנת ריתוך TIG אוטומטית", type: "מתקנת", date: "2026-04-01", cost: 8500, tech: "אבי לוי", status: "בביצוע" },
   { id: "M-303", asset: "מלגזה דיזל Hyster 5T", type: "מתקנת", date: "2026-04-05", cost: 6200, tech: "משה דוד", status: "בביצוע" },
@@ -45,7 +47,7 @@ const maintenanceHistory = [
   { id: "M-307", asset: "תנור ציפוי אלקטרוסטטי", type: "שנתית", date: "2026-05-01", cost: 7200, tech: "חברת שירות", status: "מתוכנן" },
 ];
 
-const utilizationData = [
+const FALLBACK_UTILIZATION_DATA = [
   { asset: "מסור CNC אלומיניום 600", hours: 168, available: 192, oee: 87, downtime: 6, quality: 96 },
   { asset: "מרכז עיבוד שבבי DMG", hours: 176, available: 192, oee: 91, downtime: 4, quality: 98 },
   { asset: "תנור ציפוי אלקטרוסטטי", hours: 144, available: 168, oee: 85, downtime: 8, quality: 94 },
@@ -65,6 +67,14 @@ const statusColor: Record<string, string> = {
 };
 
 export default function AssetsDashboard() {
+  const { data: assetsdashboardData } = useQuery({
+    queryKey: ["assets-dashboard"],
+    queryFn: () => authFetch("/api/assets/assets_dashboard"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const assets = assetsdashboardData ?? FALLBACK_ASSETS;
+
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("registry");
 

@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +14,7 @@ import {
 } from "lucide-react";
 
 // ── Drawings Registry (15 drawings) ──
-const drawings = [
+const FALLBACK_DRAWINGS = [
   { id: "DWG-001", title: "חלון אלומיניום 180x120", product: "חלון כנף", rev: "C", format: "CAD", scale: "1:5", size: "A1", status: "released", engineer: "יוסי כהן" },
   { id: "DWG-002", title: "דלת כניסה דו-כנפית", product: "דלת כניסה", rev: "B", format: "PDF", scale: "1:10", size: "A1", status: "approved", engineer: "שרה לוי" },
   { id: "DWG-003", title: "מעקה זכוכית מרפסת", product: "מעקה זכוכית", rev: "A", format: "DXF", scale: "1:5", size: "A3", status: "draft", engineer: "דוד מזרחי" },
@@ -31,7 +33,7 @@ const drawings = [
 ];
 
 // ── Revision History (10 entries) ──
-const revisions = [
+const FALLBACK_REVISIONS = [
   { dwg: "DWG-010", title: "קיר מסך אלומיניום", fromRev: "D", toRev: "E", date: "2026-04-06", engineer: "שרה לוי", reason: "עדכון מידות לפי מדידה סופית", scope: "מידות" },
   { dwg: "DWG-004", title: "ויטרינה חנות 300x250", fromRev: "C", toRev: "D", date: "2026-04-05", engineer: "רחל אברהם", reason: "שינוי סוג זכוכית לפי דרישת לקוח", scope: "חומרים" },
   { dwg: "DWG-001", title: "חלון אלומיניום 180x120", fromRev: "B", toRev: "C", date: "2026-04-04", engineer: "יוסי כהן", reason: "תיקון חתכים בפינות", scope: "גיאומטריה" },
@@ -45,7 +47,7 @@ const revisions = [
 ];
 
 // ── Pending Approvals (6 entries) ──
-const approvals = [
+const FALLBACK_APPROVALS = [
   { dwg: "DWG-005", title: "תריס גלילה חשמלי", rev: "B", submitter: "אלון גולדשטיין", submitted: "2026-04-05", chain: ["מהנדס ראשי", "מנהל QC", "מנהל ייצור"], currentStep: 1, priority: "רגיל" },
   { dwg: "DWG-008", title: "דלת הזזה מותאמת", rev: "B", submitter: "נועה פרידמן", submitted: "2026-04-04", chain: ["מהנדס ראשי", "מנהל QC"], currentStep: 0, priority: "דחוף" },
   { dwg: "DWG-011", title: "פרגולה אלומיניום 4x3", rev: "B", submitter: "דוד מזרחי", submitted: "2026-04-03", chain: ["מהנדס ראשי", "מנהל QC", "מנהל פרויקט"], currentStep: 2, priority: "רגיל" },
@@ -55,7 +57,7 @@ const approvals = [
 ];
 
 // ── Drawing Standards ──
-const standards = [
+const FALLBACK_STANDARDS = [
   { category: "בלוק כותרת", standard: "ISO 7200", desc: "בלוק כותרת אחיד -- שם חברה, מספר שרטוט, רוויזיה, תאריך, קנ\"מ, שם שרטט, אישור", compliance: 94 },
   { category: "סבילויות מידה", standard: "ISO 2768-1", desc: "סבילויות כלליות -- עדין (f), בינוני (m), גס (c) לפי סוג עיבוד", compliance: 88 },
   { category: "סבילויות גיאומטריות", standard: "ISO 1101", desc: "סימון ישרות, שטוחות, עגולות, מקבילות, ניצבות ותנועתיות", compliance: 82 },
@@ -103,6 +105,33 @@ const th = "p-3 text-right text-muted-foreground font-medium text-xs";
 const td = "p-3 text-sm";
 
 export default function DrawingManagementPage() {
+  const { data: apidrawings } = useQuery({
+    queryKey: ["/api/engineering/drawing-management/drawings"],
+    queryFn: () => authFetch("/api/engineering/drawing-management/drawings").then(r => r.json()).catch(() => null),
+  });
+  const drawings = Array.isArray(apidrawings) ? apidrawings : (apidrawings?.data ?? apidrawings?.items ?? FALLBACK_DRAWINGS);
+
+
+  const { data: apirevisions } = useQuery({
+    queryKey: ["/api/engineering/drawing-management/revisions"],
+    queryFn: () => authFetch("/api/engineering/drawing-management/revisions").then(r => r.json()).catch(() => null),
+  });
+  const revisions = Array.isArray(apirevisions) ? apirevisions : (apirevisions?.data ?? apirevisions?.items ?? FALLBACK_REVISIONS);
+
+
+  const { data: apiapprovals } = useQuery({
+    queryKey: ["/api/engineering/drawing-management/approvals"],
+    queryFn: () => authFetch("/api/engineering/drawing-management/approvals").then(r => r.json()).catch(() => null),
+  });
+  const approvals = Array.isArray(apiapprovals) ? apiapprovals : (apiapprovals?.data ?? apiapprovals?.items ?? FALLBACK_APPROVALS);
+
+
+  const { data: apistandards } = useQuery({
+    queryKey: ["/api/engineering/drawing-management/standards"],
+    queryFn: () => authFetch("/api/engineering/drawing-management/standards").then(r => r.json()).catch(() => null),
+  });
+  const standards = Array.isArray(apistandards) ? apistandards : (apistandards?.data ?? apistandards?.items ?? FALLBACK_STANDARDS);
+
   const [tab, setTab] = useState("registry");
   const [search, setSearch] = useState("");
 

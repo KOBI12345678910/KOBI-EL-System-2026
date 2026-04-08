@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -31,7 +33,7 @@ interface Supplier {
   email: string;
 }
 
-const suppliers: Supplier[] = [
+const FALLBACK_SUPPLIERS: Supplier[] = [
   { id: "SUP-001", name: "אלומיניום ישראל בע\"מ", category: "אלומיניום", status: "פעיל", riskScore: 12, performanceScore: 94, openOrders: 5, totalVolume: 4850000, lastDelivery: "2026-04-06", preferred: true, blacklisted: false, contact: "רונן כהן", phone: "04-8551234", email: "ronen@alum-il.co.il" },
   { id: "SUP-002", name: "זכוכית הגליל", category: "זכוכית", status: "פעיל", riskScore: 18, performanceScore: 89, openOrders: 3, totalVolume: 3200000, lastDelivery: "2026-04-04", preferred: true, blacklisted: false, contact: "יעל לוי", phone: "04-9823456", email: "yael@galil-glass.co.il" },
   { id: "SUP-003", name: "פלדת צפון", category: "ברזל", status: "פעיל", riskScore: 25, performanceScore: 82, openOrders: 4, totalVolume: 2750000, lastDelivery: "2026-04-03", preferred: false, blacklisted: false, contact: "משה אברהם", phone: "04-6721234", email: "moshe@plada-zafon.co.il" },
@@ -164,6 +166,14 @@ function SupplierTable({ data, showContact }: { data: Supplier[]; showContact?: 
 }
 
 export default function SupplierManagement() {
+  const { data: suppliermanagementData } = useQuery({
+    queryKey: ["supplier-management"],
+    queryFn: () => authFetch("/api/procurement/supplier_management"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const suppliers = suppliermanagementData ?? FALLBACK_SUPPLIERS;
+
   const preferred = suppliers.filter((s) => s.preferred);
   const blacklisted = suppliers.filter((s) => s.blacklisted);
   const ranked = [...suppliers].sort((a, b) => b.performanceScore - a.performanceScore);

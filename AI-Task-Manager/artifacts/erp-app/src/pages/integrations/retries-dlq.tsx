@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,7 +12,7 @@ import {
   CheckCircle2, XCircle, Zap, ShieldAlert, ArrowDownUp
 } from "lucide-react";
 
-const dlqItems = [
+const FALLBACK_DLQ_ITEMS = [
   { id: "DLQ-001", event: "webhook/order.created", error: "Timeout: endpoint unreachable after 30s", attempts: "3/3", firstFailure: "2026-04-08 08:12:33", lastAttempt: "2026-04-08 09:45:10", payloadSize: "2.4 KB" },
   { id: "DLQ-002", event: "webhook/invoice.paid", error: "HTTP 502 Bad Gateway from target", attempts: "3/3", firstFailure: "2026-04-07 22:05:11", lastAttempt: "2026-04-08 01:30:44", payloadSize: "1.8 KB" },
   { id: "DLQ-003", event: "event/stock.updated", error: "JSON parse error: unexpected token at pos 0", attempts: "3/3", firstFailure: "2026-04-08 06:33:21", lastAttempt: "2026-04-08 07:55:09", payloadSize: "4.1 KB" },
@@ -18,7 +20,7 @@ const dlqItems = [
   { id: "DLQ-005", event: "event/payment.refunded", error: "Rate limit exceeded: 429 Too Many Requests", attempts: "3/3", firstFailure: "2026-04-08 10:01:02", lastAttempt: "2026-04-08 11:15:30", payloadSize: "3.2 KB" },
 ];
 
-const retryPolicies = [
+const FALLBACK_RETRY_POLICIES = [
   { integration: "Webhooks יוצאים", maxAttempts: 3, backoff: "exponential", initialDelay: "10s", maxDelay: "5m", timeout: "30s" },
   { integration: "API חשבשבת", maxAttempts: 5, backoff: "exponential", initialDelay: "5s", maxDelay: "10m", timeout: "60s" },
   { integration: "Sync מלאי", maxAttempts: 4, backoff: "linear", initialDelay: "15s", maxDelay: "2m", timeout: "45s" },
@@ -27,7 +29,7 @@ const retryPolicies = [
   { integration: "Payment Gateway", maxAttempts: 2, backoff: "exponential", initialDelay: "20s", maxDelay: "3m", timeout: "90s" },
 ];
 
-const rateLimits = [
+const FALLBACK_RATE_LIMITS = [
   { service: "API חשבשבת", limit: "60/min", usage: 45, burst: 80, breaches: 3, throttled: 12 },
   { service: "Webhook Delivery", limit: "120/min", usage: 88, burst: 150, breaches: 2, throttled: 8 },
   { service: "CRM Sync", limit: "30/min", usage: 22, burst: 50, breaches: 0, throttled: 0 },
@@ -38,7 +40,7 @@ const rateLimits = [
   { service: "Analytics Push", limit: "150/min", usage: 42, burst: 200, breaches: 1, throttled: 2 },
 ];
 
-const retryHistory = [
+const FALLBACK_RETRY_HISTORY = [
   { item: "DLQ-001", attempt: 2, delay: "20s", result: "fail" as const, duration: "31.2s" },
   { item: "DLQ-003", attempt: 1, delay: "10s", result: "fail" as const, duration: "5.1s" },
   { item: "INV-2281", attempt: 1, delay: "5s", result: "success" as const, duration: "1.3s" },
@@ -51,7 +53,7 @@ const retryHistory = [
   { item: "EMAIL-772", attempt: 1, delay: "3s", result: "success" as const, duration: "0.9s" },
 ];
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "פריטים ב-DLQ", value: "5", icon: Skull, color: "text-red-400", bg: "bg-red-500/10" },
   { label: "Retries היום", value: "23", icon: RotateCcw, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "הצלחה אחרי Retry", value: "87%", icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/10" },
@@ -85,6 +87,18 @@ function BackoffVisual({ strategy, initial }: { strategy: string; initial: strin
 }
 
 export default function RetriesDLQPage() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["retries_dlq"],
+    queryFn: () => authFetch("/api/integrations/retries-dlq").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const dlqItems = apiData?.dlqItems ?? FALLBACK_DLQ_ITEMS;
+  const retryPolicies = apiData?.retryPolicies ?? FALLBACK_RETRY_POLICIES;
+  const rateLimits = apiData?.rateLimits ?? FALLBACK_RATE_LIMITS;
+  const retryHistory = apiData?.retryHistory ?? FALLBACK_RETRY_HISTORY;
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
   const [activeTab, setActiveTab] = useState("dlq");
 
   return (

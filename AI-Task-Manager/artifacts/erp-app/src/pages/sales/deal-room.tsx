@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -97,6 +99,12 @@ const activityIcon = (type: string) => {
 };
 
 export default function DealRoom() {
+  const { data: dealroomData } = useQuery({
+    queryKey: ["deal-room"],
+    queryFn: () => authFetch("/api/sales/deal_room"),
+    staleTime: 5 * 60 * 1000,
+  });
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* Deal Header */}

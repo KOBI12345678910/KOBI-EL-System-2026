@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -39,7 +41,7 @@ const STATUS_COLOR: Record<string, string> = {
   "מושבת": "bg-red-600/20 text-red-300 border-red-500/40",
 };
 
-const vehicles: Vehicle[] = [
+const FALLBACK_VEHICLES: Vehicle[] = [
   { id: "VEH-001", plate: "85-342-71", type: "משאית 12T", makeModel: "מרצדס אקטרוס 1845", year: 2021, km: 187420, testDate: "2026-01-15", insuranceUntil: "2026-09-30", licenseUntil: "2026-12-31", driver: "מוחמד חלבי", status: "תקין", purchaseDate: "2021-03-10", monthlyCost: 8200, weight: 12000, cargoVolume: 42, fuelConsumption: 32 },
   { id: "VEH-002", plate: "91-487-23", type: "משאית 12T", makeModel: "וולוו FH 460", year: 2020, km: 214860, testDate: "2025-11-20", insuranceUntil: "2026-07-15", licenseUntil: "2026-11-30", driver: "אבי כהן", status: "דורש טיפול", purchaseDate: "2020-06-22", monthlyCost: 9100, weight: 12000, cargoVolume: 44, fuelConsumption: 34 },
   { id: "VEH-003", plate: "78-156-94", type: "משאית מנוף 8T", makeModel: "סקניה P280 + מנוף פלפינגר", year: 2022, km: 98300, testDate: "2026-03-05", insuranceUntil: "2026-11-20", licenseUntil: "2027-03-31", driver: "יוסי לוי", status: "תקין", purchaseDate: "2022-01-18", monthlyCost: 11500, weight: 8000, cargoVolume: 28, fuelConsumption: 28 },
@@ -50,7 +52,7 @@ const vehicles: Vehicle[] = [
   { id: "VEH-008", plate: "29-645-13", type: "רכב שירות", makeModel: "רנו מאסטר L3H2", year: 2019, km: 198700, testDate: "2025-12-02", insuranceUntil: "2026-05-31", licenseUntil: "2026-06-30", driver: "—", status: "מושבת", purchaseDate: "2019-11-20", monthlyCost: 3200, weight: 3500, cargoVolume: 13, fuelConsumption: 14 },
 ];
 
-const maintenanceHistory = [
+const FALLBACK_MAINTENANCE_HISTORY = [
   { date: "2026-03-18", vehicle: "VEH-002", description: "החלפת רפידות בלמים קדמיות + דיסקים", cost: 4200, garage: "מוסך אורן — חיפה" },
   { date: "2026-02-04", vehicle: "VEH-006", description: "טיפול 120,000 ק\"מ — שמן, פילטרים, רצועה", cost: 3100, garage: "מוסך יניב — עכו" },
   { date: "2026-01-22", vehicle: "VEH-001", description: "החלפת צמיגים 4 יח' — מישלין 315/80R22.5", cost: 9600, garage: "צמיגי הצפון" },
@@ -58,7 +60,7 @@ const maintenanceHistory = [
   { date: "2025-11-15", vehicle: "VEH-005", description: "טיפול שנתי + החלפת סוללה", cost: 2400, garage: "מוסך אורן — חיפה" },
 ];
 
-const documents = [
+const FALLBACK_DOCUMENTS = [
   { vehicle: "VEH-001", type: "רישיון רכב", validUntil: "2026-12-31", status: "בתוקף" },
   { vehicle: "VEH-001", type: "ביטוח מקיף", validUntil: "2026-09-30", status: "בתוקף" },
   { vehicle: "VEH-001", type: "טסט שנתי", validUntil: "2027-01-15", status: "בתוקף" },
@@ -86,6 +88,43 @@ function shekel(n: number) {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function VehicleRegistry() {
+  const { data: vehicles = FALLBACK_VEHICLES } = useQuery({
+    queryKey: ["logistics-vehicles"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/vehicle-registry/vehicles");
+      if (!res.ok) return FALLBACK_VEHICLES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_VEHICLES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: maintenanceHistory = FALLBACK_MAINTENANCE_HISTORY } = useQuery({
+    queryKey: ["logistics-maintenance-history"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/vehicle-registry/maintenance-history");
+      if (!res.ok) return FALLBACK_MAINTENANCE_HISTORY;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_MAINTENANCE_HISTORY;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: documents = FALLBACK_DOCUMENTS } = useQuery({
+    queryKey: ["logistics-documents"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/vehicle-registry/documents");
+      if (!res.ok) return FALLBACK_DOCUMENTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DOCUMENTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
 
   const activeCount = vehicles.filter(v => v.status === "תקין" || v.status === "דורש טיפול").length;

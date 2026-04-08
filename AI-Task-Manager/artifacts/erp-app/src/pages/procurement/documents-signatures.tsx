@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -19,7 +21,7 @@ const statusColors: Record<string, string> = {
   "הושלם": "bg-blue-500/20 text-blue-400 border-blue-500/30",
 };
 
-const documents = [
+const FALLBACK_DOCUMENTS = [
   { id: "DOC-001", name: "חוזה שנתי - אלומט בע\"מ", type: "חוזה", linkedTo: "PO-1042", uploadedBy: "עוזי כהן", date: "2026-04-01", version: "v3.1", status: "חתום" },
   { id: "DOC-002", name: "הזמנת רכש פרופילי אלומיניום", type: "הזמנה", linkedTo: "PO-1085", uploadedBy: "דנה לוי", date: "2026-04-03", version: "v1.0", status: "ממתין לחתימה" },
   { id: "DOC-003", name: "תעודת משלוח - זכוכית מחוסמת", type: "תעודת משלוח", linkedTo: "PO-1071", uploadedBy: "רון אברהם", date: "2026-04-05", version: "v1.0", status: "חתום" },
@@ -30,7 +32,7 @@ const documents = [
   { id: "DOC-008", name: "הסכם סודיות - ספק חדש", type: "חוזה", linkedTo: "—", uploadedBy: "דנה לוי", date: "2026-04-08", version: "v1.0", status: "ממתין לחתימה" },
 ];
 
-const signatures = [
+const FALLBACK_SIGNATURES = [
   { id: "SIG-001", docId: "DOC-002", docName: "הזמנת רכש פרופילי אלומיניום", signer: "עוזי כהן", role: "מנכ\"ל", requestedDate: "2026-04-03", status: "ממתין לחתימה", type: "אישור" },
   { id: "SIG-002", docId: "DOC-005", docName: "חוזה מסגרת - מתכת פלוס", signer: "דנה לוי", role: "מנהלת רכש", requestedDate: "2026-04-07", status: "ממתין לחתימה", type: "חוזה" },
   { id: "SIG-003", docId: "DOC-001", docName: "חוזה שנתי - אלומט בע\"מ", signer: "עוזי כהן", role: "מנכ\"ל", requestedDate: "2026-03-28", status: "אושר", type: "חוזה", signedDate: "2026-04-01" },
@@ -41,7 +43,7 @@ const signatures = [
   { id: "SIG-008", docId: "DOC-007", docName: "תעודת בדיקה - ציפוי אנודייז", signer: "מיכל שרון", role: "מנהלת איכות", requestedDate: "2026-04-01", status: "אושר", type: "אישור", signedDate: "2026-04-02" },
 ];
 
-const versions = [
+const FALLBACK_VERSIONS = [
   { docId: "DOC-001", docName: "חוזה שנתי - אלומט בע\"מ", from: "v3.0", to: "v3.1", changedBy: "עוזי כהן", date: "2026-04-01", summary: "עדכון תנאי תשלום ל-שוטף+60" },
   { docId: "DOC-004", docName: "אישור איכות - פלדת אל-חלד", from: "v1.0", to: "v2.0", changedBy: "מיכל שרון", date: "2026-04-06", summary: "הוספת תוצאות בדיקת מתיחה" },
   { docId: "DOC-005", docName: "חוזה מסגרת - מתכת פלוס", from: "v1.0", to: "v1.2", changedBy: "דנה לוי", date: "2026-04-07", summary: "תיקון סעיף אחריות, הוספת נספח מחירים" },
@@ -50,7 +52,7 @@ const versions = [
   { docId: "DOC-006", docName: "הזמנת חומרי גלם Q2", from: "—", to: "v1.0", changedBy: "יוסי מזרחי", date: "2026-04-07", summary: "טיוטה ראשונית" },
 ];
 
-const auditTrail = [
+const FALLBACK_AUDIT_TRAIL = [
   { timestamp: "2026-04-08 09:15", user: "דנה לוי", action: "העלאת מסמך", target: "DOC-008 - הסכם סודיות", detail: "מסמך חדש הועלה למערכת" },
   { timestamp: "2026-04-07 16:42", user: "דנה לוי", action: "עדכון גרסה", target: "DOC-005 - חוזה מסגרת", detail: "גרסה עודכנה מ-v1.0 ל-v1.2" },
   { timestamp: "2026-04-07 14:20", user: "יוסי מזרחי", action: "העלאת מסמך", target: "DOC-006 - הזמנת חומרי גלם", detail: "טיוטה ראשונית נשמרה" },
@@ -61,7 +63,7 @@ const auditTrail = [
   { timestamp: "2026-04-01 13:10", user: "עוזי כהן", action: "חתימה דיגיטלית", target: "DOC-001 - חוזה שנתי", detail: "חוזה נחתם סופית — v3.1" },
 ];
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "סה\"כ מסמכים", value: "48", icon: FileText, color: "text-blue-400", bg: "bg-blue-500/20" },
   { label: "ממתינים לחתימה", value: "7", icon: Clock, color: "text-amber-400", bg: "bg-amber-500/20" },
   { label: "נחתמו היום", value: "3", icon: CheckCircle2, color: "text-green-400", bg: "bg-green-500/20" },
@@ -78,6 +80,14 @@ const typeIcons: Record<string, any> = {
 };
 
 export default function DocumentsSignatures() {
+  const { data: documentssignaturesData } = useQuery({
+    queryKey: ["documents-signatures"],
+    queryFn: () => authFetch("/api/procurement/documents_signatures"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const documents = documentssignaturesData ?? FALLBACK_DOCUMENTS;
+
   const [activeTab, setActiveTab] = useState("documents");
   const [searchTerm, setSearchTerm] = useState("");
 

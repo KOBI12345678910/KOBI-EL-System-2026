@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -19,7 +21,7 @@ const fmtPct = (n: number) => `${n > 0 ? "+" : ""}${n.toFixed(1)}%`;
 
 /* ── Static mock data ─────────────────────────────────────────── */
 
-const kpiData = [
+const FALLBACK_KPI_DATA = [
   { label: "עלות כוללת החודש", value: 148500, format: "currency", icon: Calculator, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "תקציב מאושר", value: 165000, format: "currency", icon: DollarSign, color: "text-emerald-400", bg: "bg-emerald-500/10" },
   { label: "ניצול תקציב", value: 90, format: "pct", icon: BarChart3, color: "text-amber-400", bg: "bg-amber-500/10" },
@@ -28,7 +30,7 @@ const kpiData = [
   { label: 'עלות ל-מ"ר', value: 145, format: "currency", icon: Package, color: "text-cyan-400", bg: "bg-cyan-500/10" },
 ];
 
-const installations = [
+const FALLBACK_INSTALLATIONS = [
   { id: "INS-301", project: "מגדלי הים — חיפה", planned: 22000, actual: 21400, labor: 9200, materials: 5800, transport: 2600, equipment: 2400, misc: 1400, status: "בתקציב" },
   { id: "INS-302", project: "פארק המדע — רחובות", planned: 18500, actual: 19200, labor: 8100, materials: 4500, transport: 3100, equipment: 2200, misc: 1300, status: "חריגה קלה" },
   { id: "INS-303", project: "בית חכם — הרצליה", planned: 15000, actual: 14800, labor: 6400, materials: 4100, transport: 1800, equipment: 1500, misc: 1000, status: "בתקציב" },
@@ -47,7 +49,7 @@ const statusColor: Record<string, string> = {
   "חריגה משמעותית": "bg-red-500/20 text-red-300",
 };
 
-const costCategories = [
+const FALLBACK_COST_CATEGORIES = [
   {
     name: "כוח אדם",
     subtitle: "שעות x תעריף",
@@ -100,7 +102,7 @@ const costCategories = [
   },
 ];
 
-const monthlyTrend = [
+const FALLBACK_MONTHLY_TREND = [
   { month: "נובמבר", actual: 132000, budget: 140000 },
   { month: "דצמבר", actual: 141500, budget: 145000 },
   { month: "ינואר", actual: 128000, budget: 150000 },
@@ -109,7 +111,7 @@ const monthlyTrend = [
   { month: "אפריל", actual: 148500, budget: 165000 },
 ];
 
-const insights = [
+const FALLBACK_INSIGHTS = [
   { text: "עלות הובלה עלתה 15% — שקול ספק חלופי או מיזוג נסיעות באשכולות גיאוגרפיים", type: "warning", icon: Truck },
   { text: 'עלות כ"א בפרויקט INS-304 חורגת ב-22% — נדרש ניתוח שעות נוספות מול תכולה', type: "critical", icon: Users },
   { text: 'פרויקטים בטווח 30 ק"מ ממרכז הלוגיסטיקה חוסכים 18% בהובלה — תעדוף אזורי', type: "positive", icon: TrendingDown },
@@ -132,7 +134,7 @@ const insightIconColor: Record<string, string> = {
 
 /* ── Bar helpers for trend chart ──────────────────────────────── */
 
-const trendMax = Math.max(...monthlyTrend.flatMap(m => [m.actual, m.budget]));
+const trendMax = Math.max(...FALLBACK_MONTHLY_TREND.flatMap(m => [m.actual, m.budget]));
 
 const DeviationArrow = ({ planned, actual }: { planned: number; actual: number }) => {
   const diff = actual - planned;
@@ -145,6 +147,67 @@ const DeviationArrow = ({ planned, actual }: { planned: number; actual: number }
 /* ── Component ─────────────────────────────────────────────────── */
 
 export default function InstallationCostTracking() {
+  const { data: kpiData = FALLBACK_KPI_DATA } = useQuery({
+    queryKey: ["installation-kpi-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-cost-tracking/kpi-data");
+      if (!res.ok) return FALLBACK_KPI_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_KPI_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: installations = FALLBACK_INSTALLATIONS } = useQuery({
+    queryKey: ["installation-installations"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-cost-tracking/installations");
+      if (!res.ok) return FALLBACK_INSTALLATIONS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_INSTALLATIONS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: costCategories = FALLBACK_COST_CATEGORIES } = useQuery({
+    queryKey: ["installation-cost-categories"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-cost-tracking/cost-categories");
+      if (!res.ok) return FALLBACK_COST_CATEGORIES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_COST_CATEGORIES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: monthlyTrend = FALLBACK_MONTHLY_TREND } = useQuery({
+    queryKey: ["installation-monthly-trend"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-cost-tracking/monthly-trend");
+      if (!res.ok) return FALLBACK_MONTHLY_TREND;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_MONTHLY_TREND;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: insights = FALLBACK_INSIGHTS } = useQuery({
+    queryKey: ["installation-insights"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-cost-tracking/insights");
+      if (!res.ok) return FALLBACK_INSIGHTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_INSIGHTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* Header */}

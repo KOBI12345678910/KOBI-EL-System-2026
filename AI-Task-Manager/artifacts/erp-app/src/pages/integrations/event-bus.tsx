@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,7 +13,7 @@ import {
 } from "lucide-react";
 
 /* ────── KPI Strip ────── */
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "סוגי אירועים", value: "45", icon: Radio, color: "text-violet-600", bg: "bg-violet-50" },
   { label: "אירועים היום", value: "1,847", icon: Zap, color: "text-blue-600", bg: "bg-blue-50" },
   { label: "מנויים", value: "68", icon: Users, color: "text-emerald-600", bg: "bg-emerald-50" },
@@ -21,7 +23,7 @@ const kpis = [
 ];
 
 /* ────── Event Registry (15 types) ────── */
-const eventTypes = [
+const FALLBACK_EVENT_TYPES = [
   { name: "order.created", publisher: "הזמנות", subscribers: 8, today: 312, lastFired: "10:42:18", schema: "v3.1" },
   { name: "payment.received", publisher: "כספים", subscribers: 6, today: 287, lastFired: "10:41:55", schema: "v2.4" },
   { name: "installation.started", publisher: "התקנות", subscribers: 5, today: 41, lastFired: "10:38:02", schema: "v1.8" },
@@ -40,7 +42,7 @@ const eventTypes = [
 ];
 
 /* ────── Live Stream (20 recent events) ────── */
-const liveEvents = [
+const FALLBACK_LIVE_EVENTS = [
   { ts: "10:42:20.341", name: "workflow.step_done", source: "אוטומציה", payload: '{"wf_id":"WF-882","step":4,"status":"ok"}', notified: 3, ms: 4 },
   { ts: "10:42:18.112", name: "order.created", source: "הזמנות", payload: '{"order_id":"ORD-7841","customer":"אלקטרו-טק","total":12400}', notified: 8, ms: 11 },
   { ts: "10:42:01.887", name: "customer.updated", source: "CRM", payload: '{"cust_id":"C-2291","field":"phone","old":"050...","new":"052..."}', notified: 5, ms: 7 },
@@ -64,7 +66,7 @@ const liveEvents = [
 ];
 
 /* ────── Subscribers (10) ────── */
-const subscribers = [
+const FALLBACK_SUBSCRIBERS = [
   { pattern: "order.*", target: "Webhook", targetType: "webhook", filter: "amount > 5000", active: true, today: 198 },
   { pattern: "payment.*", target: "סנכרון חשבשבת", targetType: "sync", filter: "—", active: true, today: 287 },
   { pattern: "qc.failed", target: "אימייל מנהל איכות", targetType: "email", filter: 'severity = "high"', active: true, today: 9 },
@@ -78,7 +80,7 @@ const subscribers = [
 ];
 
 /* ────── Dead Letters (3) ────── */
-const deadLetters = [
+const FALLBACK_DEAD_LETTERS = [
   {
     name: "payment.received",
     error: "Timeout: חשבשבת API לא הגיב תוך 30 שניות",
@@ -131,6 +133,18 @@ const processingColor = (ms: number) => {
 
 /* ══════════════════════════════════════════════════════════════ */
 export default function EventBusPage() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["event_bus"],
+    queryFn: () => authFetch("/api/integrations/event-bus").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const eventTypes = apiData?.eventTypes ?? FALLBACK_EVENT_TYPES;
+  const liveEvents = apiData?.liveEvents ?? FALLBACK_LIVE_EVENTS;
+  const subscribers = apiData?.subscribers ?? FALLBACK_SUBSCRIBERS;
+  const deadLetters = apiData?.deadLetters ?? FALLBACK_DEAD_LETTERS;
   const [tab, setTab] = useState("registry");
 
   return (

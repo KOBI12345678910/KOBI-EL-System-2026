@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +25,7 @@ type SystemFamily = {
   projectsUsing: number;
 };
 
-const SYSTEMS: SystemFamily[] = [
+const FALLBACK_SYSTEMS: SystemFamily[] = [
   { id: 1, name: "Casement 50", type: "ציר", widthMM: 50, profiles: 28, glassOptions: 6, hardwareCompat: "Roto / Siegenia", thermalRating: "Uf=1.4", status: "פעיל", projectsUsing: 34 },
   { id: 2, name: "Sliding 70", type: "הזזה", widthMM: 70, profiles: 35, glassOptions: 8, hardwareCompat: "Hawa / GU", thermalRating: "Uf=1.6", status: "פעיל", projectsUsing: 41 },
   { id: 3, name: "Tilt & Turn 65", type: "ציר-הטיה", widthMM: 65, profiles: 32, glassOptions: 7, hardwareCompat: "Roto NT / Maco", thermalRating: "Uf=1.2", status: "פעיל", projectsUsing: 29 },
@@ -53,7 +55,7 @@ const COMPAT_MATRIX: { accessory: string; systems: Record<number, "full" | "part
   { accessory: "רשת יתושים", systems: { 1: "full", 2: "full", 3: "full", 4: "none", 5: "partial", 6: "full", 7: "none", 8: "none", 9: "none", 10: "none" } },
 ];
 
-const PERF_SPECS: { systemId: number; thermal: number; acoustic: number; wind: number; water: number }[] = [
+const FALLBACK_PERF_SPECS: { systemId: number; thermal: number; acoustic: number; wind: number; water: number }[] = [
   { systemId: 1, thermal: 78, acoustic: 72, wind: 80, water: 85 },
   { systemId: 2, thermal: 65, acoustic: 60, wind: 70, water: 75 },
   { systemId: 3, thermal: 88, acoustic: 82, wind: 85, water: 90 },
@@ -66,7 +68,7 @@ const PERF_SPECS: { systemId: number; thermal: number; acoustic: number; wind: n
   { systemId: 10, thermal: 35, acoustic: 90, wind: 96, water: 95 },
 ];
 
-const PROJECT_USAGE: { project: string; client: string; systems: number[]; units: number; year: number }[] = [
+const FALLBACK_PROJECT_USAGE: { project: string; client: string; systems: number[]; units: number; year: number }[] = [
   { project: "מגדל אופק TLV", client: "אזורים", systems: [2, 4, 6], units: 820, year: 2025 },
   { project: "פארק הים חיפה", client: "חג'ג'", systems: [1, 3, 5], units: 540, year: 2026 },
   { project: "קניון גרנד ב\"ש", client: "BIG", systems: [4, 8], units: 310, year: 2025 },
@@ -85,6 +87,26 @@ const COMPAT_CELL: Record<string, string> = {
 const COMPAT_LABEL: Record<string, string> = { full: "מלא", partial: "חלקי", none: "---" };
 
 export default function FabSystems() {
+  const { data: apiSYSTEMS } = useQuery({
+    queryKey: ["/api/fabrication/fab-systems/systems"],
+    queryFn: () => authFetch("/api/fabrication/fab-systems/systems").then(r => r.json()).catch(() => null),
+  });
+  const SYSTEMS = Array.isArray(apiSYSTEMS) ? apiSYSTEMS : (apiSYSTEMS?.data ?? apiSYSTEMS?.items ?? FALLBACK_SYSTEMS);
+
+
+  const { data: apiPERF_SPECS } = useQuery({
+    queryKey: ["/api/fabrication/fab-systems/perf-specs"],
+    queryFn: () => authFetch("/api/fabrication/fab-systems/perf-specs").then(r => r.json()).catch(() => null),
+  });
+  const PERF_SPECS = Array.isArray(apiPERF_SPECS) ? apiPERF_SPECS : (apiPERF_SPECS?.data ?? apiPERF_SPECS?.items ?? FALLBACK_PERF_SPECS);
+
+
+  const { data: apiPROJECT_USAGE } = useQuery({
+    queryKey: ["/api/fabrication/fab-systems/project-usage"],
+    queryFn: () => authFetch("/api/fabrication/fab-systems/project-usage").then(r => r.json()).catch(() => null),
+  });
+  const PROJECT_USAGE = Array.isArray(apiPROJECT_USAGE) ? apiPROJECT_USAGE : (apiPROJECT_USAGE?.data ?? apiPROJECT_USAGE?.items ?? FALLBACK_PROJECT_USAGE);
+
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("systems");
 

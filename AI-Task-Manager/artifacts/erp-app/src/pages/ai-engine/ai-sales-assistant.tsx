@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +13,7 @@ import {
   BarChart3, DollarSign, ShieldCheck, Clock
 } from "lucide-react";
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "המלצות AI היום", value: 24, icon: Brain, color: "text-violet-400", bg: "bg-violet-500/10", change: "+6", up: true },
   { label: "לידים שנוקדו", value: 156, icon: Target, color: "text-blue-400", bg: "bg-blue-500/10", change: "+18", up: true },
   { label: "הצעות שנוצרו", value: 12, icon: FileText, color: "text-emerald-400", bg: "bg-emerald-500/10", change: "+3", up: true },
@@ -21,7 +23,7 @@ const kpis = [
 ];
 
 const I = (c:string,a:string,t:string,p:string,s:number) => ({customer:c,action:a,type:t,priority:p,score:s});
-const insights = [
+const FALLBACK_INSIGHTS = [
   I("אלקטרו-טק בע\"מ","שלח הצעת מחיר מעודכנת - הלקוח השווה מחירים מול מתחרה","next_action","high",94),
   I("מפעלי הגליל","הצע חבילת שדרוג קו ייצור #3 - צריכת חשמל גבוהה ב-30%","upsell","high",91),
   I("תעשיות הנגב","התראת נטישה - לא הזמין 90 יום, ירידה של 40% בתקשורת","churn","critical",89),
@@ -35,7 +37,7 @@ const insights = [
 ];
 
 const L = (n:string,c:string,s:number,b:number,t:number,d:boolean,p:number,e:number,st:string) => ({name:n,company:c,score:s,budget:b,timeline:t,decisionMaker:d,pastPurchases:p,engagement:e,status:st});
-const leads = [
+const FALLBACK_LEADS = [
   L("דוד כהן","טכנולוגיות עתיד",95,92,88,true,4,96,"חם"), L("שרה לוי","מפעלי דרום",91,85,90,true,2,94,"חם"),
   L("יוסי אברהם","תעשיות מרכז",88,78,92,true,3,88,"חם"), L("מירי גולן","אלקטרו-סיסטם",85,90,70,false,1,91,"חם"),
   L("אבי פרידמן","בניה ירוקה",82,88,65,true,0,85,"פושר"), L("רונית שמש","מזון טבעי",79,72,80,true,2,78,"פושר"),
@@ -46,14 +48,14 @@ const leads = [
   L("אורלי ביטון","שירותי IT",42,35,38,false,0,48,"קר"),
 ];
 
-const proposals = [
+const FALLBACK_PROPOSALS = [
   { id: "P-2026-041", customer: "אלקטרו-טק בע\"מ", title: "שדרוג מערכת אוטומציה", value: "₪850,000", products: "PLC מתקדם, חיישני IoT, תוכנת SCADA", discount: "8%", status: "ממתין" },
   { id: "P-2026-042", customer: "מפעלי הגליל", title: "קו ייצור חדש - שלב ב'", value: "₪1,200,000", products: "רובוט תעשייתי, מסוע אוטומטי, מערכת בקרה", discount: "12%", status: "נשלח" },
   { id: "P-2026-043", customer: "פלדות ישראל", title: "חידוש הסכם שירות שנתי", value: "₪320,000", products: "תחזוקה מונעת, חלפים, תמיכה 24/7", discount: "5%", status: "טיוטה" },
   { id: "P-2026-044", customer: "כימיקלים מתקדמים", title: "מערכת ניטור תהליכים", value: "₪480,000", products: "חיישנים, Gateway IoT, פלטפורמת ניתוח", discount: "10%", status: "אושר" },
 ];
 
-const forecast = [
+const FALLBACK_FORECAST = [
   { month: "אפריל 2026", predicted: 1800000, deals: 8, probability: 72 },
   { month: "מאי 2026", predicted: 2100000, deals: 11, probability: 65 },
   { month: "יוני 2026", predicted: 1950000, deals: 9, probability: 58 },
@@ -77,6 +79,18 @@ const statusColors: Record<string, string> = {
 };
 
 export default function AiSalesAssistant() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["ai_sales_assistant"],
+    queryFn: () => authFetch("/api/ai/ai-sales-assistant").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const insights = apiData?.insights ?? FALLBACK_INSIGHTS;
+  const leads = apiData?.leads ?? FALLBACK_LEADS;
+  const proposals = apiData?.proposals ?? FALLBACK_PROPOSALS;
+  const forecast = apiData?.forecast ?? FALLBACK_FORECAST;
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("insights");
 

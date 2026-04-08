@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -18,7 +20,7 @@ const fmtPct = (v: number) => (v >= 0 ? "+" : "") + v.toFixed(1) + "%";
 // ============================================================
 // SUBMODULE: steel_index
 // ============================================================
-const steelIndex = [
+const FALLBACK_STEEL_INDEX = [
   { date: "2026-04-08", lme: 3820, local: 4250, avgCost: 4100, is_price_above_market: false, is_good_deal: true },
   { date: "2026-04-01", lme: 3790, local: 4220, avgCost: 4100, is_price_above_market: false, is_good_deal: true },
   { date: "2026-03-25", lme: 3850, local: 4310, avgCost: 4100, is_price_above_market: true, is_good_deal: false },
@@ -32,7 +34,7 @@ const steelIndex = [
 // ============================================================
 // SUBMODULE: aluminum_index
 // ============================================================
-const aluminumIndex = [
+const FALLBACK_ALUMINUM_INDEX = [
   { date: "2026-04-08", lme: 2480, local: 2850, avgCost: 2780, is_price_above_market: false, is_good_deal: true },
   { date: "2026-04-01", lme: 2510, local: 2890, avgCost: 2780, is_price_above_market: true, is_good_deal: false },
   { date: "2026-03-25", lme: 2540, local: 2930, avgCost: 2780, is_price_above_market: true, is_good_deal: false },
@@ -46,7 +48,7 @@ const aluminumIndex = [
 // ============================================================
 // SUBMODULE: currency_rates
 // ============================================================
-const currencyRates = [
+const FALLBACK_CURRENCY_RATES = [
   { currency: "USD/ILS", symbol: "$", rate: 3.62, prevRate: 3.59, dailyChange: +0.83, weeklyChange: +1.12 },
   { currency: "EUR/ILS", symbol: "\u20AC", rate: 3.98, prevRate: 3.95, dailyChange: +0.76, weeklyChange: +0.95 },
   { currency: "CNY/ILS", symbol: "\u00A5", rate: 0.498, prevRate: 0.501, dailyChange: -0.60, weeklyChange: -0.42 },
@@ -58,7 +60,7 @@ const currencyRates = [
 // ============================================================
 // SUBMODULE: commodity_trends
 // ============================================================
-const commodityTrends = [
+const FALLBACK_COMMODITY_TRENDS = [
   { commodity: "פלדה HRC", unit: "$/ton", m6: 3420, m5: 3510, m4: 3590, m3: 3680, m2: 3780, m1: 3820, direction: "up", change: +11.7 },
   { commodity: "אלומיניום LME", unit: "$/ton", m6: 2290, m5: 2330, m4: 2380, m3: 2430, m2: 2460, m1: 2480, direction: "up", change: +8.3 },
   { commodity: "נחושת LME", unit: "$/ton", m6: 8750, m5: 8820, m4: 8900, m3: 8950, m2: 9010, m1: 9080, direction: "up", change: +3.8 },
@@ -71,7 +73,7 @@ const commodityTrends = [
 
 const months = ["נוב", "דצמ", "ינו", "פבר", "מרץ", "אפר"];
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "מדד פלדה", value: "$3,820/ton", icon: BarChart3, color: "from-blue-600 to-blue-800" },
   { label: "מדד אלומיניום", value: "$2,480/ton", icon: Activity, color: "from-cyan-600 to-cyan-800" },
   { label: "שער USD/ILS", value: "3.62", icon: DollarSign, color: "from-emerald-600 to-emerald-800" },
@@ -96,6 +98,14 @@ const DirectionIcon = ({ dir }: { dir: string }) => {
 };
 
 export default function MarketPriceTracking() {
+  const { data: marketpricetrackingData } = useQuery({
+    queryKey: ["market-price-tracking"],
+    queryFn: () => authFetch("/api/procurement/market_price_tracking"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const steelIndex = marketpricetrackingData ?? FALLBACK_STEEL_INDEX;
+
   const [activeTab, setActiveTab] = useState("steel");
 
   return (

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,7 +12,7 @@ import {
 } from "lucide-react";
 
 /* ── KPI data ── */
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "Endpoints רשומים", value: "48", icon: Globe, color: "text-blue-600 bg-blue-100" },
   { label: "קריאות היום", value: "12,450", icon: Activity, color: "text-emerald-600 bg-emerald-100" },
   { label: "שגיאות", value: "0.3%", icon: AlertTriangle, color: "text-red-600 bg-red-100" },
@@ -20,7 +22,7 @@ const kpis = [
 ];
 
 /* ── Internal APIs ── */
-const internalApis = [
+const FALLBACK_INTERNAL_APIS = [
   { path: "/api/v1/customers", method: "GET", module: "CRM", auth: "JWT", calls: 2340, avg: "62ms", status: "active" },
   { path: "/api/v1/customers", method: "POST", module: "CRM", auth: "JWT", calls: 185, avg: "110ms", status: "active" },
   { path: "/api/v1/leads", method: "GET", module: "CRM", auth: "JWT", calls: 1870, avg: "58ms", status: "active" },
@@ -36,7 +38,7 @@ const internalApis = [
 ];
 
 /* ── External APIs ── */
-const externalApis = [
+const FALLBACK_EXTERNAL_APIS = [
   { service: "חילן — שכר", baseUrl: "https://api.hilan.co.il/v2", auth: "OAuth 2.0", calls: 320, errorRate: "0.0%", lastCall: "08:42", health: "healthy" },
   { service: "Google Workspace", baseUrl: "https://www.googleapis.com", auth: "OAuth 2.0", calls: 1840, errorRate: "0.1%", lastCall: "08:44", health: "healthy" },
   { service: "WhatsApp Business", baseUrl: "https://graph.facebook.com/v18.0", auth: "Bearer Token", calls: 2650, errorRate: "0.2%", lastCall: "08:45", health: "healthy" },
@@ -48,7 +50,7 @@ const externalApis = [
 ];
 
 /* ── Rate Limits ── */
-const rateLimits = [
+const FALLBACK_RATE_LIMITS = [
   { pattern: "/api/v1/customers/*", limit: "100/min", usage: 72, breaches: 3 },
   { pattern: "/api/v1/inventory/*", limit: "200/min", usage: 88, breaches: 5 },
   { pattern: "/api/v1/invoices/*", limit: "60/min", usage: 35, breaches: 0 },
@@ -58,7 +60,7 @@ const rateLimits = [
 ];
 
 /* ── Recent Logs ── */
-const recentLogs = [
+const FALLBACK_RECENT_LOGS = [
   { ts: "08:45:12", method: "GET", path: "/api/v1/customers?page=2", status: 200, duration: 58, ip: "10.0.1.15" },
   { ts: "08:45:10", method: "POST", path: "/api/v1/work-orders", status: 201, duration: 132, ip: "10.0.1.22" },
   { ts: "08:45:08", method: "GET", path: "/api/v1/inventory/stock", status: 200, duration: 41, ip: "10.0.2.5" },
@@ -124,6 +126,18 @@ const durationColor = (ms: number) => {
 /* ══════════════════════════════════════════════════════════ */
 
 export default function ApiGatewayPage() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["api_gateway"],
+    queryFn: () => authFetch("/api/integrations/api-gateway").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const internalApis = apiData?.internalApis ?? FALLBACK_INTERNAL_APIS;
+  const externalApis = apiData?.externalApis ?? FALLBACK_EXTERNAL_APIS;
+  const rateLimits = apiData?.rateLimits ?? FALLBACK_RATE_LIMITS;
+  const recentLogs = apiData?.recentLogs ?? FALLBACK_RECENT_LOGS;
   const [activeTab, setActiveTab] = useState("internal");
 
   return (

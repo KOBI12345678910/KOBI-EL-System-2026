@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +13,7 @@ import {
   Package, Activity
 } from "lucide-react";
 
-const labels = [
+const FALLBACK_LABELS = [
   { id: "BC-10001", code: "7290001234501", type: "ברקוד", item: "פרופיל אלומיניום T-60", location: "מחסן A-12", lastScan: "2026-04-08 09:15", scanCount: 47, status: "פעיל" },
   { id: "BC-10002", code: "7290001234502", type: "ברקוד", item: "זכוכית מחוסמת 10מ\"מ", location: "מחסן B-03", lastScan: "2026-04-08 08:42", scanCount: 32, status: "פעיל" },
   { id: "RF-20001", code: "RFID-A7F3E2D1", type: "RFID", item: "לוח פלדה 2x1 מ׳", location: "אזור ייצור 1", lastScan: "2026-04-08 10:05", scanCount: 128, status: "פעיל" },
@@ -24,7 +26,7 @@ const labels = [
   { id: "RF-20005", code: "RFID-E1F7C5D9", type: "RFID", item: "עגלת הובלה תעשייתית", location: "אזור ייצור 2", lastScan: "2026-04-08 10:30", scanCount: 203, status: "פעיל" },
 ];
 
-const scannerStations = [
+const FALLBACK_SCANNER_STATIONS = [
   { id: "SCN-01", name: "כניסה ראשית - מחסן", type: "ברקוד + RFID", status: "מקוון", scansToday: 234, lastActivity: "10:32" },
   { id: "SCN-02", name: "רציף טעינה 1", type: "RFID", status: "מקוון", scansToday: 156, lastActivity: "10:28" },
   { id: "SCN-03", name: "רציף טעינה 2", type: "RFID", status: "מקוון", scansToday: 98, lastActivity: "10:05" },
@@ -41,6 +43,31 @@ const statusColors: Record<string, string> = {
 };
 
 export default function BarcodeRfid() {
+  const { data: labels = FALLBACK_LABELS } = useQuery({
+    queryKey: ["logistics-labels"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/barcode-rfid/labels");
+      if (!res.ok) return FALLBACK_LABELS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_LABELS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: scannerStations = FALLBACK_SCANNER_STATIONS } = useQuery({
+    queryKey: ["logistics-scanner-stations"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/barcode-rfid/scanner-stations");
+      if (!res.ok) return FALLBACK_SCANNER_STATIONS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SCANNER_STATIONS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("labels");

@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,7 +31,7 @@ const kpis = [
   { label: "ציון בריאות שרשרת", value: "82/100", sub: "טוב", icon: Activity, color: "text-teal-600", bg: "bg-teal-50" },
 ];
 
-const pipelineStages = [
+const FALLBACK_PIPELINESTAGES = [
   { stage: "ספק", icon: Building2, color: "bg-blue-500" },
   { stage: "נמל מוצא", icon: Anchor, color: "bg-cyan-500" },
   { stage: "מכס", icon: ShieldCheck, color: "bg-amber-500" },
@@ -38,7 +40,7 @@ const pipelineStages = [
   { stage: "לקוח", icon: MapPin, color: "bg-rose-500" },
 ];
 
-const activeShipments = [
+const FALLBACK_ACTIVESHIPMENTS = [
   { id: "SHP-4401", supplier: "Foshan Glass Co.", item: "זכוכית מחוסמת 10mm", stageIdx: 2, eta: "2026-04-14", status: "במכס — בדיקת מסמכים" },
   { id: "SHP-4402", supplier: "Schüco International", item: "פרופיל אלומיניום Premium", stageIdx: 3, eta: "2026-04-11", status: "הגיע למחסן — ממתין לפריקה" },
   { id: "SHP-4403", supplier: "Alumil SA", item: "חלון מסגרת כפולה", stageIdx: 1, eta: "2026-04-22", status: "בנמל פיראוס — ממתין להעמסה" },
@@ -48,7 +50,7 @@ const activeShipments = [
   { id: "SHP-4407", supplier: "Technal SAS", item: "מערכת תריסים חשמלית", stageIdx: 1, eta: "2026-04-25", status: "בנמל מרסיי — ממתין לשילוח" },
 ];
 
-const criticalAlerts = [
+const FALLBACK_CRITICALALERTS = [
   { type: "חוסר חומר", severity: "critical", message: "מלאי זכוכית מחוסמת 8mm ירד מתחת לסף מינימלי — 12 יח' (מינימום: 50)", time: "לפני 25 דקות", action: "הזמנת חירום" },
   { type: "עיכוב משלוח", severity: "high", message: "SHP-4401 עוכב במכס אשדוד — חוסר תעודת מקור. צפי עיכוב 3-5 ימים", time: "לפני שעה", action: "שלח מסמכים" },
   { type: "עצירת איכות", severity: "high", message: "משלוח SHP-4402 — 15% מהפרופילים עם סטייה ממידות. ממתין לבדיקת QC", time: "לפני 2 שעות", action: "בדיקת QC" },
@@ -57,7 +59,7 @@ const criticalAlerts = [
   { type: "ביטול הזמנה", severity: "low", message: "ספק Alumil ביטל חלקית הזמנת מסגרות (40 מ-80 יח') — בעיית ייצור", time: "לפני 8 שעות", action: "ספק חלופי" },
 ];
 
-const topSuppliers = [
+const FALLBACK_TOPSUPPLIERS = [
   { name: "Foshan Glass Co.", volume: 2450, pct: 24, country: "סין", trend: "up" },
   { name: "Schüco International", volume: 1820, pct: 18, country: "גרמניה", trend: "stable" },
   { name: "מפעלי ברזל השרון", volume: 1340, pct: 13, country: "ישראל", trend: "up" },
@@ -70,20 +72,20 @@ const topSuppliers = [
   { name: "Pilkington Glass", volume: 310, pct: 3, country: "בריטניה", trend: "down" },
 ];
 
-const todayReceiving = [
+const FALLBACK_TODAYRECEIVING = [
   { time: "08:00", supplier: "מפעלי ברזל השרון", items: "קורות HEB200 x40", dock: "רציף 2", status: "התקבל" },
   { time: "10:30", supplier: "Schüco International", items: "פרופיל Premium x120", dock: "רציף 1", status: "ממתין" },
   { time: "13:00", supplier: "אלו-סטיל בע\"מ", items: "אביזרי אלומיניום x300", dock: "רציף 3", status: "צפוי" },
   { time: "15:00", supplier: "Guardian Industries", items: "זכוכית Low-E x80", dock: "רציף 1", status: "צפוי" },
 ];
 
-const bottlenecks = [
+const FALLBACK_BOTTLENECKS = [
   { area: "מכס אשדוד", impact: "גבוה", detail: "3 משלוחים בהמתנה, עיכוב ממוצע 4 ימים", pctDelay: 72 },
   { area: "בדיקת איכות", impact: "בינוני", detail: "צוואר בקבוק ב-QC — 6 פריטים ממתינים", pctDelay: 55 },
   { area: "קיבולת מחסן", impact: "בינוני", detail: "תפוסת מחסן 87% — צפי מלא עד יום חמישי", pctDelay: 44 },
 ];
 
-const shipmentsTable = [
+const FALLBACK_SHIPMENTSTABLE = [
   { id: "SHP-4401", supplier: "Foshan Glass Co.", origin: "שנג'ן, סין", eta: "2026-04-14", status: "במכס", items: 200, mode: "ימי" },
   { id: "SHP-4402", supplier: "Schüco International", origin: "בילפלד, גרמניה", eta: "2026-04-11", status: "במחסן", items: 120, mode: "ימי" },
   { id: "SHP-4403", supplier: "Alumil SA", origin: "אתונה, יוון", eta: "2026-04-22", status: "בנמל", items: 80, mode: "ימי" },
@@ -98,7 +100,7 @@ const shipmentsTable = [
   { id: "SHP-4412", supplier: "Foshan Glass Co.", origin: "שנג'ן, סין", eta: "2026-04-30", status: "הוזמן", items: 220, mode: "ימי" },
 ];
 
-const supplierPerformance = [
+const FALLBACK_SUPPLIERPERFORMANCE = [
   { name: "Foshan Glass Co.", otd: 82, quality: 88, fillRate: 91, leadTime: 22, trend: "up", risk: "בינוני" },
   { name: "Schüco International", otd: 95, quality: 97, fillRate: 98, leadTime: 14, trend: "stable", risk: "נמוך" },
   { name: "מפעלי ברזל השרון", otd: 91, quality: 85, fillRate: 94, leadTime: 4, trend: "up", risk: "נמוך" },
@@ -109,7 +111,7 @@ const supplierPerformance = [
   { name: "YKK AP", otd: 96, quality: 98, fillRate: 99, leadTime: 28, trend: "stable", risk: "נמוך" },
 ];
 
-const costBreakdown = [
+const FALLBACK_COSTBREAKDOWN = [
   { category: "הובלה ימית", thisMonth: 142000, lastMonth: 155000, pct: 50 },
   { category: "מכס ומיסים", thisMonth: 68000, lastMonth: 72000, pct: 24 },
   { category: "אחסון ומחסנים", thisMonth: 38000, lastMonth: 35000, pct: 13 },
@@ -118,7 +120,7 @@ const costBreakdown = [
   { category: "תפעול ומסמכים", thisMonth: 5000, lastMonth: 5500, pct: 2 },
 ];
 
-const monthlyTrend = [
+const FALLBACK_MONTHLYTREND = [
   { month: "ינואר", total: 265000 },
   { month: "פברואר", total: 278000 },
   { month: "מרץ", total: 296000 },
@@ -158,6 +160,75 @@ const riskBadge = (r: string) => {
 // COMPONENT
 // ============================================================
 export default function SupplyChainCommandCenter() {
+  const { data: apipipelineStages } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-command-center/pipelinestages"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-command-center/pipelinestages").then(r => r.json()).catch(() => null),
+  });
+  const pipelineStages = Array.isArray(apipipelineStages) ? apipipelineStages : (apipipelineStages?.data ?? apipipelineStages?.items ?? FALLBACK_PIPELINESTAGES);
+
+
+  const { data: apiactiveShipments } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-command-center/activeshipments"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-command-center/activeshipments").then(r => r.json()).catch(() => null),
+  });
+  const activeShipments = Array.isArray(apiactiveShipments) ? apiactiveShipments : (apiactiveShipments?.data ?? apiactiveShipments?.items ?? FALLBACK_ACTIVESHIPMENTS);
+
+
+  const { data: apicriticalAlerts } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-command-center/criticalalerts"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-command-center/criticalalerts").then(r => r.json()).catch(() => null),
+  });
+  const criticalAlerts = Array.isArray(apicriticalAlerts) ? apicriticalAlerts : (apicriticalAlerts?.data ?? apicriticalAlerts?.items ?? FALLBACK_CRITICALALERTS);
+
+
+  const { data: apitopSuppliers } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-command-center/topsuppliers"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-command-center/topsuppliers").then(r => r.json()).catch(() => null),
+  });
+  const topSuppliers = Array.isArray(apitopSuppliers) ? apitopSuppliers : (apitopSuppliers?.data ?? apitopSuppliers?.items ?? FALLBACK_TOPSUPPLIERS);
+
+
+  const { data: apitodayReceiving } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-command-center/todayreceiving"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-command-center/todayreceiving").then(r => r.json()).catch(() => null),
+  });
+  const todayReceiving = Array.isArray(apitodayReceiving) ? apitodayReceiving : (apitodayReceiving?.data ?? apitodayReceiving?.items ?? FALLBACK_TODAYRECEIVING);
+
+
+  const { data: apibottlenecks } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-command-center/bottlenecks"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-command-center/bottlenecks").then(r => r.json()).catch(() => null),
+  });
+  const bottlenecks = Array.isArray(apibottlenecks) ? apibottlenecks : (apibottlenecks?.data ?? apibottlenecks?.items ?? FALLBACK_BOTTLENECKS);
+
+
+  const { data: apishipmentsTable } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-command-center/shipmentstable"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-command-center/shipmentstable").then(r => r.json()).catch(() => null),
+  });
+  const shipmentsTable = Array.isArray(apishipmentsTable) ? apishipmentsTable : (apishipmentsTable?.data ?? apishipmentsTable?.items ?? FALLBACK_SHIPMENTSTABLE);
+
+
+  const { data: apisupplierPerformance } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-command-center/supplierperformance"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-command-center/supplierperformance").then(r => r.json()).catch(() => null),
+  });
+  const supplierPerformance = Array.isArray(apisupplierPerformance) ? apisupplierPerformance : (apisupplierPerformance?.data ?? apisupplierPerformance?.items ?? FALLBACK_SUPPLIERPERFORMANCE);
+
+
+  const { data: apicostBreakdown } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-command-center/costbreakdown"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-command-center/costbreakdown").then(r => r.json()).catch(() => null),
+  });
+  const costBreakdown = Array.isArray(apicostBreakdown) ? apicostBreakdown : (apicostBreakdown?.data ?? apicostBreakdown?.items ?? FALLBACK_COSTBREAKDOWN);
+
+
+  const { data: apimonthlyTrend } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-command-center/monthlytrend"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-command-center/monthlytrend").then(r => r.json()).catch(() => null),
+  });
+  const monthlyTrend = Array.isArray(apimonthlyTrend) ? apimonthlyTrend : (apimonthlyTrend?.data ?? apimonthlyTrend?.items ?? FALLBACK_MONTHLYTREND);
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* Header */}

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -51,7 +53,7 @@ const mockUser = {
   workSchedule: "א׳-ה׳ 08:00-17:00",
 };
 
-const mockRoles = [
+const FALLBACK_MOCK_ROLES = [
   { id: 1, role: "מנהל מכירות", level: "מחלקתי", startDate: "2022-01-15", endDate: null, active: true },
   { id: 2, role: "מאשר הזמנות", level: "ארגוני", startDate: "2021-06-01", endDate: null, active: true },
   { id: 3, role: "צופה דוחות כספיים", level: "קריאה בלבד", startDate: "2020-09-10", endDate: null, active: true },
@@ -59,7 +61,7 @@ const mockRoles = [
   { id: 5, role: "נציג שירות", level: "בסיסי", startDate: "2019-03-15", endDate: "2020-08-31", active: false },
 ];
 
-const mockPermissions = [
+const FALLBACK_MOCK_PERMISSIONS = [
   { id: 1, code: "SALES_DISCOUNT_OVERRIDE", name: "אישור הנחות מעל 20%", module: "מכירות", type: "allow", override: "כן", expiry: "2026-12-31" },
   { id: 2, code: "REPORT_EXPORT_ALL", name: "ייצוא כל הדוחות", module: "דוחות", type: "allow", override: "לא", expiry: null },
   { id: 3, code: "CUSTOMER_DELETE", name: "מחיקת לקוחות", module: "CRM", type: "deny", override: "כן", expiry: null },
@@ -68,7 +70,7 @@ const mockPermissions = [
   { id: 6, code: "PO_APPROVE_HIGH", name: "אישור הזמנות מעל 50K", module: "רכש", type: "allow", override: "לא", expiry: "2027-03-31" },
 ];
 
-const mockDataScopes = [
+const FALLBACK_MOCK_DATA_SCOPES = [
   { id: 1, type: "branch", typeLabel: "סניף", value: "סניף תל אביב - מרכז", access: "ALLOW" },
   { id: 2, type: "branch", typeLabel: "סניף", value: "סניף חיפה", access: "ALLOW" },
   { id: 3, type: "warehouse", typeLabel: "מחסן", value: "מחסן ראשי TLV", access: "ALLOW" },
@@ -81,7 +83,7 @@ const mockDataScopes = [
   { id: 10, type: "branch", typeLabel: "סניף", value: "סניף באר שבע", access: "DENY" },
 ];
 
-const mockApprovalLimits = [
+const FALLBACK_MOCK_APPROVAL_LIMITS = [
   { id: 1, docType: "הזמנת רכש", action: "אישור", min: 0, max: 50000, requiredRole: "מנהל מכירות", escalation: "מנהל כספים" },
   { id: 2, docType: "הזמנת רכש", action: "אישור", min: 50001, max: 200000, requiredRole: "סמנכ״ל", escalation: "מנכ״ל" },
   { id: 3, docType: "הצעת מחיר", action: "אישור הנחה", min: 0, max: 15, requiredRole: "מנהל מכירות", escalation: "סמנכ״ל מכירות" },
@@ -90,7 +92,7 @@ const mockApprovalLimits = [
   { id: 6, docType: "בקשת חופשה", action: "אישור", min: 1, max: 5, requiredRole: "מנהל ישיר", escalation: "מנהל משאבי אנוש" },
 ];
 
-const mockAuditHistory = [
+const FALLBACK_MOCK_AUDIT_HISTORY = [
   { id: 1, date: "2026-04-08 09:12:33", action: "התחברות", entity: "מערכת", details: "התחברות מוצלחת דרך SSO", result: "success", ip: "10.0.1.45" },
   { id: 2, date: "2026-04-08 09:15:20", action: "צפייה", entity: "דוח מכירות חודשי", details: "ייצוא דוח מכירות מרץ 2026", result: "success", ip: "10.0.1.45" },
   { id: 3, date: "2026-04-07 16:45:10", action: "עדכון", entity: "לקוח #4521", details: "שינוי תנאי תשלום מ-שוטף+30 ל-שוטף+60", result: "success", ip: "10.0.1.45" },
@@ -103,7 +105,7 @@ const mockAuditHistory = [
   { id: 10, date: "2026-04-04 09:00:05", action: "התחברות", entity: "מערכת", details: "התחברות מוצלחת", result: "success", ip: "10.0.1.45" },
 ];
 
-const mockSessions = [
+const FALLBACK_MOCK_SESSIONS = [
   { id: "SES-A1B2C3", ip: "10.0.1.45", device: "Chrome 124 / Windows 11", location: "תל אביב, ישראל", startTime: "2026-04-08 08:55:00", lastActivity: "2026-04-08 09:22:14", active: true },
   { id: "SES-D4E5F6", ip: "10.0.2.112", device: "Edge 124 / Windows 11", location: "תל אביב, ישראל", startTime: "2026-04-08 07:30:00", lastActivity: "2026-04-08 08:50:00", active: false },
   { id: "SES-G7H8I9", ip: "192.168.1.12", device: "Safari 17 / macOS Sonoma", location: "הרצליה, ישראל", startTime: "2026-04-06 20:15:00", lastActivity: "2026-04-06 21:10:33", active: false },
@@ -154,6 +156,14 @@ function formatDateTime(d: string | null) {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function UserCardPage() {
+  const { data: usercardData } = useQuery({
+    queryKey: ["user-card"],
+    queryFn: () => authFetch("/api/system/user_card"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const mockRoles = usercardData ?? FALLBACK_MOCK_ROLES;
+
   const [activeTab, setActiveTab] = useState("general");
   const user = mockUser;
   const userStatus = statusMap[user.status];

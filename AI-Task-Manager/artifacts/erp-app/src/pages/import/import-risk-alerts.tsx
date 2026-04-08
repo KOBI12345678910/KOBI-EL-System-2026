@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +17,7 @@ const SEV: Record<Severity, string> = {
 };
 const SEV_LABEL: Record<Severity, string> = { critical: "קריטי", high: "גבוה", medium: "בינוני", low: "נמוך" };
 
-const alerts = [
+const FALLBACK_ALERTS = [
   { id: "ALR-001", type: "missing_document", title: "מסמך חסר - שטר מטען", shipment: "SHP-2041", supplier: "Foshan Glass Co.", severity: "critical" as Severity, time: "לפני 12 דקות", desc: "שטר מטען (B/L) חסר למשלוח SHP-2041, עיכוב שחרור צפוי" },
   { id: "ALR-002", type: "shipment_delayed", title: "עיכוב משלוח - 6 ימים", shipment: "SHP-2038", supplier: "Schuco International", severity: "critical" as Severity, time: "לפני שעה", desc: "משלוח SHP-2038 מגרמניה מעוכב 6 ימים בנמל המבורג" },
   { id: "ALR-003", type: "eta_changed", title: "שינוי ETA - דחייה ב-4 ימים", shipment: "SHP-2040", supplier: "Alumil SA", severity: "high" as Severity, time: "לפני 2 שעות", desc: "ETA עודכן מ-12/04 ל-16/04. סטיית מסלול באגאי" },
@@ -30,7 +32,7 @@ const alerts = [
   { id: "ALR-012", type: "demurrage_risk", title: "סיכון דמי השהיה - SHP-2037", shipment: "SHP-2037", supplier: "YiLida Hardware", severity: "medium" as Severity, time: "לפני יום", desc: "מכולה בנמל אשדוד 8 ימים, דמי השהיה $150/יום" },
 ];
 
-const countryRiskMatrix = [
+const FALLBACK_COUNTRY_RISK_MATRIX = [
   { country: "טורקיה", flag: "🇹🇷", political: 72, economic: 65, logistics: 58, overall: 65, trend: "up" },
   { country: "סין", flag: "🇨🇳", political: 55, economic: 45, logistics: 42, overall: 47, trend: "stable" },
   { country: "גרמניה", flag: "🇩🇪", political: 15, economic: 20, logistics: 18, overall: 18, trend: "stable" },
@@ -41,13 +43,13 @@ const countryRiskMatrix = [
   { country: "פולין", flag: "🇵🇱", political: 40, economic: 32, logistics: 30, overall: 34, trend: "stable" },
 ];
 
-const currencyExposure = [
+const FALLBACK_CURRENCY_EXPOSURE = [
   { currency: "USD", symbol: "$", position: 285000, hedged: 180000, open: 105000, rate: 3.72, weekChange: +1.1, monthChange: +2.8 },
   { currency: "EUR", symbol: "\u20AC", position: 198000, hedged: 120000, open: 78000, rate: 4.05, weekChange: +3.2, monthChange: +4.1 },
   { currency: "CNY", symbol: "\u00A5", position: 420000, hedged: 300000, open: 120000, rate: 0.52, weekChange: -0.4, monthChange: +1.2 },
 ];
 
-const resolvedAlerts = [
+const FALLBACK_RESOLVED_ALERTS = [
   { id: "ALR-R01", title: "מסמך חסר - C/O", resolved: "05/04/2026", by: "יוסי כהן", duration: "4 שעות", type: "missing_document" },
   { id: "ALR-R02", title: "עיכוב משלוח SHP-2030", resolved: "03/04/2026", by: "שרה לוי", duration: "2 ימים", type: "shipment_delayed" },
   { id: "ALR-R03", title: "חריגת Landed Cost SHP-2028", resolved: "01/04/2026", by: "דוד מזרחי", duration: "6 שעות", type: "landed_cost_above_threshold" },
@@ -62,6 +64,55 @@ const riskColor = (v: number) => v >= 60 ? "text-red-400" : v >= 40 ? "text-oran
 const riskBg = (v: number) => v >= 60 ? "bg-red-500" : v >= 40 ? "bg-orange-500" : v >= 25 ? "bg-amber-500" : "bg-green-500";
 
 export default function ImportRiskAlerts() {
+  const { data: alerts = FALLBACK_ALERTS } = useQuery({
+    queryKey: ["import-alerts"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-risk-alerts/alerts");
+      if (!res.ok) return FALLBACK_ALERTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_ALERTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: countryRiskMatrix = FALLBACK_COUNTRY_RISK_MATRIX } = useQuery({
+    queryKey: ["import-country-risk-matrix"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-risk-alerts/country-risk-matrix");
+      if (!res.ok) return FALLBACK_COUNTRY_RISK_MATRIX;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_COUNTRY_RISK_MATRIX;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: currencyExposure = FALLBACK_CURRENCY_EXPOSURE } = useQuery({
+    queryKey: ["import-currency-exposure"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-risk-alerts/currency-exposure");
+      if (!res.ok) return FALLBACK_CURRENCY_EXPOSURE;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_CURRENCY_EXPOSURE;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: resolvedAlerts = FALLBACK_RESOLVED_ALERTS } = useQuery({
+    queryKey: ["import-resolved-alerts"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-risk-alerts/resolved-alerts");
+      if (!res.ok) return FALLBACK_RESOLVED_ALERTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_RESOLVED_ALERTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [tab, setTab] = useState("alerts");
   const criticalCount = alerts.filter(a => a.severity === "critical").length;
   const highCount = alerts.filter(a => a.severity === "high").length;

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Lightbulb, FolderOpen, TrendingUp, CheckCircle2, Coins, Search, Plus, Download, Target, BarChart3, ArrowUpRight } from "lucide-react";
 
-const lessons = [
+const FALLBACK_LESSONS = [
   { id: 1, title: "עיכוב באספקת פרופיל תרמי מספק חיצוני", category: "ייצור", source: "פרויקט מגדלי הים", impact: "גבוה", recommendations: "לנהל מלאי ביטחון של 2 שבועות לפרופיל תרמי", status: "יושם", savings: 45000 },
   { id: 2, title: "שבירת זכוכית בהתקנה עקב אחסון לא נכון", category: "התקנה", source: "פרויקט בית הכנסת", impact: "גבוה", recommendations: "להוסיף מדפי אחסון ייעודיים לזכוכית באתר", status: "יושם", savings: 32000 },
   { id: 3, title: "חוסר התאמה בין מידות מפעל לאתר", category: "איכות", source: "פרויקט קניון הצפון", impact: "בינוני", recommendations: "בדיקת מידות כפולה — מפעל ואתר לפני שילוח", status: "יושם", savings: 18000 },
@@ -20,7 +22,7 @@ const lessons = [
   { id: 10, title: "נפילת כלים מפיגום באתר", category: "בטיחות", source: "פרויקט בית ספר", impact: "גבוה", recommendations: "חובת רשת ביטחון ותיק כלים סגור", status: "יושם", savings: 0 },
 ];
 
-const categorySummary = [
+const FALLBACK_CATEGORY_SUMMARY = [
   { name: "ייצור", count: 3, color: "bg-blue-500/20 text-blue-300", implemented: 1, inProgress: 2 },
   { name: "התקנה", count: 2, color: "bg-emerald-500/20 text-emerald-300", implemented: 2, inProgress: 0 },
   { name: "איכות", count: 2, color: "bg-orange-500/20 text-orange-300", implemented: 2, inProgress: 0 },
@@ -28,7 +30,7 @@ const categorySummary = [
   { name: "תכנון", count: 1, color: "bg-purple-500/20 text-purple-300", implemented: 0, inProgress: 1 },
 ];
 
-const actionItems = [
+const FALLBACK_ACTION_ITEMS = [
   { id: 1, action: "התקנת מד לחות אוטומטי בקו ציפוי", lesson: "תקלת ציפוי עקב לחות גבוהה", responsible: "משה אברהם", deadline: "2026-05-15", progress: 60, priority: "גבוה" },
   { id: 2, action: "הטמעת תוכנת אופטימיזציית חיתוך", lesson: "בזבוז חומר בחיתוך", responsible: "יוסי כהן", deadline: "2026-06-01", progress: 35, priority: "גבוה" },
   { id: 3, action: "הוספת שלב אישור הנדסי לחיבורים", lesson: "תכנון לא מדויק של חיבורי פינה", responsible: "רון ביטון", deadline: "2026-04-30", progress: 80, priority: "בינוני" },
@@ -36,7 +38,7 @@ const actionItems = [
   { id: 5, action: "רכישת מדפי אחסון זכוכית ניידים", lesson: "שבירת זכוכית בהתקנה", responsible: "יעקב שמש", deadline: "2026-05-10", progress: 50, priority: "בינוני" },
 ];
 
-const impactTracking = [
+const FALLBACK_IMPACT_TRACKING = [
   { metric: "הפחתת שבירות זכוכית", before: "8 לחודש", after: "2 לחודש", improvement: "75%", savings: "32,000 ₪/חודש" },
   { metric: "עיכובים באספקה", before: "12 ימים ממוצע", after: "3 ימים ממוצע", improvement: "75%", savings: "45,000 ₪/רבעון" },
   { metric: "בזבוז חומר בחיתוך", before: "14%", after: "6%", improvement: "57%", savings: "67,000 ₪/רבעון" },
@@ -45,7 +47,7 @@ const impactTracking = [
   { metric: "אירועי בטיחות", before: "4 לרבעון", after: "1 לרבעון", improvement: "75%", savings: "— (ערך בטיחותי)" },
 ];
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "סה\"כ לקחים", value: "10", icon: Lightbulb, color: "text-yellow-400", bg: "bg-yellow-500/10" },
   { label: "קטגוריות", value: "5", icon: FolderOpen, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "לקחים הרבעון", value: "4", icon: TrendingUp, color: "text-emerald-400", bg: "bg-emerald-500/10" },
@@ -70,6 +72,14 @@ const priorityColor: Record<string, string> = {
 };
 
 export default function LessonsLearned() {
+  const { data: lessonslearnedData } = useQuery({
+    queryKey: ["lessons-learned"],
+    queryFn: () => authFetch("/api/knowledge/lessons_learned"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const lessons = lessonslearnedData ?? FALLBACK_LESSONS;
+
   const [search, setSearch] = useState("");
 
   const filtered = lessons.filter(l =>

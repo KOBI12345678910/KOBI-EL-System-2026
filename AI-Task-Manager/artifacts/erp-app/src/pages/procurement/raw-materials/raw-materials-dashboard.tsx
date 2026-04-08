@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -15,7 +17,7 @@ import {
 
 const fmt = (n: number) => "₪" + n.toLocaleString("he-IL");
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "סה\"כ חומרי גלם", value: "1,247", icon: Package, color: "text-blue-400" },
   { label: "פעילים", value: "1,089", icon: ShieldCheck, color: "text-green-400" },
   { label: "מלאי נמוך", value: "64", icon: TrendingDown, color: "text-amber-400" },
@@ -60,7 +62,7 @@ interface AttentionItem {
   daysUntilOut: number;
 }
 
-const attentionItems: AttentionItem[] = [
+const FALLBACK_ATTENTION_ITEMS: AttentionItem[] = [
   { id: "RM-0012", name: "פרופיל ברזל 40x40x2", category: "פרופילי ברזל", currentStock: 45, minStock: 200, unit: "מטר", lastOrder: "2026-03-18", reorderStatus: "הוזמן", daysUntilOut: 4 },
   { id: "RM-0087", name: "זכוכית מחוסמת 10מ\"מ", category: "זכוכית", currentStock: 12, minStock: 80, unit: "יח׳", lastOrder: "2026-03-22", reorderStatus: "ממתין לאישור", daysUntilOut: 2 },
   { id: "RM-0134", name: "פרופיל אלומיניום תרמי 60", category: "פרופילי אלומיניום", currentStock: 30, minStock: 150, unit: "מטר", lastOrder: "2026-03-10", reorderStatus: "לא הוזמן", daysUntilOut: 5 },
@@ -88,6 +90,14 @@ const urgencyColor = (days: number) => {
 // ============================================================
 
 export default function RawMaterialsDashboard() {
+  const { data: rawmaterialsdashboardData } = useQuery({
+    queryKey: ["raw-materials-dashboard"],
+    queryFn: () => authFetch("/api/procurement/raw_materials_dashboard"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = rawmaterialsdashboardData ?? FALLBACK_KPIS;
+
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const filteredItems = selectedCategory

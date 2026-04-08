@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +17,7 @@ interface CostComponent {
   currency: "ILS" | "USD";
 }
 
-const shipments = [
+const FALLBACK_SHIPMENTS = [
   { id: "SHP-2026-001", supplier: "Foshan Glass Co.", origin: "סין", po: "PO-IM-001", weight: 12500, cbm: 28.5, units: 4200, meters: 1800, date: "2026-03-15" },
   { id: "SHP-2026-002", supplier: "Schuco International", origin: "גרמניה", po: "PO-IM-002", weight: 8200, cbm: 18.3, units: 1500, meters: 3200, date: "2026-03-22" },
   { id: "SHP-2026-003", supplier: "Alumil SA", origin: "יוון", po: "PO-IM-003", weight: 6800, cbm: 15.1, units: 2800, meters: 2100, date: "2026-04-01" },
@@ -64,6 +66,19 @@ const fmtCur = (v: number, c: "ILS" | "USD") => c === "ILS" ? fmtILS(v) : fmtUSD
 const RATE = 3.65;
 
 export default function LandedCostCalculator() {
+  const { data: shipments = FALLBACK_SHIPMENTS } = useQuery({
+    queryKey: ["import-shipments"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/landed-cost-calculator/shipments");
+      if (!res.ok) return FALLBACK_SHIPMENTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SHIPMENTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [selectedShipment, setSelectedShipment] = useState(0);
   const [tab, setTab] = useState("breakdown");
 

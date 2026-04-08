@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -14,7 +16,7 @@ const fmt = (v: number) =>
 const pct = (v: number) => `${v >= 0 ? "+" : ""}${v.toFixed(1)}%`;
 
 // ---- affected materials catalog ----
-const materials = [
+const FALLBACK_MATERIALS = [
   { id: 1, name: "פרופיל אלומיניום 6063", unit: "מ'", cost: 148, qty: 2400, margin: 32, supplier: "אלומט בע\"מ" },
   { id: 2, name: "זכוכית מחוסמת 8 מ\"מ", unit: 'מ"ר', cost: 210, qty: 1800, margin: 28, supplier: "זכוכית ירושלים" },
   { id: 3, name: "חיבורי נירוסטה 316", unit: "יח'", cost: 34, qty: 12000, margin: 38, supplier: "MegaFix EU" },
@@ -26,7 +28,7 @@ const materials = [
 const suppliers = ["אלומט בע\"מ", "זכוכית ירושלים", "MegaFix EU", "רבר-טק", "מתכת-פרו", "YieldSteel CN"];
 
 // ---- saved scenarios ----
-const savedScenarios = [
+const FALLBACK_SAVED_SCENARIOS = [
   { id: 1, name: "עליית אלומיניום Q3", type: "price_increase", date: "2026-03-15", impact: 42800, status: "פעיל" },
   { id: 2, name: "החלפה ל-YieldSteel", type: "supplier_change", date: "2026-02-20", impact: -31500, status: "אושר" },
   { id: 3, name: "הנחת כמות נירוסטה", type: "bulk_discount", date: "2026-03-01", impact: -18200, status: "בבדיקה" },
@@ -52,6 +54,14 @@ const statusBadge: Record<string, string> = {
 };
 
 export default function ProcurementSimulation() {
+  const { data: procurementsimulationData } = useQuery({
+    queryKey: ["procurement-simulation"],
+    queryFn: () => authFetch("/api/procurement/procurement_simulation"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const materials = procurementsimulationData ?? FALLBACK_MATERIALS;
+
   const [scenario, setScenario] = useState<string>("price_increase");
   const [priceChange, setPriceChange] = useState(15);
   const [selectedSupplier, setSelectedSupplier] = useState("מתכת-פרו");

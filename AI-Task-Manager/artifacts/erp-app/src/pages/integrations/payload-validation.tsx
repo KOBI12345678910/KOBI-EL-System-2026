@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +13,7 @@ import {
   Fingerprint, Activity, Timer, Filter,
 } from "lucide-react";
 /* ── KPI Data ── */
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "סכמות רשומות", value: "47", icon: FileJson, color: "text-blue-600 bg-blue-100", sub: "+3 החודש" },
   { label: "אימותים היום", value: "8,214", icon: ShieldCheck, color: "text-emerald-600 bg-emerald-100", sub: "97.6% עברו" },
   { label: "אימותים שנכשלו", value: "198", icon: XCircle, color: "text-red-600 bg-red-100", sub: "2.4% מהכלל" },
@@ -20,7 +22,7 @@ const kpis = [
   { label: "זמן אימות ממוצע", value: "12ms", icon: Timer, color: "text-violet-600 bg-violet-100", sub: "p99: 45ms" },
 ];
 /* ── Request Schemas ── */
-const requestSchemas = [
+const FALLBACK_REQUEST_SCHEMAS = [
   { name: "הזמנת רכש", version: "3.2.1", endpoint: "/api/v1/purchase-orders", format: "JSON", fields: 28, required: 12, updated: "2026-04-07", rate: 99.1 },
   { name: "יצירת לקוח", version: "2.4.0", endpoint: "/api/v1/customers", format: "JSON", fields: 22, required: 8, updated: "2026-04-06", rate: 98.7 },
   { name: "פקודת ייצור", version: "4.1.0", endpoint: "/api/v1/work-orders", format: "JSON", fields: 35, required: 15, updated: "2026-04-08", rate: 97.3 },
@@ -33,7 +35,7 @@ const requestSchemas = [
   { name: "פנייה לתמיכה", version: "1.5.2", endpoint: "/api/v1/tickets", format: "JSON", fields: 16, required: 6, updated: "2026-04-06", rate: 98.4 },
 ];
 /* ── Response Schemas ── */
-const responseSchemas = [
+const FALLBACK_RESPONSE_SCHEMAS = [
   { name: "תגובת הזמנה", version: "3.2.1", target: "SAP ERP", format: "JSON", compliance: 99.2, lastValidated: "2026-04-08 10:30" },
   { name: "אישור חשבונית", version: "5.0.2", target: "רשות המסים", format: "XML", compliance: 100, lastValidated: "2026-04-08 09:15" },
   { name: "סטטוס משלוח", version: "2.1.0", target: "DHL API", format: "JSON", compliance: 98.5, lastValidated: "2026-04-08 08:42" },
@@ -44,7 +46,7 @@ const responseSchemas = [
   { name: "נתוני שכר", version: "2.8.1", target: "חילן Payroll", format: "XML", compliance: 99.9, lastValidated: "2026-04-07 23:00" },
 ];
 /* ── Validation Rules ── */
-const validationRules = [
+const FALLBACK_VALIDATION_RULES = [
   { name: "שדה חובה - מזהה לקוח", type: "required_field", entity: "לקוח", field: "customer_id", condition: "NOT NULL", severity: "error", active: true },
   { name: "בדיקת סוג - כמות", type: "type_check", entity: "הזמנה", field: "quantity", condition: "integer > 0", severity: "error", active: true },
   { name: "טווח - אחוז הנחה", type: "range", entity: "הצעת מחיר", field: "discount_pct", condition: "0 <= x <= 40", severity: "warning", active: true },
@@ -59,7 +61,7 @@ const validationRules = [
   { name: "מותאם - תקציב לא חורג", type: "custom", entity: "פרויקט", field: "total_cost", condition: "total_cost <= budget * 1.1", severity: "error", active: true },
 ];
 /* ── Malformed Queue ── */
-const malformedQueue = [
+const FALLBACK_MALFORMED_QUEUE = [
   { ts: "2026-04-08 10:42:18", source: "SAP ERP", endpoint: "/api/v1/purchase-orders", errorType: "missing_field", preview: '{"vendor":"...", "items":[...]}  // חסר purchase_order_id', retry: "ממתין", attempts: 0 },
   { ts: "2026-04-08 10:38:05", source: "Salesforce", endpoint: "/api/v1/customers", errorType: "type_mismatch", preview: '{"customer_id":"ABC", ...}  // customer_id חייב להיות מספר', retry: "נכשל", attempts: 2 },
   { ts: "2026-04-08 10:15:33", source: "WMS מחסנים", endpoint: "/api/v1/inventory/update", errorType: "invalid_json", preview: '{"sku":"AL-6060","qty":50,"lo...  // JSON קטוע', retry: "ממתין", attempts: 0 },
@@ -70,7 +72,7 @@ const malformedQueue = [
   { ts: "2026-04-08 07:35:41", source: "MES Dashboard", endpoint: "/api/v1/work-orders", errorType: "missing_field", preview: '{"wo_id":"WO-2841", ...}  // חסר metal_type חובה', retry: "תוקן", attempts: 1 },
 ];
 /* ── Invalid Signatures ── */
-const invalidSignatures = [
+const FALLBACK_INVALID_SIGNATURES = [
   { ts: "2026-04-08 10:35:22", sourceIp: "185.120.33.44", endpoint: "/webhooks/orders", expected: "sha256=a3f8c1...d92b", actual: "sha256=7e2b0f...11ac", blocked: true },
   { ts: "2026-04-08 09:48:15", sourceIp: "93.172.56.12", endpoint: "/webhooks/invoices", expected: "sha256=d4e7a2...f103", actual: "sha256=000000...0000", blocked: true },
   { ts: "2026-04-08 09:12:03", sourceIp: "212.179.44.10", endpoint: "/webhooks/shipments", expected: "sha256=b1c9d3...8e4f", actual: "sha256=b1c9d3...8e50", blocked: false },
@@ -130,6 +132,19 @@ const errorTypeBadge = (t: string) => {
 };
 /* ══════════════════════════════════════════════════════════ */
 export default function PayloadValidationPage() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["payload_validation"],
+    queryFn: () => authFetch("/api/integrations/payload-validation").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const requestSchemas = apiData?.requestSchemas ?? FALLBACK_REQUEST_SCHEMAS;
+  const responseSchemas = apiData?.responseSchemas ?? FALLBACK_RESPONSE_SCHEMAS;
+  const validationRules = apiData?.validationRules ?? FALLBACK_VALIDATION_RULES;
+  const malformedQueue = apiData?.malformedQueue ?? FALLBACK_MALFORMED_QUEUE;
+  const invalidSignatures = apiData?.invalidSignatures ?? FALLBACK_INVALID_SIGNATURES;
   const [tab, setTab] = useState("request-schemas");
   const [search, setSearch] = useState("");
 

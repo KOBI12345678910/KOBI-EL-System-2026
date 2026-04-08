@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,8 +9,9 @@ import { Plus, Search, Download, Edit2, Trash2, ChevronRight, ChevronLeft, Clock
 import { useFormValidation, FormFieldError, RequiredMark } from "@/hooks/use-form-validation";
 
 const BASE = "/api";
-function apiFetch(path: string, opts?: RequestInit) {
-  return fetch(BASE + path, { headers: { "Content-Type": "application/json" }, ...opts }).then(r => r.json());
+async function apiFetch(path: string, opts?: RequestInit) {
+  const res = await authFetch(BASE + path, { headers: { "Content-Type": "application/json" }, ...opts });
+  return res.json();
 }
 
 const STATUS_MAP: Record<string, string> = { scheduled: "מתוכנן", delivered: "נמסר", cancelled: "מבוטל", delayed: "עיכוב", in_transit: "בדרך" };

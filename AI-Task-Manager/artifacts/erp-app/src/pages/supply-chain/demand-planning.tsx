@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,7 +20,7 @@ const kpis = [
   { label: "סטייה תחזית/בפועל", value: "4.8%", delta: "-1.2%", icon: ArrowUpDown, color: "text-red-600", bg: "bg-red-50" },
 ];
 
-const forecastData = [
+const FALLBACK_FORECASTDATA = [
   { id: "ALW-100", name: "חלון אלומיניום סטנדרט", apr: 420, may: 380, jun: 450, seasonal: 1.12, growth: 8.5, confidence: 94, method: "AI" },
   { id: "ALW-200", name: "חלון אלומיניום מבודד", apr: 310, may: 290, jun: 340, seasonal: 1.08, growth: 12.0, confidence: 91, method: "AI" },
   { id: "GLP-300", name: "פנל זכוכית מחוסמת", apr: 580, may: 620, jun: 700, seasonal: 1.18, growth: 15.2, confidence: 88, method: "AI" },
@@ -33,7 +35,7 @@ const forecastData = [
   { id: "SLR-700", name: "תריס אלומיניום חשמלי", apr: 210, may: 230, jun: 260, seasonal: 1.20, growth: 18.5, confidence: 82, method: "AI" },
 ];
 
-const mrpData = [
+const FALLBACK_MRPDATA = [
   { product: "חלון אלומיניום סטנדרט", component: "פרופיל AL-6063", needed: 1680, available: 1200, shortfall: 480, poQty: 500, leadTime: 14, reqDate: "2026-04-22" },
   { product: "חלון אלומיניום סטנדרט", component: "זכוכית 5 מ\"מ", needed: 840, available: 900, shortfall: 0, poQty: 0, leadTime: 10, reqDate: "-" },
   { product: "פנל זכוכית מחוסמת", component: "זכוכית גולמית 8 מ\"מ", needed: 1160, available: 600, shortfall: 560, poQty: 600, leadTime: 21, reqDate: "2026-04-18" },
@@ -47,16 +49,16 @@ const mrpData = [
   { product: "זכוכית למינציה בטיחותית", component: "זכוכית Float 4 מ\"מ", needed: 680, available: 700, shortfall: 0, poQty: 0, leadTime: 10, reqDate: "-" },
 ];
 
-const seasonalProducts = [
+const FALLBACK_SEASONALPRODUCTS = [
   { name: "חלונות אלומיניום", peak: "אפר-יונ", months: [60, 65, 80, 100, 95, 105, 85, 70, 75, 90, 80, 55], alert: "עונת שיא מתחילה" },
   { name: "פנלי זכוכית", peak: "מאי-אוג", months: [50, 55, 65, 80, 100, 110, 105, 95, 70, 60, 55, 45], alert: "עלייה צפויה בחודש הבא" },
   { name: "דלתות פלדה", peak: "ספט-נוב", months: [70, 65, 60, 55, 50, 55, 65, 75, 100, 110, 95, 80], alert: null },
   { name: "תריסי אלומיניום", peak: "מרץ-יונ", months: [55, 70, 95, 110, 105, 100, 80, 65, 55, 50, 45, 50], alert: "שיא ביקוש עכשיו" },
   { name: "פרופילים תרמיים", peak: "אוק-דצ", months: [60, 55, 50, 45, 40, 45, 55, 70, 85, 100, 110, 90], alert: null },
 ];
-const monthLabels = ["ינו", "פבר", "מרץ", "אפר", "מאי", "יונ", "יול", "אוג", "ספט", "אוק", "נוב", "דצמ"];
+const FALLBACK_MONTHLABELS = ["ינו", "פבר", "מרץ", "אפר", "מאי", "יונ", "יול", "אוג", "ספט", "אוק", "נוב", "דצמ"];
 
-const targetsData = [
+const FALLBACK_TARGETSDATA = [
   { product: "חלון אלומיניום סטנדרט", months: [
     { planned: 400, actual: 385 }, { planned: 410, actual: 420 }, { planned: 390, actual: 375 },
     { planned: 420, actual: 410 }, { planned: 380, actual: 395 }, { planned: 450, actual: 430 }
@@ -82,7 +84,7 @@ const targetsData = [
     { planned: 960, actual: 945 }, { planned: 900, actual: 910 }, { planned: 1020, actual: 985 }
   ]},
 ];
-const targetMonthLabels = ["נוב 25", "דצמ 25", "ינו 26", "פבר 26", "מרץ 26", "אפר 26"];
+const FALLBACK_TARGETMONTHLABELS = ["נוב 25", "דצמ 25", "ינו 26", "פבר 26", "מרץ 26", "אפר 26"];
 
 function methodBadge(m: string) {
   if (m === "AI") return <Badge className="bg-purple-500/20 text-purple-700">AI</Badge>;
@@ -102,6 +104,47 @@ function accColor(val: number) {
 }
 
 export default function DemandPlanningPage() {
+  const { data: apiforecastData } = useQuery({
+    queryKey: ["/api/supply-chain/demand-planning/forecastdata"],
+    queryFn: () => authFetch("/api/supply-chain/demand-planning/forecastdata").then(r => r.json()).catch(() => null),
+  });
+  const forecastData = Array.isArray(apiforecastData) ? apiforecastData : (apiforecastData?.data ?? apiforecastData?.items ?? FALLBACK_FORECASTDATA);
+
+
+  const { data: apimrpData } = useQuery({
+    queryKey: ["/api/supply-chain/demand-planning/mrpdata"],
+    queryFn: () => authFetch("/api/supply-chain/demand-planning/mrpdata").then(r => r.json()).catch(() => null),
+  });
+  const mrpData = Array.isArray(apimrpData) ? apimrpData : (apimrpData?.data ?? apimrpData?.items ?? FALLBACK_MRPDATA);
+
+
+  const { data: apiseasonalProducts } = useQuery({
+    queryKey: ["/api/supply-chain/demand-planning/seasonalproducts"],
+    queryFn: () => authFetch("/api/supply-chain/demand-planning/seasonalproducts").then(r => r.json()).catch(() => null),
+  });
+  const seasonalProducts = Array.isArray(apiseasonalProducts) ? apiseasonalProducts : (apiseasonalProducts?.data ?? apiseasonalProducts?.items ?? FALLBACK_SEASONALPRODUCTS);
+
+
+  const { data: apimonthLabels } = useQuery({
+    queryKey: ["/api/supply-chain/demand-planning/monthlabels"],
+    queryFn: () => authFetch("/api/supply-chain/demand-planning/monthlabels").then(r => r.json()).catch(() => null),
+  });
+  const monthLabels = Array.isArray(apimonthLabels) ? apimonthLabels : (apimonthLabels?.data ?? apimonthLabels?.items ?? FALLBACK_MONTHLABELS);
+
+
+  const { data: apitargetsData } = useQuery({
+    queryKey: ["/api/supply-chain/demand-planning/targetsdata"],
+    queryFn: () => authFetch("/api/supply-chain/demand-planning/targetsdata").then(r => r.json()).catch(() => null),
+  });
+  const targetsData = Array.isArray(apitargetsData) ? apitargetsData : (apitargetsData?.data ?? apitargetsData?.items ?? FALLBACK_TARGETSDATA);
+
+
+  const { data: apitargetMonthLabels } = useQuery({
+    queryKey: ["/api/supply-chain/demand-planning/targetmonthlabels"],
+    queryFn: () => authFetch("/api/supply-chain/demand-planning/targetmonthlabels").then(r => r.json()).catch(() => null),
+  });
+  const targetMonthLabels = Array.isArray(apitargetMonthLabels) ? apitargetMonthLabels : (apitargetMonthLabels?.data ?? apitargetMonthLabels?.items ?? FALLBACK_TARGETMONTHLABELS);
+
   return (
     <div className="p-6 space-y-6" dir="rtl">
       {/* Header */}

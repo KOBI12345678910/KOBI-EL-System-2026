@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +21,7 @@ const statusMap: Record<string, { label: string; color: string }> = {
   "return-visit": { label: "ביקור חוזר", color: "bg-red-500/20 text-red-300 border-red-500/30" },
 };
 
-const installationOrders = [
+const FALLBACK_INSTALLATIONORDERS = [
   { id: "INS-4001", project: "מגדלי הים התיכון", site: "תל אביב - רח׳ הירקון 88", units: 24, team: "צוות אלפא", scheduled: "2026-04-10", status: "ready" },
   { id: "INS-4002", project: "פארק הייטק הרצליה", site: "הרצליה פיתוח - סגולה 5", units: 18, team: "צוות בטא", scheduled: "2026-04-09", status: "dispatched" },
   { id: "INS-4003", project: "מתחם מגורי נווה צדק", site: "תל אביב - שבזי 42", units: 12, team: "צוות גמא", scheduled: "2026-04-08", status: "installing" },
@@ -32,7 +34,7 @@ const installationOrders = [
   { id: "INS-4010", project: "פרויקט מגורי השרון", site: "נתניה - רח׳ הרצל 15", units: 32, team: "צוות בטא", scheduled: "2026-04-05", status: "completed" },
 ];
 
-const checklistItems = [
+const FALLBACK_CHECKLISTITEMS = [
   { id: 1, category: "חומרים", item: "אריזת יחידות לפי הזמנה", status: "done", order: "INS-4001" },
   { id: 2, category: "חומרים", item: "בדיקת שלמות אריזות", status: "done", order: "INS-4001" },
   { id: 3, category: "חומרים", item: "תוויות זיהוי על כל יחידה", status: "done", order: "INS-4002" },
@@ -47,14 +49,14 @@ const checklistItems = [
   { id: 12, category: "גישה לאתר", item: "אישור בטיחות אתר", status: "done", order: "INS-4002" },
 ];
 
-const teams = [
+const FALLBACK_TEAMS = [
   { name: "צוות אלפא", leader: "דוד כהן", members: 5, phone: "050-1234567", currentOrder: "INS-4001", location: "מחסן מרכזי", status: "available", completedToday: 0 },
   { name: "צוות בטא", leader: "משה לוי", members: 4, phone: "050-2345678", currentOrder: "INS-4002", location: "הרצליה פיתוח", status: "on-site", completedToday: 1 },
   { name: "צוות גמא", leader: "יוסי אברהם", members: 6, phone: "050-3456789", currentOrder: "INS-4003", location: "תל אביב - נווה צדק", status: "on-site", completedToday: 0 },
   { name: "צוות דלתא", leader: "אבי ישראלי", members: 4, phone: "050-4567890", currentOrder: "INS-4008", location: "חיפה", status: "transit", completedToday: 1 },
 ];
 
-const siteIssues = [
+const FALLBACK_SITEISSUES = [
   { id: "ISS-301", order: "INS-4006", site: "אילת - שד׳ התמרים 30", issue: "מידות פתח לא תואמות לתוכנית", severity: "high", reportedBy: "צוות בטא", date: "2026-04-06", resolution: "ביקור חוזר עם התאמות", resolved: false },
   { id: "ISS-302", order: "INS-4004", site: "באר שבע - דרך חברון 1", issue: "רטיבות בקיר מקבל", severity: "medium", reportedBy: "צוות דלתא", date: "2026-04-07", resolution: "תוקן באתר - איטום נוסף", resolved: true },
   { id: "ISS-303", order: "INS-4003", site: "תל אביב - שבזי 42", issue: "גישה חסומה לקומה 3", severity: "medium", reportedBy: "צוות גמא", date: "2026-04-08", resolution: "בהמתנה לתיאום עם קבלן ראשי", resolved: false },
@@ -76,6 +78,33 @@ const severityMap: Record<string, { label: string; color: string }> = {
 };
 
 export default function FabInstallationOrders() {
+  const { data: apiinstallationOrders } = useQuery({
+    queryKey: ["/api/fabrication/fab-installation-orders/installationorders"],
+    queryFn: () => authFetch("/api/fabrication/fab-installation-orders/installationorders").then(r => r.json()).catch(() => null),
+  });
+  const installationOrders = Array.isArray(apiinstallationOrders) ? apiinstallationOrders : (apiinstallationOrders?.data ?? apiinstallationOrders?.items ?? FALLBACK_INSTALLATIONORDERS);
+
+
+  const { data: apichecklistItems } = useQuery({
+    queryKey: ["/api/fabrication/fab-installation-orders/checklistitems"],
+    queryFn: () => authFetch("/api/fabrication/fab-installation-orders/checklistitems").then(r => r.json()).catch(() => null),
+  });
+  const checklistItems = Array.isArray(apichecklistItems) ? apichecklistItems : (apichecklistItems?.data ?? apichecklistItems?.items ?? FALLBACK_CHECKLISTITEMS);
+
+
+  const { data: apiteams } = useQuery({
+    queryKey: ["/api/fabrication/fab-installation-orders/teams"],
+    queryFn: () => authFetch("/api/fabrication/fab-installation-orders/teams").then(r => r.json()).catch(() => null),
+  });
+  const teams = Array.isArray(apiteams) ? apiteams : (apiteams?.data ?? apiteams?.items ?? FALLBACK_TEAMS);
+
+
+  const { data: apisiteIssues } = useQuery({
+    queryKey: ["/api/fabrication/fab-installation-orders/siteissues"],
+    queryFn: () => authFetch("/api/fabrication/fab-installation-orders/siteissues").then(r => r.json()).catch(() => null),
+  });
+  const siteIssues = Array.isArray(apisiteIssues) ? apisiteIssues : (apisiteIssues?.data ?? apisiteIssues?.items ?? FALLBACK_SITEISSUES);
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [tab, setTab] = useState("orders");

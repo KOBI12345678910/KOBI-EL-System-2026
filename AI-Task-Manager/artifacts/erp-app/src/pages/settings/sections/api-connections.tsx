@@ -1,22 +1,24 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Button, Input, Label, Card } from "@/components/ui-components";
 import { Code2, Plus, Trash2, Eye, EyeOff, Copy, RefreshCw, Save, Webhook, Key } from "lucide-react";
 import ActivityLog from "@/components/activity-log";
 import RelatedRecords from "@/components/related-records";
 
-const API_KEYS = [
+const FALLBACK_API_KEYS = [
   { id: 1, name: "אינטגרציה ראשית", key: "ek_live_xxxxxxxxxxxxxxxxxxx", created: "01/01/2026", lastUsed: "17/03/2026", perms: "קריאה/כתיבה" },
   { id: 2, name: "אפליקציה מובייל", key: "ek_live_yyyyyyyyyyyyyyyyyyy", created: "15/02/2026", lastUsed: "17/03/2026", perms: "קריאה בלבד" },
   { id: 3, name: "דשבורד חיצוני", key: "ek_live_zzzzzzzzzzzzzzzzzzz", created: "10/03/2026", lastUsed: "16/03/2026", perms: "קריאה בלבד" },
 ];
 
-const WEBHOOKS = [
+const FALLBACK_WEBHOOKS = [
   { id: 1, name: "הזמנה חדשה", url: "https://n8n.mycompany.com/webhook/orders", events: ["order.created", "order.updated"], active: true },
   { id: 2, name: "לקוח חדש", url: "https://zapier.com/hooks/catch/xxx", events: ["customer.created"], active: true },
   { id: 3, name: "חשבונית שנשלחה", url: "https://hooks.slack.com/services/xxx", events: ["invoice.sent"], active: false },
 ];
 
-const ENDPOINTS = [
+const FALLBACK_ENDPOINTS = [
   { method: "GET", path: "/api/customers", desc: "קבלת רשימת לקוחות" },
   { method: "POST", path: "/api/customers", desc: "יצירת לקוח חדש" },
   { method: "GET", path: "/api/orders", desc: "קבלת הזמנות" },
@@ -26,6 +28,14 @@ const ENDPOINTS = [
 ];
 
 export default function ApiConnectionsSection() {
+  const { data: apiconnectionsData } = useQuery({
+    queryKey: ["api-connections"],
+    queryFn: () => authFetch("/api/settings/api_connections"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const API_KEYS = apiconnectionsData ?? FALLBACK_API_KEYS;
+
   const [activeTab, setActiveTab] = useState("keys");
   const [visibleKeys, setVisibleKeys] = useState<Set<number>>(new Set());
   const [showAddKey, setShowAddKey] = useState(false);

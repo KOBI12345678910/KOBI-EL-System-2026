@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -21,7 +23,7 @@ interface Role {
 }
 
 // ── Mock Data ──────────────────────────────────────────────────────────────
-const ROLES: Role[] = [
+const FALLBACK_ROLES: Role[] = [
   {
     id: "role-001",
     code: "CEO",
@@ -164,6 +166,14 @@ const LEVEL_DOT_COLORS: Record<number, string> = {
 
 // ── Component ──────────────────────────────────────────────────────────────
 export default function RolesListPage() {
+  const { data: roleslistData } = useQuery({
+    queryKey: ["roles-list"],
+    queryFn: () => authFetch("/api/system/roles_list"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const ROLES = roleslistData ?? FALLBACK_ROLES;
+
   const [searchTerm, setSearchTerm] = useState("");
   const [levelFilter, setLevelFilter] = useState<number | null>(null);
   const [systemRoleFilter, setSystemRoleFilter] = useState<boolean | null>(null);

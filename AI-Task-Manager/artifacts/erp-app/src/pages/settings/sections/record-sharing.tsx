@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Button, Input, Label, Card } from "@/components/ui-components";
 import { Share2, Plus, Trash2, Save, Users, Check, X } from "lucide-react";
 import ActivityLog from "@/components/activity-log";
 import RelatedRecords from "@/components/related-records";
 
-const SHARING_RULES = [
+const FALLBACK_SHARING_RULES = [
   { id: 1, module: "לקוחות", condition: "נציג = המשתמש הנוכחי", sharedWith: "מנהל מכירות", access: "קריאה/כתיבה" },
   { id: 2, module: "הזמנות", condition: "אזור = צפון", sharedWith: "צוות צפון", access: "קריאה בלבד" },
   { id: 3, module: "חשבוניות", condition: "סכום > 10,000", sharedWith: "מנהל כספים", access: "קריאה/כתיבה" },
@@ -12,6 +14,14 @@ const SHARING_RULES = [
 ];
 
 export default function RecordSharingSection() {
+  const { data: recordsharingData } = useQuery({
+    queryKey: ["record-sharing"],
+    queryFn: () => authFetch("/api/settings/record_sharing"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const SHARING_RULES = recordsharingData ?? FALLBACK_SHARING_RULES;
+
   const [rules, setRules] = useState(SHARING_RULES);
   const [activeTab, setActiveTab] = useState("rules");
   const [showAddForm, setShowAddForm] = useState(false);

@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +12,7 @@ import {
   Building2, Award, AlertTriangle, CheckCircle2, Loader2
 } from "lucide-react";
 
-const tenders = [
+const FALLBACK_TENDERS = [
   { number: "MKZ-2026-001", project: "חלונות אלומיניום - מגדלי הים", client: "שיכון ובינוי", type: "ציבורי", value: 2850000, deadline: "2026-04-15", status: "בהכנה", team: "צוות א׳ - רונן" },
   { number: "MKZ-2026-002", project: "מעטפת זכוכית - מרכז עזריאלי החדש", client: "קבוצת עזריאלי", type: "פרטי", value: 5400000, deadline: "2026-04-22", status: "פעיל", team: "צוות ב׳ - שירה" },
   { number: "MKZ-2026-003", project: "דלתות זכוכית מאובטחות - משהב״ט", client: "משרד הביטחון", type: "ציבורי", value: 1950000, deadline: "2026-04-10", status: "הוגש", team: "צוות א׳ - רונן" },
@@ -38,6 +40,19 @@ const typeColors: Record<string, string> = {
 };
 
 export default function TendersManagement() {
+  const { data: tenders = FALLBACK_TENDERS } = useQuery({
+    queryKey: ["tenders-tenders"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tenders-management/tenders");
+      if (!res.ok) return FALLBACK_TENDERS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TENDERS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 

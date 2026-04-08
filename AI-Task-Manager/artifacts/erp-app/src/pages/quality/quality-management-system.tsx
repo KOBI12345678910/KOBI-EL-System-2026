@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -13,7 +15,7 @@ import {
 
 /* ───────── mock data ───────── */
 
-const inspections = [
+const FALLBACK_INSPECTIONS = [
   { id: "INS-0401", item: "פרופיל אלומיניום 60x40", stage: "incoming", result: "עבר", inspector: "יוסי כהן", date: "2026-04-07", notes: "תקין לפי מפרט" },
   { id: "INS-0402", item: "פלטת פלדה 3mm", stage: "incoming", result: "נכשל", inspector: "דני לוי", date: "2026-04-07", notes: "עובי חורג ב-0.2mm" },
   { id: "INS-0403", item: "מסגרת ריתוך #W-112", stage: "in_process", result: "עבר", inspector: "אורית שמש", date: "2026-04-07", notes: "ריתוך תקין" },
@@ -24,7 +26,7 @@ const inspections = [
   { id: "INS-0408", item: "גוף משאבה PMP-44", stage: "in_process", result: "עבר", inspector: "דני לוי", date: "2026-04-08", notes: "עיבוד שבבי תקין" },
 ];
 
-const ncrs = [
+const FALLBACK_NCRS = [
   { id: "NCR-001", item: "פלטת פלדה 3mm", desc: "עובי חורג מהמפרט", disposition: "החזרה לספק", cost: 2400, date: "2026-04-07", status: "פתוח" },
   { id: "NCR-002", item: "מעקה בטיחות BR-55", desc: "צבע מתקלף", disposition: "עיבוד חוזר", cost: 850, date: "2026-04-08", status: "פתוח" },
   { id: "NCR-003", item: "ציר פלדה SH-12", desc: "סדק בריתוך", disposition: "גריטה", cost: 3200, date: "2026-04-05", status: "בטיפול" },
@@ -34,7 +36,7 @@ const ncrs = [
   { id: "NCR-007", item: "גוף שסתום VB-18", desc: "מידות חורגות", disposition: "ויתור מותנה", cost: 0, date: "2026-03-28", status: "סגור" },
 ];
 
-const capas = [
+const FALLBACK_CAPAS = [
   { id: "CAPA-01", type: "CA", action: "הכשרת מחדש לצוות ריתוך", rootCause: "חוסר הכשרה", responsible: "מנהל ייצור", due: "2026-04-15", status: "בביצוע", verified: false },
   { id: "CAPA-02", type: "CA", action: "החלפת ספק פלדה", rootCause: "חומר גלם לקוי", responsible: "מנהל רכש", due: "2026-04-20", status: "מתוכנן", verified: false },
   { id: "CAPA-03", type: "PA", action: "בדיקת קליברציה שבועית", rootCause: "סטייה במכשירי מדידה", responsible: "מנהל איכות", due: "2026-04-10", status: "בביצוע", verified: false },
@@ -44,7 +46,7 @@ const capas = [
   { id: "CAPA-07", type: "PA", action: "הטמעת SPC בקו ייצור 2", rootCause: "חוסר בקרה סטטיסטית", responsible: "מהנדס איכות", due: "2026-05-01", status: "מתוכנן", verified: false },
 ];
 
-const suppliers = [
+const FALLBACK_SUPPLIERS = [
   { name: "מתכות ישראל בע\"מ", deliveries: 48, defects: 2, rate: 4.2, score: 92, trend: "up" },
   { name: "פלדת הצפון", deliveries: 35, defects: 3, rate: 8.6, score: 84, trend: "down" },
   { name: "ברגים ומחברים בע\"מ", deliveries: 120, defects: 1, rate: 0.8, score: 97, trend: "up" },
@@ -54,7 +56,7 @@ const suppliers = [
   { name: "חומרי גלם דרום", deliveries: 42, defects: 1, rate: 2.4, score: 94, trend: "up" },
 ];
 
-const installers = [
+const FALLBACK_INSTALLERS = [
   { team: "צוות התקנה א׳ - חיפה", checked: 18, issues: 1, rating: 96, lead: "אבי כהן" },
   { team: "צוות התקנה ב׳ - ת\"א", checked: 24, issues: 3, rating: 88, lead: "משה לוי" },
   { team: "צוות התקנה ג׳ - באר שבע", checked: 12, issues: 0, rating: 100, lead: "יוסי דוד" },
@@ -63,7 +65,7 @@ const installers = [
   { team: "צוות התקנה ו׳ - אשדוד", checked: 10, issues: 4, rating: 60, lead: "עמית גולן" },
 ];
 
-const defectCosts = [
+const FALLBACK_DEFECT_COSTS = [
   { category: "חומר גלם לקוי", occurrences: 12, cost: 18400, trend: "up" },
   { category: "טעות ריתוך", occurrences: 8, cost: 12800, trend: "down" },
   { category: "צביעה לקויה", occurrences: 6, cost: 5100, trend: "up" },
@@ -115,6 +117,14 @@ const scoreColor = (s: number) =>
 /* ───────── component ───────── */
 
 export default function QualityManagementSystem() {
+  const { data: qualitymanagementsystemData } = useQuery({
+    queryKey: ["quality-management-system"],
+    queryFn: () => authFetch("/api/quality/quality_management_system"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const inspections = qualitymanagementsystemData ?? FALLBACK_INSPECTIONS;
+
   const [tab, setTab] = useState("inspections");
 
   const kpis = [

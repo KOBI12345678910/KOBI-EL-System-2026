@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +17,7 @@ const fmt = (n: number) => new Intl.NumberFormat("he-IL").format(n);
 const fmtC = (n: number) => new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", minimumFractionDigits: 0 }).format(n);
 const fmtP = (n: number) => `${n.toFixed(1)}%`;
 
-const KPI = [
+const FALLBACK_KPI = [
   { title: "סה\"כ הוצאות רכש", value: fmtC(4_870_000), change: -3.2, icon: DollarSign, color: "text-blue-600 bg-blue-50" },
   { title: "עלות ליחידה (מגמה)", value: "₪48.2", change: -1.8, icon: TrendingDown, color: "text-green-600 bg-green-50" },
   { title: "שיעור הזמנה מושלמת", value: "94.6%", change: 2.1, icon: ShieldCheck, color: "text-emerald-600 bg-emerald-50" },
@@ -24,11 +26,11 @@ const KPI = [
   { title: "עלות שרשרת / הכנסות", value: "6.8%", change: -0.5, icon: BarChart3, color: "text-cyan-600 bg-cyan-50" },
 ];
 
-const PERF = [{ m:"נוב׳",otd:91.2,fill:88.5,quality:97.1,cost:82.0 },{ m:"דצמ׳",otd:92.8,fill:90.1,quality:97.5,cost:83.5 },
+const FALLBACK_PERF = [{ m:"נוב׳",otd:91.2,fill:88.5,quality:97.1,cost:82.0 },{ m:"דצמ׳",otd:92.8,fill:90.1,quality:97.5,cost:83.5 },
   { m:"ינו׳",otd:93.5,fill:91.4,quality:96.8,cost:85.2 },{ m:"פבר׳",otd:94.1,fill:92.0,quality:97.9,cost:86.0 },
   { m:"מרץ",otd:95.0,fill:93.5,quality:98.2,cost:87.4 },{ m:"אפר׳",otd:95.8,fill:94.2,quality:98.5,cost:88.1 }];
 
-const SUPPLIERS = [
+const FALLBACK_SUPPLIERS = [
   { name: "אלומיניום ישראל בע\"מ", score: 96.5, otd: 98.2, quality: 99.1, cat: "אלומיניום" },
   { name: "זכוכית השרון", score: 94.8, otd: 97.0, quality: 98.5, cat: "זכוכית" },
   { name: "פלדות הצפון", score: 93.2, otd: 95.8, quality: 97.8, cat: "פלדה" },
@@ -41,52 +43,52 @@ const SUPPLIERS = [
   { name: "ברגים ומחברים ת\"א", score: 84.3, otd: 88.0, quality: 94.8, cat: "מחברים" },
 ];
 
-const CAT_SCORES = [{ cat:"אלומיניום",score:92.5,n:4,trend:"up" as const },{ cat:"זכוכית",score:90.4,n:3,trend:"up" as const },
+const FALLBACK_CAT_SCORES = [{ cat:"אלומיניום",score:92.5,n:4,trend:"up" as const },{ cat:"זכוכית",score:90.4,n:3,trend:"up" as const },
   { cat:"פלדה",score:91.5,n:3,trend:"stable" as const },{ cat:"חומרי גלם",score:89.4,n:5,trend:"down" as const },
   { cat:"אריזה",score:90.5,n:2,trend:"up" as const }];
 
-const SPEND = [{ cat:"חומרי גלם",amount:2_450_000,pct:50.3 },{ cat:"הובלה",amount:730_000,pct:15.0 },
+const FALLBACK_SPEND = [{ cat:"חומרי גלם",amount:2_450_000,pct:50.3 },{ cat:"הובלה",amount:730_000,pct:15.0 },
   { cat:"מכס ויבוא",amount:535_000,pct:11.0 },{ cat:"אחסנה",amount:487_000,pct:10.0 },
   { cat:"טיפול ומשלוח",amount:390_000,pct:8.0 },{ cat:"אחר",amount:278_000,pct:5.7 }];
 
-const COST_TREND = [{ m:"נוב׳",total:840_000,mat:420_000,log:210_000 },{ m:"דצמ׳",total:810_000,mat:405_000,log:200_000 },
+const FALLBACK_COST_TREND = [{ m:"נוב׳",total:840_000,mat:420_000,log:210_000 },{ m:"דצמ׳",total:810_000,mat:405_000,log:200_000 },
   { m:"ינו׳",total:795_000,mat:398_000,log:195_000 },{ m:"פבר׳",total:820_000,mat:415_000,log:205_000 },
   { m:"מרץ",total:805_000,mat:400_000,log:198_000 },{ m:"אפר׳",total:800_000,mat:395_000,log:192_000 }];
 
-const PRODUCTS = [{ p:"חלון אלומיניום סטנדרט",cost:285,target:270,gap:5.6 },{ p:"דלת זכוכית מחוסמת",cost:520,target:500,gap:4.0 },
+const FALLBACK_PRODUCTS = [{ p:"חלון אלומיניום סטנדרט",cost:285,target:270,gap:5.6 },{ p:"דלת זכוכית מחוסמת",cost:520,target:500,gap:4.0 },
   { p:"מעקה פלדה",cost:180,target:175,gap:2.9 },{ p:"חזית מבנה מותאמת",cost:1_200,target:1_100,gap:9.1 },
   { p:"תריס אלומיניום חשמלי",cost:420,target:400,gap:5.0 }];
 
-const SAVINGS = [{ t:"איחוד הזמנות אלומיניום (3 ספקים)",v:85_000,effort:"בינוני",pri:"גבוה" },
+const FALLBACK_SAVINGS = [{ t:"איחוד הזמנות אלומיניום (3 ספקים)",v:85_000,effort:"בינוני",pri:"גבוה" },
   { t:"מעבר למכס מופחת (הסכם סחר חופשי)",v:62_000,effort:"גבוה",pri:"גבוה" },
   { t:"אופטימיזציית מסלולי הובלה",v:45_000,effort:"נמוך",pri:"בינוני" },
   { t:"הפחתת מלאי עודף — קטגוריה C",v:38_000,effort:"נמוך",pri:"בינוני" }];
 
-const ABC = [{ cls:"A",items:142,pI:20,value:3_896_000,pV:80,clr:"bg-red-500",turn:8.2 },
+const FALLBACK_ABC = [{ cls:"A",items:142,pI:20,value:3_896_000,pV:80,clr:"bg-red-500",turn:8.2 },
   { cls:"B",items:213,pI:30,value:731_250,pV:15,clr:"bg-amber-500",turn:5.1 },
   { cls:"C",items:355,pI:50,value:243_750,pV:5,clr:"bg-green-500",turn:2.3 }];
 
-const TURNOVER = [{ cat:"אלומיניום גולמי",rate:9.4,target:10,ok:true },{ cat:"זכוכית מחוסמת",rate:7.8,target:8,ok:false },
+const FALLBACK_TURNOVER = [{ cat:"אלומיניום גולמי",rate:9.4,target:10,ok:true },{ cat:"זכוכית מחוסמת",rate:7.8,target:8,ok:false },
   { cat:"פלדת נירוסטה",rate:6.2,target:7,ok:false },{ cat:"חומרי איטום",rate:11.5,target:10,ok:true },
   { cat:"ברגים ומחברים",rate:4.8,target:6,ok:false }];
 
-const DEAD = [{ name:"פרופיל AL-2040 (דגם ישן)",value:42_000,days:380 },
+const FALLBACK_DEAD = [{ name:"פרופיל AL-2040 (דגם ישן)",value:42_000,days:380 },
   { name:"זגוגית 8 מ\"מ ירוקה",value:28_500,days:290 },{ name:"ציר פלדה T-55 (הופסק)",value:19_800,days:250 }];
-const EXCESS = [{ name:"פרופיל AL-6060 T5",qty:"2,400 מ\"ט",value:96_000 },
+const FALLBACK_EXCESS = [{ name:"פרופיל AL-6060 T5",qty:"2,400 מ\"ט",value:96_000 },
   { name:"זגוגית שקופה 6 מ\"מ",qty:"180 מ\"ר",value:54_000 },{ name:"סיליקון שקוף 310 מ\"ל",qty:"800 יח׳",value:32_000 }];
 
-const FORECAST_ACC = [{ m:"נוב׳",v:87.2 },{ m:"דצמ׳",v:89.5 },{ m:"ינו׳",v:91.0 },
+const FALLBACK_FORECAST_ACC = [{ m:"נוב׳",v:87.2 },{ m:"דצמ׳",v:89.5 },{ m:"ינו׳",v:91.0 },
   { m:"פבר׳",v:90.3 },{ m:"מרץ",v:92.8 },{ m:"אפר׳",v:93.5 }];
 
-const STOCKOUTS = [{ item:"פרופיל AL-6063 T6",days:5,demand:320,onHand:85,sev:"critical" },
+const FALLBACK_STOCKOUTS = [{ item:"פרופיל AL-6063 T6",days:5,demand:320,onHand:85,sev:"critical" },
   { item:"זגוגית מחוסמת 10 מ\"מ",days:9,demand:150,onHand:65,sev:"high" },
   { item:"בורג נירוסטה M8x30",days:14,demand:5000,onHand:2800,sev:"medium" },
   { item:"סיליקון מבני שחור",days:22,demand:400,onHand:310,sev:"low" }];
 
-const PRICES = [{ mat:"אלומיניום",cur:9.85,pred:10.20,chg:3.6,up:true },
+const FALLBACK_PRICES = [{ mat:"אלומיניום",cur:9.85,pred:10.20,chg:3.6,up:true },
   { mat:"זכוכית שטוחה",cur:52.0,pred:50.5,chg:-2.9,up:false },{ mat:"פלדת נירוסטה",cur:14.2,pred:15.1,chg:6.3,up:true }];
 
-const AI_REC = [{ a:"להגדיל הזמנת פרופיל AL-6063 ב-40% לפני מחסור צפוי",imp:"גבוה",type:"מלאי" },
+const FALLBACK_AI_REC = [{ a:"להגדיל הזמנת פרופיל AL-6063 ב-40% לפני מחסור צפוי",imp:"גבוה",type:"מלאי" },
   { a:"לנעול מחיר אלומיניום לרבעון הבא — מגמת עלייה צפויה",imp:"גבוה",type:"מחיר" },
   { a:"לנצל ירידת מחיר זכוכית — להגדיל רכש ב-15%",imp:"בינוני",type:"מחיר" },
   { a:"לסלק מלאי מת בקטגוריה C — פוטנציאל שחרור ₪187K",imp:"בינוני",type:"מלאי" },
@@ -100,6 +102,117 @@ const sevLabel: Record<string, [string, string]> = {
 const impColor = (i: string) => i === "גבוה" ? "bg-red-100 text-red-700" : i === "בינוני" ? "bg-amber-100 text-amber-700" : "bg-green-100 text-green-700";
 
 export default function SupplyChainAnalyticsPage() {
+  const { data: apiKPI } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-analytics/kpi"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-analytics/kpi").then(r => r.json()).catch(() => null),
+  });
+  const KPI = Array.isArray(apiKPI) ? apiKPI : (apiKPI?.data ?? apiKPI?.items ?? FALLBACK_KPI);
+
+
+  const { data: apiPERF } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-analytics/perf"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-analytics/perf").then(r => r.json()).catch(() => null),
+  });
+  const PERF = Array.isArray(apiPERF) ? apiPERF : (apiPERF?.data ?? apiPERF?.items ?? FALLBACK_PERF);
+
+
+  const { data: apiSUPPLIERS } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-analytics/suppliers"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-analytics/suppliers").then(r => r.json()).catch(() => null),
+  });
+  const SUPPLIERS = Array.isArray(apiSUPPLIERS) ? apiSUPPLIERS : (apiSUPPLIERS?.data ?? apiSUPPLIERS?.items ?? FALLBACK_SUPPLIERS);
+
+
+  const { data: apiCAT_SCORES } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-analytics/cat-scores"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-analytics/cat-scores").then(r => r.json()).catch(() => null),
+  });
+  const CAT_SCORES = Array.isArray(apiCAT_SCORES) ? apiCAT_SCORES : (apiCAT_SCORES?.data ?? apiCAT_SCORES?.items ?? FALLBACK_CAT_SCORES);
+
+
+  const { data: apiSPEND } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-analytics/spend"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-analytics/spend").then(r => r.json()).catch(() => null),
+  });
+  const SPEND = Array.isArray(apiSPEND) ? apiSPEND : (apiSPEND?.data ?? apiSPEND?.items ?? FALLBACK_SPEND);
+
+
+  const { data: apiCOST_TREND } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-analytics/cost-trend"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-analytics/cost-trend").then(r => r.json()).catch(() => null),
+  });
+  const COST_TREND = Array.isArray(apiCOST_TREND) ? apiCOST_TREND : (apiCOST_TREND?.data ?? apiCOST_TREND?.items ?? FALLBACK_COST_TREND);
+
+
+  const { data: apiPRODUCTS } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-analytics/products"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-analytics/products").then(r => r.json()).catch(() => null),
+  });
+  const PRODUCTS = Array.isArray(apiPRODUCTS) ? apiPRODUCTS : (apiPRODUCTS?.data ?? apiPRODUCTS?.items ?? FALLBACK_PRODUCTS);
+
+
+  const { data: apiSAVINGS } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-analytics/savings"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-analytics/savings").then(r => r.json()).catch(() => null),
+  });
+  const SAVINGS = Array.isArray(apiSAVINGS) ? apiSAVINGS : (apiSAVINGS?.data ?? apiSAVINGS?.items ?? FALLBACK_SAVINGS);
+
+
+  const { data: apiABC } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-analytics/abc"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-analytics/abc").then(r => r.json()).catch(() => null),
+  });
+  const ABC = Array.isArray(apiABC) ? apiABC : (apiABC?.data ?? apiABC?.items ?? FALLBACK_ABC);
+
+
+  const { data: apiTURNOVER } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-analytics/turnover"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-analytics/turnover").then(r => r.json()).catch(() => null),
+  });
+  const TURNOVER = Array.isArray(apiTURNOVER) ? apiTURNOVER : (apiTURNOVER?.data ?? apiTURNOVER?.items ?? FALLBACK_TURNOVER);
+
+
+  const { data: apiDEAD } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-analytics/dead"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-analytics/dead").then(r => r.json()).catch(() => null),
+  });
+  const DEAD = Array.isArray(apiDEAD) ? apiDEAD : (apiDEAD?.data ?? apiDEAD?.items ?? FALLBACK_DEAD);
+
+
+  const { data: apiEXCESS } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-analytics/excess"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-analytics/excess").then(r => r.json()).catch(() => null),
+  });
+  const EXCESS = Array.isArray(apiEXCESS) ? apiEXCESS : (apiEXCESS?.data ?? apiEXCESS?.items ?? FALLBACK_EXCESS);
+
+
+  const { data: apiFORECAST_ACC } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-analytics/forecast-acc"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-analytics/forecast-acc").then(r => r.json()).catch(() => null),
+  });
+  const FORECAST_ACC = Array.isArray(apiFORECAST_ACC) ? apiFORECAST_ACC : (apiFORECAST_ACC?.data ?? apiFORECAST_ACC?.items ?? FALLBACK_FORECAST_ACC);
+
+
+  const { data: apiSTOCKOUTS } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-analytics/stockouts"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-analytics/stockouts").then(r => r.json()).catch(() => null),
+  });
+  const STOCKOUTS = Array.isArray(apiSTOCKOUTS) ? apiSTOCKOUTS : (apiSTOCKOUTS?.data ?? apiSTOCKOUTS?.items ?? FALLBACK_STOCKOUTS);
+
+
+  const { data: apiPRICES } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-analytics/prices"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-analytics/prices").then(r => r.json()).catch(() => null),
+  });
+  const PRICES = Array.isArray(apiPRICES) ? apiPRICES : (apiPRICES?.data ?? apiPRICES?.items ?? FALLBACK_PRICES);
+
+
+  const { data: apiAI_REC } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-analytics/ai-rec"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-analytics/ai-rec").then(r => r.json()).catch(() => null),
+  });
+  const AI_REC = Array.isArray(apiAI_REC) ? apiAI_REC : (apiAI_REC?.data ?? apiAI_REC?.items ?? FALLBACK_AI_REC);
+
   const [search, setSearch] = useState("");
   const filtered = SUPPLIERS.filter((s) => s.name.includes(search) || s.cat.includes(search));
 

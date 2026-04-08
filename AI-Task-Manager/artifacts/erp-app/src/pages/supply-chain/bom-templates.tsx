@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +12,7 @@ import {
   Plus, Copy, Settings2, CheckCircle2, ArrowLeft, ArrowRight, Ruler, Calculator
 } from "lucide-react";
 
-const templates = [
+const FALLBACK_TEMPLATES = [
   { id: 1, name: "חלון אלומיניום סטנדרטי 100x120", category: "חלונות", components: 18, levels: 3, baseCost: 1250, products: 34, status: "active", updated: "2026-04-01" },
   { id: 2, name: "דלת זכוכית כפולה", category: "דלתות", components: 24, levels: 4, baseCost: 3800, products: 12, status: "active", updated: "2026-03-28" },
   { id: 3, name: "מעקה פלדה 1 מטר", category: "מעקות", components: 14, levels: 2, baseCost: 890, products: 21, status: "active", updated: "2026-03-25" },
@@ -23,7 +25,7 @@ const templates = [
   { id: 10, name: "מעקה זכוכית מודרני", category: "מעקות", components: 20, levels: 3, baseCost: 2400, products: 11, status: "active", updated: "2026-04-06" },
 ];
 
-const families = [
+const FALLBACK_FAMILIES = [
   { name: "חלונות אלומיניום", templates: 3, variants: 24, sharedPct: 72, complexity: "בינוני", icon: "🪟", color: "bg-blue-500/10 text-blue-700" },
   { name: "דלתות זכוכית", templates: 2, variants: 16, sharedPct: 65, complexity: "גבוה", icon: "🚪", color: "bg-purple-500/10 text-purple-700" },
   { name: "מסגרות פלדה", templates: 1, variants: 10, sharedPct: 80, complexity: "נמוך", icon: "🔩", color: "bg-gray-500/10 text-gray-700" },
@@ -32,7 +34,7 @@ const families = [
   { name: "מעקות", templates: 2, variants: 14, sharedPct: 70, complexity: "בינוני", icon: "🛡️", color: "bg-green-500/10 text-green-700" },
 ];
 
-const variants = [
+const FALLBACK_VARIANTS = [
   { size: "60x60", dimChange: "-40x-60", addedParts: 0, costDelta: -480, timeDelta: -15 },
   { size: "80x100", dimChange: "-20x-20", addedParts: 0, costDelta: -210, timeDelta: -8 },
   { size: "100x120", dimChange: "בסיס", addedParts: 0, costDelta: 0, timeDelta: 0 },
@@ -50,6 +52,26 @@ const statusBadge = (s: string) => {
 };
 
 export default function BomTemplatesPage() {
+  const { data: apitemplates } = useQuery({
+    queryKey: ["/api/supply-chain/bom-templates/templates"],
+    queryFn: () => authFetch("/api/supply-chain/bom-templates/templates").then(r => r.json()).catch(() => null),
+  });
+  const templates = Array.isArray(apitemplates) ? apitemplates : (apitemplates?.data ?? apitemplates?.items ?? FALLBACK_TEMPLATES);
+
+
+  const { data: apifamilies } = useQuery({
+    queryKey: ["/api/supply-chain/bom-templates/families"],
+    queryFn: () => authFetch("/api/supply-chain/bom-templates/families").then(r => r.json()).catch(() => null),
+  });
+  const families = Array.isArray(apifamilies) ? apifamilies : (apifamilies?.data ?? apifamilies?.items ?? FALLBACK_FAMILIES);
+
+
+  const { data: apivariants } = useQuery({
+    queryKey: ["/api/supply-chain/bom-templates/variants"],
+    queryFn: () => authFetch("/api/supply-chain/bom-templates/variants").then(r => r.json()).catch(() => null),
+  });
+  const variants = Array.isArray(apivariants) ? apivariants : (apivariants?.data ?? apivariants?.items ?? FALLBACK_VARIANTS);
+
   const [search, setSearch] = useState("");
   const [wizardStep, setWizardStep] = useState(0);
   const [selectedTemplate, setSelectedTemplate] = useState(templates[0]);

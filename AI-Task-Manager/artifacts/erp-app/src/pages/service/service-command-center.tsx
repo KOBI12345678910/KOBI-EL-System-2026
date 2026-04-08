@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,7 +11,7 @@ import {
   AlertCircle, CheckCircle, XCircle, TrendingUp
 } from "lucide-react";
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "קריאות פתוחות", value: "18", icon: Phone, color: "text-blue-600", bg: "bg-blue-50" },
   { label: "קריטיות", value: "3", icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" },
   { label: "תיקונים היום", value: "5", icon: Wrench, color: "text-emerald-600", bg: "bg-emerald-50" },
@@ -20,7 +22,7 @@ const kpis = [
   { label: "שביעות רצון", value: "4.2/5", icon: Star, color: "text-yellow-600", bg: "bg-yellow-50" },
 ];
 
-const openCases = [
+const FALLBACK_OPEN_CASES = [
   { id: "SRV-301", customer: "קבוצת אלון", project: "מגדלי הים", type: "נזילת חלון", urgency: "קריטי", technician: "מוחמד חלבי", sla: "2:15", status: "בטיפול" },
   { id: "SRV-302", customer: "אמות השקעות", project: "פארק עתידים", type: "תקלת מנעול", urgency: "גבוה", technician: "יוסי לוי", sla: "5:30", status: "בטיפול" },
   { id: "SRV-303", customer: "שיכון ובינוי", project: "שכונת הפארק", type: "רעש בתריס", urgency: "בינוני", technician: "—", sla: "12:00", status: "ממתין לשיבוץ" },
@@ -33,7 +35,7 @@ const openCases = [
   { id: "SRV-310", customer: "דמרי בנייה", project: "דמרי ים", type: "בעיית איטום", urgency: "גבוה", technician: "אבי כהן", sla: "3:20", status: "בדרך ללקוח" },
 ];
 
-const todaySchedule = [
+const FALLBACK_TODAY_SCHEDULE = [
   { time: "08:00", technician: "אבי כהן", customer: "דמרי בנייה", location: "אשדוד — דמרי ים", type: "בעיית איטום" },
   { time: "09:30", technician: "יוסי לוי", customer: "עזריאלי קבוצה", location: "תל אביב — מגדל עזריאלי 4", type: "חלון תקוע" },
   { time: "10:00", technician: "מוחמד חלבי", customer: "קבוצת אלון", location: "חיפה — מגדלי הים", type: "נזילת חלון" },
@@ -42,14 +44,14 @@ const todaySchedule = [
   { time: "15:30", technician: "אבי כהן", customer: 'נדל"ן פלוס', location: "רמת גן — מתחם הבורסה", type: "זכוכית סדוקה" },
 ];
 
-const technicians = [
+const FALLBACK_TECHNICIANS = [
   { name: "אבי כהן", calls: 42, avgTime: "3.2 שעות", sla: 94, satisfaction: 4.6, open: 3, specialty: "איטום + זכוכית" },
   { name: "יוסי לוי", calls: 38, avgTime: "4.1 שעות", sla: 88, satisfaction: 4.3, open: 2, specialty: "מנעולים + חלונות" },
   { name: "מוחמד חלבי", calls: 45, avgTime: "3.8 שעות", sla: 91, satisfaction: 4.5, open: 2, specialty: "אלומיניום + תריסים" },
   { name: "דוד מזרחי", calls: 30, avgTime: "5.0 שעות", sla: 80, satisfaction: 4.0, open: 1, specialty: "דלתות + הרכבה" },
 ];
 
-const slaBreaches = [
+const FALLBACK_SLA_BREACHES = [
   { id: "SRV-288", customer: "הראל ביטוח", breach: "24 שעות איחור", reason: "חלק חלופי לא במלאי", impact: "פיצוי ₪1,200", date: "2026-04-05" },
   { id: "SRV-291", customer: "כלל ביטוח", breach: "8 שעות איחור", reason: "טכנאי לא זמין", impact: "הנחה 10% בחידוש", date: "2026-04-06" },
   { id: "SRV-295", customer: "מנורה מבטחים", breach: "12 שעות איחור", reason: "אבחון שגוי — ביקור חוזר", impact: "פיצוי ₪800", date: "2026-04-06" },
@@ -57,7 +59,7 @@ const slaBreaches = [
   { id: "SRV-300", customer: "צמח המרמן", breach: "18 שעות איחור", reason: "חלק מיובא — עיכוב במכס", impact: "פיצוי ₪2,500", date: "2026-04-07" },
 ];
 
-const warrantyClaims = [
+const FALLBACK_WARRANTY_CLAIMS = [
   { category: "חלונות אלומיניום", active: 34, totalCost: "₪18,200", avgAge: "8 חודשים", topIssue: "נזילה באיטום" },
   { category: "דלתות כניסה", active: 22, totalCost: "₪9,400", avgAge: "6 חודשים", topIssue: "בעיית מנעול" },
   { category: "תריסים חשמליים", active: 18, totalCost: "₪4,800", avgAge: "11 חודשים", topIssue: "מנוע שרוף" },
@@ -85,6 +87,14 @@ function statusBadge(status: string) {
 }
 
 export default function ServiceCommandCenter() {
+  const { data: servicecommandcenterData } = useQuery({
+    queryKey: ["service-command-center"],
+    queryFn: () => authFetch("/api/service/service_command_center"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = servicecommandcenterData ?? FALLBACK_KPIS;
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* Header */}

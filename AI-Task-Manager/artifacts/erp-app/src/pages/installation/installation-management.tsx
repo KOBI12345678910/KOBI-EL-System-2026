@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,7 +12,7 @@ import {
 
 /* ── Static mock data ─────────────────────────────────────────── */
 
-const installationOrders = [
+const FALLBACK_INSTALLATION_ORDERS = [
   { id: "INS-001", project: "מגדלי הים — חיפה", product: "חלונות אלומיניום Premium", address: "שד' הנשיא 45, חיפה", crew: "צוות אלפא", scheduled: "2026-04-10", status: "בביצוע", pct: 65 },
   { id: "INS-002", project: "פארק המדע — רחובות", product: "ויטרינות חזית 3m", address: "רח' הרצל 12, רחובות", crew: "צוות בטא", scheduled: "2026-04-11", status: "מתוכנן", pct: 0 },
   { id: "INS-003", project: "בית חכם — הרצליה", product: "דלתות הזזה חשמליות", address: "רח' סוקולוב 88, הרצליה", crew: "צוות גמא", scheduled: "2026-04-09", status: "הושלם", pct: 100 },
@@ -21,7 +23,7 @@ const installationOrders = [
   { id: "INS-008", project: "מרכז ספורט — ראשל\"צ", product: "דלתות אש + מסגרות", address: "רח' ביאליק 15, ראשל\"צ", crew: "צוות דלתא", scheduled: "2026-04-07", status: "הושלם", pct: 100 },
 ];
 
-const siteReadiness = [
+const FALLBACK_SITE_READINESS = [
   { insId: "INS-001", project: "מגדלי הים — חיפה", access: true, power: true, measurements: true, drawings: true, materials: false },
   { insId: "INS-002", project: "פארק המדע — רחובות", access: true, power: false, measurements: true, drawings: true, materials: true },
   { insId: "INS-004", project: "מלון ים התיכון", access: false, power: false, measurements: true, drawings: false, materials: false },
@@ -30,7 +32,7 @@ const siteReadiness = [
   { insId: "INS-007", project: "בניין מגורים — נתניה", access: true, power: true, measurements: true, drawings: true, materials: true },
 ];
 
-const crews = [
+const FALLBACK_CREWS = [
   { name: "צוות אלפא", members: "יוסי כהן, דוד מזרחי, אלון גולדשטיין", currentJob: "INS-001", nextJob: "INS-004", availability: "תפוס" },
   { name: "צוות בטא", members: "שרה לוי, עומר חדד, נועה פרידמן", currentJob: "—", nextJob: "INS-002", availability: "זמין" },
   { name: "צוות גמא", members: "רחל אברהם, איתן רוזנברג, תמר שלום", currentJob: "INS-007", nextJob: "—", availability: "תפוס" },
@@ -39,7 +41,7 @@ const crews = [
   { name: "צוות זטא", members: "ליאור בן-דוד, מאיה פרץ, טל רון", currentJob: "—", nextJob: "—", availability: "חופשה" },
 ];
 
-const deviations = [
+const FALLBACK_DEVIATIONS = [
   { insId: "INS-007", issue: "פתח קיר צר מהתוכנית ב-4 ס\"מ", severity: "גבוהה", photo: true, resolution: "ממתין לאישור מהנדס" },
   { insId: "INS-001", issue: "נקודת חשמל חסרה בקיר צפוני", severity: "בינונית", photo: true, resolution: "חשמלאי תואם ל-09/04" },
   { insId: "INS-005", issue: "רצפה לא מיושרת — הפרש 1.5 ס\"מ", severity: "נמוכה", photo: false, resolution: "פילוס מקומי בוצע" },
@@ -48,7 +50,7 @@ const deviations = [
   { insId: "INS-005", issue: "מידות משקוף שונות מתוכנית", severity: "נמוכה", photo: true, resolution: "התאמה בשטח בוצעה" },
 ];
 
-const customerSignoffs = [
+const FALLBACK_CUSTOMER_SIGNOFFS = [
   { project: "בית חכם — הרצליה", date: "2026-04-09", signedBy: "אבי רוזנפלד", notes: "התקנה מעולה, בלי הערות", status: "אושר" },
   { project: "מרכז ספורט — ראשל\"צ", date: "2026-04-07", signedBy: "דנה כהן-מלמד", notes: "דלת אש #3 — ציר צריך כיוון", status: "אושר עם הערות" },
   { project: "מגדלי הים — חיפה", date: "—", signedBy: "—", notes: "ממתין להשלמת התקנה", status: "ממתין" },
@@ -90,18 +92,91 @@ const Check = ({ ok }: { ok: boolean }) =>
 
 /* ── KPI cards ────────────────────────────────────────────────── */
 
-const kpiData = [
-  { label: "התקנות פעילות", value: installationOrders.filter(o => o.status === "בביצוע").length, icon: HardHat, color: "text-yellow-400", bg: "bg-yellow-500/10" },
-  { label: "מתוכננות השבוע", value: installationOrders.filter(o => o.status === "מתוכנן").length, icon: Calendar, color: "text-blue-400", bg: "bg-blue-500/10" },
-  { label: "הושלמו החודש", value: installationOrders.filter(o => o.status === "הושלם").length, icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-  { label: "צוותים זמינים", value: crews.filter(c => c.availability === "זמין").length, icon: Users, color: "text-purple-400", bg: "bg-purple-500/10" },
-  { label: "חריגות פתוחות", value: deviations.length, icon: AlertTriangle, color: "text-red-400", bg: "bg-red-500/10" },
-  { label: "אישורים ממתינים", value: customerSignoffs.filter(s => s.status === "ממתין" || s.status === "חסום").length, icon: FileCheck, color: "text-orange-400", bg: "bg-orange-500/10" },
+const FALLBACK_KPI_DATA = [
+  { label: "התקנות פעילות", value: FALLBACK_INSTALLATION_ORDERS.filter(o => o.status === "בביצוע").length, icon: HardHat, color: "text-yellow-400", bg: "bg-yellow-500/10" },
+  { label: "מתוכננות השבוע", value: FALLBACK_INSTALLATION_ORDERS.filter(o => o.status === "מתוכנן").length, icon: Calendar, color: "text-blue-400", bg: "bg-blue-500/10" },
+  { label: "הושלמו החודש", value: FALLBACK_INSTALLATION_ORDERS.filter(o => o.status === "הושלם").length, icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+  { label: "צוותים זמינים", value: FALLBACK_CREWS.filter(c => c.availability === "זמין").length, icon: Users, color: "text-purple-400", bg: "bg-purple-500/10" },
+  { label: "חריגות פתוחות", value: FALLBACK_DEVIATIONS.length, icon: AlertTriangle, color: "text-red-400", bg: "bg-red-500/10" },
+  { label: "אישורים ממתינים", value: FALLBACK_CUSTOMER_SIGNOFFS.filter(s => s.status === "ממתין" || s.status === "חסום").length, icon: FileCheck, color: "text-orange-400", bg: "bg-orange-500/10" },
 ];
 
 /* ── Component ────────────────────────────────────────────────── */
 
 export default function InstallationManagement() {
+  const { data: installationOrders = FALLBACK_INSTALLATION_ORDERS } = useQuery({
+    queryKey: ["installation-installation-orders"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-management/installation-orders");
+      if (!res.ok) return FALLBACK_INSTALLATION_ORDERS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_INSTALLATION_ORDERS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: siteReadiness = FALLBACK_SITE_READINESS } = useQuery({
+    queryKey: ["installation-site-readiness"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-management/site-readiness");
+      if (!res.ok) return FALLBACK_SITE_READINESS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SITE_READINESS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: crews = FALLBACK_CREWS } = useQuery({
+    queryKey: ["installation-crews"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-management/crews");
+      if (!res.ok) return FALLBACK_CREWS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_CREWS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: deviations = FALLBACK_DEVIATIONS } = useQuery({
+    queryKey: ["installation-deviations"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-management/deviations");
+      if (!res.ok) return FALLBACK_DEVIATIONS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DEVIATIONS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: customerSignoffs = FALLBACK_CUSTOMER_SIGNOFFS } = useQuery({
+    queryKey: ["installation-customer-signoffs"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-management/customer-signoffs");
+      if (!res.ok) return FALLBACK_CUSTOMER_SIGNOFFS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_CUSTOMER_SIGNOFFS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: kpiData = FALLBACK_KPI_DATA } = useQuery({
+    queryKey: ["installation-kpi-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-management/kpi-data");
+      if (!res.ok) return FALLBACK_KPI_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_KPI_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* Header */}

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,7 +35,7 @@ const currentShift = {
   ],
 };
 
-const handoverLog = [
+const FALLBACK_HANDOVER_LOG = [
   { id: "HO-041", shift: "לילה > בוקר", from: "דני שמש", to: "אבי כהן", date: "08/04", time: "06:00", output: 820, issues: 2, notes: "תנור ציפוי דורש תשומת לב, לחץ אוויר ירד", status: "הושלם" },
   { id: "HO-040", shift: "ערב > לילה", from: "משה לוי", to: "דני שמש", date: "07/04", time: "22:00", output: 1050, issues: 1, notes: "מכונת CNC #2 - כלי חדש הותקן, לעקוב אחרי איכות", status: "הושלם" },
   { id: "HO-039", shift: "בוקר > ערב", from: "אבי כהן", to: "משה לוי", date: "07/04", time: "14:00", output: 1180, issues: 0, notes: "יום טוב, כל הקווים עבדו תקין", status: "הושלם" },
@@ -46,7 +48,7 @@ const handoverLog = [
   { id: "HO-032", shift: "לילה > בוקר", from: "דני שמש", to: "אבי כהן", date: "05/04", time: "06:00", output: 750, issues: 2, notes: "תקלת PLC בקו כיפוף, נפתרה. מחסנית כלים CNC #2 תקולה", status: "הושלם" },
 ];
 
-const pendingItems = [
+const FALLBACK_PENDING_ITEMS = [
   { id: "PI-01", item: "תנור ציפוי - החזרה לפעולה אחרי תיקון", from: "משמרת לילה", priority: "קריטי", dueBy: "11:00 היום", assignee: "יוסי ברק", status: "בטיפול" },
   { id: "PI-02", item: "בדיקת רצועת מסוע #3 - סימני שחיקה", from: "07/04 בוקר", priority: "גבוה", dueBy: "סוף יום", assignee: "רועי אדם", status: "ממתין" },
   { id: "PI-03", item: "תלונת לקוח T-200 - סטיית מידות בחלונות", from: "06/04 ערב", priority: "גבוה", dueBy: "10/04", assignee: "QC - שרה דהן", status: "בבדיקה" },
@@ -56,7 +58,7 @@ const pendingItems = [
   { id: "PI-07", item: "עדכון תוכנת NC בקו כיפוף - גרסה 4.3", from: "04/04 ערב", priority: "נמוך", dueBy: "12/04", assignee: "IT - עומר", status: "מתוכנן" },
 ];
 
-const weeklySchedule = [
+const FALLBACK_WEEKLY_SCHEDULE = [
   { day: "ראשון 06/04", morning: { manager: "אבי כהן", workers: 24 }, evening: { manager: "משה לוי", workers: 22 }, night: { manager: "דני שמש", workers: 18 } },
   { day: "שני 07/04", morning: { manager: "אבי כהן", workers: 24 }, evening: { manager: "משה לוי", workers: 22 }, night: { manager: "דני שמש", workers: 18 } },
   { day: "שלישי 08/04", morning: { manager: "אבי כהן", workers: 24 }, evening: { manager: "משה לוי", workers: 22 }, night: { manager: "דני שמש", workers: 18 } },
@@ -81,6 +83,14 @@ const PISTAT: Record<string, string> = {
 };
 
 export default function ShiftHandover() {
+  const { data: shifthandoverData } = useQuery({
+    queryKey: ["shift-handover"],
+    queryFn: () => authFetch("/api/operations/shift_handover"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const handoverLog = shifthandoverData ?? FALLBACK_HANDOVER_LOG;
+
   const [search, setSearch] = useState("");
 
   const kpis = [

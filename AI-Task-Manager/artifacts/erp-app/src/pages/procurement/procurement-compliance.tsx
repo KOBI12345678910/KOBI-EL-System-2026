@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,7 +16,7 @@ import {
 const pct = (v: number) => `${v.toFixed(0)}%`;
 
 /* ── 5 compliance controls ──────────────────────────────────────── */
-const controls = [
+const FALLBACK_CONTROLS = [
   { id: "CTL-01", name: "מסמכי רכש", icon: FileCheck, description: "תעודות משלוח, חשבוניות, הזמנות רכש מאושרות", compliant: 42, total: 48, color: "text-blue-400", bg: "bg-blue-500/10" },
   { id: "CTL-02", name: "הסמכות ספקים", icon: Award, description: "ISO 9001, ISO 14001, תקני ישראל", compliant: 18, total: 24, color: "text-purple-400", bg: "bg-purple-500/10" },
   { id: "CTL-03", name: "בקרת איכות", icon: ClipboardCheck, description: "תעודות בדיקה, COC, דו\"חות מעבדה", compliant: 35, total: 40, color: "text-emerald-400", bg: "bg-emerald-500/10" },
@@ -23,7 +25,7 @@ const controls = [
 ];
 
 /* ── supplier compliance status ─────────────────────────────────── */
-const supplierCompliance = [
+const FALLBACK_SUPPLIER_COMPLIANCE = [
   { supplier: "אלומיניום ישראל בע\"מ", docs: "תקין", certs: "תקין", quality: "תקין", safety: "תקין", imports: "תקין",  overall: 100, status: "מאושר" },
   { supplier: "פלדות השרון", docs: "תקין", certs: "תקין", quality: "חסר", safety: "תקין", imports: "לא רלוונטי",  overall: 80, status: "חלקי" },
   { supplier: "זכוכית הגליל", docs: "תקין", certs: "פג תוקף", quality: "תקין", safety: "תקין", imports: "תקין",  overall: 85, status: "חלקי" },
@@ -51,6 +53,14 @@ const statusColor: Record<string, string> = {
 
 /* ================================================================ */
 export default function ProcurementCompliance() {
+  const { data: procurementcomplianceData } = useQuery({
+    queryKey: ["procurement-compliance"],
+    queryFn: () => authFetch("/api/procurement/procurement_compliance"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const controls = procurementcomplianceData ?? FALLBACK_CONTROLS;
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 

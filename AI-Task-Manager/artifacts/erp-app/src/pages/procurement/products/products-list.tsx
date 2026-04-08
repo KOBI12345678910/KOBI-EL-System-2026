@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -33,7 +35,7 @@ interface Product {
 // ============================================================
 // MOCK DATA - Products Master for Techno-Kol Uzi Factory
 // ============================================================
-const products: Product[] = [
+const FALLBACK_PRODUCTS: Product[] = [
   // --- Iron ---
   { product_code: "PRD-1001", product_name: "שער כניסה דגם Premium", category: "ברזל", subcategory: "שערים", product_type: "מוצר סטנדרטי", default_material: "ברזל מגולוון", base_cost: 4200, sale_price: 7800, gross_margin: 46.2, image_thumbnail: "gate-premium.jpg", active_status: "active" },
   { product_code: "PRD-1002", product_name: "גדר ברזל 1.5m", category: "ברזל", subcategory: "גדרות", product_type: "מוצר סטנדרטי", default_material: "ברזל שחור", base_cost: 850, sale_price: 1650, gross_margin: 48.5, image_thumbnail: "fence-150.jpg", active_status: "active" },
@@ -92,7 +94,7 @@ const avgMargin = products.reduce((s, p) => s + p.gross_margin, 0) / totalProduc
 const totalRevenuePotential = products.filter(p => p.active_status === "active").reduce((s, p) => s + p.sale_price, 0);
 const categories = [...new Set(products.map(p => p.category))];
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "סה\"כ מוצרים", value: totalProducts.toString(), sub: `${activeProducts} פעילים`, icon: Package, gradient: "from-blue-600 to-blue-800" },
   { label: "מרווח גולמי ממוצע", value: fmtPercent(avgMargin), sub: "על פני כל המוצרים", icon: TrendingUp, gradient: "from-emerald-600 to-emerald-800" },
   { label: "פוטנציאל הכנסה", value: fmtCurrency(totalRevenuePotential), sub: "מוצרים פעילים", icon: BarChart3, gradient: "from-purple-600 to-purple-800" },
@@ -103,6 +105,14 @@ const kpis = [
 // COMPONENT
 // ============================================================
 export default function ProductsList() {
+  const { data: productslistData } = useQuery({
+    queryKey: ["products-list"],
+    queryFn: () => authFetch("/api/procurement/products_list"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const products = productslistData ?? FALLBACK_PRODUCTS;
+
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
 

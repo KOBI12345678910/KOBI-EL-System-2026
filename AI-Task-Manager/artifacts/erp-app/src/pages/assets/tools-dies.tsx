@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +13,7 @@ import {
   CalendarDays, ArrowUpCircle, CircleDot, Drill, Cog
 } from "lucide-react";
 
-const tools = [
+const FALLBACK_TOOLS = [
   { id: "TL-001", name: "תבנית חיתוך פרופיל 40x40", type: "תבנית חיתוך", condition: "תקין", cycles: 12400, maxCycles: 20000, location: "אולם A - מסור 600", lastService: "2026-02-10", cost: 8500 },
   { id: "TL-002", name: "תבנית חיתוך פרופיל 60x60", type: "תבנית חיתוך", condition: "טעון השחזה", cycles: 17200, maxCycles: 20000, location: "אולם A - מסור 400", lastService: "2025-12-15", cost: 9200 },
   { id: "TL-003", name: "כלי כרסום קרביד D12", type: "כלי כרסום", condition: "תקין", cycles: 3200, maxCycles: 8000, location: "אולם A - מרכז עיבוד DMG", lastService: "2026-03-20", cost: 2800 },
@@ -26,7 +28,7 @@ const tools = [
   { id: "TL-012", name: "סט תבניות כיפוף V-Die", type: "תבנית כיפוף", condition: "תקין", cycles: 9300, maxCycles: 25000, location: "אולם A - מכונת כיפוף", lastService: "2026-03-15", cost: 18000 },
 ];
 
-const maintenanceSchedule = [
+const FALLBACK_MAINTENANCE_SCHEDULE = [
   { tool: "תבנית חיתוך פרופיל 60x60", action: "השחזה", dueDate: "2026-04-12", priority: "גבוה", estimatedCost: 850, tech: "אברהם סדן" },
   { tool: "להב חיתוך יהלום זכוכית", action: "החלפה", dueDate: "2026-04-10", priority: "דחוף", estimatedCost: 4200, tech: "הזמנה מספק" },
   { tool: "ג'יג ריתוך פינות 90°", action: "תיקון + כיול", dueDate: "2026-04-15", priority: "גבוה", estimatedCost: 1200, tech: "אברהם סדן" },
@@ -35,14 +37,14 @@ const maintenanceSchedule = [
   { tool: "פיקסצ'ר הרכבה מודולרי", action: "כיול ובדיקה", dueDate: "2026-05-01", priority: "נמוך", estimatedCost: 350, tech: "פנימי" },
 ];
 
-const consumptionData = [
+const FALLBACK_CONSUMPTION_DATA = [
   { month: "ינואר", cutting: 12, milling: 8, drill: 15, blades: 3, total: 38, cost: 18500 },
   { month: "פברואר", cutting: 10, milling: 6, drill: 12, blades: 2, total: 30, cost: 14200 },
   { month: "מרץ", cutting: 14, milling: 10, drill: 18, blades: 4, total: 46, cost: 22800 },
   { month: "אפריל (חזוי)", cutting: 11, milling: 7, drill: 14, blades: 3, total: 35, cost: 17000 },
 ];
 
-const orderNeeded = [
+const FALLBACK_ORDER_NEEDED = [
   { tool: "להב חיתוך יהלום זכוכית", qty: 3, unitCost: 4200, supplier: "גלובל דיימונד", leadTime: "5 ימים", urgency: "דחוף" },
   { tool: "מקדח HSS 8 מ\"מ (סט 10)", qty: 2, unitCost: 1200, supplier: "כלי חיתוך בע\"מ", leadTime: "3 ימים", urgency: "רגיל" },
   { tool: "מקדח HSS 12 מ\"מ (סט 10)", qty: 2, unitCost: 1500, supplier: "כלי חיתוך בע\"מ", leadTime: "3 ימים", urgency: "רגיל" },
@@ -67,6 +69,14 @@ const priorityColor: Record<string, string> = {
 };
 
 export default function ToolsDies() {
+  const { data: toolsdiesData } = useQuery({
+    queryKey: ["tools-dies"],
+    queryFn: () => authFetch("/api/assets/tools_dies"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const tools = toolsdiesData ?? FALLBACK_TOOLS;
+
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("registry");
 

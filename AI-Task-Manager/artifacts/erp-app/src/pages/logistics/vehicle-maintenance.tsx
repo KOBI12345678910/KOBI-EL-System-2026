@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,8 +9,8 @@ import {
   CheckCircle2, Timer, TrendingUp, Bell, Fuel, ShieldCheck, CircleDot
 } from "lucide-react";
 
-const TABS = ["לו\"ז", "היסטוריה", "עלויות", "התראות"] as const;
-type Tab = typeof TABS[number];
+const FALLBACK_TABS = ["לו\"ז", "היסטוריה", "עלויות", "התראות"] as const;
+type Tab = typeof FALLBACK_TABS[number];
 
 const STATUS_COLORS: Record<string, string> = {
   "מתוכנן": "bg-blue-500/20 text-blue-300 border-blue-500/40",
@@ -25,7 +27,7 @@ const URGENCY_COLORS: Record<string, string> = {
 
 const fmt = (n: number) => "₪" + n.toLocaleString("he-IL");
 
-const scheduleData = [
+const FALLBACK_SCHEDULE_DATA = [
   { vehicle: "משאית 12-345-67", type: "החלפת שמן", date: "2026-04-15", kmNext: 5200, urgency: "בינונית", status: "מתוכנן" },
   { vehicle: "משאית 23-456-78", type: "בלמים", date: "2026-04-10", kmNext: 1800, urgency: "גבוהה", status: "בביצוע" },
   { vehicle: "ואן 34-567-89", type: "צמיגים", date: "2026-04-20", kmNext: 8400, urgency: "נמוכה", status: "מתוכנן" },
@@ -36,7 +38,7 @@ const scheduleData = [
   { vehicle: "פיקאפ 89-012-34", type: "צמיגים", date: "2026-04-30", kmNext: 15000, urgency: "נמוכה", status: "מתוכנן" },
 ];
 
-const historyData = [
+const FALLBACK_HISTORY_DATA = [
   { date: "2026-03-28", vehicle: "משאית 12-345-67", type: "החלפת שמן", garage: "מוסך אבי", cost: 850, parts: "פילטר שמן, שמן 10W-40", downtime: 0.5 },
   { date: "2026-03-22", vehicle: "ואן 34-567-89", type: "בלמים", garage: "מוסך המפרץ", cost: 2200, parts: "רפידות בלם קדמיות", downtime: 1 },
   { date: "2026-03-15", vehicle: "משאית 23-456-78", type: "צמיגים", garage: "צמיגי השרון", cost: 3600, parts: "4 צמיגים 315/80R22.5", downtime: 0.5 },
@@ -49,7 +51,7 @@ const historyData = [
   { date: "2026-01-30", vehicle: "ואן 34-567-89", type: "החלפת שמן", garage: "מוסך אבי", cost: 720, parts: "פילטר שמן", downtime: 0.5 },
 ];
 
-const alerts = [
+const FALLBACK_ALERTS = [
   { vehicle: "פיקאפ 45-678-90", message: "טסט שנתי באיחור של 4 ימים!", urgency: "גבוהה", date: "2026-04-08" },
   { vehicle: "משאית 78-901-23", message: "טיפול בלמים - ק\"מ קריטי (900 ק\"מ נותרו)", urgency: "גבוהה", date: "2026-04-08" },
   { vehicle: "משאית 12-345-67", message: "החלפת שמן מתוכננת בעוד 7 ימים", urgency: "בינונית", date: "2026-04-15" },
@@ -57,7 +59,7 @@ const alerts = [
   { vehicle: "משאית 56-789-01", message: "טיפול כללי מתוכנן בעוד 17 יום", urgency: "נמוכה", date: "2026-04-25" },
 ];
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "טיפולים מתוכננים", value: "4", icon: Calendar, color: "text-blue-400" },
   { label: "בוצעו החודש", value: "3", icon: CheckCircle2, color: "text-green-400" },
   { label: "חירום", value: "1", icon: AlertTriangle, color: "text-red-400" },
@@ -66,6 +68,67 @@ const kpis = [
 ];
 
 export default function VehicleMaintenance() {
+  const { data: TABS = FALLBACK_TABS } = useQuery({
+    queryKey: ["logistics-t-a-b-s"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/vehicle-maintenance/t-a-b-s");
+      if (!res.ok) return FALLBACK_TABS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TABS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: scheduleData = FALLBACK_SCHEDULE_DATA } = useQuery({
+    queryKey: ["logistics-schedule-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/vehicle-maintenance/schedule-data");
+      if (!res.ok) return FALLBACK_SCHEDULE_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SCHEDULE_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: historyData = FALLBACK_HISTORY_DATA } = useQuery({
+    queryKey: ["logistics-history-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/vehicle-maintenance/history-data");
+      if (!res.ok) return FALLBACK_HISTORY_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_HISTORY_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: alerts = FALLBACK_ALERTS } = useQuery({
+    queryKey: ["logistics-alerts"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/vehicle-maintenance/alerts");
+      if (!res.ok) return FALLBACK_ALERTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_ALERTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: kpis = FALLBACK_KPIS } = useQuery({
+    queryKey: ["logistics-kpis"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/vehicle-maintenance/kpis");
+      if (!res.ok) return FALLBACK_KPIS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_KPIS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [tab, setTab] = useState<Tab>("לו\"ז");
 
   const totalHistoryCost = historyData.reduce((s, h) => s + h.cost, 0);

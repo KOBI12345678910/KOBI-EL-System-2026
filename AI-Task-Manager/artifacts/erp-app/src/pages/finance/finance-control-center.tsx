@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { LayoutDashboard, DollarSign, TrendingUp, TrendingDown, CreditCard, Wallet, ArrowUpDown, AlertTriangle, Clock, CheckCircle2, BarChart3, Loader2, RefreshCw, Building2, Users, Briefcase } from "lucide-react";
 import { motion } from "framer-motion";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell, Legend } from "recharts";
@@ -7,6 +9,12 @@ const API = "/api";
 const fmt = (v: any) => Number(v || 0).toLocaleString("he-IL", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
 export default function FinanceControlCenterPage() {
+  const { data: financecontrolcenterData } = useQuery({
+    queryKey: ["finance-control-center"],
+    queryFn: () => authFetch("/api/finance/finance_control_center"),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [data, setData] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("erp_token") || "";

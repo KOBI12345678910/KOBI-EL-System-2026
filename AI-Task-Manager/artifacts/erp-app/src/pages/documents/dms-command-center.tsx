@@ -1,4 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,7 +15,7 @@ import {
 // ============================================================
 // DMS DATA — טכנו-כל עוזי
 // ============================================================
-const kpis = [
+const FALLBACK_KPIS = [
   { label: 'סה"כ מסמכים', value: "3,847", icon: Files, color: "text-blue-600", bg: "bg-blue-50" },
   { label: "ממתינים לאישור", value: "23", icon: FileClock, color: "text-amber-600", bg: "bg-amber-50" },
   { label: "פג תוקף", value: "8", icon: FileWarning, color: "text-red-600", bg: "bg-red-50" },
@@ -24,7 +26,7 @@ const kpis = [
   { label: "תבניות זמינות", value: "45", icon: LayoutTemplate, color: "text-cyan-600", bg: "bg-cyan-50" },
 ];
 
-const recentActivity = [
+const FALLBACK_RECENT_ACTIVITY = [
   { action: "העלאה", doc: "הזמנת רכש PR-001284", user: "יוסי אברהם", time: "לפני 5 דקות", icon: Upload, color: "text-blue-600" },
   { action: "אישור", doc: "פרוטוקול בדיקה QC-0087", user: "מיכל לוי", time: "לפני 12 דקות", icon: CheckCircle, color: "text-emerald-600" },
   { action: "עריכה", doc: "מפרט טכני — פרופיל Pro-X", user: "דני כהן", time: "לפני 18 דקות", icon: Pen, color: "text-amber-600" },
@@ -37,7 +39,7 @@ const recentActivity = [
   { action: "חתימה", doc: "אישור תקציב רבעון 2", user: "שלמה פינקל (CFO)", time: "לפני 3 שעות", icon: PenTool, color: "text-purple-600" },
 ];
 
-const categories = [
+const FALLBACK_CATEGORIES = [
   { name: "מסמכי ייצור", total: 820, recent: 34, pending: 5, icon: "🏭", color: "bg-blue-50 border-blue-200" },
   { name: "מסמכי רכש", total: 645, recent: 22, pending: 8, icon: "📦", color: "bg-amber-50 border-amber-200" },
   { name: "מסמכי פרויקטים", total: 512, recent: 18, pending: 3, icon: "📐", color: "bg-emerald-50 border-emerald-200" },
@@ -45,7 +47,7 @@ const categories = [
   { name: "מסמכי כספים", total: 1530, recent: 41, pending: 5, icon: "💰", color: "bg-red-50 border-red-200" },
 ];
 
-const pendingApprovals = [
+const FALLBACK_PENDING_APPROVALS = [
   { doc: "הזמנת רכש PR-001284", type: "רכש", requester: "יוסי אברהם", approver: "שלמה פינקל", since: "3 שעות", urgency: "high" },
   { doc: "מפרט טכני — חלון Premium", type: "ייצור", requester: "דני כהן", approver: "מיכל לוי", since: "5 שעות", urgency: "high" },
   { doc: "חוזה שירות — חברת ניקיון", type: "כספים", requester: "רונית שמעון", approver: "עוזי טכנו-כל", since: "יום", urgency: "medium" },
@@ -58,7 +60,7 @@ const pendingApprovals = [
   { doc: "תוכנית הדרכה — עובדים חדשים", type: "איכות", requester: "אבי רוזן", approver: "מיכל לוי", since: "5 ימים", urgency: "low" },
 ];
 
-const alerts = [
+const FALLBACK_ALERTS = [
   { type: "expiry", message: "תעודת ISO 9001 פוגעת ב-15/04/2026", severity: "critical", icon: FileWarning },
   { type: "expiry", message: "רישיון עסק — חידוש נדרש עד 30/04/2026", severity: "critical", icon: FileWarning },
   { type: "signature", message: "חוזה ספק Alumil — חתימה חסרה (14 יום)", severity: "high", icon: PenTool },
@@ -69,7 +71,7 @@ const alerts = [
   { type: "expiry", message: "אישור כבאות — פג תוקף ב-01/05/2026", severity: "low", icon: FileWarning },
 ];
 
-const storageByDept = [
+const FALLBACK_STORAGE_BY_DEPT = [
   { dept: "כספים", used: 145, quota: 150, pct: 92 },
   { dept: "ייצור", used: 98, quota: 120, pct: 82 },
   { dept: "רכש", used: 72, quota: 100, pct: 72 },
@@ -77,7 +79,7 @@ const storageByDept = [
   { dept: "איכות", used: 27, quota: 50, pct: 54 },
 ];
 
-const topDownloaded = [
+const FALLBACK_TOP_DOWNLOADED = [
   { doc: "קטלוג מוצרים 2026", downloads: 234, dept: "מכירות" },
   { doc: "מחירון ייצור — אלומיניום", downloads: 189, dept: "מכירות" },
   { doc: "נוהל בטיחות כללי", downloads: 156, dept: "ייצור" },
@@ -85,7 +87,7 @@ const topDownloaded = [
   { doc: "מדריך הדרכה — ERP", downloads: 128, dept: "IT" },
 ];
 
-const userActivity = [
+const FALLBACK_USER_ACTIVITY = [
   { user: "יוסי אברהם", uploads: 48, downloads: 92, edits: 31, approvals: 15 },
   { user: "מיכל לוי", uploads: 35, downloads: 64, edits: 52, approvals: 28 },
   { user: "דני כהן", uploads: 29, downloads: 78, edits: 18, approvals: 8 },
@@ -103,6 +105,21 @@ const severityLabel = (s: string) =>
   s === "critical" ? "קריטי" : s === "high" ? "גבוה" : s === "medium" ? "בינוני" : "נמוך";
 
 export default function DmsCommandCenter() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["dms_command_center"],
+    queryFn: () => authFetch("/api/documents/dms-command-center").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const recentActivity = apiData?.recentActivity ?? FALLBACK_RECENT_ACTIVITY;
+  const categories = apiData?.categories ?? FALLBACK_CATEGORIES;
+  const pendingApprovals = apiData?.pendingApprovals ?? FALLBACK_PENDING_APPROVALS;
+  const alerts = apiData?.alerts ?? FALLBACK_ALERTS;
+  const storageByDept = apiData?.storageByDept ?? FALLBACK_STORAGE_BY_DEPT;
+  const topDownloaded = apiData?.topDownloaded ?? FALLBACK_TOP_DOWNLOADED;
+  const userActivity = apiData?.userActivity ?? FALLBACK_USER_ACTIVITY;
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* ── Header ───────────────────────────────────────── */}

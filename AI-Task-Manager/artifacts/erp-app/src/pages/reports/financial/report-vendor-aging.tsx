@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,7 +11,7 @@ import {
   TrendingDown, ArrowUpDown, ChevronRight, ChevronLeft, Printer, Eye, Calendar
 } from "lucide-react";
 
-const kpis = [
+const FALLBACK_KPIS = [
   { title: "סה״כ חובות לספקים", value: "₪3,156,200", icon: DollarSign, color: "text-blue-400", bg: "bg-blue-500/10", change: "-3.5%", changeColor: "text-green-400" },
   { title: "שוטף (0-30 יום)", value: "₪1,520,800", icon: TrendingDown, color: "text-green-400", bg: "bg-green-500/10", change: "48%", changeColor: "text-green-400" },
   { title: "30-60 יום", value: "₪842,600", icon: Clock, color: "text-yellow-400", bg: "bg-yellow-500/10", change: "27%", changeColor: "text-yellow-400" },
@@ -27,7 +29,7 @@ const statusBadge = (status: string) => {
   return m[status] || "bg-gray-500/20 text-gray-300";
 };
 
-const vendors = [
+const FALLBACK_VENDORS = [
   { id: 1, name: "אלקום חומרי גלם בע״מ", current: 312000, d30: 145000, d60: 78000, d90: 0, total: 535000, terms: "שוטף+60", dueDate: "2026-05-02", status: "תקין", category: "חומרי גלם" },
   { id: 2, name: "מתכות ישראל אילת", current: 245000, d30: 112000, d60: 65000, d90: 45000, total: 467000, terms: "שוטף+45", dueDate: "2026-04-18", status: "באיחור", category: "מתכות" },
   { id: 3, name: "זכוכית פלוט ים המלח", current: 198000, d30: 87000, d60: 52000, d90: 0, total: 337000, terms: "שוטף+30", dueDate: "2026-04-25", status: "תקין", category: "זכוכית" },
@@ -45,6 +47,14 @@ const vendors = [
 const fmt = (n: number) => "₪" + n.toLocaleString("he-IL");
 
 export default function ReportVendorAgingPage() {
+  const { data: reportvendoragingData } = useQuery({
+    queryKey: ["report-vendor-aging"],
+    queryFn: () => authFetch("/api/reports/report_vendor_aging"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = reportvendoragingData ?? FALLBACK_KPIS;
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortField, setSortField] = useState<string>("total");

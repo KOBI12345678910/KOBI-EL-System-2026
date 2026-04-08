@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +32,12 @@ interface IntegrationConfig {
 }
 
 export default function IsraeliIntegrations() {
+  const { data: israeliintegrationsData } = useQuery({
+    queryKey: ["israeli-integrations"],
+    queryFn: () => authFetch("/api/settings/israeli_integrations"),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [status, setStatus] = useState<IntegrationConfig | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +34,7 @@ const deliveryTypeCls: Record<DeliveryType, string> = {
 
 /* ── static data: live vehicles ───────────────────────────── */
 interface LiveVehicle { plate: string; driver: string; location: string; destination: string; eta: string; status: VehicleStatus; cargo: string; }
-const liveVehicles: LiveVehicle[] = [
+const FALLBACK_LIVE_VEHICLES: LiveVehicle[] = [
   { plate: "782-34-191", driver: "מאיר אוחנה", location: "כביש 6 — גשר הקישון", destination: "חיפה — נמל", eta: "09:25", status: "בנסיעה", cargo: "קורות פלדה 8 טון" },
   { plate: "551-18-207", driver: "דוד לוי", location: "אזור תעשייה אשדוד", destination: "לקוח — מגדלי הים", eta: "08:40", status: "פריקה", cargo: "עמודי בטון ומעקות" },
   { plate: "319-90-442", driver: "יוסי כהן", location: "רחוב הרצל, נתניה", destination: "קניון השרון", eta: "10:05", status: "בנסיעה", cargo: "חלונות אלומיניום" },
@@ -42,9 +44,9 @@ const liveVehicles: LiveVehicle[] = [
   { plate: "876-54-222", driver: "—", location: "מפעל טכנו-כל — אשדוד", destination: "—", eta: "—", status: "במפעל", cargo: "—" },
   { plate: "935-12-440", driver: "עמית שושן", location: "מפעל טכנו-כל — מוסך", destination: "—", eta: "—", status: "במפעל", cargo: "בתחזוקה שוטפת" },
 ];
-/* ── static data: today's schedule ────────────────────────── */
+/* ── static data: today's FALLBACK_SCHEDULE ────────────────────────── */
 interface ScheduleEntry { time: string; vehicle: string; driver: string; destination: string; type: DeliveryType; status: ScheduleStatus; }
-const schedule: ScheduleEntry[] = [
+const FALLBACK_SCHEDULE: ScheduleEntry[] = [
   { time: "06:30", vehicle: "551-18-207", driver: "דוד לוי", destination: "אשדוד — מגדלי הים", type: "משלוח", status: "הושלם" },
   { time: "07:00", vehicle: "782-34-191", driver: "מאיר אוחנה", destination: "חיפה — נמל", type: "משלוח", status: "בדרך" },
   { time: "07:45", vehicle: "319-90-442", driver: "יוסי כהן", destination: "נתניה — קניון השרון", type: "התקנה", status: "בדרך" },
@@ -54,9 +56,9 @@ const schedule: ScheduleEntry[] = [
   { time: "13:00", vehicle: "782-34-191", driver: "מאיר אוחנה", destination: "קיסריה — גשר כביש 6", type: "משלוח", status: "מתוכנן" },
   { time: "14:30", vehicle: "551-18-207", driver: "דוד לוי", destination: "אשדוד — נמל רציף 4", type: "איסוף", status: "מתוכנן" },
 ];
-/* ── static data: vehicle performance ─────────────────────── */
+/* ── static data: vehicle FALLBACK_PERFORMANCE ─────────────────────── */
 interface VehiclePerformance { plate: string; type: string; kmToday: number; kmMonth: number; fuelPerKm: number; efficiency: number; trips: number; }
-const performance: VehiclePerformance[] = [
+const FALLBACK_PERFORMANCE: VehiclePerformance[] = [
   { plate: "782-34-191", type: "משאית", kmToday: 125, kmMonth: 2850, fuelPerKm: 0.38, efficiency: 92, trips: 48 },
   { plate: "551-18-207", type: "מנוף", kmToday: 45, kmMonth: 980, fuelPerKm: 0.52, efficiency: 85, trips: 22 },
   { plate: "319-90-442", type: "טנדר", kmToday: 78, kmMonth: 1620, fuelPerKm: 0.18, efficiency: 96, trips: 55 },
@@ -66,9 +68,9 @@ const performance: VehiclePerformance[] = [
   { plate: "876-54-222", type: "מנוף", kmToday: 0, kmMonth: 650, fuelPerKm: 0.55, efficiency: 78, trips: 14 },
   { plate: "935-12-440", type: "משאית", kmToday: 0, kmMonth: 2100, fuelPerKm: 0.36, efficiency: 90, trips: 38 },
 ];
-/* ── static data: maintenance ─────────────────────────────── */
+/* ── static data: FALLBACK_MAINTENANCE ─────────────────────────────── */
 interface Maintenance { plate: string; type: string; service: string; dueDate: string; kmUntil: number; urgency: string; }
-const maintenance: Maintenance[] = [
+const FALLBACK_MAINTENANCE: Maintenance[] = [
   { plate: "935-12-440", type: "משאית", service: "טיפול 50,000 ק\"מ — שמן + פילטרים", dueDate: "08/04/2026", kmUntil: 120, urgency: "דחוף" },
   { plate: "876-54-222", type: "מנוף", service: "בדיקת מערכת הידראולית שנתית", dueDate: "15/04/2026", kmUntil: 480, urgency: "בינוני" },
   { plate: "624-57-333", type: "משאית", service: "החלפת צמיגים — ציר אחורי", dueDate: "22/04/2026", kmUntil: 1200, urgency: "רגיל" },
@@ -79,7 +81,7 @@ const urgencyCls: Record<string, string> = {
 };
 /* ── static data: monthly costs ───────────────────────────── */
 interface CostLine { category: string; amount: number; pct: number; trend: string; up: boolean; }
-const monthlyCosts: CostLine[] = [
+const FALLBACK_MONTHLY_COSTS: CostLine[] = [
   { category: "דלק", amount: 18500, pct: 38, trend: "+3.2%", up: false },
   { category: "שכר נהגים", amount: 14200, pct: 29, trend: "יציב", up: true },
   { category: "תחזוקה ותיקונים", amount: 7800, pct: 16, trend: "-8.5%", up: true },
@@ -90,6 +92,67 @@ const monthlyCosts: CostLine[] = [
 
 /* ══════════════════════════════════════════════════════════════ */
 export default function FleetCommandCenter() {
+  const { data: liveVehicles = FALLBACK_LIVE_VEHICLES } = useQuery({
+    queryKey: ["logistics-live-vehicles"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/fleet-command-center/live-vehicles");
+      if (!res.ok) return FALLBACK_LIVE_VEHICLES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_LIVE_VEHICLES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: schedule = FALLBACK_SCHEDULE } = useQuery({
+    queryKey: ["logistics-schedule"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/fleet-command-center/schedule");
+      if (!res.ok) return FALLBACK_SCHEDULE;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SCHEDULE;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: performance = FALLBACK_PERFORMANCE } = useQuery({
+    queryKey: ["logistics-performance"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/fleet-command-center/performance");
+      if (!res.ok) return FALLBACK_PERFORMANCE;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_PERFORMANCE;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: maintenance = FALLBACK_MAINTENANCE } = useQuery({
+    queryKey: ["logistics-maintenance"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/fleet-command-center/maintenance");
+      if (!res.ok) return FALLBACK_MAINTENANCE;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_MAINTENANCE;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: monthlyCosts = FALLBACK_MONTHLY_COSTS } = useQuery({
+    queryKey: ["logistics-monthly-costs"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/fleet-command-center/monthly-costs");
+      if (!res.ok) return FALLBACK_MONTHLY_COSTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_MONTHLY_COSTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [activeTab, setActiveTab] = useState("live");
 
   return (

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +34,12 @@ interface CommodityRisk {
 }
 
 export default function RiskHedging() {
+  const { data: riskhedgingData } = useQuery({
+    queryKey: ["risk-hedging"],
+    queryFn: () => authFetch("/api/procurement/risk_hedging"),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [exposures, setExposures] = useState<CurrencyExposure[]>([]);
   const [risks, setRisks] = useState<CommodityRisk[]>([]);
   const [riskSummary, setRiskSummary] = useState<any>(null);

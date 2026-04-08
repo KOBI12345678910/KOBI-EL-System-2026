@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +12,7 @@ import {
   Filter, Award, Layers, BarChart3, AlertTriangle
 } from "lucide-react";
 
-const pipelineStages = [
+const FALLBACK_PIPELINE_STAGES = [
   { name: "זוהה", count: 14, value: 28500000, color: "bg-gray-500", textColor: "text-gray-400" },
   { name: "הוכשר", count: 11, value: 22800000, color: "bg-blue-500", textColor: "text-blue-400" },
   { name: "בהכנה", count: 8, value: 18200000, color: "bg-amber-500", textColor: "text-amber-400" },
@@ -19,7 +21,7 @@ const pipelineStages = [
   { name: "נמסר", count: 3, value: 7200000, color: "bg-green-500", textColor: "text-green-400" },
 ];
 
-const monthlyTrends = [
+const FALLBACK_MONTHLY_TRENDS = [
   { month: "אוק׳ 2025", submitted: 4, won: 2, lost: 1, value: 3200000 },
   { month: "נוב׳ 2025", submitted: 6, won: 3, lost: 2, value: 5800000 },
   { month: "דצמ׳ 2025", submitted: 3, won: 1, lost: 1, value: 2100000 },
@@ -28,7 +30,7 @@ const monthlyTrends = [
   { month: "מרץ 2026", submitted: 8, won: 3, lost: 2, value: 7800000 },
 ];
 
-const recentActivity = [
+const FALLBACK_RECENT_ACTIVITY = [
   { tender: "חלונות אלומיניום - מגדלי הים", action: "הוגשה הצעה", time: "לפני 2 שעות", type: "submit" },
   { tender: "מעטפת זכוכית - עזריאלי", action: "עודכן מפרט טכני", time: "לפני 5 שעות", type: "update" },
   { tender: "דלתות מאובטחות - משהב״ט", action: "זכינו!", time: "אתמול", type: "won" },
@@ -37,6 +39,43 @@ const recentActivity = [
 ];
 
 export default function TenderDashboard() {
+  const { data: pipelineStages = FALLBACK_PIPELINE_STAGES } = useQuery({
+    queryKey: ["tenders-pipeline-stages"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-dashboard/pipeline-stages");
+      if (!res.ok) return FALLBACK_PIPELINE_STAGES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_PIPELINE_STAGES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: monthlyTrends = FALLBACK_MONTHLY_TRENDS } = useQuery({
+    queryKey: ["tenders-monthly-trends"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-dashboard/monthly-trends");
+      if (!res.ok) return FALLBACK_MONTHLY_TRENDS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_MONTHLY_TRENDS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: recentActivity = FALLBACK_RECENT_ACTIVITY } = useQuery({
+    queryKey: ["tenders-recent-activity"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-dashboard/recent-activity");
+      if (!res.ok) return FALLBACK_RECENT_ACTIVITY;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_RECENT_ACTIVITY;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const totalPipeline = pipelineStages.reduce((s, st) => s + st.value, 0);
   const activeCount = pipelineStages.slice(1, 5).reduce((s, st) => s + st.count, 0);
   const submittedCount = pipelineStages[3].count + pipelineStages[4].count;

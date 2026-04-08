@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -12,7 +14,7 @@ import {
 
 /* ── mock data ── */
 
-const activityLog = [
+const FALLBACK_ACTIVITY_LOG = [
   { date: "2026-04-08", time: "16:42", user: "יוסי כהן", action: "צפייה", doc: "DOC-301", docName: "חוזה ספק מתכת כללי", dept: "רכש", ip: "192.168.1.x", device: "Desktop", status: "הצלחה" },
   { date: "2026-04-08", time: "16:35", user: "שרה מזרחי", action: "הורדה", doc: "DOC-118", docName: "הצעת מחיר פרויקט דלתא", dept: "מכירות", ip: "192.168.2.x", device: "Desktop", status: "הצלחה" },
   { date: "2026-04-08", time: "16:28", user: "אלון גולדשטיין", action: "עריכה", doc: "DOC-205", docName: "מפרט טכני PCB-8L Rev C", dept: "הנדסה", ip: "192.168.1.x", device: "Desktop", status: "הצלחה" },
@@ -35,13 +37,13 @@ const activityLog = [
   { date: "2026-04-08", time: "10:50", user: "דוד מזרחי", action: "שינוי הרשאות", doc: "DOC-620", docName: "תעודת ISO 9001", dept: "איכות", ip: "192.168.1.x", device: "Desktop", status: "נחסם" },
 ];
 
-const suspiciousEvents = [
+const FALLBACK_SUSPICIOUS_EVENTS = [
   { id: "SEC-001", time: "03:22", user: "חשבון: admin_temp", description: "גישה לא רגילה מחוץ לשעות העבודה — ניסיון כניסה למאגר מסמכים בשעה 03:22", severity: "גבוה", type: "after-hours", ip: "192.168.9.x" },
   { id: "SEC-002", time: "14:10", user: "שרה מזרחי", description: "נפח הורדות חריג — 28 מסמכים ב-15 דקות, חריגה מממוצע יומי של 4", severity: "בינוני", type: "volume", ip: "192.168.2.x" },
   { id: "SEC-003", time: "16:05", user: "משתמש לא מזוהה", description: "ניסיון הסלמת הרשאות — בקשה לשינוי הרשאות אדמין ממשתמש בסיסי", severity: "קריטי", type: "escalation", ip: "192.168.7.x" },
 ];
 
-const topUsers = [
+const FALLBACK_TOP_USERS = [
   { name: "יוסי כהן", actions: 14, dept: "רכש" },
   { name: "שרה מזרחי", actions: 11, dept: "מכירות" },
   { name: "אלון גולדשטיין", actions: 9, dept: "הנדסה" },
@@ -49,7 +51,7 @@ const topUsers = [
   { name: "נועה פרידמן", actions: 7, dept: "תפעול" },
 ];
 
-const topDocs = [
+const FALLBACK_TOP_DOCS = [
   { doc: "DOC-301", name: "חוזה ספק מתכת כללי", views: 18 },
   { doc: "DOC-118", name: "הצעת מחיר פרויקט דלתא", views: 14 },
   { doc: "DOC-620", name: "תעודת ISO 9001", views: 12 },
@@ -57,7 +59,7 @@ const topDocs = [
   { doc: "DOC-205", name: "מפרט טכני PCB-8L Rev C", views: 9 },
 ];
 
-const peakHours = [
+const FALLBACK_PEAK_HOURS = [
   { hour: "08:00-09:00", pct: 35 }, { hour: "09:00-10:00", pct: 72 },
   { hour: "10:00-11:00", pct: 88 }, { hour: "11:00-12:00", pct: 95 },
   { hour: "12:00-13:00", pct: 40 }, { hour: "13:00-14:00", pct: 68 },
@@ -99,6 +101,18 @@ const severityBadge = (s: string) => {
 /* ── component ── */
 
 export default function DocumentAuditTrail() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["document_audit_trail"],
+    queryFn: () => authFetch("/api/documents/document-audit-trail").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const activityLog = apiData?.activityLog ?? FALLBACK_ACTIVITY_LOG;
+  const suspiciousEvents = apiData?.suspiciousEvents ?? FALLBACK_SUSPICIOUS_EVENTS;
+  const topUsers = apiData?.topUsers ?? FALLBACK_TOP_USERS;
+  const topDocs = apiData?.topDocs ?? FALLBACK_TOP_DOCS;
+  const peakHours = apiData?.peakHours ?? FALLBACK_PEAK_HOURS;
   const [tab, setTab] = useState("full");
 
   const kpis = [

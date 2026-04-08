@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +12,7 @@ import {
   Search, Plus, Download, Eye, Edit2, Trash2, Filter, Users
 } from "lucide-react";
 
-const ndaData = [
+const FALLBACK_NDA_DATA = [
   { id: "NDA-001", party: "אלומיניום הצפון בע\"מ", contact: "דוד כהן", scope: "טכנולוגיית ייצור פרופילים", signed: "2025-09-15", expiry: "2027-09-15", duration: "24 חודשים", status: "חתום", confidentiality: "גבוהה" },
   { id: "NDA-002", party: "זכוכית ים תיכון", contact: "רונית לוי", scope: "שיטות חיתוך זכוכית מחוסמת", signed: "2026-01-10", expiry: "2028-01-10", duration: "24 חודשים", status: "חתום", confidentiality: "גבוהה" },
   { id: "NDA-003", party: "מתכות הדרום בע\"מ", contact: "אלי ברק", scope: "תהליכי ריתוך מתקדמים", signed: "2025-11-20", expiry: "2026-05-20", duration: "6 חודשים", status: "ממתין לחידוש", confidentiality: "בינונית" },
@@ -36,6 +38,14 @@ const confidentialityColors: Record<string, string> = {
 };
 
 export default function NdaAgreements() {
+  const { data: ndaagreementsData } = useQuery({
+    queryKey: ["nda-agreements"],
+    queryFn: () => authFetch("/api/contracts/nda_agreements"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const ndaData = ndaagreementsData ?? FALLBACK_NDA_DATA;
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("all");

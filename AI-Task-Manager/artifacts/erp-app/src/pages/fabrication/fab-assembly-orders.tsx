@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,7 +26,7 @@ const priorityColors: Record<string, string> = {
   "נמוך": "bg-gray-500/20 text-gray-300 border-gray-500/30",
 };
 
-const assemblyOrders = [
+const FALLBACK_ASSEMBLYORDERS = [
   { id: "ASM-2026-001", product: "חלון דו-כנפי אלומיניום 180x150", qty: 24, station: "תחנה 1", operator: "יוסי כהן", start: "08/04/2026", end: "10/04/2026", status: "בתהליך", priority: "דחוף" },
   { id: "ASM-2026-002", product: "דלת כניסה מעוצבת PVC", qty: 12, station: "תחנה 3", operator: "אבי לוי", start: "08/04/2026", end: "11/04/2026", status: "בתהליך", priority: "גבוה" },
   { id: "ASM-2026-003", product: "קיר מסך זכוכית כפולה", qty: 8, station: "תחנה 5", operator: "מיכאל ברק", start: "07/04/2026", end: "12/04/2026", status: "בבקרת איכות", priority: "דחוף" },
@@ -39,7 +41,7 @@ const assemblyOrders = [
   { id: "ASM-2026-012", product: "חלון קבוע תרמי 240x180", qty: 15, station: "תחנה 4", operator: "רון אביב", start: "09/04/2026", end: "13/04/2026", status: "בתהליך", priority: "גבוה" },
 ];
 
-const stations = [
+const FALLBACK_STATIONS = [
   { name: "תחנה 1 - הרכבת חלונות", capacity: 40, currentLoad: 32, efficiency: 94, operator: "יוסי כהן", status: "פעיל", type: "חלונות" },
   { name: "תחנה 2 - הרכבה תרמית", capacity: 30, currentLoad: 26, efficiency: 88, operator: "דני שמעון", status: "פעיל", type: "בידוד תרמי" },
   { name: "תחנה 3 - הרכבת דלתות", capacity: 25, currentLoad: 22, efficiency: 91, operator: "אבי לוי", status: "פעיל", type: "דלתות" },
@@ -48,7 +50,7 @@ const stations = [
   { name: "תחנה 6 - ויטרינות ומסחרי", capacity: 10, currentLoad: 6, efficiency: 85, operator: "עמית דגן", status: "תחזוקה", type: "מסחרי" },
 ];
 
-const qualityResults = [
+const FALLBACK_QUALITYRESULTS = [
   { order: "ASM-2026-003", product: "קיר מסך זכוכית כפולה", inspector: "שרון מזרחי", date: "08/04/2026", result: "עבר", score: 96, notes: "איטום מצוין, יישור מושלם" },
   { order: "ASM-2026-010", product: "חלון דריי-קיפ 100x140", inspector: "שרון מזרחי", date: "08/04/2026", result: "עבר בתנאי", score: 82, notes: "דרוש כיוונון ציר עליון" },
   { order: "ASM-2026-005", product: "דלת מרפסת דו-כנפית", inspector: "נועה רביבו", date: "07/04/2026", result: "עבר", score: 98, notes: "איכות גבוהה, אין ליקויים" },
@@ -56,7 +58,7 @@ const qualityResults = [
   { order: "ASM-2026-011", product: "מערכת דלת אוטומטית", inspector: "שרון מזרחי", date: "05/04/2026", result: "נכשל", score: 62, notes: "חיישן תנועה לא תקין - הוחזר לתיקון" },
 ];
 
-const defectTypes = [
+const FALLBACK_DEFECTTYPES = [
   { type: "יישור לא מדויק", count: 7, pct: 28 },
   { type: "פגם באיטום", count: 5, pct: 20 },
   { type: "שריטות בזכוכית", count: 4, pct: 16 },
@@ -65,7 +67,7 @@ const defectTypes = [
   { type: "בעיית גימור", count: 2, pct: 8 },
 ];
 
-const dailySchedule = [
+const FALLBACK_DAILYSCHEDULE = [
   { time: "06:00-08:00", station: "תחנה 1", task: "הרכבת חלונות דו-כנפיים - ASM-001", workers: 3, status: "הושלם" },
   { time: "06:00-10:00", station: "תחנה 5", task: "הרכבת קיר מסך - ASM-003", workers: 4, status: "בתהליך" },
   { time: "08:00-12:00", station: "תחנה 3", task: "הרכבת דלתות כניסה - ASM-002", workers: 2, status: "בתהליך" },
@@ -75,7 +77,7 @@ const dailySchedule = [
   { time: "14:00-16:00", station: "תחנה 1", task: "הרכבת חלונות ציר - ASM-007", workers: 3, status: "ממתין" },
 ];
 
-const resourceAllocation = [
+const FALLBACK_RESOURCEALLOCATION = [
   { resource: "צוות הרכבה א'", available: 6, assigned: 5, utilization: 83 },
   { resource: "צוות הרכבה ב'", available: 5, assigned: 4, utilization: 80 },
   { resource: "צוות קירות מסך", available: 4, assigned: 4, utilization: 100 },
@@ -93,6 +95,47 @@ const kpis = [
 ];
 
 export default function FabAssemblyOrders() {
+  const { data: apiassemblyOrders } = useQuery({
+    queryKey: ["/api/fabrication/fab-assembly-orders/assemblyorders"],
+    queryFn: () => authFetch("/api/fabrication/fab-assembly-orders/assemblyorders").then(r => r.json()).catch(() => null),
+  });
+  const assemblyOrders = Array.isArray(apiassemblyOrders) ? apiassemblyOrders : (apiassemblyOrders?.data ?? apiassemblyOrders?.items ?? FALLBACK_ASSEMBLYORDERS);
+
+
+  const { data: apistations } = useQuery({
+    queryKey: ["/api/fabrication/fab-assembly-orders/stations"],
+    queryFn: () => authFetch("/api/fabrication/fab-assembly-orders/stations").then(r => r.json()).catch(() => null),
+  });
+  const stations = Array.isArray(apistations) ? apistations : (apistations?.data ?? apistations?.items ?? FALLBACK_STATIONS);
+
+
+  const { data: apiqualityResults } = useQuery({
+    queryKey: ["/api/fabrication/fab-assembly-orders/qualityresults"],
+    queryFn: () => authFetch("/api/fabrication/fab-assembly-orders/qualityresults").then(r => r.json()).catch(() => null),
+  });
+  const qualityResults = Array.isArray(apiqualityResults) ? apiqualityResults : (apiqualityResults?.data ?? apiqualityResults?.items ?? FALLBACK_QUALITYRESULTS);
+
+
+  const { data: apidefectTypes } = useQuery({
+    queryKey: ["/api/fabrication/fab-assembly-orders/defecttypes"],
+    queryFn: () => authFetch("/api/fabrication/fab-assembly-orders/defecttypes").then(r => r.json()).catch(() => null),
+  });
+  const defectTypes = Array.isArray(apidefectTypes) ? apidefectTypes : (apidefectTypes?.data ?? apidefectTypes?.items ?? FALLBACK_DEFECTTYPES);
+
+
+  const { data: apidailySchedule } = useQuery({
+    queryKey: ["/api/fabrication/fab-assembly-orders/dailyschedule"],
+    queryFn: () => authFetch("/api/fabrication/fab-assembly-orders/dailyschedule").then(r => r.json()).catch(() => null),
+  });
+  const dailySchedule = Array.isArray(apidailySchedule) ? apidailySchedule : (apidailySchedule?.data ?? apidailySchedule?.items ?? FALLBACK_DAILYSCHEDULE);
+
+
+  const { data: apiresourceAllocation } = useQuery({
+    queryKey: ["/api/fabrication/fab-assembly-orders/resourceallocation"],
+    queryFn: () => authFetch("/api/fabrication/fab-assembly-orders/resourceallocation").then(r => r.json()).catch(() => null),
+  });
+  const resourceAllocation = Array.isArray(apiresourceAllocation) ? apiresourceAllocation : (apiresourceAllocation?.data ?? apiresourceAllocation?.items ?? FALLBACK_RESOURCEALLOCATION);
+
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("orders");
   const [statusFilter, setStatusFilter] = useState("all");

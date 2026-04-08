@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +22,7 @@ const STAGES = [
   { key: "packing", name: "אריזה", icon: Package, color: "text-green-400", bg: "bg-green-500" },
 ];
 
-const orders = [
+const FALLBACK_ORDERS = [
   { id: "WO-6001", product: "חלונות אלומיניום - מגדלי הים", qty: 240, currentStage: "welding", progress: 35, priority: "גבוהה", client: "שיכון ובינוי", startTime: "06:30" },
   { id: "WO-6002", product: "מעטפת זכוכית - עזריאלי", qty: 86, currentStage: "cutting", progress: 15, priority: "דחוף", client: "קבוצת עזריאלי", startTime: "07:00" },
   { id: "WO-6003", product: "דלתות מאובטחות - משהב״ט", qty: 52, currentStage: "assembly", progress: 58, priority: "גבוהה", client: "משרד הביטחון", startTime: "05:45" },
@@ -37,7 +39,7 @@ const priorityColors: Record<string, string> = {
   "רגילה": "bg-green-500/20 text-green-400 border-green-500/30",
 };
 
-const stationStats = [
+const FALLBACK_STATIONSTATS = [
   { stage: "חיתוך", active: 2, capacity: 3, utilization: 67, avgCycle: "45 דק׳" },
   { stage: "ריתוך", active: 2, capacity: 2, utilization: 100, avgCycle: "62 דק׳" },
   { stage: "הרכבה", active: 1, capacity: 2, utilization: 50, avgCycle: "38 דק׳" },
@@ -47,6 +49,19 @@ const stationStats = [
 ];
 
 export default function WorkflowTracker() {
+  const { data: apiorders } = useQuery({
+    queryKey: ["/api/fabrication/workflow-tracker/orders"],
+    queryFn: () => authFetch("/api/fabrication/workflow-tracker/orders").then(r => r.json()).catch(() => null),
+  });
+  const orders = Array.isArray(apiorders) ? apiorders : (apiorders?.data ?? apiorders?.items ?? FALLBACK_ORDERS);
+
+
+  const { data: apistationStats } = useQuery({
+    queryKey: ["/api/fabrication/workflow-tracker/stationstats"],
+    queryFn: () => authFetch("/api/fabrication/workflow-tracker/stationstats").then(r => r.json()).catch(() => null),
+  });
+  const stationStats = Array.isArray(apistationStats) ? apistationStats : (apistationStats?.data ?? apistationStats?.items ?? FALLBACK_STATIONSTATS);
+
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState("all");
 

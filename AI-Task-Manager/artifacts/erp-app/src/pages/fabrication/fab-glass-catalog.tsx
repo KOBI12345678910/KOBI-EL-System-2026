@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +14,7 @@ import {
 } from "lucide-react";
 
 /* ── Glass Catalog Data ─────────────────────────────────────────────── */
-const glassCatalog = [
+const FALLBACK_GLASSCATALOG = [
   { id: 1, name: "פלואט שקוף 4 מ\"מ", type: "פלואט", thickness: 4, weight: 10, uValue: 5.8, stockM2: 1240, priceM2: 38, status: "תקין", color: "שקוף" },
   { id: 2, name: "פלואט שקוף 5 מ\"מ", type: "פלואט", thickness: 5, weight: 12.5, uValue: 5.7, stockM2: 980, priceM2: 45, status: "תקין", color: "שקוף" },
   { id: 3, name: "פלואט שקוף 6 מ\"מ", type: "פלואט", thickness: 6, weight: 15, uValue: 5.6, stockM2: 1560, priceM2: 52, status: "תקין", color: "שקוף" },
@@ -31,7 +33,7 @@ const glassCatalog = [
   { id: 16, name: "דוגמתית (פטרן) 4 מ\"מ", type: "דוגמתית", thickness: 4, weight: 10, uValue: 5.7, stockM2: 280, priceM2: 65, status: "נמוך", color: "שקוף" },
 ];
 
-const iguConfigs = [
+const FALLBACK_IGUCONFIGS = [
   { id: 1, name: "4-12-4", outer: 4, spacer: 12, inner: 4, totalMm: 20, spacerType: "אלומיניום", gasFill: "אוויר", uValue: 2.8, weight: 20, priceM2: 145, popularity: 92 },
   { id: 2, name: "4-16-4", outer: 4, spacer: 16, inner: 4, totalMm: 24, spacerType: "אלומיניום", gasFill: "אוויר", uValue: 2.7, weight: 20, priceM2: 155, popularity: 85 },
   { id: 3, name: "6-12-6", outer: 6, spacer: 12, inner: 6, totalMm: 24, spacerType: "אלומיניום", gasFill: "אוויר", uValue: 2.7, weight: 30, priceM2: 185, popularity: 78 },
@@ -42,7 +44,7 @@ const iguConfigs = [
   { id: 8, name: "6-16-6 מחוסם", outer: 6, spacer: 16, inner: 6, totalMm: 28, spacerType: "Warm Edge", gasFill: "ארגון", uValue: 1.3, weight: 30, priceM2: 340, popularity: 72 },
 ];
 
-const stockItems = [
+const FALLBACK_STOCKITEMS = [
   { type: "פלואט 4 מ\"מ", inStock: 1240, minLevel: 500, incoming: 800, monthlyUse: 420, eta: "12/04" },
   { type: "פלואט 6 מ\"מ", inStock: 1560, minLevel: 600, incoming: 0, monthlyUse: 520, eta: "-" },
   { type: "מחוסם 6 מ\"מ", inStock: 2100, minLevel: 800, incoming: 500, monthlyUse: 680, eta: "18/04" },
@@ -54,7 +56,7 @@ const stockItems = [
   { type: "חלבית", inStock: 650, minLevel: 250, incoming: 0, monthlyUse: 160, eta: "-" },
 ];
 
-const suppliers = [
+const FALLBACK_SUPPLIERS = [
   { id: 1, name: "זכוכית ישראל בע\"מ", region: "חיפה", types: "פלואט, מחוסם", leadDays: 5, priceIndex: 98, quality: 4.8, onTime: 96, orders: 24, volume: 8400 },
   { id: 2, name: "Guardian Industries", region: "יבוא - ארה\"ב", types: "Low-E, מחוסם", leadDays: 21, priceIndex: 105, quality: 4.9, onTime: 92, orders: 12, volume: 5200 },
   { id: 3, name: "AGC Glass Europe", region: "יבוא - בלגיה", types: "למינציה, Low-E, צבועה", leadDays: 18, priceIndex: 112, quality: 4.7, onTime: 88, orders: 8, volume: 3800 },
@@ -69,6 +71,33 @@ const SC: Record<string, string> = {
 
 /* ── Component ──────────────────────────────────────────────────────── */
 export default function FabGlassCatalog() {
+  const { data: apiglassCatalog } = useQuery({
+    queryKey: ["/api/fabrication/fab-glass-catalog/glasscatalog"],
+    queryFn: () => authFetch("/api/fabrication/fab-glass-catalog/glasscatalog").then(r => r.json()).catch(() => null),
+  });
+  const glassCatalog = Array.isArray(apiglassCatalog) ? apiglassCatalog : (apiglassCatalog?.data ?? apiglassCatalog?.items ?? FALLBACK_GLASSCATALOG);
+
+
+  const { data: apiiguConfigs } = useQuery({
+    queryKey: ["/api/fabrication/fab-glass-catalog/iguconfigs"],
+    queryFn: () => authFetch("/api/fabrication/fab-glass-catalog/iguconfigs").then(r => r.json()).catch(() => null),
+  });
+  const iguConfigs = Array.isArray(apiiguConfigs) ? apiiguConfigs : (apiiguConfigs?.data ?? apiiguConfigs?.items ?? FALLBACK_IGUCONFIGS);
+
+
+  const { data: apistockItems } = useQuery({
+    queryKey: ["/api/fabrication/fab-glass-catalog/stockitems"],
+    queryFn: () => authFetch("/api/fabrication/fab-glass-catalog/stockitems").then(r => r.json()).catch(() => null),
+  });
+  const stockItems = Array.isArray(apistockItems) ? apistockItems : (apistockItems?.data ?? apistockItems?.items ?? FALLBACK_STOCKITEMS);
+
+
+  const { data: apisuppliers } = useQuery({
+    queryKey: ["/api/fabrication/fab-glass-catalog/suppliers"],
+    queryFn: () => authFetch("/api/fabrication/fab-glass-catalog/suppliers").then(r => r.json()).catch(() => null),
+  });
+  const suppliers = Array.isArray(apisuppliers) ? apisuppliers : (apisuppliers?.data ?? apisuppliers?.items ?? FALLBACK_SUPPLIERS);
+
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [tab, setTab] = useState("catalog");

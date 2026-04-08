@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,7 +16,7 @@ const fmtPct = (v: number) => `${v > 0 ? "+" : ""}${v.toFixed(1)}%`;
 
 /* ─── Static Data ─── */
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: 'סה"כ הוצאות חומרי גלם', value: 2_847_500, icon: DollarSign, color: "from-blue-600 to-blue-800" },
   { label: "שינוי עלות ממוצע", value: 4.7, icon: TrendingUp, color: "from-amber-600 to-amber-800", isPct: true },
   { label: "פריט עם עלייה גבוהה", value: "פלדה אל-חלד 304", icon: AlertTriangle, color: "from-red-600 to-red-800", isText: true },
@@ -23,7 +25,7 @@ const kpis = [
   { label: "ערך שחזור גרוטאות", value: 43_600, icon: Recycle, color: "from-cyan-600 to-cyan-800" },
 ];
 
-const categoryData = [
+const FALLBACK_CATEGORY_DATA = [
   { name: "מתכות", spend: 1_124_000, pct: 39.5 },
   { name: "פולימרים ופלסטיק", spend: 498_200, pct: 17.5 },
   { name: "רכיבים אלקטרוניים", spend: 384_600, pct: 13.5 },
@@ -34,7 +36,7 @@ const categoryData = [
   { name: 'חומ"ס ושונות', spend: 100_000, pct: 3.5 },
 ];
 
-const priceComparison = [
+const FALLBACK_PRICE_COMPARISON = [
   { item: "פלדה אל-חלד 304", unit: "ק\"ג", sup1: "מתכות הצפון", p1: 38.5, sup2: "פלדות ישראל", p2: 41.2, sup3: "Steel-Pro", p3: 40.0 },
   { item: "אלומיניום 6061", unit: "ק\"ג", sup1: "מתכות הצפון", p1: 28.0, sup2: "אלו-מט", p2: 26.5, sup3: "Metal-X", p3: 29.3 },
   { item: "נחושת C110", unit: "ק\"ג", sup1: "קופר-טק", p1: 64.0, sup2: "מתכות הדרום", p2: 67.5, sup3: "פלדות ישראל", p3: 65.8 },
@@ -46,7 +48,7 @@ const priceComparison = [
   { item: "חוט ריתוך MIG", unit: "ק\"ג", sup1: "ריתוך בע\"מ", p1: 32.0, sup2: "Weld-X", p2: 34.5, sup3: "סולדר-פרו", p3: 31.0 },
 ];
 
-const trendData = [
+const FALLBACK_TREND_DATA = [
   { item: "פלדה אל-חלד 304", oct: 34.2, nov: 35.0, dec: 36.1, jan: 37.0, feb: 37.8, mar: 38.5, change: 12.6 },
   { item: "אלומיניום 6061", oct: 27.0, nov: 26.5, dec: 27.2, jan: 27.8, feb: 28.0, mar: 28.0, change: 3.7 },
   { item: "נחושת C110", oct: 68.0, nov: 66.5, dec: 65.0, jan: 64.8, feb: 64.2, mar: 64.0, change: -5.9 },
@@ -58,7 +60,7 @@ const trendData = [
   { item: "חוט ריתוך MIG", oct: 30.0, nov: 30.5, dec: 31.0, jan: 31.5, feb: 31.8, mar: 32.0, change: 6.7 },
 ];
 
-const wasteData = [
+const FALLBACK_WASTE_DATA = [
   { material: "פלדה אל-חלד 304", wastePct: 8.2, wasteKg: 3_280, scrapValue: 18_700, netCost: 105_900 },
   { material: "אלומיניום 6061", wastePct: 6.5, wasteKg: 1_950, scrapValue: 9_200, netCost: 45_400 },
   { material: "נחושת C110", wastePct: 4.8, wasteKg: 480, scrapValue: 8_640, netCost: 22_100 },
@@ -73,6 +75,14 @@ const wasteData = [
 const months6 = ["אוק'", "נוב'", "דצמ'", "ינו'", "פבר'", "מרץ"];
 
 export default function CostAnalysis() {
+  const { data: costanalysisData } = useQuery({
+    queryKey: ["cost-analysis"],
+    queryFn: () => authFetch("/api/procurement/cost_analysis"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = costanalysisData ?? FALLBACK_KPIS;
+
   const [tab, setTab] = useState("categories");
 
   return (

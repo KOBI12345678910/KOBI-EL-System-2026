@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -60,7 +62,7 @@ interface ServiceCase {
   handoverStatus: string;
 }
 
-const cases: ServiceCase[] = [
+const FALLBACK_CASES: ServiceCase[] = [
   { id: "SRV-301", customer: '\u05D0\u05DC\u05D5\u05DF \u05DE\u05E2\u05E8\u05DB\u05D5\u05EA \u05D1\u05E2"\u05DE', project: "\u05DE\u05D2\u05D3\u05DC \u05DE\u05E9\u05E8\u05D3\u05D9\u05DD \u05E8\u05DE\u05EA \u05D2\u05DF", installationId: "INS-1180", faultType: "\u05E0\u05D6\u05D9\u05DC\u05D4", description: "\u05E0\u05D6\u05D9\u05DC\u05D4 \u05DE\u05EA\u05D7\u05EA \u05DC\u05DE\u05E1\u05D2\u05E8\u05EA \u05D7\u05DC\u05D5\u05DF \u05D0\u05DC\u05D5\u05DE\u05D9\u05E0\u05D9\u05D5\u05DD \u05D1\u05E7\u05D5\u05DE\u05D4 3", urgency: "critical", technician: "\u05D9\u05D5\u05E1\u05D9 \u05DB\u05D4\u05DF", slaTarget: "4 \u05E9\u05E2\u05D5\u05EA", slaStatus: "breached", status: "repairing", openDate: "2026-04-05", daysOpen: 3, installationDate: "2025-11-12", installationCrew: "\u05E6\u05D5\u05D5\u05EA \u05D0\u05DC\u05E3", handoverStatus: "\u05D4\u05D5\u05E9\u05DC\u05DD" },
   { id: "SRV-302", customer: '\u05E0\u05D3\u05DC"\u05DF \u05E6\u05E4\u05D5\u05DF', project: "\u05E4\u05E8\u05D5\u05D9\u05E7\u05D8 \u05DE\u05D2\u05D5\u05E8\u05D9 \u05E7\u05E8\u05D9\u05D9\u05EA \u05D9\u05DD", installationId: "INS-1195", faultType: "\u05D0\u05D9\u05D8\u05D5\u05DD", description: "\u05D0\u05D9\u05D8\u05D5\u05DD \u05DC\u05E7\u05D5\u05D9 \u05D1\u05D7\u05DC\u05D5\u05DF \u05E1\u05DC\u05D5\u05DF \u05DE\u05E8\u05DB\u05D6\u05D9", urgency: "urgent", technician: "\u05DE\u05D5\u05D8\u05D9 \u05DC\u05D5\u05D9", slaTarget: "8 \u05E9\u05E2\u05D5\u05EA", slaStatus: "on_time", status: "diagnosing", openDate: "2026-04-07", daysOpen: 1, installationDate: "2026-01-20", installationCrew: "\u05E6\u05D5\u05D5\u05EA \u05D1\u05D9\u05EA", handoverStatus: "\u05D4\u05D5\u05E9\u05DC\u05DD" },
   { id: "SRV-303", customer: "\u05E7\u05D9\u05D1\u05D5\u05E5 \u05D3\u05D2\u05E0\u05D9\u05D4", project: "\u05E9\u05D3\u05E8\u05D5\u05D2 \u05D7\u05D3\u05E8 \u05D0\u05D5\u05DB\u05DC", installationId: "INS-1142", faultType: "\u05E0\u05E2\u05D9\u05DC\u05D4", description: "\u05DE\u05E0\u05E2\u05D5\u05DC \u05E9\u05E2\u05E8 \u05D7\u05E9\u05DE\u05DC\u05D9 \u05DC\u05D0 \u05E0\u05E0\u05E2\u05DC \u05D1\u05E9\u05DC\u05D8", urgency: "critical", technician: "\u05D0\u05D1\u05D9 \u05D3\u05D5\u05D3", slaTarget: "4 \u05E9\u05E2\u05D5\u05EA", slaStatus: "on_time", status: "en_route", openDate: "2026-04-08", daysOpen: 0, installationDate: "2025-08-05", installationCrew: "\u05E6\u05D5\u05D5\u05EA \u05D0\u05DC\u05E3", handoverStatus: "\u05D4\u05D5\u05E9\u05DC\u05DD" },
@@ -79,7 +81,7 @@ const cases: ServiceCase[] = [
 ];
 
 /* Detail data for case SRV-301 (expanded view) */
-const detailTimeline = [
+const FALLBACK_DETAIL_TIMELINE = [
   { time: "2026-04-05 08:12", event: "\u05E7\u05E8\u05D9\u05D0\u05D4 \u05E0\u05E4\u05EA\u05D7\u05D4 \u05E2\"\u05D9 \u05DC\u05E7\u05D5\u05D7", by: "\u05D3\u05E0\u05D9\u05D0\u05DC \u05D0\u05DC\u05D5\u05DF" },
   { time: "2026-04-05 08:30", event: "\u05E9\u05D5\u05D1\u05E6\u05D4 \u05DC\u05D8\u05DB\u05E0\u05D0\u05D9 \u05D9\u05D5\u05E1\u05D9 \u05DB\u05D4\u05DF", by: "\u05DE\u05E2\u05E8\u05DB\u05EA" },
   { time: "2026-04-05 10:00", event: "\u05D8\u05DB\u05E0\u05D0\u05D9 \u05D9\u05E6\u05D0 \u05DC\u05D0\u05EA\u05E8", by: "\u05D9\u05D5\u05E1\u05D9 \u05DB\u05D4\u05DF" },
@@ -89,7 +91,7 @@ const detailTimeline = [
   { time: "2026-04-07 16:30", event: "\u05EA\u05D9\u05E7\u05D5\u05DF \u05D4\u05D5\u05E9\u05DC\u05DD, \u05DE\u05DE\u05EA\u05D9\u05DF \u05DC\u05D0\u05D9\u05E9\u05D5\u05E8 \u05DC\u05E7\u05D5\u05D7", by: "\u05D9\u05D5\u05E1\u05D9 \u05DB\u05D4\u05DF" },
 ];
 
-const detailParts = [
+const FALLBACK_DETAIL_PARTS = [
   { part: "\u05D2\u05D5\u05DE\u05D9\u05D9\u05EA \u05D0\u05D9\u05D8\u05D5\u05DD 5x3000mm", qty: 2, cost: 85 },
   { part: "\u05E1\u05D9\u05DC\u05D9\u05E7\u05D5\u05DF \u05D7\u05D9\u05E6\u05D5\u05E0\u05D9 \u05E9\u05E7\u05D5\u05E3", qty: 1, cost: 120 },
   { part: "\u05D1\u05D5\u05E8\u05D2 \u05E4\u05DC\u05D3\u05D4 M8", qty: 4, cost: 15 },
@@ -105,6 +107,14 @@ const waitingPart = cases.filter(c => c.status === "waiting_part").length;
 const slaBreaches = cases.filter(c => c.slaStatus === "breached").length;
 
 export default function ServiceCases() {
+  const { data: servicecasesData } = useQuery({
+    queryKey: ["service-cases"],
+    queryFn: () => authFetch("/api/service/service_cases"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const cases = servicecasesData ?? FALLBACK_CASES;
+
   const [activeTab, setActiveTab] = useState("all");
   const [expandedCase, setExpandedCase] = useState<string | null>(null);
 

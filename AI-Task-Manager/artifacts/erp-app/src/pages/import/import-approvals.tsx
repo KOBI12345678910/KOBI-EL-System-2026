@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,7 +10,7 @@ import {
 } from "lucide-react";
 
 // ── Approval types ───────────────────────────────────────────────────
-const approvalTypes = [
+const FALLBACK_APPROVAL_TYPES = [
   { key: "import_order", label: "הזמנות יבוא", icon: FileText, color: "text-blue-400", bg: "bg-blue-500/10", pending: 3 },
   { key: "foreign_payment", label: "תשלומים לחו\"ל", icon: DollarSign, color: "text-emerald-400", bg: "bg-emerald-500/10", pending: 2 },
   { key: "customs_cost", label: "עלויות מכס", icon: ShieldAlert, color: "text-amber-400", bg: "bg-amber-500/10", pending: 2 },
@@ -17,7 +19,7 @@ const approvalTypes = [
 ];
 
 // ── Pending approvals ────────────────────────────────────────────────
-const pendingApprovals = [
+const FALLBACK_PENDING_APPROVALS = [
   { id: "APR-1001", type: "הזמנות יבוא", ref: "PO-5501", amount: "$48,200", requester: "דני כהן", urgency: "גבוהה", status: "pending", date: "2026-04-06" },
   { id: "APR-1002", type: "תשלומים לחו\"ל", ref: "PAY-7720", amount: "$32,500", requester: "מירב לוי", urgency: "בינונית", status: "pending", date: "2026-04-07" },
   { id: "APR-1003", type: "עלויות מכס", ref: "CUS-3301", amount: "₪82,000", requester: "אבי ישראלי", urgency: "גבוהה", status: "pending", date: "2026-04-07" },
@@ -30,7 +32,7 @@ const pendingApprovals = [
   { id: "APR-1010", type: "שחרור סחורה", ref: "REL-881", amount: "₪195,000", requester: "שמעון דוד", urgency: "קריטית", status: "pending", date: "2026-04-08" },
 ];
 
-const approvedItems = [
+const FALLBACK_APPROVED_ITEMS = [
   { id: "APR-0991", type: "הזמנות יבוא", ref: "PO-5498", amount: "$65,000", requester: "דני כהן", urgency: "גבוהה", status: "approved", date: "2026-04-03", approvedBy: "עוזי אל" },
   { id: "APR-0992", type: "תשלומים לחו\"ל", ref: "PAY-7715", amount: "$41,200", requester: "מירב לוי", urgency: "בינונית", status: "approved", date: "2026-04-02", approvedBy: "עוזי אל" },
   { id: "APR-0993", type: "עלויות מכס", ref: "CUS-3298", amount: "₪73,000", requester: "אבי ישראלי", urgency: "גבוהה", status: "approved", date: "2026-04-01", approvedBy: "רונן שפירא" },
@@ -38,7 +40,7 @@ const approvedItems = [
   { id: "APR-0995", type: "הזמנות יבוא", ref: "PO-5497", amount: "$33,700", requester: "יוסי חדד", urgency: "נמוכה", status: "approved", date: "2026-03-30", approvedBy: "רונן שפירא" },
 ];
 
-const rejectedItems = [
+const FALLBACK_REJECTED_ITEMS = [
   { id: "APR-0988", type: "חיובים חריגים", ref: "EXC-435", amount: "₪28,000", requester: "רותי בר", urgency: "בינונית", status: "rejected", date: "2026-03-28", reason: "חריגה מתקציב — דרוש אישור מנכ\"ל" },
   { id: "APR-0989", type: "תשלומים לחו\"ל", ref: "PAY-7710", amount: "$18,500", requester: "מירב לוי", urgency: "נמוכה", status: "rejected", date: "2026-03-29", reason: "מסמכים חסרים — חשבונית ספק לא צורפה" },
   { id: "APR-0990", type: "הזמנות יבוא", ref: "PO-5495", amount: "$120,000", requester: "דני כהן", urgency: "גבוהה", status: "rejected", date: "2026-03-27", reason: "ספק לא עמד בתנאי אשראי" },
@@ -64,6 +66,55 @@ const statusBadge = (s: string) => {
 };
 
 export default function ImportApprovals() {
+  const { data: approvalTypes = FALLBACK_APPROVAL_TYPES } = useQuery({
+    queryKey: ["import-approval-types"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-approvals/approval-types");
+      if (!res.ok) return FALLBACK_APPROVAL_TYPES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_APPROVAL_TYPES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: pendingApprovals = FALLBACK_PENDING_APPROVALS } = useQuery({
+    queryKey: ["import-pending-approvals"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-approvals/pending-approvals");
+      if (!res.ok) return FALLBACK_PENDING_APPROVALS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_PENDING_APPROVALS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: approvedItems = FALLBACK_APPROVED_ITEMS } = useQuery({
+    queryKey: ["import-approved-items"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-approvals/approved-items");
+      if (!res.ok) return FALLBACK_APPROVED_ITEMS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_APPROVED_ITEMS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: rejectedItems = FALLBACK_REJECTED_ITEMS } = useQuery({
+    queryKey: ["import-rejected-items"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-approvals/rejected-items");
+      if (!res.ok) return FALLBACK_REJECTED_ITEMS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_REJECTED_ITEMS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div className="p-6 space-y-6" dir="rtl">
       {/* ── Header ──────────────────────────────────────────────── */}

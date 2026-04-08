@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,7 +13,7 @@ import {
 
 const fmt = (v: number) => new Intl.NumberFormat("he-IL").format(v);
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "בדיקות היום", value: "24", sub: "פריטים נבדקו", icon: ClipboardCheck, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "אחוז עוברים", value: "91.7%", sub: "מתוך 24 בדיקות", icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/10" },
   { label: "פריטים נכשלו", value: "2", sub: "דורשים טיפול", icon: XCircle, color: "text-red-400", bg: "bg-red-500/10" },
@@ -31,7 +33,7 @@ const defectColors: Record<DefectType, string> = {
   "אריזה פגומה": "bg-teal-500/20 text-teal-400 border-teal-500/30",
 };
 
-const inspections = [
+const FALLBACK_INSPECTIONS = [
   { id: "QC-001", po: "PO-000461", supplier: "Foshan Glass Co.", item: "זכוכית מחוסמת 10מ״מ", qtyInspected: 120, qtyPassed: 118, qtyFailed: 2, defect: "סדק" as DefectType, inspector: "יוסי כהן", result: "עבר" },
   { id: "QC-002", po: "PO-000462", supplier: "Schüco International", item: "פרופיל אלומיניום 6060", qtyInspected: 300, qtyPassed: 300, qtyFailed: 0, defect: null, inspector: "שרה לוי", result: "עבר" },
   { id: "QC-003", po: "PO-000463", supplier: "מפעלי ברזל השרון", item: "פלדה מגולוונת 2מ״מ", qtyInspected: 80, qtyPassed: 74, qtyFailed: 6, defect: "שריטה" as DefectType, inspector: "דוד מזרחי", result: "נכשל" },
@@ -42,7 +44,7 @@ const inspections = [
   { id: "QC-008", po: "PO-000468", supplier: "מפעלי ברזל השרון", item: "ברזל בניין 12מ״מ", qtyInspected: 450, qtyPassed: 444, qtyFailed: 6, defect: "אריזה פגומה" as DefectType, inspector: "נועה פרידמן", result: "עבר" },
 ];
 
-const defectsByType: { type: DefectType; count: number; pct: number }[] = [
+const FALLBACK_DEFECTS_BY_TYPE: { type: DefectType; count: number; pct: number }[] = [
   { type: "סדק", count: 14, pct: 25.5 },
   { type: "שריטה", count: 11, pct: 20.0 },
   { type: "מידה לא תואמת", count: 10, pct: 18.2 },
@@ -51,7 +53,7 @@ const defectsByType: { type: DefectType; count: number; pct: number }[] = [
   { type: "צבע שונה", count: 5, pct: 9.1 },
 ];
 
-const defectsBySupplier = [
+const FALLBACK_DEFECTS_BY_SUPPLIER = [
   { supplier: "מפעלי ברזל השרון", defects: 18, inspected: 530, rate: 3.4, topDefect: "שריטה" as DefectType },
   { supplier: "אלום-טק בע״מ", defects: 15, inspected: 1000, rate: 1.5, topDefect: "מידה לא תואמת" as DefectType },
   { supplier: "Foshan Glass Co.", defects: 12, inspected: 380, rate: 3.2, topDefect: "סדק" as DefectType },
@@ -60,7 +62,7 @@ const defectsBySupplier = [
   { supplier: "Schüco International", defects: 2, inspected: 2300, rate: 0.1, topDefect: "שריטה" as DefectType },
 ];
 
-const supplierRanking = [
+const FALLBACK_SUPPLIER_RANKING = [
   { supplier: "Schüco International", score: 98.2, defectRate: 0.1, inspections: 2300, trend: "up" },
   { supplier: "Alumil SA", score: 95.8, defectRate: 1.1, inspections: 700, trend: "up" },
   { supplier: "תעשיות זכוכית ים", score: 94.5, defectRate: 1.1, inspections: 350, trend: "stable" },
@@ -69,7 +71,7 @@ const supplierRanking = [
   { supplier: "מפעלי ברזל השרון", score: 84.6, defectRate: 3.4, inspections: 530, trend: "down" },
 ];
 
-const returns = [
+const FALLBACK_RETURNS = [
   { id: "RMA-001", date: "2026-04-07", supplier: "מפעלי ברזל השרון", item: "פלדה מגולוונת 2מ״מ", qty: 6, reason: "שריטות עמוקות על 7.5% מהמשלוח", status: "נשלח לספק" },
   { id: "RMA-002", date: "2026-04-06", supplier: "אלום-טק בע״מ", item: "חיבורי פינה 90°", qty: 15, reason: "מידות חורגות מטולרנס ±0.5מ״מ", status: "ממתין לאישור" },
   { id: "RMA-003", date: "2026-04-05", supplier: "Foshan Glass Co.", item: "זכוכית מחוסמת 10מ״מ", qty: 2, reason: "סדקים מיקרוסקופיים בשולי הזכוכית", status: "זיכוי התקבל" },
@@ -108,6 +110,14 @@ const scoreColor = (score: number) => {
 const TH = "text-right text-[10px] font-semibold";
 
 export default function QualityControl() {
+  const { data: qualitycontrolData } = useQuery({
+    queryKey: ["quality-control"],
+    queryFn: () => authFetch("/api/procurement/quality_control"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = qualitycontrolData ?? FALLBACK_KPIS;
+
   const [tab, setTab] = useState("inspections");
 
   return (

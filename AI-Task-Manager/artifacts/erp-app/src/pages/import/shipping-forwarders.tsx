@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -5,14 +7,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Ship, Users, Truck, Briefcase, DollarSign, Clock, Award, Star, TrendingUp, TrendingDown } from "lucide-react";
 
-const submodules = [
+const FALLBACK_SUBMODULES = [
   "forwarders_list", "profiles", "carriers", "customs_brokers",
   "shipping_quotes", "route_comparisons", "freight_cost_history", "performance",
 ] as const;
 
 const fmt = (v: number) => "$" + v.toLocaleString("en-US");
 
-const forwarders = [
+const FALLBACK_FORWARDERS = [
   { id: "FWD-001", name: "גלובל לוגיסטיקה בע\"מ", country: "ישראל", routes: "אסיה, אירופה", shipments: 42, rating: 4.7, avgCost: 3800, onTime: 94, status: "active" },
   { id: "FWD-002", name: "MSC Israel", country: "שוויץ/ישראל", routes: "אסיה, אמריקה", shipments: 38, rating: 4.5, avgCost: 4200, onTime: 91, status: "active" },
   { id: "FWD-003", name: "Maersk Logistics", country: "דנמרק", routes: "עולמי", shipments: 56, rating: 4.8, avgCost: 4600, onTime: 96, status: "preferred" },
@@ -23,7 +25,7 @@ const forwarders = [
   { id: "FWD-008", name: "Orian Group", country: "ישראל", routes: "אסיה, אירופה", shipments: 35, rating: 4.2, avgCost: 3600, onTime: 87, status: "active" },
 ];
 
-const carriers = [
+const FALLBACK_CARRIERS = [
   { id: "CRR-001", name: "MSC Mediterranean", type: "ימי", vessels: 12, routes: "Far East - Ashdod", transitDays: 22, reliability: 92, cost: 3200 },
   { id: "CRR-002", name: "Maersk Line", type: "ימי", vessels: 18, routes: "EU - Haifa", transitDays: 14, reliability: 96, cost: 3800 },
   { id: "CRR-003", name: "ZIM Shipping", type: "ימי", vessels: 8, routes: "Asia - Ashdod", transitDays: 20, reliability: 93, cost: 2900 },
@@ -34,7 +36,7 @@ const carriers = [
   { id: "CRR-008", name: "Evergreen Marine", type: "ימי", vessels: 6, routes: "Asia - Haifa", transitDays: 25, reliability: 88, cost: 2700 },
 ];
 
-const brokers = [
+const FALLBACK_BROKERS = [
   { id: "BRK-001", name: "שמעון סחר בע\"מ", license: "IL-5521", specialization: "אלומיניום, זכוכית", activeEntries: 12, avgClearTime: 3.2, successRate: 98, monthlyFee: 4500 },
   { id: "BRK-002", name: "גלובל קלירנס", license: "IL-4418", specialization: "כימיקלים, חומרי גלם", activeEntries: 8, avgClearTime: 4.1, successRate: 95, monthlyFee: 3800 },
   { id: "BRK-003", name: "יבוא ישיר בע\"מ", license: "IL-6632", specialization: "מערכות, מכונות", activeEntries: 6, avgClearTime: 3.8, successRate: 96, monthlyFee: 4200 },
@@ -43,7 +45,7 @@ const brokers = [
   { id: "BRK-006", name: "מכס פלוס בע\"מ", license: "IL-2291", specialization: "אלקטרוניקה, רכיבים", activeEntries: 5, avgClearTime: 4.5, successRate: 93, monthlyFee: 3500 },
 ];
 
-const performanceData = [
+const FALLBACK_PERFORMANCE_DATA = [
   { name: "Maersk Logistics", type: "ספדיטור", onTime: 96, costScore: 78, reliability: 97, communication: 95, overall: 94, rank: 1, trend: "up" },
   { name: "ZIM Integrated", type: "ספדיטור", onTime: 93, costScore: 88, reliability: 94, communication: 90, overall: 92, rank: 2, trend: "up" },
   { name: "אל-עמיל מכס", type: "עמיל", onTime: 99, costScore: 72, reliability: 98, communication: 93, overall: 91, rank: 3, trend: "stable" },
@@ -86,6 +88,67 @@ const rankBadge = (r: number) => {
 };
 
 export default function ShippingForwarders() {
+  const { data: submodules = FALLBACK_SUBMODULES } = useQuery({
+    queryKey: ["import-submodules"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/shipping-forwarders/submodules");
+      if (!res.ok) return FALLBACK_SUBMODULES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SUBMODULES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: forwarders = FALLBACK_FORWARDERS } = useQuery({
+    queryKey: ["import-forwarders"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/shipping-forwarders/forwarders");
+      if (!res.ok) return FALLBACK_FORWARDERS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_FORWARDERS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: carriers = FALLBACK_CARRIERS } = useQuery({
+    queryKey: ["import-carriers"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/shipping-forwarders/carriers");
+      if (!res.ok) return FALLBACK_CARRIERS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_CARRIERS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: brokers = FALLBACK_BROKERS } = useQuery({
+    queryKey: ["import-brokers"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/shipping-forwarders/brokers");
+      if (!res.ok) return FALLBACK_BROKERS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_BROKERS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: performanceData = FALLBACK_PERFORMANCE_DATA } = useQuery({
+    queryKey: ["import-performance-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/shipping-forwarders/performance-data");
+      if (!res.ok) return FALLBACK_PERFORMANCE_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_PERFORMANCE_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [tab, setTab] = useState("forwarders");
 
   const activeForwarders = forwarders.filter(f => f.status === "active" || f.status === "preferred").length;

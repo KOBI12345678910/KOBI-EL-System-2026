@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   Target, Search, Plus, Edit2, Trash2, X, Save, TrendingUp,
   CheckCircle2, Clock, AlertTriangle, Users, BarChart3,
@@ -40,6 +42,12 @@ const goalCategories = [
 ];
 
 export default function EmployeeGoalsPage() {
+  const { data: employeegoalsData } = useQuery({
+    queryKey: ["employee-goals"],
+    queryFn: () => authFetch("/api/hr/employee_goals"),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [items, setItems] = useState<any[]>([]);
   const [stats, setStats] = useState<any>({});
   const [loading, setLoading] = useState(true);

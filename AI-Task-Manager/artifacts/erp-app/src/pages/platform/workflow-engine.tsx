@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -24,7 +26,7 @@ const APPROVAL_TYPES: Record<string, { label: string; color: string; icon: any }
 };
 
 /* ─── KPI Data ─── */
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "תהליכים פעילים",   value: 34,    icon: Activity,      color: "text-blue-400",    bg: "from-blue-500/20 to-blue-900/10" },
   { label: "ממתינים לאישור",    value: 18,    icon: Clock,         color: "text-amber-400",   bg: "from-amber-500/20 to-amber-900/10" },
   { label: "אושרו היום",        value: 12,    icon: CheckCircle,   color: "text-green-400",   bg: "from-green-500/20 to-green-900/10" },
@@ -34,7 +36,7 @@ const kpis = [
 ];
 
 /* ─── Pending Approvals ─── */
-const pendingApprovals = [
+const FALLBACK_PENDING_APPROVALS = [
   { id: "WF-1001", type: "purchase",              ref: "PO-2026-0487",   requester: "דנה לוי",    module: "רכש",    amount: 185000, urgency: "critical", days: 3 },
   { id: "WF-1002", type: "pricing",               ref: "PRC-2026-112",   requester: "נועה פרידמן", module: "תמחור",  amount: 42000,  urgency: "high",     days: 2 },
   { id: "WF-1003", type: "drawing",               ref: "DRW-A-4521",     requester: "אורי כהן",   module: "הנדסה",  amount: 0,      urgency: "medium",   days: 1 },
@@ -50,7 +52,7 @@ const pendingApprovals = [
 ];
 
 /* ─── Approval Matrix ─── */
-const matrixRules = [
+const FALLBACK_MATRIX_RULES = [
   { action: "הזמנת רכש",           threshold: 50000,   role: "מנהל רכש",       levels: 1, escalation: "48h" },
   { action: "הזמנת רכש",           threshold: 200000,  role: "סמנכ\"ל תפעול",  levels: 2, escalation: "24h" },
   { action: "הזמנת רכש",           threshold: 500000,  role: "מנכ\"ל",          levels: 3, escalation: "12h" },
@@ -64,7 +66,7 @@ const matrixRules = [
 ];
 
 /* ─── History Log ─── */
-const historyLog = [
+const FALLBACK_HISTORY_LOG = [
   { id: "WF-0991", ref: "PO-2026-0472",   type: "purchase",              approver: "עוזי אלקבץ",  decision: "approved", date: "2026-04-08 09:12", comment: "" },
   { id: "WF-0990", ref: "DRW-A-4498",     type: "drawing",               approver: "אורי כהן",    decision: "approved", date: "2026-04-08 08:45", comment: "תיקון קל בקוטר" },
   { id: "WF-0989", ref: "PRC-2026-108",   type: "pricing",               approver: "נועה פרידמן", decision: "rejected", date: "2026-04-07 17:30", comment: "מרווח נמוך מדי" },
@@ -78,7 +80,7 @@ const historyLog = [
 ];
 
 /* ─── Workflow Definitions ─── */
-const workflowDefs = [
+const FALLBACK_WORKFLOW_DEFS = [
   { name: "אישור הזמנת רכש",       steps: 3, modules: ["רכש", "כספים"],            status: "active" },
   { name: "שחרור לייצור",          steps: 4, modules: ["הנדסה", "ייצור", "איכות"],  status: "active" },
   { name: "שחרור לאספקה",          steps: 2, modules: ["ייצור", "לוגיסטיקה"],       status: "active" },
@@ -117,6 +119,14 @@ const statusBadge = (s: string) => {
 
 /* ─── Component ─── */
 export default function WorkflowEngine() {
+  const { data: workflowengineData } = useQuery({
+    queryKey: ["workflow-engine"],
+    queryFn: () => authFetch("/api/platform/workflow_engine"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = workflowengineData ?? FALLBACK_KPIS;
+
   const [tab, setTab] = useState("pending");
 
   return (

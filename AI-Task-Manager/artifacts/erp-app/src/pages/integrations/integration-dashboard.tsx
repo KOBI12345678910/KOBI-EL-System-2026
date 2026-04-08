@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -13,7 +15,7 @@ import {
 
 // ────────────────────────────── KPI Data ──────────────────────────────
 
-const kpiCards = [
+const FALLBACK_KPI_CARDS = [
   { label: "APIs פעילים", value: "24", icon: Globe, color: "text-blue-400", bg: "bg-blue-500/15", trend: "+2" },
   { label: "Webhooks", value: "18", icon: Webhook, color: "text-violet-400", bg: "bg-violet-500/15", trend: "+1" },
   { label: "MCP Servers", value: "6", icon: Server, color: "text-cyan-400", bg: "bg-cyan-500/15", trend: "0" },
@@ -38,7 +40,7 @@ interface SystemModule {
   detail: string;
 }
 
-const systemModules: SystemModule[] = [
+const FALLBACK_SYSTEM_MODULES: SystemModule[] = [
   { name: "API Gateway", nameHe: "שער API", status: "operational", uptime: "99.98%", latency: "42ms", icon: Globe, detail: "24 endpoints פעילים, 0 שגיאות 5xx" },
   { name: "Webhook Gateway", nameHe: "שער Webhooks", status: "operational", uptime: "99.95%", latency: "78ms", icon: Webhook, detail: "18 webhooks רשומים, delivery rate 99.7%" },
   { name: "Event Bus", nameHe: "אפיק אירועים", status: "operational", uptime: "99.99%", latency: "12ms", icon: Radio, detail: "Kafka cluster 3 nodes, 1,847 events היום" },
@@ -67,7 +69,7 @@ interface ActivityEvent {
   detail: string;
 }
 
-const activityFeed: ActivityEvent[] = [
+const FALLBACK_ACTIVITY_FEED: ActivityEvent[] = [
   { id: 1, timestamp: "14:32:08", type: "API Call", typeBadge: "bg-blue-500/15 text-blue-400", source: "CRM Module", target: "GET /api/customers", status: "success", duration: "45ms", detail: "HTTP 200 — 142 records" },
   { id: 2, timestamp: "14:31:55", type: "Webhook", typeBadge: "bg-violet-500/15 text-violet-400", source: "Stripe", target: "payment.completed", status: "success", duration: "120ms", detail: "HTTP 200 — invoice #INV-2847" },
   { id: 3, timestamp: "14:31:42", type: "Sync", typeBadge: "bg-emerald-500/15 text-emerald-400", source: "SAP B1", target: "Inventory Sync", status: "success", duration: "2.3s", detail: "847 פריטים סונכרנו בהצלחה" },
@@ -94,7 +96,7 @@ const eventStatusConfig: Record<string, { icon: React.ComponentType<{ className?
 
 // ────────────────────────────── Tab Data ──────────────────────────────
 
-const topApis = [
+const FALLBACK_TOP_APIS = [
   { name: "GET /api/customers", calls: 4_820, avgLatency: "38ms", status: "200", errorRate: "0.1%" },
   { name: "POST /api/orders", calls: 2_340, avgLatency: "220ms", status: "201", errorRate: "0.3%" },
   { name: "GET /api/inventory", calls: 1_980, avgLatency: "55ms", status: "200", errorRate: "0.0%" },
@@ -102,7 +104,7 @@ const topApis = [
   { name: "GET /api/reports/daily", calls: 890, avgLatency: "1.2s", status: "200", errorRate: "2.1%" },
 ];
 
-const topWebhooks = [
+const FALLBACK_TOP_WEBHOOKS = [
   { name: "Stripe — payment.completed", deliveries: 1_240, successRate: "99.8%", avgLatency: "120ms", lastDelivery: "14:31:55" },
   { name: "SendGrid — email.delivered", deliveries: 980, successRate: "99.5%", avgLatency: "95ms", lastDelivery: "14:30:44" },
   { name: "GitHub — push", deliveries: 450, successRate: "100%", avgLatency: "65ms", lastDelivery: "14:29:30" },
@@ -110,7 +112,7 @@ const topWebhooks = [
   { name: "Slack — message.posted", deliveries: 280, successRate: "99.6%", avgLatency: "88ms", lastDelivery: "14:22:08" },
 ];
 
-const topEvents = [
+const FALLBACK_TOP_EVENTS = [
   { name: "order.status.changed", count: 420, producers: "Production, Sales", consumers: 4, avgProcessTime: "8ms" },
   { name: "inventory.updated", count: 380, producers: "Warehouse, Sync", consumers: 6, avgProcessTime: "12ms" },
   { name: "payment.received", count: 245, producers: "Finance, Stripe", consumers: 3, avgProcessTime: "15ms" },
@@ -118,7 +120,7 @@ const topEvents = [
   { name: "quality.inspection.done", count: 156, producers: "Quality Module", consumers: 3, avgProcessTime: "22ms" },
 ];
 
-const topMcp = [
+const FALLBACK_TOP_MCP = [
   { name: "tools/inventory-check", calls: 340, avgLatency: "340ms", server: "Warehouse MCP", model: "Claude 3.5" },
   { name: "tools/create-quote", calls: 280, avgLatency: "890ms", server: "Sales MCP", model: "Claude 3.5" },
   { name: "tools/customer-lookup", calls: 220, avgLatency: "210ms", server: "CRM MCP", model: "Claude 3.5" },
@@ -126,7 +128,7 @@ const topMcp = [
   { name: "tools/financial-report", calls: 95, avgLatency: "1.2s", server: "Finance MCP", model: "Claude 3.5" },
 ];
 
-const topSyncJobs = [
+const FALLBACK_TOP_SYNC_JOBS = [
   { name: "SAP B1 — Inventory", runs: 48, lastRun: "14:31:42", avgDuration: "2.3s", records: "847", status: "success" as const },
   { name: "Priority — GL Accounts", runs: 24, lastRun: "14:30:15", avgDuration: "4.8s", records: "95/100", status: "warning" as const },
   { name: "WooCommerce — Products", runs: 12, lastRun: "14:28:40", avgDuration: "3.1s", records: "127", status: "success" as const },
@@ -134,7 +136,7 @@ const topSyncJobs = [
   { name: "HubSpot — Deals", runs: 6, lastRun: "13:00:01", avgDuration: "8.2s", records: "456", status: "success" as const },
 ];
 
-const alerts = [
+const FALLBACK_ALERTS = [
   { id: 1, severity: "critical", message: "DLQ: 3 הודעות כושלות מחכות לטיפול", timestamp: "14:28:00", source: "Event Bus" },
   { id: 2, severity: "warning", message: "Sync Engine latency עלה ב-15% — מעל סף 300ms", timestamp: "14:25:12", source: "Sync Engine" },
   { id: 3, severity: "warning", message: "API /api/reports/daily — error rate 2.1% (סף: 1%)", timestamp: "14:20:08", source: "API Gateway" },
@@ -150,7 +152,7 @@ const alertSeverityConfig: Record<string, { label: string; badgeClass: string }>
 
 // ────────────────────────────── Uptime Data ──────────────────────────────
 
-const uptimeData = [
+const FALLBACK_UPTIME_DATA = [
   { service: "API Gateway", days: [99.99, 100, 99.98, 100, 99.97, 100, 99.98] },
   { service: "Webhook Gateway", days: [99.95, 99.90, 100, 99.95, 99.88, 100, 99.95] },
   { service: "Event Bus", days: [100, 100, 99.99, 100, 100, 99.99, 99.99] },
@@ -159,7 +161,7 @@ const uptimeData = [
   { service: "DLQ Monitor", days: [100, 100, 100, 99.50, 100, 100, 95.00] },
 ];
 
-const dayLabels = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
+const FALLBACK_DAY_LABELS = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
 
 function getUptimeColor(val: number): string {
   if (val >= 99.9) return "bg-green-500";
@@ -180,6 +182,24 @@ function getUptimeTextColor(val: number): string {
 // ────────────────────────────── Component ──────────────────────────────
 
 export default function IntegrationDashboard() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["integration_dashboard"],
+    queryFn: () => authFetch("/api/integrations/integration-dashboard").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const kpiCards = apiData?.kpiCards ?? FALLBACK_KPI_CARDS;
+  const systemModules = apiData?.systemModules ?? FALLBACK_SYSTEM_MODULES;
+  const activityFeed = apiData?.activityFeed ?? FALLBACK_ACTIVITY_FEED;
+  const topApis = apiData?.topApis ?? FALLBACK_TOP_APIS;
+  const topWebhooks = apiData?.topWebhooks ?? FALLBACK_TOP_WEBHOOKS;
+  const topEvents = apiData?.topEvents ?? FALLBACK_TOP_EVENTS;
+  const topMcp = apiData?.topMcp ?? FALLBACK_TOP_MCP;
+  const topSyncJobs = apiData?.topSyncJobs ?? FALLBACK_TOP_SYNC_JOBS;
+  const alerts = apiData?.alerts ?? FALLBACK_ALERTS;
+  const uptimeData = apiData?.uptimeData ?? FALLBACK_UPTIME_DATA;
+  const dayLabels = apiData?.dayLabels ?? FALLBACK_DAY_LABELS;
   const [activeTab, setActiveTab] = useState("overview");
 
   return (

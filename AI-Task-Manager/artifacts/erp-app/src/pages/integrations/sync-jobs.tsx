@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,7 +13,7 @@ import {
 } from "lucide-react";
 
 /* ────── KPI Data ────── */
-const kpiCards = [
+const FALLBACK_KPI_CARDS = [
   { label: "Jobs פעילים", value: "12", icon: Activity, color: "text-blue-600", bg: "bg-blue-50" },
   { label: "בריצה כרגע", value: "3", icon: Zap, color: "text-emerald-600", bg: "bg-emerald-50" },
   { label: "הושלמו היום", value: "45", icon: CheckCircle, color: "text-green-600", bg: "bg-green-50" },
@@ -21,7 +23,7 @@ const kpiCards = [
 ];
 
 /* ────── Sync Jobs (12 configured) ────── */
-const syncJobs = [
+const FALLBACK_SYNC_JOBS = [
   { id: "JOB-001", name: "sync_payroll_hilan", cron: "0 6 * * *", cronHeb: "כל יום ב-06:00", connector: "Hilan API", direction: "inbound" as const, lastRun: "08/04/2026 06:00", nextRun: "09/04/2026 06:00", status: "active" as const, records: 312 },
   { id: "JOB-002", name: "sync_attendance", cron: "*/30 * * * *", cronHeb: "כל 30 דקות", connector: "Synel BioTime", direction: "inbound" as const, lastRun: "08/04/2026 14:30", nextRun: "08/04/2026 15:00", status: "active" as const, records: 1480 },
   { id: "JOB-003", name: "import_bank_transactions", cron: "0 8,14 * * 1-5", cronHeb: "ימים א׳-ה׳ ב-08:00 ו-14:00", connector: "Bank Hapoalim API", direction: "inbound" as const, lastRun: "08/04/2026 14:00", nextRun: "09/04/2026 08:00", status: "active" as const, records: 87 },
@@ -37,7 +39,7 @@ const syncJobs = [
 ];
 
 /* ────── Queue Monitor (8 items) ────── */
-const queueItems = [
+const FALLBACK_QUEUE_ITEMS = [
   { position: 1, jobName: "sync_attendance", priority: "גבוהה", queuedAt: "14:52:10", estimatedStart: "14:52:30", status: "processing" as const },
   { position: 2, jobName: "sync_ecommerce_orders", priority: "גבוהה", queuedAt: "14:52:15", estimatedStart: "14:53:00", status: "processing" as const },
   { position: 3, jobName: "sync_google_calendar", priority: "רגילה", queuedAt: "14:52:20", estimatedStart: "14:53:30", status: "processing" as const },
@@ -49,7 +51,7 @@ const queueItems = [
 ];
 
 /* ────── Run History (15 recent) ────── */
-const runHistory = [
+const FALLBACK_RUN_HISTORY = [
   { job: "sync_attendance", startTime: "08/04 14:30:00", duration: "3.8s", processed: 48, created: 2, updated: 46, errored: 0, status: "success" as const },
   { job: "sync_ecommerce_orders", startTime: "08/04 14:45:02", duration: "2.1s", processed: 12, created: 5, updated: 7, errored: 0, status: "success" as const },
   { job: "sync_google_calendar", startTime: "08/04 14:50:01", duration: "1.4s", processed: 8, created: 1, updated: 7, errored: 0, status: "success" as const },
@@ -68,7 +70,7 @@ const runHistory = [
 ];
 
 /* ────── Failed Jobs (3 failures) ────── */
-const failedJobs = [
+const FALLBACK_FAILED_JOBS = [
   {
     id: "FAIL-001", job: "import_shipping_tracking", failedAt: "08/04/2026 12:00:05", retryCount: 3,
     error: "ConnectionRefusedError: Israel Post API endpoint returned HTTP 503 Service Unavailable",
@@ -122,6 +124,18 @@ const runStatusBadge = (status: string) => {
 
 /* ═══════════════════════════════════════════════════════════ */
 export default function SyncJobsPage() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["sync_jobs"],
+    queryFn: () => authFetch("/api/integrations/sync-jobs").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const kpiCards = apiData?.kpiCards ?? FALLBACK_KPI_CARDS;
+  const syncJobs = apiData?.syncJobs ?? FALLBACK_SYNC_JOBS;
+  const queueItems = apiData?.queueItems ?? FALLBACK_QUEUE_ITEMS;
+  const runHistory = apiData?.runHistory ?? FALLBACK_RUN_HISTORY;
+  const failedJobs = apiData?.failedJobs ?? FALLBACK_FAILED_JOBS;
   const [activeTab, setActiveTab] = useState("sync-jobs");
   const [expandedFail, setExpandedFail] = useState<string | null>(null);
 

@@ -1,4 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -65,7 +67,7 @@ interface ModuleDef {
 // Data: Modules
 // ---------------------------------------------------------------------------
 
-const MODULES: ModuleDef[] = [
+const FALLBACK_MODULES: ModuleDef[] = [
   { key: "all",         label: "הכל",        color: "text-white",       bgColor: "bg-white/10" },
   { key: "system",      label: "מערכת",      color: "text-purple-400",  bgColor: "bg-purple-500/15" },
   { key: "customers",   label: "לקוחות",     color: "text-blue-400",    bgColor: "bg-blue-500/15" },
@@ -82,7 +84,7 @@ const MODULES: ModuleDef[] = [
 // Data: Roles (columns)
 // ---------------------------------------------------------------------------
 
-const ROLES: RoleDef[] = [
+const FALLBACK_ROLES: RoleDef[] = [
   { id: "CEO",                   label: 'מנכ"ל',            level: 5, color: "text-yellow-300" },
   { id: "SYSTEM_ADMIN",          label: "מנהל מערכת",       level: 5, color: "text-purple-300" },
   { id: "FINANCE_MANAGER",       label: "מנהל כספים",       level: 4, color: "text-blue-300" },
@@ -100,7 +102,7 @@ const ROLES: RoleDef[] = [
 // Data: Permissions (rows)
 // ---------------------------------------------------------------------------
 
-const PERMISSIONS: PermissionDef[] = [
+const FALLBACK_PERMISSIONS: PermissionDef[] = [
   // System
   { code: "USERS_VIEW",           label: "צפייה במשתמשים",              module: "system",      description: "צפייה ברשימת משתמשי המערכת" },
   { code: "USERS_CREATE",         label: "יצירת משתמשים",              module: "system",      description: "הוספת משתמשים חדשים למערכת" },
@@ -308,6 +310,14 @@ function MatrixCell({
 // ---------------------------------------------------------------------------
 
 export default function PermissionsMatrixPage() {
+  const { data: permissionsmatrixData } = useQuery({
+    queryKey: ["permissions-matrix"],
+    queryFn: () => authFetch("/api/system/permissions_matrix"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const MODULES = permissionsmatrixData ?? FALLBACK_MODULES;
+
   const [matrix, setMatrix] = useState<Record<string, Record<string, CellValue>>>(buildInitialMatrix);
   const [activeModule, setActiveModule] = useState<ModuleKey>("all");
   const [searchQuery, setSearchQuery] = useState("");

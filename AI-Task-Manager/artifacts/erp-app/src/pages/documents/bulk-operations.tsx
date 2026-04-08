@@ -1,11 +1,13 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Layers, Upload, Download, FolderEdit, ShieldCheck, Archive, Trash2, Cloud, HardDrive, ScanLine, CheckCircle2, XCircle, Clock, Loader2, FileUp, FileDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
-const quickActions = [
+const FALLBACK_QUICK_ACTIONS = [
   { title: "העלאה מרובה", description: "גרור ושחרר קבצים או בחר מהמחשב", icon: Upload, color: "bg-blue-500", lightBg: "bg-blue-50 border-blue-200", textColor: "text-blue-600" },
   { title: "הורדה מרובה", description: "בחר מסמכים והורד כקובץ ZIP", icon: Download, color: "bg-green-500", lightBg: "bg-green-50 border-green-200", textColor: "text-green-600" },
   { title: "שינוי קטגוריה", description: "סיווג מחדש של מסמכים בקבוצה", icon: FolderEdit, color: "bg-orange-500", lightBg: "bg-orange-50 border-orange-200", textColor: "text-orange-600" },
@@ -14,20 +16,20 @@ const quickActions = [
   { title: "מחיקה מרובה", description: "מחיקת מסמכים עם אישור מוקדם", icon: Trash2, color: "bg-red-500", lightBg: "bg-red-50 border-red-200", textColor: "text-red-600" },
 ];
 
-const activeOperations = [
+const FALLBACK_ACTIVE_OPERATIONS = [
   { id: "BOP-041", type: "העלאה מרובה", icon: FileUp, docsCount: 128, progress: 72, startedBy: "עוזי כהן", date: "08/04/2026", time: "09:14", status: "בריצה" as const },
   { id: "BOP-040", type: "שינוי קטגוריה", icon: FolderEdit, docsCount: 54, progress: 100, startedBy: "רונית לוי", date: "08/04/2026", time: "08:45", status: "הושלם" as const },
   { id: "BOP-039", type: "ארכיון מרובה", icon: Archive, docsCount: 312, progress: 88, startedBy: "מיכאל אברהם", date: "07/04/2026", time: "16:30", status: "בריצה" as const },
   { id: "BOP-038", type: "הורדה מרובה", icon: FileDown, docsCount: 47, progress: 63, startedBy: "שרה דוידוב", date: "07/04/2026", time: "14:22", status: "נכשל חלקית" as const },
 ];
 
-const externalSources = [
+const FALLBACK_EXTERNAL_SOURCES = [
   { name: "Google Drive", icon: Cloud, connected: true, lastSync: "08/04/2026 08:00", docsAvailable: 1_240 },
   { name: "SharePoint", icon: HardDrive, connected: true, lastSync: "07/04/2026 22:15", docsAvailable: 876 },
   { name: "סורק רשת", icon: ScanLine, connected: false, lastSync: "---", docsAvailable: 0 },
 ];
 
-const migrationHistory = [
+const FALLBACK_MIGRATION_HISTORY = [
   { id: "MIG-015", source: "Google Drive", date: "05/04/2026", totalDocs: 420, success: 418, failed: 2 },
   { id: "MIG-014", source: "SharePoint", date: "01/04/2026", totalDocs: 310, success: 310, failed: 0 },
   { id: "MIG-013", source: "סורק רשת", date: "28/03/2026", totalDocs: 89, success: 85, failed: 4 },
@@ -54,6 +56,17 @@ function progressColor(status: OpStatus) {
 }
 
 export default function BulkDocumentOperationsPage() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["bulk_operations"],
+    queryFn: () => authFetch("/api/documents/bulk-operations").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const quickActions = apiData?.quickActions ?? FALLBACK_QUICK_ACTIONS;
+  const activeOperations = apiData?.activeOperations ?? FALLBACK_ACTIVE_OPERATIONS;
+  const externalSources = apiData?.externalSources ?? FALLBACK_EXTERNAL_SOURCES;
+  const migrationHistory = apiData?.migrationHistory ?? FALLBACK_MIGRATION_HISTORY;
   const [activeTab, setActiveTab] = useState("operations");
 
   return (

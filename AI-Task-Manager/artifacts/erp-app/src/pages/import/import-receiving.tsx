@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -6,10 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { PackageCheck, Clock, CheckCircle, XCircle, AlertTriangle, TruckIcon, ShieldCheck, PackageX } from "lucide-react";
 
-export default function ImportReceiving() {
-  const [activeTab, setActiveTab] = useState("queue");
-
-  const receivingQueue = [
+const FALLBACK_RECEIVING_QUEUE = [
     { id: "SHP-2026-041", po: "PO-IM-001", supplier: "Foshan Glass Co.", origin: "סין", items: 12, pallets: 8, eta: "2026-04-08", status: "awaiting" },
     { id: "SHP-2026-039", po: "PO-IM-002", supplier: "Schüco International", origin: "גרמניה", items: 24, pallets: 14, eta: "2026-04-08", status: "unloading" },
     { id: "SHP-2026-044", po: "PO-IM-005", supplier: "Alumil SA", origin: "יוון", items: 18, pallets: 10, eta: "2026-04-09", status: "awaiting" },
@@ -19,7 +18,7 @@ export default function ImportReceiving() {
     { id: "SHP-2026-048", po: "PO-IM-009", supplier: "Reynaers Belgium", origin: "בלגיה", items: 20, pallets: 12, eta: "2026-04-11", status: "awaiting" },
   ];
 
-  const receipts = [
+const FALLBACK_RECEIPTS = [
     { grn: "GRN-2026-0187", shipment: "SHP-2026-035", po: "PO-IM-001", supplier: "Foshan Glass Co.", ordered: 500, received: 500, date: "2026-04-06", match: "full" },
     { grn: "GRN-2026-0188", shipment: "SHP-2026-033", po: "PO-IM-002", supplier: "Schüco International", ordered: 240, received: 238, date: "2026-04-06", match: "shortage" },
     { grn: "GRN-2026-0189", shipment: "SHP-2026-036", po: "PO-IM-003", supplier: "Technal India", ordered: 180, received: 180, date: "2026-04-07", match: "full" },
@@ -30,7 +29,7 @@ export default function ImportReceiving() {
     { grn: "GRN-2026-0194", shipment: "SHP-2026-029", po: "PO-IM-008", supplier: "Aluprof Poland", ordered: 200, received: 200, date: "2026-04-05", match: "full" },
   ];
 
-  const qcInspections = [
+const FALLBACK_QC_INSPECTIONS = [
     { id: "QC-0451", item: 'זכוכית מחוסמת 10 מ"מ', supplier: "Foshan Glass Co.", qty: 500, inspected: 500, passed: 492, failed: 8, defect: "שריטות משטח", status: "passed" },
     { id: "QC-0452", item: "פרופיל אלומיניום T60", supplier: "Schüco International", qty: 238, inspected: 238, passed: 236, failed: 2, defect: "עיוות קל", status: "passed" },
     { id: "QC-0453", item: "צירים הידראוליים HD-50", supplier: "Technal India", qty: 180, inspected: 180, passed: 180, failed: 0, defect: "-", status: "passed" },
@@ -41,7 +40,7 @@ export default function ImportReceiving() {
     { id: "QC-0458", item: "תריס חשמלי AR-200", supplier: "Aluprof Poland", qty: 200, inspected: 200, passed: 199, failed: 1, defect: "חיווט פגום", status: "passed" },
   ];
 
-  const deviations = [
+const FALLBACK_DEVIATIONS = [
     { id: "DEV-0091", type: "shortage", ref: "GRN-2026-0188", item: "פרופיל אלומיניום T60", supplier: "Schüco International", qty: 2, detail: "חסר 2 יח' מול הזמנה PO-IM-002", status: "open" },
     { id: "DEV-0092", type: "shortage", ref: "GRN-2026-0190", item: "מסגרת חלון CW-86", supplier: "Kawneer UK", qty: 5, detail: "חסר 5 יח' - ספירת מחסן מאושרת", status: "claimed" },
     { id: "DEV-0093", type: "damage", ref: "GRN-2026-0193", item: "פאנל סנדוויץ' PIR 80", supplier: "Reynaers Belgium", qty: 15, detail: "נזק שינוע - פאנלים מעוכים", status: "open" },
@@ -51,7 +50,7 @@ export default function ImportReceiving() {
     { id: "DEV-0097", type: "ncr", ref: "QC-0451", item: 'זכוכית מחוסמת 10 מ"מ', supplier: "Foshan Glass Co.", qty: 8, detail: "שריטות - אושר שימוש בדרגה ב'", status: "resolved" },
   ];
 
-  const releases = [
+const FALLBACK_RELEASES = [
     { id: "REL-0321", grn: "GRN-2026-0189", item: "צירים הידראוליים HD-50", supplier: "Technal India", qty: 180, target: "מחסן חומרי גלם", qcRef: "QC-0453", date: "2026-04-07", status: "released" },
     { id: "REL-0322", grn: "GRN-2026-0191", item: "גומיית איטום EPDM", supplier: "Alumil SA", qty: 400, target: "מחסן חומרי גלם", qcRef: "QC-0455", date: "2026-04-07", status: "pending_qc" },
     { id: "REL-0323", grn: "GRN-2026-0194", item: "תריס חשמלי AR-200", supplier: "Aluprof Poland", qty: 199, target: "מחסן מוצרים מוגמרים", qcRef: "QC-0458", date: "2026-04-07", status: "released" },
@@ -61,6 +60,69 @@ export default function ImportReceiving() {
     { id: "REL-0327", grn: "GRN-2026-0190", item: "מסגרת חלון CW-86", supplier: "Kawneer UK", qty: 0, target: "השהייה - בקרת איכות", qcRef: "QC-0454", date: "-", status: "hold" },
     { id: "REL-0328", grn: "GRN-2026-0193", item: "פאנל סנדוויץ' PIR 80", supplier: "Reynaers Belgium", qty: 0, target: "השהייה - בקרת איכות", qcRef: "QC-0457", date: "-", status: "hold" },
   ];
+
+export default function ImportReceiving() {
+  const [activeTab, setActiveTab] = useState("queue");
+
+  const { data: receivingQueue = FALLBACK_RECEIVING_QUEUE } = useQuery({
+    queryKey: ["import-receiving-queue"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-receiving/receiving-queue");
+      if (!res.ok) return FALLBACK_RECEIVING_QUEUE;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_RECEIVING_QUEUE;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: receipts = FALLBACK_RECEIPTS } = useQuery({
+    queryKey: ["import-receipts"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-receiving/receipts");
+      if (!res.ok) return FALLBACK_RECEIPTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_RECEIPTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: qcInspections = FALLBACK_QC_INSPECTIONS } = useQuery({
+    queryKey: ["import-qc-inspections"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-receiving/qc-inspections");
+      if (!res.ok) return FALLBACK_QC_INSPECTIONS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_QC_INSPECTIONS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: deviations = FALLBACK_DEVIATIONS } = useQuery({
+    queryKey: ["import-deviations"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-receiving/deviations");
+      if (!res.ok) return FALLBACK_DEVIATIONS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DEVIATIONS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: releases = FALLBACK_RELEASES } = useQuery({
+    queryKey: ["import-releases"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-receiving/releases");
+      if (!res.ok) return FALLBACK_RELEASES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_RELEASES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
 
   const kpi = {
     awaitingReceipt: receivingQueue.filter(r => r.status === "awaiting").length,

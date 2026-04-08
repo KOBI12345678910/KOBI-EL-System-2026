@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,7 +12,7 @@ import {
 
 /* ── Static mock data ─────────────────────────────────────────── */
 
-const installations = [
+const FALLBACK_INSTALLATIONS = [
   { id: "INS-001", project: "מגדלי הים — חיפה", customer: "אזורים נדל\"ן", revenue: 72000, cost: 48500, team: "צוות אלפא", product: "חלונות" },
   { id: "INS-002", project: "פארק המדע — רחובות", customer: "רבוע כחול", revenue: 55000, cost: 41200, team: "צוות בטא", product: "ויטרינות" },
   { id: "INS-003", project: "בית חכם — הרצליה", customer: "גינדי השקעות", revenue: 38000, cost: 24700, team: "צוות גמא", product: "דלתות" },
@@ -25,14 +27,14 @@ const installations = [
   { id: "INS-012", project: "וילה פרטית — קיסריה", customer: "לקוח פרטי", revenue: 30000, cost: 14900, team: "צוות גמא", product: "מחיצות" },
 ];
 
-const teamData = [
+const FALLBACK_TEAM_DATA = [
   { name: "צוות אלפא", revenue: 197000, cost: 144300, count: 3 },
   { name: "צוות בטא", revenue: 136000, cost: 104800, count: 3 },
   { name: "צוות גמא", revenue: 109000, cost: 78200, count: 3 },
   { name: "צוות דלתא", revenue: 138000, cost: 90700, count: 3 },
 ];
 
-const productData = [
+const FALLBACK_PRODUCT_DATA = [
   { name: "חלונות", revenue: 113000, cost: 87100, count: 2 },
   { name: "דלתות", revenue: 71000, cost: 46800, count: 2 },
   { name: "ויטרינות", revenue: 116000, cost: 84700, count: 2 },
@@ -41,7 +43,7 @@ const productData = [
   { name: "מחיצות", revenue: 82000, cost: 51300, count: 2 },
 ];
 
-const topCustomers = [
+const FALLBACK_TOP_CUSTOMERS = [
   { name: "אזורים נדל\"ן", totalRevenue: 130000, totalCost: 82700, installations: 2 },
   { name: "נת\"ע", totalRevenue: 61000, totalCost: 43500, installations: 1 },
   { name: "אלמוג מלונות", totalRevenue: 64000, totalCost: 52300, installations: 1 },
@@ -49,7 +51,7 @@ const topCustomers = [
   { name: "אמות השקעות", totalRevenue: 52000, totalCost: 36400, installations: 1 },
 ];
 
-const insights = [
+const FALLBACK_INSIGHTS = [
   { icon: "up", text: "צוות אלפא הכי רווחי — הגדל את הקיבולת שלו", detail: "מרווח ממוצע 26.7% עם הכנסה גבוהה. הוספת איש צוות נוסף תגדיל את התפוקה ב-25%.", type: "positive" },
   { icon: "alert", text: "מעקות זכוכית — מרווח נמוך, שקול העלאת מחיר", detail: "מרווח של 13.9% בלבד לעומת ממוצע 28% בשאר הקטגוריות. עלות החומרים עלתה 15% ברבעון האחרון.", type: "warning" },
   { icon: "target", text: "אזורים נדל\"ן — נפח גבוה, מרווח נמוך — משא ומתן", detail: "לקוח הכי גדול (₪130,000) אבל מרווח 36.4%. אפשר לשפר תנאי תשלום או להעלות מחיר ב-5%.", type: "info" },
@@ -67,6 +69,67 @@ const badgeVariant = (m: number): "default" | "secondary" | "destructive" => m >
 /* ── Component ───────────────────────────────────────────────── */
 
 export default function InstallationProfitability() {
+  const { data: installations = FALLBACK_INSTALLATIONS } = useQuery({
+    queryKey: ["installation-installations"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-profitability/installations");
+      if (!res.ok) return FALLBACK_INSTALLATIONS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_INSTALLATIONS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: teamData = FALLBACK_TEAM_DATA } = useQuery({
+    queryKey: ["installation-team-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-profitability/team-data");
+      if (!res.ok) return FALLBACK_TEAM_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TEAM_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: productData = FALLBACK_PRODUCT_DATA } = useQuery({
+    queryKey: ["installation-product-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-profitability/product-data");
+      if (!res.ok) return FALLBACK_PRODUCT_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_PRODUCT_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: topCustomers = FALLBACK_TOP_CUSTOMERS } = useQuery({
+    queryKey: ["installation-top-customers"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-profitability/top-customers");
+      if (!res.ok) return FALLBACK_TOP_CUSTOMERS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TOP_CUSTOMERS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: insights = FALLBACK_INSIGHTS } = useQuery({
+    queryKey: ["installation-insights"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-profitability/insights");
+      if (!res.ok) return FALLBACK_INSIGHTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_INSIGHTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const totalRevenue = 580000;
   const totalCost = 418000;
   const grossProfit = totalRevenue - totalCost;

@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -5,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { MapPin, Ship, Anchor, Package, ShieldCheck, Factory, Clock, AlertTriangle, CalendarClock, FileWarning, Ban, Truck } from "lucide-react";
 
-const stages = [
+const FALLBACK_STAGES = [
   { key: "ordered", label: "הוזמן", color: "bg-slate-600", icon: Package },
   { key: "shipped", label: "נשלח", color: "bg-blue-700", icon: Ship },
   { key: "in_transit", label: "בדרך", color: "bg-cyan-600", icon: Truck },
@@ -15,7 +17,7 @@ const stages = [
   { key: "factory", label: "במפעל", color: "bg-green-600", icon: Factory },
 ];
 
-const shipments = [
+const FALLBACK_SHIPMENTS = [
   { id: "SHP-101", supplier: "Foshan Glass Co.", country: "CN", flag: "🇨🇳", stage: "in_transit", eta: "2026-04-18", daysLeft: 10, alerts: ["delay"], po: "PO-IM-001", value: 45000 },
   { id: "SHP-102", supplier: "Schüco International", country: "DE", flag: "🇩🇪", stage: "customs", eta: "2026-04-12", daysLeft: 4, alerts: ["docs"], po: "PO-IM-002", value: 120000 },
   { id: "SHP-103", supplier: "Alumil SA", country: "GR", flag: "🇬🇷", stage: "ordered", eta: "2026-05-01", daysLeft: 23, alerts: [], po: "PO-IM-003", value: 78000 },
@@ -26,7 +28,7 @@ const shipments = [
   { id: "SHP-108", supplier: "Guangdong Hardware", country: "CN", flag: "🇨🇳", stage: "in_transit", eta: "2026-04-20", daysLeft: 12, alerts: ["delay"], po: "PO-IM-008", value: 38000 },
 ];
 
-const milestones = [
+const FALLBACK_MILESTONES = [
   { shipment: "SHP-101", milestone: "הזמנה אושרה", date: "2026-03-10", done: true },
   { shipment: "SHP-101", milestone: "נשלח מהמפעל", date: "2026-03-18", done: true },
   { shipment: "SHP-101", milestone: "הגעה לנמל מוצא", date: "2026-03-22", done: true },
@@ -42,33 +44,33 @@ const milestones = [
   { shipment: "SHP-105", milestone: "שחרור מכס", date: "2026-04-14", done: false },
 ];
 
-const etaChanges = [
+const FALLBACK_ETA_CHANGES = [
   { shipment: "SHP-101", date: "2026-03-25", oldEta: "2026-04-12", newEta: "2026-04-18", reason: "עיכוב בנמל מוצא", days: 6 },
   { shipment: "SHP-108", date: "2026-04-01", oldEta: "2026-04-16", newEta: "2026-04-20", reason: "סערה בים", days: 4 },
   { shipment: "SHP-102", date: "2026-03-20", oldEta: "2026-04-08", newEta: "2026-04-12", reason: "עומס בנמל חיפה", days: 4 },
   { shipment: "SHP-106", date: "2026-04-03", oldEta: "2026-04-20", newEta: "2026-04-22", reason: "שינוי מסלול ספינה", days: 2 },
 ];
 
-const delays = [
+const FALLBACK_DELAYS = [
   { shipment: "SHP-101", reason: "עיכוב בנמל שנזן", category: "נמל מוצא", days: 6, impact: "high" },
   { shipment: "SHP-108", reason: "תנאי מזג אוויר קשים", category: "מזג אוויר", days: 4, impact: "medium" },
   { shipment: "SHP-102", reason: "חוסר מסמכים מקוריים", category: "מסמכים", days: 3, impact: "high" },
   { shipment: "SHP-105", reason: "בדיקה רנדומלית במכס", category: "מכס", days: 2, impact: "medium" },
 ];
 
-const customsHolds = [
+const FALLBACK_CUSTOMS_HOLDS = [
   { shipment: "SHP-102", holdType: "מסמכים חסרים", since: "2026-04-08", status: "open", details: "חסר אישור CE מקורי" },
   { shipment: "SHP-105", holdType: "בדיקה פיזית", since: "2026-04-07", status: "in_progress", details: "דגימת סחורה לבדיקת תקן" },
 ];
 
-const missingDocs = [
+const FALLBACK_MISSING_DOCS = [
   { shipment: "SHP-102", document: "אישור CE מקורי", required: "2026-04-06", status: "missing", responsible: "ספק" },
   { shipment: "SHP-102", document: "תעודת מקור EUR.1", required: "2026-04-06", status: "missing", responsible: "סוכן מכס" },
   { shipment: "SHP-101", document: "שטר מטען B/L", required: "2026-04-10", status: "pending", responsible: "חברת שילוח" },
   { shipment: "SHP-108", document: "חשבון מסחרי", required: "2026-04-12", status: "pending", responsible: "ספק" },
 ];
 
-const factoryDeliveries = [
+const FALLBACK_FACTORY_DELIVERIES = [
   { shipment: "SHP-104", date: "2026-04-05", arrived: true, warehouse: "מחסן A", receiver: "דוד כהן", items: 120, qcStatus: "passed" },
   { shipment: "SHP-107", date: "2026-04-10", arrived: false, warehouse: "מחסן B", receiver: "משה לוי", items: 85, qcStatus: "pending" },
 ];
@@ -83,6 +85,103 @@ const alertBadge = (alert: string) => {
 };
 
 export default function ImportTracking() {
+  const { data: stages = FALLBACK_STAGES } = useQuery({
+    queryKey: ["import-stages"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-tracking/stages");
+      if (!res.ok) return FALLBACK_STAGES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_STAGES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: shipments = FALLBACK_SHIPMENTS } = useQuery({
+    queryKey: ["import-shipments"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-tracking/shipments");
+      if (!res.ok) return FALLBACK_SHIPMENTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SHIPMENTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: milestones = FALLBACK_MILESTONES } = useQuery({
+    queryKey: ["import-milestones"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-tracking/milestones");
+      if (!res.ok) return FALLBACK_MILESTONES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_MILESTONES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: etaChanges = FALLBACK_ETA_CHANGES } = useQuery({
+    queryKey: ["import-eta-changes"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-tracking/eta-changes");
+      if (!res.ok) return FALLBACK_ETA_CHANGES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_ETA_CHANGES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: delays = FALLBACK_DELAYS } = useQuery({
+    queryKey: ["import-delays"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-tracking/delays");
+      if (!res.ok) return FALLBACK_DELAYS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DELAYS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: customsHolds = FALLBACK_CUSTOMS_HOLDS } = useQuery({
+    queryKey: ["import-customs-holds"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-tracking/customs-holds");
+      if (!res.ok) return FALLBACK_CUSTOMS_HOLDS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_CUSTOMS_HOLDS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: missingDocs = FALLBACK_MISSING_DOCS } = useQuery({
+    queryKey: ["import-missing-docs"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-tracking/missing-docs");
+      if (!res.ok) return FALLBACK_MISSING_DOCS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_MISSING_DOCS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: factoryDeliveries = FALLBACK_FACTORY_DELIVERIES } = useQuery({
+    queryKey: ["import-factory-deliveries"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-tracking/factory-deliveries");
+      if (!res.ok) return FALLBACK_FACTORY_DELIVERIES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_FACTORY_DELIVERIES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [tab, setTab] = useState("board");
 
   return (

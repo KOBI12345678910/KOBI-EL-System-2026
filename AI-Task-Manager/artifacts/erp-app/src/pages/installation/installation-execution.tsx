@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,7 +12,7 @@ import {
 
 /* ── Static mock data ─────────────────────────────────────────── */
 
-const activeInstallations = [
+const FALLBACK_ACTIVE_INSTALLATIONS = [
   {
     id: "INS-101", project: "מגדלי הים — חיפה", address: "שד' הנשיא 45, חיפה",
     crew: "צוות אלפא", leader: "יוסי כהן", product: "חלונות אלומיניום Premium",
@@ -49,7 +51,7 @@ const activeInstallations = [
   },
 ];
 
-const timelineEvents = [
+const FALLBACK_TIMELINE_EVENTS = [
   { time: "06:00", installation: "INS-101", event: "יציאה מהמפעל — משאית 832-45-971", icon: "truck" },
   { time: "06:00", installation: "INS-103", event: "יציאה מהמפעל — טנדר 278-93-415", icon: "truck" },
   { time: "06:15", installation: "INS-102", event: "יציאה מהמפעל — משאית 541-27-683", icon: "truck" },
@@ -66,7 +68,7 @@ const timelineEvents = [
   { time: "11:00", installation: "INS-106", event: "בדיקת QC — חלונות קומה 1-2 עברו", icon: "check" },
 ];
 
-const installationItems = [
+const FALLBACK_INSTALLATION_ITEMS = [
   { id: "ITM-001", insId: "INS-101", product: "חלון Premium 120x150", location: "קומה 5 — חדר שינה", installed: true, qcPassed: true, notes: "" },
   { id: "ITM-002", insId: "INS-101", product: "חלון Premium 180x150", location: "קומה 5 — סלון", installed: true, qcPassed: true, notes: "" },
   { id: "ITM-003", insId: "INS-101", product: "חלון Premium 120x150", location: "קומה 5 — מטבח", installed: true, qcPassed: false, notes: "איטום צריך תיקון" },
@@ -80,7 +82,7 @@ const installationItems = [
   { id: "ITM-011", insId: "INS-104", product: "מעקה זכוכית 1.5m", location: "קומה 12 — לובי", installed: false, qcPassed: false, notes: "ממתין לחלק חיבור" },
 ];
 
-const fieldIssues = [
+const FALLBACK_FIELD_ISSUES = [
   {
     id: "ISS-041", insId: "INS-101", description: "סדק בזכוכית חלון קומה 5 — שירותים — נדרשת החלפה",
     severity: "גבוהה", reportedBy: "יוסי כהן", time: "09:45", photos: 2, status: "פתוח",
@@ -131,7 +133,7 @@ const Check = ({ ok }: { ok: boolean }) =>
 
 /* ── KPI strip ────────────────────────────────────────────────── */
 
-const kpiData = [
+const FALLBACK_KPI_DATA = [
   { label: "התקנות פעילות", value: 6, icon: Activity, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "צוותים בשטח", value: 6, icon: Users, color: "text-emerald-400", bg: "bg-emerald-500/10" },
   { label: "יצאו מהמפעל", value: 2, icon: Truck, color: "text-sky-400", bg: "bg-sky-500/10" },
@@ -143,6 +145,67 @@ const kpiData = [
 /* ── Component ────────────────────────────────────────────────── */
 
 export default function InstallationExecution() {
+  const { data: activeInstallations = FALLBACK_ACTIVE_INSTALLATIONS } = useQuery({
+    queryKey: ["installation-active-installations"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-execution/active-installations");
+      if (!res.ok) return FALLBACK_ACTIVE_INSTALLATIONS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_ACTIVE_INSTALLATIONS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: timelineEvents = FALLBACK_TIMELINE_EVENTS } = useQuery({
+    queryKey: ["installation-timeline-events"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-execution/timeline-events");
+      if (!res.ok) return FALLBACK_TIMELINE_EVENTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TIMELINE_EVENTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: installationItems = FALLBACK_INSTALLATION_ITEMS } = useQuery({
+    queryKey: ["installation-installation-items"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-execution/installation-items");
+      if (!res.ok) return FALLBACK_INSTALLATION_ITEMS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_INSTALLATION_ITEMS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: fieldIssues = FALLBACK_FIELD_ISSUES } = useQuery({
+    queryKey: ["installation-field-issues"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-execution/field-issues");
+      if (!res.ok) return FALLBACK_FIELD_ISSUES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_FIELD_ISSUES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: kpiData = FALLBACK_KPI_DATA } = useQuery({
+    queryKey: ["installation-kpi-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-execution/kpi-data");
+      if (!res.ok) return FALLBACK_KPI_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_KPI_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* ── Header ───────────────────────────────────────────── */}

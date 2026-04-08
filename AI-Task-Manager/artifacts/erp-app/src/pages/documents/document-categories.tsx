@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -13,7 +15,7 @@ import {
 
 /* ── category data ── */
 
-const categories = [
+const FALLBACK_CATEGORIES = [
   { id: 1, name: "רכש", icon: PackageOpen, docs: 645, color: "bg-blue-600", pct: 16.8, subs: ["הזמנות רכש", "תעודות משלוח", "חשבוניות ספק", "חוזי ספק"] },
   { id: 2, name: "כספים", icon: Banknote, docs: 1530, color: "bg-green-600", pct: 39.8, subs: ["חשבוניות", "קבלות", "דוחות כספיים", "אישורי תשלום"] },
   { id: 3, name: "ייצור", icon: Factory, docs: 820, color: "bg-orange-600", pct: 21.3, subs: ["הוראות עבודה", "דוחות QC", "שרטוטים", "BOM"] },
@@ -28,7 +30,7 @@ const categories = [
   { id: 12, name: "כללי", icon: LayoutList, docs: 9, color: "bg-gray-500", pct: 0.2, subs: ["שונות"] },
 ];
 
-const uncategorized = [
+const FALLBACK_UNCATEGORIZED = [
   { id: "UC-001", name: "סריקה_20260401_001.pdf", uploaded: "2026-04-01", uploader: "יוסי כהן", size: "2.4 MB", suggested: "רכש" },
   { id: "UC-002", name: "מייל_ספק_תמונות.zip", uploaded: "2026-04-02", uploader: "דוד מזרחי", size: "18 MB", suggested: "התקנות" },
   { id: "UC-003", name: "טיוטת_הסכם_v2.docx", uploaded: "2026-04-03", uploader: "רחל אברהם", size: "340 KB", suggested: "משפטי" },
@@ -43,7 +45,7 @@ const uncategorized = [
   { id: "UC-012", name: "חוזה_עבודה_חדש_2026.docx", uploaded: "2026-04-07", uploader: "דוד לוי", size: "310 KB", suggested: "משאבי אנוש" },
 ];
 
-const rules = [
+const FALLBACK_RULES = [
   { id: 1, pattern: "הזמנת רכש / PO-*", target: "רכש > הזמנות רכש", matches: 312, accuracy: 97 },
   { id: 2, pattern: "חשבונית מס / INV-*", target: "כספים > חשבוניות", matches: 845, accuracy: 99 },
   { id: 3, pattern: "שרטוט / DWG-* / .dwg / .stp", target: "הנדסה > שרטוטים", matches: 128, accuracy: 94 },
@@ -60,7 +62,7 @@ const rules = [
 
 /* ── helpers ── */
 
-const summaryCards = [
+const FALLBACK_SUMMARY_CARDS = [
   { label: "קטגוריות ראשיות", value: 12, icon: FolderOpen, accent: "text-blue-600" },
   { label: "תתי-קטגוריות", value: 48, icon: Tag, accent: "text-purple-600" },
   { label: "מסמכים מסווגים", value: "3,847", icon: FileText, accent: "text-green-600" },
@@ -70,6 +72,17 @@ const summaryCards = [
 /* ── component ── */
 
 export default function DocumentCategoriesPage() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["document_categories"],
+    queryFn: () => authFetch("/api/documents/document-categories").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const categories = apiData?.categories ?? FALLBACK_CATEGORIES;
+  const uncategorized = apiData?.uncategorized ?? FALLBACK_UNCATEGORIZED;
+  const rules = apiData?.rules ?? FALLBACK_RULES;
+  const summaryCards = apiData?.summaryCards ?? FALLBACK_SUMMARY_CARDS;
   const [expanded, setExpanded] = useState<number | null>(null);
 
   const toggle = (id: number) => setExpanded(expanded === id ? null : id);

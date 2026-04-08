@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useLocation } from "wouter";
 import {
   Shield, ArrowRight, DollarSign, TrendingUp, Activity, AlertTriangle,
@@ -23,7 +25,7 @@ function fmt(val: number) {
   return `₪${val.toFixed(0)}`;
 }
 
-const STRATEGIES = [
+const FALLBACK_STRATEGIES = [
   {
     id: 1, name: "Forward Contracts — חומרי גלם", type: "Forward",
     cost: 45000, annualSaving: 346500, netBenefit: 301500, roi: 670,
@@ -76,7 +78,7 @@ const STRATEGIES = [
   },
 ];
 
-const BEFORE_AFTER = [
+const FALLBACK_BEFORE_AFTER = [
   { category: "חומרי גלם", before: 23.6, after: 14.2 },
   { category: "ביקוש", before: 44.4, after: 35.8 },
   { category: "תפעולי", before: 18.2, after: 8.2 },
@@ -84,7 +86,7 @@ const BEFORE_AFTER = [
   { category: 'מטח', before: 2.3, after: 1.4 },
 ];
 
-const COVERAGE_RADAR = [
+const FALLBACK_COVERAGE_RADAR = [
   { risk: "חומרי גלם", covered: 60, target: 80 },
   { risk: "ביקוש/שוק", covered: 45, target: 70 },
   { risk: "תפעולי", covered: 70, target: 85 },
@@ -95,7 +97,7 @@ const COVERAGE_RADAR = [
   { risk: "סייבר", covered: 30, target: 60 },
 ];
 
-const EFFICIENCY = [
+const FALLBACK_EFFICIENCY = [
   { month: "01", hedgedVar: 2800, unhedgedVar: 3330, savings: 530 },
   { month: "02", hedgedVar: 2650, unhedgedVar: 3330, savings: 680 },
   { month: "03", hedgedVar: 2900, unhedgedVar: 3450, savings: 550 },
@@ -111,6 +113,14 @@ const EFFICIENCY = [
 ];
 
 export default function BlackRockHedging() {
+  const { data: blackrockhedgingData } = useQuery({
+    queryKey: ["blackrock-hedging"],
+    queryFn: () => authFetch("/api/finance/blackrock_hedging"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const STRATEGIES = blackrockhedgingData ?? FALLBACK_STRATEGIES;
+
   const [, navigate] = useLocation();
   const [tab, setTab] = useState("strategies");
   const [expandedStrategy, setExpandedStrategy] = useState<number | null>(0);

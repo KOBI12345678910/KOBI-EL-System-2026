@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,7 +13,7 @@ import {
 } from "lucide-react";
 
 /* ────── KPI Data ────── */
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "mappings מוגדרים", value: 15, icon: ArrowLeftRight, color: "text-blue-600", bg: "bg-blue-50" },
   { label: "transformations היום", value: 890, icon: Zap, color: "text-emerald-600", bg: "bg-emerald-50" },
   { label: "validation errors", value: 4, icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" },
@@ -19,7 +21,7 @@ const kpis = [
 ];
 
 /* ────── Field Mappings ────── */
-const fieldMappings = [
+const FALLBACK_FIELD_MAPPINGS = [
   { id: "MAP-001", source: "vendor_name", target: "supplier_name", rule: "direct", integration: "SAP B1", active: true, lastUsed: "2026-04-08 09:14" },
   { id: "MAP-002", source: "inv_date", target: "invoice_date", rule: "format", integration: "חשבונית ירוקה", active: true, lastUsed: "2026-04-08 08:55" },
   { id: "MAP-003", source: "total_amount", target: "gross_total", rule: "calculate", integration: "Priority", active: true, lastUsed: "2026-04-08 08:30" },
@@ -40,7 +42,7 @@ const ruleColors: Record<string, string> = {
 };
 
 /* ────── Payload Schemas ────── */
-const schemas = [
+const FALLBACK_SCHEMAS = [
   { name: "supplier_invoice", version: "3.2", fields: 34, rules: 18, lastValidated: "2026-04-08 09:15" },
   { name: "hilan_payroll", version: "2.1", fields: 52, rules: 24, lastValidated: "2026-04-08 07:00" },
   { name: "customs_declaration", version: "1.8", fields: 41, rules: 22, lastValidated: "2026-04-07 18:30" },
@@ -52,7 +54,7 @@ const schemas = [
 ];
 
 /* ────── Validation Log ────── */
-const validationLog = [
+const FALLBACK_VALIDATION_LOG = [
   { payload: "INV-20260408-0091", schema: "supplier_invoice", result: "pass", errors: 0, ts: "2026-04-08 09:15:03" },
   { payload: "PAY-202604-BATCH", schema: "hilan_payroll", result: "pass", errors: 0, ts: "2026-04-08 07:00:22" },
   { payload: "SO-88421", schema: "sales_order", result: "fail", errors: 2, ts: "2026-04-08 08:45:11" },
@@ -66,7 +68,7 @@ const validationLog = [
 ];
 
 /* ────── Transform Rules ────── */
-const transformRules = [
+const FALLBACK_TRANSFORM_RULES = [
   { name: "שינוי שם שדה", type: "field_rename", desc: "vendor_name → supplier_name", example: '"vendor_name" → "supplier_name"', uses: 245, icon: Replace },
   { name: "המרת פורמט תאריך", type: "date_format", desc: "DD/MM/YYYY → ISO 8601", example: '"08/04/2026" → "2026-04-08T00:00:00Z"', uses: 312, icon: CalendarClock },
   { name: "המרת מטבע", type: "currency_convert", desc: "שער בנק ישראל × סכום מקור", example: "USD 100 × 3.62 = ₪362.00", uses: 89, icon: Coins },
@@ -77,6 +79,18 @@ const transformRules = [
 
 /* ────── Component ────── */
 export default function TransformationEngine() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["transformation_engine"],
+    queryFn: () => authFetch("/api/integrations/transformation-engine").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const fieldMappings = apiData?.fieldMappings ?? FALLBACK_FIELD_MAPPINGS;
+  const schemas = apiData?.schemas ?? FALLBACK_SCHEMAS;
+  const validationLog = apiData?.validationLog ?? FALLBACK_VALIDATION_LOG;
+  const transformRules = apiData?.transformRules ?? FALLBACK_TRANSFORM_RULES;
   const [tab, setTab] = useState("mappings");
 
   return (

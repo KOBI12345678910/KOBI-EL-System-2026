@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,7 +14,7 @@ import {
 const fmt = (v: number) => "₪" + v.toLocaleString("he-IL");
 const pct = (v: number) => v.toFixed(1) + "%";
 
-const costBreakdown = [
+const FALLBACK_COST_BREAKDOWN = [
   { label: "חומרי גלם", amount: 42800, pctOfTotal: 28.5, color: "bg-blue-500" },
   { label: "יבוא ומכס", amount: 8900, pctOfTotal: 5.9, color: "bg-cyan-500" },
   { label: "ייצור", amount: 38200, pctOfTotal: 25.4, color: "bg-violet-500" },
@@ -21,15 +23,15 @@ const costBreakdown = [
   { label: "תקורה כללית", amount: 22400, pctOfTotal: 14.9, color: "bg-slate-400" },
   { label: "רזרבת סיכון", amount: 11800, pctOfTotal: 7.9, color: "bg-red-400" },
 ];
-const totalCost = costBreakdown.reduce((s, c) => s + c.amount, 0);
+const totalCost = FALLBACK_COST_BREAKDOWN.reduce((s, c) => s + c.amount, 0);
 
-const priceCards = [
+const FALLBACK_PRICE_CARDS = [
   { title: "מחיר רצפה (מינימום)", price: 168500, margin: 11.8, profit: 18300, icon: ArrowDown, color: "from-red-600/30 to-red-900/10 border-red-500/30", textColor: "text-red-400" },
   { title: "מחיר יעד", price: 187000, margin: 24.4, profit: 36800, icon: Target, color: "from-amber-600/30 to-amber-900/10 border-amber-500/30", textColor: "text-amber-400" },
   { title: "מחיר מומלץ", price: 198500, margin: 32.1, profit: 48300, icon: TrendingUp, color: "from-emerald-600/30 to-emerald-900/10 border-emerald-500/30", textColor: "text-emerald-400" },
 ];
 
-const sensitivityRows = [
+const FALLBACK_SENSITIVITY_ROWS = [
   { scenario: "בסיס (ללא שינוי)", costDelta: 0, newCost: totalCost, price: 198500, margin: 32.1, profit: 48300, status: "ok" },
   { scenario: "עלייה של 5%", costDelta: 5, newCost: Math.round(totalCost * 1.05), price: 198500, margin: 27.3, profit: 41190, status: "ok" },
   { scenario: "עלייה של 10%", costDelta: 10, newCost: Math.round(totalCost * 1.10), price: 198500, margin: 22.2, profit: 33780, status: "warning" },
@@ -37,7 +39,7 @@ const sensitivityRows = [
   { scenario: "עלייה של 20%", costDelta: 20, newCost: Math.round(totalCost * 1.20), price: 198500, margin: 11.0, profit: 18060, status: "danger" },
 ];
 
-const pastProjects = [
+const FALLBACK_PAST_PROJECTS = [
   { id: "PRJ-0982", name: "שער כניסה Deluxe", client: "נכסי אריאל", cost: 138200, price: 179000, margin: 22.8, date: "2025-11" },
   { id: "PRJ-1011", name: "שער Premium חשמלי", client: "קבוצת רמות", cost: 155400, price: 205000, margin: 24.2, date: "2025-12" },
   { id: "PRJ-1023", name: "שער כניסה מעוצב", client: "גולדן הום", cost: 128700, price: 168000, margin: 23.4, date: "2026-01" },
@@ -45,13 +47,25 @@ const pastProjects = [
   { id: "PRJ-1041", name: "שער אלומיניום Premium", client: "נדל\"ן פלוס", cost: 144900, price: 191000, margin: 24.1, date: "2026-03" },
 ];
 
-const discountGuardrails = [
+const FALLBACK_DISCOUNT_GUARDRAILS = [
   { label: "הנחה מקסימלית מותרת", value: "12%", detail: "עד ₪23,820 ממחיר המומלץ", icon: ShieldCheck, color: "text-blue-400" },
   { label: "מרווח מינימלי (התראה)", value: "15%", detail: "מתחת ל-15% — נדרש אישור מנהל", icon: AlertTriangle, color: "text-amber-400" },
   { label: "חריגה ללקוח אסטרטגי", value: "אושר", detail: "קבוצת אלון — לקוח אסטרטגי, הנחה עד 18%", icon: CheckCircle2, color: "text-emerald-400" },
 ];
 
 export default function RecommendedPrice() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["recommended_price"],
+    queryFn: () => authFetch("/api/pricing/recommended-price").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const costBreakdown = apiData?.costBreakdown ?? FALLBACK_COST_BREAKDOWN;
+  const priceCards = apiData?.priceCards ?? FALLBACK_PRICE_CARDS;
+  const sensitivityRows = apiData?.sensitivityRows ?? FALLBACK_SENSITIVITY_ROWS;
+  const pastProjects = apiData?.pastProjects ?? FALLBACK_PAST_PROJECTS;
+  const discountGuardrails = apiData?.discountGuardrails ?? FALLBACK_DISCOUNT_GUARDRAILS;
   const [tab, setTab] = useState("recommended");
 
   return (

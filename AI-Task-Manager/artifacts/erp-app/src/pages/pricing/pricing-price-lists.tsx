@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +13,7 @@ import {
   TrendingUp, Layers, FileText
 } from "lucide-react";
 
-const priceLists = [
+const FALLBACK_PRICE_LISTS = [
   { id: "PL-001", name: "מחירון חלונות אלומיניום 2026", category: "חלונות", products: 45, tiers: ["קמעונאי", "סיטונאי", "קבלן"], validFrom: "2026-01-01", validUntil: "2026-12-31", lastUpdate: "2026-03-15", status: "פעיל", currency: "ILS", avgDiscount: "12%" },
   { id: "PL-002", name: "מחירון דלתות כניסה", category: "דלתות", products: 28, tiers: ["קמעונאי", "מפיץ"], validFrom: "2026-01-01", validUntil: "2026-12-31", lastUpdate: "2026-02-20", status: "פעיל", currency: "ILS", avgDiscount: "15%" },
   { id: "PL-003", name: "מחירון מעקות ומסגרות", category: "מעקות", products: 32, tiers: ["קמעונאי", "קבלן", "פרויקט"], validFrom: "2026-01-01", validUntil: "2026-06-30", lastUpdate: "2026-01-10", status: "פעיל", currency: "ILS", avgDiscount: "10%" },
@@ -32,7 +34,7 @@ const statusColors: Record<string, string> = {
   "ארכיון": "bg-gray-500/20 text-gray-300 border-gray-500/30",
 };
 
-const sampleProducts = [
+const FALLBACK_SAMPLE_PRODUCTS = [
   { sku: "WIN-T60-150120", name: "חלון T-60 150x120", retail: 4200, wholesale: 3570, contractor: 3150, unit: "יח׳" },
   { sku: "WIN-T60-180150", name: "חלון T-60 180x150", retail: 5800, wholesale: 4930, contractor: 4350, unit: "יח׳" },
   { sku: "WIN-T60-200180", name: "חלון T-60 200x180", retail: 7500, wholesale: 6375, contractor: 5625, unit: "יח׳" },
@@ -41,6 +43,15 @@ const sampleProducts = [
 ];
 
 export default function PricingPriceLists() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["pricing_price_lists"],
+    queryFn: () => authFetch("/api/pricing/pricing-price-lists").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const priceLists = apiData?.priceLists ?? FALLBACK_PRICE_LISTS;
+  const sampleProducts = apiData?.sampleProducts ?? FALLBACK_SAMPLE_PRODUCTS;
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("lists");

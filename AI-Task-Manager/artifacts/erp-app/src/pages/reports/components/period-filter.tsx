@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Calendar, FileDown, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -23,7 +25,7 @@ interface PeriodFilterProps {
   onCustomEndChange?: (date: string) => void;
 }
 
-const PERIOD_OPTIONS: { value: PeriodType; label: string }[] = [
+const FALLBACK_PERIOD_OPTIONS: { value: PeriodType; label: string }[] = [
   { value: "day", label: "יומי" },
   { value: "week", label: "שבועי" },
   { value: "month", label: "חודשי" },
@@ -32,7 +34,7 @@ const PERIOD_OPTIONS: { value: PeriodType; label: string }[] = [
   { value: "custom", label: "טווח מותאם" },
 ];
 
-const MONTH_OPTIONS = [
+const FALLBACK_MONTH_OPTIONS = [
   { value: "1", label: "ינואר" }, { value: "2", label: "פברואר" }, { value: "3", label: "מרץ" },
   { value: "4", label: "אפריל" }, { value: "5", label: "מאי" }, { value: "6", label: "יוני" },
   { value: "7", label: "יולי" }, { value: "8", label: "אוגוסט" }, { value: "9", label: "ספטמבר" },
@@ -114,6 +116,14 @@ export default function PeriodFilter({
   month, onMonthChange, quarter, onQuarterChange,
   customStart, onCustomStartChange, customEnd, onCustomEndChange,
 }: PeriodFilterProps) {
+  const { data: periodfilterData } = useQuery({
+    queryKey: ["period-filter"],
+    queryFn: () => authFetch("/api/reports/period_filter"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const PERIOD_OPTIONS = periodfilterData ?? FALLBACK_PERIOD_OPTIONS;
+
   return (
     <div className="flex flex-wrap gap-2 items-center">
       <div className="flex items-center gap-1 text-xs text-muted-foreground">

@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +14,7 @@ import {
 } from "lucide-react";
 
 // ── Material Catalog ──
-const materials = [
+const FALLBACK_MATERIALS = [
   { id: "MAT-001", name: "אלומיניום 6063-T5", family: "אלומיניום", spec: "TK-AL-001", standard: "EN 755-2", density: 2.70, yieldMPa: 110, properties: "אנודייז מעולה, עמידות קורוזיה, ריתוך טוב", supplier: "אלקואה ישראל", status: "מאושר" },
   { id: "MAT-002", name: "אלומיניום 6061-T6", family: "אלומיניום", spec: "TK-AL-002", standard: "EN 755-2", density: 2.70, yieldMPa: 240, properties: "חוזק גבוה, עיבוד שבבי, ריתוך", supplier: "הידאל תעשיות", status: "מאושר" },
   { id: "MAT-003", name: "זכוכית שטוחה 4 מ\"מ", family: "זכוכית", spec: "TK-GL-001", standard: "EN 572-2", density: 2.50, yieldMPa: 45, properties: "שקיפות גבוהה, חיתוך קל", supplier: "פניציה זכוכית", status: "מאושר" },
@@ -32,10 +34,10 @@ const materials = [
 
 const pvbInterlayer = { id: "MAT-016", name: "שכבת PVB ביניים", family: "זכוכית", spec: "TK-GL-006", standard: "EN ISO 12543-4", density: 1.07, yieldMPa: 22, properties: "הדבקת שכבות, בטיחות, בידוד אקוסטי", supplier: "קוראקס ישראל", status: "מאושר" };
 const argonGas = { id: "MAT-017", name: "גז ארגון", family: "גז בידוד", spec: "TK-GS-001", standard: "EN 1279-3", density: 0.0018, yieldMPa: 0, properties: "בידוד תרמי יחידות IGU, Ug=1.1", supplier: "מקסימה גזים", status: "מאושר" };
-const allMaterials = [...materials, pvbInterlayer, argonGas];
+const FALLBACK_ALLMATERIALS = [...materials, pvbInterlayer, argonGas];
 
 // ── Test Results ──
-const testResults = [
+const FALLBACK_TESTRESULTS = [
   { id: "TST-001", material: "אלומיניום 6063-T5", test: "מתיחה", date: "2026-04-01", lab: "מעבדת התקנים", result: "115 MPa", target: ">=110 MPa", status: "עבר" },
   { id: "TST-002", material: "זכוכית מחוסמת", test: "שבירה / פרגמנטציה", date: "2026-04-02", lab: "מכון התקנים", result: "42 שברים/50x50", target: ">=40", status: "עבר" },
   { id: "TST-003", material: "פלדה S235", test: "מתיחה", date: "2026-04-03", lab: "מעבדת התקנים", result: "242 MPa", target: ">=235 MPa", status: "עבר" },
@@ -49,7 +51,7 @@ const testResults = [
 ];
 
 // ── Certifications ──
-const certifications = [
+const FALLBACK_CERTIFICATIONS = [
   { id: "CRT-001", material: "אלומיניום 6063-T5", certType: "תעודת בדיקה 3.1", issuer: "מכון התקנים הישראלי", issued: "2025-10-15", expiry: "2026-10-14", status: "בתוקף" },
   { id: "CRT-002", material: "זכוכית מחוסמת", certType: "CE EN 12150-1", issuer: "TUV Rheinland", issued: "2025-06-01", expiry: "2026-05-31", status: "בתוקף" },
   { id: "CRT-003", material: "פלדה S235", certType: "תעודת בדיקה 3.1", issuer: "מכון התקנים", issued: "2025-08-20", expiry: "2026-08-19", status: "בתוקף" },
@@ -61,7 +63,7 @@ const certifications = [
 ];
 
 // ── Non-Conformances ──
-const ncrs = [
+const FALLBACK_NCRS = [
   { id: "NCR-001", material: "זכוכית שטוחה 8 מ\"מ", desc: "עובי מתחת לטולרנס — 7.6 מ\"מ במקום 8.0", severity: "משמעותי", date: "2026-03-28", assignee: "דוד מזרחי", status: "פתוח", action: "החזרה לספק + בדיקה חוזרת" },
   { id: "NCR-002", material: "ציפוי אבקתי", desc: "גוון RAL 7016 חורג מדלתא E>2", severity: "קל", date: "2026-04-01", assignee: "שרה לוי", status: "בטיפול", action: "ריסוס מחדש אצווה 312" },
   { id: "NCR-003", material: "אלומיניום 6063-T5", desc: "שריטות אורך על פרופילים — פגם אקסטרוזיה", severity: "משמעותי", date: "2026-04-03", assignee: "יוסי כהן", status: "בטיפול", action: "תביעת ספק + בדיקת QC מחמירה" },
@@ -95,6 +97,40 @@ const statusColor: Record<string, string> = {
 };
 
 export default function MaterialSpecificationsPage() {
+  const { data: apimaterials } = useQuery({
+    queryKey: ["/api/engineering/material-specifications/materials"],
+    queryFn: () => authFetch("/api/engineering/material-specifications/materials").then(r => r.json()).catch(() => null),
+  });
+  const materials = Array.isArray(apimaterials) ? apimaterials : (apimaterials?.data ?? apimaterials?.items ?? FALLBACK_MATERIALS);
+
+
+  const { data: apiallMaterials } = useQuery({
+    queryKey: ["/api/engineering/material-specifications/allmaterials"],
+    queryFn: () => authFetch("/api/engineering/material-specifications/allmaterials").then(r => r.json()).catch(() => null),
+  });
+  const allMaterials = Array.isArray(apiallMaterials) ? apiallMaterials : (apiallMaterials?.data ?? apiallMaterials?.items ?? FALLBACK_ALLMATERIALS);
+
+
+  const { data: apitestResults } = useQuery({
+    queryKey: ["/api/engineering/material-specifications/testresults"],
+    queryFn: () => authFetch("/api/engineering/material-specifications/testresults").then(r => r.json()).catch(() => null),
+  });
+  const testResults = Array.isArray(apitestResults) ? apitestResults : (apitestResults?.data ?? apitestResults?.items ?? FALLBACK_TESTRESULTS);
+
+
+  const { data: apicertifications } = useQuery({
+    queryKey: ["/api/engineering/material-specifications/certifications"],
+    queryFn: () => authFetch("/api/engineering/material-specifications/certifications").then(r => r.json()).catch(() => null),
+  });
+  const certifications = Array.isArray(apicertifications) ? apicertifications : (apicertifications?.data ?? apicertifications?.items ?? FALLBACK_CERTIFICATIONS);
+
+
+  const { data: apincrs } = useQuery({
+    queryKey: ["/api/engineering/material-specifications/ncrs"],
+    queryFn: () => authFetch("/api/engineering/material-specifications/ncrs").then(r => r.json()).catch(() => null),
+  });
+  const ncrs = Array.isArray(apincrs) ? apincrs : (apincrs?.data ?? apincrs?.items ?? FALLBACK_NCRS);
+
   const [search, setSearch] = useState("");
   const [familyFilter, setFamilyFilter] = useState("all");
 

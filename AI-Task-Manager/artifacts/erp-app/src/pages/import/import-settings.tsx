@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,7 +10,7 @@ import {
 } from "lucide-react";
 
 // ── 1. Countries ─────────────────────────────────────────────────────
-const countries = [
+const FALLBACK_COUNTRIES = [
   { code: "CN", name: "סין", flag: "\u{1F1E8}\u{1F1F3}", agreement: "—", currency: "CNY", active: true },
   { code: "DE", name: "גרמניה", flag: "\u{1F1E9}\u{1F1EA}", agreement: "EU-IL FTA", currency: "EUR", active: true },
   { code: "TR", name: "טורקיה", flag: "\u{1F1F9}\u{1F1F7}", agreement: "TR-IL FTA", currency: "TRY", active: true },
@@ -18,7 +20,7 @@ const countries = [
 ];
 
 // ── 2. Ports ─────────────────────────────────────────────────────────
-const ports = [
+const FALLBACK_PORTS = [
   { code: "ILASH", name: "נמל אשדוד", type: "ימי", country: "ישראל", primary: true },
   { code: "ILHFA", name: "נמל חיפה", type: "ימי", country: "ישראל", primary: true },
   { code: "ILBEN", name: "נמל תעופה בן גוריון", type: "אווירי", country: "ישראל", primary: true },
@@ -28,7 +30,7 @@ const ports = [
 ];
 
 // ── 3. Incoterms ─────────────────────────────────────────────────────
-const incoterms = [
+const FALLBACK_INCOTERMS = [
   { code: "FOB", name: "Free On Board", desc: "הספק אחראי עד העמסה על הספינה", default: true },
   { code: "CIF", name: "Cost Insurance Freight", desc: "הספק אחראי כולל ביטוח והובלה עד נמל יעד", default: false },
   { code: "EXW", name: "Ex Works", desc: "הקונה אחראי מרגע עזיבת המפעל", default: false },
@@ -37,7 +39,7 @@ const incoterms = [
 ];
 
 // ── 4. Shipment modes ────────────────────────────────────────────────
-const shipmentModes = [
+const FALLBACK_SHIPMENT_MODES = [
   { code: "SEA_FCL", name: "ימי — מכולה שלמה (FCL)", icon: "sea", avgDays: 25, costRange: "$3,500-$5,000/TEU" },
   { code: "SEA_LCL", name: "ימי — מכולה משותפת (LCL)", icon: "sea", avgDays: 30, costRange: "$80-$120/CBM" },
   { code: "AIR", name: "אווירי", icon: "air", avgDays: 5, costRange: "$8-$12/kg" },
@@ -45,16 +47,16 @@ const shipmentModes = [
   { code: "EXPRESS", name: "שליח מהיר (DHL/FedEx)", icon: "express", avgDays: 3, costRange: "$15-$25/kg" },
 ];
 
-// ── 5. Customs brokers ───────────────────────────────────────────────
-const brokers = [
+// ── 5. Customs FALLBACK_BROKERS ───────────────────────────────────────────────
+const FALLBACK_BROKERS = [
   { name: "שחם עמילות מכס", license: "AMK-5521", port: "אשדוד", rating: "A+", phone: "08-8523100" },
   { name: "מכס פלוס בע\"מ", license: "AMK-3387", port: "חיפה", rating: "A", phone: "04-8501200" },
   { name: "ג.ל.ד עמילות מכס", license: "AMK-4412", port: "אשדוד", rating: "A-", phone: "08-8564300" },
   { name: "נהרי עמילות מכס", license: "AMK-2298", port: "בן גוריון", rating: "B+", phone: "03-9753200" },
 ];
 
-// ── 6. Freight forwarders ────────────────────────────────────────────
-const forwarders = [
+// ── 6. Freight FALLBACK_FORWARDERS ────────────────────────────────────────────
+const FALLBACK_FORWARDERS = [
   { name: "דהן שילוח בינלאומי", speciality: "ימי + אווירי", routes: "אסיה, אירופה", rating: "A", active: true },
   { name: "אלעד לוגיסטיקה", speciality: "ימי FCL", routes: "סין, טורקיה", rating: "A-", active: true },
   { name: "Kuehne+Nagel Israel", speciality: "אווירי", routes: "גרמניה, איטליה", rating: "A+", active: true },
@@ -62,7 +64,7 @@ const forwarders = [
 ];
 
 // ── 7. Carriers ──────────────────────────────────────────────────────
-const carriers = [
+const FALLBACK_CARRIERS = [
   { name: "ZIM", type: "ימי", routes: "אסיה, אירופה, ים תיכון", transitAvg: "22 ימים" },
   { name: "MSC", type: "ימי", routes: "סין, דרום מזרח אסיה", transitAvg: "28 ימים" },
   { name: "Maersk", type: "ימי", routes: "אירופה, סין", transitAvg: "25 ימים" },
@@ -71,7 +73,7 @@ const carriers = [
 ];
 
 // ── 8. Document types ────────────────────────────────────────────────
-const documentTypes = [
+const FALLBACK_DOCUMENT_TYPES = [
   { code: "CI", name: "חשבונית מסחרית (Commercial Invoice)", required: true, stage: "הזמנה" },
   { code: "PL", name: "רשימת אריזה (Packing List)", required: true, stage: "משלוח" },
   { code: "BL", name: "שטר מטען (Bill of Lading)", required: true, stage: "הובלה" },
@@ -81,7 +83,7 @@ const documentTypes = [
 ];
 
 // ── 9. Duty rules ────────────────────────────────────────────────────
-const dutyRules = [
+const FALLBACK_DUTY_RULES = [
   { hsRange: "7005.xx", category: "זכוכית שטוחה", baseRate: "8%", ftaRate: "0% (EU)", notes: "דורש EUR.1" },
   { hsRange: "7604.xx", category: "פרופילי אלומיניום", baseRate: "6%", ftaRate: "3% (TR)", notes: "הסכם טורקיה" },
   { hsRange: "3214.xx", category: "חומרי אטימה", baseRate: "12%", ftaRate: "—", notes: "אין הסכם" },
@@ -90,7 +92,7 @@ const dutyRules = [
 ];
 
 // ── 10. Landed cost rules ────────────────────────────────────────────
-const landedCostRules = [
+const FALLBACK_LANDED_COST_RULES = [
   { component: "הובלה ימית", method: "לפי נפח (CBM)", pct: "8-12%", allocTo: "הזמנה" },
   { component: "הובלה אווירית", method: "לפי משקל (kg)", pct: "15-22%", allocTo: "הזמנה" },
   { component: "ביטוח", method: "% מערך הסחורה", pct: "0.5-1.5%", allocTo: "הזמנה" },
@@ -100,7 +102,7 @@ const landedCostRules = [
 ];
 
 // ── 11. Currency rules ───────────────────────────────────────────────
-const currencyRules = [
+const FALLBACK_CURRENCY_RULES = [
   { currency: "USD", symbol: "$", source: "בנק ישראל", updateFreq: "יומי", hedging: "חוזה פורוורד", spread: "0.3%" },
   { currency: "EUR", symbol: "\u20AC", source: "בנק ישראל", updateFreq: "יומי", hedging: "חוזה פורוורד", spread: "0.4%" },
   { currency: "CNY", symbol: "\u00A5", source: "בנק ישראל", updateFreq: "יומי", hedging: "אופציה", spread: "0.8%" },
@@ -109,7 +111,7 @@ const currencyRules = [
 ];
 
 // ── 12. Alert rules ──────────────────────────────────────────────────
-const alertRules = [
+const FALLBACK_ALERT_RULES = [
   { event: "עיכוב משלוח > 3 ימים", severity: "קריטי", channel: "SMS + מייל", recipients: "מנהל יבוא, מנכ\"ל" },
   { event: "חריגת Landed Cost > 5%", severity: "גבוה", channel: "מייל", recipients: "מנהל יבוא, כספים" },
   { event: "מסמך חסר למשלוח פעיל", severity: "גבוה", channel: "מייל + מערכת", recipients: "מנהל יבוא" },
@@ -129,6 +131,151 @@ const severityBadge = (s: string) => {
 };
 
 export default function ImportSettings() {
+  const { data: countries = FALLBACK_COUNTRIES } = useQuery({
+    queryKey: ["import-countries"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-settings/countries");
+      if (!res.ok) return FALLBACK_COUNTRIES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_COUNTRIES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: ports = FALLBACK_PORTS } = useQuery({
+    queryKey: ["import-ports"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-settings/ports");
+      if (!res.ok) return FALLBACK_PORTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_PORTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: incoterms = FALLBACK_INCOTERMS } = useQuery({
+    queryKey: ["import-incoterms"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-settings/incoterms");
+      if (!res.ok) return FALLBACK_INCOTERMS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_INCOTERMS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: shipmentModes = FALLBACK_SHIPMENT_MODES } = useQuery({
+    queryKey: ["import-shipment-modes"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-settings/shipment-modes");
+      if (!res.ok) return FALLBACK_SHIPMENT_MODES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SHIPMENT_MODES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: brokers = FALLBACK_BROKERS } = useQuery({
+    queryKey: ["import-brokers"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-settings/brokers");
+      if (!res.ok) return FALLBACK_BROKERS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_BROKERS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: forwarders = FALLBACK_FORWARDERS } = useQuery({
+    queryKey: ["import-forwarders"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-settings/forwarders");
+      if (!res.ok) return FALLBACK_FORWARDERS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_FORWARDERS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: carriers = FALLBACK_CARRIERS } = useQuery({
+    queryKey: ["import-carriers"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-settings/carriers");
+      if (!res.ok) return FALLBACK_CARRIERS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_CARRIERS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: documentTypes = FALLBACK_DOCUMENT_TYPES } = useQuery({
+    queryKey: ["import-document-types"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-settings/document-types");
+      if (!res.ok) return FALLBACK_DOCUMENT_TYPES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DOCUMENT_TYPES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: dutyRules = FALLBACK_DUTY_RULES } = useQuery({
+    queryKey: ["import-duty-rules"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-settings/duty-rules");
+      if (!res.ok) return FALLBACK_DUTY_RULES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DUTY_RULES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: landedCostRules = FALLBACK_LANDED_COST_RULES } = useQuery({
+    queryKey: ["import-landed-cost-rules"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-settings/landed-cost-rules");
+      if (!res.ok) return FALLBACK_LANDED_COST_RULES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_LANDED_COST_RULES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: currencyRules = FALLBACK_CURRENCY_RULES } = useQuery({
+    queryKey: ["import-currency-rules"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-settings/currency-rules");
+      if (!res.ok) return FALLBACK_CURRENCY_RULES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_CURRENCY_RULES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: alertRules = FALLBACK_ALERT_RULES } = useQuery({
+    queryKey: ["import-alert-rules"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-settings/alert-rules");
+      if (!res.ok) return FALLBACK_ALERT_RULES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_ALERT_RULES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div className="p-6 space-y-6" dir="rtl">
       {/* ── Header ──────────────────────────────────────────────── */}

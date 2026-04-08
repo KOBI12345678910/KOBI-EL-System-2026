@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,7 +12,7 @@ import {
 
 /* ── Static mock data ─────────────────────────────────────────── */
 
-const activeInstallations = [
+const FALLBACK_ACTIVE_INSTALLATIONS = [
   { id: "INS-101", project: "מגדלי הים — חיפה", progress: 85, installed: 10, total: 12, daysElapsed: 2, daysPlanned: 3, status: "לפי לו\"ז", crew: "צוות אלפא", phase: "התקנה" },
   { id: "INS-102", project: "פארק המדע — רחובות", progress: 45, installed: 5, total: 11, daysElapsed: 3, daysPlanned: 4, status: "לפי לו\"ז", crew: "צוות בטא", phase: "התקנה" },
   { id: "INS-103", project: "קניון הדרום — ב\"ש", progress: 92, installed: 11, total: 12, daysElapsed: 3, daysPlanned: 3, status: "מקדים", crew: "צוות דלתא", phase: "בדיקה" },
@@ -23,7 +25,7 @@ const activeInstallations = [
   { id: "INS-110", project: "בית חכם — הרצליה", progress: 50, installed: 4, total: 8, daysElapsed: 1, daysPlanned: 2, status: "לפי לו\"ז", crew: "צוות זטא", phase: "התקנה" },
 ];
 
-const ganttData = [
+const FALLBACK_GANTT_DATA = [
   { id: "INS-101", project: "מגדלי הים — חיפה", plannedStart: 1, plannedEnd: 3, actualStart: 1, actualEnd: 2.5, status: "לפי לו\"ז" },
   { id: "INS-102", project: "פארק המדע — רחובות", plannedStart: 1, plannedEnd: 4, actualStart: 1, actualEnd: 3, status: "לפי לו\"ז" },
   { id: "INS-103", project: "קניון הדרום — ב\"ש", plannedStart: 1, plannedEnd: 3, actualStart: 1, actualEnd: 2.8, status: "מקדים" },
@@ -34,7 +36,7 @@ const ganttData = [
   { id: "INS-108", project: "מרכז ספורט — ראשל\"צ", plannedStart: 2, plannedEnd: 4, actualStart: 2, actualEnd: 3.5, status: "לפי לו\"ז" },
 ];
 
-const milestoneData = [
+const FALLBACK_MILESTONE_DATA = [
   { id: "INS-101", project: "מגדלי הים — חיפה", milestones: [true, true, true, true, false, false, false] },
   { id: "INS-102", project: "פארק המדע — רחובות", milestones: [true, true, true, false, false, false, false] },
   { id: "INS-103", project: "קניון הדרום — ב\"ש", milestones: [true, true, true, true, true, true, false] },
@@ -47,9 +49,9 @@ const milestoneData = [
   { id: "INS-110", project: "בית חכם — הרצליה", milestones: [true, true, true, false, false, false, false] },
 ];
 
-const milestoneLabels = ["הגעה לאתר", "פריקה", "התקנת מסגרות", "הכנסת זכוכית", "איטום", "בדיקה", "מסירה"];
+const FALLBACK_MILESTONE_LABELS = ["הגעה לאתר", "פריקה", "התקנת מסגרות", "הכנסת זכוכית", "איטום", "בדיקה", "מסירה"];
 
-const delayedInstallations = [
+const FALLBACK_DELAYED_INSTALLATIONS = [
   { id: "INS-104", project: "מלון ים התיכון — ת\"א", reason: "עיכוב בגישה לקומות עליונות — מנוף תפוס ע\"י קבלן שכן", impact: 1.5, corrective: "תיאום מנוף ייעודי ליום רביעי, עבודה במשמרת כפולה", responsible: "יוסי כהן — מנהל פרויקט" },
   { id: "INS-107", project: "בית ספר אורט — ת\"א", reason: "חומרי איטום לא הגיעו מהספק — עיכוב באספקה", impact: 1, corrective: "הזמנת חומר חלופי מספק משני, משלוח אקספרס", responsible: "שרה לוי — רכשת" },
   { id: "INS-112", project: "מרכז מסחרי — אשדוד", reason: "אי התאמה בין מידות באתר לתוכניות — דרוש מדידה מחדש", impact: 2, corrective: "צוות מדידות נשלח מחר, ייצור מותאם תוך 48 שעות", responsible: "אלון גולדשטיין — מהנדס שטח" },
@@ -87,7 +89,7 @@ const ganttBarColor = (status: string) => {
 
 /* ── KPI data ─────────────────────────────────────────────────── */
 
-const kpiData = [
+const FALLBACK_KPI_DATA = [
   { label: "בביצוע", value: "6", icon: Activity, color: "text-yellow-400", bg: "bg-yellow-500/10" },
   { label: "לפי לו\"ז", value: "4", icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10" },
   { label: "מאחרות", value: "2", icon: AlertTriangle, color: "text-red-400", bg: "bg-red-500/10" },
@@ -98,6 +100,79 @@ const kpiData = [
 /* ── Component ────────────────────────────────────────────────── */
 
 export default function InstallationProgress() {
+  const { data: activeInstallations = FALLBACK_ACTIVE_INSTALLATIONS } = useQuery({
+    queryKey: ["installation-active-installations"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-progress/active-installations");
+      if (!res.ok) return FALLBACK_ACTIVE_INSTALLATIONS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_ACTIVE_INSTALLATIONS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: ganttData = FALLBACK_GANTT_DATA } = useQuery({
+    queryKey: ["installation-gantt-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-progress/gantt-data");
+      if (!res.ok) return FALLBACK_GANTT_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_GANTT_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: milestoneData = FALLBACK_MILESTONE_DATA } = useQuery({
+    queryKey: ["installation-milestone-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-progress/milestone-data");
+      if (!res.ok) return FALLBACK_MILESTONE_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_MILESTONE_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: milestoneLabels = FALLBACK_MILESTONE_LABELS } = useQuery({
+    queryKey: ["installation-milestone-labels"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-progress/milestone-labels");
+      if (!res.ok) return FALLBACK_MILESTONE_LABELS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_MILESTONE_LABELS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: delayedInstallations = FALLBACK_DELAYED_INSTALLATIONS } = useQuery({
+    queryKey: ["installation-delayed-installations"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-progress/delayed-installations");
+      if (!res.ok) return FALLBACK_DELAYED_INSTALLATIONS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DELAYED_INSTALLATIONS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: kpiData = FALLBACK_KPI_DATA } = useQuery({
+    queryKey: ["installation-kpi-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-progress/kpi-data");
+      if (!res.ok) return FALLBACK_KPI_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_KPI_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* Header */}

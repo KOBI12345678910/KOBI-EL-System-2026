@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -38,7 +40,7 @@ const systemIcon: Record<string, string> = {
 };
 
 /* ── KPI Data ──────────────────────────────────────────────────── */
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "סה״כ בקשות",    value: 12, icon: FileSpreadsheet, color: "text-blue-400",   bg: "bg-blue-500/10" },
   { label: "טיוטה",          value: 2,  icon: FileText,        color: "text-slate-400",  bg: "bg-slate-500/10" },
   { label: "בחישוב",         value: 3,  icon: Calculator,      color: "text-cyan-400",   bg: "bg-cyan-500/10" },
@@ -48,7 +50,7 @@ const kpis = [
 ];
 
 /* ── 12 Pricing Requests ──────────────────────────────────────── */
-const requests = [
+const FALLBACK_REQUESTS = [
   { id: "PR-301", project: "מגדל הים התיכון - חזית זכוכית",      customer: "אורבן נדל״ן",      systemType: "חזית",   areaSqm: 1420, weightKg: 8540,  estimatedCost: 485000,  recommendedPrice: 642000,  margin: 32.4, version: 3, status: "approved",    urgency: "high",   createdBy: "רונן לוי",     date: "2026-03-12" },
   { id: "PR-302", project: "שערי כניסה - פארק רעננה",            customer: "עיריית רעננה",      systemType: "שער",    areaSqm: 86,   weightKg: 1260,  estimatedCost: 78500,   recommendedPrice: 108200,  margin: 37.8, version: 2, status: "sent",        urgency: "medium", createdBy: "מיכל כהן",     date: "2026-03-18" },
   { id: "PR-303", project: "מעקות בטיחות - קניון הנגב",          customer: "ביג מרכזי מסחר",    systemType: "מעקה",   areaSqm: 310,  weightKg: 3720,  estimatedCost: 215000,  recommendedPrice: 296700,  margin: 38.0, version: 1, status: "review",      urgency: "high",   createdBy: "אלון דוד",     date: "2026-03-22" },
@@ -65,6 +67,15 @@ const requests = [
 
 /* ── Component ─────────────────────────────────────────────────── */
 export default function PricingRequestsList() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["pricing_requests_list"],
+    queryFn: () => authFetch("/api/pricing/pricing-requests-list").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const requests = apiData?.requests ?? FALLBACK_REQUESTS;
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
 

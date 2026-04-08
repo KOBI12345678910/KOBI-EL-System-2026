@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +13,7 @@ import {
   Star, Lightbulb, Eye, ChevronDown, ChevronUp, Swords, BookOpen
 } from "lucide-react";
 
-const CRITERIA = [
+const FALLBACK_CRITERIA = [
   { key: "technical", label: "יכולת טכנית", weight: 30 },
   { key: "price", label: "תחרותיות מחיר", weight: 25 },
   { key: "experience", label: "ניסיון", weight: 20 },
@@ -19,7 +21,7 @@ const CRITERIA = [
   { key: "team", label: "צוות", weight: 10 },
 ] as const;
 
-const TENDERS_EVAL = [
+const FALLBACK_TENDERS_EVAL = [
   { id: "TND-041", name: "חלונות אלומיניום - בי\"ס ממלכתי חיפה", client: "עיריית חיפה", deadline: "2026-04-20", scores: { technical: 88, price: 72, experience: 90, timeline: 85, team: 78 } },
   { id: "TND-042", name: "מעטפת זכוכית - מגדל משרדים ת\"א", client: "אזורים בנייה", deadline: "2026-04-25", scores: { technical: 92, price: 65, experience: 85, timeline: 70, team: 90 } },
   { id: "TND-043", name: "דלתות מתכת - מפעל תעשייתי", client: "נשר מפעלים", deadline: "2026-05-01", scores: { technical: 75, price: 88, experience: 70, timeline: 92, team: 82 } },
@@ -28,7 +30,7 @@ const TENDERS_EVAL = [
   { id: "TND-046", name: "מחיצות פנים - בניין ממשלתי", client: "משרד הביטחון", deadline: "2026-05-15", scores: { technical: 70, price: 82, experience: 78, timeline: 88, team: 70 } },
 ];
 
-const GO_NOGO = [
+const FALLBACK_GO_NOGO = [
   { id: "OPP-101", name: "מכרז ציבורי - 400 חלונות אלומיניום", value: 1800000, risk: "בינוני", reward: "גבוה", fit: 88, resources: 72, winProb: 65, decision: "go" },
   { id: "OPP-102", name: "מגדל מגורים - מעטפת זכוכית מלאה", value: 4200000, risk: "גבוה", reward: "גבוה מאוד", fit: 92, resources: 55, winProb: 45, decision: "pending" },
   { id: "OPP-103", name: "שיפוץ מבנה היסטורי - דלתות מתכת", value: 650000, risk: "נמוך", reward: "בינוני", fit: 75, resources: 90, winProb: 80, decision: "go" },
@@ -39,7 +41,7 @@ const GO_NOGO = [
   { id: "OPP-108", name: "מרכז לוגיסטי - שערים ודלתות", value: 920000, risk: "נמוך", reward: "בינוני", fit: 70, resources: 88, winProb: 75, decision: "go" },
 ];
 
-const COMPETITORS = [
+const FALLBACK_COMPETITORS = [
   { tender: "TND-041", competitors: [
     { name: "אלומטל בע\"מ", strengths: "מחירים נמוכים, נוכחות מקומית", weaknesses: "איכות נמוכה יותר, אין תעודת ISO", position: "מתחרה ישיר" },
     { name: "זכוכית הגליל", strengths: "ניסיון במוסדות חינוך", weaknesses: "לוחות זמנים ארוכים, מחיר גבוה", position: "מתחרה עקיף" },
@@ -59,7 +61,7 @@ const COMPETITORS = [
   ]},
 ];
 
-const LESSONS = [
+const FALLBACK_LESSONS = [
   { id: 1, tender: "TND-032", outcome: "זכייה", title: "פרויקט מגורים - רמת גן", lesson: "תמחור אגרסיבי בשילוב הוכחת ניסיון דומה הביא לזכייה. ההצעה הטכנית המפורטת עם לוח זמנים ריאליסטי היו היתרון המרכזי.", category: "תמחור", date: "2026-02-15" },
   { id: 2, tender: "TND-028", outcome: "הפסד", title: "מגדל משרדים - הרצליה", lesson: "הפסדנו בשל חוסר ניסיון ספציפי בחזיתות מעל 20 קומות. יש לבנות פורטפוליו בתחום זה דרך שותפויות.", category: "ניסיון", date: "2026-01-20" },
   { id: 3, tender: "TND-025", outcome: "זכייה", title: "בית ספר - נתניה", lesson: "הקשר האישי עם מנהל הפרויקט ותגובה מהירה לשאלות הבהרה היו גורם מכריע. ביקור באתר לפני ההגשה יצר אמון.", category: "יחסים", date: "2025-12-10" },
@@ -85,6 +87,67 @@ const decisionBadge = (d: string) => {
 };
 
 export default function TenderEvaluationPage() {
+  const { data: CRITERIA = FALLBACK_CRITERIA } = useQuery({
+    queryKey: ["tenders-criteria"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-evaluation/criteria");
+      if (!res.ok) return FALLBACK_CRITERIA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_CRITERIA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: TENDERS_EVAL = FALLBACK_TENDERS_EVAL } = useQuery({
+    queryKey: ["tenders-tenders-eval"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-evaluation/tenders-eval");
+      if (!res.ok) return FALLBACK_TENDERS_EVAL;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TENDERS_EVAL;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: GO_NOGO = FALLBACK_GO_NOGO } = useQuery({
+    queryKey: ["tenders-go-nogo"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-evaluation/go-nogo");
+      if (!res.ok) return FALLBACK_GO_NOGO;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_GO_NOGO;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: COMPETITORS = FALLBACK_COMPETITORS } = useQuery({
+    queryKey: ["tenders-competitors"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-evaluation/competitors");
+      if (!res.ok) return FALLBACK_COMPETITORS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_COMPETITORS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: LESSONS = FALLBACK_LESSONS } = useQuery({
+    queryKey: ["tenders-lessons"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-evaluation/lessons");
+      if (!res.ok) return FALLBACK_LESSONS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_LESSONS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [activeTab, setActiveTab] = useState("matrix");
   const [search, setSearch] = useState("");
   const [expandedTender, setExpandedTender] = useState<string | null>(null);

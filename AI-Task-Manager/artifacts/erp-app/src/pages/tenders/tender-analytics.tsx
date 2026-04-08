@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +13,7 @@ import {
   Briefcase, Building2, Layers, Zap, PieChart, Activity
 } from "lucide-react";
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "סה\"כ הצעות", value: "187", change: "+12%", up: true, icon: Briefcase, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "אחוז זכייה", value: "38.5%", change: "+4.2%", up: true, icon: Target, color: "text-green-400", bg: "bg-green-500/10" },
   { label: "ערך הצעה ממוצע", value: "₪284,000", change: "+8%", up: true, icon: DollarSign, color: "text-amber-400", bg: "bg-amber-500/10" },
@@ -20,19 +22,19 @@ const kpis = [
   { label: "ROI על הגשות", value: "3.2x", change: "+0.4", up: true, icon: Percent, color: "text-rose-400", bg: "bg-rose-500/10" },
 ];
 
-const quarterlyData = [
+const FALLBACK_QUARTERLY_DATA = [
   { q: "Q3 2025", submitted: 28, won: 9, lost: 15, pending: 4, winRate: 37.5 },
   { q: "Q4 2025", submitted: 32, won: 12, lost: 16, pending: 4, winRate: 42.9 },
   { q: "Q1 2026", submitted: 35, won: 14, lost: 17, pending: 4, winRate: 45.2 },
 ];
-const projectTypes = [
+const FALLBACK_PROJECT_TYPES = [
   { type: "חלונות אלומיניום", bids: 45, wins: 22, rate: 48.9, avg: "₪320K" },
   { type: "מעקות זכוכית", bids: 38, wins: 16, rate: 42.1, avg: "₪185K" },
   { type: "חיפוי מתכת", bids: 32, wins: 10, rate: 31.3, avg: "₪410K" },
   { type: "דלתות פנים", bids: 28, wins: 12, rate: 42.9, avg: "₪95K" },
   { type: "פרגולות/סככות", bids: 24, wins: 8, rate: 33.3, avg: "₪260K" },
 ];
-const sectorData = [
+const FALLBACK_SECTOR_DATA = [
   { sector: "ממשלתי", bids: 52, wins: 18, rate: 34.6, trend: "up" },
   { sector: "מוניציפלי", bids: 40, wins: 17, rate: 42.5, trend: "up" },
   { sector: "פרטי - מגורים", bids: 35, wins: 16, rate: 45.7, trend: "stable" },
@@ -40,7 +42,7 @@ const sectorData = [
   { sector: "תעשייתי", bids: 20, wins: 6, rate: 30.0, trend: "up" },
 ];
 
-const finMonths = [
+const FALLBACK_FIN_MONTHS = [
   { month: "אוק 25", bidValue: 2800000, wonValue: 1050000, margin: 24.5 },
   { month: "נוב 25", bidValue: 3200000, wonValue: 1400000, margin: 26.1 },
   { month: "דצמ 25", bidValue: 2600000, wonValue: 980000, margin: 22.8 },
@@ -50,7 +52,7 @@ const finMonths = [
 ];
 const finTotals = { totalBid: 19000000, totalWon: 8200000, avgMargin: 25.8, totalCost: 285000 };
 
-const funnelStages = [
+const FALLBACK_FUNNEL_STAGES = [
   { stage: "זוהו", count: 64, value: "₪38.2M", color: "bg-slate-500", pct: 100 },
   { stage: "מסוננים", count: 48, value: "₪29.8M", color: "bg-blue-500", pct: 75 },
   { stage: "בהכנה", count: 28, value: "₪18.4M", color: "bg-cyan-500", pct: 43.8 },
@@ -59,26 +61,135 @@ const funnelStages = [
   { stage: "החלטה", count: 8, value: "₪5.2M", color: "bg-green-500", pct: 12.5 },
 ];
 
-const aiRecommendations = [
+const FALLBACK_AI_RECOMMENDATIONS = [
   { type: "pursue", icon: CheckCircle2, color: "text-green-400", bg: "border-green-500/30", title: "מכרז עיריית חיפה - חלונות מבנה ציבורי", desc: "התאמה גבוהה: 87%. ניסיון קודם עם הלקוח, יתרון טכני בפרופילי אלומיניום. הערכת רווח: ₪180K. מומלץ להגיש עם דגש על אחריות מורחבת.", budget: "₪1.2M", deadline: "28/04/2026" },
   { type: "pursue", icon: CheckCircle2, color: "text-green-400", bg: "border-green-500/30", title: "פרויקט מגדל הים - מעקות זכוכית", desc: "שוק ממוקד עם מעט מתחרים. חיזוי רווחיות 32%. מומלץ לתמחר ב-₪210K עם מרווח של 28%.", budget: "₪750K", deadline: "15/05/2026" },
   { type: "caution", icon: AlertTriangle, color: "text-amber-400", bg: "border-amber-500/30", title: "משרד הביטחון - חיפוי מתכת מתקדם", desc: "תחרות צפופה. 4 מתחרים חזקים מזוהים. נדרש השקעה גדולה בהכנה. שקלו הגשה רק אם יש פינוי משאבים.", budget: "₪3.5M", deadline: "10/05/2026" },
   { type: "avoid", icon: ArrowDownRight, color: "text-red-400", bg: "border-red-500/30", title: "פרויקט נהריה - תריסי אלומיניום", desc: "שיעור זכייה היסטורי נמוך (15%) בקטגוריה זו. מתחרה מקומי עם יתרון מובהק. ROI צפוי שלילי.", budget: "₪480K", deadline: "20/04/2026" },
 ];
 
-const pricingInsights = [
+const FALLBACK_PRICING_INSIGHTS = [
   { category: "חלונות אלומיניום", optimalRange: "₪280-340 למ\"ר", current: "₪310 למ\"ר", status: "optimal", note: "במרכז הטווח האופטימלי" },
   { category: "מעקות זכוכית", optimalRange: "₪420-500 למ\"ר", current: "₪380 למ\"ר", status: "low", note: "מתחת לטווח - הפסד רווחיות" },
   { category: "חיפוי מתכת", optimalRange: "₪200-260 למ\"ר", current: "₪245 למ\"ר", status: "optimal", note: "תמחור תחרותי ורווחי" },
 ];
 
-const resourceAllocation = [
+const FALLBACK_RESOURCE_ALLOCATION = [
   { resource: "צוות הנדסה", current: 78, optimal: 65, note: "עומס יתר - נדרש חיזוק" },
   { resource: "צוות תמחור", current: 62, optimal: 70, note: "ניצולת תקינה" },
   { resource: "ניהול פרויקטים", current: 85, optimal: 75, note: "עומס קריטי - עדיפות לזכיות בטוחות" },
 ];
 
 export default function TenderAnalyticsPage() {
+  const { data: kpis = FALLBACK_KPIS } = useQuery({
+    queryKey: ["tenders-kpis"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-analytics/kpis");
+      if (!res.ok) return FALLBACK_KPIS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_KPIS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: quarterlyData = FALLBACK_QUARTERLY_DATA } = useQuery({
+    queryKey: ["tenders-quarterly-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-analytics/quarterly-data");
+      if (!res.ok) return FALLBACK_QUARTERLY_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_QUARTERLY_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: projectTypes = FALLBACK_PROJECT_TYPES } = useQuery({
+    queryKey: ["tenders-project-types"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-analytics/project-types");
+      if (!res.ok) return FALLBACK_PROJECT_TYPES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_PROJECT_TYPES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: sectorData = FALLBACK_SECTOR_DATA } = useQuery({
+    queryKey: ["tenders-sector-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-analytics/sector-data");
+      if (!res.ok) return FALLBACK_SECTOR_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SECTOR_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: finMonths = FALLBACK_FIN_MONTHS } = useQuery({
+    queryKey: ["tenders-fin-months"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-analytics/fin-months");
+      if (!res.ok) return FALLBACK_FIN_MONTHS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_FIN_MONTHS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: funnelStages = FALLBACK_FUNNEL_STAGES } = useQuery({
+    queryKey: ["tenders-funnel-stages"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-analytics/funnel-stages");
+      if (!res.ok) return FALLBACK_FUNNEL_STAGES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_FUNNEL_STAGES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: aiRecommendations = FALLBACK_AI_RECOMMENDATIONS } = useQuery({
+    queryKey: ["tenders-ai-recommendations"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-analytics/ai-recommendations");
+      if (!res.ok) return FALLBACK_AI_RECOMMENDATIONS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_AI_RECOMMENDATIONS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: pricingInsights = FALLBACK_PRICING_INSIGHTS } = useQuery({
+    queryKey: ["tenders-pricing-insights"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-analytics/pricing-insights");
+      if (!res.ok) return FALLBACK_PRICING_INSIGHTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_PRICING_INSIGHTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: resourceAllocation = FALLBACK_RESOURCE_ALLOCATION } = useQuery({
+    queryKey: ["tenders-resource-allocation"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-analytics/resource-allocation");
+      if (!res.ok) return FALLBACK_RESOURCE_ALLOCATION;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_RESOURCE_ALLOCATION;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [activeTab, setActiveTab] = useState("performance");
   const [period, setPeriod] = useState("6m");
 

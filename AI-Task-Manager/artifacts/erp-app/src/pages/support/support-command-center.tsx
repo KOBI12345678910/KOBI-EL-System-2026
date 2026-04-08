@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -18,7 +20,7 @@ const kpis = {
   escalations: 4,
 };
 
-const openTickets = [
+const FALLBACK_OPEN_TICKETS = [
   { id: "TKT-1041", customer: "קבוצת אלון", contact: "רועי כהן", category: "תקלה", subject: "חלון אלומיניום לא נסגר — פרויקט מגדל C", priority: "critical", sla: "02:15", status: "in_progress", agent: "מיכל לוי" },
   { id: "TKT-1042", customer: "אמות השקעות", contact: "דנה ברק", category: "בקשת שירות", subject: "התקנת דלת הזזה — קומה 12", priority: "high", sla: "04:30", status: "open", agent: "—" },
   { id: "TKT-1043", customer: "שיכון ובינוי", contact: "אלון דוד", category: "שאלה", subject: "מפרט טכני — זכוכית מחוסמת 10mm", priority: "medium", sla: "08:00", status: "in_progress", agent: "יוסי אברהם" },
@@ -28,7 +30,7 @@ const openTickets = [
   { id: "TKT-1047", customer: "מלון רויאל אילת", contact: "רינת כץ", category: "שאלה", subject: "הצעת מחיר לשדרוג פרופילים", priority: "low", sla: "16:00", status: "open", agent: "—" },
 ];
 
-const slaTracking = [
+const FALLBACK_SLA_TRACKING = [
   { category: "תקלה קריטית", slaTarget: "4 שעות", compliance: 88, total: 12, met: 10, breached: 2, avgResolution: "3.2 שעות" },
   { category: "תקלה רגילה", slaTarget: "8 שעות", compliance: 95, total: 28, met: 26, breached: 2, avgResolution: "5.8 שעות" },
   { category: "בקשת שירות", slaTarget: "24 שעות", compliance: 98, total: 35, met: 34, breached: 1, avgResolution: "14 שעות" },
@@ -36,14 +38,14 @@ const slaTracking = [
   { category: "VIP — כל סוג", slaTarget: "2 שעות", compliance: 82, total: 8, met: 6, breached: 2, avgResolution: "1.8 שעות" },
 ];
 
-const teamPerformance = [
+const FALLBACK_TEAM_PERFORMANCE = [
   { name: "מיכל לוי", role: "ראש צוות שירות", ticketsClosed: 48, avgResponse: 12, csat: 4.8, fcr: 78, escalations: 1, slaRate: 97 },
   { name: "יוסי אברהם", role: "טכנאי בכיר", ticketsClosed: 42, avgResponse: 15, csat: 4.7, fcr: 82, escalations: 0, slaRate: 95 },
   { name: "נועה שמיר", role: "נציגת שירות", ticketsClosed: 35, avgResponse: 22, csat: 4.5, fcr: 65, escalations: 2, slaRate: 91 },
   { name: "אור ברק", role: "טכנאי שטח", ticketsClosed: 30, avgResponse: 28, csat: 4.3, fcr: 58, escalations: 1, slaRate: 88 },
 ];
 
-const vipCustomers = [
+const FALLBACK_VIP_CUSTOMERS = [
   { customer: "קבוצת אלון", tier: "פלטינום", openTickets: 3, avgResponse: 8, csat: 4.9, revenue: "₪8.5M", lastContact: "2026-04-08", status: "active_issue" },
   { customer: "אמות השקעות", tier: "זהב", openTickets: 1, avgResponse: 14, csat: 4.5, revenue: "₪4.2M", lastContact: "2026-04-07", status: "active_issue" },
   { customer: "שיכון ובינוי", tier: "פלטינום", openTickets: 1, avgResponse: 10, csat: 4.7, revenue: "₪6.8M", lastContact: "2026-04-08", status: "active_issue" },
@@ -94,6 +96,14 @@ const vipStatusLabel = (s: string) => {
 };
 
 export default function SupportCommandCenter() {
+  const { data: supportcommandcenterData } = useQuery({
+    queryKey: ["support-command-center"],
+    queryFn: () => authFetch("/api/support/support_command_center"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const openTickets = supportcommandcenterData ?? FALLBACK_OPEN_TICKETS;
+
   return (
     <div className="p-6 space-y-6" dir="rtl">
       <div className="flex items-center justify-between">

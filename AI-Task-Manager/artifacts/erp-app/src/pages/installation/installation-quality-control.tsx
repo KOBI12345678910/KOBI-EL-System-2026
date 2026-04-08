@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,7 +12,7 @@ import {
 
 /* ── Static mock data ─────────────────────────────────────────── */
 
-const qcChecklist = [
+const FALLBACK_QC_CHECKLIST = [
   { id: 1, item: "יישור אנכי (±2mm)", category: "מידות", critical: true },
   { id: 2, item: "יישור אופקי (±2mm)", category: "מידות", critical: true },
   { id: 3, item: "איטום היקפי תקין", category: "איטום", critical: true },
@@ -28,7 +30,7 @@ const qcChecklist = [
   { id: 15, item: "מראה כללי", category: "חזותי", critical: false },
 ];
 
-const qcResults = [
+const FALLBACK_QC_RESULTS = [
   { id: "INS-301", inspector: "יוסי כהן", date: "2026-04-07", score: 97, result: "עבר", failedItems: 0, corrective: "—" },
   { id: "INS-302", inspector: "שרה לוי", date: "2026-04-07", score: 92, result: "עבר", failedItems: 1, corrective: "גימור צבע — ליטוש מקומי" },
   { id: "INS-303", inspector: "דוד מזרחי", date: "2026-04-06", score: 54, result: "נכשל", failedItems: 5, corrective: "יישור מחדש + החלפת איטום" },
@@ -41,7 +43,7 @@ const qcResults = [
   { id: "INS-310", inspector: "מיכל ברק", date: "2026-04-03", score: 0, result: "ממתין", failedItems: 0, corrective: "—" },
 ];
 
-const failedItemsDetail = [
+const FALLBACK_FAILED_ITEMS_DETAIL = [
   { inspection: "INS-303", item: "יישור אנכי (±2mm)", defectType: "סטייה 6mm ימינה", photos: 3, severity: "קריטי", action: "פירוק והתקנה מחדש", deadline: "2026-04-10" },
   { inspection: "INS-303", item: "איטום היקפי תקין", defectType: "פער באיטום תחתון", photos: 2, severity: "גבוה", action: "החלפת רצועת איטום", deadline: "2026-04-09" },
   { inspection: "INS-308", item: "זכוכית שלמה ללא שריטות", defectType: "שריטה 12 ס\"מ בפינה", photos: 4, severity: "קריטי", action: "החלפת יחידת זכוכית", deadline: "2026-04-11" },
@@ -49,7 +51,7 @@ const failedItemsDetail = [
   { inspection: "INS-303", item: "התאמה לשרטוט", defectType: "מיקום 3 ס\"מ גבוה מהתוכנית", photos: 2, severity: "בינוני", action: "התאמה עם קבלן ראשי", deadline: "2026-04-12" },
 ];
 
-const trendData = [
+const FALLBACK_TREND_DATA = [
   { week: "שבוע 10", inspections: 12, passRate: 75, avgScore: 84 },
   { week: "שבוע 11", inspections: 15, passRate: 80, avgScore: 87 },
   { week: "שבוע 12", inspections: 14, passRate: 79, avgScore: 86 },
@@ -80,7 +82,7 @@ const progressColor = (score: number) =>
 
 /* ── KPI summary ──────────────────────────────────────────────── */
 
-const kpiData = [
+const FALLBACK_KPI_DATA = [
   { label: "בדיקות שבוצעו", value: 18, icon: ClipboardCheck, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "עברו", value: 15, icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10" },
   { label: "נכשלו", value: 2, icon: XCircle, color: "text-red-400", bg: "bg-red-500/10" },
@@ -92,6 +94,67 @@ const kpiData = [
 /* ── Component ────────────────────────────────────────────────── */
 
 export default function InstallationQualityControl() {
+  const { data: qcChecklist = FALLBACK_QC_CHECKLIST } = useQuery({
+    queryKey: ["installation-qc-checklist"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-quality-control/qc-checklist");
+      if (!res.ok) return FALLBACK_QC_CHECKLIST;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_QC_CHECKLIST;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: qcResults = FALLBACK_QC_RESULTS } = useQuery({
+    queryKey: ["installation-qc-results"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-quality-control/qc-results");
+      if (!res.ok) return FALLBACK_QC_RESULTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_QC_RESULTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: failedItemsDetail = FALLBACK_FAILED_ITEMS_DETAIL } = useQuery({
+    queryKey: ["installation-failed-items-detail"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-quality-control/failed-items-detail");
+      if (!res.ok) return FALLBACK_FAILED_ITEMS_DETAIL;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_FAILED_ITEMS_DETAIL;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: trendData = FALLBACK_TREND_DATA } = useQuery({
+    queryKey: ["installation-trend-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-quality-control/trend-data");
+      if (!res.ok) return FALLBACK_TREND_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TREND_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: kpiData = FALLBACK_KPI_DATA } = useQuery({
+    queryKey: ["installation-kpi-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-quality-control/kpi-data");
+      if (!res.ok) return FALLBACK_KPI_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_KPI_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* Header */}

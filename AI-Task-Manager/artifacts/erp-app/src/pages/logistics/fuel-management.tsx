@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,14 +11,14 @@ import { Droplets, TrendingDown, TrendingUp, Fuel, AlertTriangle, Truck, Activit
 const fmt = (n: number) => "₪" + n.toLocaleString("he-IL");
 const fmtL = (n: number) => n.toLocaleString("he-IL");
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "צריכת דלק החודש", value: "2,450 ליטר", icon: Droplets, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "עלות דלק", value: "₪18,500", icon: Fuel, color: "text-amber-400", bg: "bg-amber-500/10" },
   { label: "ממוצע ל-100 ק\"מ", value: "18.5 ליטר", icon: Activity, color: "text-cyan-400", bg: "bg-cyan-500/10" },
   { label: "חיסכון מול חודש קודם", value: "-8%", icon: TrendingDown, color: "text-green-400", bg: "bg-green-500/10" },
 ];
 
-const fuelLog = [
+const FALLBACK_FUEL_LOG = [
   { date: "2026-04-07", vehicle: "משאית 12-345-67", driver: "יוסי כהן", station: "פז - א.ת. חולון", liters: 180, pricePerLiter: 7.52, amount: 1353.6, odometer: 124500, kmSinceLast: 620, per100: 29.0 },
   { date: "2026-04-06", vehicle: "טנדר 23-456-78", driver: "אבי לוי", station: "סונול - ראשל\"צ", liters: 65, pricePerLiter: 7.48, amount: 486.2, odometer: 87230, kmSinceLast: 410, per100: 15.9 },
   { date: "2026-04-06", vehicle: "רכב 34-567-89", driver: "דני אברהם", station: "דלק - פ\"ת", liters: 42, pricePerLiter: 7.55, amount: 317.1, odometer: 45600, kmSinceLast: 350, per100: 12.0 },
@@ -34,7 +36,7 @@ const fuelLog = [
   { date: "2026-03-31", vehicle: "ואן 90-123-45", driver: "גיל מזרחי", station: "פז - ירושלים", liters: 72, pricePerLiter: 7.55, amount: 543.6, odometer: 48900, kmSinceLast: 370, per100: 19.5 },
 ];
 
-const vehicleComparison = [
+const FALLBACK_VEHICLE_COMPARISON = [
   { vehicle: "משאית 12-345-67", type: "משאית", avgPer100: 29.5, totalCost: 4055, totalLiters: 540, rating: "אדום" },
   { vehicle: "משאית 45-678-90", type: "משאית", avgPer100: 33.5, totalCost: 2884, totalLiters: 385, rating: "אדום" },
   { vehicle: "טנדר 23-456-78", type: "טנדר", avgPer100: 15.4, totalCost: 951, totalLiters: 127, rating: "ירוק" },
@@ -45,7 +47,7 @@ const vehicleComparison = [
   { vehicle: "ואן 90-123-45", type: "ואן", avgPer100: 19.5, totalCost: 544, totalLiters: 72, rating: "צהוב" },
 ];
 
-const monthlyTrend = [
+const FALLBACK_MONTHLY_TREND = [
   { month: "נובמבר 2025", liters: 2780, cost: 20572, avgPrice: 7.40 },
   { month: "דצמבר 2025", liters: 2900, cost: 21605, avgPrice: 7.45 },
   { month: "ינואר 2026", liters: 2820, cost: 21150, avgPrice: 7.50 },
@@ -54,7 +56,7 @@ const monthlyTrend = [
   { month: "אפריל 2026", liters: 2450, cost: 18500, avgPrice: 7.55 },
 ];
 
-const anomalies = [
+const FALLBACK_ANOMALIES = [
   {
     severity: "high",
     title: "צריכה חריגה - משאית 45-678-90",
@@ -91,9 +93,70 @@ const severityBadge = (s: string) => {
   return "bg-yellow-500/20 text-yellow-300 border-yellow-500/40";
 };
 
-const maxLiters = Math.max(...monthlyTrend.map(m => m.liters));
+const maxLiters = Math.max(...FALLBACK_MONTHLY_TREND.map(m => m.liters));
 
 export default function FuelManagement() {
+  const { data: kpis = FALLBACK_KPIS } = useQuery({
+    queryKey: ["logistics-kpis"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/fuel-management/kpis");
+      if (!res.ok) return FALLBACK_KPIS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_KPIS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: fuelLog = FALLBACK_FUEL_LOG } = useQuery({
+    queryKey: ["logistics-fuel-log"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/fuel-management/fuel-log");
+      if (!res.ok) return FALLBACK_FUEL_LOG;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_FUEL_LOG;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: vehicleComparison = FALLBACK_VEHICLE_COMPARISON } = useQuery({
+    queryKey: ["logistics-vehicle-comparison"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/fuel-management/vehicle-comparison");
+      if (!res.ok) return FALLBACK_VEHICLE_COMPARISON;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_VEHICLE_COMPARISON;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: monthlyTrend = FALLBACK_MONTHLY_TREND } = useQuery({
+    queryKey: ["logistics-monthly-trend"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/fuel-management/monthly-trend");
+      if (!res.ok) return FALLBACK_MONTHLY_TREND;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_MONTHLY_TREND;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: anomalies = FALLBACK_ANOMALIES } = useQuery({
+    queryKey: ["logistics-anomalies"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/fuel-management/anomalies");
+      if (!res.ok) return FALLBACK_ANOMALIES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_ANOMALIES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [tab, setTab] = useState("log");
 
   return (

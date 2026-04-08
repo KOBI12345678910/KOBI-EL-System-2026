@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -20,7 +22,7 @@ const pct  = (v: number) => `${v.toFixed(1)}%`;
 /* ------------------------------------------------------------------ */
 /*  KPI data                                                           */
 /* ------------------------------------------------------------------ */
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "סה\"כ מוצרים",         value: "247",     icon: Package,      color: "from-blue-600 to-blue-800" },
   { label: "מוצרים פעילים",        value: "218",     icon: CheckCircle2, color: "from-emerald-600 to-emerald-800" },
   { label: "עם עץ מוצר (BOM)",    value: "194",     icon: Layers,       color: "from-violet-600 to-violet-800" },
@@ -109,7 +111,7 @@ interface Product {
   revenue: number;
 }
 
-const topProducts: Product[] = [
+const FALLBACK_TOP_PRODUCTS: Product[] = [
   { name: "שער חשמלי נגרר 5 מ'",        category: "ברזל",           baseCost: 5_200,  salePrice: 8_900,  margin: 41.6, unitsSold: 84,  revenue: 747_600 },
   { name: "חלון ויטרינה 200x150",        category: "אלומיניום",      baseCost: 2_100,  salePrice: 3_450,  margin: 39.1, unitsSold: 156, revenue: 538_200 },
   { name: "מעקה זכוכית 1.1 מ' (מ\"ר)",  category: "זכוכית",         baseCost: 3_800,  salePrice: 6_200,  margin: 38.7, unitsSold: 72,  revenue: 446_400 },
@@ -139,6 +141,14 @@ const catBadge: Record<string, string> = {
 /*  Component                                                          */
 /* ================================================================== */
 export default function ProductsDashboard() {
+  const { data: productsdashboardData } = useQuery({
+    queryKey: ["products-dashboard"],
+    queryFn: () => authFetch("/api/procurement/products_dashboard"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = productsdashboardData ?? FALLBACK_KPIS;
+
   return (
     <div className="p-6 space-y-6" dir="rtl">
       {/* ---------- Header ---------- */}

@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +20,7 @@ const kpis = [
 
 const selectedComponent = "פרופיל אלומיניום 60x40";
 
-const whereUsedData = [
+const FALLBACK_WHEREUSEDDATA = [
   { product: "חלון ויטרינה 200x240", bomLevel: 1, qtyPerUnit: 4, totalDemand: 480, costPct: 18.5, substitutable: true },
   { product: "דלת כניסה מחוזקת TK-900", bomLevel: 1, qtyPerUnit: 2, totalDemand: 260, costPct: 12.3, substitutable: false },
   { product: "מחיצת זכוכית משרדית", bomLevel: 2, qtyPerUnit: 6, totalDemand: 720, costPct: 22.1, substitutable: true },
@@ -29,7 +31,7 @@ const whereUsedData = [
   { product: "תריס גלילה חשמלי", bomLevel: 3, qtyPerUnit: 2, totalDemand: 180, costPct: 8.9, substitutable: true },
 ];
 
-const sharedComponents = [
+const FALLBACK_SHAREDCOMPONENTS = [
   { name: "בורג נירוסטה M6x20", sku: "HW-BLT-0061", usedIn: 28, demand: 14200, suppliers: 5, avgPrice: 0.85, criticality: "נמוך" },
   { name: 'אטם EPDM 12 מ"מ', sku: "SL-EPD-0034", usedIn: 24, demand: 9600, suppliers: 3, avgPrice: 4.2, criticality: "בינוני" },
   { name: "פרופיל אלומיניום 60x40", sku: "AL-PRF-0012", usedIn: 18, demand: 3200, suppliers: 2, avgPrice: 48.5, criticality: "קריטי" },
@@ -47,7 +49,7 @@ const sharedComponents = [
   { name: "אגוז ריתוך M8", sku: "HW-NUT-0088", usedIn: 6, demand: 7200, suppliers: 4, avgPrice: 1.2, criticality: "נמוך" },
 ];
 
-const dependencies = [
+const FALLBACK_DEPENDENCIES = [
   {
     component: "פרופיל תרמי PA66", sku: "AL-THB-0003",
     affectedProducts: ["חלון ויטרינה 200x240", "חלון הזזה תלת-מסלולי", "דלת כניסה מחוזקת TK-900"],
@@ -69,7 +71,7 @@ const dependencies = [
     impact: "בינוני", altAvailable: false, note: "שני ספקים פעילים. סיכון בינוני בשל ייבוא." },
 ];
 
-const orphanComponents = [
+const FALLBACK_ORPHANCOMPONENTS = [
   { name: 'ציר פרפר 80 מ"מ', sku: "HW-HNG-0012", lastUsedIn: "דלת פנים קלאסית דגם A", removedDate: "2025-11-20", stockOnHand: 340, value: 5440, action: "למכור" },
   { name: 'פרופיל T עגול 30 מ"מ', sku: "AL-PRF-0099", lastUsedIn: "מעקה ישן דגם ספיר", removedDate: "2025-08-15", stockOnHand: 120, value: 3960, action: "לגרוט" },
   { name: "ידית פליז עתיקה", sku: "HW-HND-0067", lastUsedIn: "חלון אנגלי דגם B", removedDate: "2026-01-10", stockOnHand: 85, value: 7650, action: "למכור" },
@@ -97,6 +99,33 @@ const actionBadge = (action: string) => {
 };
 
 export default function BomWhereUsedPage() {
+  const { data: apiwhereUsedData } = useQuery({
+    queryKey: ["/api/supply-chain/bom-where-used/whereuseddata"],
+    queryFn: () => authFetch("/api/supply-chain/bom-where-used/whereuseddata").then(r => r.json()).catch(() => null),
+  });
+  const whereUsedData = Array.isArray(apiwhereUsedData) ? apiwhereUsedData : (apiwhereUsedData?.data ?? apiwhereUsedData?.items ?? FALLBACK_WHEREUSEDDATA);
+
+
+  const { data: apisharedComponents } = useQuery({
+    queryKey: ["/api/supply-chain/bom-where-used/sharedcomponents"],
+    queryFn: () => authFetch("/api/supply-chain/bom-where-used/sharedcomponents").then(r => r.json()).catch(() => null),
+  });
+  const sharedComponents = Array.isArray(apisharedComponents) ? apisharedComponents : (apisharedComponents?.data ?? apisharedComponents?.items ?? FALLBACK_SHAREDCOMPONENTS);
+
+
+  const { data: apidependencies } = useQuery({
+    queryKey: ["/api/supply-chain/bom-where-used/dependencies"],
+    queryFn: () => authFetch("/api/supply-chain/bom-where-used/dependencies").then(r => r.json()).catch(() => null),
+  });
+  const dependencies = Array.isArray(apidependencies) ? apidependencies : (apidependencies?.data ?? apidependencies?.items ?? FALLBACK_DEPENDENCIES);
+
+
+  const { data: apiorphanComponents } = useQuery({
+    queryKey: ["/api/supply-chain/bom-where-used/orphancomponents"],
+    queryFn: () => authFetch("/api/supply-chain/bom-where-used/orphancomponents").then(r => r.json()).catch(() => null),
+  });
+  const orphanComponents = Array.isArray(apiorphanComponents) ? apiorphanComponents : (apiorphanComponents?.data ?? apiorphanComponents?.items ?? FALLBACK_ORPHANCOMPONENTS);
+
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("where-used");
 

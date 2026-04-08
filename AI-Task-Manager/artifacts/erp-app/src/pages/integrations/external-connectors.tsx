@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -38,7 +40,7 @@ const CATEGORIES: Record<string, string> = {
   customs: "מכס ויבוא",
 };
 
-const connectors: Connector[] = [
+const FALLBACK_CONNECTORS: Connector[] = [
   // שכר ורשויות
   { id: 1, name: "חילן", nameEn: "Payroll – Hilan", category: "payroll", status: "מחובר", lastSync: "08/04/2026 09:15", recordsSynced: 12480, health: 98, authType: "Certificate", endpoints: 4, syncSchedule: "כל שעה", errorLog: [] },
   { id: 2, name: "ביטוח לאומי", nameEn: "National Insurance", category: "payroll", status: "מחובר", lastSync: "08/04/2026 08:00", recordsSynced: 3210, health: 95, authType: "Certificate", endpoints: 2, syncSchedule: "יומי 06:00", errorLog: [] },
@@ -228,6 +230,14 @@ function ConnectorDetail({ c, onClose }: { c: Connector; onClose: () => void }) 
 /* ───────────────────── Main page ───────────────────── */
 
 export default function ExternalConnectorsPage() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["external_connectors"],
+    queryFn: () => authFetch("/api/integrations/external-connectors").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const connectors = apiData?.connectors ?? FALLBACK_CONNECTORS;
   const [selected, setSelected] = useState<Connector | null>(null);
 
   const activeCount = connectors.filter(c => c.status === "מחובר").length;

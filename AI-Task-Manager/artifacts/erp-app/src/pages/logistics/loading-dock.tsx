@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +13,7 @@ import {
   Timer, MapPin, Calendar, Weight
 } from "lucide-react";
 
-const docks = [
+const FALLBACK_DOCKS = [
   { id: "D-01", name: "רציף 1 - כניסה ראשית", type: "טעינה + פריקה", capacity: "עד 20 טון", status: "פנוי", vehicle: "—", driver: "—", company: "—", scheduledTime: "—", eta: "—" },
   { id: "D-02", name: "רציף 2 - חומרי גלם", type: "פריקה", capacity: "עד 30 טון", status: "בפריקה", vehicle: "משאית 45-678-90", driver: "חסן א.", company: "אלומיניום הצפון", scheduledTime: "08:00", eta: "סיום: 11:30" },
   { id: "D-03", name: "רציף 3 - מוצר מוגמר", type: "טעינה", capacity: "עד 25 טון", status: "בטעינה", vehicle: "שלייה 12-345-67", driver: "יוסי מ.", company: "קונסטרקט מהנדסים", scheduledTime: "09:00", eta: "סיום: 12:00" },
@@ -20,7 +22,7 @@ const docks = [
   { id: "D-06", name: "רציף 6 - חירום/גדול", type: "טעינה + פריקה", capacity: "עד 40 טון", status: "בתחזוקה", vehicle: "—", driver: "—", company: "—", scheduledTime: "—", eta: "צפי חזרה: 14:00" },
 ];
 
-const schedule = [
+const FALLBACK_SCHEDULE = [
   { time: "06:00", dock: "D-02", type: "פריקה", company: "פלדת אביב", vehicle: "משאית 11-222-33", items: "לוחות פלדה 4x2", weight: "18 טון", status: "הושלם" },
   { time: "08:00", dock: "D-02", type: "פריקה", company: "אלומיניום הצפון", vehicle: "משאית 45-678-90", items: "פרופילי אלומיניום", weight: "12 טון", status: "בביצוע" },
   { time: "09:00", dock: "D-03", type: "טעינה", company: "קונסטרקט מהנדסים", vehicle: "שלייה 12-345-67", items: "חלונות מוגמרים", weight: "8 טון", status: "בביצוע" },
@@ -47,6 +49,31 @@ const schedStatusColors: Record<string, string> = {
 };
 
 export default function LoadingDock() {
+  const { data: docks = FALLBACK_DOCKS } = useQuery({
+    queryKey: ["logistics-docks"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/loading-dock/docks");
+      if (!res.ok) return FALLBACK_DOCKS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DOCKS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: schedule = FALLBACK_SCHEDULE } = useQuery({
+    queryKey: ["logistics-schedule"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/loading-dock/schedule");
+      if (!res.ok) return FALLBACK_SCHEDULE;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SCHEDULE;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [activeTab, setActiveTab] = useState("overview");
   const [search, setSearch] = useState("");
 

@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +16,7 @@ import {
 
 const fmt = (v: number) => new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", maximumFractionDigits: 0 }).format(v);
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "סה\"כ הגשות", value: "47", icon: FileText, color: "text-blue-400", border: "border-blue-500/30" },
   { label: "אחוז זכייה", value: "34%", icon: Trophy, color: "text-emerald-400", border: "border-emerald-500/30" },
   { label: "הצעות פעילות", value: "8", icon: Target, color: "text-purple-400", border: "border-purple-500/30" },
@@ -31,7 +33,7 @@ interface Submission {
   deadline: string; value: number; status: TenderStatus; lead: string; competitors: number;
 }
 
-const submissions: Submission[] = [
+const FALLBACK_SUBMISSIONS: Submission[] = [
   { id: "TND-401", project: "חלונות אלומיניום — מגדל רמת גן", client: "שיכון ובינוי", type: "ציבורי", deadline: "2026-04-18", value: 3200000, status: "הוגש", lead: "יוסי אברהם", competitors: 5 },
   { id: "TND-402", project: "מעקות בטיחות — מתחם צבאי", client: "משרד הביטחון", type: "ציבורי", deadline: "2026-04-22", value: 5100000, status: "בבדיקה", lead: "דני כהן", competitors: 4 },
   { id: "TND-403", project: "חזיתות זכוכית — מגדל משרדים TLV", client: "קבוצת אלון", type: "פרטי", deadline: "2026-05-01", value: 4800000, status: "טיוטה", lead: "מיכל לוי", competitors: 3 },
@@ -46,7 +48,7 @@ const submissions: Submission[] = [
   { id: "TND-412", project: "קירוי מתכת — אצטדיון", client: "עיריית באר שבע", type: "ציבורי", deadline: "2026-06-01", value: 8500000, status: "טיוטה", lead: "דני כהן", competitors: 6 },
 ];
 
-const preparations = [
+const FALLBACK_PREPARATIONS = [
   { id: "TND-403", project: "חזיתות זכוכית — מגדל TLV", progress: 35, docs: 4, docsRequired: 8, specs: "מפרט טכני חלקי", pricing: "בהכנה", team: ["מיכל לוי", "אורי טכני", "נועם מחיר"], dueDate: "2026-05-01",
     checklist: [{ item: "מסמכי רישום חברה", done: true }, { item: "ערבות מכרז", done: false }, { item: "מפרט טכני", done: true }, { item: "כתב כמויות מתומחר", done: false }, { item: "לוח זמנים", done: false }, { item: "רשימת פרויקטים", done: true }, { item: "אישורי ISO", done: false }, { item: "הצעה מסחרית", done: false }] },
   { id: "TND-406", project: "ויטרינות — קניון הנגב", progress: 20, docs: 2, docsRequired: 7, specs: "טרם התחיל", pricing: "המתנה לכמויות", team: ["מיכל לוי", "שרה גולד"], dueDate: "2026-05-10",
@@ -55,7 +57,7 @@ const preparations = [
     checklist: [{ item: "רישום חברה", done: true }, { item: "ערבות מכרז", done: false }, { item: "מפרט טכני", done: false }, { item: "חישובי קונסטרוקציה", done: false }, { item: "כתב כמויות", done: false }, { item: "קבלני משנה", done: false }, { item: "פוליסת ביטוח", done: false }, { item: "אישורי ISO", done: false }, { item: "הצעה מסחרית", done: false }] },
 ];
 
-const results = [
+const FALLBACK_RESULTS = [
   { id: "TND-404", project: "דלתות פלדה — בית ספר", client: "משרד החינוך", value: 980000, result: "זכייה", reason: "מחיר תחרותי ולו\"ז מהיר", ourBid: 980000, winningBid: 980000, competitors: 6, date: "2026-03-28" },
   { id: "TND-407", project: "תריסים חשמליים — מגורים", client: "אפריקה ישראל", value: 1100000, result: "הפסד", reason: "מחיר גבוה ב-12% מהזוכה", ourBid: 1100000, winningBid: 968000, competitors: 7, date: "2026-03-25" },
   { id: "TND-380", project: "מעקות למרפסות — פנינת הים", client: "חברת מגורים", value: 920000, result: "זכייה", reason: "ניסיון מוכח בפרויקטים דומים", ourBid: 920000, winningBid: 920000, competitors: 5, date: "2026-03-15" },
@@ -66,7 +68,7 @@ const results = [
   { id: "TND-355", project: "קירוי פלדה — מפעל", client: "תעשיות כימיות", value: 5500000, result: "הפסד", reason: "חוסר ניסיון בתחום כימי", ourBid: 5500000, winningBid: 5200000, competitors: 5, date: "2026-02-01" },
 ];
 
-const documents = [
+const FALLBACK_DOCUMENTS = [
   { id: "DOC-101", tender: "TND-403", name: "חבילת מכרז — חזיתות זכוכית", type: "חבילת מכרז", pages: 42, lastUpdate: "2026-04-05", status: "בעבודה" },
   { id: "DOC-102", tender: "TND-403", name: "הצעה טכנית — חזיתות זכוכית", type: "הצעה טכנית", pages: 28, lastUpdate: "2026-04-06", status: "בעבודה" },
   { id: "DOC-103", tender: "TND-403", name: "הצעה מסחרית — חזיתות זכוכית", type: "הצעה מסחרית", pages: 12, lastUpdate: "2026-04-03", status: "טיוטה" },
@@ -90,6 +92,67 @@ const typeColor = (t: string) => TC[t] || "bg-slate-500/15 text-slate-300";
 const docStatusColor = (s: string) => DC[s] || "bg-slate-500/20 text-slate-300";
 
 export default function TenderSubmissionsPage() {
+  const { data: kpis = FALLBACK_KPIS } = useQuery({
+    queryKey: ["tenders-kpis"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-submissions/kpis");
+      if (!res.ok) return FALLBACK_KPIS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_KPIS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: submissions = FALLBACK_SUBMISSIONS } = useQuery({
+    queryKey: ["tenders-submissions"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-submissions/submissions");
+      if (!res.ok) return FALLBACK_SUBMISSIONS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SUBMISSIONS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: preparations = FALLBACK_PREPARATIONS } = useQuery({
+    queryKey: ["tenders-preparations"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-submissions/preparations");
+      if (!res.ok) return FALLBACK_PREPARATIONS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_PREPARATIONS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: results = FALLBACK_RESULTS } = useQuery({
+    queryKey: ["tenders-results"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-submissions/results");
+      if (!res.ok) return FALLBACK_RESULTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_RESULTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: documents = FALLBACK_DOCUMENTS } = useQuery({
+    queryKey: ["tenders-documents"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-submissions/documents");
+      if (!res.ok) return FALLBACK_DOCUMENTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DOCUMENTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [tab, setTab] = useState("submissions");

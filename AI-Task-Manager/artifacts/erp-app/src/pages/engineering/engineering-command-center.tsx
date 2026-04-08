@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,7 +23,7 @@ const kpis = {
   prototypeTests: 4,
 };
 
-const topProjects = [
+const FALLBACK_TOPPROJECTS = [
   { id: "ENG-1001", name: "פרופיל אלומיניום דגם Ultra-X", client: "קבוצת אלון", phase: "עיצוב מפורט", progress: 72, priority: "critical", deadline: "2026-04-18", engineer: "יוסי כהן" },
   { id: "ENG-1002", name: "מערכת חלונות תרמית 3G", client: "אמות השקעות", phase: "בדיקות אב-טיפוס", progress: 55, priority: "high", deadline: "2026-04-22", engineer: "דנה לוי" },
   { id: "ENG-1003", name: "דלת הזזה חשמלית Pro", client: "שיכון ובינוי", phase: "תכנון מוקדם", progress: 30, priority: "high", deadline: "2026-05-01", engineer: "אורן מזרחי" },
@@ -29,7 +31,7 @@ const topProjects = [
   { id: "ENG-1005", name: "פרגולת אלומיניום מתקפלת", client: "גינות ירוקות", phase: "עיצוב מפורט", progress: 45, priority: "medium", deadline: "2026-04-28", engineer: "עמית בר" },
 ];
 
-const recentDrawings = [
+const FALLBACK_RECENTDRAWINGS = [
   { id: "DWG-4501", name: "חתך פרופיל Ultra-X — גרסה 3.2", project: "ENG-1001", author: "יוסי כהן", date: "2026-04-08", status: "review" },
   { id: "DWG-4502", name: "פרט חיבור תרמי — צומת פינתי", project: "ENG-1002", author: "דנה לוי", date: "2026-04-07", status: "approved" },
   { id: "DWG-4503", name: "מנגנון הזזה — תרשים הרכבה", project: "ENG-1003", author: "אורן מזרחי", date: "2026-04-07", status: "draft" },
@@ -38,7 +40,7 @@ const recentDrawings = [
   { id: "DWG-4506", name: "חתך דלת חשמלית — מסילה עליונה", project: "ENG-1003", author: "אורן מזרחי", date: "2026-04-05", status: "approved" },
 ];
 
-const urgentTasks = [
+const FALLBACK_URGENTTASKS = [
   { task: "עדכון מפרט חומרים Ultra-X לפי ECN-078", project: "ENG-1001", assignee: "יוסי כהן", due: "2026-04-09", status: "overdue" },
   { task: "בדיקת עמידות רוח — דוח סופי", project: "ENG-1002", assignee: "דנה לוי", due: "2026-04-10", status: "urgent" },
   { task: "אישור שרטוט מעקה לפני ייצור", project: "ENG-1004", assignee: "רונית שמש", due: "2026-04-10", status: "urgent" },
@@ -46,7 +48,7 @@ const urgentTasks = [
   { task: "חישוב עומסים מחדש — פרגולה", project: "ENG-1005", assignee: "עמית בר", due: "2026-04-11", status: "pending" },
 ];
 
-const allProjects = [
+const FALLBACK_ALLPROJECTS = [
   { id: "ENG-1001", name: "פרופיל אלומיניום דגם Ultra-X", phase: "עיצוב מפורט", progress: 72, priority: "critical", deadline: "2026-04-18", engineer: "יוסי כהן", drawings: 8, ecn: 2 },
   { id: "ENG-1002", name: "מערכת חלונות תרמית 3G", phase: "בדיקות אב-טיפוס", progress: 55, priority: "high", deadline: "2026-04-22", engineer: "דנה לוי", drawings: 5, ecn: 1 },
   { id: "ENG-1003", name: "דלת הזזה חשמלית Pro", phase: "תכנון מוקדם", progress: 30, priority: "high", deadline: "2026-05-01", engineer: "אורן מזרחי", drawings: 3, ecn: 0 },
@@ -61,7 +63,7 @@ const allProjects = [
   { id: "ENG-1012", name: "חלון צליל-בידוד 42dB", phase: "עיצוב מפורט", progress: 50, priority: "medium", deadline: "2026-05-08", engineer: "שירה דוד", drawings: 3, ecn: 0 },
 ];
 
-const engineers = [
+const FALLBACK_ENGINEERS = [
   { name: "יוסי כהן", role: "מהנדס בכיר — אלומיניום", projects: 2, tasks: 7, utilization: 95, status: "overloaded", completedMonth: 12 },
   { name: "דנה לוי", role: "מהנדסת — תרמיקה וחלונות", projects: 2, tasks: 5, utilization: 88, status: "active", completedMonth: 9 },
   { name: "אורן מזרחי", role: "מהנדס — מנגנונים ופלדה", projects: 2, tasks: 6, utilization: 92, status: "active", completedMonth: 11 },
@@ -72,7 +74,7 @@ const engineers = [
   { name: "נועם אלון", role: "מהנדס — CAD ושרטוט", projects: 1, tasks: 6, utilization: 82, status: "active", completedMonth: 14 },
 ];
 
-const monthlyMetrics = [
+const FALLBACK_MONTHLYMETRICS = [
   { month: "ינואר", drawingsCompleted: 28, ecnClosed: 4, reviewCycles: 2.1, onTimeDelivery: 91, defectsFound: 3, standardsScore: 94 },
   { month: "פברואר", drawingsCompleted: 32, ecnClosed: 6, reviewCycles: 1.8, onTimeDelivery: 93, defectsFound: 2, standardsScore: 95 },
   { month: "מרץ", drawingsCompleted: 35, ecnClosed: 5, reviewCycles: 1.6, onTimeDelivery: 95, defectsFound: 1, standardsScore: 96 },
@@ -118,6 +120,47 @@ const utilizationBg = (u: number) => {
 };
 
 export default function EngineeringCommandCenter() {
+  const { data: apitopProjects } = useQuery({
+    queryKey: ["/api/engineering/engineering-command-center/topprojects"],
+    queryFn: () => authFetch("/api/engineering/engineering-command-center/topprojects").then(r => r.json()).catch(() => null),
+  });
+  const topProjects = Array.isArray(apitopProjects) ? apitopProjects : (apitopProjects?.data ?? apitopProjects?.items ?? FALLBACK_TOPPROJECTS);
+
+
+  const { data: apirecentDrawings } = useQuery({
+    queryKey: ["/api/engineering/engineering-command-center/recentdrawings"],
+    queryFn: () => authFetch("/api/engineering/engineering-command-center/recentdrawings").then(r => r.json()).catch(() => null),
+  });
+  const recentDrawings = Array.isArray(apirecentDrawings) ? apirecentDrawings : (apirecentDrawings?.data ?? apirecentDrawings?.items ?? FALLBACK_RECENTDRAWINGS);
+
+
+  const { data: apiurgentTasks } = useQuery({
+    queryKey: ["/api/engineering/engineering-command-center/urgenttasks"],
+    queryFn: () => authFetch("/api/engineering/engineering-command-center/urgenttasks").then(r => r.json()).catch(() => null),
+  });
+  const urgentTasks = Array.isArray(apiurgentTasks) ? apiurgentTasks : (apiurgentTasks?.data ?? apiurgentTasks?.items ?? FALLBACK_URGENTTASKS);
+
+
+  const { data: apiallProjects } = useQuery({
+    queryKey: ["/api/engineering/engineering-command-center/allprojects"],
+    queryFn: () => authFetch("/api/engineering/engineering-command-center/allprojects").then(r => r.json()).catch(() => null),
+  });
+  const allProjects = Array.isArray(apiallProjects) ? apiallProjects : (apiallProjects?.data ?? apiallProjects?.items ?? FALLBACK_ALLPROJECTS);
+
+
+  const { data: apiengineers } = useQuery({
+    queryKey: ["/api/engineering/engineering-command-center/engineers"],
+    queryFn: () => authFetch("/api/engineering/engineering-command-center/engineers").then(r => r.json()).catch(() => null),
+  });
+  const engineers = Array.isArray(apiengineers) ? apiengineers : (apiengineers?.data ?? apiengineers?.items ?? FALLBACK_ENGINEERS);
+
+
+  const { data: apimonthlyMetrics } = useQuery({
+    queryKey: ["/api/engineering/engineering-command-center/monthlymetrics"],
+    queryFn: () => authFetch("/api/engineering/engineering-command-center/monthlymetrics").then(r => r.json()).catch(() => null),
+  });
+  const monthlyMetrics = Array.isArray(apimonthlyMetrics) ? apimonthlyMetrics : (apimonthlyMetrics?.data ?? apimonthlyMetrics?.items ?? FALLBACK_MONTHLYMETRICS);
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       <div className="flex items-center justify-between">

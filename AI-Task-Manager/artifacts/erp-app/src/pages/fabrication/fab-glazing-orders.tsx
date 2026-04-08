@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +28,7 @@ const GLASS_TYPES: Record<string, string> = {
   igu: "IGU תרמי",
 };
 
-const glazingOrders = [
+const FALLBACK_GLAZINGORDERS = [
   { id: "GZ-4001", product: "חלון דו-כנפי 180x150", glassType: "tempered", dims: "85x145", thickness: 6, spacer: "-", gasFill: "-", qty: 24, status: "done" },
   { id: "GZ-4002", product: "דלת מרפסת הזזה 300x220", glassType: "igu", dims: "145x215", thickness: 8, spacer: "16mm אלומ'", gasFill: "ארגון", qty: 8, status: "glazing" },
   { id: "GZ-4003", product: "חלון סורג קיפ 60x120", glassType: "float", dims: "55x115", thickness: 4, spacer: "-", gasFill: "-", qty: 40, status: "cutting" },
@@ -41,7 +43,7 @@ const glazingOrders = [
   { id: "GZ-4012", product: "ויטרינה חנות 350x280", glassType: "laminated", dims: "170x275", thickness: 10, spacer: "-", gasFill: "-", qty: 4, status: "qc" },
 ];
 
-const glassInventory = [
+const FALLBACK_GLASSINVENTORY = [
   { type: "float", thickness: 4, availableM2: 320, sheets: 64, location: "מחסן A-1" },
   { type: "float", thickness: 5, availableM2: 185, sheets: 37, location: "מחסן A-2" },
   { type: "float", thickness: 6, availableM2: 210, sheets: 42, location: "מחסן A-3" },
@@ -54,7 +56,7 @@ const glassInventory = [
   { type: "igu", thickness: 8, availableM2: 110, sheets: 22, location: "מחסן D-2" },
 ];
 
-const qualityTests = [
+const FALLBACK_QUALITYTESTS = [
   { id: "QC-801", order: "GZ-4006", test: "שלמות איטום", result: "עבר", score: 98, inspector: "דני לוי", date: "2026-04-07" },
   { id: "QC-802", order: "GZ-4012", test: "בדיקה חזותית", result: "עבר", score: 100, inspector: "מיכל כהן", date: "2026-04-07" },
   { id: "QC-803", order: "GZ-4006", test: "אימות מילוי גז IGU", result: "עבר", score: 96, inspector: "דני לוי", date: "2026-04-07" },
@@ -65,7 +67,7 @@ const qualityTests = [
   { id: "QC-808", order: "GZ-4005", test: "אימות מילוי גז IGU", result: "לא רלוונטי", score: 0, inspector: "-", date: "2026-04-05" },
 ];
 
-const cuttingPlans = [
+const FALLBACK_CUTTINGPLANS = [
   { id: "CP-301", glassType: "float", thickness: 4, sheetSize: "321x225 cm", pieces: 12, efficiency: 91, waste: "2.1 מ\"ר", order: "GZ-4003" },
   { id: "CP-302", glassType: "tempered", thickness: 8, sheetSize: "321x225 cm", pieces: 6, efficiency: 87, waste: "3.8 מ\"ר", order: "GZ-4010" },
   { id: "CP-303", glassType: "igu", thickness: 6, sheetSize: "250x180 cm", pieces: 4, efficiency: 93, waste: "1.4 מ\"ר", order: "GZ-4009" },
@@ -75,6 +77,33 @@ const cuttingPlans = [
 ];
 
 export default function FabGlazingOrders() {
+  const { data: apiglazingOrders } = useQuery({
+    queryKey: ["/api/fabrication/fab-glazing-orders/glazingorders"],
+    queryFn: () => authFetch("/api/fabrication/fab-glazing-orders/glazingorders").then(r => r.json()).catch(() => null),
+  });
+  const glazingOrders = Array.isArray(apiglazingOrders) ? apiglazingOrders : (apiglazingOrders?.data ?? apiglazingOrders?.items ?? FALLBACK_GLAZINGORDERS);
+
+
+  const { data: apiglassInventory } = useQuery({
+    queryKey: ["/api/fabrication/fab-glazing-orders/glassinventory"],
+    queryFn: () => authFetch("/api/fabrication/fab-glazing-orders/glassinventory").then(r => r.json()).catch(() => null),
+  });
+  const glassInventory = Array.isArray(apiglassInventory) ? apiglassInventory : (apiglassInventory?.data ?? apiglassInventory?.items ?? FALLBACK_GLASSINVENTORY);
+
+
+  const { data: apiqualityTests } = useQuery({
+    queryKey: ["/api/fabrication/fab-glazing-orders/qualitytests"],
+    queryFn: () => authFetch("/api/fabrication/fab-glazing-orders/qualitytests").then(r => r.json()).catch(() => null),
+  });
+  const qualityTests = Array.isArray(apiqualityTests) ? apiqualityTests : (apiqualityTests?.data ?? apiqualityTests?.items ?? FALLBACK_QUALITYTESTS);
+
+
+  const { data: apicuttingPlans } = useQuery({
+    queryKey: ["/api/fabrication/fab-glazing-orders/cuttingplans"],
+    queryFn: () => authFetch("/api/fabrication/fab-glazing-orders/cuttingplans").then(r => r.json()).catch(() => null),
+  });
+  const cuttingPlans = Array.isArray(apicuttingPlans) ? apicuttingPlans : (apicuttingPlans?.data ?? apicuttingPlans?.items ?? FALLBACK_CUTTINGPLANS);
+
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("orders");
 

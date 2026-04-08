@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Brain, Database, Search, RefreshCw, Layers, FileText, Mail, Users, Package, FileSignature, Clock, Zap, AlertTriangle, CheckCircle2, BarChart3, Sparkles, GitBranch, Activity, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +24,7 @@ const sCfg: Record<SourceType, { label: string; icon: any }> = {
   email: { label: "דוא\"ל", icon: Mail }, meeting: { label: "פגישה", icon: Users },
 };
 
-const data: KCtx[] = [
+const FALLBACK_DATA: KCtx[] = [
   { id: "KC-001", entityType: "project", entityId: "PRJ-101", entityName: "מגדלי הים - חיפה", sourceType: "document", sourceRef: "DOC-2240", chunkPreview: "תכנון מסגרת אלומיניום לקומות 12-18, כולל חישוב עומסי רוח לפי ת\"י 1139...", freshnessScore: 95, createdAt: "2026-04-08" },
   { id: "KC-002", entityType: "customer", entityId: "CUS-032", entityName: "אפריקה ישראל", sourceType: "email", sourceRef: "EML-8841", chunkPreview: "אישור מנהל פרויקט לשינוי מפרט זכוכית מחוסמת לזכוכית למינציה בקומה 3...", freshnessScore: 88, createdAt: "2026-04-07" },
   { id: "KC-003", entityType: "product", entityId: "PRD-055", entityName: "חלון הזזה תרמי SL-90", sourceType: "document", sourceRef: "DOC-2238", chunkPreview: "ערך U-Value של 1.4 W/m²K, עומד בדרישות תקן בידוד תרמי SI-1045 עדכון 2025...", freshnessScore: 92, createdAt: "2026-04-07" },
@@ -44,7 +46,7 @@ const embStats = { totalVectors: 48720, dimensions: 1536, indexType: "HNSW", ind
   dist: [{ type: "פרויקטים", count: 14200, pct: 29 }, { type: "לקוחות", count: 11680, pct: 24 }, { type: "מוצרים", count: 12900, pct: 26 }, { type: "חוזים", count: 9940, pct: 21 }],
 };
 
-const semResults = [
+const FALLBACK_SEM_RESULTS = [
   { id: "SR-1", ctxId: "KC-001", text: "תכנון מסגרת אלומיניום לקומות 12-18, כולל חישוב עומסי רוח...", sim: 0.96, entity: "מגדלי הים - חיפה", et: "project" as EntityType },
   { id: "SR-2", ctxId: "KC-009", text: "דרישות מיוחדות לעמידות בקורוזיה - ציפוי אנודייז 25 מיקרון...", sim: 0.91, entity: "מלון ים המלח", et: "project" as EntityType },
   { id: "SR-3", ctxId: "KC-011", text: "עומס רוח מקסימלי 2.5 kPa, סטייה מותרת ±2 מ\"מ בחיבורים...", sim: 0.87, entity: "מערכת חזית CW-120", et: "product" as EntityType },
@@ -56,6 +58,15 @@ const fColor = (s: number) => s >= 80 ? "text-green-400" : s >= 50 ? "text-yello
 const fBg = (s: number) => s >= 80 ? "bg-green-500/20 text-green-400 border-green-500/30" : s >= 50 ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" : "bg-red-500/20 text-red-400 border-red-500/30";
 
 export default function Bash44KnowledgeContexts() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["bash44_knowledge_contexts"],
+    queryFn: () => authFetch("/api/ai/bash44-knowledge-contexts").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const data = apiData?.data ?? FALLBACK_DATA;
+  const semResults = apiData?.semResults ?? FALLBACK_SEM_RESULTS;
   const [search, setSearch] = useState("");
   const [semQuery, setSemQuery] = useState("");
   const [semDone, setSemDone] = useState(false);

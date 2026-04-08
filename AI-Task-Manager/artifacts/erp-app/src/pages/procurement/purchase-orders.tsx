@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -45,7 +47,7 @@ interface PurchaseOrder {
   approval: Approval;
 }
 
-const orders: PurchaseOrder[] = [
+const FALLBACK_ORDERS: PurchaseOrder[] = [
   { poNumber: "PO-2026-001", supplier: "מפעלי אלומיניום הגליל", orderDate: "2026-04-01", itemsCount: 12, totalAmount: 245000, status: "התקבל", expectedDelivery: "2026-04-10", actualDelivery: "2026-04-09", approval: "מאושר" },
   { poNumber: "PO-2026-002", supplier: "זכוכית שומרון בע\"מ", orderDate: "2026-04-02", itemsCount: 8, totalAmount: 178500, status: "בדרך", expectedDelivery: "2026-04-15", actualDelivery: "", approval: "מאושר" },
   { poNumber: "PO-2026-003", supplier: "ברזל ופלדה נתניה", orderDate: "2026-04-03", itemsCount: 15, totalAmount: 412000, status: "נשלח לספק", expectedDelivery: "2026-04-20", actualDelivery: "", approval: "מאושר" },
@@ -64,6 +66,14 @@ const isDelayed = (o: PurchaseOrder) => {
 };
 
 export default function PurchaseOrders() {
+  const { data: purchaseordersData } = useQuery({
+    queryKey: ["purchase-orders"],
+    queryFn: () => authFetch("/api/procurement/purchase_orders"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const orders = purchaseordersData ?? FALLBACK_ORDERS;
+
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
 

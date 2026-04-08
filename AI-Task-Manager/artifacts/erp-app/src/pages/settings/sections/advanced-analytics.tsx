@@ -1,10 +1,18 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Button, Input, Label, Card } from "@/components/ui-components";
 import { BarChart3, TrendingUp, Globe, RefreshCw, Save, Plus, Trash2, Eye } from "lucide-react";
 import ActivityLog from "@/components/activity-log";
 import RelatedRecords from "@/components/related-records";
 
 export default function AdvancedAnalyticsSection() {
+  const { data: advancedanalyticsData } = useQuery({
+    queryKey: ["advanced-analytics"],
+    queryFn: () => authFetch("/api/settings/advanced_analytics"),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [activeTab, setActiveTab] = useState("connection");
   const [gaId, setGaId] = useState("G-XXXXXXXXXX");
   const [gtmId, setGtmId] = useState("");

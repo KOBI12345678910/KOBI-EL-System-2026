@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,7 +13,7 @@ import {
 
 /* ── Static mock data ─────────────────────────────────────────── */
 
-const documentTypes = [
+const FALLBACK_DOCUMENT_TYPES = [
   { name: "פרוטוקול מסירה", count: 12, icon: ClipboardCheck, color: "text-blue-400", bg: "bg-blue-500/10", type: "מסמך" },
   { name: "דו\"ח בקרת איכות", count: 18, icon: ShieldCheck, color: "text-emerald-400", bg: "bg-emerald-500/10", type: "מסמך" },
   { name: "טופס חריגה", count: 8, icon: AlertTriangle, color: "text-red-400", bg: "bg-red-500/10", type: "מסמך" },
@@ -22,7 +24,7 @@ const documentTypes = [
   { name: "שרטוטי As-Built", count: 4, icon: Pencil, color: "text-cyan-400", bg: "bg-cyan-500/10", type: "מסמך" },
 ];
 
-const documents = [
+const FALLBACK_DOCUMENTS = [
   { id: "DOC-101", docType: "פרוטוקול מסירה", insId: "INS-003", project: "בית חכם — הרצליה", uploadDate: "2026-04-09", uploadedBy: "יוסי כהן", fileSize: "1.2MB", status: "מאושר" },
   { id: "DOC-102", docType: "דו\"ח בקרת איכות", insId: "INS-001", project: "מגדלי הים — חיפה", uploadDate: "2026-04-08", uploadedBy: "שרה לוי", fileSize: "3.4MB", status: "סופי" },
   { id: "DOC-103", docType: "טופס חריגה", insId: "INS-007", project: "בניין מגורים — נתניה", uploadDate: "2026-04-07", uploadedBy: "רחל אברהם", fileSize: "0.8MB", status: "סופי" },
@@ -40,7 +42,7 @@ const documents = [
   { id: "DOC-115", docType: "דו\"ח בקרת איכות", insId: "INS-007", project: "בניין מגורים — נתניה", uploadDate: "2026-04-06", uploadedBy: "איתן רוזנברג", fileSize: "3.0MB", status: "סופי" },
 ];
 
-const photoGallery = [
+const FALLBACK_PHOTO_GALLERY = [
   { insId: "INS-001", date: "2026-04-02", desc: "קיר צפוני — מצב מבנה קיים", label: "לפני", size: "4.2MB" },
   { insId: "INS-001", date: "2026-04-08", desc: "קיר צפוני — חלונות מותקנים", label: "אחרי", size: "3.8MB" },
   { insId: "INS-003", date: "2026-03-28", desc: "פתח דלת הזזה — מדידות", label: "לפני", size: "2.9MB" },
@@ -55,7 +57,7 @@ const photoGallery = [
   { insId: "INS-004", date: "2026-04-05", desc: "מרפסת קומה 12 — הכנה למעקה", label: "לפני", size: "3.6MB" },
 ];
 
-const missingDocuments = [
+const FALLBACK_MISSING_DOCUMENTS = [
   { insId: "INS-001", project: "מגדלי הים — חיפה", missingDoc: "פרוטוקול מסירה", daysOverdue: 0, urgency: "בינונית", note: "ממתין להשלמת התקנה" },
   { insId: "INS-002", project: "פארק המדע — רחובות", missingDoc: "דו\"ח בקרת איכות", daysOverdue: 3, urgency: "גבוהה", note: "התקנה טרם החלה — נדרש QC מקדים" },
   { insId: "INS-004", project: "מלון ים התיכון", missingDoc: "דו\"ח בטיחות", daysOverdue: 5, urgency: "קריטית", note: "חובה לפני עבודה בגובה קומה 12" },
@@ -85,7 +87,7 @@ const urgencyColor: Record<string, string> = {
 
 /* ── KPI cards ────────────────────────────────────────────────── */
 
-const kpiData = [
+const FALLBACK_KPI_DATA = [
   { label: "מסמכים כוללים", value: 145, icon: FileText, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "תמונות שטח", value: 89, icon: Camera, color: "text-purple-400", bg: "bg-purple-500/10" },
   { label: "פרוטוקולי מסירה", value: 14, icon: ClipboardCheck, color: "text-emerald-400", bg: "bg-emerald-500/10" },
@@ -96,6 +98,67 @@ const kpiData = [
 /* ── Component ────────────────────────────────────────────────── */
 
 export default function InstallationDocuments() {
+  const { data: documentTypes = FALLBACK_DOCUMENT_TYPES } = useQuery({
+    queryKey: ["installation-document-types"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-documents/document-types");
+      if (!res.ok) return FALLBACK_DOCUMENT_TYPES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DOCUMENT_TYPES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: documents = FALLBACK_DOCUMENTS } = useQuery({
+    queryKey: ["installation-documents"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-documents/documents");
+      if (!res.ok) return FALLBACK_DOCUMENTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DOCUMENTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: photoGallery = FALLBACK_PHOTO_GALLERY } = useQuery({
+    queryKey: ["installation-photo-gallery"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-documents/photo-gallery");
+      if (!res.ok) return FALLBACK_PHOTO_GALLERY;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_PHOTO_GALLERY;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: missingDocuments = FALLBACK_MISSING_DOCUMENTS } = useQuery({
+    queryKey: ["installation-missing-documents"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-documents/missing-documents");
+      if (!res.ok) return FALLBACK_MISSING_DOCUMENTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_MISSING_DOCUMENTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: kpiData = FALLBACK_KPI_DATA } = useQuery({
+    queryKey: ["installation-kpi-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-documents/kpi-data");
+      if (!res.ok) return FALLBACK_KPI_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_KPI_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* Header */}

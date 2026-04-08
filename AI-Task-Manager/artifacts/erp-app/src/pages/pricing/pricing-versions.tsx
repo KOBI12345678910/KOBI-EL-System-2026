@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -27,7 +29,7 @@ const urgencyMap: Record<string, { label: string; color: string }> = {
   critical: { label: "קריטית", color: "bg-red-500/20 text-red-400" },
 };
 
-const versions = [
+const FALLBACK_VERSIONS = [
   { id: 1, project: "מכסה פלסטיק TK-200", version: 1, createdBy: "יוסי כהן", date: "2026-03-15", totalCost: 12400, recommendedPrice: 18600, margin: 33.3, status: "approved", changes: "—" },
   { id: 2, project: "מכסה פלסטיק TK-200", version: 2, createdBy: "יוסי כהן", date: "2026-03-22", totalCost: 11800, recommendedPrice: 17700, margin: 33.3, status: "approved", changes: "הפחתת חומר גלם ב-5%" },
   { id: 3, project: "מכסה פלסטיק TK-200", version: 3, createdBy: "דנה לוי", date: "2026-04-01", totalCost: 12100, recommendedPrice: 18150, margin: 33.3, status: "pending", changes: "תוספת אריזה מיוחדת" },
@@ -40,12 +42,12 @@ const versions = [
   { id: 10, project: "אטם סיליקון SG-7", version: 2, createdBy: "יוסי כהן", date: "2026-04-05", totalCost: 5900, recommendedPrice: 8260, margin: 28.6, status: "pending", changes: "שינוי ספק + הנחת כמות" },
 ];
 
-const pendingApprovals = versions.filter(v => v.status === "pending").map(v => ({
+const pendingApprovals = FALLBACK_VERSIONS.filter(v => v.status === "pending").map(v => ({
   ...v,
   urgency: v.project.includes("TK-200") ? "high" : v.project.includes("SG-7") ? "critical" : "medium",
 }));
 
-const historyItems = [
+const FALLBACK_HISTORY_ITEMS = [
   { id: 1, project: "מכסה פלסטיק TK-200", version: 1, action: "approved", by: "עוזי טכנוכל", date: "2026-03-16", notes: "מחיר סביר, מאושר לייצור" },
   { id: 2, project: "מכסה פלסטיק TK-200", version: 2, action: "approved", by: "עוזי טכנוכל", date: "2026-03-23", notes: "חיסכון בחומר גלם מצוין" },
   { id: 3, project: "בורג נירוסטה M8", version: 1, action: "approved", by: "עוזי טכנוכל", date: "2026-03-11", notes: "מותאם למחירון הספק" },
@@ -55,7 +57,7 @@ const historyItems = [
   { id: 7, project: "אטם סיליקון SG-7", version: 1, action: "approved", by: "שרה מנהלת", date: "2026-03-26", notes: "מחיר תחרותי" },
 ];
 
-const comparisonCategories = [
+const FALLBACK_COMPARISON_CATEGORIES = [
   { category: "חומרי גלם", v1: 6200, v2: 5900, change: -4.8 },
   { category: "עבודה ישירה", v1: 2800, v2: 2800, change: 0 },
   { category: "אריזה", v1: 400, v2: 950, change: 137.5 },
@@ -64,7 +66,7 @@ const comparisonCategories = [
   { category: "בדיקות איכות", v1: 300, v2: 300, change: 0 },
 ];
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "סה\"כ גרסאות", value: "10", icon: Layers, color: "text-blue-400" },
   { label: "ממוצע גרסאות לפרויקט", value: "2.0", icon: BarChart3, color: "text-purple-400" },
   { label: "ממתינים לאישור", value: "3", icon: Clock, color: "text-yellow-400" },
@@ -74,6 +76,17 @@ const kpis = [
 ];
 
 export default function PricingVersions() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["pricing_versions"],
+    queryFn: () => authFetch("/api/pricing/pricing-versions").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const versions = apiData?.versions ?? FALLBACK_VERSIONS;
+  const historyItems = apiData?.historyItems ?? FALLBACK_HISTORY_ITEMS;
+  const comparisonCategories = apiData?.comparisonCategories ?? FALLBACK_COMPARISON_CATEGORIES;
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
   const [tab, setTab] = useState("versions");
   const [compProject] = useState("מכסה פלסטיק TK-200");
   const [compV1] = useState(2);

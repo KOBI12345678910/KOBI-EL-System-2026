@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,54 +17,54 @@ import {
 /* ── sub-modules: engineering_settings, cad_integration,
    standards_library, notification_rules, system_integrations ── */
 
-const numberingSchemes = [
+const FALLBACK_NUMBERINGSCHEMES = [
   { label: "תבנית מספור שרטוטים", value: "DWG-{PROJECT}-{SEQ:4}", desc: "קידומת פרויקט + מספר רץ 4 ספרות" },
   { label: "סכמת רוויזיות", value: "A → B → C → …", desc: "אותיות לטיניות עוקבות, P1/P2 לטיוטה" },
   { label: "יחידות ברירת מחדל", value: "מילימטרים (mm)", desc: "כל השרטוטים והמפרטים ב-mm" },
 ];
-const toleranceClasses = [
+const FALLBACK_TOLERANCECLASSES = [
   { name: "מתכת (אלומיניום)", standard: "±0.5 mm", fine: "±0.2 mm", ultra: "±0.1 mm" },
   { name: "זכוכית", standard: "±1.0 mm", fine: "±0.5 mm", ultra: "±0.3 mm" },
   { name: "פרזול והרכבה", standard: "±0.3 mm", fine: "±0.15 mm", ultra: "±0.05 mm" },
 ];
-const approvalChain = [
+const FALLBACK_APPROVALCHAIN = [
   { step: 1, role: "מהנדס מתכנן", sla: "2 שעות" },
   { step: 2, role: "ראש צוות הנדסה", sla: "4 שעות" },
   { step: 3, role: "מנהל הנדסה", sla: "8 שעות" },
   { step: 4, role: "מנהל איכות (אם נדרש)", sla: "12 שעות" },
 ];
-const cadSoftware = [
+const FALLBACK_CADSOFTWARE = [
   { name: "SolidWorks 2026", status: "מחובר", version: "SP3.1", license: "פעילה" },
   { name: "AutoCAD LT 2026", status: "מחובר", version: "2026.1", license: "פעילה" },
   { name: "Inventor Professional", status: "לא פעיל", version: "—", license: "ממתין" },
 ];
-const fileFormats = [
+const FALLBACK_FILEFORMATS = [
   { format: "DWG", use: "שרטוטי ייצור", auto: true },
   { format: "DXF", use: "חיתוך CNC", auto: true },
   { format: "STEP", use: "חילופי תלת-ממד", auto: false },
   { format: "PDF", use: "אישורי לקוח", auto: true },
   { format: "IFC", use: "BIM שיתוף", auto: false },
 ];
-const standardsLibrary = [
+const FALLBACK_STANDARDSLIBRARY = [
   { code: "ISO 2768-1", name: "סובלנויות כלליות — ממדים ליניאריים", pct: 100 },
   { code: "EN 14351-1", name: "חלונות ודלתות — תקן מוצר", pct: 95 },
   { code: "ת\"י 23", name: "אלומיניום — פרופילים לבנייה", pct: 100 },
   { code: "EN 13830", name: "קירות מסך — תקן מוצר", pct: 88 },
   { code: "ISO 9001", name: "ניהול איכות — דרישות", pct: 92 },
 ];
-const alertChannels = [
+const FALLBACK_ALERTCHANNELS = [
   { channel: "דוא\"ל", on: true, targets: "כל צוות ההנדסה" },
   { channel: "SMS דחוף", on: true, targets: "מנהלי צוותים בלבד" },
   { channel: "הודעת מערכת", on: true, targets: "כל המשתמשים" },
   { channel: "Webhook חיצוני", on: false, targets: "—" },
 ];
-const escalationRules = [
+const FALLBACK_ESCALATIONRULES = [
   { trigger: "שרטוט לא אושר תוך 24 שעות", action: "אסקלציה לראש צוות", p: "גבוהה" },
   { trigger: "ECO פתוח מעל 48 שעות", action: "התראה למנהל הנדסה", p: "בינונית" },
   { trigger: "כשל בדיקת תקן", action: "חסימת שחרור + התראה לאיכות", p: "קריטית" },
   { trigger: "תזכורת ביקורת רוויזיה", action: "תזכורת יומית למהנדס", p: "רגילה" },
 ];
-const systems = [
+const FALLBACK_SYSTEMS = [
   { system: "ייצור", status: "מחובר", sync: "דו-כיווני", last: "08/04/2026 09:15", hp: 98, icon: Factory, clr: "text-orange-600" },
   { system: "רכש", status: "מחובר", sync: "חד-כיווני", last: "08/04/2026 08:50", hp: 95, icon: ShoppingCart, clr: "text-purple-600" },
   { system: "איכות", status: "מחובר", sync: "דו-כיווני", last: "08/04/2026 09:10", hp: 100, icon: ShieldCheck, clr: "text-green-600" },
@@ -71,6 +73,68 @@ const systems = [
 ];
 
 export default function EngineeringSettingsPage() {
+  const { data: apinumberingSchemes } = useQuery({
+    queryKey: ["/api/engineering/engineering-settings/numberingschemes"],
+    queryFn: () => authFetch("/api/engineering/engineering-settings/numberingschemes").then(r => r.json()).catch(() => null),
+  });
+  const numberingSchemes = Array.isArray(apinumberingSchemes) ? apinumberingSchemes : (apinumberingSchemes?.data ?? apinumberingSchemes?.items ?? FALLBACK_NUMBERINGSCHEMES);
+
+
+  const { data: apitoleranceClasses } = useQuery({
+    queryKey: ["/api/engineering/engineering-settings/toleranceclasses"],
+    queryFn: () => authFetch("/api/engineering/engineering-settings/toleranceclasses").then(r => r.json()).catch(() => null),
+  });
+  const toleranceClasses = Array.isArray(apitoleranceClasses) ? apitoleranceClasses : (apitoleranceClasses?.data ?? apitoleranceClasses?.items ?? FALLBACK_TOLERANCECLASSES);
+
+
+  const { data: apiapprovalChain } = useQuery({
+    queryKey: ["/api/engineering/engineering-settings/approvalchain"],
+    queryFn: () => authFetch("/api/engineering/engineering-settings/approvalchain").then(r => r.json()).catch(() => null),
+  });
+  const approvalChain = Array.isArray(apiapprovalChain) ? apiapprovalChain : (apiapprovalChain?.data ?? apiapprovalChain?.items ?? FALLBACK_APPROVALCHAIN);
+
+
+  const { data: apicadSoftware } = useQuery({
+    queryKey: ["/api/engineering/engineering-settings/cadsoftware"],
+    queryFn: () => authFetch("/api/engineering/engineering-settings/cadsoftware").then(r => r.json()).catch(() => null),
+  });
+  const cadSoftware = Array.isArray(apicadSoftware) ? apicadSoftware : (apicadSoftware?.data ?? apicadSoftware?.items ?? FALLBACK_CADSOFTWARE);
+
+
+  const { data: apifileFormats } = useQuery({
+    queryKey: ["/api/engineering/engineering-settings/fileformats"],
+    queryFn: () => authFetch("/api/engineering/engineering-settings/fileformats").then(r => r.json()).catch(() => null),
+  });
+  const fileFormats = Array.isArray(apifileFormats) ? apifileFormats : (apifileFormats?.data ?? apifileFormats?.items ?? FALLBACK_FILEFORMATS);
+
+
+  const { data: apistandardsLibrary } = useQuery({
+    queryKey: ["/api/engineering/engineering-settings/standardslibrary"],
+    queryFn: () => authFetch("/api/engineering/engineering-settings/standardslibrary").then(r => r.json()).catch(() => null),
+  });
+  const standardsLibrary = Array.isArray(apistandardsLibrary) ? apistandardsLibrary : (apistandardsLibrary?.data ?? apistandardsLibrary?.items ?? FALLBACK_STANDARDSLIBRARY);
+
+
+  const { data: apialertChannels } = useQuery({
+    queryKey: ["/api/engineering/engineering-settings/alertchannels"],
+    queryFn: () => authFetch("/api/engineering/engineering-settings/alertchannels").then(r => r.json()).catch(() => null),
+  });
+  const alertChannels = Array.isArray(apialertChannels) ? apialertChannels : (apialertChannels?.data ?? apialertChannels?.items ?? FALLBACK_ALERTCHANNELS);
+
+
+  const { data: apiescalationRules } = useQuery({
+    queryKey: ["/api/engineering/engineering-settings/escalationrules"],
+    queryFn: () => authFetch("/api/engineering/engineering-settings/escalationrules").then(r => r.json()).catch(() => null),
+  });
+  const escalationRules = Array.isArray(apiescalationRules) ? apiescalationRules : (apiescalationRules?.data ?? apiescalationRules?.items ?? FALLBACK_ESCALATIONRULES);
+
+
+  const { data: apisystems } = useQuery({
+    queryKey: ["/api/engineering/engineering-settings/systems"],
+    queryFn: () => authFetch("/api/engineering/engineering-settings/systems").then(r => r.json()).catch(() => null),
+  });
+  const systems = Array.isArray(apisystems) ? apisystems : (apisystems?.data ?? apisystems?.items ?? FALLBACK_SYSTEMS);
+
   const [tab, setTab] = useState("general");
 
   return (

@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,7 +21,7 @@ const kpis = [
   { label: "קונפליקטים בגרסאות", value: 2, icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" },
 ];
 
-const activeBoms = [
+const FALLBACK_ACTIVEBOMS = [
   { id: "BOM-001", product: "חלון אלומיניום 120x150", version: "v2.3", status: "active", createdBy: "עוזי כהן", createdDate: "2026-01-15", approvedBy: "משה לוי", effectiveDate: "2026-02-01", components: 14, cost: 1250 },
   { id: "BOM-002", product: "דלת הזזה זכוכית כפולה", version: "v1.8", status: "active", createdBy: "דנה רותם", createdDate: "2026-02-10", approvedBy: "עוזי כהן", effectiveDate: "2026-03-01", components: 22, cost: 3400 },
   { id: "BOM-003", product: "מעקה אלומיניום מרפסת", version: "v3.1", status: "active", createdBy: "יוסי אברהם", createdDate: "2025-11-20", approvedBy: "דנה רותם", effectiveDate: "2025-12-15", components: 9, cost: 870 },
@@ -34,7 +36,7 @@ const activeBoms = [
   { id: "BOM-012", product: "פרגולת אלומיניום 3x4", version: "v2.5", status: "active", createdBy: "משה לוי", createdDate: "2026-01-28", approvedBy: "עוזי כהן", effectiveDate: "2026-02-15", components: 17, cost: 4800 },
 ];
 
-const changeHistory = [
+const FALLBACK_CHANGEHISTORY = [
   { id: 1, bom: "BOM-001", version: "v2.3", date: "2026-03-28", author: "עוזי כהן", type: "quantity", desc: "עדכון כמות אטמי EPDM מ-4 ל-6 יחידות", approval: "approved" },
   { id: 2, bom: "BOM-002", version: "v1.8", date: "2026-03-25", author: "דנה רותם", type: "added", desc: "הוספת מנגנון נעילה רב-נקודתי", approval: "approved" },
   { id: 3, bom: "BOM-004", version: "v1.2", date: "2026-03-22", author: "משה לוי", type: "substitution", desc: "החלפת זכוכית 6mm בזכוכית מחוסמת 8mm", approval: "pending" },
@@ -52,7 +54,7 @@ const changeHistory = [
   { id: 15, bom: "BOM-010", version: "v2.9", date: "2026-02-05", author: "דנה רותם", type: "removed", desc: "הסרת רווחים פנימיים - עדכון לחיתוך רציף", approval: "approved" },
 ];
 
-const comparisonOld = [
+const FALLBACK_COMPARISONOLD = [
   { component: "פרופיל אלומיניום ראשי", qty: 4, unit: "מ'", cost: 280, status: "unchanged" },
   { component: "זכוכית בידודית 24mm", qty: 2, unit: "יח'", cost: 450, status: "modified" },
   { component: "אטם EPDM שחור", qty: 4, unit: "מ'", cost: 32, status: "modified" },
@@ -63,7 +65,7 @@ const comparisonOld = [
   { component: "סיליקון UV", qty: 1, unit: "שפ'", cost: 35, status: "unchanged" },
 ];
 
-const comparisonNew = [
+const FALLBACK_COMPARISONNEW = [
   { component: "פרופיל אלומיניום ראשי", qty: 4, unit: "מ'", cost: 280, status: "unchanged" },
   { component: "זכוכית בידודית 28mm", qty: 2, unit: "יח'", cost: 520, status: "modified" },
   { component: "אטם EPDM שחור", qty: 6, unit: "מ'", cost: 48, status: "modified" },
@@ -77,7 +79,7 @@ const comparisonNew = [
   { component: "כיסוי ציר דקורטיבי", qty: 2, unit: "יח'", cost: 30, status: "added" },
 ];
 
-const pendingApprovals = [
+const FALLBACK_PENDINGAPPROVALS = [
   { id: 1, bom: "BOM-004", product: "ויטרינה חנות 200x250", version: "v1.2", submitter: "משה לוי", submitted: "2026-03-28", reviewer: "עוזי כהן", summary: "החלפת זכוכית 6mm בזכוכית מחוסמת 8mm, עדכון עלות" },
   { id: 2, bom: "BOM-009", product: "מחיצת זכוכית משרדית", version: "v1.0", submitter: "עוזי כהן", submitted: "2026-04-01", reviewer: "דנה רותם", summary: "גרסה ראשונית - 13 רכיבים, מערכת תליה עליונה" },
   { id: 3, bom: "BOM-002", product: "דלת הזזה זכוכית כפולה", version: "v1.9", submitter: "דנה רותם", submitted: "2026-04-03", reviewer: "יוסי אברהם", summary: "הוספת מנגנון בלימה רכה ועדכון מסילות" },
@@ -115,6 +117,40 @@ const approvalBadge = (status: string) => {
 };
 
 export default function BomVersionsPage() {
+  const { data: apiactiveBoms } = useQuery({
+    queryKey: ["/api/supply-chain/bom-versions/activeboms"],
+    queryFn: () => authFetch("/api/supply-chain/bom-versions/activeboms").then(r => r.json()).catch(() => null),
+  });
+  const activeBoms = Array.isArray(apiactiveBoms) ? apiactiveBoms : (apiactiveBoms?.data ?? apiactiveBoms?.items ?? FALLBACK_ACTIVEBOMS);
+
+
+  const { data: apichangeHistory } = useQuery({
+    queryKey: ["/api/supply-chain/bom-versions/changehistory"],
+    queryFn: () => authFetch("/api/supply-chain/bom-versions/changehistory").then(r => r.json()).catch(() => null),
+  });
+  const changeHistory = Array.isArray(apichangeHistory) ? apichangeHistory : (apichangeHistory?.data ?? apichangeHistory?.items ?? FALLBACK_CHANGEHISTORY);
+
+
+  const { data: apicomparisonOld } = useQuery({
+    queryKey: ["/api/supply-chain/bom-versions/comparisonold"],
+    queryFn: () => authFetch("/api/supply-chain/bom-versions/comparisonold").then(r => r.json()).catch(() => null),
+  });
+  const comparisonOld = Array.isArray(apicomparisonOld) ? apicomparisonOld : (apicomparisonOld?.data ?? apicomparisonOld?.items ?? FALLBACK_COMPARISONOLD);
+
+
+  const { data: apicomparisonNew } = useQuery({
+    queryKey: ["/api/supply-chain/bom-versions/comparisonnew"],
+    queryFn: () => authFetch("/api/supply-chain/bom-versions/comparisonnew").then(r => r.json()).catch(() => null),
+  });
+  const comparisonNew = Array.isArray(apicomparisonNew) ? apicomparisonNew : (apicomparisonNew?.data ?? apicomparisonNew?.items ?? FALLBACK_COMPARISONNEW);
+
+
+  const { data: apipendingApprovals } = useQuery({
+    queryKey: ["/api/supply-chain/bom-versions/pendingapprovals"],
+    queryFn: () => authFetch("/api/supply-chain/bom-versions/pendingapprovals").then(r => r.json()).catch(() => null),
+  });
+  const pendingApprovals = Array.isArray(apipendingApprovals) ? apipendingApprovals : (apipendingApprovals?.data ?? apipendingApprovals?.items ?? FALLBACK_PENDINGAPPROVALS);
+
   const [search, setSearch] = useState("");
 
   const filteredBoms = activeBoms.filter(b =>

@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,9 +12,9 @@ import {
 
 /* ── Static mock data ─────────────────────────────────────────── */
 
-const teams = ["צוות אלפא", "צוות בטא", "צוות גמא", "צוות דלתא"] as const;
+const FALLBACK_TEAMS = ["צוות אלפא", "צוות בטא", "צוות גמא", "צוות דלתא"] as const;
 
-const weekDays = [
+const FALLBACK_WEEK_DAYS = [
   { key: "sun", label: "ראשון", date: "06/04" },
   { key: "mon", label: "שני", date: "07/04" },
   { key: "tue", label: "שלישי", date: "08/04" },
@@ -63,7 +65,7 @@ const calendarGrid: Record<string, Record<string, CellEntry>> = {
   },
 };
 
-const schedulingQueue = [
+const FALLBACK_SCHEDULING_QUEUE = [
   { id: "SCH-001", priority: "דחוף", project: "מגדלי הים — חיפה", product: "חלונות אלומיניום Premium", requestedDate: "2026-04-08", crewPref: "צוות אלפא", duration: "3 ימים", dependencies: "חומרים באתר", status: "שובץ" },
   { id: "SCH-002", priority: "דחוף", project: "קניון הדרום — ב\"ש", product: "פרגולות אלומיניום", requestedDate: "2026-04-06", crewPref: "צוות דלתא", duration: "4 ימים", dependencies: "אישור קונסטרוקטור", status: "שובץ" },
   { id: "SCH-003", priority: "רגיל", project: "פארק המדע — רחובות", product: "ויטרינות חזית 3m", requestedDate: "2026-04-07", crewPref: "צוות בטא", duration: "2.5 ימים", dependencies: "מנוף באתר", status: "שובץ" },
@@ -76,7 +78,7 @@ const schedulingQueue = [
   { id: "SCH-010", priority: "נמוך", project: "וילה פרטית — כפר שמריהו", product: "פרגולה ביומטרית", requestedDate: "2026-04-14", crewPref: "ללא העדפה", duration: "1.5 ימים", dependencies: "אישור ועד בית", status: "ממתין לאישור" },
 ];
 
-const conflicts = [
+const FALLBACK_CONFLICTS = [
   {
     id: "CON-1",
     description: "צוות אלפא משובץ לשני פרויקטים ב-10/04",
@@ -97,14 +99,14 @@ const conflicts = [
   },
 ];
 
-const monthlyOverview = [
+const FALLBACK_MONTHLY_OVERVIEW = [
   { week: "שבוע 14 (31/03-04/04)", planned: 5, completed: 5, cancelled: 0 },
   { week: "שבוע 15 (06/04-11/04)", planned: 8, completed: 0, cancelled: 0 },
   { week: "שבוע 16 (13/04-18/04)", planned: 6, completed: 0, cancelled: 1 },
   { week: "שבוע 17 (20/04-25/04)", planned: 4, completed: 0, cancelled: 0 },
 ];
 
-const teamUtilization = [
+const FALLBACK_TEAM_UTILIZATION = [
   { team: "צוות אלפא", scheduled: 37, available: 45, pct: 82 },
   { team: "צוות בטא", scheduled: 32, available: 45, pct: 71 },
   { team: "צוות גמא", scheduled: 34, available: 45, pct: 76 },
@@ -133,7 +135,7 @@ const queueStatusColor: Record<string, string> = {
 
 /* ── KPI cards ────────────────────────────────────────────────── */
 
-const kpiData = [
+const FALLBACK_KPI_DATA = [
   { label: "מתוכנן השבוע", value: "8", icon: CalendarDays, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "שובצו צוותים", value: "6", icon: Users, color: "text-emerald-400", bg: "bg-emerald-500/10" },
   { label: "ממתינים לאישור", value: "2", icon: Clock, color: "text-amber-400", bg: "bg-amber-500/10" },
@@ -145,6 +147,91 @@ const kpiData = [
 /* ── Component ────────────────────────────────────────────────── */
 
 export default function InstallationScheduling() {
+  const { data: teams = FALLBACK_TEAMS } = useQuery({
+    queryKey: ["installation-teams"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-scheduling/teams");
+      if (!res.ok) return FALLBACK_TEAMS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TEAMS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: weekDays = FALLBACK_WEEK_DAYS } = useQuery({
+    queryKey: ["installation-week-days"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-scheduling/week-days");
+      if (!res.ok) return FALLBACK_WEEK_DAYS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_WEEK_DAYS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: schedulingQueue = FALLBACK_SCHEDULING_QUEUE } = useQuery({
+    queryKey: ["installation-scheduling-queue"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-scheduling/scheduling-queue");
+      if (!res.ok) return FALLBACK_SCHEDULING_QUEUE;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SCHEDULING_QUEUE;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: conflicts = FALLBACK_CONFLICTS } = useQuery({
+    queryKey: ["installation-conflicts"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-scheduling/conflicts");
+      if (!res.ok) return FALLBACK_CONFLICTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_CONFLICTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: monthlyOverview = FALLBACK_MONTHLY_OVERVIEW } = useQuery({
+    queryKey: ["installation-monthly-overview"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-scheduling/monthly-overview");
+      if (!res.ok) return FALLBACK_MONTHLY_OVERVIEW;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_MONTHLY_OVERVIEW;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: teamUtilization = FALLBACK_TEAM_UTILIZATION } = useQuery({
+    queryKey: ["installation-team-utilization"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-scheduling/team-utilization");
+      if (!res.ok) return FALLBACK_TEAM_UTILIZATION;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TEAM_UTILIZATION;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: kpiData = FALLBACK_KPI_DATA } = useQuery({
+    queryKey: ["installation-kpi-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-scheduling/kpi-data");
+      if (!res.ok) return FALLBACK_KPI_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_KPI_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* Header */}

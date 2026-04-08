@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Button, Input, Label, Card } from "@/components/ui-components";
 import { FileText, Plus, Trash2, Edit2, Copy, Search, Download, Eye, Star } from "lucide-react";
 import ActivityLog from "@/components/activity-log";
@@ -17,7 +19,7 @@ interface Template {
   lastModified: string;
 }
 
-const INITIAL_TEMPLATES: Template[] = [
+const FALLBACK_INITIAL_TEMPLATES: Template[] = [
   { id: 1, name: "חשבונית מס רגילה", type: "document", module: "חשבוניות", description: "תבנית חשבונית מס עם כל השדות הסטנדרטיים", usageCount: 342, isFavorite: true, lastModified: "15/03/2026" },
   { id: 2, name: "הצעת מחיר מפורטת", type: "document", module: "הצעות מחיר", description: "הצעת מחיר עם תיאורים מפורטים, תמונות ותנאים", usageCount: 128, isFavorite: true, lastModified: "10/03/2026" },
   { id: 3, name: "תבנית לקוח חדש", type: "data", module: "לקוחות", description: "מבנה נתונים ברירת מחדל ללקוח חדש", usageCount: 89, isFavorite: false, lastModified: "01/03/2026" },
@@ -37,6 +39,14 @@ const TYPE_CONFIG: Record<string, { label: string; color: string; bg: string }> 
 };
 
 export default function TemplateManagementSection() {
+  const { data: templatemanagementData } = useQuery({
+    queryKey: ["template-management"],
+    queryFn: () => authFetch("/api/settings/template_management"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const INITIAL_TEMPLATES = templatemanagementData ?? FALLBACK_INITIAL_TEMPLATES;
+
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;
   const [templates, setTemplates] = useState<Template[]>(INITIAL_TEMPLATES);

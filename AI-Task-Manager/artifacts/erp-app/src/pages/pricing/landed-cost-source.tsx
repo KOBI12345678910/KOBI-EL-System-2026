@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,7 +17,7 @@ const fmt = (v: number) => "₪" + v.toLocaleString("he-IL");
 const fmtUsd = (v: number) => "$" + v.toLocaleString("en-US");
 const pct = (v: number) => v.toFixed(1) + "%";
 
-const projects = [
+const FALLBACK_PROJECTS = [
   { id: "PRJ-1048", name: "שער כניסה Premium — קבוצת אלון" },
   { id: "PRJ-1035", name: "מעקה נירוסטה — עזריאלי" },
   { id: "PRJ-1051", name: "מבנה פלדה — שופרסל לוגיסטיקה" },
@@ -28,7 +30,7 @@ type Material = {
   exchangeRate: number; date: string; localPrice: number;
 };
 
-const materials: Material[] = [
+const FALLBACK_MATERIALS: Material[] = [
   { name: "פלדה S355 - 10mm", origin: "טורקיה", supplier: "Erdemir Steel", fob: 820, freight: 95, insurance: 18, customs: 62, portFees: 35, totalLanded: 1030, perMeter: 128.75, perKg: 6.87, exchangeRate: 3.64, date: "2026-03-28", localPrice: 1180 },
   { name: "צינור נירוסטה 316L", origin: "אירופה (גרמניה)", supplier: "ThyssenKrupp", fob: 1420, freight: 140, insurance: 32, customs: 98, portFees: 42, totalLanded: 1732, perMeter: 216.50, perKg: 22.15, exchangeRate: 3.92, date: "2026-03-25", localPrice: 1950 },
   { name: "אלומיניום 6063-T5", origin: "סין", supplier: "Henan Mingtai", fob: 580, freight: 125, insurance: 22, customs: 78, portFees: 38, totalLanded: 843, perMeter: 105.38, perKg: 9.25, exchangeRate: 3.64, date: "2026-03-30", localPrice: 920 },
@@ -37,18 +39,28 @@ const materials: Material[] = [
   { name: "מנוע חשמלי תעשייתי", origin: "איטליה", supplier: "CAME BPT", fob: 3200, freight: 210, insurance: 68, customs: 240, portFees: 55, totalLanded: 3773, perMeter: 0, perKg: 188.65, exchangeRate: 3.92, date: "2026-03-20", localPrice: 4250 },
 ];
 
-const exchangeScenarios = [
+const FALLBACK_EXCHANGE_SCENARIOS = [
   { label: "שער נמוך ($1 = ₪3.45)", rate: 3.45, delta: -5.2 },
   { label: "שער נוכחי ($1 = ₪3.64)", rate: 3.64, delta: 0 },
   { label: "שער גבוה ($1 = ₪3.85)", rate: 3.85, delta: +5.8 },
   { label: "שער קיצוני ($1 = ₪4.05)", rate: 4.05, delta: +11.3 },
 ];
 
-const totalImport = materials.reduce((s, m) => s + m.totalLanded, 0);
-const totalLocal = materials.reduce((s, m) => s + m.localPrice, 0);
+const totalImport = FALLBACK_MATERIALS.reduce((s, m) => s + m.totalLanded, 0);
+const totalLocal = FALLBACK_MATERIALS.reduce((s, m) => s + m.localPrice, 0);
 const totalSavings = totalLocal - totalImport;
 
 export default function LandedCostSource() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["landed_cost_source"],
+    queryFn: () => authFetch("/api/pricing/landed-cost-source").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const projects = apiData?.projects ?? FALLBACK_PROJECTS;
+  const materials = apiData?.materials ?? FALLBACK_MATERIALS;
+  const exchangeScenarios = apiData?.exchangeScenarios ?? FALLBACK_EXCHANGE_SCENARIOS;
   const [tab, setTab] = useState("landed");
   const [selectedProject, setSelectedProject] = useState(projects[0].id);
 

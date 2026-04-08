@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { FileText, CheckCircle2, AlertTriangle, XCircle, ShieldCheck, GraduationCap, Search, Plus, Download, ClipboardList, History, Eye } from "lucide-react";
 
-const sops = [
+const FALLBACK_SOPS = [
   { id: 1, name: "חיתוך פרופילי אלומיניום", code: "SOP-PRD-001", version: "3.2", owner: "יוסי כהן", department: "ייצור", status: "פעיל", lastReview: "2026-03-15", nextReview: "2026-09-15", training: true },
   { id: 2, name: "טיפול וניקוי זכוכית מחוסמת", code: "SOP-PRD-002", version: "2.1", owner: "דוד לוי", department: "ייצור", status: "פעיל", lastReview: "2026-02-20", nextReview: "2026-08-20", training: true },
   { id: 3, name: "ציפוי אבקתי אלקטרוסטטי", code: "SOP-PRD-003", version: "4.0", owner: "משה אברהם", department: "ייצור", status: "פעיל", lastReview: "2026-04-01", nextReview: "2026-10-01", training: true },
@@ -22,7 +24,7 @@ const sops = [
   { id: 12, name: "קליטת חומרי גלם למחסן", code: "SOP-LOG-002", version: "1.8", owner: "יעקב שמש", department: "לוגיסטיקה", status: "פעיל", lastReview: "2026-01-10", nextReview: "2026-07-10", training: false },
 ];
 
-const departments = [
+const FALLBACK_DEPARTMENTS = [
   { name: "ייצור", total: 4, compliant: 3, percent: 75 },
   { name: "הרכבה", total: 1, compliant: 1, percent: 100 },
   { name: "בקרת איכות", total: 2, compliant: 2, percent: 100 },
@@ -31,7 +33,7 @@ const departments = [
   { name: "תחזוקה", total: 1, compliant: 0, percent: 0 },
 ];
 
-const trainingLinks = [
+const FALLBACK_TRAINING_LINKS = [
   { sop: "חיתוך פרופילי אלומיניום", code: "SOP-PRD-001", course: "הכשרת מפעיל מכונת חיתוך", duration: "8 שעות", certified: 12, required: 15 },
   { sop: "טיפול וניקוי זכוכית מחוסמת", code: "SOP-PRD-002", course: "טיפול בטוח בזכוכית", duration: "4 שעות", certified: 18, required: 18 },
   { sop: "ציפוי אבקתי אלקטרוסטטי", code: "SOP-PRD-003", course: "הפעלת קו ציפוי", duration: "12 שעות", certified: 6, required: 8 },
@@ -42,7 +44,7 @@ const trainingLinks = [
   { sop: "בטיחות — עבודה בגובה", code: "SOP-SAF-002", course: "עבודה בגובה מוסמך", duration: "8 שעות", certified: 14, required: 14 },
 ];
 
-const revisionHistory = [
+const FALLBACK_REVISION_HISTORY = [
   { code: "SOP-PRD-003", name: "ציפוי אבקתי אלקטרוסטטי", from: "3.5", to: "4.0", date: "2026-04-01", author: "משה אברהם", changes: "עדכון טמפרטורות ריפוי והוספת שלב בדיקה" },
   { code: "SOP-QC-001", name: "בדיקת איכות — מוצר מוגמר", from: "5.0", to: "5.1", date: "2026-03-28", author: "שרה גולן", changes: "הוספת בדיקת עמידות UV" },
   { code: "SOP-SAF-001", name: "בטיחות — עבודה עם מכונות חיתוך", from: "4.1", to: "4.2", date: "2026-04-05", author: "אמיר רז", changes: "עדכון דרישות ציוד מגן" },
@@ -57,7 +59,7 @@ const statusColor: Record<string, string> = {
   "פג תוקף": "bg-red-500/20 text-red-300",
 };
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "סה\"כ נהלים", value: "12", icon: FileText, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "פעילים", value: "9", icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/10" },
   { label: "בסקירה", value: "2", icon: AlertTriangle, color: "text-yellow-400", bg: "bg-yellow-500/10" },
@@ -67,6 +69,14 @@ const kpis = [
 ];
 
 export default function SopProcedures() {
+  const { data: sopproceduresData } = useQuery({
+    queryKey: ["sop-procedures"],
+    queryFn: () => authFetch("/api/knowledge/sop_procedures"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const sops = sopproceduresData ?? FALLBACK_SOPS;
+
   const [search, setSearch] = useState("");
 
   const filtered = sops.filter(s =>

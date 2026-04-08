@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -30,8 +32,8 @@ const typeIcon: Record<AlertType, typeof Bell> = {
   "צריכת דלק חריגה": Fuel, "חריגת מסלול": MapPin, "השבתה ממושכת": Ban, "תאונה/נזק": Zap,
 };
 
-/* ── static data: 12 alerts ───────────────────────────────── */
-const alerts: FleetAlert[] = [
+/* ── static data: 12 FALLBACK_ALERTS ───────────────────────────────── */
+const FALLBACK_ALERTS: FleetAlert[] = [
   { id: 1, type: "טסט שנתי מתקרב", severity: "קריטי", title: "טסט שנתי פג בעוד 5 ימים", description: "רכב 72-315-84 - משאית וולוו חייב לעבור טסט שנתי עד 13/04/2026. יש לתאם תור במכון רישוי.", vehicle: "72-315-84", driver: "יוסי כהן", time: "לפני שעה", action: "תיאום תור" },
   { id: 2, type: "ביטוח פג", severity: "קריטי", title: "ביטוח מקיף פג תוקף", description: "פוליסת ביטוח מקיף לרכב 55-482-91 פגה ב-06/04/2026. הרכב אינו מכוסה כעת.", vehicle: "55-482-91", driver: "אבי לוי", time: "לפני 3 שעות", action: "חידוש ביטוח" },
   { id: 3, type: "תאונה/נזק", severity: "קריטי", title: "דיווח תאונה - נזק לפגוש קדמי", description: "נהג דיווח על פגיעה בעמוד חניה. נזק לפגוש קדמי ולפנס ימני. הרכב נסיע לא מסוכנת.", vehicle: "38-764-22", driver: "משה ברק", time: "לפני 45 דקות", action: "פתיחת תביעה" },
@@ -46,8 +48,8 @@ const alerts: FleetAlert[] = [
   { id: 12, type: "צריכת דלק חריגה", severity: "מידע", title: "עלייה קלה בצריכת דלק", description: "רכב 51-246-90 מראה עלייה של 8% בצריכת דלק בשבועיים האחרונים. יתכן שקשור לעומס.", vehicle: "51-246-90", driver: "גיל מזרחי", time: "לפני 3 ימים", action: "מעקב" },
 ];
 
-/* ── closed alerts ────────────────────────────────────────── */
-const closedAlerts = [
+/* ── closed FALLBACK_ALERTS ────────────────────────────────────────── */
+const FALLBACK_CLOSED_ALERTS = [
   { id: 101, title: "טסט שנתי בוצע בהצלחה", vehicle: "22-190-37", closedAt: "03/04/2026", closedBy: "יוסי כהן" },
   { id: 102, title: "ביטוח חודש - פוליסה 88431", vehicle: "55-482-91", closedAt: "01/04/2026", closedBy: "מערכת" },
   { id: 103, title: "טיפול 30,000 קמ הושלם", vehicle: "38-764-22", closedAt: "29/03/2026", closedBy: "עמית גולן" },
@@ -56,6 +58,31 @@ const closedAlerts = [
 
 /* ── component ────────────────────────────────────────────── */
 export default function FleetAlerts() {
+  const { data: alerts = FALLBACK_ALERTS } = useQuery({
+    queryKey: ["logistics-alerts"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/fleet-alerts/alerts");
+      if (!res.ok) return FALLBACK_ALERTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_ALERTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: closedAlerts = FALLBACK_CLOSED_ALERTS } = useQuery({
+    queryKey: ["logistics-closed-alerts"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/fleet-alerts/closed-alerts");
+      if (!res.ok) return FALLBACK_CLOSED_ALERTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_CLOSED_ALERTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [tab, setTab] = useState("פעילות");
   const [severityFilter, setSeverityFilter] = useState<Severity | "הכל">("הכל");
 

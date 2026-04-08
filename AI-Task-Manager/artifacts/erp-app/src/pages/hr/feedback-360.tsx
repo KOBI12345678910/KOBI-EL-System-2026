@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   MessageCircle, Users, CheckCircle2, Clock, BarChart3,
   Star, TrendingUp, Calendar, Eye, ChevronDown, ChevronUp,
@@ -15,12 +17,12 @@ import { Progress } from "@/components/ui/progress";
 
 /* ── Static Data ── */
 
-const feedbackCycles = [
+const FALLBACK_FEEDBACK_CYCLES = [
   { id: 1, name: "הערכה שנתית 2026 - Q1", startDate: "2026-01-15", endDate: "2026-04-15", employees: 18, completed: 128, total: 144, status: "פעיל" },
   { id: 2, name: "הערכת מנהלים רבעון 1", startDate: "2026-03-01", endDate: "2026-04-30", employees: 6, completed: 28, total: 48, status: "פעיל" },
 ];
 
-const employees = [
+const FALLBACK_EMPLOYEES = [
   { id: 1, name: "יוסי כהן", role: "מנהל ייצור", selfDone: true, managerDone: true, peerDone: 4, peerTotal: 4, subDone: 3, subTotal: 3, avg: 4.2, status: "הושלם" },
   { id: 2, name: "מיכל לוי", role: "מהנדסת איכות", selfDone: true, managerDone: true, peerDone: 3, peerTotal: 4, subDone: 0, subTotal: 0, avg: 3.9, status: "בתהליך" },
   { id: 3, name: "אבי מזרחי", role: "טכנאי בכיר", selfDone: true, managerDone: false, peerDone: 2, peerTotal: 4, subDone: 0, subTotal: 0, avg: 3.5, status: "בתהליך" },
@@ -42,7 +44,7 @@ const selectedEmployeeResults = { name: "רונית שפירא", role: "מנהל
   { name: "אמינות", self: 4.5, manager: 5.0, peers: 4.7, subordinates: 4.8, avg: 4.75 },
 ] };
 
-const anonymousComments = [
+const FALLBACK_ANONYMOUS_COMMENTS = [
   { id: 1, text: "מנהלת מסורה ביותר, תמיד זמינה לשיחה ומקשיבה באמת. יוצרת אווירה חיובית בצוות.", category: "מנהיגות", sentiment: "positive" },
   { id: 2, text: "מקצועית ברמה גבוהה, מביאה פתרונות יצירתיים לבעיות מורכבות. ממליץ בחום.", category: "מקצועיות", sentiment: "positive" },
   { id: 3, text: "לעיתים מתעכבת בקבלת החלטות כשיש לחץ זמנים. כדאי לשפר את קצב התגובה.", category: "יוזמה", sentiment: "neutral" },
@@ -50,7 +52,7 @@ const anonymousComments = [
   { id: 5, text: "שומרת על מילה, אפשר לסמוך עליה בעיניים עצומות. דוגמה אישית לצוות כולו.", category: "אמינות", sentiment: "positive" },
 ];
 
-const historyData = [
+const FALLBACK_HISTORY_DATA = [
   { cycle: "הערכה שנתית 2025", period: "ינו-מרץ 2025", employees: 22, completion: 94, avgScore: 3.7 },
   { cycle: "הערכת מנהלים Q3 2025", period: "יול-ספט 2025", employees: 5, completion: 100, avgScore: 4.0 },
   { cycle: "הערכה שנתית 2024", period: "ינו-מרץ 2024", employees: 20, completion: 89, avgScore: 3.6 },
@@ -67,6 +69,14 @@ const progressColor = (v: number) => v >= 90 ? "bg-emerald-500" : v >= 70 ? "bg-
 /* ── Component ── */
 
 export default function Feedback360Page() {
+  const { data: feedback360Data } = useQuery({
+    queryKey: ["feedback-360"],
+    queryFn: () => authFetch("/api/hr/feedback_360"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const feedbackCycles = feedback360Data ?? FALLBACK_FEEDBACK_CYCLES;
+
   const [activeTab, setActiveTab] = useState("cycles");
   const [expandedEmployee, setExpandedEmployee] = useState<number | null>(null);
 

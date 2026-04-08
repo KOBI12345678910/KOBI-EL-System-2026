@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,7 +13,7 @@ import {
 
 /* ── Static mock data ─────────────────────────────────────────── */
 
-const measurements = [
+const FALLBACK_MEASUREMENTS = [
   { measurement_id: "MSR-001", project: "מגדלי הים — חיפה", customer: "חברת אקרו נדל\"ן", site_address: "שד' הנשיא 45, חיפה", measured_by: "יוסי כהן", measured_at: "2026-03-20", opening_width_mm: 1200, opening_height_mm: 1500, depth_mm: 120, floor_level_difference: "0 מ\"מ", wall_alignment_notes: "קירות ישרים, ללא סטיות", irregularities_found: "לא נמצאו", linked_photos: 8, linked_drawings: 2, approved_for_production: "כן", requires_change_order: "לא" },
   { measurement_id: "MSR-002", project: "פארק המדע — רחובות", customer: "רשות המדע הלאומית", site_address: "רח' הרצל 12, רחובות", measured_by: "שרה לוי", measured_at: "2026-03-22", opening_width_mm: 2400, opening_height_mm: 2100, depth_mm: 150, floor_level_difference: "3 מ\"מ", wall_alignment_notes: "סטייה קלה בקיר מזרחי", irregularities_found: "סדק אופקי 2 מ\"מ בקיר עליון", linked_photos: 12, linked_drawings: 3, approved_for_production: "כן", requires_change_order: "לא" },
   { measurement_id: "MSR-003", project: "בית חכם — הרצליה", customer: "גולדשטיין ובניו", site_address: "רח' סוקולוב 88, הרצליה", measured_by: "אלון גולדשטיין", measured_at: "2026-03-25", opening_width_mm: 1800, opening_height_mm: 2200, depth_mm: 140, floor_level_difference: "8 מ\"מ", wall_alignment_notes: "קיר צפוני נוטה 5 מ\"מ", irregularities_found: "הפרש גובה רצפה — דרוש פילוס", linked_photos: 6, linked_drawings: 2, approved_for_production: "ממתין", requires_change_order: "כן" },
@@ -26,7 +28,7 @@ const measurements = [
   { measurement_id: "MSR-012", project: "משרדי חברת ענן — רעננה", customer: "ענן טכנולוגיות בע\"מ", site_address: "רח' אחוזה 120, רעננה", measured_by: "אלון גולדשטיין", measured_at: "2026-04-07", opening_width_mm: 1400, opening_height_mm: 2100, depth_mm: 120, floor_level_difference: "4 מ\"מ", wall_alignment_notes: "קיר גבס כפול — תקין", irregularities_found: "לא נמצאו", linked_photos: 5, linked_drawings: 1, approved_for_production: "ממתין", requires_change_order: "לא" },
 ];
 
-const siteSurveys = [
+const FALLBACK_SITE_SURVEYS = [
   { id: "SRV-001", project: "מגדלי הים — חיפה", surveyor: "יוסי כהן", date: "2026-03-18", photos: 24, notes: "גישה מלאה לקומות 3-12, חשמל זמני מחובר", findings: "תקין — מוכן להתקנה", status: "אושר" },
   { id: "SRV-002", project: "פארק המדע — רחובות", surveyor: "שרה לוי", date: "2026-03-20", photos: 18, notes: "שטח פנוי, ריצוף טרם הונח", findings: "דרוש תיאום עם קבלן ריצוף", status: "אושר עם הערות" },
   { id: "SRV-003", project: "מלון ים התיכון", surveyor: "דוד מזרחי", date: "2026-03-26", photos: 32, notes: "קומה 12 — גישה במנוף בלבד", findings: "דרוש מנוף 20 טון ביום ההתקנה", status: "אושר עם הערות" },
@@ -37,7 +39,7 @@ const siteSurveys = [
   { id: "SRV-008", project: "מגדלי אקרו — תל אביב", surveyor: "יוסי כהן", date: "2026-04-02", photos: 28, notes: "קומות 8-15, גישה מלאה, פיגום קיים", findings: "תקין — מוכן להתקנה", status: "אושר" },
 ];
 
-const fieldSketches = [
+const FALLBACK_FIELD_SKETCHES = [
   { id: "SKT-001", project: "מגדלי הים — חיפה", drawnBy: "אלון גולדשטיין", date: "2026-03-21", linkedDrawing: "DWG-045 Rev C", dimensions: "12 פתחים, קומות 3-7", approval: "מאושר" },
   { id: "SKT-002", project: "מלון ים התיכון", drawnBy: "דוד מזרחי", date: "2026-03-27", linkedDrawing: "DWG-078 Rev B", dimensions: "8 ויטרינות, קומה 12", approval: "מאושר" },
   { id: "SKT-003", project: "קניון הדרום — באר שבע", drawnBy: "נועה פרידמן", date: "2026-03-29", linkedDrawing: "DWG-091 Rev A", dimensions: "4 חזיתות, קומת קרקע", approval: "ממתין" },
@@ -46,7 +48,7 @@ const fieldSketches = [
   { id: "SKT-006", project: "משרדי חברת ענן — רעננה", drawnBy: "אלון גולדשטיין", date: "2026-04-06", linkedDrawing: "DWG-110 Rev A", dimensions: "5 מחיצות זכוכית", approval: "ממתין" },
 ];
 
-const dimensionComparisons = [
+const FALLBACK_DIMENSION_COMPARISONS = [
   { measurement_id: "MSR-003", project: "בית חכם — הרצליה", element: "חלון סלון", planned_w: 1800, measured_w: 1793, planned_h: 2200, measured_h: 2198, planned_d: 140, measured_d: 138 },
   { measurement_id: "MSR-005", project: "קניון הדרום — באר שבע", element: "ויטרינה ראשית", planned_w: 4200, measured_w: 4188, planned_h: 3000, measured_h: 2994, planned_d: 200, measured_d: 198 },
   { measurement_id: "MSR-006", project: "משרדי הייטק — הרצליה פיתוח", element: "דלת כניסה", planned_w: 1500, measured_w: 1498, planned_h: 2100, measured_h: 2100, planned_d: 110, measured_d: 110 },
@@ -81,7 +83,7 @@ const deviationClass = (planned: number, measured: number) =>
 
 /* ── KPI data ────────────────────────────────────────────────── */
 
-const kpiData = [
+const FALLBACK_KPI_DATA = [
   { label: "סה\"כ מדידות", value: 28, icon: Scaling, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "ממתינות לאישור", value: 5, icon: ClipboardCheck, color: "text-amber-400", bg: "bg-amber-500/10" },
   { label: "אושרו לייצור", value: 20, icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10" },
@@ -92,6 +94,67 @@ const kpiData = [
 /* ── Component ────────────────────────────────────────────────── */
 
 export default function MeasurementsSurveys() {
+  const { data: measurements = FALLBACK_MEASUREMENTS } = useQuery({
+    queryKey: ["installation-measurements"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/measurements-surveys/measurements");
+      if (!res.ok) return FALLBACK_MEASUREMENTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_MEASUREMENTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: siteSurveys = FALLBACK_SITE_SURVEYS } = useQuery({
+    queryKey: ["installation-site-surveys"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/measurements-surveys/site-surveys");
+      if (!res.ok) return FALLBACK_SITE_SURVEYS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SITE_SURVEYS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: fieldSketches = FALLBACK_FIELD_SKETCHES } = useQuery({
+    queryKey: ["installation-field-sketches"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/measurements-surveys/field-sketches");
+      if (!res.ok) return FALLBACK_FIELD_SKETCHES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_FIELD_SKETCHES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: dimensionComparisons = FALLBACK_DIMENSION_COMPARISONS } = useQuery({
+    queryKey: ["installation-dimension-comparisons"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/measurements-surveys/dimension-comparisons");
+      if (!res.ok) return FALLBACK_DIMENSION_COMPARISONS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DIMENSION_COMPARISONS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: kpiData = FALLBACK_KPI_DATA } = useQuery({
+    queryKey: ["installation-kpi-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/measurements-surveys/kpi-data");
+      if (!res.ok) return FALLBACK_KPI_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_KPI_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* Header */}

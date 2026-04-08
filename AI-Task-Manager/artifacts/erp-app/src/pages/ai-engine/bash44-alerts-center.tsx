@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,7 +21,7 @@ const SEV: Record<Severity, { he: string; cls: string }> = {
   low: { he: "נמוך", cls: "bg-green-500/20 text-green-300 border-green-500/30" },
 };
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "התראות פתוחות", value: "12", icon: Bell, color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
   { label: "התראות קריטיות", value: "3", icon: ShieldAlert, color: "text-red-400", bg: "bg-red-500/10 border-red-500/20" },
   { label: "נפתרו היום", value: "8", icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
@@ -27,7 +29,7 @@ const kpis = [
   { label: "התראות חוזרות", value: "5", icon: Repeat, color: "text-violet-400", bg: "bg-violet-500/10 border-violet-500/20" },
 ];
 
-const openAlerts = [
+const FALLBACK_OPEN_ALERTS = [
   { id: "ALR-1001", agent: "סוכן מלאי", entityType: "מוצר", entityId: "SKU-2281", type: "חריגה", severity: "critical" as Severity, title: "מלאי אפס - מוצר ביקוש", message: "מוצר SKU-2281 הגיע למלאי 0 למרות 14 הזמנות ממתינות", role: "מנהל מלאי", time: "08:12" },
   { id: "ALR-1002", agent: "סוכן כספים", entityType: "חשבונית", entityId: "INV-9982", type: "חריגה פיננסית", severity: "critical" as Severity, title: "חשבונית ללא כיסוי תקציבי", message: "חשבונית בסך ₪87,400 חורגת מתקציב המחלקה ב-34%", role: "סמנכ״ל כספים", time: "08:45" },
   { id: "ALR-1003", agent: "סוכן ייצור", entityType: "קו ייצור", entityId: "LINE-03", type: "השבתה", severity: "critical" as Severity, title: "קו ייצור 3 - השבתת חירום", message: "זוהתה תקלה בחיישן טמפרטורה, ייצור נעצר אוטומטית", role: "מנהל ייצור", time: "09:02" },
@@ -42,7 +44,7 @@ const openAlerts = [
   { id: "ALR-1012", agent: "סוכן מכירות", entityType: "הצעת מחיר", entityId: "QT-2210", type: "תפוגה", severity: "low" as Severity, title: "הצעת מחיר פגת תוקף מחר", message: "הצעה QT-2210 בסך ₪64,000 תפוג ב-09/04", role: "נציג מכירות", time: "13:10" },
 ];
 
-const resolvedAlerts = [
+const FALLBACK_RESOLVED_ALERTS = [
   { id: "ALR-0985", agent: "סוכן מלאי", title: "מלאי מינימלי - ברגים M8", severity: "high" as Severity, opened: "07:15", closed: "07:42", duration: "27 דק׳", resolver: "מערכת אוטומטית" },
   { id: "ALR-0986", agent: "סוכן כספים", title: "תשלום כפול לספק", severity: "critical" as Severity, opened: "07:30", closed: "08:05", duration: "35 דק׳", resolver: "דנה כהן" },
   { id: "ALR-0987", agent: "סוכן ייצור", title: "לחץ שמן חריג - מכבש A1", severity: "high" as Severity, opened: "07:48", closed: "08:20", duration: "32 דק׳", resolver: "יוסי מזרחי" },
@@ -60,7 +62,7 @@ const resolvedAlerts = [
   { id: "ALR-0999", agent: "סוכן איכות", title: "סטיית מידות ברכיב X", severity: "low" as Severity, opened: "10:30", closed: "11:45", duration: "75 דק׳", resolver: "אלי בן-דוד" },
 ];
 
-const agentGroups = [
+const FALLBACK_AGENT_GROUPS = [
   { agent: "סוכן מלאי", icon: Package, color: "text-amber-400", count: 3, critical: 1, high: 1, medium: 1, low: 0 },
   { agent: "סוכן כספים", icon: DollarSign, color: "text-emerald-400", count: 2, critical: 1, high: 0, medium: 1, low: 0 },
   { agent: "סוכן ייצור", icon: Wrench, color: "text-blue-400", count: 2, critical: 1, high: 0, medium: 0, low: 1 },
@@ -71,21 +73,21 @@ const agentGroups = [
   { agent: "סוכן HR", icon: Users, color: "text-orange-400", count: 1, critical: 0, high: 0, medium: 1, low: 0 },
 ];
 
-const patterns = [
+const FALLBACK_PATTERNS = [
   { pattern: "מלאי אפס במוצרי ביקוש", freq: 14, trend: "עולה", lastWeek: 9, entity: "SKU-2281, SKU-1190, SKU-3345", agent: "סוכן מלאי", severity: "critical" as Severity, suggestion: "הפעלת מנגנון הזמנה אוטומטית כשמלאי יורד מתחת ל-20 יח׳" },
   { pattern: "חריגת SLA בפניות שירות", freq: 11, trend: "יציב", lastWeek: 10, entity: "TK-7821, TK-7654, TK-7590", agent: "סוכן שירות", severity: "high" as Severity, suggestion: "הוספת נציג נוסף למשמרת בוקר + אסקלציה אוטומטית ב-18 שעות" },
   { pattern: "סטיית טמפרטורה בציוד ייצור", freq: 8, trend: "עולה", lastWeek: 5, entity: "MC-205, MC-118, LINE-03", agent: "סוכן ייצור", severity: "high" as Severity, suggestion: "התקנת חיישנים משניים + כיול חודשי אוטומטי" },
   { pattern: "ספקים מאחרים באספקה", freq: 7, trend: "יציב", lastWeek: 7, entity: "PO-3310, PO-3288, PO-3275", agent: "סוכן רכש", severity: "medium" as Severity, suggestion: "הוספת קנסות איחור לחוזים + ספק גיבוי לפריטים קריטיים" },
   { pattern: "פגמים חוזרים באצוות ייצור", freq: 6, trend: "יורד", lastWeek: 8, entity: "BT-0078, BT-0065", agent: "סוכן איכות", severity: "medium" as Severity, suggestion: "בדיקת חומרי גלם בכניסה + תיקון פרמטרי מכונה" },
 ];
-const topEntities = [
+const FALLBACK_TOP_ENTITIES = [
   { entity: "SKU-2281", type: "מוצר", alerts: 9, lastAlert: "08:12", agents: "מלאי, מכירות" },
   { entity: "LINE-03", type: "קו ייצור", alerts: 7, lastAlert: "09:02", agents: "ייצור, איכות" },
   { entity: "CUS-0445", type: "לקוח", alerts: 5, lastAlert: "12:00", agents: "כספים, מכירות" },
   { entity: "MC-205", type: "מכונה", alerts: 4, lastAlert: "12:30", agents: "ייצור" },
   { entity: "PO-3310", type: "הזמנת רכש", alerts: 3, lastAlert: "10:15", agents: "רכש, מלאי" },
 ];
-const trendData = [
+const FALLBACK_TREND_DATA = [
   { day: "ראשון", total: 18, critical: 4, resolved: 15 },
   { day: "שני", total: 22, critical: 5, resolved: 19 },
   { day: "שלישי", total: 15, critical: 2, resolved: 14 },
@@ -97,6 +99,20 @@ const trendData = [
 const TC: Record<string, string> = { "עולה": "text-red-400", "יורד": "text-emerald-400", "יציב": "text-blue-400" };
 
 export default function Bash44AlertsCenter() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["bash44_alerts_center"],
+    queryFn: () => authFetch("/api/ai/bash44-alerts-center").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const openAlerts = apiData?.openAlerts ?? FALLBACK_OPEN_ALERTS;
+  const resolvedAlerts = apiData?.resolvedAlerts ?? FALLBACK_RESOLVED_ALERTS;
+  const agentGroups = apiData?.agentGroups ?? FALLBACK_AGENT_GROUPS;
+  const patterns = apiData?.patterns ?? FALLBACK_PATTERNS;
+  const topEntities = apiData?.topEntities ?? FALLBACK_TOP_ENTITIES;
+  const trendData = apiData?.trendData ?? FALLBACK_TREND_DATA;
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("open");
 

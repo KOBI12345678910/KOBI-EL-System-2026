@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -11,7 +13,7 @@ import {
 
 /* ── mock data ── */
 
-const documents = [
+const FALLBACK_DOCUMENTS = [
   { id: "DOC-001", name: "חוזה ספק מתכת כללי", type: "חוזה", folder: "חוזים/ספקים", entity: "ספק: מתכת-פרו בע\"מ", version: "3.1", status: "מאושר", expiry: "2026-09-15" },
   { id: "DOC-002", name: "שרטוט מסגרת T-400", type: "שרטוט", folder: "הנדסה/שרטוטים", entity: "מוצר: מסגרת T-400", version: "2.0", status: "מאושר", expiry: "—" },
   { id: "DOC-003", name: "תעודת ISO 9001", type: "תעודה", folder: "איכות/תקנים", entity: "חברה", version: "1.0", status: "פעיל", expiry: "2026-06-30" },
@@ -22,7 +24,7 @@ const documents = [
   { id: "DOC-008", name: "שרטוט ציר הנעה SH-40", type: "שרטוט", folder: "הנדסה/שרטוטים", entity: "מוצר: ציר SH-40", version: "4.3", status: "מאושר", expiry: "—" },
 ];
 
-const approvals = [
+const FALLBACK_APPROVALS = [
   { id: "APR-101", doc: "חוזה ספק מתכת כללי v3.1", requester: "יוסי כהן", role: "מנהל רכש", submitted: "2026-04-05", signers: "דוד לוי, רחל אברהם", status: "ממתין לחתימה" },
   { id: "APR-102", doc: "הצעת מחיר פרויקט דלתא v1.2", requester: "שרה מזרחי", role: "מנהלת מכירות", submitted: "2026-04-06", signers: "אלון גולדשטיין", status: "ממתין לחתימה" },
   { id: "APR-103", doc: "נוהל בטיחות עדכון 2026", requester: "מיכל ברק", role: "בטיחות", submitted: "2026-04-03", signers: "נועה פרידמן, עומר חדד", status: "חתימה 1/2" },
@@ -31,7 +33,7 @@ const approvals = [
   { id: "APR-106", doc: "חוזה שכירות מחסן צפון v2.1", requester: "נועה פרידמן", role: "תפעול", submitted: "2026-04-04", signers: "דוד לוי", status: "ממתין לחתימה" },
 ];
 
-const revisions = [
+const FALLBACK_REVISIONS = [
   { doc: "חוזה ספק מתכת כללי", from: "3.0", to: "3.1", changedBy: "יוסי כהן", date: "2026-04-05", summary: "עדכון תנאי תשלום ל-שוטף+60" },
   { doc: "שרטוט מסגרת T-400", from: "1.9", to: "2.0", changedBy: "אלון גולדשטיין", date: "2026-03-28", summary: "שינוי מידות חור הרכבה" },
   { doc: "הצעת מחיר פרויקט דלתא", from: "1.1", to: "1.2", changedBy: "שרה מזרחי", date: "2026-04-06", summary: "הוספת סעיף אחריות מורחבת" },
@@ -41,7 +43,7 @@ const revisions = [
   { doc: "שרטוט ציר הנעה SH-40", from: "4.2", to: "4.3", changedBy: "דוד מזרחי", date: "2026-03-20", summary: "תיקון טולרנס סובבים" },
 ];
 
-const expiringDocs = [
+const FALLBACK_EXPIRING_DOCS = [
   { id: "DOC-004", name: "הצעת מחיר פרויקט דלתא", expiry: "2026-05-01", daysLeft: 23, owner: "שרה מזרחי" },
   { id: "DOC-003", name: "תעודת ISO 9001", expiry: "2026-06-30", daysLeft: 83, owner: "מיכל ברק" },
   { id: "DOC-007", name: "חוזה שכירות מחסן צפון", expiry: "2026-03-01", daysLeft: -38, owner: "נועה פרידמן" },
@@ -51,7 +53,7 @@ const expiringDocs = [
   { id: "DOC-006", name: "אישור יבוא מכס 2026-44", expiry: "2026-12-31", daysLeft: 267, owner: "עומר חדד" },
 ];
 
-const ocrQueue = [
+const FALLBACK_OCR_QUEUE = [
   { file: "scan_invoice_78120.pdf", pages: 3, status: "הושלם", preview: "חשבונית מס מספר 78120... סה\"כ ₪45,200" },
   { file: "contract_north_v2.pdf", pages: 8, status: "בעיבוד", preview: "חוזה שכירות... סעיף 4.2 תנאי..." },
   { file: "drawing_T400_rev2.tiff", pages: 1, status: "ממתין", preview: "—" },
@@ -86,7 +88,7 @@ function urgencyBadge(days: number) {
 
 /* ── KPIs ── */
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "סה\"כ מסמכים", value: 1_284, icon: <FileText className="w-5 h-5" />, color: "text-blue-400" },
   { label: "ממתינים לאישור", value: 6, icon: <Clock className="w-5 h-5" />, color: "text-amber-400" },
   { label: "תוקף קרוב", value: 4, icon: <AlertTriangle className="w-5 h-5" />, color: "text-orange-400" },
@@ -98,6 +100,19 @@ const kpis = [
 /* ── component ── */
 
 export default function DocumentControl() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["document_control"],
+    queryFn: () => authFetch("/api/documents/document-control").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const documents = apiData?.documents ?? FALLBACK_DOCUMENTS;
+  const approvals = apiData?.approvals ?? FALLBACK_APPROVALS;
+  const revisions = apiData?.revisions ?? FALLBACK_REVISIONS;
+  const expiringDocs = apiData?.expiringDocs ?? FALLBACK_EXPIRING_DOCS;
+  const ocrQueue = apiData?.ocrQueue ?? FALLBACK_OCR_QUEUE;
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
   const [tab, setTab] = useState("repository");
 
   return (

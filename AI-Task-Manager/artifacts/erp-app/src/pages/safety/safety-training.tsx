@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +13,7 @@ import {
   Calendar, TrendingUp, UserCheck
 } from "lucide-react";
 
-const courses = [
+const FALLBACK_COURSES = [
   { id: "ST-001", name: "הדרכת בטיחות כללית - עובדים חדשים", trainer: "רועי כהן", type: "חובה", duration: "8 שעות", nextDate: "2026-04-15", frequency: "בקבלה", enrolled: 12, completed: 0, certified: 0, total: 12, status: "מתוכננת", certExpiry: "—" },
   { id: "ST-002", name: "עבודה בגובה - הסמכה", trainer: "עמית ברק", type: "הסמכה", duration: "16 שעות", nextDate: "2026-05-01", frequency: "שנתי", enrolled: 28, completed: 24, certified: 24, total: 28, status: "בביצוע", certExpiry: "2027-05-01" },
   { id: "ST-003", name: "כיבוי אש ופינוי חירום", trainer: "כבאי מוסמך - חיצוני", type: "חובה", duration: "4 שעות", nextDate: "2026-04-20", frequency: "שנתי", enrolled: 148, completed: 145, certified: 145, total: 148, status: "הושלמה", certExpiry: "2027-04-20" },
@@ -38,6 +40,14 @@ const typeColors: Record<string, string> = {
 };
 
 export default function SafetyTraining() {
+  const { data: safetytrainingData } = useQuery({
+    queryKey: ["safety-training"],
+    queryFn: () => authFetch("/api/safety/safety_training"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const courses = safetytrainingData ?? FALLBACK_COURSES;
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("all");

@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { useParams } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,7 +8,7 @@ import { MapPin, Truck, Clock, CheckCircle2, Package, AlertCircle, Phone, Naviga
 
 const API = "/api";
 
-const STATUS_TIMELINE = [
+const FALLBACK_STATUS_TIMELINE = [
   { key: "dispatched", label: "יצא מהמחסן", icon: Package },
   { key: "en_route", label: "בדרך אליך", icon: Truck },
   { key: "arriving_soon", label: "מגיע בקרוב", icon: Navigation },
@@ -45,6 +47,19 @@ function getStatusIndex(status: string): number {
 }
 
 export default function CustomerTrackingPortal() {
+  const { data: STATUS_TIMELINE = FALLBACK_STATUS_TIMELINE } = useQuery({
+    queryKey: ["logistics-status-timeline"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/customer-tracking-portal/status-timeline");
+      if (!res.ok) return FALLBACK_STATUS_TIMELINE;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_STATUS_TIMELINE;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const params = useParams<{ token: string }>();
   const token = params?.token;
   const [tracking, setTracking] = useState<TrackingData | null>(null);
@@ -64,7 +79,7 @@ export default function CustomerTrackingPortal() {
 
   async function loadTracking() {
     try {
-      const r = await fetch(`${API}/delivery-tracking/token/${token}`);
+      const r = await authFetch(`${API}/delivery-tracking/token/${token}`);
       if (r.ok) {
         setTracking(await r.json());
         setError(null);

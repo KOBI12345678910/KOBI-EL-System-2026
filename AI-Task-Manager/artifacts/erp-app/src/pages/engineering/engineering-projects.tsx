@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +14,7 @@ import {
 } from "lucide-react";
 
 /* ── 12 engineering projects ── */
-const projects = [
+const FALLBACK_PROJECTS = [
   { id: "PRJ-001", name: "חיפוי מגדל מגורים", client: "אזורים בנייה", type: "חזיתות אלומיניום", start: "2025-11-01", end: "2026-06-30", progress: 72, status: "בביצוע", lead: "יוסי כהן", budget: 1850000, actual: 1410000 },
   { id: "PRJ-002", name: "קיר מסך בית חולים", client: "שערי צדק", type: "קירות מסך", start: "2025-12-15", end: "2026-08-15", progress: 45, status: "בביצוע", lead: "שרה לוי", budget: 2400000, actual: 1080000 },
   { id: "PRJ-003", name: "מערכת כניסה קניון", client: "עזריאלי גרופ", type: "דלתות זכוכית", start: "2026-01-10", end: "2026-05-20", progress: 88, status: "בביצוע", lead: "דוד מזרחי", budget: 620000, actual: 545000 },
@@ -28,7 +30,7 @@ const projects = [
 ];
 
 /* ── milestones for timeline ── */
-const milestones = [
+const FALLBACK_MILESTONES = [
   { project: "PRJ-001", name: "אישור שרטוטי ייצור", date: "2026-01-15", status: "הושלם" },
   { project: "PRJ-001", name: "השלמת ייצור קומות 1-10", date: "2026-03-20", status: "הושלם" },
   { project: "PRJ-001", name: "התקנה קומות 1-10", date: "2026-04-30", status: "בביצוע" },
@@ -58,7 +60,7 @@ const milestones = [
 ];
 
 /* ── resource allocation ── */
-const resources = [
+const FALLBACK_RESOURCES = [
   { engineer: "יוסי כהן", role: "מהנדס ראשי", projects: ["PRJ-001", "PRJ-011"], hoursWeek: 48, capacity: 90 },
   { engineer: "שרה לוי", role: "מהנדסת קונסטרוקציה", projects: ["PRJ-002"], hoursWeek: 42, capacity: 78 },
   { engineer: "דוד מזרחי", role: "מהנדס ייצור", projects: ["PRJ-003", "PRJ-012"], hoursWeek: 44, capacity: 82 },
@@ -99,6 +101,26 @@ const th = "p-3 text-right text-muted-foreground font-medium text-xs";
 const td = "p-3 text-sm";
 
 export default function EngineeringProjectsPage() {
+  const { data: apiprojects } = useQuery({
+    queryKey: ["/api/engineering/engineering-projects/projects"],
+    queryFn: () => authFetch("/api/engineering/engineering-projects/projects").then(r => r.json()).catch(() => null),
+  });
+  const projects = Array.isArray(apiprojects) ? apiprojects : (apiprojects?.data ?? apiprojects?.items ?? FALLBACK_PROJECTS);
+
+
+  const { data: apimilestones } = useQuery({
+    queryKey: ["/api/engineering/engineering-projects/milestones"],
+    queryFn: () => authFetch("/api/engineering/engineering-projects/milestones").then(r => r.json()).catch(() => null),
+  });
+  const milestones = Array.isArray(apimilestones) ? apimilestones : (apimilestones?.data ?? apimilestones?.items ?? FALLBACK_MILESTONES);
+
+
+  const { data: apiresources } = useQuery({
+    queryKey: ["/api/engineering/engineering-projects/resources"],
+    queryFn: () => authFetch("/api/engineering/engineering-projects/resources").then(r => r.json()).catch(() => null),
+  });
+  const resources = Array.isArray(apiresources) ? apiresources : (apiresources?.data ?? apiresources?.items ?? FALLBACK_RESOURCES);
+
   const [tab, setTab] = useState("projects");
   const [search, setSearch] = useState("");
 

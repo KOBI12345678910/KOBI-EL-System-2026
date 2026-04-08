@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +14,7 @@ import {
   MessageSquare, BarChart3, Sparkles, AlertTriangle, CheckCircle2
 } from "lucide-react";
 
-const agents = [
+const FALLBACK_AGENTS = [
   { code: "AGT-001", name: "מנתח מסמכים", model: "claude-sonnet-4-6", format: "JSON", active: true, confidence: 92, escalation: 65, runs: 1847, lastRun: "08/04/2026 09:12" },
   { code: "AGT-002", name: "חיזוי מכירות", model: "gpt-5.2", format: "JSON", active: true, confidence: 88, escalation: 70, runs: 3214, lastRun: "08/04/2026 08:45" },
   { code: "AGT-003", name: "ניתוח סנטימנט", model: "claude-haiku-4-5", format: "טקסט", active: true, confidence: 85, escalation: 60, runs: 5621, lastRun: "08/04/2026 09:30" },
@@ -30,7 +32,7 @@ const agents = [
   { code: "AGT-015", name: "ניהול סיכונים", model: "claude-opus-4-6", format: "JSON", active: true, confidence: 96, escalation: 88, runs: 934, lastRun: "08/04/2026 09:00" },
 ];
 
-const templates = [
+const FALLBACK_TEMPLATES = [
   { agent: "AGT-001", name: "תבנית ניתוח מסמך כללי", version: "3.2", isDefault: true, preview: "נתח את המסמך הבא וחלץ: כותרת, תאריך, סכום, צדדים, סעיפים עיקריים. החזר JSON מובנה." },
   { agent: "AGT-003", name: "תבנית סנטימנט לקוח", version: "2.8", isDefault: true, preview: "סווג את הסנטימנט של ההודעה: חיובי/שלילי/ניטרלי. ציין ביטחון 0-100 ומילות מפתח." },
   { agent: "AGT-006", name: "תבנית ניתוח חשבונית", version: "4.1", isDefault: true, preview: "חלץ מהחשבונית: מספר, תאריך, ספק, פריטים, סכומים, מע\"מ, סה\"כ. אמת נכונות חישובים." },
@@ -40,7 +42,7 @@ const templates = [
   { agent: "AGT-015", name: "תבנית הערכת סיכון פיננסי", version: "3.5", isDefault: false, preview: "הערך סיכון: נזילות, אשראי, שוק, תפעולי. ציין הסתברות, חומרה, ותוכנית מיטיגציה." },
 ];
 
-const routing = [
+const FALLBACK_ROUTING = [
   { event: "חשבונית חדשה התקבלה", agents: ["AGT-006", "AGT-007"], enabled: true },
   { event: "ליד חדש נכנס ל-CRM", agents: ["AGT-004", "AGT-003"], enabled: true },
   { event: "הזמנת לקוח בוצעה", agents: ["AGT-002", "AGT-014"], enabled: true },
@@ -55,7 +57,7 @@ const routing = [
   { event: "בקשת הצעת מחיר", agents: ["AGT-009", "AGT-002"], enabled: true },
 ];
 
-const jobs = [
+const FALLBACK_JOBS = [
   { code: "JOB-01", freq: "כל שעה", time: "XX:00", agents: ["AGT-007", "AGT-015"], lastRun: "08/04 09:00", nextRun: "08/04 10:00", status: "פעיל" },
   { code: "JOB-02", freq: "יומי", time: "06:00", agents: ["AGT-002", "AGT-012"], lastRun: "08/04 06:00", nextRun: "09/04 06:00", status: "פעיל" },
   { code: "JOB-03", freq: "יומי", time: "23:00", agents: ["AGT-005", "AGT-014"], lastRun: "07/04 23:00", nextRun: "08/04 23:00", status: "פעיל" },
@@ -64,7 +66,7 @@ const jobs = [
   { code: "JOB-06", freq: "כל 15 דקות", time: "XX:00/15/30/45", agents: ["AGT-010"], lastRun: "08/04 09:30", nextRun: "08/04 09:45", status: "פעיל" },
 ];
 
-const models = [
+const FALLBACK_MODELS = [
   { type: "שפה גדול (LLM)", name: "Claude Sonnet 4.6", provider: "Anthropic", useCases: "ניתוח מסמכים, חיזוי, קוד", status: "פעיל", load: 74, latency: "1.2s", requests: "18,420" },
   { type: "שפה מהיר", name: "Claude Haiku 4.5", provider: "Anthropic", useCases: "סנטימנט, מענה לקוחות, סיווג", status: "פעיל", load: 89, latency: "0.4s", requests: "42,310" },
   { type: "חשיבה עמוקה", name: "Claude Opus 4.6", provider: "Anthropic", useCases: "סיכונים, אסטרטגיה, ניתוח מורכב", status: "פעיל", load: 42, latency: "3.8s", requests: "2,145" },
@@ -72,7 +74,7 @@ const models = [
   { type: "עברית מותאם", name: "Kimi K2.5", provider: "Moonshot", useCases: "סיכום פגישות, תרגום, טקסט עברי", status: "תחזוקה", load: 0, latency: "-", requests: "3,621" },
 ];
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "סוכנים פעילים", value: "12/15", icon: Bot, color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
   { label: "הרצות היום", value: "4,218", icon: Zap, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
   { label: "ביטחון ממוצע", value: "89.1%", icon: ShieldCheck, color: "text-violet-400", bg: "bg-violet-500/10 border-violet-500/20" },
@@ -82,6 +84,19 @@ const kpis = [
 ];
 
 export default function Bash44AgentConfig() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["bash44_agent_config"],
+    queryFn: () => authFetch("/api/ai/bash44-agent-config").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const agents = apiData?.agents ?? FALLBACK_AGENTS;
+  const templates = apiData?.templates ?? FALLBACK_TEMPLATES;
+  const routing = apiData?.routing ?? FALLBACK_ROUTING;
+  const jobs = apiData?.jobs ?? FALLBACK_JOBS;
+  const models = apiData?.models ?? FALLBACK_MODELS;
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
   const [search, setSearch] = useState("");
   const [agentStates, setAgentStates] = useState<Record<string, boolean>>(
     Object.fromEntries(agents.map(a => [a.code, a.active]))

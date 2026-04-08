@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -5,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Container, Anchor, Ship, Weight, Box, DollarSign, Package, Layers } from "lucide-react";
 
-const submodules = [
+const FALLBACK_SUBMODULES = [
   "containers_list", "container_details", "packages", "pallets",
   "cartons", "loose_cargo", "loading_map", "cost_allocation",
 ] as const;
@@ -13,7 +15,7 @@ const submodules = [
 const fmt = (v: number) => "$" + v.toLocaleString("en-US");
 const fmtNis = (v: number) => "\u20AA" + v.toLocaleString("he-IL");
 
-const containers = [
+const FALLBACK_CONTAINERS = [
   { id: "CNTR-001", type: "40HC", shipment: "SHP-1120", supplier: "Foshan Glass Co.", origin: "Shenzhen", port: "Ashdod", weight: 18400, cbm: 67.5, status: "in_transit", eta: "2026-04-12", cost: 4200 },
   { id: "CNTR-002", type: "20ft", shipment: "SHP-1121", supplier: "Schuco International", origin: "Hamburg", port: "Haifa", weight: 12800, cbm: 28.3, status: "at_port", eta: "2026-04-08", cost: 2800 },
   { id: "CNTR-003", type: "40ft", shipment: "SHP-1122", supplier: "Alumil SA", origin: "Thessaloniki", port: "Ashdod", weight: 22100, cbm: 58.2, status: "in_transit", eta: "2026-04-15", cost: 3600 },
@@ -24,7 +26,7 @@ const containers = [
   { id: "CNTR-008", type: "20ft", shipment: "SHP-1127", supplier: "Hydro ASA", origin: "Oslo", port: "Haifa", weight: 11600, cbm: 26.9, status: "at_port", eta: "2026-04-08", cost: 2600 },
 ];
 
-const packages = [
+const FALLBACK_PACKAGES = [
   { container: "CNTR-001", pallets: 22, cartons: 186, loose: 4, totalPcs: 2840, packType: "mixed", fragile: true, stackable: false },
   { container: "CNTR-002", pallets: 14, cartons: 98, loose: 0, totalPcs: 1420, packType: "palletized", fragile: false, stackable: true },
   { container: "CNTR-003", pallets: 18, cartons: 152, loose: 8, totalPcs: 2160, packType: "mixed", fragile: true, stackable: false },
@@ -35,7 +37,7 @@ const packages = [
   { container: "CNTR-008", pallets: 10, cartons: 72, loose: 3, totalPcs: 960, packType: "mixed", fragile: true, stackable: false },
 ];
 
-const costs = [
+const FALLBACK_COSTS = [
   { container: "CNTR-001", freight: 4200, insurance: 840, portHandling: 1200, customs: 14720, storage: 0, inland: 1800, total: 22760 },
   { container: "CNTR-002", freight: 2800, insurance: 560, portHandling: 950, customs: 9600, storage: 450, inland: 1200, total: 15560 },
   { container: "CNTR-003", freight: 3600, insurance: 720, portHandling: 1100, customs: 12400, storage: 0, inland: 1500, total: 19320 },
@@ -66,6 +68,55 @@ const packBadge = (t: string) => {
 };
 
 export default function ContainersPackages() {
+  const { data: submodules = FALLBACK_SUBMODULES } = useQuery({
+    queryKey: ["import-submodules"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/containers-packages/submodules");
+      if (!res.ok) return FALLBACK_SUBMODULES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SUBMODULES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: containers = FALLBACK_CONTAINERS } = useQuery({
+    queryKey: ["import-containers"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/containers-packages/containers");
+      if (!res.ok) return FALLBACK_CONTAINERS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_CONTAINERS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: packages = FALLBACK_PACKAGES } = useQuery({
+    queryKey: ["import-packages"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/containers-packages/packages");
+      if (!res.ok) return FALLBACK_PACKAGES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_PACKAGES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: costs = FALLBACK_COSTS } = useQuery({
+    queryKey: ["import-costs"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/containers-packages/costs");
+      if (!res.ok) return FALLBACK_COSTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_COSTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [tab, setTab] = useState("containers");
 
   const active = containers.filter(c => c.status !== "cleared").length;

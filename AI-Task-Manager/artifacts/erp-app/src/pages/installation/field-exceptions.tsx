@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,7 +11,7 @@ import {
   Wrench, Users, CalendarClock, TrendingUp, BarChart3, Activity
 } from "lucide-react";
 
-const exceptions = [
+const FALLBACK_EXCEPTIONS = [
   { id: "EXC-001", insId: "INS-001", project: "מגדלי הים — חיפה", type: "סטיית מידות", severity: "גבוה", description: "פתח חלון קטן ב-3 ס\"מ מהתוכנית — קומה 7 צפון", responsible: "יוסי כהן", resolution: "חיתוך מחדש של מסגרת מותאמת", status: "בטיפול", cost: 2200 },
   { id: "EXC-002", insId: "INS-002", project: "פארק המדע — רחובות", type: "חומר לא תקין", severity: "קריטי", description: "זכוכית שכבתית הגיעה עם שריטות פנימיות — אצווה 4B", responsible: "שרה לוי", resolution: "החלפה מלאה — הזמנה דחופה מספק", status: "פתוח", cost: 4800 },
   { id: "EXC-003", insId: "INS-005", project: "קניון הדרום — באר שבע", type: "בעיית גישה", severity: "בינוני", description: "מעבר לכניסת משאית חסום ע\"י פיגומים קבלן שכן", responsible: "מיכל ברק", resolution: "תיאום פינוי פיגומים עד 10/04", status: "בטיפול", cost: 500 },
@@ -49,13 +51,13 @@ const typeIcon: Record<string, typeof AlertTriangle> = {
   "כוח אדם": Users,
 };
 
-const openCount = exceptions.filter(e => e.status === "פתוח").length;
-const criticalCount = exceptions.filter(e => e.severity === "קריטי").length;
-const inProgressCount = exceptions.filter(e => e.status === "בטיפול").length;
-const closedThisMonth = exceptions.filter(e => e.status === "נסגר").length;
-const totalCost = exceptions.reduce((sum, e) => sum + e.cost, 0);
+const openCount = FALLBACK_EXCEPTIONS.filter(e => e.status === "פתוח").length;
+const criticalCount = FALLBACK_EXCEPTIONS.filter(e => e.severity === "קריטי").length;
+const inProgressCount = FALLBACK_EXCEPTIONS.filter(e => e.status === "בטיפול").length;
+const closedThisMonth = FALLBACK_EXCEPTIONS.filter(e => e.status === "נסגר").length;
+const totalCost = FALLBACK_EXCEPTIONS.reduce((sum, e) => sum + e.cost, 0);
 
-const kpiData = [
+const FALLBACK_KPI_DATA = [
   { label: "חריגות פתוחות", value: "8", icon: FileWarning, color: "text-red-400", bg: "bg-red-500/10" },
   { label: "קריטיות", value: String(criticalCount), icon: ShieldAlert, color: "text-red-400", bg: "bg-red-500/10" },
   { label: "בטיפול", value: String(inProgressCount), icon: Clock, color: "text-yellow-400", bg: "bg-yellow-500/10" },
@@ -64,16 +66,16 @@ const kpiData = [
   { label: "עלות חריגות", value: "₪14,500", icon: DollarSign, color: "text-orange-400", bg: "bg-orange-500/10" },
 ];
 
-const typeCounts = exceptions.reduce<Record<string, number>>((acc, e) => {
+const typeCounts = FALLBACK_EXCEPTIONS.reduce<Record<string, number>>((acc, e) => {
   acc[e.type] = (acc[e.type] || 0) + 1;
   return acc;
 }, {});
 
 const paretoData = Object.entries(typeCounts)
-  .map(([type, count]) => ({ type, count, pct: Math.round((count / exceptions.length) * 100) }))
+  .map(([type, count]) => ({ type, count, pct: Math.round((count / FALLBACK_EXCEPTIONS.length) * 100) }))
   .sort((a, b) => b.count - a.count);
 
-const workflowSteps = [
+const FALLBACK_WORKFLOW_STEPS = [
   { label: "דיווח", icon: FileWarning, desc: "זיהוי ודיווח מהשטח", color: "text-red-400" },
   { label: "הערכה", icon: Activity, desc: "הערכת חומרה והשפעה", color: "text-orange-400" },
   { label: "אישור", icon: CheckCircle2, desc: "אישור תוכנית פתרון", color: "text-amber-400" },
@@ -82,13 +84,62 @@ const workflowSteps = [
   { label: "סגירה", icon: CheckCircle2, desc: "סגירה ותיעוד לקחים", color: "text-emerald-400" },
 ];
 
-const impactData = [
+const FALLBACK_IMPACT_DATA = [
   { title: "השפעה על לו\"ז", icon: CalendarClock, color: "text-orange-400", bg: "bg-orange-500/10", metric: "3.5", unit: "ימי עיכוב מצטברים", details: [{ label: "INS-007 בניין מגורים", value: "1.5 ימים" }, { label: "INS-002 פארק המדע", value: "1.0 יום" }, { label: "INS-001 מגדלי הים", value: "0.5 יום" }, { label: "INS-004 מלון ים התיכון", value: "0.5 יום" }] },
   { title: "השפעה על עלות", icon: DollarSign, color: "text-red-400", bg: "bg-red-500/10", metric: "₪16,500", unit: "חריגה מתקציב", details: [{ label: "חומרים פגומים", value: "₪6,600" }, { label: "שינויי לקוח", value: "₪4,500" }, { label: "עבודה נוספת", value: "₪3,200" }, { label: "ציוד ושונות", value: "₪2,200" }] },
   { title: "השפעה על איכות", icon: TrendingUp, color: "text-blue-400", bg: "bg-blue-500/10", metric: "94.2%", unit: "ציון איכות ממוצע", details: [{ label: "התאמה למפרט", value: "96%" }, { label: "גימור ושלמות", value: "93%" }, { label: "בטיחות", value: "91%" }, { label: "שביעות רצון לקוח", value: "97%" }] },
 ];
 
 export default function FieldExceptions() {
+  const { data: exceptions = FALLBACK_EXCEPTIONS } = useQuery({
+    queryKey: ["installation-exceptions"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/field-exceptions/exceptions");
+      if (!res.ok) return FALLBACK_EXCEPTIONS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_EXCEPTIONS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: kpiData = FALLBACK_KPI_DATA } = useQuery({
+    queryKey: ["installation-kpi-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/field-exceptions/kpi-data");
+      if (!res.ok) return FALLBACK_KPI_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_KPI_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: workflowSteps = FALLBACK_WORKFLOW_STEPS } = useQuery({
+    queryKey: ["installation-workflow-steps"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/field-exceptions/workflow-steps");
+      if (!res.ok) return FALLBACK_WORKFLOW_STEPS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_WORKFLOW_STEPS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: impactData = FALLBACK_IMPACT_DATA } = useQuery({
+    queryKey: ["installation-impact-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/field-exceptions/impact-data");
+      if (!res.ok) return FALLBACK_IMPACT_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_IMPACT_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* Header */}

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +13,7 @@ import {
   XCircle, Calendar, Package, Wrench, CreditCard, FileText, Users
 } from "lucide-react";
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "אחריות פעילות", value: 248, icon: Shield, color: "text-blue-500", bg: "bg-blue-50", change: "+12", up: true },
   { label: "תביעות החודש", value: 8, icon: FileCheck, color: "text-amber-500", bg: "bg-amber-50", change: "+2", up: true },
   { label: "שיעור תביעות", value: "3.2%", icon: TrendingUp, color: "text-red-500", bg: "bg-red-50", change: "+0.4%", up: true },
@@ -20,7 +22,7 @@ const kpis = [
   { label: "פוקעות (90 יום)", value: 34, icon: Clock, color: "text-purple-500", bg: "bg-purple-50", change: "+5", up: true },
 ];
 
-const warranties = [
+const FALLBACK_WARRANTIES = [
   { id: "WR-2001", product: "חלון הזזה כפול 200x160", customer: "אלומיניום הצפון בע\"מ", start: "15/01/2025", end: "15/01/2030", status: "פעיל", terms: "5 שנים - מנגנון + אטימות" },
   { id: "WR-2002", product: "זכוכית מחוסמת 10 מ\"מ", customer: "זגוגית השרון", start: "20/03/2025", end: "20/03/2028", status: "פעיל", terms: "3 שנים - שלמות מבנית" },
   { id: "WR-2003", product: "דלת כניסה מפלדה", customer: "בניין ירוק בע\"מ", start: "01/06/2024", end: "01/06/2027", status: "פעיל", terms: "3 שנים - מנעול + צירים" },
@@ -35,7 +37,7 @@ const warranties = [
   { id: "WR-2012", product: "דלת הזזה אוטומטית", customer: "קליל תעשיות", start: "25/10/2024", end: "25/10/2026", status: "עומד לפוג", terms: "2 שנים - מנוע + מסילה" },
 ];
 
-const claims = [
+const FALLBACK_CLAIMS = [
   { id: "CL-401", warranty: "WR-2010", customer: "זכוכית אילת", product: "גדר אלומיניום דקורטיבית", issue: "התקלפות ציפוי אבקתי", filed: "02/04/2026", assessment: "מאושר - פגם ציפוי", cost: 4200, status: "אושר" },
   { id: "CL-402", warranty: "WR-2005", customer: "מתכת פלוס", product: "תריס חשמלי", issue: "תקלת מנוע חשמלי", filed: "05/04/2026", assessment: "בבדיקה", cost: 0, status: "בבדיקה" },
   { id: "CL-403", warranty: "WR-2003", customer: "בניין ירוק בע\"מ", product: "דלת כניסה מפלדה", issue: "ציר עליון שבור", filed: "01/04/2026", assessment: "מאושר - בלאי מוקדם", cost: 1800, status: "בתיקון" },
@@ -46,7 +48,7 @@ const claims = [
   { id: "CL-408", warranty: "WR-2011", customer: "מפעלי גולן מתכת", product: "פרופיל תרמי TH60", issue: "ירידת בידוד", filed: "04/04/2026", assessment: "מאושר - החלפת איטום", cost: 2600, status: "הושלם" },
 ];
 
-const coverageTerms = [
+const FALLBACK_COVERAGE_TERMS = [
   { category: "חלונות ודלתות", structural: "5 שנים", mechanism: "5 שנים", sealing: "5 שנים", coating: "3 שנים", electrical: "-" },
   { category: "מעקות וגדרות", structural: "5 שנים", mechanism: "-", sealing: "-", coating: "3 שנים", electrical: "-" },
   { category: "תריסים חשמליים", structural: "3 שנים", mechanism: "2 שנים", sealing: "2 שנים", coating: "3 שנים", electrical: "2 שנים" },
@@ -55,7 +57,7 @@ const coverageTerms = [
   { category: "פרופילים תרמיים", structural: "5 שנים", mechanism: "-", sealing: "5 שנים", coating: "-", electrical: "-" },
 ];
 
-const financials = [
+const FALLBACK_FINANCIALS = [
   { month: "ינואר 2026", claims: 5, totalCost: 11200, reserve: 130000, utilization: "8.6%" },
   { month: "פברואר 2026", claims: 6, totalCost: 14800, reserve: 135000, utilization: "11.0%" },
   { month: "מרץ 2026", claims: 7, totalCost: 18500, reserve: 140000, utilization: "13.2%" },
@@ -78,6 +80,14 @@ const claimStatusColor: Record<string, string> = {
 };
 
 export default function WarrantyManagement() {
+  const { data: warrantymanagementData } = useQuery({
+    queryKey: ["warranty-management"],
+    queryFn: () => authFetch("/api/customer-service/warranty_management"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = warrantymanagementData ?? FALLBACK_KPIS;
+
   const [search, setSearch] = useState("");
 
   return (

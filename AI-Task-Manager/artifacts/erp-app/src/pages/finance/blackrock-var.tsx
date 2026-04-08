@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useLocation } from "wouter";
 import {
   AlertTriangle, ArrowRight, TrendingDown, Activity, Shield, Target,
@@ -22,7 +24,7 @@ function fmt(val: number) {
   return `₪${val.toFixed(0)}`;
 }
 
-const VAR_LEVELS = [
+const FALLBACK_VAR_LEVELS = [
   { level: "90%", var: 2770000, es: 3580000, breaches: 5000, implied: "1 in 10 years", color: "#eab308" },
   { level: "95%", var: 3330000, es: 4010000, breaches: 2500, implied: "1 in 20 years", color: "#f97316" },
   { level: "99%", var: 4410000, es: 5000000, breaches: 500, implied: "1 in 100 years", color: "#ef4444" },
@@ -30,7 +32,7 @@ const VAR_LEVELS = [
   { level: "99.9%", var: 5740000, es: 6180000, breaches: 50, implied: "1 in 1000 years", color: "#991b1b" },
 ];
 
-const RISK_CATEGORIES = [
+const FALLBACK_RISK_CATEGORIES = [
   { name: "ביקוש", pctOfVar: 44.4, var95: 1480000, marginalVar: 185000, incrementalVar: 1380000, beta: 1.32, color: "#ef4444" },
   { name: "חומרי גלם", pctOfVar: 23.6, var95: 786000, marginalVar: 98000, incrementalVar: 734000, beta: 0.87, color: "#f97316" },
   { name: "תפעולי", pctOfVar: 18.2, var95: 606000, marginalVar: 76000, incrementalVar: 565000, beta: 0.72, color: "#eab308" },
@@ -38,7 +40,7 @@ const RISK_CATEGORIES = [
   { name: 'מטח', pctOfVar: 2.3, var95: 77000, marginalVar: 9600, incrementalVar: 72000, beta: 0.11, color: "#8b5cf6" },
 ];
 
-const RISK_FACTORS = [
+const FALLBACK_RISK_FACTORS = [
   { factor: "ירידת ביקוש", weight: 14.8, sensitivity: -492, pctOfVar: 14.8, stressLoss: -984, category: "ביקוש" },
   { factor: "עליית אלומיניום", weight: 10.4, sensitivity: -347, pctOfVar: 10.4, stressLoss: -693, category: "חומרי גלם" },
   { factor: "אובדן לקוח גדול", weight: 8.2, sensitivity: -273, pctOfVar: 8.2, stressLoss: -546, category: "ביקוש" },
@@ -54,7 +56,7 @@ const RISK_FACTORS = [
   { factor: "עליית ריבית", weight: 1.0, sensitivity: -32, pctOfVar: 1.0, stressLoss: -64, category: "אשראי" },
 ];
 
-const EXTREME = [
+const FALLBACK_EXTREME = [
   { name: "קריסת בנייה גלובלית", var: 7260, prob: 0.5, impact: "פשיטת רגל אפשרית", horizon: "3-5 שנים", hedge: "ביטוח + גיוון" },
   { name: "מלחמה ממושכת 12+ חודשים", var: 6500, prob: 1, impact: "הפסד מצטבר קריטי", horizon: "1-3 שנים", hedge: "רזרבה נזילה" },
   { name: "משבר שרשרת אספקה", var: 5800, prob: 2, impact: "השבתה חלקית", horizon: "6-12 חודשים", hedge: "ספקים חלופיים" },
@@ -67,7 +69,7 @@ const EXTREME = [
   { name: "תקנות בנייה מחמירות", var: 2800, prob: 8, impact: "עלויות ציות גבוהות", horizon: "1-2 שנים", hedge: "R&D + הכשרה" },
 ];
 
-const BACKTESTING = [
+const FALLBACK_BACKTESTING = [
   { month: "01/25", actualLoss: 180, varLimit: 278, breached: false },
   { month: "02/25", actualLoss: 120, varLimit: 278, breached: false },
   { month: "03/25", actualLoss: 350, varLimit: 278, breached: true },
@@ -83,6 +85,14 @@ const BACKTESTING = [
 ];
 
 export default function BlackRockVaR() {
+  const { data: blackrockvarData } = useQuery({
+    queryKey: ["blackrock-var"],
+    queryFn: () => authFetch("/api/finance/blackrock_var"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const VAR_LEVELS = blackrockvarData ?? FALLBACK_VAR_LEVELS;
+
   const [, navigate] = useLocation();
   const [tab, setTab] = useState("overview");
 

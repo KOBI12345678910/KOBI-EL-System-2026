@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +14,7 @@ import {
   TrendingUp, TrendingDown, Layers, DollarSign, Users, Zap,
 } from "lucide-react";
 
-const ecos = [
+const FALLBACK_ECOS = [
   { id: "ECO-2026-001", title: "שינוי עובי זכוכית מחוסמת 6mm ל-8mm", products: ["חלון ויטרינה VT-200", "דלת כניסה DK-150"], type: "design", priority: "critical", status: "in-progress", requestor: "דוד כהן", created: "2026-03-12", target: "2026-04-20" },
   { id: "ECO-2026-002", title: "החלפת סגסוגת אלומיניום 6063 ל-6061", products: ["פרופיל תריס PR-80"], type: "material", priority: "high", status: "approved", requestor: "מירי לוי", created: "2026-03-15", target: "2026-04-25" },
   { id: "ECO-2026-003", title: "שיפור תהליך ריתוך מסגרות TIG", products: ["מסגרת אלומיניום FR-300", "שלדת פלדה ST-100"], type: "process", priority: "medium", status: "review", requestor: "יוסי אברהם", created: "2026-03-18", target: "2026-05-01" },
@@ -28,7 +30,7 @@ const ecos = [
 ];
 
 const stg = (role: string, name: string, status: string, date?: string, comment?: string) => ({ role, name, status, date: date ?? null, comment: comment ?? null });
-const approvalPipeline = [
+const FALLBACK_APPROVALPIPELINE = [
   { ecoId: "ECO-2026-007", title: "שדרוג חומר איטום סיליקון לעמידות UV", stages: [
     stg("מהנדס מוצר", "שלמה ביטון", "approved", "2026-04-02", "נדרש לעמידה בתקן ישראלי 1045"),
     stg("מנהל בקרת איכות", "רונית שמש", "approved", "2026-04-04", "אושר - בדיקות מעבדה הושלמו"),
@@ -81,7 +83,7 @@ const impactData = {
   ],
 };
 
-const historyData = [
+const FALLBACK_HISTORYDATA = [
   { id: "ECO-2025-048", title: "מעבר לפרופיל תרמי משופר", implemented: "2025-12-15", plannedDays: 30, actualDays: 28, savings: 32000, lessons: "תיאום מוקדם עם ספק קיצר זמנים" },
   { id: "ECO-2025-045", title: "החלפת גומיות EPDM לסיליקון", implemented: "2025-11-20", plannedDays: 21, actualDays: 25, savings: 18500, lessons: "בדיקות QC נוספות היו נחוצות" },
   { id: "ECO-2025-042", title: "שדרוג מנגנון נעילה רב-נקודתי", implemented: "2025-10-10", plannedDays: 45, actualDays: 42, savings: 55000, lessons: "הכשרת צוות ייצור במקביל חסכה זמן" },
@@ -111,6 +113,26 @@ const approvalIcon = (s: string) => {
 };
 
 export default function EngineeringChangeOrdersPage() {
+  const { data: apiecos } = useQuery({
+    queryKey: ["/api/supply-chain/engineering-change-orders/ecos"],
+    queryFn: () => authFetch("/api/supply-chain/engineering-change-orders/ecos").then(r => r.json()).catch(() => null),
+  });
+  const ecos = Array.isArray(apiecos) ? apiecos : (apiecos?.data ?? apiecos?.items ?? FALLBACK_ECOS);
+
+
+  const { data: apiapprovalPipeline } = useQuery({
+    queryKey: ["/api/supply-chain/engineering-change-orders/approvalpipeline"],
+    queryFn: () => authFetch("/api/supply-chain/engineering-change-orders/approvalpipeline").then(r => r.json()).catch(() => null),
+  });
+  const approvalPipeline = Array.isArray(apiapprovalPipeline) ? apiapprovalPipeline : (apiapprovalPipeline?.data ?? apiapprovalPipeline?.items ?? FALLBACK_APPROVALPIPELINE);
+
+
+  const { data: apihistoryData } = useQuery({
+    queryKey: ["/api/supply-chain/engineering-change-orders/historydata"],
+    queryFn: () => authFetch("/api/supply-chain/engineering-change-orders/historydata").then(r => r.json()).catch(() => null),
+  });
+  const historyData = Array.isArray(apihistoryData) ? apihistoryData : (apihistoryData?.data ?? apihistoryData?.items ?? FALLBACK_HISTORYDATA);
+
   const [search, setSearch] = useState("");
   const filtered = ecos.filter(e =>
     e.id.toLowerCase().includes(search.toLowerCase()) ||

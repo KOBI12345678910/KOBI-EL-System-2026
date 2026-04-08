@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -35,7 +37,7 @@ interface Supplier {
   lastOrder: string;
 }
 
-const suppliers: Supplier[] = [
+const FALLBACK_SUPPLIERS: Supplier[] = [
   { code: "SUP-CN-001", name: "Foshan Glass Co.", country: "\u05E1\u05D9\u05DF", countryCode: "CN", category: "\u05D6\u05DB\u05D5\u05DB\u05D9\u05EA", incoterm: "FOB", currency: "USD", leadTime: 42, riskScore: 65, performance: 78, status: "active", totalOrders: 34, lastOrder: "2026-03-15" },
   { code: "SUP-DE-001", name: "Sch\u00FCco International", country: "\u05D2\u05E8\u05DE\u05E0\u05D9\u05D4", countryCode: "DE", category: "\u05D0\u05DC\u05D5\u05DE\u05D9\u05E0\u05D9\u05D5\u05DD", incoterm: "CIF", currency: "EUR", leadTime: 28, riskScore: 15, performance: 96, status: "preferred", totalOrders: 67, lastOrder: "2026-04-02" },
   { code: "SUP-GR-001", name: "Alumil SA", country: "\u05D9\u05D5\u05D5\u05DF", countryCode: "GR", category: "\u05D0\u05DC\u05D5\u05DE\u05D9\u05E0\u05D9\u05D5\u05DD", incoterm: "CFR", currency: "EUR", leadTime: 21, riskScore: 30, performance: 88, status: "preferred", totalOrders: 52, lastOrder: "2026-03-28" },
@@ -75,6 +77,19 @@ function perfColor(val: number) {
 }
 
 export default function ForeignSuppliers() {
+  const { data: suppliers = FALLBACK_SUPPLIERS } = useQuery({
+    queryKey: ["import-suppliers"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/foreign-suppliers/suppliers");
+      if (!res.ok) return FALLBACK_SUPPLIERS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SUPPLIERS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [tab, setTab] = useState("all");
   const [search, setSearch] = useState("");
 

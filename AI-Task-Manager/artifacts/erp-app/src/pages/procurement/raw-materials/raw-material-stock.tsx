@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,7 +14,7 @@ import {
 
 const fmt = (v: number) => "₪" + v.toLocaleString("he-IL");
 
-const stockData = [
+const FALLBACK_STOCK_DATA = [
   { id: "RM-001", material: "פרופיל אלומיניום 6063-T5", warehouse: "מחסן ראשי A", onHand: 820, allocated: 280, available: 540, min: 200, reorderPoint: 350, unit: "מ'", unitCost: 48, status: "תקין" },
   { id: "RM-002", material: "זכוכית מחוסמת 10 מ\"מ", warehouse: "מחסן זכוכית", onHand: 145, allocated: 96, available: 49, min: 50, reorderPoint: 80, unit: "יח'", unitCost: 320, status: "נמוך" },
   { id: "RM-003", material: "ברגים נירוסטה M8x25", warehouse: "מחסן חומרי עזר", onHand: 4200, allocated: 1200, available: 3000, min: 1000, reorderPoint: 2000, unit: "יח'", unitCost: 1.2, status: "תקין" },
@@ -27,7 +29,7 @@ const stockData = [
   { id: "RM-012", material: "גומי איטום NEOPRENE", warehouse: "מחסן ראשי A", onHand: 520, allocated: 180, available: 340, min: 150, reorderPoint: 250, unit: "מ'", unitCost: 12, status: "תקין" },
 ];
 
-const movements = [
+const FALLBACK_MOVEMENTS = [
   { date: "08/04/2026", material: "פרופיל אלומיניום 6063-T5", type: "כניסה", qty: 150, fromWH: "ספק - Alumil SA", toWH: "מחסן ראשי A", ref: "GRN-004520", user: "עומר חדד" },
   { date: "08/04/2026", material: "ברגים נירוסטה M8x25", type: "כניסה", qty: 2000, fromWH: "ספק - מפעלי ברזל השרון", toWH: "מחסן חומרי עזר", ref: "GRN-004519", user: "מיכל ברק" },
   { date: "07/04/2026", material: "זכוכית מחוסמת 10 מ\"מ", type: "יציאה", qty: 30, fromWH: "מחסן זכוכית", toWH: "קו ייצור 1", ref: "WO-2280", user: "יוסי כהן" },
@@ -42,7 +44,7 @@ const movements = [
   { date: "03/04/2026", material: "זכוכית למינציה 6+6", type: "יציאה", qty: 25, fromWH: "מחסן זכוכית", toWH: "קו ייצור 1", ref: "WO-2270", user: "יוסי כהן" },
 ];
 
-const openPOs = [
+const FALLBACK_OPEN_POS = [
   { po: "PO-003412", material: "זכוכית למינציה 6+6", supplier: "Foshan Glass Co.", qty: 50, unit: "יח'", value: 29000, expectedDate: "15/04/2026", status: "בדרך" },
   { po: "PO-003415", material: "אטמי EPDM 12 מ\"מ", supplier: "גומי-טק בע\"מ", qty: 500, unit: "מ'", value: 4250, expectedDate: "12/04/2026", status: "אושרה" },
   { po: "PO-003418", material: "ידיות אלומיניום 200 מ\"מ", supplier: "ידית-טק בע\"מ", qty: 400, unit: "יח'", value: 11200, expectedDate: "18/04/2026", status: "בדרך" },
@@ -55,7 +57,7 @@ const openPOs = [
   { po: "PO-003435", material: "גומי איטום NEOPRENE", supplier: "גומי-טק בע\"מ", qty: 300, unit: "מ'", value: 3600, expectedDate: "13/04/2026", status: "ממתינה" },
 ];
 
-const historyData = [
+const FALLBACK_HISTORY_DATA = [
   { month: "אוקטובר 2025", totalItems: 9800, totalValue: 412000, received: 3200, issued: 2900, adjustments: -45 },
   { month: "נובמבר 2025", totalItems: 10100, totalValue: 428000, received: 3500, issued: 3100, adjustments: -55 },
   { month: "דצמבר 2025", totalItems: 10450, totalValue: 445000, received: 2800, issued: 2350, adjustments: -100 },
@@ -85,6 +87,14 @@ const PC: Record<string, string> = {
 };
 
 export default function RawMaterialStock() {
+  const { data: rawmaterialstockData } = useQuery({
+    queryKey: ["raw-material-stock"],
+    queryFn: () => authFetch("/api/procurement/raw_material_stock"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const stockData = rawmaterialstockData ?? FALLBACK_STOCK_DATA;
+
   const [tab, setTab] = useState("stock");
 
   const totalItems = stockData.reduce((s, r) => s + r.onHand, 0);

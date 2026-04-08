@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Button, Input, Label, Card } from "@/components/ui-components";
 import { Users, Plus, Trash2, Edit2, Save, Hash, Check, X } from "lucide-react";
 import ActivityLog from "@/components/activity-log";
@@ -20,14 +22,14 @@ interface Channel {
   members: number;
 }
 
-const INITIAL_TEAMS: Team[] = [
+const FALLBACK_INITIAL_TEAMS: Team[] = [
   { id: 1, name: "צוות מכירות", description: "צוות מכירות ופיתוח עסקי", members: 8, color: "bg-blue-500" },
   { id: 2, name: "צוות כספים", description: "חשבונאות ופיננסים", members: 4, color: "bg-green-500" },
   { id: 3, name: "צוות IT", description: "פיתוח ותשתיות", members: 5, color: "bg-violet-500" },
   { id: 4, name: "צוות לוגיסטיקה", description: "מחסן ומשלוחים", members: 6, color: "bg-amber-500" },
 ];
 
-const INITIAL_CHANNELS: Channel[] = [
+const FALLBACK_INITIAL_CHANNELS: Channel[] = [
   { id: 1, name: "כללי", team: "כל הארגון", isPrivate: false, members: 23 },
   { id: 2, name: "הזמנות-דחופות", team: "צוות מכירות", isPrivate: false, members: 8 },
   { id: 3, name: "חשבוניות", team: "צוות כספים", isPrivate: true, members: 4 },
@@ -35,6 +37,14 @@ const INITIAL_CHANNELS: Channel[] = [
 ];
 
 export default function TeamCollaborationSection() {
+  const { data: teamcollaborationData } = useQuery({
+    queryKey: ["team-collaboration"],
+    queryFn: () => authFetch("/api/settings/team_collaboration"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const INITIAL_TEAMS = teamcollaborationData ?? FALLBACK_INITIAL_TEAMS;
+
   const [teams, setTeams] = useState<Team[]>(INITIAL_TEAMS);
   const [channels, setChannels] = useState<Channel[]>(INITIAL_CHANNELS);
   const [activeTab, setActiveTab] = useState("teams");

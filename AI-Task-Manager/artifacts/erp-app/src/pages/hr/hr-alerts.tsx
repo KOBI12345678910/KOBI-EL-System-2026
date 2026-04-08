@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   Bell, AlertTriangle, AlertCircle, Info, Clock, FileText,
   UserX, ShieldAlert, CalendarClock, UserPlus, Scale, Wallet,
@@ -9,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 
-const alertTypes = [
+const FALLBACK_ALERT_TYPES = [
   { key: "contract_ending", label: "חוזה עבודה מסתיים", icon: FileText, color: "text-orange-600" },
   { key: "cert_expired", label: "תוקף הסמכה פג", icon: ShieldAlert, color: "text-red-600" },
   { key: "late_review", label: "הערכת ביצועים מאוחרת", icon: CalendarClock, color: "text-yellow-600" },
@@ -42,7 +44,7 @@ const severityConfig: Record<Severity, { label: string; color: string; bgColor: 
   info: { label: "מידע", color: "text-blue-700", bgColor: "bg-blue-50 border-blue-200", icon: Info },
 };
 
-const alerts: HRAlert[] = [
+const FALLBACK_ALERTS: HRAlert[] = [
   { id: 1, type: "contract_ending", severity: "critical", title: "חוזה עבודה מסתיים בעוד 7 ימים", description: "חוזה העסקה של העובד מסתיים ב-15/04/2026. נדרשת החלטה על חידוש או סיום.", employee: "דוד כהן", employeeId: "EMP-1042", time: "לפני שעתיים", action: "חידוש חוזה" },
   { id: 2, type: "cert_expired", severity: "critical", title: "תוקף הסמכת בטיחות פג", description: "הסמכת מפעיל מלגזה פגה ב-01/04/2026. אסור להפעיל ציוד עד לחידוש.", employee: "יוסי לוי", employeeId: "EMP-0387", time: "לפני 3 ימים", action: "תיאום הסמכה" },
   { id: 3, type: "hearing", severity: "critical", title: "שימוע מתוכנן בעוד 5 ימים", description: "שימוע לפני פיטורין קבוע ל-13/04/2026. יש להכין תיק ולוודא ייצוג משפטי.", employee: "מירב שלום", employeeId: "EMP-0921", time: "היום", action: "הכנת תיק" },
@@ -59,13 +61,21 @@ const alerts: HRAlert[] = [
   { id: 14, type: "pending_leave", severity: "info", title: "בקשת חופשה ממתינה 4 ימים", description: "בקשת יום חופש ל-20/04 ממתינה לאישור. אין חפיפה עם עובדים אחרים.", employee: "אורן שפירא", employeeId: "EMP-0347", time: "לפני 4 ימים", action: "אישור מהיר" },
 ];
 
-const closedAlerts = [
+const FALLBACK_CLOSED_ALERTS = [
   { id: 101, title: "חוזה חודש עם רועי בן דוד", closedBy: "מנהל HR", closedAt: "02/04/2026" },
   { id: 102, title: "הסמכת חשמלאי - יעקב מלכה", closedBy: "מנהל בטיחות", closedAt: "31/03/2026" },
   { id: 103, title: "חופשת מחלה - הדר נחום", closedBy: "מערכת אוטומטית", closedAt: "28/03/2026" },
 ];
 
 export default function HRAlerts() {
+  const { data: hralertsData } = useQuery({
+    queryKey: ["hr-alerts"],
+    queryFn: () => authFetch("/api/hr/hr_alerts"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const alertTypes = hralertsData ?? FALLBACK_ALERT_TYPES;
+
   const [activeTab, setActiveTab] = useState("active");
   const [filterSeverity, setFilterSeverity] = useState<Severity | "all">("all");
 

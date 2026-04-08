@@ -1,5 +1,7 @@
 import { usePermissions } from "@/hooks/use-permissions";
 import { useState, useRef, useCallback, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Image, Video, FileText, Upload, Search, X, Eye, Trash2, Plus,
@@ -55,7 +57,7 @@ const FILE_TYPE_COLORS: Record<string, string> = {
   other: "text-muted-foreground",
 };
 
-const INSTALL_TYPES = [
+const FALLBACK_INSTALL_TYPES = [
   "שערים חשמליים", "שערים ידניים", "שערי כניסה", "סורגים", "גדרות",
   "מעקות", "דלתות", "פרגולות", "ויטרינות", "קונסטרוקציות", "אחר"
 ];
@@ -78,14 +80,14 @@ function getFileTypeFromMime(mimeType: string): MediaFile["type"] {
   return "other";
 }
 
-const INITIAL_ALBUMS: Album[] = [
+const FALLBACK_INITIAL_ALBUMS: Album[] = [
   { id: 1, name: "פרויקט וילה כהן - שערים", description: "תמונות התקנת שערים", project: "פרויקט כהן", customer: "משפחת כהן", fileCount: 12, createdAt: "2026-01-15" },
   { id: 2, name: "פרויקט מסחרי - גדרות", description: "גדרות פאנל מסחריות", project: "מרכז מסחרי ABC", customer: "חברת ABC", fileCount: 8, createdAt: "2026-02-01" },
   { id: 3, name: "מוצרים - קטלוג ראשי", description: "תמונות קטלוג מוצרים", fileCount: 24, createdAt: "2025-11-20" },
   { id: 4, name: "סרטוני הדרכה", description: "סרטוני הכשרה ותפעול", fileCount: 5, createdAt: "2026-01-05" },
 ];
 
-const INITIAL_FILES: MediaFile[] = [
+const FALLBACK_INITIAL_FILES: MediaFile[] = [
   { id: 1, name: "שער_כניסה_פרמיום_1.jpg", type: "image", size: 2.4 * 1024 * 1024, url: "https://picsum.photos/seed/gate1/800/600", thumbnailUrl: "https://picsum.photos/seed/gate1/300/200", album: "פרויקט וילה כהן - שערים", project: "פרויקט כהן", customer: "משפחת כהן", tags: ["שערים", "כניסה", "פרמיום"], uploadedAt: "2026-01-16", uploadedBy: "דן לוי" },
   { id: 2, name: "גדר_פאנל_מסחרי.jpg", type: "image", size: 1.8 * 1024 * 1024, url: "https://picsum.photos/seed/fence1/800/600", thumbnailUrl: "https://picsum.photos/seed/fence1/300/200", album: "פרויקט מסחרי - גדרות", project: "מרכז מסחרי ABC", customer: "חברת ABC", tags: ["גדרות", "מסחרי"], uploadedAt: "2026-02-02", uploadedBy: "משה כהן" },
   { id: 3, name: "מעקה_מרפסת_אלומיניום.jpg", type: "image", size: 3.1 * 1024 * 1024, url: "https://picsum.photos/seed/railing1/800/600", thumbnailUrl: "https://picsum.photos/seed/railing1/300/200", album: "מוצרים - קטלוג ראשי", tags: ["מעקות", "אלומיניום", "מרפסת"], uploadedAt: "2025-12-01" },
@@ -97,6 +99,14 @@ const INITIAL_FILES: MediaFile[] = [
 ];
 
 export default function MediaLibraryPage() {
+  const { data: medialibraryData } = useQuery({
+    queryKey: ["media-library"],
+    queryFn: () => authFetch("/api/modules/media_library"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const INSTALL_TYPES = medialibraryData ?? FALLBACK_INSTALL_TYPES;
+
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;
   const [files, setFiles] = useState<MediaFile[]>(INITIAL_FILES);

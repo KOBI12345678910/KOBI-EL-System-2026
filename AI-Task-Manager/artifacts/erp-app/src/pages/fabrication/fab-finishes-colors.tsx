@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +13,7 @@ import {
   Download, Plus, Layers, Award, Paintbrush, Pipette, Zap
 } from "lucide-react";
 
-const colorCatalog = [
+const FALLBACK_COLORCATALOG = [
   { code: "RAL 9010", name: "לבן טהור", type: "RAL", texture: "מאט", hex: "#F1ECE1", stock: "במלאי", premium: 0, popularity: 98 },
   { code: "RAL 7016", name: "אנטרציט", type: "RAL", texture: "מאט", hex: "#383E42", stock: "במלאי", premium: 0, popularity: 95 },
   { code: "RAL 8017", name: "חום שוקולד", type: "RAL", texture: "סאטן", hex: "#44322D", stock: "במלאי", premium: 5, popularity: 82 },
@@ -34,7 +36,7 @@ const colorCatalog = [
   { code: "CUS-001", name: "צבע מותאם אישית", type: "מותאם", texture: "לבחירה", hex: "#999999", stock: "הזמנה מיוחדת", premium: 45, popularity: 30 },
 ];
 
-const finishTypes = [
+const FALLBACK_FINISHTYPES = [
   { name: "צביעה אלקטרוסטטית", nameEn: "Powder Coating", description: "ציפוי אבקה יבש המוקשה בתנור בטמפרטורה גבוהה", thickness: "60-120 מיקרון", durability: 95, curing: "200°C / 15 דקות", colors: "RAL מלא + מותאם", applications: "חלונות, דלתות, חזיתות", warranty: "25 שנה", marketShare: 62 },
   { name: "אנודייז", nameEn: "Anodizing", description: "תהליך אלקטרוכימי המייצר שכבת תחמוצת מגנה", thickness: "15-25 מיקרון", durability: 98, curing: "אלקטרוליזה בחומצה", colors: "טבעי, ברונזה, שחור, שמפניה, זהב", applications: "חזיתות, ויטרינות, מעקות", warranty: "30 שנה", marketShare: 22 },
   { name: "צבע רטוב", nameEn: "Wet Paint", description: "ציפוי נוזלי בריסוס עם שכבות מרובות", thickness: "40-80 מיקרון", durability: 82, curing: "60°C / 30 דקות", colors: "ללא הגבלה", applications: "תיקונים, פרויקטים מיוחדים", warranty: "15 שנה", marketShare: 8 },
@@ -42,14 +44,14 @@ const finishTypes = [
   { name: "אלקטרופורזיס", nameEn: "Electrophoresis", description: "ציפוי בסיסי בשיטה אלקטרוכימית לפני צביעה", thickness: "20-30 מיקרון", durability: 88, curing: "טבילה אלקטרוכימית", colors: "בסיס שקוף/שחור", applications: "שכבת בסיס לצביעה כפולה", warranty: "35 שנה (משולב)", marketShare: 2 },
 ];
 
-const qualityStandards = [
+const FALLBACK_QUALITYSTANDARDS = [
   { name: "Qualicoat", logo: "QC", level: "Seaside Class 3", description: "תקן בינלאומי לציפויי אבקה על אלומיניום", requirements: ["עמידות UV: 3000+ שעות", "עמידות לחות: 1000+ שעות", "אדהזיה: GT0-GT1", "עמידות מורפלין: ללא חדירה", "מראה: Delta E < 1.5"], status: "מאושר", lastAudit: "2025-11-15", nextAudit: "2026-11-15", compliance: 100 },
   { name: "Qualanod", logo: "QA", level: "Class 20", description: "תקן בינלאומי לאנודייז על אלומיניום", requirements: ["עובי שכבה: 20+ מיקרון", "בדיקת Sealing: < 20 mg/dm2", "עמידות חומצה: תקין", "עמידות אור: Level 8", "קשיות: > 300 HV"], status: "מאושר", lastAudit: "2025-09-20", nextAudit: "2026-09-20", compliance: 100 },
   { name: "GSB International", logo: "GSB", level: "Master Premium", description: "תקן גרמני לציפויים על מתכות", requirements: ["עמידות מזג אוויר: Florida Test 3 שנים", "עמידות UV: Delta E < 1.0", "אדהזיה: חיתוך צלב 100%", "גמישות: כיפוף 5 מ\"מ ללא סדק", "עמידות כימית: חומצה + בסיס"], status: "מאושר", lastAudit: "2026-01-10", nextAudit: "2027-01-10", compliance: 98 },
   { name: "ISO 12944", logo: "ISO", level: "C5-M (ימי)", description: "תקן הגנה מפני קורוזיה לסביבה ימית", requirements: ["עמידות ערפל מלח: 1500+ שעות", "שכבת ציפוי מינימלית: 80 מיקרון", "הכנת משטח: SA 2.5", "בדיקת Pull-off: > 5 MPa", "תיעוד תהליך מלא"], status: "בהתאמה", lastAudit: "2026-02-28", nextAudit: "2026-08-28", compliance: 87 },
 ];
 
-const matchingProjects = [
+const FALLBACK_MATCHINGPROJECTS = [
   { project: "מגדלי הים התיכון", colors: ["RAL 7016", "ANO-NAT", "RAL 9010"], units: 450, status: "בייצור" },
   { project: "קניון רמת אביב", colors: ["ANO-BRZ", "WD-OAK", "RAL 9005"], units: 280, status: "מאושר" },
   { project: "בנייני משרדים הרצליה", colors: ["RAL 7035", "ANO-BLK", "RAL 9010"], units: 620, status: "בייצור" },
@@ -70,6 +72,32 @@ const projectStatus = (s: string) =>
   : "bg-purple-500/20 text-purple-300";
 
 export default function FabFinishesColors() {
+  const { data: apifinishTypes } = useQuery({
+    queryKey: ["/api/fabrication/fab-finishes-colors/finishtypes"],
+    queryFn: () => authFetch("/api/fabrication/fab-finishes-colors/finishtypes").then(r => r.json()).catch(() => null),
+  });
+  const finishTypes = Array.isArray(apifinishTypes) ? apifinishTypes : (apifinishTypes?.data ?? apifinishTypes?.items ?? FALLBACK_FINISHTYPES);
+
+
+  const { data: apiqualityStandards } = useQuery({
+    queryKey: ["/api/fabrication/fab-finishes-colors/qualitystandards"],
+    queryFn: () => authFetch("/api/fabrication/fab-finishes-colors/qualitystandards").then(r => r.json()).catch(() => null),
+  });
+  const qualityStandards = Array.isArray(apiqualityStandards) ? apiqualityStandards : (apiqualityStandards?.data ?? apiqualityStandards?.items ?? FALLBACK_QUALITYSTANDARDS);
+
+
+  const { data: apimatchingProjects } = useQuery({
+    queryKey: ["/api/fabrication/fab-finishes-colors/matchingprojects"],
+    queryFn: () => authFetch("/api/fabrication/fab-finishes-colors/matchingprojects").then(r => r.json()).catch(() => null),
+  });
+  const matchingProjects = Array.isArray(apimatchingProjects) ? apimatchingProjects : (apimatchingProjects?.data ?? apimatchingProjects?.items ?? FALLBACK_MATCHINGPROJECTS);
+
+  const { data: apicolorCatalog } = useQuery({
+    queryKey: ["/api/fabrication/fab-finishes-colors/colorcatalog"],
+    queryFn: () => authFetch("/api/fabrication/fab-finishes-colors/colorcatalog").then(r => r.json()).catch(() => null),
+  });
+  const colorCatalog = Array.isArray(apicolorCatalog) ? apicolorCatalog : (apicolorCatalog?.data ?? apicolorCatalog?.items ?? FALLBACK_COLORCATALOG);
+
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [matchSearch, setMatchSearch] = useState("");

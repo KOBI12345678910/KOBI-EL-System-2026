@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +19,7 @@ interface Accessory {
   monthlyUsage: number; lastOrder: string;
 }
 
-const CATALOG: Accessory[] = [
+const FALLBACK_CATALOG: Accessory[] = [
   { id: 1, name: "ידיות אלומיניום", sku: "HND-AL-001", category: "ידיות", unit: "יח׳", stock: 342, minLevel: 100, price: 28.5, supplier: "רותם פרזול", monthlyUsage: 185, lastOrder: "2026-03-22" },
   { id: 2, name: "צירים כבדים 120 ק״ג", sku: "HNG-HV-012", category: "צירים", unit: "זוג", stock: 156, minLevel: 50, price: 45.0, supplier: "GU ישראל", monthlyUsage: 72, lastOrder: "2026-03-18" },
   { id: 3, name: "מנעול רב-נקודתי", sku: "LCK-MP-005", category: "מנעולים", unit: "יח׳", stock: 89, minLevel: 30, price: 185.0, supplier: "MACO", monthlyUsage: 34, lastOrder: "2026-04-01" },
@@ -35,7 +37,7 @@ const CATALOG: Accessory[] = [
   { id: 15, name: "אטם סף תחתון", sku: "THS-RB-006", category: "אטמי סף", unit: "מטר", stock: 340, minLevel: 150, price: 12.0, supplier: "דברת גומי", monthlyUsage: 110, lastOrder: "2026-03-27" },
 ];
 
-const MONTHLY_TRENDS = [
+const FALLBACK_MONTHLY_TRENDS = [
   { month: "ינואר", total: 3420 }, { month: "פברואר", total: 3680 },
   { month: "מרץ", total: 4150 }, { month: "אפריל", total: 3920 },
 ];
@@ -51,6 +53,19 @@ const CAT_COLORS: Record<string, string> = {
 };
 
 export default function FabAccessories() {
+  const { data: apiCATALOG } = useQuery({
+    queryKey: ["/api/fabrication/fab-accessories/catalog"],
+    queryFn: () => authFetch("/api/fabrication/fab-accessories/catalog").then(r => r.json()).catch(() => null),
+  });
+  const CATALOG = Array.isArray(apiCATALOG) ? apiCATALOG : (apiCATALOG?.data ?? apiCATALOG?.items ?? FALLBACK_CATALOG);
+
+
+  const { data: apiMONTHLY_TRENDS } = useQuery({
+    queryKey: ["/api/fabrication/fab-accessories/monthly-trends"],
+    queryFn: () => authFetch("/api/fabrication/fab-accessories/monthly-trends").then(r => r.json()).catch(() => null),
+  });
+  const MONTHLY_TRENDS = Array.isArray(apiMONTHLY_TRENDS) ? apiMONTHLY_TRENDS : (apiMONTHLY_TRENDS?.data ?? apiMONTHLY_TRENDS?.items ?? FALLBACK_MONTHLY_TRENDS);
+
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("catalog");
 

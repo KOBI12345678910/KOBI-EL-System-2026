@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +17,7 @@ const statusColors: Record<string, string> = { "פתוח": "bg-red-500/20 text-r
 const warrantyStatusColors: Record<string, string> = { "מאושר": "bg-green-500/20 text-green-300", "ממתין לאישור": "bg-yellow-500/20 text-yellow-300", "בבדיקה": "bg-blue-500/20 text-blue-300" };
 const issueTypeLabels: Record<string, string> = { "תקלת-חומרה": "תקלת חומרה", "סדק-זכוכית": "סדק בזכוכית", "כשל-איטום": "כשל איטום", "בעיית-יישור": "בעיית יישור", "נזילה": "נזילה" };
 
-const tickets = [
+const FALLBACK_TICKETS = [
   { id: "SRV-4001", customer: "אלומיניום הצפון בע\"מ", product: "חלון ציר 180x120", issueType: "תקלת-חומרה", priority: "קריטי", status: "פתוח", assignedTo: "יוסי כהן", slaHours: 4 },
   { id: "SRV-4002", customer: "זגגות המרכז", product: "דלת הזזה 240x220", issueType: "סדק-זכוכית", priority: "גבוה", status: "מוקצה", assignedTo: "דני לוי", slaHours: 8 },
   { id: "SRV-4003", customer: "קבלן בניין עוז", product: "חלון קיפ 100x60", issueType: "כשל-איטום", priority: "בינוני", status: "בטיפול", assignedTo: "שרה מזרחי", slaHours: 18 },
@@ -30,7 +32,7 @@ const tickets = [
   { id: "SRV-4012", customer: "יזמות השרון", product: "חלון קיפ 120x80", issueType: "סדק-זכוכית", priority: "גבוה", status: "פתוח", assignedTo: "יוסי כהן", slaHours: 10 },
 ];
 
-const warrantyClaims = [
+const FALLBACK_WARRANTYCLAIMS = [
   { id: "WR-801", ticket: "SRV-4001", customer: "אלומיניום הצפון בע\"מ", type: "אחריות", product: "חלון ציר 180x120", cost: 0, status: "מאושר" },
   { id: "WR-802", ticket: "SRV-4002", customer: "זגגות המרכז", type: "מחוץ לאחריות", product: "דלת הזזה 240x220", cost: 1250, status: "ממתין לאישור" },
   { id: "WR-803", ticket: "SRV-4004", customer: "פרויקט מגדלי הים", type: "אחריות", product: "קיר מסך 300x400", cost: 0, status: "בבדיקה" },
@@ -40,7 +42,7 @@ const warrantyClaims = [
   { id: "WR-807", ticket: "SRV-4012", customer: "יזמות השרון", type: "מחוץ לאחריות", product: "חלון קיפ 120x80", cost: 650, status: "ממתין לאישור" },
 ];
 
-const rootCauses = [
+const FALLBACK_ROOTCAUSES = [
   { category: "פגם בחומר גלם", count: 28, pct: 32 },
   { category: "שגיאת הרכבה", count: 22, pct: 25 },
   { category: "בלאי טבעי", count: 15, pct: 17 },
@@ -49,7 +51,7 @@ const rootCauses = [
   { category: "אחר", count: 4, pct: 4 },
 ];
 
-const spareParts = [
+const FALLBACK_SPAREPARTS = [
   { partNo: "SP-101", name: "ידית אלומיניום 28 מ\"מ", category: "ידיות", stock: 145, minStock: 50, usedThisMonth: 32 },
   { partNo: "SP-102", name: "גומיית איטום EPDM 6 מ\"מ", category: "איטום", stock: 12, minStock: 100, usedThisMonth: 88 },
   { partNo: "SP-103", name: "נעילת ביטחון רב-נקודתית", category: "נעילה", stock: 67, minStock: 30, usedThisMonth: 18 },
@@ -61,6 +63,33 @@ const spareParts = [
 ];
 
 export default function FabServiceTickets() {
+  const { data: apitickets } = useQuery({
+    queryKey: ["/api/fabrication/fab-service-tickets/tickets"],
+    queryFn: () => authFetch("/api/fabrication/fab-service-tickets/tickets").then(r => r.json()).catch(() => null),
+  });
+  const tickets = Array.isArray(apitickets) ? apitickets : (apitickets?.data ?? apitickets?.items ?? FALLBACK_TICKETS);
+
+
+  const { data: apiwarrantyClaims } = useQuery({
+    queryKey: ["/api/fabrication/fab-service-tickets/warrantyclaims"],
+    queryFn: () => authFetch("/api/fabrication/fab-service-tickets/warrantyclaims").then(r => r.json()).catch(() => null),
+  });
+  const warrantyClaims = Array.isArray(apiwarrantyClaims) ? apiwarrantyClaims : (apiwarrantyClaims?.data ?? apiwarrantyClaims?.items ?? FALLBACK_WARRANTYCLAIMS);
+
+
+  const { data: apirootCauses } = useQuery({
+    queryKey: ["/api/fabrication/fab-service-tickets/rootcauses"],
+    queryFn: () => authFetch("/api/fabrication/fab-service-tickets/rootcauses").then(r => r.json()).catch(() => null),
+  });
+  const rootCauses = Array.isArray(apirootCauses) ? apirootCauses : (apirootCauses?.data ?? apirootCauses?.items ?? FALLBACK_ROOTCAUSES);
+
+
+  const { data: apispareParts } = useQuery({
+    queryKey: ["/api/fabrication/fab-service-tickets/spareparts"],
+    queryFn: () => authFetch("/api/fabrication/fab-service-tickets/spareparts").then(r => r.json()).catch(() => null),
+  });
+  const spareParts = Array.isArray(apispareParts) ? apispareParts : (apispareParts?.data ?? apispareParts?.items ?? FALLBACK_SPAREPARTS);
+
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("tickets");
 

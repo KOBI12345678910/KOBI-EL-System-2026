@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -11,7 +13,7 @@ import {
 
 /* ── mock data ── */
 
-const versionHistory = [
+const FALLBACK_VERSION_HISTORY = [
   { id: "DOC-101", name: "חוזה ספק מתכת כללי", version: "3.1", prevVersion: "3.0", changeType: "עדכון תוכן", changedBy: "יוסי כהן", date: "2026-04-07", time: "09:15", comment: "עדכון מחירי ספק ותנאי תשלום", size: "1.4 MB", status: "נוכחי" },
   { id: "DOC-101", name: "חוזה ספק מתכת כללי", version: "3.0", prevVersion: "2.4", changeType: "אישור", changedBy: "דוד לוי", date: "2026-03-20", time: "14:30", comment: "אישור סופי ע\"י הנהלה", size: "1.3 MB", status: "ארכיון" },
   { id: "DOC-205", name: "שרטוט מסגרת T-400", version: "2.0", prevVersion: "1.9", changeType: "עדכון תוכן", changedBy: "אלון גולדשטיין", date: "2026-04-06", time: "11:42", comment: "תיקון שרטוט חתך A ומידות הרכבה", size: "4.8 MB", status: "נוכחי" },
@@ -29,7 +31,7 @@ const versionHistory = [
   { id: "DOC-910", name: "רישיון עסק 2026", version: "1.0", prevVersion: "—", changeType: "יצירה", changedBy: "דוד לוי", date: "2026-01-10", time: "09:00", comment: "חידוש רישיון עסק שנתי", size: "620 KB", status: "נוכחי" },
 ];
 
-const rollbackEvents = [
+const FALLBACK_ROLLBACK_EVENTS = [
   { doc: "חוזה שכירות מחסן צפון", docId: "DOC-640", fromVersion: "2.0", toVersion: "1.0", reason: "סעיף שכירות שגוי — נדרש חזרה לנוסח מקורי", approvedBy: "דוד לוי", date: "2026-03-18", time: "11:30" },
   { doc: "מפרט טכני PCB-8L", docId: "DOC-523", fromVersion: "2.1", toVersion: "2.0", reason: "שגיאת ממדים בשכבה 4 — חזרה לגרסה מאומתת", approvedBy: "אלון גולדשטיין", date: "2026-03-25", time: "16:00" },
   { doc: "נוהל בטיחות כללי", docId: "DOC-418", fromVersion: "5.3", toVersion: "5.2", reason: "נוהל פינוי לא תואם תקן — שחזור גרסה קודמת", approvedBy: "מיכל ברק", date: "2026-02-14", time: "09:20" },
@@ -55,7 +57,7 @@ const comparisonData = {
   dateB: "2026-04-07",
 };
 
-const retentionPolicies = [
+const FALLBACK_RETENTION_POLICIES = [
   { docType: "חוזים", retention: "7 שנים", maxVersions: 50, autoArchive: true, compliance: "ISO 9001" },
   { docType: "שרטוטים", retention: "10 שנים", maxVersions: 100, autoArchive: true, compliance: "ISO 13485" },
   { docType: "הצעות מחיר", retention: "3 שנים", maxVersions: 20, autoArchive: true, compliance: "פנימי" },
@@ -85,7 +87,7 @@ const statusColor: Record<string, string> = {
 
 /* ── KPIs ── */
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "גרסאות פעילות", value: 412, icon: <GitFork className="w-5 h-5" />, color: "text-blue-400" },
   { label: "שינויים היום", value: 18, icon: <History className="w-5 h-5" />, color: "text-amber-400" },
   { label: "rollbacks החודש", value: 3, icon: <RotateCcw className="w-5 h-5" />, color: "text-red-400" },
@@ -95,6 +97,17 @@ const kpis = [
 /* ── component ── */
 
 export default function VersionControl() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["version_control"],
+    queryFn: () => authFetch("/api/documents/version-control").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const versionHistory = apiData?.versionHistory ?? FALLBACK_VERSION_HISTORY;
+  const rollbackEvents = apiData?.rollbackEvents ?? FALLBACK_ROLLBACK_EVENTS;
+  const retentionPolicies = apiData?.retentionPolicies ?? FALLBACK_RETENTION_POLICIES;
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
   const [tab, setTab] = useState("history");
 
   return (

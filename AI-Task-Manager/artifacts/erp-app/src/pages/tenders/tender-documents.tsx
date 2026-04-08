@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +19,7 @@ const statusStyle: Record<string, { label: string; cls: string }> = {
   signed: { label: "חתום", cls: "bg-green-500/20 text-green-600" },
 };
 
-const documents = [
+const FALLBACK_DOCUMENTS = [
   { id: 1, name: "הצעה טכנית", tender: "TND-001", category: "טכני", updated: "2026-04-06", status: "final", version: 3 },
   { id: 2, name: "הצעה מסחרית", tender: "TND-001", category: "מסחרי", updated: "2026-04-07", status: "signed", version: 2 },
   { id: 3, name: "פרופיל חברה", tender: "TND-002", category: "כללי", updated: "2026-04-05", status: "final", version: 1 },
@@ -35,7 +37,7 @@ const documents = [
   { id: 15, name: "תכנית בטיחות", tender: "TND-003", category: "בטיחות", updated: "2026-04-01", status: "draft", version: 1 },
 ];
 
-const templates = [
+const FALLBACK_TEMPLATES = [
   { id: 1, name: "תבנית הצעה טכנית", category: "טכני", uses: 24, lastUsed: "2026-04-05" },
   { id: 2, name: "תבנית הצעה מסחרית", category: "מסחרי", uses: 18, lastUsed: "2026-04-06" },
   { id: 3, name: "תבנית פרופיל חברה", category: "כללי", uses: 31, lastUsed: "2026-04-07" },
@@ -46,7 +48,7 @@ const templates = [
   { id: 8, name: "תבנית ערבות בנקאית", category: "פיננסי", uses: 7, lastUsed: "2026-03-25" },
 ];
 
-const complianceChecklist = [
+const FALLBACK_COMPLIANCE_CHECKLIST = [
   { type: "מכרז ממשלתי", required: ["הצעה טכנית", "הצעה מסחרית", "תעודות ISO", "דוחות כספיים", "ערבות בנקאית", "ביטוח", "תכנית בטיחות"], completed: 5 },
   { type: "מכרז עירוני", required: ["הצעה טכנית", "הצעה מסחרית", "פרופיל חברה", "ממליצים", "תעודות ISO", "ביטוח"], completed: 4 },
   { type: "מכרז פרטי", required: ["הצעה טכנית", "הצעה מסחרית", "פרופיל חברה", "שרטוטים", "כתב כמויות"], completed: 5 },
@@ -54,7 +56,7 @@ const complianceChecklist = [
   { type: "מכרז ביטחוני", required: ["הצעה טכנית", "הצעה מסחרית", "סיווג ביטחוני", "ISO", "דוחות כספיים", "ערבות", "ביטוח", "בטיחות", "קבלני משנה"], completed: 6 },
 ];
 
-const signatures = [
+const FALLBACK_SIGNATURES = [
   { id: 1, doc: "הצעה מסחרית - TND-001", signer: "עוזי אלמליח", role: "מנכ\"ל", status: "completed", date: "2026-04-07" },
   { id: 2, doc: "כתב כמויות - TND-001", signer: "עוזי אלמליח", role: "מנכ\"ל", status: "completed", date: "2026-04-07" },
   { id: 3, doc: "שרטוטים הנדסיים - TND-001", signer: "רונן כהן", role: "מהנדס ראשי", status: "completed", date: "2026-04-06" },
@@ -66,6 +68,55 @@ const signatures = [
 ];
 
 export default function TenderDocumentsPage() {
+  const { data: documents = FALLBACK_DOCUMENTS } = useQuery({
+    queryKey: ["tenders-documents"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-documents/documents");
+      if (!res.ok) return FALLBACK_DOCUMENTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DOCUMENTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: templates = FALLBACK_TEMPLATES } = useQuery({
+    queryKey: ["tenders-templates"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-documents/templates");
+      if (!res.ok) return FALLBACK_TEMPLATES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TEMPLATES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: complianceChecklist = FALLBACK_COMPLIANCE_CHECKLIST } = useQuery({
+    queryKey: ["tenders-compliance-checklist"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-documents/compliance-checklist");
+      if (!res.ok) return FALLBACK_COMPLIANCE_CHECKLIST;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_COMPLIANCE_CHECKLIST;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: signatures = FALLBACK_SIGNATURES } = useQuery({
+    queryKey: ["tenders-signatures"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-documents/signatures");
+      if (!res.ok) return FALLBACK_SIGNATURES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SIGNATURES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("documents");
 

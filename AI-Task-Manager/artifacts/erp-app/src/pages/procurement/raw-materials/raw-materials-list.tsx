@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -67,7 +69,7 @@ const STATUS_COLORS: Record<string, string> = {
 // ============================================================
 // MOCK DATA — 14 realistic factory materials
 // ============================================================
-const materials: RawMaterial[] = [
+const FALLBACK_MATERIALS: RawMaterial[] = [
   {
     material_code: "RM-1001", material_name: "צינור מרובע 40x40x2", category: "ברזל", subcategory: "צינורות", material_type: "פלדה שחורה",
     alloy_or_grade: "ST37", dimensions_display: "40x40x2 מ\"מ", thickness_mm: 2, width_mm: 40, height_mm: 40, length_m: 6,
@@ -174,6 +176,14 @@ const CATEGORIES = ["הכל", "ברזל", "אלומיניום", "זכוכית", 
 // COMPONENT
 // ============================================================
 export default function RawMaterialsList() {
+  const { data: rawmaterialslistData } = useQuery({
+    queryKey: ["raw-materials-list"],
+    queryFn: () => authFetch("/api/procurement/raw_materials_list"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const materials = rawmaterialslistData ?? FALLBACK_MATERIALS;
+
   const [search, setSearch] = useState("");
   const [categoryTab, setCategoryTab] = useState("הכל");
   const [statusFilter, setStatusFilter] = useState("הכל");

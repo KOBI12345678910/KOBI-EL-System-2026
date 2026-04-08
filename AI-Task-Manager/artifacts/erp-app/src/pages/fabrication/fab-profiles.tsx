@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +18,7 @@ const kpis = [
   { label: "התראות מלאי נמוך", value: "7", icon: AlertTriangle, color: "text-red-400", bg: "bg-red-500/10" },
 ];
 
-const profiles = [
+const FALLBACK_PROFILES = [
   { code: "PR-4520", series: "כנף", dims: "45x20 מ\"מ", weightM: "0.62", alloy: "6063", tb: true, surface: "אנודייז כסף", stockM: 1240, status: "פעיל" },
   { code: "PR-6530", series: "הזזה", dims: "65x30 מ\"מ", weightM: "1.15", alloy: "6063", tb: false, surface: "צביעה אלקטרוסטטית", stockM: 870, status: "פעיל" },
   { code: "PR-7240", series: "ציר-סובב", dims: "72x40 מ\"מ", weightM: "1.38", alloy: "6063", tb: true, surface: "אנודייז ברונזה", stockM: 560, status: "פעיל" },
@@ -34,7 +36,7 @@ const profiles = [
   { code: "PR-6228", series: "דלת", dims: "62x28 מ\"מ", weightM: "0.95", alloy: "6063", tb: true, surface: "צביעה RAL 9010", stockM: 780, status: "פעיל" },
 ];
 
-const seriesData = [
+const FALLBACK_SERIESDATA = [
   { name: "כנף (Casement)", count: 52, apps: "חלונות כנף, חלונות קיפ, אוורור צד" },
   { name: "הזזה (Sliding)", count: 48, apps: "דלתות הזזה, חלונות הזזה, מרפסות" },
   { name: "ציר-סובב (Tilt & Turn)", count: 45, apps: "חלונות ציר-סובב, חלונות ניקוי, בנייני מגורים" },
@@ -42,7 +44,7 @@ const seriesData = [
   { name: "דלת (Door)", count: 65, apps: "דלתות כניסה, דלתות פנים, דלתות חירום, דלתות מרפסת" },
 ];
 
-const stockData = [
+const FALLBACK_STOCKDATA = [
   { code: "PR-4520", name: "כנף 45x20", stock: 1240, min: 200, max: 2000 },
   { code: "PR-6530", name: "הזזה 65x30", stock: 870, min: 300, max: 1500 },
   { code: "PR-7240", name: "ציר-סובב 72x40", stock: 560, min: 200, max: 1200 },
@@ -54,7 +56,7 @@ const stockData = [
   { code: "PR-8248", name: "ציר-סובב 82x48", stock: 45, min: 100, max: 600 },
 ];
 
-const techSpecs = [
+const FALLBACK_TECHSPECS = [
   { code: "PR-4520", series: "כנף", ix: 12.4, iy: 5.8, area: 2.32, uf: 3.1, ufTb: 1.8 as number | null, span: "1.2 מ'" },
   { code: "PR-6530", series: "הזזה", ix: 28.6, iy: 14.2, area: 4.31, uf: 3.4, ufTb: null, span: "1.8 מ'" },
   { code: "PR-7240", series: "ציר-סובב", ix: 42.1, iy: 22.5, area: 5.17, uf: 3.2, ufTb: 1.6 as number | null, span: "1.5 מ'" },
@@ -72,6 +74,33 @@ const SC: Record<string, string> = {
 };
 
 export default function FabProfiles() {
+  const { data: apiprofiles } = useQuery({
+    queryKey: ["/api/fabrication/fab-profiles/profiles"],
+    queryFn: () => authFetch("/api/fabrication/fab-profiles/profiles").then(r => r.json()).catch(() => null),
+  });
+  const profiles = Array.isArray(apiprofiles) ? apiprofiles : (apiprofiles?.data ?? apiprofiles?.items ?? FALLBACK_PROFILES);
+
+
+  const { data: apiseriesData } = useQuery({
+    queryKey: ["/api/fabrication/fab-profiles/seriesdata"],
+    queryFn: () => authFetch("/api/fabrication/fab-profiles/seriesdata").then(r => r.json()).catch(() => null),
+  });
+  const seriesData = Array.isArray(apiseriesData) ? apiseriesData : (apiseriesData?.data ?? apiseriesData?.items ?? FALLBACK_SERIESDATA);
+
+
+  const { data: apistockData } = useQuery({
+    queryKey: ["/api/fabrication/fab-profiles/stockdata"],
+    queryFn: () => authFetch("/api/fabrication/fab-profiles/stockdata").then(r => r.json()).catch(() => null),
+  });
+  const stockData = Array.isArray(apistockData) ? apistockData : (apistockData?.data ?? apistockData?.items ?? FALLBACK_STOCKDATA);
+
+
+  const { data: apitechSpecs } = useQuery({
+    queryKey: ["/api/fabrication/fab-profiles/techspecs"],
+    queryFn: () => authFetch("/api/fabrication/fab-profiles/techspecs").then(r => r.json()).catch(() => null),
+  });
+  const techSpecs = Array.isArray(apitechSpecs) ? apitechSpecs : (apitechSpecs?.data ?? apitechSpecs?.items ?? FALLBACK_TECHSPECS);
+
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("catalog");
   const filtered = profiles.filter(p => !search || p.code.includes(search) || p.series.includes(search) || p.surface.includes(search));

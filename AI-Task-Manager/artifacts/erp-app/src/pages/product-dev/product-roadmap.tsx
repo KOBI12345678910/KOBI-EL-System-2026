@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,7 +21,7 @@ import {
   Users,
 } from "lucide-react";
 
-const phases = [
+const FALLBACK_PHASES = [
   { key: "concept", label: "קונספט", icon: Lightbulb, color: "bg-yellow-100 text-yellow-800", border: "border-yellow-300" },
   { key: "design", label: "עיצוב", icon: Pencil, color: "bg-blue-100 text-blue-800", border: "border-blue-300" },
   { key: "prototype", label: "אב-טיפוס", icon: Wrench, color: "bg-purple-100 text-purple-800", border: "border-purple-300" },
@@ -27,7 +29,7 @@ const phases = [
   { key: "launch", label: "השקה", icon: Rocket, color: "bg-green-100 text-green-800", border: "border-green-300" },
 ];
 
-const products = [
+const FALLBACK_PRODUCTS = [
   { id: 1, name: "חלון אלומיניום תרמי דור 4", phase: "testing", quarter: "Q2", progress: 82, team: "צוות חלונות", priority: "גבוה" },
   { id: 2, name: "דלת כניסה חכמה עם נעילה ביומטרית", phase: "prototype", quarter: "Q2", progress: 55, team: "צוות דלתות", priority: "גבוה" },
   { id: 3, name: "ויטרינה זכוכית כפולה Low-E Pro", phase: "design", quarter: "Q3", progress: 35, team: "צוות זכוכית", priority: "בינוני" },
@@ -59,6 +61,14 @@ const priorityColor = (priority: string) => {
 };
 
 export default function ProductRoadmap() {
+  const { data: productroadmapData } = useQuery({
+    queryKey: ["product-roadmap"],
+    queryFn: () => authFetch("/api/product-dev/product_roadmap"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const phases = productroadmapData ?? FALLBACK_PHASES;
+
   const [tab, setTab] = useState("timeline");
 
   const totalProducts = products.length;

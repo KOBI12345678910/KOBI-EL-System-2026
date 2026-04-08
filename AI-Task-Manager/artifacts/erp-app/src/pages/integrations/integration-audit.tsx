@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,7 +12,7 @@ import {
   Lock, RotateCw, FileText, Gauge, ArrowDownRight, ArrowUpRight,
 } from "lucide-react";
 
-const auditLog = [
+const FALLBACK_AUDIT_LOG = [
   { ts: "2026-04-08 09:42:11", integration: "SAP B1", action: "API Call", dir: "out", source: "ERP", target: "SAP", status: 200, duration: "120ms", user: "system", traceId: "trc-a1b2c3d4e5f6" },
   { ts: "2026-04-08 09:41:58", integration: "חשבשבת", action: "Sync", dir: "out", source: "ERP", target: "Hashavshevet", status: 200, duration: "340ms", user: "kobi@techno-kol.co.il", traceId: "trc-b2c3d4e5f6a7" },
   { ts: "2026-04-08 09:40:33", integration: "Salesforce", action: "Webhook", dir: "in", source: "Salesforce", target: "ERP", status: 200, duration: "85ms", user: "system", traceId: "trc-c3d4e5f6a7b8" },
@@ -33,7 +35,7 @@ const auditLog = [
   { ts: "2026-04-08 09:20:22", integration: "Stripe", action: "API Call", dir: "in", source: "Stripe", target: "ERP", status: 200, duration: "67ms", user: "system", traceId: "trc-b0c1d2e3f4a5" },
 ];
 
-const traceChain = [
+const FALLBACK_TRACE_CHAIN = [
   { step: 1, service: "WooCommerce", event: "order.created", ts: "09:38:44.000", duration: "—", status: "trigger" },
   { step: 2, service: "Webhook Gateway", event: "payload validated", ts: "09:38:44.012", duration: "12ms", status: "ok" },
   { step: 3, service: "ERP Router", event: "route to Sales module", ts: "09:38:44.025", duration: "13ms", status: "ok" },
@@ -44,13 +46,13 @@ const traceChain = [
   { step: 8, service: "Audit Logger", event: "trace committed", ts: "09:38:44.645", duration: "5ms", status: "complete" },
 ];
 
-const anomalies = [
+const FALLBACK_ANOMALIES = [
   { id: "ANM-001", type: "תעבורה חריגה", integration: "Make.com", detected: "2026-04-08 08:15", severity: "warning", desc: "עלייה של 340% בקריאות Webhook מ-Make.com בשעה האחרונה לעומת ממוצע יומי. ייתכן לולאה אינסופית בתרחיש." },
   { id: "ANM-002", type: "קפיצת שגיאות", integration: "SAP B1", detected: "2026-04-08 09:27", severity: "critical", desc: "5 שגיאות HTTP 500 ברצף מ-SAP B1 API תוך 10 דקות. חריגה מסף של 2 שגיאות לשעה. יש לבדוק זמינות שרת SAP." },
   { id: "ANM-003", type: "סטיית חביון", integration: "חשבונית ירוקה", detected: "2026-04-08 07:50", severity: "info", desc: "זמן תגובה ממוצע עלה ל-410ms (ממוצע רגיל: 180ms). סטייה של 128%. ייתכן עומס בצד ספק השירות." },
 ];
 
-const complianceData = [
+const FALLBACK_COMPLIANCE_DATA = [
   { integration: "SAP B1", encryption: true, tokenRotation: true, auditLogs: true, errorHandling: true, rateLimits: true, score: 100 },
   { integration: "חשבשבת", encryption: true, tokenRotation: true, auditLogs: true, errorHandling: true, rateLimits: false, score: 80 },
   { integration: "Salesforce", encryption: true, tokenRotation: true, auditLogs: true, errorHandling: true, rateLimits: true, score: 100 },
@@ -71,6 +73,17 @@ const sevColor = (s: string) => s === "critical" ? "bg-red-500/15 text-red-400 b
 const checkIcon = (v: boolean) => v ? <CheckCircle2 className="h-4 w-4 text-emerald-400" /> : <XCircle className="h-4 w-4 text-red-400" />;
 
 export default function IntegrationAuditPage() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["integration_audit"],
+    queryFn: () => authFetch("/api/integrations/integration-audit").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const auditLog = apiData?.auditLog ?? FALLBACK_AUDIT_LOG;
+  const traceChain = apiData?.traceChain ?? FALLBACK_TRACE_CHAIN;
+  const anomalies = apiData?.anomalies ?? FALLBACK_ANOMALIES;
+  const complianceData = apiData?.complianceData ?? FALLBACK_COMPLIANCE_DATA;
   const [tab, setTab] = useState("audit");
 
   return (

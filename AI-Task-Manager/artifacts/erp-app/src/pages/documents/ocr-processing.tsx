@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Scan, Brain, FileSearch, CheckCircle2, AlertTriangle, Clock, Mail, Upload, Smartphone, Eye, BarChart3, Sparkles, ShieldCheck, Layers, type LucideIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +18,7 @@ const kpis: { label: string; value: string | number; icon: LucideIcon; color: st
 ];
 
 /* ── Scan Queue ── */
-const scanQueue = [
+const FALLBACK_SCAN_QUEUE = [
   { id: "SCN-1041", file: "invoice_elco_032026.pdf", source: "סורק", lang: "עברית", type: "חשבונית", confidence: 98.2, status: "הושלם", fields: 14 },
   { id: "SCN-1042", file: "delivery_note_8812.pdf", source: "אימייל", lang: "עברית", type: "תעודת משלוח", confidence: 95.7, status: "הושלם", fields: 11 },
   { id: "SCN-1043", file: "PO_mashbir_2026.pdf", source: "העלאה ידנית", lang: "אנגלית", type: "הזמנה", confidence: 91.3, status: "הושלם", fields: 9 },
@@ -28,7 +30,7 @@ const scanQueue = [
 ];
 
 /* ── Extracted Fields (sample invoice) ── */
-const extractedFields = [
+const FALLBACK_EXTRACTED_FIELDS = [
   { field: "שם ספק", value: "אלקו בע\"מ", confidence: 99.1 },
   { field: "מספר חשבונית", value: "INV-2026-03-4417", confidence: 99.8 },
   { field: "תאריך חשבונית", value: "15/03/2026", confidence: 98.5 },
@@ -46,7 +48,7 @@ const extractedFields = [
 ];
 
 /* ── Auto-Classification Rules ── */
-const classificationRules = [
+const FALLBACK_CLASSIFICATION_RULES = [
   { id: "CLS-01", name: "זיהוי חשבונית לפי מילות מפתח", method: "Keyword Matching", keywords: "חשבונית מס, סה\"כ לתשלום, מע\"מ", accuracy: 94.2, docs: 847, active: true },
   { id: "CLS-02", name: "זיהוי תעודת משלוח — Layout", method: "Layout Detection", keywords: "מבנה טבלאי, כותרת תעודה, חתימת מקבל", accuracy: 91.8, docs: 312, active: true },
   { id: "CLS-03", name: "זיהוי ספק לפי לוגו + כותרת", method: "Supplier Recognition", keywords: "OCR Header, Logo ML Model, ח.פ.", accuracy: 97.5, docs: 1203, active: true },
@@ -119,6 +121,16 @@ function StatsPanel() {
 
 /* ── Main Component ── */
 export default function OCRProcessingPage() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["ocr_processing"],
+    queryFn: () => authFetch("/api/documents/ocr-processing").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const scanQueue = apiData?.scanQueue ?? FALLBACK_SCAN_QUEUE;
+  const extractedFields = apiData?.extractedFields ?? FALLBACK_EXTRACTED_FIELDS;
+  const classificationRules = apiData?.classificationRules ?? FALLBACK_CLASSIFICATION_RULES;
   const [tab, setTab] = useState("queue");
 
   return (

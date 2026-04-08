@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useLocation } from 'wouter';
@@ -106,6 +108,12 @@ const categoryLabels: Record<string, string> = {
 };
 
 export default function DataFlowDashboard() {
+  const { data: dataflowdashboardData } = useQuery({
+    queryKey: ["data-flow-dashboard"],
+    queryFn: () => authFetch("/api/executive/data_flow_dashboard"),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [overview, setOverview] = useState<Overview | null>(null);
   const [nodes, setNodes] = useState<DataFlowNode[]>([]);
   const [edges, setEdges] = useState<DataFlowEdge[]>([]);

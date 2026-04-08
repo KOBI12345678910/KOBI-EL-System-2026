@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,7 +21,7 @@ const mkCosts = (m: number, l: number, o: number, t: number, w: number) => [
   { name: "פסולת ואובדן", amount: w, icon: Trash2, color: "text-red-400" },
 ];
 
-const PRODUCTS = [
+const FALLBACK_PRODUCTS = [
   { id: 1, name: "שער כניסה דגם Premium", salePrice: 7500, costs: mkCosts(2450, 1200, 380, 450, 180) },
   { id: 2, name: "שער חניה אוטומטי", salePrice: 12000, costs: mkCosts(4200, 2100, 680, 750, 320) },
   { id: 3, name: 'גדר אלומיניום 1 מ"א', salePrice: 850, costs: mkCosts(280, 140, 45, 65, 20) },
@@ -27,7 +29,7 @@ const PRODUCTS = [
   { id: 5, name: "מעקה בטיחות נירוסטה", salePrice: 3200, costs: mkCosts(1050, 520, 170, 200, 80) },
 ];
 
-const TREND_DATA = [
+const FALLBACK_TREND_DATA = [
   { month: "אוק׳ 25", materials: 2300, labor: 1100, overhead: 350 },
   { month: "נוב׳ 25", materials: 2350, labor: 1150, overhead: 360 },
   { month: "דצמ׳ 25", materials: 2400, labor: 1180, overhead: 370 },
@@ -45,6 +47,14 @@ function calcProduct(p: (typeof PRODUCTS)[0]) {
 }
 
 export default function ProductCosting() {
+  const { data: productcostingData } = useQuery({
+    queryKey: ["product-costing"],
+    queryFn: () => authFetch("/api/procurement/product_costing"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const PRODUCTS = productcostingData ?? FALLBACK_PRODUCTS;
+
   const [selectedId, setSelectedId] = useState(1);
   const [activeTab, setActiveTab] = useState("breakdown");
   const [simMat, setSimMat] = useState(0);

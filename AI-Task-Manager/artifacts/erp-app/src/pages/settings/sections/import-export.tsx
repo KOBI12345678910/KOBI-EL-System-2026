@@ -1,22 +1,32 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Button, Input, Label, Card } from "@/components/ui-components";
 import { Upload, Download, FileSpreadsheet, FileText, FileJson, CheckCircle2, Clock, AlertCircle, Trash2 } from "lucide-react";
 import ActivityLog from "@/components/activity-log";
 import RelatedRecords from "@/components/related-records";
 
-const IMPORT_HISTORY = [
+const FALLBACK_IMPORT_HISTORY = [
   { id: 1, file: "לקוחות_2026.xlsx", type: "Excel", module: "לקוחות", records: 245, status: "הצליח", date: "17/03/2026 10:30", imported: 242, errors: 3 },
   { id: 2, file: "מוצרים.csv", type: "CSV", module: "מוצרים", records: 1200, status: "הצליח", date: "15/03/2026 14:15", imported: 1200, errors: 0 },
   { id: 3, file: "ספקים_Q1.xlsx", type: "Excel", module: "ספקים", records: 89, status: "שגיאה", date: "10/03/2026 09:00", imported: 0, errors: 89 },
 ];
 
-const EXPORT_HISTORY = [
+const FALLBACK_EXPORT_HISTORY = [
   { id: 1, file: "הזמנות_2026.xlsx", type: "Excel", module: "הזמנות", records: 1423, date: "17/03/2026 12:00" },
   { id: 2, file: "לקוחות_מלא.pdf", type: "PDF", module: "לקוחות", records: 312, date: "16/03/2026 16:30" },
   { id: 3, file: "נתונים.json", type: "JSON", module: "כל המערכת", records: 5820, date: "01/03/2026 08:00" },
 ];
 
 export default function ImportExportSection() {
+  const { data: importexportData } = useQuery({
+    queryKey: ["import-export"],
+    queryFn: () => authFetch("/api/settings/import_export"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const IMPORT_HISTORY = importexportData ?? FALLBACK_IMPORT_HISTORY;
+
   const [activeTab, setActiveTab] = useState("import");
   const [selectedModule, setSelectedModule] = useState("");
   const [fileFormat, setFileFormat] = useState("xlsx");

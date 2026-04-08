@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +13,7 @@ import {
   AlertTriangle, ArrowUpRight, ArrowDownRight, Eye
 } from "lucide-react";
 
-const bids = [
+const FALLBACK_BIDS = [
   { id: "BID-001", tender: "חלונות אלומיניום - מגדלי הים", ourPrice: 2850000, marketAvg: 3100000, competitor: 2720000, margin: 18.5, winProb: 72, status: "מוביל" },
   { id: "BID-002", tender: "מעטפת זכוכית - עזריאלי", ourPrice: 5400000, marketAvg: 5800000, competitor: 5150000, margin: 22.3, winProb: 45, status: "תחרותי" },
   { id: "BID-003", tender: "דלתות זכוכית מאובטחות", ourPrice: 1950000, marketAvg: 2200000, competitor: 1880000, margin: 15.2, winProb: 58, status: "נמוך" },
@@ -22,7 +24,7 @@ const bids = [
   { id: "BID-008", tender: "מעקות זכוכית - מגורים", ourPrice: 980000, marketAvg: 1100000, competitor: 920000, margin: 21.3, winProb: 55, status: "תחרותי" },
 ];
 
-const costBreakdown = [
+const FALLBACK_COST_BREAKDOWN = [
   { bid: "BID-001", materials: 48, labor: 28, overhead: 12, profit: 12 },
   { bid: "BID-002", materials: 42, labor: 30, overhead: 10, profit: 18 },
   { bid: "BID-003", materials: 52, labor: 25, overhead: 11, profit: 12 },
@@ -33,7 +35,7 @@ const costBreakdown = [
   { bid: "BID-008", materials: 44, labor: 29, overhead: 14, profit: 13 },
 ];
 
-const winLoss = [
+const FALLBACK_WIN_LOSS = [
   { quarter: "Q1 2025", submitted: 14, won: 6, lost: 5, pending: 3, winRate: 54.5 },
   { quarter: "Q2 2025", submitted: 18, won: 7, lost: 8, pending: 3, winRate: 46.7 },
   { quarter: "Q3 2025", submitted: 12, won: 5, lost: 4, pending: 3, winRate: 55.6 },
@@ -48,6 +50,43 @@ const statusColors: Record<string, string> = {
 };
 
 export default function BidAnalysis() {
+  const { data: bids = FALLBACK_BIDS } = useQuery({
+    queryKey: ["tenders-bids"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/bid-analysis/bids");
+      if (!res.ok) return FALLBACK_BIDS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_BIDS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: costBreakdown = FALLBACK_COST_BREAKDOWN } = useQuery({
+    queryKey: ["tenders-cost-breakdown"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/bid-analysis/cost-breakdown");
+      if (!res.ok) return FALLBACK_COST_BREAKDOWN;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_COST_BREAKDOWN;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: winLoss = FALLBACK_WIN_LOSS } = useQuery({
+    queryKey: ["tenders-win-loss"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/bid-analysis/win-loss");
+      if (!res.ok) return FALLBACK_WIN_LOSS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_WIN_LOSS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [activeTab, setActiveTab] = useState("comparison");
 
   const avgMargin = (bids.reduce((s, b) => s + b.margin, 0) / bids.length).toFixed(1);

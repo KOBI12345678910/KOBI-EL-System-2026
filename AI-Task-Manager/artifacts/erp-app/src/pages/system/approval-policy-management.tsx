@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -41,7 +43,7 @@ function FolderKanbanIcon(props: any) {
   return <Layers {...props} />;
 }
 
-const MOCK_POLICIES: ApprovalPolicy[] = [
+const FALLBACK_MOCK_POLICIES: ApprovalPolicy[] = [
   {
     entityType: "purchase_order",
     label: "הזמנת רכש",
@@ -108,6 +110,14 @@ const MOCK_POLICIES: ApprovalPolicy[] = [
 // ─── Component ─────────────────────────────────────────────────────────────────
 
 export default function ApprovalPolicyManagement() {
+  const { data: approvalpolicymanagementData } = useQuery({
+    queryKey: ["approval-policy-management"],
+    queryFn: () => authFetch("/api/system/approval_policy_management"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const MOCK_POLICIES = approvalpolicymanagementData ?? FALLBACK_MOCK_POLICIES;
+
   const [policies, setPolicies] = useState<ApprovalPolicy[]>(MOCK_POLICIES);
   const [activeTab, setActiveTab] = useState<EntityType>("purchase_order");
   const [showAddTier, setShowAddTier] = useState(false);

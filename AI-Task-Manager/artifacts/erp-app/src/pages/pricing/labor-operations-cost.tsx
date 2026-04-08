@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,7 +14,7 @@ const fmt = (v: number) => v.toLocaleString("he-IL");
 const fmtCurrency = (v: number) => `₪${fmt(Math.round(v))}`;
 
 /* ──────────── projects ──────────── */
-const PROJECTS = [
+const FALLBACK_PROJECTS = [
   { id: "PRJ-2601", name: "שער חשמלי דגם פרימיום — וילה כהן" },
   { id: "PRJ-2602", name: "גדר אלומיניום 120 מ׳ — מפעל צפון" },
   { id: "PRJ-2603", name: "פרגולה מתקפלת — מלון ים המלח" },
@@ -52,6 +54,14 @@ type Indirect   = ReturnType<typeof defaultIndirect>;
    COMPONENT
    ══════════════════════════════════════════════════════════ */
 export default function LaborOperationsCost() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["labor_operations_cost"],
+    queryFn: () => authFetch("/api/pricing/labor-operations-cost").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const PROJECTS = apiData?.PROJECTS ?? FALLBACK_PROJECTS;
   const [selectedProject, setSelectedProject] = useState(PROJECTS[0].id);
   const [production, setProduction] = useState<Production>(defaultProduction);
   const [field, setField]           = useState<Field>(defaultField);

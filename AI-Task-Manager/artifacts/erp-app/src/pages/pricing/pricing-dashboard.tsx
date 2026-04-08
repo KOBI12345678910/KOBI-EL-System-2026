@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -22,7 +24,7 @@ const fmt = (v: number) =>
 const fmtFull = (v: number) => v.toLocaleString("he-IL");
 
 /* ── KPI Data ───────────────────────────────────────────────── */
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "בקשות תמחור פעילות", value: 23, icon: FileText, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "הושלמו החודש", value: 47, icon: CheckCircle2, color: "text-green-400", bg: "bg-green-500/10" },
   { label: "מרווח ממוצע %", value: "32.4%", icon: Percent, color: "text-emerald-400", bg: "bg-emerald-500/10" },
@@ -50,7 +52,7 @@ const urgencyMap: Record<string, { label: string; cls: string }> = {
 };
 
 /* ── Active Pricing Requests ────────────────────────────────── */
-const pricingRequests = [
+const FALLBACK_PRICING_REQUESTS = [
   { id: "PR-1041", project: "מגדל הים התיכון - חזית זכוכית", customer: "אורבן נדל״ן", systemType: "חזית", estimatedCost: 485000, recommendedPrice: 642000, margin: 32.4, status: "approved", urgency: "high" },
   { id: "PR-1042", project: "שערי כניסה - פארק רעננה", customer: "עיריית רעננה", systemType: "שער", estimatedCost: 78500, recommendedPrice: 108200, margin: 37.8, status: "sent", urgency: "medium" },
   { id: "PR-1043", project: "מעקות בטיחות - קניון הנגב", customer: "ביג מרכזי מסחר", systemType: "מעקה", estimatedCost: 215000, recommendedPrice: 296700, margin: 38.0, status: "review", urgency: "high" },
@@ -64,7 +66,7 @@ const pricingRequests = [
 ];
 
 /* ── Top 5 Most Quoted Products ─────────────────────────────── */
-const topProducts = [
+const FALLBACK_TOP_PRODUCTS = [
   { name: "חלון אלומיניום תרמי 6000 סדרה", count: 34, revenue: 2450000 },
   { name: "חזית זכוכית מבודדת כפולה", count: 28, revenue: 3120000 },
   { name: "מעקה זכוכית עם מאחז נירוסטה", count: 22, revenue: 890000 },
@@ -73,7 +75,7 @@ const topProducts = [
 ];
 
 /* ── Material Cost Distribution (19 categories) ─────────────── */
-const materialCategories = [
+const FALLBACK_MATERIAL_CATEGORIES = [
   { name: "אלומיניום פרופיל ראשי", pct: 18.5, amount: 925000 },
   { name: "זכוכית מחוסמת", pct: 14.2, amount: 710000 },
   { name: "זכוכית מבודדת (LOW-E)", pct: 11.8, amount: 590000 },
@@ -96,7 +98,7 @@ const materialCategories = [
 ];
 
 /* ── Margin Trend (last 6 months) ───────────────────────────── */
-const marginTrend = [
+const FALLBACK_MARGIN_TREND = [
   { month: "נובמבר", margin: 29.5, projects: 6 },
   { month: "דצמבר", margin: 31.2, projects: 8 },
   { month: "ינואר", margin: 30.8, projects: 7 },
@@ -111,6 +113,18 @@ const systemTypeIcon: Record<string, string> = {
 
 /* ── Component ──────────────────────────────────────────────── */
 export default function PricingDashboard() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["pricing_dashboard"],
+    queryFn: () => authFetch("/api/pricing/pricing-dashboard").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const pricingRequests = apiData?.pricingRequests ?? FALLBACK_PRICING_REQUESTS;
+  const topProducts = apiData?.topProducts ?? FALLBACK_TOP_PRODUCTS;
+  const materialCategories = apiData?.materialCategories ?? FALLBACK_MATERIAL_CATEGORIES;
+  const marginTrend = apiData?.marginTrend ?? FALLBACK_MARGIN_TREND;
   const [activeTab, setActiveTab] = useState("requests");
   const [sortField, setSortField] = useState<string>("id");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");

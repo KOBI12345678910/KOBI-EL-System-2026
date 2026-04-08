@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -26,7 +28,7 @@ interface Material {
 }
 
 /* ──────────── projects ──────────── */
-const PROJECTS = [
+const FALLBACK_PROJECTS = [
   { id: "PRJ-2601", name: "שער חשמלי כפול — וילה אשכנזי, סביון" },
   { id: "PRJ-2602", name: "גדר בטחון 80 מ׳ — מפעל כימי חיפה" },
   { id: "PRJ-2603", name: "פרגולת אלומיניום — מלון רמדה נתניה" },
@@ -34,7 +36,7 @@ const PROJECTS = [
 ];
 
 /* ──────────── 10 BOM materials for gate project ──────────── */
-const MATERIALS: Material[] = [
+const FALLBACK_MATERIALS: Material[] = [
   { id: "RM-1001", name: "פרופיל ברזל 60x40x2 מ״מ",       rmCode: "FE-6040-2",  unit: "מטר",  qtyNeeded: 48,  stockAvailable: 120, stockCost: 38.50,  supplierPrice: 36.00, contractPrice: 34.20,  landedCost: 31.80,  lastUpdated: "2026-04-07" },
   { id: "RM-1002", name: "פרופיל ברזל 80x80x3 מ״מ",       rmCode: "FE-8080-3",  unit: "מטר",  qtyNeeded: 24,  stockAvailable: 15,  stockCost: 62.00,  supplierPrice: 58.50, contractPrice: 55.00,  landedCost: 52.40,  lastUpdated: "2026-04-06" },
   { id: "RM-1003", name: "צירים כבדים נירוסטה 200 מ״מ",    rmCode: "HW-HNG-200", unit: "יחידה", qtyNeeded: 6,   stockAvailable: 22,  stockCost: 145.00, supplierPrice: 138.00, contractPrice: null,   landedCost: 118.50, lastUpdated: "2026-04-05" },
@@ -82,6 +84,15 @@ function getBestPrice(m: Material): { price: number; source: PriceSource } {
    COMPONENT
    ══════════════════════════════════════════════════════════ */
 export default function MaterialPricePull() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["material_price_pull"],
+    queryFn: () => authFetch("/api/pricing/material-price-pull").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const PROJECTS = apiData?.PROJECTS ?? FALLBACK_PROJECTS;
+  const MATERIALS = apiData?.MATERIALS ?? FALLBACK_MATERIALS;
   const [selectedProject, setSelectedProject] = useState(PROJECTS[0].id);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<"name" | "saving" | "best">("name");

@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -35,7 +37,7 @@ const statusMap: Record<string, string> = {
   "הושלם": "bg-emerald-500/20 text-emerald-300",
 };
 
-const orders: CoatingOrder[] = [
+const FALLBACK_ORDERS: CoatingOrder[] = [
   { id: "CO-2401", order: "PO-8810", product: "פרופיל אלומיניום 6063", colorName: "לבן אלפיני", ral: "RAL 9010", finish: "אבקה", sqm: 24.5, thickness: 72, status: "בתנור" },
   { id: "CO-2402", order: "PO-8812", product: "מסגרת חלון 4 כנפות", colorName: "אנתרציט", ral: "RAL 7016", finish: "אבקה", sqm: 18.2, thickness: 68, status: "הושלם" },
   { id: "CO-2403", order: "PO-8815", product: "דלת כניסה פלדה", colorName: "שחור מט", ral: "RAL 9005", finish: "צביעה רטובה", sqm: 6.8, thickness: 45, status: "בהכנה" },
@@ -48,7 +50,7 @@ const orders: CoatingOrder[] = [
   { id: "CO-2410", order: "PO-8833", product: "מערכת חלונות ויטרינה", colorName: "כחול כהה", ral: "RAL 5003", finish: "אנודייז", sqm: 22.8, thickness: 25, status: "ממתין לציפוי" },
 ];
 
-const ralColors = [
+const FALLBACK_RALCOLORS = [
   { ral: "RAL 9010", name: "לבן אלפיני", hex: "#f1ece1", stock: 340, popular: true },
   { ral: "RAL 7016", name: "אנתרציט", hex: "#383e42", stock: 280, popular: true },
   { ral: "RAL 9005", name: "שחור מט", hex: "#0e0e10", stock: 220, popular: true },
@@ -63,7 +65,7 @@ const ralColors = [
   { ral: "RAL 1003", name: "צהוב אות", hex: "#f9a800", stock: 45, popular: false },
 ];
 
-const qualityTests = [
+const FALLBACK_QUALITYTESTS = [
   { id: "QT-501", order: "CO-2402", test: "עובי ציפוי", method: "מד עובי אלקטרומגנטי", target: "60-80 μm", result: "68 μm", pass: true },
   { id: "QT-502", order: "CO-2402", test: "הידבקות", method: "Cross-Cut ISO 2409", target: "דרגה 0-1", result: "דרגה 0", pass: true },
   { id: "QT-503", order: "CO-2405", test: "עובי ציפוי", method: "מד עובי אלקטרומגנטי", target: "60-80 μm", result: "75 μm", pass: true },
@@ -76,13 +78,13 @@ const qualityTests = [
   { id: "QT-510", order: "CO-2406", test: "עובי ציפוי", method: "מד עובי אלקטרומגנטי", target: "60-80 μm", result: "58 μm", pass: false },
 ];
 
-const ovenSlots = [
+const FALLBACK_OVENSLOTS = [
   { id: "OV-A", name: "תנור A - ראשי", capacity: "12 מ\"ר", tempRange: "180-220°C", currentTemp: 195, cycle: "אפייה", order: "CO-2401", remaining: "8 דק'", utilization: 92 },
   { id: "OV-B", name: "תנור B - משני", capacity: "8 מ\"ר", tempRange: "160-200°C", currentTemp: 185, cycle: "אפייה", order: "CO-2406", remaining: "14 דק'", utilization: 78 },
   { id: "OV-C", name: "תנור C - אנודייז", capacity: "6 מ\"ר", tempRange: "60-100°C", currentTemp: 22, cycle: "מנוחה", order: "---", remaining: "---", utilization: 0 },
 ];
 
-const ovenQueue = [
+const FALLBACK_OVENQUEUE = [
   { position: 1, order: "CO-2409", product: "שער חנייה מתרומם", color: "ירוק יער", sqm: 8.4, oven: "OV-A", eta: "14:30" },
   { position: 2, order: "CO-2404", product: "תריס חשמלי 2.4 מ'", color: "ברונזה", sqm: 12.0, oven: "OV-B", eta: "15:10" },
   { position: 3, order: "CO-2410", product: "מערכת חלונות ויטרינה", color: "כחול כהה", sqm: 22.8, oven: "OV-C", eta: "15:45" },
@@ -91,6 +93,39 @@ const ovenQueue = [
 
 /* ───────── component ───────── */
 export default function FabCoatingOrders() {
+  const { data: apiorders } = useQuery({
+    queryKey: ["/api/fabrication/fab-coating-orders/orders"],
+    queryFn: () => authFetch("/api/fabrication/fab-coating-orders/orders").then(r => r.json()).catch(() => null),
+  });
+  const orders = Array.isArray(apiorders) ? apiorders : (apiorders?.data ?? apiorders?.items ?? FALLBACK_ORDERS);
+
+
+  const { data: apiqualityTests } = useQuery({
+    queryKey: ["/api/fabrication/fab-coating-orders/qualitytests"],
+    queryFn: () => authFetch("/api/fabrication/fab-coating-orders/qualitytests").then(r => r.json()).catch(() => null),
+  });
+  const qualityTests = Array.isArray(apiqualityTests) ? apiqualityTests : (apiqualityTests?.data ?? apiqualityTests?.items ?? FALLBACK_QUALITYTESTS);
+
+
+  const { data: apiovenSlots } = useQuery({
+    queryKey: ["/api/fabrication/fab-coating-orders/ovenslots"],
+    queryFn: () => authFetch("/api/fabrication/fab-coating-orders/ovenslots").then(r => r.json()).catch(() => null),
+  });
+  const ovenSlots = Array.isArray(apiovenSlots) ? apiovenSlots : (apiovenSlots?.data ?? apiovenSlots?.items ?? FALLBACK_OVENSLOTS);
+
+
+  const { data: apiovenQueue } = useQuery({
+    queryKey: ["/api/fabrication/fab-coating-orders/ovenqueue"],
+    queryFn: () => authFetch("/api/fabrication/fab-coating-orders/ovenqueue").then(r => r.json()).catch(() => null),
+  });
+  const ovenQueue = Array.isArray(apiovenQueue) ? apiovenQueue : (apiovenQueue?.data ?? apiovenQueue?.items ?? FALLBACK_OVENQUEUE);
+
+  const { data: apiralColors } = useQuery({
+    queryKey: ["/api/fabrication/fab-coating-orders/ralcolors"],
+    queryFn: () => authFetch("/api/fabrication/fab-coating-orders/ralcolors").then(r => r.json()).catch(() => null),
+  });
+  const ralColors = Array.isArray(apiralColors) ? apiralColors : (apiralColors?.data ?? apiralColors?.items ?? FALLBACK_RALCOLORS);
+
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("orders");
 

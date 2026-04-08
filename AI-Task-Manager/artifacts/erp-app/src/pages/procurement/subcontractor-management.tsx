@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -25,7 +27,7 @@ const orderStatusMap: Record<string, { label: string; color: string }> = {
   pending:     { label: "ממתין",     color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" },
 };
 
-const subcontractors = [
+const FALLBACK_SUBCONTRACTORS = [
   { id: "SC-001", name: "גלוון הצפון", specialty: "גלוון חם וקר", contact: "אבי כהן", phone: "04-9551234", activeOrders: 4, totalValue: 285000, performance: 92, quality: 96.5, onTime: 88, status: "active" },
   { id: "SC-002", name: "צביעת אבקה — מפעלי דרום", specialty: "צביעה אלקטרוסטטית", contact: "מוחמד חלבי", phone: "08-6234567", activeOrders: 3, totalValue: 198000, performance: 87, quality: 94.2, onTime: 91, status: "active" },
   { id: "SC-003", name: "התקנות אלומיניום גליל", specialty: "התקנת מערכות אלומיניום", contact: "יוסי מזרחי", phone: "04-6789012", activeOrders: 2, totalValue: 342000, performance: 95, quality: 98.1, onTime: 96, status: "active" },
@@ -36,7 +38,7 @@ const subcontractors = [
   { id: "SC-008", name: "עיבוד שבבי מרכזי", specialty: "CNC מחרטה וכרסום", contact: "חיים ברגר", phone: "08-9112233", activeOrders: 2, totalValue: 178000, performance: 93, quality: 95.7, onTime: 95, status: "active" },
 ];
 
-const orders = [
+const FALLBACK_ORDERS = [
   { id: "SCO-001", subcontractor: "גלוון הצפון", scope: "גלוון 450 יח׳ פרופילים", value: 72000, startDate: "2026-03-01", dueDate: "2026-04-15", progress: 78, status: "in_progress" },
   { id: "SCO-002", subcontractor: "צביעת אבקה — מפעלי דרום", scope: "צביעה RAL 7016 — 300 יח׳", value: 54000, startDate: "2026-03-10", dueDate: "2026-04-10", progress: 95, status: "in_progress" },
   { id: "SCO-003", subcontractor: "התקנות אלומיניום גליל", scope: "התקנת חזיתות בניין A", value: 185000, startDate: "2026-02-15", dueDate: "2026-05-01", progress: 62, status: "in_progress" },
@@ -47,7 +49,7 @@ const orders = [
   { id: "SCO-008", subcontractor: "צביעת אבקה — מפעלי דרום", scope: "צביעה לבן RAL 9010 — 500 יח׳", value: 67000, startDate: "2026-02-20", dueDate: "2026-03-30", progress: 100, status: "completed" },
 ];
 
-const costData = [
+const FALLBACK_COST_DATA = [
   { subcontractor: "גלוון הצפון", budgeted: 290000, actual: 285000, variance: -5000, invoiced: 248000, paid: 220000 },
   { subcontractor: "צביעת אבקה — מפעלי דרום", budgeted: 185000, actual: 198000, variance: 13000, invoiced: 175000, paid: 160000 },
   { subcontractor: "התקנות אלומיניום גליל", budgeted: 350000, actual: 342000, variance: -8000, invoiced: 280000, paid: 240000 },
@@ -58,7 +60,7 @@ const costData = [
   { subcontractor: "עיבוד שבבי מרכזי", budgeted: 170000, actual: 178000, variance: 8000, invoiced: 140000, paid: 120000 },
 ];
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "קבלנים פעילים", value: "6", icon: Users, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "הזמנות פתוחות", value: "7", icon: FileText, color: "text-purple-400", bg: "bg-purple-500/10" },
   { label: "שווי כולל", value: fmt(1585000), icon: DollarSign, color: "text-emerald-400", bg: "bg-emerald-500/10" },
@@ -71,6 +73,14 @@ const perfColor = (v: number) => v >= 90 ? "text-emerald-400" : v >= 80 ? "text-
 const progressColor = (v: number) => v >= 90 ? "bg-emerald-500" : v >= 60 ? "bg-blue-500" : v >= 40 ? "bg-amber-500" : "bg-red-500";
 
 export default function SubcontractorManagement() {
+  const { data: subcontractormanagementData } = useQuery({
+    queryKey: ["subcontractor-management"],
+    queryFn: () => authFetch("/api/procurement/subcontractor_management"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const subcontractors = subcontractormanagementData ?? FALLBACK_SUBCONTRACTORS;
+
   const [tab, setTab] = useState("profiles");
   const [search, setSearch] = useState("");
 

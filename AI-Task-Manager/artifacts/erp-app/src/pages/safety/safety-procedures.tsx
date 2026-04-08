@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +13,7 @@ import {
   AlertTriangle, Clock, FileText, ClipboardCheck
 } from "lucide-react";
 
-const procedures = [
+const FALLBACK_PROCEDURES = [
   { id: "SP-001", name: "נוהל כיבוי אש וחירום", category: "אש", icon: "flame", dept: "כל המפעל", version: "4.2", lastReview: "2026-02-15", nextReview: "2026-08-15", compliance: 98, status: "פעיל", responsible: "רועי כהן", trained: 145, totalStaff: 148 },
   { id: "SP-002", name: "בטיחות חשמל ומתח גבוה", category: "חשמל", icon: "zap", dept: "תחזוקה / ייצור", version: "3.1", lastReview: "2026-01-10", nextReview: "2026-07-10", compliance: 95, status: "פעיל", responsible: "אלי שמש", trained: 62, totalStaff: 65 },
   { id: "SP-003", name: "טיפול בחומרים כימיים", category: "כימי", icon: "flask", dept: "ייצור / מעבדה", version: "2.8", lastReview: "2025-11-20", nextReview: "2026-05-20", compliance: 92, status: "לעדכון", responsible: "דנה לוי", trained: 38, totalStaff: 42 },
@@ -44,6 +46,14 @@ const categoryIcons: Record<string, JSX.Element> = {
 };
 
 export default function SafetyProcedures() {
+  const { data: safetyproceduresData } = useQuery({
+    queryKey: ["safety-procedures"],
+    queryFn: () => authFetch("/api/safety/safety_procedures"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const procedures = safetyproceduresData ?? FALLBACK_PROCEDURES;
+
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("all");

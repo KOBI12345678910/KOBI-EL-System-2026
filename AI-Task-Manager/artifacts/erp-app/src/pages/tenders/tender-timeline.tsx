@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,9 +13,9 @@ import {
   ArrowUpCircle, Shield, Target
 } from "lucide-react";
 
-const milestoneLabels = ["פרסום", "סיור קבלנים", "שאלות הבהרה", "הגשה", "הערכה", "הכרזה"];
+const FALLBACK_MILESTONE_LABELS = ["פרסום", "סיור קבלנים", "שאלות הבהרה", "הגשה", "הערכה", "הכרזה"];
 
-const tenders = [
+const FALLBACK_TENDERS = [
   { id: "TND-101", name: "חיפוי אלומיניום - בניין עירייה", client: "עיריית חיפה", milestones: ["2026-03-01","2026-03-10","2026-03-18","2026-04-15","2026-04-25","2026-05-10"], current: 3, progress: 58 },
   { id: "TND-102", name: "חלונות זכוכית - פרויקט מגדלים", client: "אזורים", milestones: ["2026-03-05","2026-03-12","2026-03-20","2026-04-10","2026-04-20","2026-05-01"], current: 4, progress: 72 },
   { id: "TND-103", name: "מעקות מתכת - קניון הגליל", client: "ביג מרכזי מסחר", milestones: ["2026-03-10","2026-03-15","2026-03-25","2026-04-12","2026-04-30","2026-05-15"], current: 3, progress: 50 },
@@ -24,7 +26,7 @@ const tenders = [
   { id: "TND-108", name: "מחיצות אלומיניום - בנק", client: "בנק הפועלים", milestones: ["2026-03-08","2026-03-16","2026-03-24","2026-04-14","2026-04-28","2026-05-12"], current: 3, progress: 48 },
 ];
 
-const tasks = [
+const FALLBACK_TASKS = [
   { id: 1, task: "איסוף מסמכי כשירות - TND-101", assignee: "רונית כהן", deadline: "2026-04-05", status: "done" },
   { id: 2, task: "סיור באתר - TND-101", assignee: "אבי לוי", deadline: "2026-03-10", status: "done" },
   { id: 3, task: "חישוב תמחיר עבודה - TND-101", assignee: "דני שרון", deadline: "2026-04-10", status: "progress" },
@@ -47,7 +49,7 @@ const tasks = [
   { id: 20, task: "חתימה והגשה פיזית - TND-108", assignee: "עוזי אל", deadline: "2026-04-14", status: "pending" },
 ];
 
-const criticalTenders = [
+const FALLBACK_CRITICAL_TENDERS = [
   { id: "TND-102", name: "חלונות זכוכית - פרויקט מגדלים", deadline: "2026-04-10", daysLeft: 2, risk: "high", reason: "סקירה משפטית באיחור - חסרה חתימת מנכ\"ל", mitigation: "העברת סקירה לעו\"ד חלופי, תיאום חתימה דחוף" },
   { id: "TND-104", name: "דלתות אלומיניום - בית חולים", deadline: "2026-04-08", daysLeft: 0, risk: "critical", reason: "הצעה כספית לא הושלמה, דד-ליין היום", mitigation: "גיוס צוות נוסף לסיום מיידי, הגשה ידנית עד 16:00" },
   { id: "TND-103", name: "מעקות מתכת - קניון הגליל", deadline: "2026-04-12", daysLeft: 4, risk: "medium", reason: "חישוב תמחיר בעיכוב, ממתין לאישור ספק", mitigation: "שימוש במחירון קודם + מרווח ביטחון 5%" },
@@ -73,7 +75,7 @@ const riskBadge = (r: string) => {
   }
 };
 
-const calendarEvents = [
+const FALLBACK_CALENDAR_EVENTS = [
   { day: 8, label: "דד-ליין TND-104", type: "deadline" },
   { day: 10, label: "הגשה TND-102", type: "deadline" },
   { day: 10, label: "סיור TND-105", type: "milestone" },
@@ -90,10 +92,83 @@ const calendarEvents = [
 
 const daysInMonth = 30;
 const monthName = "אפריל 2026";
-const dayNames = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
+const FALLBACK_DAY_NAMES = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
 const startDay = 3; // April 2026 starts on Wednesday (index 3)
 
 export default function TenderTimelinePage() {
+  const { data: milestoneLabels = FALLBACK_MILESTONE_LABELS } = useQuery({
+    queryKey: ["tenders-milestone-labels"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-timeline/milestone-labels");
+      if (!res.ok) return FALLBACK_MILESTONE_LABELS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_MILESTONE_LABELS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: tenders = FALLBACK_TENDERS } = useQuery({
+    queryKey: ["tenders-tenders"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-timeline/tenders");
+      if (!res.ok) return FALLBACK_TENDERS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TENDERS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: tasks = FALLBACK_TASKS } = useQuery({
+    queryKey: ["tenders-tasks"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-timeline/tasks");
+      if (!res.ok) return FALLBACK_TASKS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TASKS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: criticalTenders = FALLBACK_CRITICAL_TENDERS } = useQuery({
+    queryKey: ["tenders-critical-tenders"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-timeline/critical-tenders");
+      if (!res.ok) return FALLBACK_CRITICAL_TENDERS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_CRITICAL_TENDERS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: calendarEvents = FALLBACK_CALENDAR_EVENTS } = useQuery({
+    queryKey: ["tenders-calendar-events"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-timeline/calendar-events");
+      if (!res.ok) return FALLBACK_CALENDAR_EVENTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_CALENDAR_EVENTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: dayNames = FALLBACK_DAY_NAMES } = useQuery({
+    queryKey: ["tenders-day-names"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-timeline/day-names");
+      if (!res.ok) return FALLBACK_DAY_NAMES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DAY_NAMES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("timeline");
 

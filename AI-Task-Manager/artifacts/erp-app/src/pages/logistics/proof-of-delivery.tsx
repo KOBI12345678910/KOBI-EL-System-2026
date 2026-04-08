@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,7 +45,7 @@ export default function ProofOfDelivery() {
   async function loadPods() {
     setLoading(true);
     try {
-      const r = await fetch(`${API}/proof-of-delivery`);
+      const r = await authFetch(`${API}/proof-of-delivery`);
       if (r.ok) setPods(await r.json());
     } catch {}
     setLoading(false);
@@ -102,7 +104,7 @@ export default function ProofOfDelivery() {
     const signatureData = getSignatureData();
     const payload = { ...captureForm, signature_data: signatureData };
     try {
-      const r = await fetch(`${API}/proof-of-delivery`, {
+      const r = await authFetch(`${API}/proof-of-delivery`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -118,7 +120,7 @@ export default function ProofOfDelivery() {
 
   async function verifyPod(id: number) {
     try {
-      const r = await fetch(`${API}/proof-of-delivery/${id}/verify`, { method: "PUT" });
+      const r = await authFetch(`${API}/proof-of-delivery/${id}/verify`, { method: "PUT" });
       if (r.ok) loadPods();
     } catch {}
   }

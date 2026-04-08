@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { AlertTriangle, TrendingUp, BarChart3, CheckCircle2, AlertCircle, Clock } from "lucide-react";
 import { translateStatus } from "@/lib/status-labels";
 
@@ -25,6 +27,12 @@ interface RiskAlert {
 }
 
 export default function ContractRiskScoring() {
+  const { data: contractriskscoringData } = useQuery({
+    queryKey: ["contract-risk-scoring"],
+    queryFn: () => authFetch("/api/contracts/contract_risk_scoring"),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [activeTab, setActiveTab] = useState<"assessments" | "alerts" | "insights">("assessments");
   const [assessments, setAssessments] = useState<RiskAssessment[]>([]);
   const [alerts, setAlerts] = useState<RiskAlert[]>([]);

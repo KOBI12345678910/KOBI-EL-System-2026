@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -25,13 +27,13 @@ type Material = {
   recommended: string;
 };
 
-const projects = [
+const FALLBACK_PROJECTS = [
   { id: "PRJ-1052", name: "שער כניסה Premium כפול", client: "אחוזת הגולן" },
   { id: "PRJ-1058", name: "מעקה בטיחות נירוסטה", client: "קבוצת עזריאלי" },
   { id: "PRJ-1063", name: "מבנה פלדה תעשייתי", client: "שופרסל לוגיסטיקה" },
 ];
 
-const materials: Material[] = [
+const FALLBACK_MATERIALS: Material[] = [
   {
     id: "MAT-01", name: "פלדה מגולוונת 3 מ\"מ", unit: 'ק"ג', qty: 850,
     suppliers: [
@@ -85,7 +87,7 @@ const rankLabel: Record<string, { text: string; color: string; icon: typeof Star
 };
 
 const calcTotal = (strat: "cheapest" | "best_value" | "fastest") =>
-  materials.reduce((sum, m) => {
+  FALLBACK_MATERIALS.reduce((sum, m) => {
     const pick = strat === "cheapest"
       ? [...m.suppliers].sort((a, b) => a.price - b.price)[0]
       : strat === "fastest"
@@ -95,7 +97,7 @@ const calcTotal = (strat: "cheapest" | "best_value" | "fastest") =>
   }, 0);
 
 const calcLead = (strat: "cheapest" | "best_value" | "fastest") =>
-  materials.reduce((mx, m) => {
+  FALLBACK_MATERIALS.reduce((mx, m) => {
     const pick = strat === "cheapest"
       ? [...m.suppliers].sort((a, b) => a.price - b.price)[0]
       : strat === "fastest"
@@ -105,7 +107,7 @@ const calcLead = (strat: "cheapest" | "best_value" | "fastest") =>
   }, 0);
 
 const calcAvgQuality = (strat: "cheapest" | "best_value" | "fastest") => {
-  const vals = materials.map(m => {
+  const vals = FALLBACK_MATERIALS.map(m => {
     const pick = strat === "cheapest"
       ? [...m.suppliers].sort((a, b) => a.price - b.price)[0]
       : strat === "fastest"
@@ -123,6 +125,15 @@ const scenarios: { key: "cheapest" | "best_value" | "fastest"; label: string; ic
 ];
 
 export default function SupplierComparisonProject() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["supplier_comparison_project"],
+    queryFn: () => authFetch("/api/pricing/supplier-comparison-project").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const projects = apiData?.projects ?? FALLBACK_PROJECTS;
+  const materials = apiData?.materials ?? FALLBACK_MATERIALS;
   const [tab, setTab] = useState("comparison");
   const [selProject] = useState(projects[0]);
 

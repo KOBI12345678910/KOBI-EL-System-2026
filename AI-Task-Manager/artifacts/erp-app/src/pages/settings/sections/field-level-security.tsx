@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Button, Card } from "@/components/ui-components";
 import {
   Shield, Lock, Eye, EyeOff, Edit2, Trash2, Plus, Search, CheckCircle2,
@@ -37,7 +39,7 @@ const LEVEL_CONFIG: Record<PermissionLevel, { label: string; icon: LucideIcon; c
   custom:   { label: "מותאמת אישית",  icon: Sliders,      color: "text-blue-400",   bg: "bg-blue-500/10",   border: "border-blue-500/20" },
 };
 
-const INITIAL_PERMISSIONS: FieldPermission[] = [
+const FALLBACK_INITIAL_PERMISSIONS: FieldPermission[] = [
   { id: 1, role: "מנהל מערכת",  module: "חשבוניות", field: "פרטי בנק",         level: "allowed",  updatedAt: "17/03/2026 09:15" },
   { id: 2, role: "מכירות",      module: "לקוחות",   field: "סכום חוב",         level: "readonly", updatedAt: "17/03/2026 10:00" },
   { id: 3, role: "צפייה בלבד",  module: "הזמנות",   field: "הנחה",             level: "hidden",   updatedAt: "16/03/2026 14:30" },
@@ -65,6 +67,14 @@ function getLatestUpdatedAt(perms: FieldPermission[]): Date {
 }
 
 export default function FieldLevelSecuritySection() {
+  const { data: fieldlevelsecurityData } = useQuery({
+    queryKey: ["field-level-security"],
+    queryFn: () => authFetch("/api/settings/field_level_security"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const INITIAL_PERMISSIONS = fieldlevelsecurityData ?? FALLBACK_INITIAL_PERMISSIONS;
+
   const [permissions, setPermissions] = useState<FieldPermission[]>(INITIAL_PERMISSIONS);
   const [search, setSearch] = useState("");
   const [filterLevel, setFilterLevel] = useState<PermissionLevel | "all">("all");

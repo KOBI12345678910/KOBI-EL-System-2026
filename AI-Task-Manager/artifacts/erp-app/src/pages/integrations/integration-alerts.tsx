@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,7 +13,7 @@ import {
 } from "lucide-react";
 
 // ── Alert types ──
-const ALERT_TYPES = [
+const FALLBACK_ALERT_TYPES = [
   { id: "connector_down", label: "מחבר לא זמין", icon: WifiOff, color: "text-red-400" },
   { id: "sync_failed", label: "סנכרון נכשל", icon: XCircle, color: "text-red-400" },
   { id: "dlq_threshold", label: "חריגת DLQ", icon: AlertOctagon, color: "text-orange-400" },
@@ -32,7 +34,7 @@ const SEVERITY_CONFIG: Record<Severity, { label: string; bg: string; text: strin
   low: { label: "נמוך", bg: "bg-blue-500/20", text: "text-blue-400" },
 };
 
-const ALERTS: Alert[] = [
+const FALLBACK_ALERTS: Alert[] = [
   { id: 1, type: "connector_down", severity: "critical", description: "מחבר SAP B1 לא מגיב מזה 12 דקות", integration: "SAP Business One", timestamp: "08/04/2026 09:42", action: "הפעל חיבור מחדש" },
   { id: 2, type: "sync_failed", severity: "critical", description: "סנכרון הזמנות חשבשבת נכשל – timeout", integration: "חשבשבת", timestamp: "08/04/2026 09:38", action: "בדוק חיבור DB" },
   { id: 3, type: "dlq_threshold", severity: "high", description: "248 הודעות בתור DLQ של מלאי", integration: "WMS מחסן ראשי", timestamp: "08/04/2026 09:30", action: "שחזר הודעות" },
@@ -47,7 +49,7 @@ const ALERTS: Alert[] = [
   { id: 12, type: "connector_down", severity: "low", description: "מחבר בדיקה לא זמין (sandbox)", integration: "Sandbox ENV", timestamp: "08/04/2026 08:30", action: "התעלם" },
 ];
 
-const TRAFFIC_DATA = [
+const FALLBACK_TRAFFIC_DATA = [
   { name: "SAP B1", calls: 34200 },
   { name: "חשבשבת", calls: 28900 },
   { name: "CRM API", calls: 22400 },
@@ -60,7 +62,7 @@ const TRAFFIC_DATA = [
   { name: "Sandbox", calls: 1400 },
 ];
 
-const ERROR_TREND = [
+const FALLBACK_ERROR_TREND = [
   { day: "02/04", rate: 0.4 },
   { day: "03/04", rate: 0.3 },
   { day: "04/04", rate: 0.5 },
@@ -70,7 +72,7 @@ const ERROR_TREND = [
   { day: "08/04", rate: 0.3 },
 ];
 
-const LATENCY_DATA = [
+const FALLBACK_LATENCY_DATA = [
   { service: "SAP B1", p50: 120, p95: 380, p99: 820 },
   { service: "חשבשבת", p50: 95, p95: 310, p99: 680 },
   { service: "CRM API", p50: 45, p95: 150, p99: 420 },
@@ -83,6 +85,18 @@ const DAILY_VOLUME = { events: 48720, apiCalls: 155600, webhooks: 12340 };
 const maxCalls = Math.max(...TRAFFIC_DATA.map((d) => d.calls));
 
 export default function IntegrationAlertsPage() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["integration_alerts"],
+    queryFn: () => authFetch("/api/integrations/integration-alerts").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const ALERT_TYPES = apiData?.ALERT_TYPES ?? FALLBACK_ALERT_TYPES;
+  const ALERTS = apiData?.ALERTS ?? FALLBACK_ALERTS;
+  const TRAFFIC_DATA = apiData?.TRAFFIC_DATA ?? FALLBACK_TRAFFIC_DATA;
+  const ERROR_TREND = apiData?.ERROR_TREND ?? FALLBACK_ERROR_TREND;
+  const LATENCY_DATA = apiData?.LATENCY_DATA ?? FALLBACK_LATENCY_DATA;
   const [activeTab, setActiveTab] = useState("alerts");
   const [severityFilter, setSeverityFilter] = useState<Severity | "all">("all");
 

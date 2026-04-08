@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +13,7 @@ import {
   ArrowUpRight, Handshake, BarChart3
 } from "lucide-react";
 
-const suppliers = [
+const FALLBACK_SUPPLIERS = [
   { id: "SD-001", name: "אלומיניום הצפון בע\"מ", category: "חומרי גלם", program: "שיפור איכות פרופילים", startDate: "2025-10-01", endDate: "2026-09-30", progress: 72, kpiScore: 88, qualityBefore: 94.2, qualityTarget: 98, qualityCurrent: 96.8, deliveryBefore: 89, deliveryCurrent: 94, status: "פעיל", milestones: 5, completedMilestones: 3 },
   { id: "SD-002", name: "זכוכית ים תיכון", category: "חומרי גלם", program: "הסמכת ISO 9001", startDate: "2026-01-15", endDate: "2026-12-31", progress: 35, kpiScore: 76, qualityBefore: 91.5, qualityTarget: 97, qualityCurrent: 93.2, deliveryBefore: 85, deliveryCurrent: 90, status: "פעיל", milestones: 8, completedMilestones: 3 },
   { id: "SD-003", name: "פלדת אביב תעשיות", category: "חומרי גלם", program: "צמצום זמני אספקה", startDate: "2025-07-01", endDate: "2026-06-30", progress: 85, kpiScore: 92, qualityBefore: 96.1, qualityTarget: 97, qualityCurrent: 97.3, deliveryBefore: 78, deliveryCurrent: 93, status: "פעיל", milestones: 6, completedMilestones: 5 },
@@ -30,6 +32,14 @@ const statusColors: Record<string, string> = {
 };
 
 export default function SupplierDevelopment() {
+  const { data: supplierdevelopmentData } = useQuery({
+    queryKey: ["supplier-development"],
+    queryFn: () => authFetch("/api/supplier-mgmt/supplier_development"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const suppliers = supplierdevelopmentData ?? FALLBACK_SUPPLIERS;
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("overview");

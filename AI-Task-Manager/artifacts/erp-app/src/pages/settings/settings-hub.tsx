@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
@@ -64,7 +66,7 @@ const GROUP_LABELS: Record<string, { label: string; color: string }> = {
   finance: { label: "פיננסי", color: "text-emerald-400" },
 };
 
-const SETTINGS_CATEGORIES: SettingsCategory[] = [
+const FALLBACK_SETTINGS_CATEGORIES: SettingsCategory[] = [
   { id: "company-profile", label: "פרופיל חברה", icon: Building2, group: "general" },
   { id: "general-settings", label: "הגדרות כלליות", icon: Settings, group: "general" },
   { id: "security-settings", label: "אבטחה", icon: Shield, group: "security" },
@@ -99,6 +101,14 @@ const SETTINGS_CATEGORIES: SettingsCategory[] = [
 ];
 
 export default function SettingsHub() {
+  const { data: settingshubData } = useQuery({
+    queryKey: ["settings-hub"],
+    queryFn: () => authFetch("/api/settings/settings_hub"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const SETTINGS_CATEGORIES = settingshubData ?? FALLBACK_SETTINGS_CATEGORIES;
+
   const [searchTerm, setSearchTerm] = useState("");
   const [filterGroup, setFilterGroup] = useState("all");
   const validTabs = SETTINGS_CATEGORIES.map(c => c.id);

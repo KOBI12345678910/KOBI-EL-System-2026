@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,7 +14,7 @@ import {
 
 /* ── Alert type definitions ──────────────────────────────────── */
 
-const alertTypes = [
+const FALLBACK_ALERT_TYPES = [
   { key: "site-not-ready", label: "אתר לא מוכן להתקנה מחר", icon: MapPin, color: "text-red-400", bg: "bg-red-500/20" },
   { key: "missing-materials", label: "חומרים חסרים להתקנה", icon: Package, color: "text-red-400", bg: "bg-red-500/20" },
   { key: "crew-unassigned", label: "צוות לא שובץ", icon: Users, color: "text-orange-400", bg: "bg-orange-500/20" },
@@ -27,7 +29,7 @@ const alertTypes = [
 
 /* ── Mock alert data ─────────────────────────────────────────── */
 
-const alerts = [
+const FALLBACK_ALERTS = [
   { id: 1, type: "site-not-ready", title: "אתר לא מוכן — מלון רויאל אילת", desc: "עבודות שלד טרם הושלמו וגישה לקומות 4-6 חסומה. לא ניתן להתחיל התקנה מחר כמתוכנן.", ins: "INS-107", project: "מלון רויאל — אילת", time: "לפני 2 שעות", severity: "קריטי", action: "לתאם עם קבלן ראשי דחיפות או לדחות התקנה" },
   { id: 2, type: "missing-materials", title: "חומרי איטום חסרים — מגדל חיפה", desc: "אספקת חומרי איטום מספק מרכזי מתעכבת ב-3 ימים. מלאי באתר מספיק ל-40% מהעבודה.", ins: "INS-103", project: "מגדל המשרדים — חיפה", time: "לפני 3 שעות", severity: "קריטי", action: "לחפש ספק חלופי או להתחיל התקנה חלקית" },
   { id: 3, type: "qc-failure", title: "כשל QC — חלונות קומה 3 לא עוברים אטימות", desc: "בדיקת אטימות מים נכשלה ב-3 מתוך 8 חלונות בקומה 3. נדרש פירוק ותיקון איטום.", ins: "INS-001", project: "מגדלי הים — חיפה", time: "לפני 4 שעות", severity: "קריטי", action: "לשלוח צוות תיקון ולבצע בדיקה חוזרת תוך 48 שעות" },
@@ -45,7 +47,7 @@ const alerts = [
   { id: 15, type: "qc-failure", title: "שריטות בזכוכית — מגדלי אשדוד", desc: "נמצאו שריטות קלות בלוח זכוכית אחד מתוך 12 שהותקנו. הלקוח ביקש החלפה.", ins: "INS-109", project: "מגדלי הים התיכון — אשדוד", time: "לפני יומיים", severity: "מידע", action: "להזמין לוח זכוכית חלופי ולתאם החלפה" },
 ];
 
-const closedAlerts = [
+const FALLBACK_CLOSED_ALERTS = [
   { id: 101, type: "crew-unassigned", title: "צוות שובץ — מגדלי הים חיפה", closedAt: "06/04/2026", closedBy: "יוסי כהן", resolution: "צוות אלפא שובץ בהצלחה" },
   { id: 102, type: "missing-materials", title: "חומרים הגיעו — קניון הדרום", closedAt: "05/04/2026", closedBy: "עומר חדד", resolution: "אספקה התקבלה מספק חלופי" },
   { id: 103, type: "weather-risk", title: "מזג אוויר — סערה עברה", closedAt: "04/04/2026", closedBy: "מערכת", resolution: "התחזית עודכנה — ניתן להמשיך כרגיל" },
@@ -55,7 +57,7 @@ const closedAlerts = [
 
 /* ── Threshold settings ──────────────────────────────────────── */
 
-const thresholdSettings = [
+const FALLBACK_THRESHOLD_SETTINGS = [
   { type: "אתר לא מוכן להתקנה מחר", threshold: "24 שעות לפני ההתקנה", enabled: true, channel: "SMS + מערכת" },
   { type: "חומרים חסרים להתקנה", threshold: "48 שעות לפני ההתקנה", enabled: true, channel: "מערכת + דוא\"ל" },
   { type: "צוות לא שובץ", threshold: "72 שעות לפני ההתקנה", enabled: true, channel: "מערכת" },
@@ -88,20 +90,81 @@ const severityBorder: Record<string, string> = {
   "מידע": "border-r-4 border-r-blue-500",
 };
 
-const getAlertType = (key: string) => alertTypes.find(t => t.key === key);
+const getAlertType = (key: string) => FALLBACK_ALERT_TYPES.find(t => t.key === key);
 
 /* ── KPI summary ─────────────────────────────────────────────── */
 
-const kpiData = [
+const FALLBACK_KPI_DATA = [
   { label: "התראות פעילות", value: 15, icon: Bell, color: "text-primary", bg: "bg-primary/10" },
-  { label: "קריטיות", value: alerts.filter(a => a.severity === "קריטי").length, icon: AlertOctagon, color: "text-red-400", bg: "bg-red-500/10" },
-  { label: "אזהרות", value: alerts.filter(a => a.severity === "אזהרה").length, icon: AlertTriangle, color: "text-orange-400", bg: "bg-orange-500/10" },
-  { label: "מידע", value: alerts.filter(a => a.severity === "מידע").length, icon: Info, color: "text-blue-400", bg: "bg-blue-500/10" },
+  { label: "קריטיות", value: FALLBACK_ALERTS.filter(a => a.severity === "קריטי").length, icon: AlertOctagon, color: "text-red-400", bg: "bg-red-500/10" },
+  { label: "אזהרות", value: FALLBACK_ALERTS.filter(a => a.severity === "אזהרה").length, icon: AlertTriangle, color: "text-orange-400", bg: "bg-orange-500/10" },
+  { label: "מידע", value: FALLBACK_ALERTS.filter(a => a.severity === "מידע").length, icon: Info, color: "text-blue-400", bg: "bg-blue-500/10" },
 ];
 
 /* ── Component ───────────────────────────────────────────────── */
 
 export default function InstallationAlerts() {
+  const { data: alertTypes = FALLBACK_ALERT_TYPES } = useQuery({
+    queryKey: ["installation-alert-types"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-alerts/alert-types");
+      if (!res.ok) return FALLBACK_ALERT_TYPES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_ALERT_TYPES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: alerts = FALLBACK_ALERTS } = useQuery({
+    queryKey: ["installation-alerts"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-alerts/alerts");
+      if (!res.ok) return FALLBACK_ALERTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_ALERTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: closedAlerts = FALLBACK_CLOSED_ALERTS } = useQuery({
+    queryKey: ["installation-closed-alerts"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-alerts/closed-alerts");
+      if (!res.ok) return FALLBACK_CLOSED_ALERTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_CLOSED_ALERTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: thresholdSettings = FALLBACK_THRESHOLD_SETTINGS } = useQuery({
+    queryKey: ["installation-threshold-settings"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-alerts/threshold-settings");
+      if (!res.ok) return FALLBACK_THRESHOLD_SETTINGS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_THRESHOLD_SETTINGS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: kpiData = FALLBACK_KPI_DATA } = useQuery({
+    queryKey: ["installation-kpi-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-alerts/kpi-data");
+      if (!res.ok) return FALLBACK_KPI_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_KPI_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* Header */}

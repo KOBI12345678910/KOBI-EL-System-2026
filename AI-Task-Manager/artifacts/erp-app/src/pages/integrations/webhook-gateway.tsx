@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,7 +12,7 @@ import {
   Activity, Zap, Archive, ShieldCheck
 } from "lucide-react";
 
-const subscriptions = [
+const FALLBACK_SUBSCRIPTIONS = [
   { id: "WHK-001", event: "order.created", url: "https://erp.techno-kol.co.il/hooks/orders", method: "POST", secret: "whsec_Kx9•••••••mZ4", active: true, lastTriggered: "2026-04-08 09:42", deliveries: 87 },
   { id: "WHK-002", event: "invoice.paid", url: "https://accounting.techno-kol.co.il/incoming", method: "POST", secret: "whsec_Pp3•••••••rT1", active: true, lastTriggered: "2026-04-08 10:15", deliveries: 64 },
   { id: "WHK-003", event: "installation.completed", url: "https://field.techno-kol.co.il/api/done", method: "POST", secret: "whsec_Qm7•••••••bN8", active: true, lastTriggered: "2026-04-08 08:30", deliveries: 42 },
@@ -24,7 +26,7 @@ const subscriptions = [
   { id: "WHK-011", event: "employee.onboarded", url: "https://hr.techno-kol.co.il/hooks", method: "POST", secret: "whsec_Fy3•••••••oJ8", active: true, lastTriggered: "2026-04-07 11:45", deliveries: 12 },
   { id: "WHK-012", event: "quality.inspection_failed", url: "https://qa.techno-kol.co.il/notify", method: "POST", secret: "whsec_Ck7•••••••uB2", active: false, lastTriggered: "2026-04-06 15:10", deliveries: 21 },
 ];
-const deliveryLog = [
+const FALLBACK_DELIVERY_LOG = [
   { id: 1, ts: "2026-04-08 11:03:22", whId: "WHK-006", event: "payment.failed", url: "https://finance.techno-kol.co.il/hooks/pay", status: 200, durationMs: 142, payloadKB: 1.3, retries: 0, state: "delivered" },
   { id: 2, ts: "2026-04-08 10:48:11", whId: "WHK-007", event: "ticket.created", url: "https://support.techno-kol.co.il/intake", status: 201, durationMs: 98, payloadKB: 2.1, retries: 0, state: "delivered" },
   { id: 3, ts: "2026-04-08 10:15:45", whId: "WHK-002", event: "invoice.paid", url: "https://accounting.techno-kol.co.il/incoming", status: 200, durationMs: 203, payloadKB: 3.4, retries: 0, state: "delivered" },
@@ -43,7 +45,7 @@ const deliveryLog = [
   { id: 16, ts: "2026-04-08 05:55:08", whId: "WHK-001", event: "order.created", url: "https://erp.techno-kol.co.il/hooks/orders", status: 200, durationMs: 298, payloadKB: 4.5, retries: 0, state: "delivered" },
   { id: 17, ts: "2026-04-07 23:10:39", whId: "WHK-009", event: "customer.updated", url: "https://crm.techno-kol.co.il/sync", status: 404, durationMs: 89, payloadKB: 2.0, retries: 3, state: "dead" },
 ];
-const dlqItems = [
+const FALLBACK_DLQ_ITEMS = [
   { id: 1, whId: "WHK-005", event: "inventory.low_stock", error: "Connection refused: upstream server not responding (ECONNREFUSED 10.0.2.15:443)", attempts: 5, lastAttempt: "2026-04-08 09:35:02", payload: '{"sku":"AL-PROF-60","qty":3,"min":10}' },
   { id: 2, whId: "WHK-009", event: "customer.updated", error: "HTTP 404 - Endpoint /sync was removed in API v3 migration", attempts: 5, lastAttempt: "2026-04-08 05:10:39", payload: '{"customerId":1042,"field":"phone"}' },
   { id: 3, whId: "WHK-001", event: "order.created", error: "Timeout after 30000ms - no response from target", attempts: 4, lastAttempt: "2026-04-08 08:15:41", payload: '{"orderId":"ORD-2026-1847","total":12450}' },
@@ -66,6 +68,16 @@ const stateCfg: Record<string, { label: string; cls: string; icon: typeof CheckC
   dead:      { label: "DLQ", cls: "bg-zinc-500/20 text-zinc-400", icon: Archive },
 };
 export default function WebhookGatewayPage() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["webhook_gateway"],
+    queryFn: () => authFetch("/api/integrations/webhook-gateway").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const subscriptions = apiData?.subscriptions ?? FALLBACK_SUBSCRIPTIONS;
+  const deliveryLog = apiData?.deliveryLog ?? FALLBACK_DELIVERY_LOG;
+  const dlqItems = apiData?.dlqItems ?? FALLBACK_DLQ_ITEMS;
   const [tab, setTab] = useState("subscriptions");
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
 

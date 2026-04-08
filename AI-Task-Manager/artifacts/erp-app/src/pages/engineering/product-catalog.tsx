@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +14,7 @@ import {
 } from "lucide-react";
 
 // ── 15 Products ──
-const products = [
+const FALLBACK_PRODUCTS = [
   { sku: "ALW-1001", name: "חלון אלומיניום ציר", family: "חלונות", dims: "1200x1400", weight: 28, thermal: 1.4, status: "פעיל" },
   { sku: "ALW-1002", name: "חלון אלומיניום הזזה", family: "חלונות", dims: "1800x1200", weight: 35, thermal: 1.6, status: "פעיל" },
   { sku: "ALW-1003", name: "חלון אלומיניום קיפ-דרה", family: "חלונות", dims: "1000x1200", weight: 26, thermal: 1.3, status: "פעיל" },
@@ -31,7 +33,7 @@ const products = [
 ];
 
 // ── 6 Product Families ──
-const families = [
+const FALLBACK_FAMILIES = [
   { name: "חלונות", count: 5, revenue: 38, color: "bg-blue-500/20 text-blue-300", icon: "bg-blue-500" },
   { name: "דלתות", count: 4, revenue: 28, color: "bg-purple-500/20 text-purple-300", icon: "bg-purple-500" },
   { name: "קירות מסך", count: 1, revenue: 15, color: "bg-cyan-500/20 text-cyan-300", icon: "bg-cyan-500" },
@@ -41,7 +43,7 @@ const families = [
 ];
 
 // ── Technical Datasheets ──
-const datasheets = [
+const FALLBACK_DATASHEETS = [
   { sku: "ALW-1001", name: "חלון אלומיניום ציר", profile: "TB-60", glass: "דו-שכבתי 24 מ\"מ", sealant: "EPDM", finish: "אנודייז כסף", standard: "ת\"י 23", testPressure: "600 Pa", acousticRating: "Rw 35dB", updated: "2026-03-15" },
   { sku: "ALW-1002", name: "חלון אלומיניום הזזה", profile: "TB-70", glass: "דו-שכבתי 28 מ\"מ", sealant: "EPDM", finish: "צביעה RAL 7016", standard: "ת\"י 23", testPressure: "450 Pa", acousticRating: "Rw 32dB", updated: "2026-03-10" },
   { sku: "GLD-2001", name: "דלת זכוכית", profile: "TB-80", glass: "מחוסם 10 מ\"מ", sealant: "סיליקון", finish: "אנודייז שחור", standard: "ת\"י 23 / EN 14351", testPressure: "750 Pa", acousticRating: "Rw 38dB", updated: "2026-02-28" },
@@ -51,7 +53,7 @@ const datasheets = [
 ];
 
 // ── Lifecycle Stages ──
-const lifecycleStages = [
+const FALLBACK_LIFECYCLESTAGES = [
   { stage: "קונספט", color: "bg-purple-500", products: ["חלון משולב תריס חשמלי"], count: 1 },
   { stage: "עיצוב", color: "bg-blue-500", products: ["חלון אלומיניום קבוע (ALW-1004)", "שער פלדה (STG-9001)"], count: 2 },
   { stage: "בדיקות", color: "bg-amber-500", products: ["אשנב / סקיילייט (SKY-5001)"], count: 1 },
@@ -71,6 +73,33 @@ const th = "p-3 text-right text-muted-foreground font-medium text-xs";
 const td = "p-3 text-sm";
 
 export default function ProductCatalogPage() {
+  const { data: apiproducts } = useQuery({
+    queryKey: ["/api/engineering/product-catalog/products"],
+    queryFn: () => authFetch("/api/engineering/product-catalog/products").then(r => r.json()).catch(() => null),
+  });
+  const products = Array.isArray(apiproducts) ? apiproducts : (apiproducts?.data ?? apiproducts?.items ?? FALLBACK_PRODUCTS);
+
+
+  const { data: apifamilies } = useQuery({
+    queryKey: ["/api/engineering/product-catalog/families"],
+    queryFn: () => authFetch("/api/engineering/product-catalog/families").then(r => r.json()).catch(() => null),
+  });
+  const families = Array.isArray(apifamilies) ? apifamilies : (apifamilies?.data ?? apifamilies?.items ?? FALLBACK_FAMILIES);
+
+
+  const { data: apidatasheets } = useQuery({
+    queryKey: ["/api/engineering/product-catalog/datasheets"],
+    queryFn: () => authFetch("/api/engineering/product-catalog/datasheets").then(r => r.json()).catch(() => null),
+  });
+  const datasheets = Array.isArray(apidatasheets) ? apidatasheets : (apidatasheets?.data ?? apidatasheets?.items ?? FALLBACK_DATASHEETS);
+
+
+  const { data: apilifecycleStages } = useQuery({
+    queryKey: ["/api/engineering/product-catalog/lifecyclestages"],
+    queryFn: () => authFetch("/api/engineering/product-catalog/lifecyclestages").then(r => r.json()).catch(() => null),
+  });
+  const lifecycleStages = Array.isArray(apilifecycleStages) ? apilifecycleStages : (apilifecycleStages?.data ?? apilifecycleStages?.items ?? FALLBACK_LIFECYCLESTAGES);
+
   const [tab, setTab] = useState("catalog");
   const [search, setSearch] = useState("");
 

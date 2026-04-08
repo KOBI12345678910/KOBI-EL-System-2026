@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   Laptop, Smartphone, Car, CreditCard, HardHat, Wrench, ShieldCheck,
   Package, Users, Clock, DollarSign, RotateCcw, ArrowRightLeft, AlertTriangle
@@ -20,7 +22,7 @@ const statusMap: Record<string, { label: string; color: string }> = {
   damaged:  { label: "ניזוק", color: "bg-orange-100 text-orange-800" },
 };
 
-const assignments = [
+const FALLBACK_ASSIGNMENTS = [
   { id: 1,  employee: "יוסי כהן",     item: "מחשב נייד",     assetId: "AST-101", date: "2025-01-15", status: "active",   value: 4500 },
   { id: 2,  employee: "יוסי כהן",     item: "טלפון",         assetId: "AST-102", date: "2025-01-15", status: "active",   value: 3200 },
   { id: 3,  employee: "רונית לוי",    item: "מחשב נייד",     assetId: "AST-103", date: "2024-09-01", status: "active",   value: 5200 },
@@ -38,14 +40,14 @@ const assignments = [
   { id: 15, employee: "תומר חדד",     item: "ביגוד עבודה",   assetId: "AST-115", date: "2025-01-20", status: "active",   value: 550 },
 ];
 
-const pendingReturns = [
+const FALLBACK_PENDING_RETURNS = [
   { employee: "עמית ברק",    item: "כלי עבודה",   assetId: "AST-110", reason: "סיום העסקה",  dueDate: "2026-04-15" },
   { employee: "אלון מזרחי",  item: "כרטיס כניסה", assetId: "AST-113", reason: "העברה לסניף", dueDate: "2026-04-20" },
   { employee: "נועה פרידמן", item: "טלפון",       assetId: "AST-114", reason: "החלפה עקב נזק", dueDate: "2026-04-12" },
   { employee: "שירה גולן",   item: "מחשב נייד",   assetId: "AST-111", reason: "שדרוג ציוד",  dueDate: "2026-04-25" },
 ];
 
-const equipmentTypes = [
+const FALLBACK_EQUIPMENT_TYPES = [
   { type: "מחשב נייד",     icon: Laptop,      count: 22, totalValue: 42000 },
   { type: "טלפון",         icon: Smartphone,  count: 18, totalValue: 28800 },
   { type: "רכב",           icon: Car,         count: 5,  totalValue: 225000 },
@@ -56,7 +58,7 @@ const equipmentTypes = [
   { type: "ציוד משרדי",    icon: Package,     count: 2,  totalValue: 750 },
 ];
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "פריטים מוקצים", value: "85",       icon: Package,    color: "text-blue-600" },
   { label: "עובדים עם ציוד", value: "32",      icon: Users,      color: "text-green-600" },
   { label: "ממתינים להחזרה", value: "4",       icon: RotateCcw,  color: "text-orange-600" },
@@ -73,6 +75,14 @@ function groupByEmployee() {
 }
 
 export default function EmployeeEquipmentPage() {
+  const { data: employeeequipmentData } = useQuery({
+    queryKey: ["employee-equipment"],
+    queryFn: () => authFetch("/api/hr/employee_equipment"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const assignments = employeeequipmentData ?? FALLBACK_ASSIGNMENTS;
+
   const [activeTab, setActiveTab] = useState("assignments");
 
   return (

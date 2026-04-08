@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   FileText, AlertTriangle, CheckCircle, Clock,
   Search, User, Shield, ChevronLeft, FileWarning, Award
@@ -22,7 +24,7 @@ const REQUIRED_DOCS = [
   "הצהרת סודיות", "אישור משטרה", "תעודות השכלה", "הסמכות מקצועיות",
 ];
 
-const checklists = [
+const FALLBACK_CHECKLISTS = [
   { name: "יוסי כהן", dept: "ייצור", has: [1,1,1,1,1,1,1,1] },
   { name: "רונית לוי", dept: "הנדסה", has: [1,1,1,0,1,1,1,0] },
   { name: "אבי מזרחי", dept: "אחזקה", has: [1,1,0,1,1,0,1,1] },
@@ -32,7 +34,7 @@ const checklists = [
 
 interface Doc { id: number; name: string; dept: string; type: string; uploaded: string; expiry: string | null; status: string; }
 
-const docs: Doc[] = [
+const FALLBACK_DOCS: Doc[] = [
   { id: 1, name: "יוסי כהן", dept: "ייצור", type: "חוזה עבודה", uploaded: "2025-01-15", expiry: null, status: "valid" },
   { id: 2, name: "רונית לוי", dept: "הנדסה", type: "אישור בריאות", uploaded: "", expiry: "2026-02-28", status: "missing" },
   { id: 3, name: "אבי מזרחי", dept: "אחזקה", type: "טופס 101", uploaded: "", expiry: null, status: "missing" },
@@ -50,7 +52,7 @@ const docs: Doc[] = [
   { id: 15, name: "שירה ביטון", dept: "כספים", type: "אישור בריאות", uploaded: "2024-05-15", expiry: "2025-05-15", status: "expired" },
 ];
 
-const missingGroups = [
+const FALLBACK_MISSING_GROUPS = [
   { name: "רונית לוי", dept: "הנדסה", missing: ["אישור בריאות", "הסמכות מקצועיות"] },
   { name: "אבי מזרחי", dept: "אחזקה", missing: ["טופס 101", "אישור משטרה"] },
   { name: "מוחמד חאלד", dept: "לוגיסטיקה", missing: ["הצהרת סודיות"] },
@@ -71,6 +73,14 @@ function DocBadge({ ok, label }: { ok: boolean; label: string }) {
 }
 
 export default function EmployeeDocumentsPage() {
+  const { data: employeedocumentsData } = useQuery({
+    queryKey: ["employee-documents"],
+    queryFn: () => authFetch("/api/hr/employee_documents"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const checklists = employeedocumentsData ?? FALLBACK_CHECKLISTS;
+
   const [activeTab, setActiveTab] = useState("overview");
   const [search, setSearch] = useState("");
 

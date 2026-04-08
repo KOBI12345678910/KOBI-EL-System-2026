@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,7 +16,7 @@ import {
 const fmt = (n: number) => new Intl.NumberFormat("he-IL").format(n);
 
 /* ── KPI data ── */
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "מדיניות פעילה", value: "18", icon: Shield, color: "text-blue-600 bg-blue-100" },
   { label: "בקשות היום", value: fmt(284520), icon: Activity, color: "text-emerald-600 bg-emerald-100" },
   { label: "בקשות שנחסמו", value: fmt(1843), icon: Ban, color: "text-red-600 bg-red-100" },
@@ -24,7 +26,7 @@ const kpis = [
 ];
 
 /* ── Rate Policies ── */
-const policies = [
+const FALLBACK_POLICIES = [
   { id: 1, name: "API לקוחות — קריאה", target: "API", endpoint: "/api/v1/customers", limitType: "בקשות/דקה", limit: 120, current: 98, status: "warning" },
   { id: 2, name: "API מלאי — סנכרון", target: "API", endpoint: "/api/v1/inventory", limitType: "בקשות/דקה", limit: 200, current: 178, status: "warning" },
   { id: 3, name: "Webhook הזמנות", target: "Webhook", endpoint: "/webhooks/orders", limitType: "בקשות/שעה", limit: 5000, current: 2340, status: "active" },
@@ -40,7 +42,7 @@ const policies = [
 ];
 
 /* ── API Consumers ── */
-const consumers = [
+const FALLBACK_CONSUMERS = [
   { name: "מודול CRM", type: "פנימי", requests: 84200, quota: 100000, avgLatency: "68ms", errors: 12, trend: "up" },
   { name: "מודול ייצור", type: "פנימי", requests: 62500, quota: 80000, avgLatency: "95ms", errors: 8, trend: "up" },
   { name: "מודול מלאי", type: "פנימי", requests: 55000, quota: 60000, avgLatency: "45ms", errors: 3, trend: "stable" },
@@ -53,7 +55,7 @@ const consumers = [
 ];
 
 /* ── Blocked IPs ── */
-const blockedIps = [
+const FALLBACK_BLOCKED_IPS = [
   { ip: "185.220.101.34", reason: "Brute-force על /api/v1/auth/token", blockedAt: "08/04/2026 14:22", autoUnblock: "09/04/2026 14:22", attempts: 2480, country: "רוסיה" },
   { ip: "91.132.147.88", reason: "חריגה חוזרת ממגבלת בקשות", blockedAt: "07/04/2026 09:15", autoUnblock: "10/04/2026 09:15", attempts: 890, country: "אוקראינה" },
   { ip: "45.95.168.220", reason: "סריקת Endpoints לא מורשית", blockedAt: "08/04/2026 03:41", autoUnblock: "11/04/2026 03:41", attempts: 3200, country: "הולנד" },
@@ -99,6 +101,17 @@ const typeBadge = (t: string) => {
 /* ══════════════════════════════════════════════════════════ */
 
 export default function RateLimitsPage() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["rate_limits"],
+    queryFn: () => authFetch("/api/integrations/rate-limits").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const policies = apiData?.policies ?? FALLBACK_POLICIES;
+  const consumers = apiData?.consumers ?? FALLBACK_CONSUMERS;
+  const blockedIps = apiData?.blockedIps ?? FALLBACK_BLOCKED_IPS;
   const [activeTab, setActiveTab] = useState("policies");
   const [search, setSearch] = useState("");
 

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -13,7 +15,7 @@ import {
 const fmtCur = (v: number) => `₪${v.toLocaleString("he-IL")}`;
 
 /* ────── KPI Data ────── */
-const kpiData = [
+const FALLBACK_KPI_DATA = [
   { label: 'סה"כ עובדים', value: "48", sub: "+3 מתחילת שנה", icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
   { label: "שיעור תחלופה", value: "8.5%", sub: "ירידה מ-11.2%", icon: TrendingDown, color: "text-amber-600", bg: "bg-amber-50" },
   { label: 'עלות כ"א ל-עובד', value: "₪18,500", sub: "+2.3% YoY", icon: DollarSign, color: "text-emerald-600", bg: "bg-emerald-50" },
@@ -25,7 +27,7 @@ const kpiData = [
 ];
 
 /* ────── Headcount Trend (12 months) ────── */
-const headcountTrend = [
+const FALLBACK_HEADCOUNT_TREND = [
   { month: "מאי 25", total: 44, hires: 1, exits: 0, net: 1 },
   { month: "יוני 25", total: 44, hires: 0, exits: 0, net: 0 },
   { month: "יולי 25", total: 45, hires: 2, exits: 1, net: 1 },
@@ -41,7 +43,7 @@ const headcountTrend = [
 ];
 
 /* ────── Turnover Analysis ────── */
-const turnoverByDept = [
+const FALLBACK_TURNOVER_BY_DEPT = [
   { dept: "ייצור", rate: 6.5, exits: 2, headcount: 18 },
   { dept: "מכירות", rate: 14.3, exits: 1, headcount: 7 },
   { dept: "הנדסה", rate: 0, exits: 0, headcount: 6 },
@@ -52,14 +54,14 @@ const turnoverByDept = [
   { dept: "IT", rate: 0, exits: 0, headcount: 3 },
 ];
 
-const turnoverByTenure = [
+const FALLBACK_TURNOVER_BY_TENURE = [
   { tenure: "0-1 שנה", count: 2, pct: 40 },
   { tenure: "1-3 שנים", count: 2, pct: 40 },
   { tenure: "3-5 שנים", count: 1, pct: 20 },
   { tenure: "5+ שנים", count: 0, pct: 0 },
 ];
 
-const turnoverByReason = [
+const FALLBACK_TURNOVER_BY_REASON = [
   { reason: "הזדמנות חיצונית", count: 2, pct: 40 },
   { reason: "שחיקה / עומס", count: 1, pct: 20 },
   { reason: "חוסר קידום", count: 1, pct: 20 },
@@ -67,7 +69,7 @@ const turnoverByReason = [
 ];
 
 /* ────── Cost Analysis ────── */
-const costByDept = [
+const FALLBACK_COST_BY_DEPT = [
   { dept: "ייצור", headcount: 18, totalCost: 306000, avgSalary: 14200, overtimeCost: 28000, benefits: 45000 },
   { dept: "מכירות", headcount: 7, totalCost: 147000, avgSalary: 16800, overtimeCost: 8500, benefits: 18000 },
   { dept: "הנדסה", headcount: 6, totalCost: 156000, avgSalary: 22500, overtimeCost: 12000, benefits: 16500 },
@@ -79,14 +81,14 @@ const costByDept = [
 ];
 
 /* ────── Attendance Patterns ────── */
-const absenceByMonth = [
+const FALLBACK_ABSENCE_BY_MONTH = [
   { month: "ינו׳", days: 3.8 }, { month: "פבר׳", days: 3.5 }, { month: "מרץ", days: 2.9 },
   { month: "אפר׳", days: 3.2 }, { month: "מאי", days: 2.4 }, { month: "יוני", days: 2.1 },
   { month: "יולי", days: 2.8 }, { month: "אוג׳", days: 4.5 }, { month: "ספט׳", days: 3.6 },
   { month: "אוק׳", days: 3.1 }, { month: "נוב׳", days: 2.7 }, { month: "דצמ׳", days: 3.4 },
 ];
 
-const absenceByDept = [
+const FALLBACK_ABSENCE_BY_DEPT = [
   { dept: "ייצור", avgDays: 3.8, sickDays: 2.1, vacationDays: 1.2, otherDays: 0.5 },
   { dept: "מכירות", avgDays: 2.9, sickDays: 1.4, vacationDays: 1.1, otherDays: 0.4 },
   { dept: "הנדסה", avgDays: 2.2, sickDays: 0.8, vacationDays: 1.0, otherDays: 0.4 },
@@ -97,14 +99,14 @@ const absenceByDept = [
   { dept: "IT", avgDays: 2.0, sickDays: 0.7, vacationDays: 0.8, otherDays: 0.5 },
 ];
 
-const absenceByDay = [
+const FALLBACK_ABSENCE_BY_DAY = [
   { day: "ראשון", avgAbsent: 4.8 }, { day: "שני", avgAbsent: 3.2 },
   { day: "שלישי", avgAbsent: 2.5 }, { day: "רביעי", avgAbsent: 2.3 },
   { day: "חמישי", avgAbsent: 3.9 },
 ];
 
 /* ────── Training Completion ────── */
-const trainingByDept = [
+const FALLBACK_TRAINING_BY_DEPT = [
   { dept: "ייצור", completion: 78, enrolled: 18, completed: 14 },
   { dept: "מכירות", completion: 86, enrolled: 7, completed: 6 },
   { dept: "הנדסה", completion: 92, enrolled: 6, completed: 5 },
@@ -115,7 +117,7 @@ const trainingByDept = [
   { dept: "IT", completion: 100, enrolled: 3, completed: 3 },
 ];
 
-const trainingByTopic = [
+const FALLBACK_TRAINING_BY_TOPIC = [
   { topic: "בטיחות בעבודה", completion: 95, participants: 48, hours: 4 },
   { topic: "הפעלת מכונות CNC", completion: 72, participants: 12, hours: 16 },
   { topic: "ניהול איכות ISO", completion: 88, participants: 20, hours: 8 },
@@ -147,6 +149,14 @@ function MiniBarChart({ data, valueKey, labelKey, maxVal, color = "bg-blue-500" 
 }
 
 export default function HRAnalyticsPage() {
+  const { data: hranalyticsData } = useQuery({
+    queryKey: ["hr-analytics"],
+    queryFn: () => authFetch("/api/hr/hr_analytics"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpiData = hranalyticsData ?? FALLBACK_KPI_DATA;
+
   const [activeTab, setActiveTab] = useState("headcount");
 
   const totalLaborCost = costByDept.reduce((s, d) => s + d.totalCost, 0);

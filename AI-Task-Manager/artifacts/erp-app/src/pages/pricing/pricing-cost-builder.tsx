@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -21,7 +23,7 @@ interface CostRow {
 }
 
 /* ──────────── projects ──────────── */
-const PROJECTS = [
+const FALLBACK_PROJECTS = [
   { id: "PRJ-2401", name: "שער חשמלי דגם פרימיום - וילה כהן", value: 48500 },
   { id: "PRJ-2402", name: "גדר אלומיניום 120 מ׳ - מפעל צפון", value: 87200 },
   { id: "PRJ-2403", name: "פרגולה מתקפלת - מלון ים המלח", value: 62000 },
@@ -83,6 +85,14 @@ const FLOW_STEPS = [
    COMPONENT
    ══════════════════════════════════════════════════════════ */
 export default function PricingCostBuilder() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["pricing_cost_builder"],
+    queryFn: () => authFetch("/api/pricing/pricing-cost-builder").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const PROJECTS = apiData?.PROJECTS ?? FALLBACK_PROJECTS;
   const [selectedProject, setSelectedProject] = useState(PROJECTS[0].id);
   const [costs, setCosts] = useState<CostRow[]>(buildInitialCosts);
   const [wastePct, setWastePct] = useState(5);

@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Plus, Edit2, Trash2, X, Save, Search, Clock, CheckCircle2, Loader2, FileText, DollarSign, Hash, ArrowUpDown } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -10,6 +12,12 @@ interface DebitNote { id: number; note_number: string; customer_id: number; cust
 const statusMap: Record<string, { label: string; color: string }> = { draft: { label: "טיוטה", color: "bg-muted/20 text-gray-300" }, approved: { label: "מאושר", color: "bg-blue-500/20 text-blue-300" }, issued: { label: "הונפק", color: "bg-green-500/20 text-green-300" }, cancelled: { label: "מבוטל", color: "bg-red-500/20 text-red-300" } };
 
 export default function DebitNotesPage() {
+  const { data: debitnotesData } = useQuery({
+    queryKey: ["debit-notes"],
+    queryFn: () => authFetch("/api/finance/debit_notes"),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [items, setItems] = useState<DebitNote[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(""); const [filterStatus, setFilterStatus] = useState("all");

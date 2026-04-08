@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +13,7 @@ import {
   BarChart3, Zap, Globe, Briefcase, ArrowUp, ArrowDown, Minus
 } from "lucide-react";
 
-const competitors = [
+const FALLBACK_COMPETITORS = [
   { id: 1, name: "אלומיניום ישראל בע\"מ", spec: "פרופילי אלומיניום", size: "גדול", region: "מרכז", winRate: 38, priceIdx: 0.95, strengths: "מחירים תחרותיים, כמויות גדולות", weaknesses: "זמני אספקה ארוכים", recentWins: 4 },
   { id: 2, name: "מתכת פלוס תעשיות", spec: "ריתוך ומתכת", size: "בינוני", region: "צפון", winRate: 25, priceIdx: 1.02, strengths: "איכות ריתוך גבוהה", weaknesses: "מגוון מוצרים מצומצם", recentWins: 2 },
   { id: 3, name: "זכוכית הגליל", spec: "זכוכית מחוסמת", size: "בינוני", region: "צפון", winRate: 30, priceIdx: 0.98, strengths: "התמחות בזכוכית בטיחותית", weaknesses: "אין יכולת מתכת", recentWins: 3 },
@@ -24,7 +26,7 @@ const competitors = [
   { id: 10, name: "סטיל מאסטר", spec: "נירוסטה ופלדה", size: "קטן", region: "חיפה", winRate: 15, priceIdx: 1.12, strengths: "עבודות מיוחדות ומורכבות", weaknesses: "יקר, קיבולת נמוכה", recentWins: 1 },
 ];
 
-const h2hMetrics = [
+const FALLBACK_H2H_METRICS = [
   { metric: "מחיר ממוצע", us: 92, c1: 95, c2: 91, c3: 98, c4: 102, c5: 97, unit: "אינדקס" },
   { metric: "ציון איכות", us: 94, c1: 85, c2: 88, c3: 82, c4: 90, c5: 78, unit: "%" },
   { metric: "מהירות אספקה", us: 88, c1: 75, c2: 92, c3: 70, c4: 85, c5: 80, unit: "%" },
@@ -32,27 +34,27 @@ const h2hMetrics = [
   { metric: "שירות לקוחות", us: 93, c1: 80, c2: 76, c3: 85, c4: 82, c5: 70, unit: "%" },
   { metric: "גמישות ייצור", us: 91, c1: 70, c2: 85, c3: 65, c4: 88, c5: 72, unit: "%" },
 ];
-const h2hNames = ["טכנו-כל עוזי", "אלומיניום ישראל", "טיטאן מתכות", "זכוכית הגליל", "מגן אלום", "אקסל פרופילים"];
-const marketTrends = [
+const FALLBACK_H2H_NAMES = ["טכנו-כל עוזי", "אלומיניום ישראל", "טיטאן מתכות", "זכוכית הגליל", "מגן אלום", "אקסל פרופילים"];
+const FALLBACK_MARKET_TRENDS = [
   { title: "עלייה בביקוש לזכוכית אנרגטית", trend: "up", impact: "גבוה", desc: "דרישות תקן ירוק 5281 מגדילות ביקוש ב-35%" },
   { title: "מחסור בפרופילי אלומיניום", trend: "up", impact: "בינוני", desc: "עיכובים בייבוא מטורקיה, עלייה של 12% במחירים" },
   { title: "ירידה בפרויקטים ממשלתיים", trend: "down", impact: "גבוה", desc: "קיצוץ תקציבי של 15% בתשתיות לשנת 2026" },
   { title: "צמיחה בשוק הפרטי", trend: "up", impact: "בינוני", desc: "גידול של 22% בבנייה למגורים באזור המרכז" },
   { title: "תחרות מיבוא סיני", trend: "neutral", impact: "גבוה", desc: "מוצרי אלומיניום זולים מסין מאיימים על שוק מקומי" },
 ];
-const upcomingProjects = [
+const FALLBACK_UPCOMING_PROJECTS = [
   { name: "מגדל משרדים רמת גן", value: "45M", deadline: "2026-06", type: "מסחרי" },
   { name: "בית ספר אשדוד", value: "8M", deadline: "2026-05", type: "ממשלתי" },
   { name: "מרכז מסחרי מודיעין", value: "32M", deadline: "2026-07", type: "מסחרי" },
   { name: "שיקום חזיתות ת\"א", value: "15M", deadline: "2026-08", type: "שיפוץ" },
   { name: "פרויקט מחיר למשתכן כרמיאל", value: "55M", deadline: "2026-09", type: "מגורים" },
 ];
-const govBudgets = [
+const FALLBACK_GOV_BUDGETS = [
   { ministry: "משרד השיכון", budget: 380, change: 5 }, { ministry: "משרד הביטחון", budget: 220, change: -8 },
   { ministry: "משרד החינוך", budget: 150, change: 12 }, { ministry: "רשויות מקומיות", budget: 290, change: 3 },
   { ministry: "משרד הבריאות", budget: 95, change: 18 },
 ];
-const pricingPatterns = [
+const FALLBACK_PRICING_PATTERNS = [
   { type: "מבנה מגורים", ourAvg: 100, marketAvg: 105, low: 91, high: 118, volume: 42 },
   { type: "בניין משרדים", ourAvg: 98, marketAvg: 102, low: 88, high: 115, volume: 28 },
   { type: "מוסד ציבורי", ourAvg: 95, marketAvg: 98, low: 85, high: 108, volume: 18 },
@@ -62,6 +64,91 @@ const pricingPatterns = [
 ];
 
 export default function TenderCompetitorsPage() {
+  const { data: competitors = FALLBACK_COMPETITORS } = useQuery({
+    queryKey: ["tenders-competitors"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-competitors/competitors");
+      if (!res.ok) return FALLBACK_COMPETITORS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_COMPETITORS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: h2hMetrics = FALLBACK_H2H_METRICS } = useQuery({
+    queryKey: ["tenders-h2h-metrics"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-competitors/h2h-metrics");
+      if (!res.ok) return FALLBACK_H2H_METRICS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_H2H_METRICS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: h2hNames = FALLBACK_H2H_NAMES } = useQuery({
+    queryKey: ["tenders-h2h-names"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-competitors/h2h-names");
+      if (!res.ok) return FALLBACK_H2H_NAMES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_H2H_NAMES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: marketTrends = FALLBACK_MARKET_TRENDS } = useQuery({
+    queryKey: ["tenders-market-trends"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-competitors/market-trends");
+      if (!res.ok) return FALLBACK_MARKET_TRENDS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_MARKET_TRENDS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: upcomingProjects = FALLBACK_UPCOMING_PROJECTS } = useQuery({
+    queryKey: ["tenders-upcoming-projects"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-competitors/upcoming-projects");
+      if (!res.ok) return FALLBACK_UPCOMING_PROJECTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_UPCOMING_PROJECTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: govBudgets = FALLBACK_GOV_BUDGETS } = useQuery({
+    queryKey: ["tenders-gov-budgets"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-competitors/gov-budgets");
+      if (!res.ok) return FALLBACK_GOV_BUDGETS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_GOV_BUDGETS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: pricingPatterns = FALLBACK_PRICING_PATTERNS } = useQuery({
+    queryKey: ["tenders-pricing-patterns"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-competitors/pricing-patterns");
+      if (!res.ok) return FALLBACK_PRICING_PATTERNS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_PRICING_PATTERNS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("competitors");
 

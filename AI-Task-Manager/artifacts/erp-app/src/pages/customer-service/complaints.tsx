@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +13,7 @@ import {
   Wrench, Truck, CreditCard, Package, ListChecks, TrendingDown
 } from "lucide-react";
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "תלונות פתוחות", value: 14, icon: FileWarning, color: "text-red-500", bg: "bg-red-50", change: "+2", up: true },
   { label: "נפתרו החודש", value: 38, icon: CheckCircle2, color: "text-green-500", bg: "bg-green-50", change: "+8", up: true },
   { label: "ימי פתרון ממוצע", value: "3.2", icon: Clock, color: "text-amber-500", bg: "bg-amber-50", change: "-0.5", up: false },
@@ -20,7 +22,7 @@ const kpis = [
   { label: "שימור לקוחות", value: "96.5%", icon: Users, color: "text-teal-500", bg: "bg-teal-50", change: "+0.3%", up: true },
 ];
 
-const complaints = [
+const FALLBACK_COMPLAINTS = [
   { id: "CMP-301", customer: "אלומיניום הצפון בע\"מ", product: "פרופיל אלומיניום 6063", type: "פגם במוצר", severity: "קריטי", status: "בטיפול", assigned: "דנה כהן", opened: "05/04/2026", sla: 2 },
   { id: "CMP-302", customer: "זגוגית השרון", product: "זכוכית מחוסמת 10 מ\"מ", type: "איחור באספקה", severity: "גבוה", status: "פתוח", assigned: "יוסי לוי", opened: "06/04/2026", sla: 4 },
   { id: "CMP-303", customer: "בניין ירוק בע\"מ", product: "חלון הזזה כפול", type: "בעיית התקנה", severity: "בינוני", status: "ממתין ללקוח", assigned: "מיכל אברהם", opened: "04/04/2026", sla: 1 },
@@ -35,14 +37,14 @@ const complaints = [
   { id: "CMP-312", customer: "קליל תעשיות", product: "חלון ציר 70 סדרה", type: "בעיית התקנה", severity: "גבוה", status: "פתוח", assigned: "אמיר חסן", opened: "08/04/2026", sla: 7 },
 ];
 
-const rootCauseData = [
+const FALLBACK_ROOT_CAUSE_DATA = [
   { category: "פגם במוצר", count: 18, pct: 35, color: "bg-red-500", icon: Package },
   { category: "איחור באספקה", count: 14, pct: 27, color: "bg-amber-500", icon: Truck },
   { category: "בעיית התקנה", count: 11, pct: 22, color: "bg-blue-500", icon: Wrench },
   { category: "חיוב שגוי", count: 8, pct: 16, color: "bg-purple-500", icon: CreditCard },
 ];
 
-const resolutionTimeline = [
+const FALLBACK_RESOLUTION_TIMELINE = [
   { stage: "קליטת תלונה", target: "0-2 שעות", actual: "1.5 שעות", compliance: 96 },
   { stage: "הקצאה לטיפול", target: "2-4 שעות", actual: "3 שעות", compliance: 92 },
   { stage: "בירור ראשוני", target: "1 יום", actual: "0.8 ימים", compliance: 94 },
@@ -51,7 +53,7 @@ const resolutionTimeline = [
   { stage: "אישור לקוח וסגירה", target: "1 יום", actual: "1.2 ימים", compliance: 85 },
 ];
 
-const correctiveActions = [
+const FALLBACK_CORRECTIVE_ACTIONS = [
   { id: "CA-101", complaint: "CMP-301", action: "שדרוג בקרת איכות קו פרופילים", responsible: "מנהל ייצור", dueDate: "15/04/2026", status: "בביצוע", priority: "גבוה" },
   { id: "CA-102", complaint: "CMP-302", action: "תיקון תזמון משלוחים במערכת", responsible: "מנהל לוגיסטיקה", dueDate: "12/04/2026", status: "ממתין", priority: "בינוני" },
   { id: "CA-103", complaint: "CMP-305", action: "הכשרה מחדש צוות ריתוך מעקות", responsible: "מנהל ייצור", dueDate: "20/04/2026", status: "בביצוע", priority: "קריטי" },
@@ -82,6 +84,14 @@ const actionStatusColor: Record<string, string> = {
 };
 
 export default function Complaints() {
+  const { data: complaintsData } = useQuery({
+    queryKey: ["complaints"],
+    queryFn: () => authFetch("/api/customer-service/complaints"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = complaintsData ?? FALLBACK_KPIS;
+
   const [search, setSearch] = useState("");
 
   return (

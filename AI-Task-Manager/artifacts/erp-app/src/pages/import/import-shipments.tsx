@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +30,7 @@ interface Shipment {
   trackingRef: string;
 }
 
-const milestones: { key: ShipmentStatus; label: string }[] = [
+const FALLBACK_MILESTONES: { key: ShipmentStatus; label: string }[] = [
   { key: "ordered", label: "הוזמן" },
   { key: "shipped", label: "נשלח" },
   { key: "in_transit", label: "בדרך" },
@@ -38,7 +40,7 @@ const milestones: { key: ShipmentStatus; label: string }[] = [
   { key: "delivered", label: "נמסר" },
 ];
 
-const shipments: Shipment[] = [
+const FALLBACK_SHIPMENTS: Shipment[] = [
   {
     id: "SHP-001", type: "sea", supplier: "Istanbul Cam Sanayi", originCountry: "טורקיה",
     originPort: "Mersin", destinationPort: "חיפה", etd: "2026-03-18", eta: "2026-04-08",
@@ -112,8 +114,8 @@ const statusBadge = (status: ShipmentStatus) => {
 };
 
 const getMilestoneProgress = (status: ShipmentStatus): number => {
-  const idx = milestones.findIndex((m) => m.key === status);
-  return idx >= 0 ? Math.round(((idx + 1) / milestones.length) * 100) : 0;
+  const idx = FALLBACK_MILESTONES.findIndex((m) => m.key === status);
+  return idx >= 0 ? Math.round(((idx + 1) / FALLBACK_MILESTONES.length) * 100) : 0;
 };
 
 const isDelayed = (s: Shipment): boolean => {
@@ -128,6 +130,31 @@ const arrivedThisMonth = (s: Shipment): boolean => {
 };
 
 export default function ImportShipments() {
+  const { data: milestones = FALLBACK_MILESTONES } = useQuery({
+    queryKey: ["import-milestones"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-shipments/milestones");
+      if (!res.ok) return FALLBACK_MILESTONES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_MILESTONES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: shipments = FALLBACK_SHIPMENTS } = useQuery({
+    queryKey: ["import-shipments"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-shipments/shipments");
+      if (!res.ok) return FALLBACK_SHIPMENTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SHIPMENTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [activeTab, setActiveTab] = useState("active");
 
   const active = shipments.filter((s) => !["delivered", "cleared"].includes(s.status));

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -20,7 +22,7 @@ const skillLevelCfg: Record<SkillLevel, { label: string; cls: string }> = {
   3: { label: "מומחה", cls: "bg-emerald-500/20 text-emerald-400" },
 };
 
-const technicians = [
+const FALLBACK_TECHNICIANS = [
   { id: "T-01", name: "יוסי כהן", specialty: "אלומיניום", certs: ["ISO 9001", "עבודה בגובה"], completed: 142, avgResponse: "3.2 שעות", satisfaction: 4.8, performance: 94, status: "active" as TechStatus },
   { id: "T-02", name: "מוטי לוי", specialty: "זכוכית", certs: ["מתקין מוסמך", "בטיחות"], completed: 118, avgResponse: "4.1 שעות", satisfaction: 4.5, performance: 88, status: "active" as TechStatus },
   { id: "T-03", name: "אבי דוד", specialty: "ברזל", certs: ["ריתוך MIG/TIG", "ISO 9001"], completed: 165, avgResponse: "2.8 שעות", satisfaction: 4.9, performance: 96, status: "active" as TechStatus },
@@ -60,7 +62,7 @@ const availability: Record<string, DaySlot[]> = {
   "T-07": ["morning", "morning", "morning", "morning", "morning", "off"],
   "T-08": ["off", "off", "off", "off", "off", "off"],
 };
-const performanceKPIs = [
+const FALLBACK_PERFORMANCE_KPIS = [
   { id: "T-01", name: "יוסי כהן", closed: 142, avgDays: 1.4, firstFix: 89, rating: 4.8 },
   { id: "T-02", name: "מוטי לוי", closed: 118, avgDays: 1.9, firstFix: 82, rating: 4.5 },
   { id: "T-03", name: "אבי דוד", closed: 165, avgDays: 1.1, firstFix: 93, rating: 4.9 },
@@ -76,7 +78,7 @@ const trainingStatusCfg: Record<TrainingStatus, { label: string; cls: string }> 
   in_progress: { label: "בתהליך", cls: "bg-amber-500/20 text-amber-400" },
   scheduled: { label: "מתוכנן", cls: "bg-blue-500/20 text-blue-400" },
 };
-const trainingEntries = [
+const FALLBACK_TRAINING_ENTRIES = [
   { id: "TR-01", techId: "T-07", techName: "עומר ביטון", course: "ריתוך TIG למתקדמים", date: "2026-03-15", endDate: "2026-05-15", status: "in_progress" as TrainingStatus },
   { id: "TR-02", techId: "T-06", techName: "דניאל אברהם", course: "הסמכת עבודה בגובה — רענון", date: "2026-04-20", endDate: "2026-04-22", status: "scheduled" as TrainingStatus },
   { id: "TR-03", techId: "T-01", techName: "יוסי כהן", course: "מערכות שליטה חכמות IoT", date: "2026-02-01", endDate: "2026-02-28", status: "completed" as TrainingStatus },
@@ -90,6 +92,14 @@ const vacationTechs = technicians.filter(t => t.status === "vacation").length;
 const avgSatisfaction = (technicians.reduce((s, t) => s + t.satisfaction, 0) / technicians.length).toFixed(1);
 
 export default function TechnicianManagement() {
+  const { data: technicianmanagementData } = useQuery({
+    queryKey: ["technician-management"],
+    queryFn: () => authFetch("/api/service/technician_management"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const technicians = technicianmanagementData ?? FALLBACK_TECHNICIANS;
+
   const [activeTab, setActiveTab] = useState("roster");
   const hCls = "text-right text-[10px] font-semibold text-muted-foreground";
   return (

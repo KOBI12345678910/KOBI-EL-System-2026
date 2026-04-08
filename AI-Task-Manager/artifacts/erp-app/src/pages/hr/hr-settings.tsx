@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,7 +11,7 @@ import {
   CheckCircle, AlertTriangle, Shield, Briefcase, Baby, Swords, Users
 } from "lucide-react";
 
-const generalSettings = [
+const FALLBACK_GENERAL_SETTINGS = [
   { label: "שעות עבודה", value: "07:00 - 16:00", note: "כולל הפסקת צהריים 30 דקות" },
   { label: "ימי עבודה", value: "א׳ - ה׳ (ראשון עד חמישי)", note: "שבוע עבודה 5 ימים" },
   { label: "מדיניות שעות נוספות", value: "125% שעתיים ראשונות, 150% מעבר", note: "בהתאם לחוק שעות עבודה ומנוחה" },
@@ -20,7 +22,7 @@ const generalSettings = [
   { label: "גיל פרישה", value: "גברים 67 / נשים 65", note: "חוק גיל פרישה" },
 ];
 
-const salarySettings = [
+const FALLBACK_SALARY_SETTINGS = [
   { label: "מחזור שכר", value: "ה-10 לכל חודש", note: "תשלום שכר עד ה-9 לחודש העוקב" },
   { label: "שכר מינימום", value: "₪5,880", note: "עדכון אחרון: אפריל 2025" },
   { label: "מדרגות מס הכנסה", value: "10%-50%", note: "7 מדרגות מס לשנת 2026" },
@@ -34,7 +36,7 @@ const salarySettings = [
   { label: "קרן השתלמות (מעסיק)", value: "7.5%", note: "עד תקרה מוטבת" },
 ];
 
-const leaveTypes = [
+const FALLBACK_LEAVE_TYPES = [
   { type: "חופשה שנתית", days: 12, icon: CalendarDays, accrual: "צבירה חודשית — 1 יום/חודש", note: "עולה עם ותק עד 28 יום" },
   { type: "מחלה", days: 18, icon: AlertTriangle, accrual: "1.5 יום/חודש, צבירה עד 90 יום", note: "יום ראשון ללא תשלום, 50% ביום 2-3" },
   { type: "ימים אישיים", days: 3, icon: Users, accrual: "הקצאה שנתית קבועה", note: "לא ניתנים לצבירה" },
@@ -45,7 +47,7 @@ const leaveTypes = [
   { type: "חתונה", days: 3, icon: Star, accrual: "חד פעמי", note: "בתשלום מלא" },
 ];
 
-const performanceSettings = [
+const FALLBACK_PERFORMANCE_SETTINGS = [
   { label: "תדירות הערכה", value: "חצי שנתי", note: "יוני ודצמבר" },
   { label: "סולם דירוג", value: "1-5", note: "1=חלש, 2=דרוש שיפור, 3=עומד בציפיות, 4=מצטיין, 5=יוצא דופן" },
   { label: "קטגוריות חובה", value: "5 קטגוריות", note: "ביצועים, מקצועיות, עבודת צוות, יוזמה, נוכחות" },
@@ -56,7 +58,7 @@ const performanceSettings = [
   { label: "קידום דרגה", value: "דירוג 4+ בשני מחזורים רצופים", note: "בכפוף לאישור הנהלה" },
 ];
 
-const documentSettings = [
+const FALLBACK_DOCUMENT_SETTINGS = [
   { docType: "תעודת זהות / דרכון", required: "כל העובדים", expiry: "בדיקת תוקף שנתית", status: "חובה" },
   { docType: "טופס 101", required: "כל העובדים", expiry: "עדכון שנתי בינואר", status: "חובה" },
   { docType: "אישור ניהול חשבון", required: "כל העובדים", expiry: "בקבלה לעבודה", status: "חובה" },
@@ -68,7 +70,7 @@ const documentSettings = [
   { docType: "הסכם העסקה חתום", required: "כל העובדים", expiry: "חד פעמי", status: "חובה" },
 ];
 
-const integrations = [
+const FALLBACK_INTEGRATIONS = [
   { name: "שעון נוכחות", provider: "Synel MLL", status: "מחובר", lastSync: "08/04/2026 06:00", records: "2,340", health: 100 },
   { name: "מערכת שכר חילן", provider: "חילן טכנולוגיות", status: "מחובר", lastSync: "07/04/2026 22:00", records: "68", health: 100 },
   { name: "ביטוח לאומי", provider: "המוסד לביטוח לאומי", status: "מחובר", lastSync: "01/04/2026 08:00", records: "68", health: 98 },
@@ -89,6 +91,14 @@ const docBadge = (s: string) => (
 );
 
 export default function HRSettings() {
+  const { data: hrsettingsData } = useQuery({
+    queryKey: ["hr-settings"],
+    queryFn: () => authFetch("/api/hr/hr_settings"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const generalSettings = hrsettingsData ?? FALLBACK_GENERAL_SETTINGS;
+
   const [activeTab, setActiveTab] = useState("general");
 
   return (

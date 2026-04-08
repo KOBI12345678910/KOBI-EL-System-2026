@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -29,7 +31,7 @@ const companyKPIs = {
   avgDealSize: 1250000,
 };
 
-const divisionPerformance = [
+const FALLBACK_DIVISION_PERFORMANCE = [
   { name: "ייצור אלומיניום", revenue: 4200000, target: 4500000, margin: 42, headcount: 62, status: "on_track", trend: "up" },
   { name: "ייצור זכוכית", revenue: 3100000, target: 3200000, margin: 35, headcount: 45, status: "on_track", trend: "up" },
   { name: "ייצור ברזל/פלדה", revenue: 2800000, target: 3000000, margin: 38, headcount: 38, status: "at_risk", trend: "flat" },
@@ -37,7 +39,7 @@ const divisionPerformance = [
   { name: "שירות ותחזוקה", revenue: 800000, target: 1000000, margin: 55, headcount: 14, status: "at_risk", trend: "up" },
 ];
 
-const strategicInitiatives = [
+const FALLBACK_STRATEGIC_INITIATIVES = [
   { name: "הרחבת קו ייצור אלומיניום אוטומטי", owner: "אורי כהן", phase: "ביצוע", pct: 65, budget: 3200000, spent: 2100000, deadline: "2026-Q3", status: "on_track" },
   { name: "כניסה לשוק ירדן", owner: "דנה לוי", phase: "תכנון", pct: 20, budget: 800000, spent: 160000, deadline: "2026-Q4", status: "on_track" },
   { name: "מערכת ERP — שדרוג מלא", owner: "קובי", phase: "ביצוע", pct: 82, budget: 450000, spent: 370000, deadline: "2026-Q2", status: "on_track" },
@@ -45,7 +47,7 @@ const strategicInitiatives = [
   { name: "מעבר לייצור ירוק — סולארי", owner: "יוסי מ.", phase: "מכרז", pct: 35, budget: 2800000, spent: 280000, deadline: "2027-Q1", status: "at_risk" },
 ];
 
-const criticalAlerts = [
+const FALLBACK_CRITICAL_ALERTS = [
   { severity: "critical", module: "ייצור", message: "קו C — עומד מאז 06:30, ממתין לחלק חילוף", time: "07:15", action: "צוות תחזוקה בדרך" },
   { severity: "high", module: "כספים", message: "לקוח ׳אמות השקעות׳ — חוב 420K₪ מעל 90 יום", time: "אתמול", action: "שיחת גבייה תוזמנה" },
   { severity: "high", module: "פרויקטים", message: "PRJ-004 חריגת תקציב 12% — צפי להמשך עלייה", time: "היום", action: "ישיבת חירום ב-14:00" },
@@ -53,7 +55,7 @@ const criticalAlerts = [
   { severity: "medium", module: "HR", message: "3 עובדים בתקופת ניסיון מסתיימת השבוע", time: "השבוע", action: "טפסים להחלטה הופצו" },
 ];
 
-const monthlyTrend = [
+const FALLBACK_MONTHLY_TREND = [
   { month: "נוב׳", revenue: 10200000, profit: 1380000, orders: 42 },
   { month: "דצמ׳", revenue: 10800000, profit: 1520000, orders: 38 },
   { month: "ינו׳", revenue: 11100000, profit: 1490000, orders: 45 },
@@ -61,7 +63,7 @@ const monthlyTrend = [
   { month: "מרץ", revenue: 12800000, profit: 1920000, orders: 52 },
 ];
 
-const topDeals = [
+const FALLBACK_TOP_DEALS = [
   { name: "מגדל C — קבוצת אלון", value: 8500000, stage: "משא ומתן", prob: 75, pm: "אורי כהן" },
   { name: "פרויקט הרכבת הקלה — תחנות", value: 12000000, stage: "הצעה", prob: 40, pm: "דנה לוי" },
   { name: "קמפוס הייטק נתניה", value: 4200000, stage: "ניהול מו״מ סופי", prob: 85, pm: "מירי אביטל" },
@@ -104,6 +106,14 @@ const changePct = (curr: number, prev: number) => {
 };
 
 export default function ExecutiveCommandCenter() {
+  const { data: executivecommandcenterData } = useQuery({
+    queryKey: ["executive-command-center"],
+    queryFn: () => authFetch("/api/executive/executive_command_center"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const divisionPerformance = executivecommandcenterData ?? FALLBACK_DIVISION_PERFORMANCE;
+
   return (
     <div className="p-6 space-y-6" dir="rtl">
       <div className="flex items-center justify-between">

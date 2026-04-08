@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,14 +12,14 @@ import {
   CheckCircle, FileText, ArrowUpDown, ChevronRight, ChevronLeft, AlertTriangle, TrendingUp
 } from "lucide-react";
 
-const kpis = [
+const FALLBACK_KPIS = [
   { title: 'מע״מ תשומות', value: "₪386,200", icon: Receipt, color: "text-blue-400", bg: "bg-blue-500/10", sub: "חשבוניות רכש" },
   { title: 'מע״מ עסקאות', value: "₪612,800", icon: DollarSign, color: "text-green-400", bg: "bg-green-500/10", sub: "חשבוניות מכירה" },
   { title: 'מע״מ נטו לתשלום', value: "₪226,600", icon: Calculator, color: "text-orange-400", bg: "bg-orange-500/10", sub: "עסקאות - תשומות" },
   { title: "סטטוס הגשה", value: "הוגש", icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10", sub: "תקופה: מרץ 2026" },
 ];
 
-const monthlySummary = [
+const FALLBACK_MONTHLY_SUMMARY = [
   { month: "ינואר 2026", input: 298500, output: 478200, net: 179700, status: "הוגש" },
   { month: "פברואר 2026", input: 342100, output: 521400, net: 179300, status: "הוגש" },
   { month: "מרץ 2026", input: 386200, output: 612800, net: 226600, status: "הוגש" },
@@ -26,7 +28,7 @@ const monthlySummary = [
   { month: "יוני 2026", input: 0, output: 0, net: 0, status: "פתוח" },
 ];
 
-const inputInvoices = [
+const FALLBACK_INPUT_INVOICES = [
   { id: "INV-S-001", vendor: "אלקום חומרי גלם בע״מ", date: "2026-03-05", amount: 125000, vat: 21250, total: 146250, type: "חשבונית מס" },
   { id: "INV-S-002", vendor: "מתכות ישראל אילת", date: "2026-03-08", amount: 98000, vat: 16660, total: 114660, type: "חשבונית מס" },
   { id: "INV-S-003", vendor: "זכוכית פלוט ים המלח", date: "2026-03-12", amount: 87500, vat: 14875, total: 102375, type: "חשבונית מס" },
@@ -37,7 +39,7 @@ const inputInvoices = [
   { id: "INV-S-008", vendor: "חשמל ותאורה תעשייתית", date: "2026-03-25", amount: 52300, vat: 8891, total: 61191, type: "חשבונית מס" },
 ];
 
-const outputInvoices = [
+const FALLBACK_OUTPUT_INVOICES = [
   { id: "INV-C-001", customer: "אלומיניום הגליל בע״מ", date: "2026-03-03", amount: 245000, vat: 41650, total: 286650, type: "חשבונית מס" },
   { id: "INV-C-002", customer: "זגוגית הנגב", date: "2026-03-06", amount: 178000, vat: 30260, total: 208260, type: "חשבונית מס" },
   { id: "INV-C-003", customer: "מתכת השרון", date: "2026-03-10", amount: 156000, vat: 26520, total: 182520, type: "חשבונית מס" },
@@ -48,7 +50,7 @@ const outputInvoices = [
   { id: "INV-C-008", customer: "תריסי אור בע״מ", date: "2026-03-28", amount: 67200, vat: 11424, total: 78624, type: "חשבונית מס/קבלה" },
 ];
 
-const reconciliation = [
+const FALLBACK_RECONCILIATION = [
   { item: 'סה״כ מע״מ עסקאות לפי ספר חשבוניות', book: 612800, reported: 612800, diff: 0 },
   { item: 'סה״כ מע״מ תשומות לפי ספר חשבוניות', book: 386200, reported: 386200, diff: 0 },
   { item: 'מע״מ נטו לפי ספרים', book: 226600, reported: 226600, diff: 0 },
@@ -69,6 +71,14 @@ const statusColor = (s: string) => {
 };
 
 export default function ReportVatPage() {
+  const { data: reportvatData } = useQuery({
+    queryKey: ["report-vat"],
+    queryFn: () => authFetch("/api/reports/report_vat"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = reportvatData ?? FALLBACK_KPIS;
+
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const perPage = 8;

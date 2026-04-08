@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Button, Card } from "@/components/ui-components";
 import { ClipboardList, Search, Download, User, Activity } from "lucide-react";
 import ActivityLog from "@/components/activity-log";
 import RelatedRecords from "@/components/related-records";
 
-const AUDIT_LOGS = [
+const FALLBACK_AUDIT_LOGS = [
   { id: 1, user: "מנהל מערכת", action: "עדכון", module: "לקוחות", record: "חברת ABC", details: "עדכון שדה 'טלפון'", ip: "192.168.1.1", date: "2026-03-17", time: "10:42" },
   { id: 2, user: "דוד כהן", action: "יצירה", module: "הזמנות", record: "הזמנה #1042", details: "הזמנה חדשה — ₪5,400", ip: "192.168.1.15", date: "2026-03-17", time: "10:30" },
   { id: 3, user: "מיכל לוי", action: "מחיקה", module: "ספקים", record: "ספק X", details: "מחיקת ספק לא פעיל", ip: "192.168.1.22", date: "2026-03-17", time: "09:55" },
@@ -25,6 +27,14 @@ const ACTION_COLORS: Record<string, string> = {
 };
 
 export default function AuditLogSection() {
+  const { data: auditlogData } = useQuery({
+    queryKey: ["audit-log"],
+    queryFn: () => authFetch("/api/settings/audit_log"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const AUDIT_LOGS = auditlogData ?? FALLBACK_AUDIT_LOGS;
+
   const [search, setSearch] = useState("");
   const [filterUser, setFilterUser] = useState("");
   const [filterAction, setFilterAction] = useState("");

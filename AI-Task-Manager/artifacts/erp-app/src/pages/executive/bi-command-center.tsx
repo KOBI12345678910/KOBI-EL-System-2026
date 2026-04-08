@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,7 +14,7 @@ import {
 } from "lucide-react";
 
 /* ─── Executive KPIs ─── */
-const execKPIs = [
+const FALLBACK_EXEC_KPIS = [
   { label: "הכנסות", value: 12800000, prev: 11500000, target: 14000000, icon: DollarSign, color: "text-green-400", prefix: "₪" },
   { label: "רווח גולמי", value: 38.2, prev: 36.8, target: 40, icon: TrendingUp, color: "text-emerald-400", suffix: "%" },
   { label: "EBITDA", value: 2850000, prev: 2400000, target: 3200000, icon: BarChart3, color: "text-blue-400", prefix: "₪" },
@@ -22,7 +24,7 @@ const execKPIs = [
 ];
 
 /* ─── Module Health ─── */
-const modules = [
+const FALLBACK_MODULES = [
   { name: "רכש", icon: ShoppingCart, score: 87, trend: "up" as const, alerts: 2, color: "from-blue-500/20 to-blue-900/10", accent: "text-blue-400" },
   { name: "יבוא", icon: Package, score: 72, trend: "down" as const, alerts: 4, color: "from-indigo-500/20 to-indigo-900/10", accent: "text-indigo-400" },
   { name: "מלאי", icon: Layers, score: 68, trend: "down" as const, alerts: 5, color: "from-amber-500/20 to-amber-900/10", accent: "text-amber-400" },
@@ -34,7 +36,7 @@ const modules = [
 ];
 
 /* ─── Profitability ─── */
-const profitabilityData = [
+const FALLBACK_PROFITABILITY_DATA = [
   { project: "מגדל C — אלון", est: 1250000, actual: 1180000, margin: 28.5, status: "on_track" },
   { project: "קמפוס הייטק נתניה", est: 680000, actual: 740000, margin: 22.1, status: "over" },
   { project: "שדרוג מלון אילת", est: 420000, actual: 395000, margin: 31.2, status: "on_track" },
@@ -45,7 +47,7 @@ const profitabilityData = [
 ];
 
 /* ─── Exceptions ─── */
-const exceptions = [
+const FALLBACK_EXCEPTIONS = [
   { id: "EXC-001", module: "ייצור", desc: "קו C — השבתה 12 שעות, חלק חילוף מאיטליה", impact: 185000, severity: "critical", days: 2 },
   { id: "EXC-002", module: "רכש", desc: "ספק זכוכית Pilkington — עיכוב 3 שבועות", impact: 140000, severity: "critical", days: 5 },
   { id: "EXC-003", module: "כספים", desc: "לקוח אמות — חוב 420K מעל 90 יום", impact: 420000, severity: "high", days: 14 },
@@ -59,7 +61,7 @@ const exceptions = [
 ];
 
 /* ─── Alerts ─── */
-const alerts = [
+const FALLBACK_ALERTS = [
   { severity: "critical", module: "ייצור", msg: "קו C עומד — ממתין לחלק חילוף חירום", time: "07:15", owner: "יוסי מ." },
   { severity: "critical", module: "רכש", msg: "ספק Pilkington — התראת עיכוב קריטי", time: "06:50", owner: "דנה לוי" },
   { severity: "high", module: "כספים", msg: "חוב אמות השקעות — חריגה מעל 90 יום", time: "אתמול", owner: "מירי אביטל" },
@@ -74,7 +76,7 @@ const alerts = [
 ];
 
 /* ─── KPI Scorecard ─── */
-const kpiScorecard = [
+const FALLBACK_KPI_SCORECARD = [
   { category: "כספים", kpis: [
     { name: "הכנסות חודשיות", actual: "₪12.8M", target: "₪14M", pct: 91, status: "yellow" },
     { name: "רווח גולמי", actual: "38.2%", target: "40%", pct: 95, status: "green" },
@@ -120,6 +122,14 @@ const kpiStatusColor = (s: string) => s === "green" ? "bg-emerald-500" : s === "
 const TrendIcon = ({ t }: { t: string }) => t === "up" ? <ArrowUpRight className="w-4 h-4 text-emerald-400" /> : t === "down" ? <ArrowDownRight className="w-4 h-4 text-red-400" /> : <Activity className="w-4 h-4 text-slate-400" />;
 
 export default function BICommandCenter() {
+  const { data: bicommandcenterData } = useQuery({
+    queryKey: ["bi-command-center"],
+    queryFn: () => authFetch("/api/executive/bi_command_center"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const execKPIs = bicommandcenterData ?? FALLBACK_EXEC_KPIS;
+
   const [tab, setTab] = useState("overview");
 
   return (

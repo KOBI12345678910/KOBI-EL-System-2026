@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,7 +38,7 @@ const severityBadge = (s: Severity) => {
   return <Badge className={map[s]}>{labels[s]}</Badge>;
 };
 
-const alerts: { id: number; type: AlertType; severity: Severity; title: string; description: string; tender: string; date: string; resolved: boolean }[] = [
+const FALLBACK_ALERTS: { id: number; type: AlertType; severity: Severity; title: string; description: string; tender: string; date: string; resolved: boolean }[] = [
   { id: 1, type: "deadline", severity: "critical", title: "מועד הגשה ב-48 שעות", description: "מכרז אספקת אלומיניום למשרד הביטחון - יש להגיש עד 10/04", tender: "TND-042", date: "2026-04-08", resolved: false },
   { id: 2, type: "document", severity: "critical", title: "חסר אישור ISO מעודכן", description: "נדרש אישור ISO 9001 מעודכן לצורך הגשה למכרז עיריית חיפה", tender: "TND-038", date: "2026-04-08", resolved: false },
   { id: 3, type: "price_review", severity: "high", title: "סקירת הצעת מחיר", description: "הצעת מחיר לפרויקט חיפוי זכוכית דורשת אישור סופי מהנהלה", tender: "TND-045", date: "2026-04-07", resolved: false },
@@ -49,7 +51,7 @@ const alerts: { id: number; type: AlertType; severity: Severity; title: string; 
   { id: 10, type: "document", severity: "medium", title: "חסר אישור רשם קבלנים", description: "נדרש אישור סיווג קבלני מעודכן למכרז נתב\"ג", tender: "TND-040", date: "2026-04-05", resolved: false },
 ];
 
-const opportunities = [
+const FALLBACK_OPPORTUNITIES = [
   { id: 1, title: "עבודות אלומיניום - בניין משרדים", source: "ממשלתי", org: "משרד השיכון", budget: 3200000, deadline: "2026-04-25", match: 94, region: "מרכז" },
   { id: 2, title: "חיפוי זכוכית - מגדל מגורים", source: "פרטי", org: "אלקטרה נדל\"ן", budget: 5800000, deadline: "2026-05-01", match: 88, region: "תל אביב" },
   { id: 3, title: "מעקות ומסגרות מתכת - פארק תעשייה", source: "ממשלתי", org: "רשות מקרקעי ישראל", budget: 1400000, deadline: "2026-04-20", match: 82, region: "צפון" },
@@ -59,6 +61,31 @@ const opportunities = [
 ];
 
 export default function TenderAlertsPage() {
+  const { data: alerts = FALLBACK_ALERTS } = useQuery({
+    queryKey: ["tenders-alerts"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-alerts/alerts");
+      if (!res.ok) return FALLBACK_ALERTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_ALERTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: opportunities = FALLBACK_OPPORTUNITIES } = useQuery({
+    queryKey: ["tenders-opportunities"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-alerts/opportunities");
+      if (!res.ok) return FALLBACK_OPPORTUNITIES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_OPPORTUNITIES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("active");
 

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,7 +20,7 @@ const stageMap: Record<string, { label: string; color: string }> = {
   "לאחר-השקה": { label: "לאחר-השקה", color: "bg-green-500/20 text-green-400" },
 };
 
-const launches = [
+const FALLBACK_LAUNCHES = [
   { id: 1, name: "חלון אלומיניום תרמי 7000X", targetDate: "2026-06-15", stage: "טרום-השקה", readiness: 72, team: "הנדסה + שיווק" },
   { id: 2, name: "דלת זכוכית חכמה SmartEntry", targetDate: "2026-05-01", stage: "השקה", readiness: 95, team: "מוצר + מכירות" },
   { id: 3, name: "מערכת חיפוי אלומיניום ModularFace", targetDate: "2026-08-20", stage: "תכנון", readiness: 35, team: "הנדסה + ייצור" },
@@ -51,18 +53,18 @@ const checklistLabels: Record<string, string> = {
   installGuide: "מדריך התקנה",
 };
 
-const feedbackData = [
+const FALLBACK_FEEDBACK_DATA = [
   { productId: 5, product: "פרופיל UltraSlim 22", customerReaction: "מעולה - ביקוש גבוה מהצפוי", salesPerformance: "142% מהיעד", qualityIssues: "אין ליקויים משמעותיים", competitorResponse: "מתחרים הורידו מחירים ב-8%", rating: 4.8, reviewCount: 47 },
   { productId: 7, product: "חלון DualGlide", customerReaction: "חיובי - שיפור ניכר בתפקוד", salesPerformance: "118% מהיעד", qualityIssues: "2 דיווחים על רעש בהזזה", competitorResponse: "מתחרים השיקו מוצר דומה", rating: 4.5, reviewCount: 32 },
   { productId: 2, product: "דלת SmartEntry", customerReaction: "התלהבות מהטכנולוגיה החכמה", salesPerformance: "89% מהיעד (שבוע ראשון)", qualityIssues: "בעיית סנכרון אפליקציה - תוקנה", competitorResponse: "טרם הגיבו", rating: 4.3, reviewCount: 14 },
 ];
 
-const postLaunchData = [
+const FALLBACK_POST_LAUNCH_DATA = [
   { productId: 5, product: "פרופיל UltraSlim 22", salesVsForecast: 142, qualityScore: 97, satisfaction: 4.8, returnRate: 0.3, installTime: "ירידה של 22%", warranty: "0.5% תביעות" },
   { productId: 7, product: "חלון DualGlide", salesVsForecast: 118, qualityScore: 91, satisfaction: 4.5, returnRate: 1.2, installTime: "ירידה של 15%", warranty: "1.8% תביעות" },
 ];
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "מוצרים בהשקה", value: "8", icon: Rocket, color: "text-blue-400" },
   { label: "הושקו השנה", value: "3", icon: Package, color: "text-green-400" },
   { label: "זמן השקה ממוצע", value: "4.2", unit: "חודשים", icon: Calendar, color: "text-yellow-400" },
@@ -71,6 +73,14 @@ const kpis = [
 ];
 
 export default function ProductLaunchesPage() {
+  const { data: productlaunchesData } = useQuery({
+    queryKey: ["product-launches"],
+    queryFn: () => authFetch("/api/product-dev/product_launches"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const launches = productlaunchesData ?? FALLBACK_LAUNCHES;
+
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState("all");
 

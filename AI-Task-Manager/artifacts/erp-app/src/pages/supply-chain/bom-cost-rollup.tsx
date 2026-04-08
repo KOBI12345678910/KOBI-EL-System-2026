@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +30,7 @@ type Level = { level: number; desc: string; cost: number; type?: string };
 type Product = { id: string; name: string; totalCost: number; levels: Level[]; material: number; labor: number; overhead: number; weight: number };
 
 const L = (level: number, desc: string, cost: number, type?: string): Level => ({ level, desc, cost, type });
-const products: Product[] = [
+const FALLBACK_PRODUCTS: Product[] = [
   { id: "PRD-001", name: "חלון אלומיניום 120x150", totalCost: 1845, material: 1145, labor: 345, overhead: 200, weight: 32,
     levels: [L(0,"מוצר מוגמר - חלון 120x150",1845), L(1,"מסגרת אלומיניום מורכבת",720,"sub"), L(1,"יחידת זיגוג כפול",580,"sub"), L(1,"עבודת הרכבה וגימור",345,"labor"), L(1,"תקורה (אנרגיה, מתקן)",200,"overhead"), L(2,"פרופיל אלומיניום 6063-T5",385,"comp"), L(2,"אטמי EPDM",95,"comp"), L(2,"זכוכית מחוסמת 6mm",420,"comp"), L(2,"פרזול ציר נירוסטה",160,"comp"), L(3,"מטיל אלומיניום גולמי",210,"raw"), L(3,"חול סיליקה לזכוכית",85,"raw"), L(3,"גומי EPDM גולמי",42,"raw")] },
   { id: "PRD-002", name: "דלת כניסה מפלדה+זכוכית", totalCost: 3420, material: 2130, labor: 890, overhead: 400, weight: 68,
@@ -51,7 +53,7 @@ const products: Product[] = [
     levels: [L(0,"מוצר מוגמר - דלת פנורמית",4680), L(1,"מסגרת ומסילה אלומיניום",1520,"sub"), L(1,"זיגוג פנורמי",1580,"sub"), L(1,"עבודה",980,"labor"), L(1,"תקורה",600,"overhead"), L(2,"מערכת מסילה כפולה",680,"comp"), L(2,"זכוכית מחוסמת 8mm",1240,"comp"), L(3,"אלומיניום + זכוכית גולמית",520,"raw")] },
 ];
 
-const topComponents = [
+const FALLBACK_TOPCOMPONENTS = [
   { name: "זכוכית למינציה 12mm", usage: 48, unitCost: 1620, total: 77760 },
   { name: "לוח ACP 4mm", usage: 55, unitCost: 1120, total: 61600 },
   { name: "פרופיל אלומיניום 100x100", usage: 32, unitCost: 1680, total: 53760 },
@@ -64,7 +66,7 @@ const topComponents = [
   { name: "מנוע תעשייתי 1HP", usage: 25, unitCost: 950, total: 23750 },
 ];
 
-const costPerKg = [
+const FALLBACK_COSTPERKG = [
   { material: "אלומיניום 6063", priceKg: 42, sensitivity: "גבוהה" },
   { material: "אלומיניום 6082", priceKg: 48, sensitivity: "גבוהה" },
   { material: "פלדה ST37", priceKg: 18, sensitivity: "בינונית" },
@@ -75,7 +77,7 @@ const costPerKg = [
   { material: "ACP (אלו-פלסטיק)", priceKg: 38, sensitivity: "נמוכה" },
 ];
 
-const budgetItems = [
+const FALLBACK_BUDGETITEMS = [
   { id: "PRD-001", name: "חלון אלומיניום 120x150", budgeted: 1900, actual: 1845, variance: -55, pct: -2.9, status: "under" as const },
   { id: "PRD-002", name: "דלת כניסה מפלדה+זכוכית", budgeted: 3200, actual: 3420, variance: 220, pct: 6.9, status: "over" as const },
   { id: "PRD-003", name: "מעקה אלומיניום למרפסת", budgeted: 2100, actual: 2150, variance: 50, pct: 2.4, status: "on" as const },
@@ -86,7 +88,7 @@ const budgetItems = [
   { id: "PRD-008", name: "חיפוי קיר ACP", budgeted: 3100, actual: 3150, variance: 50, pct: 1.6, status: "on" as const },
 ];
 
-const simulations = [
+const FALLBACK_SIMULATIONS = [
   { title: "עליית מחיר אלומיניום ב-10%", desc: "סימולציה של עלייה במחיר מטיל אלומיניום גולמי",
     originalCost: 4287500, newCost: 4553200, delta: 265700, pctDelta: 6.2, affected: 8, icon: TrendingUp, color: "text-red-600", bg: "bg-red-50" },
   { title: "החלפת ספק זכוכית", desc: "מעבר מ-Foshan Glass לספק מקומי עם מחיר גבוה יותר ב-5%",
@@ -102,13 +104,54 @@ const statusBadge = (s: string) => s === "under" ? <Badge className="bg-green-10
   : s === "on" ? <Badge className="bg-amber-100 text-amber-700">בטווח</Badge>
   : <Badge className="bg-red-100 text-red-700">חריגה</Badge>;
 
-const costDist = [
+const FALLBACK_COSTDIST = [
   { label: "חומרי גלם", pct: 62, color: "bg-blue-500", items: "אלומיניום, זכוכית, פלדה, אטמים, פרזול" },
   { label: "עבודה", pct: 25, color: "bg-purple-500", items: "חיתוך, ריתוך, הרכבה, גימור" },
   { label: "תקורה", pct: 13, color: "bg-amber-500", items: "אנרגיה, מתקן, כלים" },
 ];
 
 export default function BomCostRollupPage() {
+  const { data: apiproducts } = useQuery({
+    queryKey: ["/api/supply-chain/bom-cost-rollup/products"],
+    queryFn: () => authFetch("/api/supply-chain/bom-cost-rollup/products").then(r => r.json()).catch(() => null),
+  });
+  const products = Array.isArray(apiproducts) ? apiproducts : (apiproducts?.data ?? apiproducts?.items ?? FALLBACK_PRODUCTS);
+
+
+  const { data: apitopComponents } = useQuery({
+    queryKey: ["/api/supply-chain/bom-cost-rollup/topcomponents"],
+    queryFn: () => authFetch("/api/supply-chain/bom-cost-rollup/topcomponents").then(r => r.json()).catch(() => null),
+  });
+  const topComponents = Array.isArray(apitopComponents) ? apitopComponents : (apitopComponents?.data ?? apitopComponents?.items ?? FALLBACK_TOPCOMPONENTS);
+
+
+  const { data: apicostPerKg } = useQuery({
+    queryKey: ["/api/supply-chain/bom-cost-rollup/costperkg"],
+    queryFn: () => authFetch("/api/supply-chain/bom-cost-rollup/costperkg").then(r => r.json()).catch(() => null),
+  });
+  const costPerKg = Array.isArray(apicostPerKg) ? apicostPerKg : (apicostPerKg?.data ?? apicostPerKg?.items ?? FALLBACK_COSTPERKG);
+
+
+  const { data: apibudgetItems } = useQuery({
+    queryKey: ["/api/supply-chain/bom-cost-rollup/budgetitems"],
+    queryFn: () => authFetch("/api/supply-chain/bom-cost-rollup/budgetitems").then(r => r.json()).catch(() => null),
+  });
+  const budgetItems = Array.isArray(apibudgetItems) ? apibudgetItems : (apibudgetItems?.data ?? apibudgetItems?.items ?? FALLBACK_BUDGETITEMS);
+
+
+  const { data: apisimulations } = useQuery({
+    queryKey: ["/api/supply-chain/bom-cost-rollup/simulations"],
+    queryFn: () => authFetch("/api/supply-chain/bom-cost-rollup/simulations").then(r => r.json()).catch(() => null),
+  });
+  const simulations = Array.isArray(apisimulations) ? apisimulations : (apisimulations?.data ?? apisimulations?.items ?? FALLBACK_SIMULATIONS);
+
+
+  const { data: apicostDist } = useQuery({
+    queryKey: ["/api/supply-chain/bom-cost-rollup/costdist"],
+    queryFn: () => authFetch("/api/supply-chain/bom-cost-rollup/costdist").then(r => r.json()).catch(() => null),
+  });
+  const costDist = Array.isArray(apicostDist) ? apicostDist : (apicostDist?.data ?? apicostDist?.items ?? FALLBACK_COSTDIST);
+
   const [activeTab, setActiveTab] = useState("rollup");
   const [searchTerm, setSearchTerm] = useState("");
   const [expanded, setExpanded] = useState<string | null>("PRD-001");

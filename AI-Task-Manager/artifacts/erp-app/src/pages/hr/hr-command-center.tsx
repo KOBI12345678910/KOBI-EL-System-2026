@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -28,7 +30,7 @@ const kpis = {
   costPerEmployee: 18200,
 };
 
-const departments = [
+const FALLBACK_DEPARTMENTS = [
   { name: "ייצור", headcount: 22, budget: 380000, actual: 365000, attendance: 96, turnover: 5.2, satisfaction: 72, openPositions: 1 },
   { name: "מכירות", headcount: 8, budget: 145000, actual: 152000, attendance: 92, turnover: 12.5, satisfaction: 82, openPositions: 1 },
   { name: "הנדסה", headcount: 12, budget: 210000, actual: 198000, attendance: 95, turnover: 4.1, satisfaction: 85, openPositions: 2 },
@@ -39,7 +41,7 @@ const departments = [
   { name: "שירות לקוחות", headcount: 5, budget: 65000, actual: 68000, attendance: 89, turnover: 18.0, satisfaction: 65, openPositions: 0 },
 ];
 
-const recentEvents = [
+const FALLBACK_RECENT_EVENTS = [
   { date: "2026-04-08", type: "absence", employee: "רונית לוי", detail: "יום מחלה", department: "מכירות" },
   { date: "2026-04-08", type: "late", employee: "יוסי אברהם", detail: "איחור 45 דקות", department: "מכירות" },
   { date: "2026-04-07", type: "leave_request", employee: "דני כהן", detail: "חופשה 14-18/04", department: "מכירות" },
@@ -49,13 +51,13 @@ const recentEvents = [
   { date: "2026-04-04", type: "termination_risk", employee: "אלון דוד", detail: "ביצועים ירודים - שיחת אזהרה 3", department: "מכירות" },
 ];
 
-const topPerformers = [
+const FALLBACK_TOP_PERFORMERS = [
   { name: "דני כהן", dept: "מכירות", score: 95, revenue: 1896000, attendance: 99, tenure: 5.2 },
   { name: "נועה שמיר", dept: "הנדסה", score: 92, revenue: 0, attendance: 98, tenure: 3.8 },
   { name: "אור ברק", dept: "ייצור", score: 88, revenue: 0, attendance: 100, tenure: 6.1 },
 ];
 
-const atRiskEmployees = [
+const FALLBACK_AT_RISK_EMPLOYEES = [
   { name: "אלון דוד", dept: "מכירות", risk: "termination", reason: "ROI שלילי, 0 סגירות, burn rate 62%", tenure: 1.2 },
   { name: "שרה גולד", dept: "מכירות", risk: "probation", reason: "burn rate 40%, conversion 1.8%", tenure: 0.8 },
   { name: "רינת כץ", dept: "שירות לקוחות", risk: "flight_risk", reason: "שביעות רצון 45, ביקשה מידע על תפקיד אחר", tenure: 2.5 },
@@ -77,6 +79,14 @@ const eventIcon = (type: string) => {
 };
 
 export default function HRCommandCenter() {
+  const { data: hrcommandcenterData } = useQuery({
+    queryKey: ["hr-command-center"],
+    queryFn: () => authFetch("/api/hr/hr_command_center"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const departments = hrcommandcenterData ?? FALLBACK_DEPARTMENTS;
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       <div className="flex items-center justify-between">

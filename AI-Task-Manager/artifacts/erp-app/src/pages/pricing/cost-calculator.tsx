@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,7 +28,7 @@ interface MaterialItem {
   quantity: number;
 }
 
-const defaultMaterials: MaterialItem[] = [
+const FALLBACK_DEFAULT_MATERIALS: MaterialItem[] = [
   { name: "אלומיניום פרופיל 6063-T5", unit: 'מ"ר', pricePerUnit: 185, quantity: 0 },
   { name: "זכוכית מחוסמת 8 מ\"מ", unit: 'מ"ר', pricePerUnit: 220, quantity: 0 },
   { name: "זכוכית בידוד כפולה Low-E", unit: 'מ"ר', pricePerUnit: 380, quantity: 0 },
@@ -36,6 +38,14 @@ const defaultMaterials: MaterialItem[] = [
 ];
 
 export default function CostCalculator() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["cost_calculator"],
+    queryFn: () => authFetch("/api/pricing/cost-calculator").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const defaultMaterials = apiData?.defaultMaterials ?? FALLBACK_DEFAULT_MATERIALS;
   const [materials, setMaterials] = useState<MaterialItem[]>(defaultMaterials);
   const [laborHours, setLaborHours] = useState(0);
   const [laborRate, setLaborRate] = useState(120);

@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Layers, Package, DollarSign, AlertTriangle, ChevronDown, BarChart3, GitCompare, ArrowUpDown, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,12 +14,12 @@ const pct = (v: number) => `${v.toFixed(1)}%`;
 
 interface BomLine { line: number; rm_code: string; name: string; category: string; quantity: number; cut_length_m: number; unit_cost: number; waste_pct: number; }
 
-const PRODUCTS = [
+const FALLBACK_PRODUCTS = [
   { id: "PRD-0001", name: "שער כניסה דגם Premium", bom_id: "BOM-1001" },
   { id: "PRD-0002", name: "גדר חניה דגם Classic", bom_id: "BOM-1002" },
   { id: "PRD-0003", name: "שער חשמלי דגם Pro", bom_id: "BOM-1003" },
 ];
-const BOM_LINES: BomLine[] = [
+const FALLBACK_BOM_LINES: BomLine[] = [
   { line: 1, rm_code: "RM-1001", name: "צינור מרובע 40x40",   category: "פרופיל ברזל", quantity: 12, cut_length_m: 2.40, unit_cost: 38.50,  waste_pct: 8.0  },
   { line: 2, rm_code: "RM-1002", name: "זווית 50x50",          category: "פרופיל ברזל", quantity: 8,  cut_length_m: 1.20, unit_cost: 42.00,  waste_pct: 6.5  },
   { line: 3, rm_code: "RM-1003", name: "פח 2mm (1.25x2.5m)",   category: "לוחות מתכת", quantity: 2,  cut_length_m: 2.50, unit_cost: 185.00, waste_pct: 12.0 },
@@ -30,7 +32,7 @@ const BOM_LINES: BomLine[] = [
   { line: 10,rm_code: "RM-1010", name: "דיסק חיתוך 125mm",     category: "מתכלים",      quantity: 3,  cut_length_m: 0,    unit_cost: 12.00,  waste_pct: 0    },
 ];
 
-const BOM_VERSIONS = [
+const FALLBACK_BOM_VERSIONS = [
   { ver: "v3.1", date: "2026-03-15", lines: 10, cost: 2184.30, change: "הוספת ברגי עיגון + דיסק חיתוך" },
   { ver: "v3.0", date: "2026-01-20", lines: 8,  cost: 1978.50, change: "שדרוג פח ל-2mm" },
   { ver: "v2.0", date: "2025-09-05", lines: 7,  cost: 1745.00, change: "החלפת מנעול" },
@@ -60,6 +62,14 @@ function SummaryCard({ icon: Icon, label, value, sub, color }: { icon: any; labe
 
 /* ── main component ── */
 export default function ProductBOM() {
+  const { data: productbomData } = useQuery({
+    queryKey: ["product-bom"],
+    queryFn: () => authFetch("/api/procurement/product_bom"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const PRODUCTS = productbomData ?? FALLBACK_PRODUCTS;
+
   const [selectedProduct, setSelectedProduct] = useState(PRODUCTS[0]);
   const [activeTab, setActiveTab] = useState("components");
   const [sortField, setSortField] = useState<keyof BomLine>("line");

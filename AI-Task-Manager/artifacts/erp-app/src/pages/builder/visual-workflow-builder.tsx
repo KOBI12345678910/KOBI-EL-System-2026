@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   Play, Pause, Save, Plus, Trash2, X, Settings, Copy, Undo,
   Redo, ZoomIn, ZoomOut, Maximize2, Download, Upload, Search,
@@ -41,7 +43,7 @@ interface PropertyDef {
   defaultValue?: any;
 }
 
-const nodeTypes: NodeType[] = [
+const FALLBACK_NODE_TYPES: NodeType[] = [
   // Triggers
   { type: "trigger_manual", label: "\u05D4\u05E4\u05E2\u05DC\u05D4 \u05D9\u05D3\u05E0\u05D9\u05EA", category: "\u05D8\u05E8\u05D9\u05D2\u05E8\u05D9\u05DD", icon: Play, color: "#22c55e", description: "\u05D4\u05EA\u05D7\u05DC\u05D4 \u05D9\u05D3\u05E0\u05D9\u05EA \u05E9\u05DC \u05EA\u05D4\u05DC\u05D9\u05DA", outputs: ["next"], properties: [{ key: "name", label: "\u05E9\u05DD", type: "text" }] },
   { type: "trigger_schedule", label: "\u05EA\u05D6\u05DE\u05D5\u05DF", category: "\u05D8\u05E8\u05D9\u05D2\u05E8\u05D9\u05DD", icon: Clock, color: "#22c55e", description: "\u05D4\u05E4\u05E2\u05DC\u05D4 \u05DC\u05E4\u05D9 \u05DC\u05D5\u05D7 \u05D6\u05DE\u05E0\u05D9\u05DD", outputs: ["next"], properties: [{ key: "cron", label: "\u05D1\u05D9\u05D8\u05D5\u05D9 Cron", type: "text", defaultValue: "0 9 * * *" }, { key: "timezone", label: "\u05D0\u05D6\u05D5\u05E8 \u05D6\u05DE\u05DF", type: "text", defaultValue: "Asia/Jerusalem" }] },
@@ -103,7 +105,7 @@ interface Template {
   connections: Connection[];
 }
 
-const templates: Template[] = [
+const FALLBACK_TEMPLATES: Template[] = [
   {
     name: "\u05D0\u05D9\u05E9\u05D5\u05E8 \u05D4\u05D5\u05E6\u05D0\u05D4",
     description: "\u05EA\u05D4\u05DC\u05D9\u05DA \u05D0\u05D9\u05E9\u05D5\u05E8 \u05D4\u05D5\u05E6\u05D0\u05D4 \u05E2\u05DD \u05D4\u05EA\u05E8\u05D0\u05D5\u05EA",
@@ -149,6 +151,14 @@ let idCounter = 1;
 const genId = () => `node_${Date.now()}_${idCounter++}`;
 
 export default function VisualWorkflowBuilderPage() {
+  const { data: visualworkflowbuilderData } = useQuery({
+    queryKey: ["visual-workflow-builder"],
+    queryFn: () => authFetch("/api/builder/visual_workflow_builder"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const nodeTypes = visualworkflowbuilderData ?? FALLBACK_NODE_TYPES;
+
   const [nodes, setNodes] = useState<WorkflowNode[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);

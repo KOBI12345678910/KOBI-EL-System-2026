@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +24,7 @@ const kpis = [
   { title: "משלוחים מעוכבים", value: "6", icon: AlertTriangle, color: "bg-red-100 text-red-700", trend: "2 קריטיים" },
 ];
 
-const shipments = [
+const FALLBACK_SHIPMENTS = [
   { id: "SHP-2026-001", supplier: "אלומטק טורקיה", origin: "טורקיה", mode: "sea" as const, departure: "2026-03-20", eta: "2026-04-12", location: "נמל אשדוד - ממתין לפריקה", progress: 92, status: "customs" as const, customs: "בבדיקה" },
   { id: "SHP-2026-002", supplier: "גלאסקו איטליה", origin: "איטליה", mode: "sea" as const, departure: "2026-03-25", eta: "2026-04-14", location: "ים תיכון - מערב כרתים", progress: 68, status: "transit" as const, customs: "טרם הוגש" },
   { id: "SHP-2026-003", supplier: "שנזן מטלס", origin: "סין", mode: "sea" as const, departure: "2026-03-10", eta: "2026-04-08", location: "נמל חיפה - בפריקה", progress: 98, status: "arrived" as const, customs: "אושר" },
@@ -40,7 +42,7 @@ const shipments = [
   { id: "SHP-2026-015", supplier: "אלוטק אנקרה", origin: "טורקיה", mode: "sea" as const, departure: "2026-03-18", eta: "2026-04-09", location: "נמל חיפה - ממתין לפריקה", progress: 90, status: "customs" as const, customs: "בבדיקה" },
 ];
 
-const warehouses = [
+const FALLBACK_WAREHOUSES = [
   { id: "WH-01", name: "מחסן ראשי - אשדוד", capacity: 87, items: 12450, value: "4,250,000", lastUpdate: "08/04/2026 09:15", topItems: [
     { name: "פרופיל אלומיניום 6060", qty: 3200, unit: "מטר" }, { name: "זכוכית מחוסמת 8מ״מ", qty: 1850, unit: "יח׳" }, { name: "חומר איטום סיליקון", qty: 4200, unit: "יח׳" }
   ]},
@@ -58,14 +60,14 @@ const warehouses = [
   ]},
 ];
 
-const bottlenecks = [
+const FALLBACK_BOTTLENECKS = [
   { type: "customs", title: "עיכוב מכס - נמל אשדוד", count: 3, impact: "גבוה", items: ["SHP-2026-001", "SHP-2026-010", "SHP-2026-015"], desc: "בדיקות אבטחה מוגברות בשל התראה רגולטורית", etaResolution: "09/04/2026", cost: "₪45,000/יום" },
   { type: "port", title: "עומס בנמל חיפה", count: 1, impact: "בינוני", items: ["SHP-2026-003"], desc: "צפיפות בנמל - זמן המתנה מוגדל ב-48 שעות", etaResolution: "10/04/2026", cost: "₪18,000/יום" },
   { type: "supplier", title: "עיכוב ספקים", count: 4, impact: "גבוה", items: ["SHP-2026-008", "SHP-2026-012", "SHP-2026-007", "SHP-2026-014"], desc: "עיכובי ייצור אצל ספקים בטורקיה וספרד, חוסר חומרי גלם", etaResolution: "15/04/2026", cost: "₪72,000 סה״כ" },
   { type: "quality", title: "עצירת איכות", count: 2, impact: "קריטי", items: ["SHP-2026-006", "SHP-2026-013"], desc: "בדיקת איכות נכשלה - פרופילים לא עומדים בתקן ישראלי ת״י", etaResolution: "12/04/2026", cost: "₪125,000 סה״כ" },
 ];
 
-const routes = [
+const FALLBACK_ROUTES = [
   { origin: "טורקיה", dest: "אשדוד", mode: "ים", avgDays: 12, reliability: 91, avgCost: "₪18,500", shipments: 156, icon: Ship },
   { origin: "סין", dest: "חיפה", mode: "ים", avgDays: 28, reliability: 84, avgCost: "₪42,000", shipments: 89, icon: Ship },
   { origin: "איטליה", dest: "אשדוד", mode: "ים", avgDays: 10, reliability: 93, avgCost: "₪15,200", shipments: 72, icon: Ship },
@@ -107,6 +109,33 @@ function progressColor(p: number) {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export default function SupplyChainVisibilityPage() {
+  const { data: apishipments } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-visibility/shipments"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-visibility/shipments").then(r => r.json()).catch(() => null),
+  });
+  const shipments = Array.isArray(apishipments) ? apishipments : (apishipments?.data ?? apishipments?.items ?? FALLBACK_SHIPMENTS);
+
+
+  const { data: apiwarehouses } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-visibility/warehouses"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-visibility/warehouses").then(r => r.json()).catch(() => null),
+  });
+  const warehouses = Array.isArray(apiwarehouses) ? apiwarehouses : (apiwarehouses?.data ?? apiwarehouses?.items ?? FALLBACK_WAREHOUSES);
+
+
+  const { data: apibottlenecks } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-visibility/bottlenecks"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-visibility/bottlenecks").then(r => r.json()).catch(() => null),
+  });
+  const bottlenecks = Array.isArray(apibottlenecks) ? apibottlenecks : (apibottlenecks?.data ?? apibottlenecks?.items ?? FALLBACK_BOTTLENECKS);
+
+
+  const { data: apiroutes } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-visibility/routes"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-visibility/routes").then(r => r.json()).catch(() => null),
+  });
+  const routes = Array.isArray(apiroutes) ? apiroutes : (apiroutes?.data ?? apiroutes?.items ?? FALLBACK_ROUTES);
+
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("shipments");
 

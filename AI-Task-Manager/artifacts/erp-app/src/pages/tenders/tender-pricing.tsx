@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { DollarSign, Percent, TrendingUp, BarChart3, Calculator, Target, Download, Save, RefreshCw, ChevronDown, ChevronUp, AlertTriangle, CheckCircle2, ArrowUpRight, ArrowDownRight, History, Scale } from "lucide-react";
 
-const TABS = ["כתב כמויות ותמחור", "ניתוח עלויות", "אסטרטגיית תמחור", "היסטוריית מחירים"] as const;
-const boqData = [
+const FALLBACK_TABS = ["כתב כמויות ותמחור", "ניתוח עלויות", "אסטרטגיית תמחור", "היסטוריית מחירים"] as const;
+const FALLBACK_BOQ_DATA = [
   { id: 1, item: "חלון אלומיניום 120x150", desc: "חלון דו-כנפי עם תריס", unit: "יח׳", qty: 48, material: 1850, labor: 420, overhead: 185, margin: 18 },
   { id: 2, item: "דלת כניסה פלדלת", desc: "דלת מעוצבת עם מנעול רב-בריחי", unit: "יח׳", qty: 12, material: 3200, labor: 680, overhead: 320, margin: 22 },
   { id: 3, item: "מעקה זכוכית", desc: "מעקה זכוכית מחוסמת 12 מ״מ", unit: "מ״א", qty: 85, material: 2400, labor: 550, overhead: 240, margin: 20 },
@@ -19,7 +21,7 @@ const boqData = [
   { id: 9, item: "סורג ביטחון", desc: "סורג פלדה צבוע אלקטרוסטטי", unit: "יח׳", qty: 30, material: 780, labor: 220, overhead: 78, margin: 14 },
   { id: 10, item: "דלת הזזה", desc: "דלת הזזה אוטומטית דו-כנפית", unit: "יח׳", qty: 4, material: 8500, labor: 1800, overhead: 850, margin: 23 },
 ];
-const priceHistory = [
+const FALLBACK_PRICE_HISTORY = [
   { tender: "מגדלי הים התיכון", date: "2025-11", value: 2850000, margin: 19.2, result: "זכייה" },
   { tender: "פארק הייטק נתניה", date: "2025-09", value: 1920000, margin: 16.8, result: "הפסד" },
   { tender: "מרכז מסחרי לוד", date: "2025-07", value: 3400000, margin: 21.5, result: "זכייה" },
@@ -29,13 +31,13 @@ const priceHistory = [
   { tender: "שיכון דיור חיפה", date: "2024-11", value: 5600000, margin: 18.5, result: "זכייה" },
   { tender: "קניון אשדוד", date: "2024-09", value: 3800000, margin: 15.1, result: "הפסד" },
 ];
-const competitors = [
+const FALLBACK_COMPETITORS = [
   { name: "אלוטק בע״מ", avgMargin: 14.5, winRate: 38, priceIndex: 0.96, strength: "מחירים נמוכים", weakness: "איכות בינונית" },
   { name: "זכוכית ישראל", avgMargin: 17.2, winRate: 42, priceIndex: 1.02, strength: "מומחיות זכוכית", weakness: "זמני אספקה ארוכים" },
   { name: "מסגריית השרון", avgMargin: 12.8, winRate: 35, priceIndex: 0.91, strength: "מחיר אגרסיבי", weakness: "קיבולת מוגבלת" },
   { name: "אלומטל תעשיות", avgMargin: 19.1, winRate: 45, priceIndex: 1.08, strength: "מוניטין חזק", weakness: "מחירים גבוהים" },
 ];
-const costBreakdown = [
+const FALLBACK_COST_BREAKDOWN = [
   { cat: "חומרי גלם - אלומיניום", std: 520000, actual: 498000, diff: -4.2 },
   { cat: "חומרי גלם - זכוכית", std: 310000, actual: 325000, diff: 4.8 },
   { cat: "חומרי גלם - פלדה", std: 85000, actual: 82000, diff: -3.5 },
@@ -49,6 +51,67 @@ function fmt(n: number) { return n.toLocaleString("he-IL"); }
 function fmtC(n: number) { return "₪" + n.toLocaleString("he-IL"); }
 
 export default function TenderPricingPage() {
+  const { data: TABS = FALLBACK_TABS } = useQuery({
+    queryKey: ["tenders-t-a-b-s"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-pricing/t-a-b-s");
+      if (!res.ok) return FALLBACK_TABS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TABS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: boqData = FALLBACK_BOQ_DATA } = useQuery({
+    queryKey: ["tenders-boq-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-pricing/boq-data");
+      if (!res.ok) return FALLBACK_BOQ_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_BOQ_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: priceHistory = FALLBACK_PRICE_HISTORY } = useQuery({
+    queryKey: ["tenders-price-history"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-pricing/price-history");
+      if (!res.ok) return FALLBACK_PRICE_HISTORY;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_PRICE_HISTORY;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: competitors = FALLBACK_COMPETITORS } = useQuery({
+    queryKey: ["tenders-competitors"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-pricing/competitors");
+      if (!res.ok) return FALLBACK_COMPETITORS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_COMPETITORS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: costBreakdown = FALLBACK_COST_BREAKDOWN } = useQuery({
+    queryKey: ["tenders-cost-breakdown"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tender-pricing/cost-breakdown");
+      if (!res.ok) return FALLBACK_COST_BREAKDOWN;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_COST_BREAKDOWN;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [tab, setTab] = useState<typeof TABS[number]>(TABS[0]);
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");

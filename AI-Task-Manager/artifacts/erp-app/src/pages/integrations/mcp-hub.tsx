@@ -1,4 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,7 +15,7 @@ import {
 /* ------------------------------------------------------------------ */
 /*  Static data — MCP Servers                                         */
 /* ------------------------------------------------------------------ */
-const mcpServers = [
+const FALLBACK_MCP_SERVERS = [
   { name: "Ahrefs", status: "online", tools: 12, callsToday: 67, avgLatency: 145, lastHeartbeat: "לפני 12 שניות", version: "1.4.2", icon: Globe, color: "from-orange-500/20 to-amber-500/20", border: "border-orange-500/30" },
   { name: "Wix", status: "online", tools: 8, callsToday: 54, avgLatency: 120, lastHeartbeat: "לפני 8 שניות", version: "2.1.0", icon: Link2, color: "from-blue-500/20 to-cyan-500/20", border: "border-blue-500/30" },
   { name: "Make.com", status: "online", tools: 6, callsToday: 41, avgLatency: 210, lastHeartbeat: "לפני 15 שניות", version: "1.2.5", icon: Zap, color: "from-violet-500/20 to-purple-500/20", border: "border-violet-500/30" },
@@ -25,7 +27,7 @@ const mcpServers = [
 /* ------------------------------------------------------------------ */
 /*  Static data — Tools Registry                                      */
 /* ------------------------------------------------------------------ */
-const toolsRegistry = [
+const FALLBACK_TOOLS_REGISTRY = [
   { name: "site-explorer-metrics", server: "Ahrefs", desc: "שליפת מדדי SEO לדומיין", inputFields: 3, callsToday: 18, avgDuration: "132ms", permissions: "admin, analyst" },
   { name: "site-audit-issues", server: "Ahrefs", desc: "בדיקת תקלות טכניות באתר", inputFields: 4, callsToday: 12, avgDuration: "245ms", permissions: "admin" },
   { name: "keywords-explorer", server: "Ahrefs", desc: "חיפוש מילות מפתח ונפחי חיפוש", inputFields: 5, callsToday: 14, avgDuration: "189ms", permissions: "admin, analyst" },
@@ -46,8 +48,8 @@ const toolsRegistry = [
 /* ------------------------------------------------------------------ */
 /*  Static data — Permissions Matrix                                  */
 /* ------------------------------------------------------------------ */
-const roles = ["מנהל (Admin)", "מפתח (Developer)", "אנליסט (Analyst)", "משתמש (User)"];
-const permTools = [
+const FALLBACK_ROLES = ["מנהל (Admin)", "מפתח (Developer)", "אנליסט (Analyst)", "משתמש (User)"];
+const FALLBACK_PERM_TOOLS = [
   "site-explorer-metrics", "site-audit-issues", "CallWixSiteAPI", "SearchInSite",
   "scenarios_run", "scenarios_list", "execute_workflow", "gcal_create_event",
   "list_records", "create_records",
@@ -62,7 +64,7 @@ const permMatrix: Record<string, boolean[]> = {
 /* ------------------------------------------------------------------ */
 /*  Static data — Recent Logs                                         */
 /* ------------------------------------------------------------------ */
-const recentLogs = [
+const FALLBACK_RECENT_LOGS = [
   { ts: "08/04/2026 09:42:15", tool: "site-explorer-metrics", caller: "עוזי (user)", input: '{ domain: "techno-kol.co.il" }', status: "success", duration: "128ms" },
   { ts: "08/04/2026 09:41:02", tool: "gcal_list_events", caller: "system", input: '{ timeMin: "2026-04-08" }', status: "success", duration: "145ms" },
   { ts: "08/04/2026 09:39:48", tool: "scenarios_run", caller: "עוזי (user)", input: '{ scenarioId: "sc_201" }', status: "success", duration: "312ms" },
@@ -98,6 +100,18 @@ function KpiCard({ label, value, icon: Icon, color }: { label: string; value: st
 /*  MAIN COMPONENT                                                    */
 /* ================================================================== */
 export default function McpHub() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["mcp_hub"],
+    queryFn: () => authFetch("/api/integrations/mcp-hub").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const mcpServers = apiData?.mcpServers ?? FALLBACK_MCP_SERVERS;
+  const toolsRegistry = apiData?.toolsRegistry ?? FALLBACK_TOOLS_REGISTRY;
+  const roles = apiData?.roles ?? FALLBACK_ROLES;
+  const permTools = apiData?.permTools ?? FALLBACK_PERM_TOOLS;
+  const recentLogs = apiData?.recentLogs ?? FALLBACK_RECENT_LOGS;
   return (
     <div dir="rtl" className="min-h-screen bg-[#0a0e14] text-white p-6 space-y-6">
       {/* ---- Header ---- */}

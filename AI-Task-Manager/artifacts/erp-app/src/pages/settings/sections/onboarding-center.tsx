@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Button, Input, Label, Card } from "@/components/ui-components";
 import {
   BookOpen, CheckCircle2, Circle, Plus, Trash2, Save, ToggleLeft, ToggleRight,
@@ -47,7 +49,7 @@ const CATEGORIES = [
   { id: "store", label: "חנות", icon: ShoppingBag, color: "bg-amber-500/10 text-amber-500 border-amber-500/20", iconBg: "bg-amber-500/15", iconColor: "text-amber-500" },
 ];
 
-const INITIAL_CHECKLIST: OnboardingStep[] = [
+const FALLBACK_INITIAL_CHECKLIST: OnboardingStep[] = [
   { id: 1, title: "הגדרת פרטי החברה", description: "מלא את פרטי החברה הבסיסיים — שם, כתובת, לוגו", completed: true, required: true },
   { id: 2, title: "הוסף משתמש ראשון", description: "צור חשבון משתמש לעמית צוות ראשון", completed: true, required: true },
   { id: 3, title: "חבר אינטגרציה ראשונה", description: "חבר את המערכת ל-Gmail, WhatsApp או שירות חיצוני", completed: false, required: false },
@@ -56,7 +58,7 @@ const INITIAL_CHECKLIST: OnboardingStep[] = [
   { id: 6, title: "ייצא דוח ראשון", description: "ייצא נתונים ל-Excel או PDF", completed: false, required: false },
 ];
 
-const INITIAL_TRACKS: TrainingTrack[] = [
+const FALLBACK_INITIAL_TRACKS: TrainingTrack[] = [
   {
     id: 1, title: "Python בסיסי", description: "מבוא לשפת Python, משתנים, לולאות ופונקציות",
     category: "programming", duration: "4 שעות", level: "beginner", active: true, participants: 8,
@@ -122,6 +124,14 @@ const LEVEL_MAP: Record<string, { label: string; color: string }> = {
 };
 
 export default function OnboardingCenterSection() {
+  const { data: onboardingcenterData } = useQuery({
+    queryKey: ["onboarding-center"],
+    queryFn: () => authFetch("/api/settings/onboarding_center"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const INITIAL_CHECKLIST = onboardingcenterData ?? FALLBACK_INITIAL_CHECKLIST;
+
   const [tracks, setTracks] = useState<TrainingTrack[]>(INITIAL_TRACKS);
   const [checklist, setChecklist] = useState<OnboardingStep[]>(INITIAL_CHECKLIST);
   const [enabled, setEnabled] = useState(true);

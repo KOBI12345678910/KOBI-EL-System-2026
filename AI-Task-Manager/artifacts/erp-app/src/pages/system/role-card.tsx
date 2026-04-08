@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -297,6 +299,12 @@ const ACCESS_COLORS: Record<string, string> = {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function RoleCardPage() {
+  const { data: rolecardData } = useQuery({
+    queryKey: ["role-card"],
+    queryFn: () => authFetch("/api/system/role_card"),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [activeTab, setActiveTab] = useState("general");
   const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({ Procurement: true });
   const [searchPerm, setSearchPerm] = useState("");

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -12,7 +14,7 @@ import {
 
 /* -- mock data -- */
 
-const entityTypes = [
+const FALLBACK_ENTITY_TYPES = [
   { name: "פרויקטים", docs: 512, entities: 45, icon: <ClipboardList className="w-5 h-5" />, color: "text-blue-400", bg: "bg-blue-900/30" },
   { name: "הזמנות רכש", docs: 645, entities: 380, icon: <Package className="w-5 h-5" />, color: "text-emerald-400", bg: "bg-emerald-900/30" },
   { name: "לקוחות", docs: 320, entities: 89, icon: <Users className="w-5 h-5" />, color: "text-cyan-400", bg: "bg-cyan-900/30" },
@@ -25,7 +27,7 @@ const entityTypes = [
   { name: "נכסים", docs: 59, entities: 45, icon: <Building2 className="w-5 h-5" />, color: "text-rose-400", bg: "bg-rose-900/30" },
 ];
 
-const linkedDocs = [
+const FALLBACK_LINKED_DOCS = [
   { id: "DOC-1001", name: "מפרט טכני מסגרת T-400", entityType: "מוצרים", entityId: "PRD-045", entityName: "מסגרת T-400", linkType: "ראשי", linkedBy: "אלון גולדשטיין", date: "2026-04-01" },
   { id: "DOC-1002", name: "חוזה אספקה שנתי", entityType: "ספקים", entityId: "VND-012", entityName: "מתכת-פרו בע\"מ", linkType: "ראשי", linkedBy: "יוסי כהן", date: "2026-03-28" },
   { id: "DOC-1003", name: "תעודת משלוח 78120", entityType: "הזמנות רכש", entityId: "PO-4520", entityName: "הזמנת חומרי גלם Q2", linkType: "תומך", linkedBy: "דוד מזרחי", date: "2026-04-03" },
@@ -43,7 +45,7 @@ const linkedDocs = [
   { id: "DOC-1015", name: "חשבונית מס 92010", entityType: "לקוחות", entityId: "CUS-045", entityName: "אלקטרו-סיסטם בע\"מ", linkType: "תומך", linkedBy: "רחל אברהם", date: "2026-04-06" },
 ];
 
-const orphanDocs = [
+const FALLBACK_ORPHAN_DOCS = [
   { id: "ORP-001", name: "סריקה_חשבונית_לא_מזוהה.pdf", uploaded: "2026-04-05", size: "1.2 MB", suggestedEntity: "הזמנות רכש" },
   { id: "ORP-002", name: "מכתב_ספק_ישן.docx", uploaded: "2026-04-03", size: "340 KB", suggestedEntity: "ספקים" },
   { id: "ORP-003", name: "תמונות_התקנה_שטח.zip", uploaded: "2026-04-06", size: "45 MB", suggestedEntity: "התקנות" },
@@ -69,7 +71,7 @@ const orphanDocs = [
   { id: "ORP-023", name: "אישור_כיבוי_אש_ישן.pdf", uploaded: "2026-03-22", size: "340 KB", suggestedEntity: "נכסים" },
 ];
 
-const autoRules = [
+const FALLBACK_AUTO_RULES = [
   { pattern: "חשבונית*", targetEntity: "הזמנות רכש", field: "מספר הזמנה", confidence: 95, active: true },
   { pattern: "חוזה*", targetEntity: "חוזים", field: "מספר חוזה", confidence: 92, active: true },
   { pattern: "שרטוט*|DWG*", targetEntity: "מוצרים", field: "קוד מוצר", confidence: 88, active: true },
@@ -88,7 +90,7 @@ const linkTypeColor: Record<string, string> = {
   "נספח": "bg-amber-900/60 text-amber-300",
 };
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "מסמכים מקושרים", value: 3_824, icon: <Link className="w-5 h-5" />, color: "text-blue-400" },
   { label: "ישויות עם מסמכים", value: 1_245, icon: <Users className="w-5 h-5" />, color: "text-emerald-400" },
   { label: "קישורים", value: 5_890, icon: <FileText className="w-5 h-5" />, color: "text-purple-400" },
@@ -98,6 +100,18 @@ const kpis = [
 /* -- component -- */
 
 export default function EntityLinkedDocuments() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["entity_linked_documents"],
+    queryFn: () => authFetch("/api/documents/entity-linked-documents").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const entityTypes = apiData?.entityTypes ?? FALLBACK_ENTITY_TYPES;
+  const linkedDocs = apiData?.linkedDocs ?? FALLBACK_LINKED_DOCS;
+  const orphanDocs = apiData?.orphanDocs ?? FALLBACK_ORPHAN_DOCS;
+  const autoRules = apiData?.autoRules ?? FALLBACK_AUTO_RULES;
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
   const [tab, setTab] = useState("overview");
 
   return (

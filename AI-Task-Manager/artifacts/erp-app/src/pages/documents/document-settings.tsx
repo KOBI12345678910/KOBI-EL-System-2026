@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -11,7 +13,7 @@ import {
   Plug, Mail, ScanLine, Cloud, Eye, PenTool, Wifi, WifiOff,
 } from "lucide-react";
 /* -- general config -- */
-const generalConfig = [
+const FALLBACK_GENERAL_CONFIG = [
   { label: "מגבלת אחסון כוללת", value: "500 GB", used: "312 GB", pct: 62, icon: HardDrive, note: "188 GB פנויים" },
   { label: "גודל קובץ מקסימלי", value: "50 MB", used: "—", pct: 0, icon: FileUp, note: "קבצי CAD עד 100 MB באישור מנהל" },
   { label: "פורמטים מותרים", value: "28 סוגים", used: "PDF, DOCX, XLSX, DWG, STP, JPG, PNG, ZIP...", pct: 0, icon: FileType2, note: "ניתן להוסיף סוגים בהתאמה אישית" },
@@ -21,7 +23,7 @@ const generalConfig = [
 ];
 
 /* -- categories -- */
-const categories = [
+const FALLBACK_CATEGORIES = [
   { name: "רכש", subs: ["הזמנות רכש", "תעודות משלוח", "חשבוניות ספק", "חוזי ספק"], docs: 645 },
   { name: "כספים", subs: ["חשבוניות", "קבלות", "דוחות כספיים", "אישורי תשלום"], docs: 1530 },
   { name: "ייצור", subs: ["הוראות עבודה", "דוחות QC", "שרטוטים", "BOM"], docs: 820 },
@@ -37,7 +39,7 @@ const categories = [
 ];
 
 /* -- approval workflow defaults -- */
-const approvalDefaults = [
+const FALLBACK_APPROVAL_DEFAULTS = [
   { docType: "חוזה ספק", chain: 4, escalation: "24 שעות", signatures: 3, mandatory: true },
   { docType: "הצעת מחיר", chain: 3, escalation: "24 שעות", signatures: 2, mandatory: true },
   { docType: "שרטוט הנדסי", chain: 2, escalation: "48 שעות", signatures: 2, mandatory: true },
@@ -48,7 +50,7 @@ const approvalDefaults = [
 ];
 
 /* -- retention policies -- */
-const retentionPolicies = [
+const FALLBACK_RETENTION_POLICIES = [
   { docType: "חוזים משפטיים", retention: 25, autoArchive: true, legalHold: false },
   { docType: "חשבוניות מס", retention: 7, autoArchive: true, legalHold: false },
   { docType: "דוחות כספיים", retention: 10, autoArchive: true, legalHold: false },
@@ -61,7 +63,7 @@ const retentionPolicies = [
 ];
 
 /* -- alert thresholds -- */
-const alertThresholds = [
+const FALLBACK_ALERT_THRESHOLDS = [
   { label: "התראת פקיעת תוקף", value: "30 יום", detail: "התראה 30 יום לפני פקיעת תוקף מסמך", icon: CalendarClock },
   { label: "הפרת SLA אישור", value: "4 שעות", detail: "הסלמה למנהל כשאישור לא טופל בזמן", icon: Timer },
   { label: "אזהרת נפח אחסון", value: "90%", detail: "התראה כשנפח האחסון חוצה 90% מהמכסה", icon: Gauge },
@@ -71,7 +73,7 @@ const alertThresholds = [
 ];
 
 /* -- integrations -- */
-const integrations = [
+const FALLBACK_INTEGRATIONS = [
   { name: "שרת דוא\"ל (Exchange)", provider: "Microsoft Exchange 2019", status: "מחובר", icon: Mail, lastSync: "08/04/2026 08:15" },
   { name: "סורק רשתי (Fujitsu)", provider: "Fujitsu fi-8170", status: "מחובר", icon: ScanLine, lastSync: "08/04/2026 09:30" },
   { name: "אחסון ענן (Azure Blob)", provider: "Microsoft Azure", status: "מחובר", icon: Cloud, lastSync: "08/04/2026 10:00" },
@@ -81,6 +83,19 @@ const integrations = [
 
 /* -- component -- */
 export default function DocumentSettingsPage() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["document_settings"],
+    queryFn: () => authFetch("/api/documents/document-settings").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const generalConfig = apiData?.generalConfig ?? FALLBACK_GENERAL_CONFIG;
+  const categories = apiData?.categories ?? FALLBACK_CATEGORIES;
+  const approvalDefaults = apiData?.approvalDefaults ?? FALLBACK_APPROVAL_DEFAULTS;
+  const retentionPolicies = apiData?.retentionPolicies ?? FALLBACK_RETENTION_POLICIES;
+  const alertThresholds = apiData?.alertThresholds ?? FALLBACK_ALERT_THRESHOLDS;
+  const integrations = apiData?.integrations ?? FALLBACK_INTEGRATIONS;
   const [activeTab, setActiveTab] = useState("general");
 
   return (

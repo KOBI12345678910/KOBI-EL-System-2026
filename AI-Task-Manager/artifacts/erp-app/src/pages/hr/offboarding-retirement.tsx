@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   UserMinus, CheckCircle2, Clock, AlertTriangle, Users,
   Calendar, ClipboardList, History, FileText, ShieldCheck,
@@ -14,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 
 /* ── checklist template (12 items per Israeli employment law) ── */
-const checklistTemplate = [
+const FALLBACK_CHECKLIST_TEMPLATE = [
   { id: 1, label: "ראיון יציאה", icon: BookOpen, category: "תהליך" },
   { id: 2, label: "החזרת ציוד (מחשב, טלפון, כרטיס)", icon: Monitor, category: "ציוד" },
   { id: 3, label: "גמר חשבון – שכר, ימי חופשה, הבראה", icon: FileText, category: "כספי" },
@@ -30,14 +32,14 @@ const checklistTemplate = [
 ];
 
 /* ── active offboarding employees ── */
-const activeOffboardings = [
+const FALLBACK_ACTIVE_OFFBOARDINGS = [
   { id: 1, name: "אלון כהן", department: "ייצור", lastDay: "2026-04-25", reason: "התפטרות", hrPerson: "מיכל לוי", completed: [1, 3, 4, 5, 9, 10, 11] },
   { id: 2, name: "דנה פרידמן", department: "לוגיסטיקה", lastDay: "2026-05-10", reason: "פיטורין", hrPerson: "רון אברהם", completed: [1, 9] },
   { id: 3, name: "יוסי מזרחי", department: "תחזוקה", lastDay: "2026-04-30", reason: "סיום חוזה", hrPerson: "מיכל לוי", completed: [1, 2, 3, 4, 9] },
 ];
 
 /* ── history (past 5 offboardings) ── */
-const offboardingHistory = [
+const FALLBACK_OFFBOARDING_HISTORY = [
   { name: "שרון ביטון", department: "מכירות", endDate: "2026-01-15", reason: "התפטרות", durationDays: 12, knowledgeTransfer: "הושלם" },
   { name: "עמית גולן", department: "ייצור", endDate: "2025-11-30", reason: "פיטורין", durationDays: 18, knowledgeTransfer: "הושלם" },
   { name: "ליאור שמש", department: "הנדסה", endDate: "2025-09-20", reason: "התפטרות", durationDays: 10, knowledgeTransfer: "חלקי" },
@@ -46,7 +48,7 @@ const offboardingHistory = [
 ];
 
 /* ── retirement planning ── */
-const retirementPlanning = [{
+const FALLBACK_RETIREMENT_PLANNING = [{
   name: "משה דיין", department: "תחזוקה", role: "טכנאי בכיר", yearsAtCompany: 28,
   plannedDate: "2026-09-01", pensionStatus: "מאושר – קרן מקפת",
   knowledgePlan: "תוכנית 6 חודשים: הכשרת רועי שמעון כמחליף, תיעוד נהלי תחזוקה, ליווי שוטף עד פרישה",
@@ -68,6 +70,14 @@ const knowledgeColor = (s: string) =>
 const pct = (completed: number[]) => Math.round((completed.length / checklistTemplate.length) * 100);
 
 export default function OffboardingRetirementPage() {
+  const { data: offboardingretirementData } = useQuery({
+    queryKey: ["offboarding-retirement"],
+    queryFn: () => authFetch("/api/hr/offboarding_retirement"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const checklistTemplate = offboardingretirementData ?? FALLBACK_CHECKLIST_TEMPLATE;
+
   const [activeTab, setActiveTab] = useState("active");
   const [expandedEmployee, setExpandedEmployee] = useState<number | null>(null);
 

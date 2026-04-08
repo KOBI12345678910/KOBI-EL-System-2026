@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +16,7 @@ const nis = (v: number) => `₪${v.toLocaleString("he-IL")}`;
 const pct = (v: number) => `${v > 0 ? "+" : ""}${v}%`;
 
 /* ── KPI data ─────────────────────────────────────────────────── */
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "עלות משלוח ממוצעת", value: nis(1250), icon: DollarSign, color: "text-blue-400" },
   { label: 'עלות ל-ק"מ', value: "₪4.80", icon: Route, color: "text-cyan-400" },
   { label: "משלוחים החודש", value: "42", icon: Truck, color: "text-emerald-400" },
@@ -22,7 +24,7 @@ const kpis = [
   { label: "חיסכון מול חיצוני", value: "-22%", icon: TrendingDown, color: "text-green-400", badge: true },
 ];
 
-/* ── deliveries table data (12 rows) ─────────────────────────── */
+/* ── FALLBACK_DELIVERIES table data (12 rows) ─────────────────────────── */
 interface Delivery {
   id: string; project: string; destination: string; km: number;
   vehicle: string; driver: string; fuel: number; driverCost: number;
@@ -47,7 +49,7 @@ const deliveries: Delivery[] = [
 interface VehicleCost {
   plate: string; type: string; totalCost: number; deliveries: number; avgCost: number;
 }
-const vehicleCosts: VehicleCost[] = [
+const FALLBACK_VEHICLE_COSTS: VehicleCost[] = [
   { plate: "78-342-91", type: "משאית", totalCost: 8400, deliveries: 9, avgCost: 933 },
   { plate: "55-118-07", type: "מנוף", totalCost: 12200, deliveries: 7, avgCost: 1743 },
   { plate: "31-990-42", type: "טנדר", totalCost: 4100, deliveries: 8, avgCost: 513 },
@@ -58,11 +60,11 @@ const vehicleCosts: VehicleCost[] = [
   { plate: "62-457-33", type: "משאית", totalCost: 1900, deliveries: 1, avgCost: 1900 },
 ];
 
-/* ── regions data (5 rows) ────────────────────────────────────── */
+/* ── FALLBACK_REGIONS data (5 rows) ────────────────────────────────────── */
 interface RegionCost {
   name: string; deliveries: number; avgKm: number; avgCost: number; color: string;
 }
-const regions: RegionCost[] = [
+const FALLBACK_REGIONS: RegionCost[] = [
   { name: "מרכז", deliveries: 14, avgKm: 22, avgCost: 680, color: "bg-blue-500" },
   { name: "צפון", deliveries: 8, avgKm: 88, avgCost: 1850, color: "bg-emerald-500" },
   { name: "דרום", deliveries: 9, avgKm: 105, avgCost: 1320, color: "bg-amber-500" },
@@ -74,7 +76,7 @@ const regions: RegionCost[] = [
 interface CostComparison {
   category: string; internal: number; external: number; savings: number; savingsPct: number;
 }
-const comparisons: CostComparison[] = [
+const FALLBACK_COMPARISONS: CostComparison[] = [
   { category: "משלוח רגיל — מרכז", internal: 680, external: 950, savings: 270, savingsPct: -28 },
   { category: "משלוח עם מנוף", internal: 1740, external: 2400, savings: 660, savingsPct: -28 },
   { category: "משלוח צפון", internal: 1850, external: 2200, savings: 350, savingsPct: -16 },
@@ -87,7 +89,7 @@ const comparisons: CostComparison[] = [
 interface MonthTrend {
   month: string; totalCost: number; deliveries: number; avgCost: number; change: number;
 }
-const monthlyTrend: MonthTrend[] = [
+const FALLBACK_MONTHLY_TREND: MonthTrend[] = [
   { month: "נובמבר 2025", totalCost: 48200, deliveries: 38, avgCost: 1268, change: 0 },
   { month: "דצמבר 2025", totalCost: 44800, deliveries: 35, avgCost: 1280, change: 0.9 },
   { month: "ינואר 2026", totalCost: 51300, deliveries: 40, avgCost: 1283, change: 0.2 },
@@ -96,10 +98,83 @@ const monthlyTrend: MonthTrend[] = [
   { month: "אפריל 2026", totalCost: 52500, deliveries: 42, avgCost: 1250, change: -3.5 },
 ];
 
-const maxRegionDeliveries = Math.max(...regions.map(r => r.deliveries));
+const maxRegionDeliveries = Math.max(...FALLBACK_REGIONS.map(r => r.deliveries));
 
 /* ── component ────────────────────────────────────────────────── */
 export default function DeliveryCostAnalysisPage() {
+  const { data: kpis = FALLBACK_KPIS } = useQuery({
+    queryKey: ["logistics-kpis"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/delivery-cost-analysis/kpis");
+      if (!res.ok) return FALLBACK_KPIS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_KPIS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: deliveries = FALLBACK_DELIVERIES } = useQuery({
+    queryKey: ["logistics-deliveries"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/delivery-cost-analysis/deliveries");
+      if (!res.ok) return FALLBACK_DELIVERIES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DELIVERIES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: vehicleCosts = FALLBACK_VEHICLE_COSTS } = useQuery({
+    queryKey: ["logistics-vehicle-costs"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/delivery-cost-analysis/vehicle-costs");
+      if (!res.ok) return FALLBACK_VEHICLE_COSTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_VEHICLE_COSTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: regions = FALLBACK_REGIONS } = useQuery({
+    queryKey: ["logistics-regions"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/delivery-cost-analysis/regions");
+      if (!res.ok) return FALLBACK_REGIONS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_REGIONS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: comparisons = FALLBACK_COMPARISONS } = useQuery({
+    queryKey: ["logistics-comparisons"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/delivery-cost-analysis/comparisons");
+      if (!res.ok) return FALLBACK_COMPARISONS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_COMPARISONS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: monthlyTrend = FALLBACK_MONTHLY_TREND } = useQuery({
+    queryKey: ["logistics-monthly-trend"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/delivery-cost-analysis/monthly-trend");
+      if (!res.ok) return FALLBACK_MONTHLY_TREND;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_MONTHLY_TREND;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [tab, setTab] = useState("deliveries");
 
   return (

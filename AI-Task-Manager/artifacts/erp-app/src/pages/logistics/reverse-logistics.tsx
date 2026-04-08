@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,7 +20,7 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
   rejected: { label: "נדחתה", color: "bg-red-500/20 text-red-300" },
 };
 
-const REASON_CODES = [
+const FALLBACK_REASON_CODES = [
   { value: "defective", label: "מוצר פגום" },
   { value: "wrong_item", label: "פריט שגוי" },
   { value: "damaged_shipping", label: "ניזוק בהובלה" },
@@ -28,7 +30,7 @@ const REASON_CODES = [
   { value: "other", label: "אחר" },
 ];
 
-const RESOLUTION_TYPES = [
+const FALLBACK_RESOLUTION_TYPES = [
   { value: "refund", label: "החזר כספי" },
   { value: "replace", label: "החלפה" },
   { value: "repair", label: "תיקון" },
@@ -55,6 +57,31 @@ interface RMADetail extends RMA {
 }
 
 export default function ReverseLogistics() {
+  const { data: REASON_CODES = FALLBACK_REASON_CODES } = useQuery({
+    queryKey: ["logistics-reason-codes"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/reverse-logistics/reason-codes");
+      if (!res.ok) return FALLBACK_REASON_CODES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_REASON_CODES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: RESOLUTION_TYPES = FALLBACK_RESOLUTION_TYPES } = useQuery({
+    queryKey: ["logistics-resolution-types"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/reverse-logistics/resolution-types");
+      if (!res.ok) return FALLBACK_RESOLUTION_TYPES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_RESOLUTION_TYPES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [rmas, setRmas] = useState<RMA[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -75,7 +102,7 @@ export default function ReverseLogistics() {
   async function loadRmas() {
     setLoading(true);
     try {
-      const r = await fetch(`${API}/rma`);
+      const r = await authFetch(`${API}/rma`);
       if (r.ok) setRmas(await r.json());
     } catch {}
     setLoading(false);
@@ -83,14 +110,14 @@ export default function ReverseLogistics() {
 
   async function loadDetail(rma: RMA) {
     try {
-      const r = await fetch(`${API}/rma/${rma.id}`);
+      const r = await authFetch(`${API}/rma/${rma.id}`);
       if (r.ok) { setSelectedRma(await r.json()); setShowDetailDialog(true); }
     } catch {}
   }
 
   async function createRma() {
     try {
-      const r = await fetch(`${API}/rma`, {
+      const r = await authFetch(`${API}/rma`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(createForm),
@@ -105,7 +132,7 @@ export default function ReverseLogistics() {
 
   async function updateStatus(id: number, status: string, extra?: any) {
     try {
-      const r = await fetch(`${API}/rma/${id}`, {
+      const r = await authFetch(`${API}/rma/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status, ...extra }),
@@ -117,7 +144,7 @@ export default function ReverseLogistics() {
   async function addItem() {
     if (!selectedRma) return;
     try {
-      const r = await fetch(`${API}/rma/${selectedRma.id}/items`, {
+      const r = await authFetch(`${API}/rma/${selectedRma.id}/items`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(itemForm),
@@ -129,7 +156,7 @@ export default function ReverseLogistics() {
   async function addShipment() {
     if (!selectedRma) return;
     try {
-      const r = await fetch(`${API}/rma/${selectedRma.id}/shipments`, {
+      const r = await authFetch(`${API}/rma/${selectedRma.id}/shipments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(shipForm),

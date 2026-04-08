@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +13,7 @@ import {
   ArrowUpRight, ArrowDownRight, Timer, BarChart3, UserCheck
 } from "lucide-react";
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "פניות פתוחות", value: 23, icon: MessageSquare, color: "text-blue-500", bg: "bg-blue-50", change: "+3", up: true },
   { label: "נפתרו היום", value: 14, icon: CheckCircle, color: "text-green-500", bg: "bg-green-50", change: "+5", up: true },
   { label: "זמן תגובה ממוצע", value: "1.4 שעות", icon: Clock, color: "text-amber-500", bg: "bg-amber-50", change: "-12%", up: false },
@@ -22,7 +24,7 @@ const kpis = [
   { label: "צבר ממתין", value: 9, icon: Inbox, color: "text-purple-500", bg: "bg-purple-50", change: "-1", up: false },
 ];
 
-const tickets = [
+const FALLBACK_TICKETS = [
   { id: "TK-1001", customer: "אלומיניום הצפון בע\"מ", subject: "עיכוב באספקת פרופילים", priority: "גבוהה", status: "פתוח", channel: "טלפון", agent: "דנה כהן", created: "08/04/2026 09:15" },
   { id: "TK-1002", customer: "זגוגית השרון", subject: "סדק בזכוכית מחוסמת", priority: "דחוף", status: "בטיפול", channel: "מייל", agent: "יוסי לוי", created: "08/04/2026 08:30" },
   { id: "TK-1003", customer: "מתכת פלוס", subject: "שאלה על מפרט טכני", priority: "רגילה", status: "ממתין ללקוח", channel: "צ'אט", agent: "מיכל אברהם", created: "07/04/2026 16:45" },
@@ -37,7 +39,7 @@ const tickets = [
   { id: "TK-1012", customer: "קליל תעשיות", subject: "שינוי כתובת משלוח", priority: "נמוכה", status: "נסגר", channel: "מייל", agent: "אמיר חסן", created: "05/04/2026 10:15" },
 ];
 
-const agents = [
+const FALLBACK_AGENTS = [
   { name: "דנה כהן", role: "ראש צוות", open: 5, resolved: 18, avgTime: "1.1 שעות", csat: 97, status: "מחוברת" },
   { name: "יוסי לוי", role: "נציג בכיר", open: 4, resolved: 15, avgTime: "1.6 שעות", csat: 93, status: "מחובר" },
   { name: "מיכל אברהם", role: "נציגה", open: 3, resolved: 12, avgTime: "1.3 שעות", csat: 98, status: "מחוברת" },
@@ -46,7 +48,7 @@ const agents = [
   { name: "אמיר חסן", role: "נציג", open: 4, resolved: 9, avgTime: "1.8 שעות", csat: 91, status: "מחובר" },
 ];
 
-const slaCategories = [
+const FALLBACK_SLA_CATEGORIES = [
   { category: "תקלות דחופות", target: "2 שעות", compliance: 91, total: 22, met: 20, breached: 2 },
   { category: "תלונות איכות", target: "4 שעות", compliance: 95, total: 40, met: 38, breached: 2 },
   { category: "שאלות טכניות", target: "8 שעות", compliance: 97, total: 65, met: 63, breached: 2 },
@@ -76,7 +78,7 @@ const channelIcon: Record<string, typeof Phone> = {
   "צ'אט": MessageSquare,
 };
 
-const ticketDistribution = [
+const FALLBACK_TICKET_DISTRIBUTION = [
   { label: "פתוחות", count: 8, color: "bg-blue-500", pct: 35 },
   { label: "בטיפול", count: 6, color: "bg-amber-500", pct: 26 },
   { label: "ממתין ללקוח", count: 3, color: "bg-purple-500", pct: 13 },
@@ -85,6 +87,14 @@ const ticketDistribution = [
 ];
 
 export default function ServiceDashboard() {
+  const { data: servicedashboardData } = useQuery({
+    queryKey: ["service-dashboard"],
+    queryFn: () => authFetch("/api/customer-service/service_dashboard"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = servicedashboardData ?? FALLBACK_KPIS;
+
   const [search, setSearch] = useState("");
 
   return (

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   ShieldCheck, Award, AlertTriangle, XCircle, Clock, DollarSign,
   Search, Calendar, CheckCircle2, FileText, Building2, FlaskConical,
@@ -20,7 +22,7 @@ const statusMap: Record<string, { label: string; color: string }> = {
   inProcess: { label: "בתהליך", color: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
 };
 
-const certifications = [
+const FALLBACK_CERTIFICATIONS = [
   { id: 1, name: "סימון CE", certNumber: "CE-2024-TK-001", product: "חלונות אלומיניום", standard: "EU 305/2011", lab: "מכון התקנים הישראלי", issueDate: "2024-03-15", expiryDate: "2027-03-15", status: "valid", cost: 18500 },
   { id: 2, name: "תקן ישראלי ת\"י 1281", certNumber: "SI-1281-2024-042", product: "דלתות אלומיניום", standard: "ת\"י 1281", lab: "מכון התקנים הישראלי", issueDate: "2024-01-10", expiryDate: "2027-01-10", status: "valid", cost: 12000 },
   { id: 3, name: "EN 14351-1 חלונות ודלתות", certNumber: "EN14351-TK-088", product: "חלונות ודלתות", standard: "EN 14351-1:2006+A2", lab: "IFT Rosenheim", issueDate: "2023-06-20", expiryDate: "2026-06-20", status: "expiring", cost: 32000 },
@@ -38,7 +40,7 @@ const certifications = [
   { id: 15, name: "בידוד תרמי מתקדם", certNumber: "TH2-TK-2025-001", product: "מערכות חזית", standard: "EN 13947", lab: "CSTB France", issueDate: "2025-01-15", expiryDate: "2025-07-15", status: "inProcess", cost: 41000 },
 ];
 
-const testingSchedule = [
+const FALLBACK_TESTING_SCHEDULE = [
   { id: 1, cert: "EN 14351-1 חלונות ודלתות", lab: "IFT Rosenheim", testDate: "2026-05-10", product: "חלונות סדרה חדשה", type: "חידוש", status: "מתוכנן" },
   { id: 2, cert: "EN 1090 פלדה", lab: "Bureau Veritas", testDate: "2026-04-20", product: "רכיבי פלדה", type: "חידוש דחוף", status: "בהכנה" },
   { id: 3, cert: "עמידות בליסטית", lab: "H.P. White Lab", testDate: "2026-06-01", product: "זכוכית בליסטית BR7", type: "חידוש", status: "מתוכנן" },
@@ -48,7 +50,7 @@ const testingSchedule = [
   { id: 7, cert: "דירוג אקוסטי", lab: "מכון התקנים הישראלי", testDate: "2026-05-25", product: "חלונות אקוסטיים 45dB", type: "שדרוג", status: "מתוכנן" },
 ];
 
-const complianceMatrix = [
+const FALLBACK_COMPLIANCE_MATRIX = [
   { product: "חלונות אלומיניום", certs: [true, true, true, false, true, false, false, false, true, true, false, false, false, true, false] },
   { product: "דלתות אלומיניום", certs: [true, true, true, false, false, false, false, false, false, true, false, false, true, true, false] },
   { product: "קירות מסך", certs: [true, false, false, true, true, true, true, false, true, true, false, false, false, true, true] },
@@ -60,7 +62,7 @@ const complianceMatrix = [
 
 const certShortNames = ["CE", "ת\"י 1281", "EN 14351", "EN 13830", "EN 12150", "EN 14449", "EN 1090", "אש", "אקוסטי", "תרמי", "הוריקן", "בליסטי", "פריצה", "סביבתי", "EN 13947"];
 
-const costData = [
+const FALLBACK_COST_DATA = [
   { product: "חלונות אלומיניום", annual: 66500, nextRenewal: "2026-06", pendingCost: 0, certCount: 7 },
   { product: "דלתות אלומיניום", annual: 47000, nextRenewal: "2026-08", pendingCost: 0, certCount: 5 },
   { product: "קירות מסך", annual: 89500, nextRenewal: "2026-06", pendingCost: 41000, certCount: 8 },
@@ -71,6 +73,14 @@ const costData = [
 ];
 
 export default function ProductCertificationsPage() {
+  const { data: productcertificationsData } = useQuery({
+    queryKey: ["product-certifications"],
+    queryFn: () => authFetch("/api/product-dev/product_certifications"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const certifications = productcertificationsData ?? FALLBACK_CERTIFICATIONS;
+
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("certifications");
   const [sortField, setSortField] = useState<string>("expiryDate");

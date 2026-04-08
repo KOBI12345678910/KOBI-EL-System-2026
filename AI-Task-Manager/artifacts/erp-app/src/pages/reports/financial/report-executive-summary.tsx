@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,7 +12,7 @@ import {
   Factory, Truck, AlertTriangle, CheckCircle, ArrowUp, ArrowDown, Building2
 } from "lucide-react";
 
-const kpis = [
+const FALLBACK_KPIS = [
   { title: "הכנסות", value: "₪18,450,000", icon: DollarSign, color: "text-green-400", bg: "bg-green-500/10", change: "+12.3%", up: true, target: "₪17,500,000", targetPct: 105 },
   { title: "מרווח גולמי", value: "40.4%", icon: TrendingUp, color: "text-blue-400", bg: "bg-blue-500/10", change: "+2.1%", up: true, target: "38%", targetPct: 106 },
   { title: "EBITDA", value: "₪4,720,000", icon: BarChart3, color: "text-purple-400", bg: "bg-purple-500/10", change: "+18.5%", up: true, target: "₪4,200,000", targetPct: 112 },
@@ -18,7 +20,7 @@ const kpis = [
   { title: "עובדים", value: "127", icon: Users, color: "text-amber-400", bg: "bg-amber-500/10", change: "+8", up: true, target: "130", targetPct: 98 },
 ];
 
-const financialHighlights = [
+const FALLBACK_FINANCIAL_HIGHLIGHTS = [
   { metric: "הכנסות ממכירות", current: 18450000, prev: 16425000, change: 12.3 },
   { metric: "עלות המכר", current: 11000000, prev: 10200000, change: 7.8 },
   { metric: "רווח גולמי", current: 7450000, prev: 6225000, change: 19.7 },
@@ -29,7 +31,7 @@ const financialHighlights = [
   { metric: "רווח נקי", current: 3207900, prev: 2380000, change: 34.8 },
 ];
 
-const operationalKpis = [
+const FALLBACK_OPERATIONAL_KPIS = [
   { category: "ייצור", items: [
     { name: "OEE (יעילות ציוד כוללת)", value: "84.2%", target: "85%", status: "yellow", trend: "+2.1%" },
     { name: "תפוקה יומית ממוצעת", value: "42 יח׳", target: "45 יח׳", status: "yellow", trend: "+5.0%" },
@@ -56,21 +58,21 @@ const operationalKpis = [
   ]},
 ];
 
-const risks = [
+const FALLBACK_RISKS = [
   { title: "עליית מחירי חומרי גלם", severity: "גבוה", impact: "₪450,000", probability: "70%", mitigation: "חוזים ארוכי טווח עם 3 ספקים עיקריים, גידור מחירי אלומיניום", color: "bg-red-500/20 text-red-300" },
   { title: "מחסור בעובדי ייצור מקצועיים", severity: "בינוני", impact: "עיכוב בייצור", probability: "50%", mitigation: "תוכנית הכשרה פנימית, שיתוף פעולה עם מכללות", color: "bg-yellow-500/20 text-yellow-300" },
   { title: "תחרות מיבוא סיני", severity: "בינוני", impact: "₪800,000", probability: "40%", mitigation: "התמחות במוצרי פרימיום, שירות מהיר, התאמות אישיות", color: "bg-yellow-500/20 text-yellow-300" },
   { title: "עדכון תקנות בנייה", severity: "נמוך", impact: "הסמכות חדשות", probability: "30%", mitigation: "מעקב רגולטורי, צוות תקינה פנימי", color: "bg-green-500/20 text-green-300" },
 ];
 
-const opportunities = [
+const FALLBACK_OPPORTUNITIES = [
   { title: "כניסה לשוק הפוטו-וולטאי", potential: "₪2,500,000", timeline: "Q3 2026", status: "בבדיקה", icon: Lightbulb },
   { title: "הרחבת קו ייצור זכוכית מבודדת", potential: "₪1,800,000", timeline: "Q4 2026", status: "מאושר", icon: Factory },
   { title: "ייצוא לקפריסין ויוון", potential: "₪1,200,000", timeline: "2027", status: "בתכנון", icon: Truck },
   { title: "אוטומציה של קו חיתוך", potential: "חיסכון ₪400,000/שנה", timeline: "Q2 2026", status: "בביצוע", icon: Target },
 ];
 
-const outlook = [
+const FALLBACK_OUTLOOK = [
   { quarter: "Q2 2026", revenue: "₪4,800,000", challenge: "עונת שיא בנייה", confidence: 92 },
   { quarter: "Q3 2026", revenue: "₪5,200,000", challenge: "השקת קו חדש", confidence: 85 },
   { quarter: "Q4 2026", revenue: "₪4,600,000", challenge: "האטה עונתית", confidence: 88 },
@@ -87,6 +89,14 @@ const statusIcon = (status: string) => {
 };
 
 export default function ReportExecutiveSummaryPage() {
+  const { data: reportexecutivesummaryData } = useQuery({
+    queryKey: ["report-executive-summary"],
+    queryFn: () => authFetch("/api/reports/report_executive_summary"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = reportexecutivesummaryData ?? FALLBACK_KPIS;
+
   return (
     <div className="p-6 space-y-6" dir="rtl">
       {/* Header */}

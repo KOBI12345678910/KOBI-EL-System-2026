@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,7 +12,7 @@ import {
   CalendarClock, Factory, Leaf, Flame, Search, Download, RefreshCw, ChevronLeft
 } from "lucide-react";
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "שיפור יעילות", value: "18.4%", delta: "+3.2%", icon: TrendingUp, color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
   { label: "דיוק חיזוי פגמים", value: "94.7%", delta: "+1.8%", icon: ShieldCheck, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
   { label: "השבתה חזויה", value: "6.2 שעות", delta: "-2.1 שעות", icon: AlertTriangle, color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
@@ -18,38 +20,38 @@ const kpis = [
   { label: "חיסכון אנרגיה", value: "₪124,500", delta: "+₪18,200", icon: Zap, color: "text-cyan-400", bg: "bg-cyan-500/10 border-cyan-500/20" },
   { label: "עלייה בתפוקה", value: "12.8%", delta: "+2.4%", icon: BarChart3, color: "text-rose-400", bg: "bg-rose-500/10 border-rose-500/20" },
 ];
-const equipment = [
+const FALLBACK_EQUIPMENT = [
   { id: "EQ-301", name: "מכבש הידראולי A3", prob: 78, fail: "3 ימים", part: "שסתום לחץ", sev: "קריטי", svc: "15/02", rec: "החלפת שסתום + בדיקת סיל" },
   { id: "EQ-118", name: "מסוע ראשי B1", prob: 62, fail: "8 ימים", part: "מנוע הנעה", sev: "גבוה", svc: "28/01", rec: "שימון + כיול מתח רצועה" },
   { id: "EQ-205", name: "רובוט ריתוך C2", prob: 45, fail: "14 ימים", part: "חיישן תרמי", sev: "בינוני", svc: "10/03", rec: "כיול חיישנים + ניקוי זרוע" },
   { id: "EQ-410", name: "CNC מרכז עיבוד D1", prob: 31, fail: "22 ימים", part: "ציר Y", sev: "נמוך", svc: "01/03", rec: "בדיקת דיוק צירים" },
 ];
-const schedule = [
+const FALLBACK_SCHEDULE = [
   { date: "10/04", eq: "מכבש הידראולי A3", type: "מונעת קריטית", dur: "4 שעות", team: "צוות א'", impact: "עצירת קו 3", ai: 96 },
   { date: "14/04", eq: "מסוע ראשי B1", type: "מונעת מתוכננת", dur: "2 שעות", team: "צוות ב'", impact: "האטת קו 1", ai: 88 },
   { date: "18/04", eq: "רובוט ריתוך C2", type: "כיול תקופתי", dur: "1.5 שעות", team: "צוות א'", impact: "מינימלי", ai: 72 },
   { date: "25/04", eq: "CNC מרכז עיבוד D1", type: "בדיקה שגרתית", dur: "1 שעה", team: "צוות ג'", impact: "ללא", ai: 65 },
 ];
-const stations = [
+const FALLBACK_STATIONS = [
   { name: "תחנת ריתוך A", prob: 8.2, trend: "עולה", defect: "ריתוך חלש", cause: "טמפרטורה לא יציבה", conf: 91, rec: "כיול אוטומטי טמפרטורת ריתוך" },
   { name: "תחנת הרכבה B", prob: 5.1, trend: "יורד", defect: "חוסר יישור", cause: "שחיקת ג'יג", conf: 87, rec: "החלפת ג'יג הרכבה" },
   { name: "תחנת צביעה C", prob: 12.4, trend: "עולה", defect: "ציפוי לא אחיד", cause: "לחות גבוהה בתא", conf: 94, rec: "התקנת בקר לחות אוטומטי" },
   { name: "תחנת בדיקה D", prob: 2.8, trend: "יציב", defect: "סטיית מידות", cause: "כיול חיישן", conf: 78, rec: "כיול חיישנים חודשי" },
 ];
-const orders = [
+const FALLBACK_ORDERS = [
   { id: "WO-4521", prod: "מנוע X200", cur: 3, ai: 1, save: "2.5 שעות", bn: "תחנת CNC", cap: 92 },
   { id: "WO-4522", prod: "גלגל שיניים G50", cur: 1, ai: 2, save: "1.8 שעות", bn: "תחנת ריתוך", cap: 78 },
   { id: "WO-4523", prod: "מארז אלומיניום P30", cur: 2, ai: 3, save: "0.5 שעות", bn: "אין", cap: 65 },
   { id: "WO-4524", prod: "צינור הידראולי H10", cur: 5, ai: 4, save: "3.1 שעות", bn: "תחנת כיפוף", cap: 88 },
   { id: "WO-4525", prod: "לוח בקרה E80", cur: 4, ai: 5, save: "0.8 שעות", bn: "תחנת הלחמה", cap: 71 },
 ];
-const energy = [
+const FALLBACK_ENERGY = [
   { zone: "אולם ייצור A", cur: 342, opt: 285, pct: 16.7, peak: "08:00-12:00", rec: "פיזור עומסים לשעות שפל" },
   { zone: "אולם ייצור B", cur: 278, opt: 241, pct: 13.3, peak: "10:00-14:00", rec: "התקנת VFD במנועים ראשיים" },
   { zone: "מחסן חומרי גלם", cur: 124, opt: 98, pct: 21.0, peak: "06:00-08:00", rec: "תאורת LED + חיישני נוכחות" },
   { zone: "קו אריזה", cur: 186, opt: 162, pct: 12.9, peak: "14:00-18:00", rec: "אופטימיזציית מהירות מסועים" },
 ];
-const waste = [
+const FALLBACK_WASTE = [
   { cat: "פסולת מתכת", cur: "3.2 טון/חודש", tgt: "1.8 טון/חודש", red: 43.8, act: "אופטימיזציית חיתוך CNC + מיחזור שבבים", pri: "גבוה", roi: "₪18,500/חודש" },
   { cat: "נוזלי קירור", cur: "420 ליטר/חודש", tgt: "280 ליטר/חודש", red: 33.3, act: "מערכת סינון ומיחזור אוטומטית", pri: "גבוה", roi: "₪12,800/חודש" },
   { cat: "חלקים פגומים", cur: "2.1%", tgt: "0.8%", red: 61.9, act: "בקרת איכות AI בזמן אמת", pri: "קריטי", roi: "₪32,000/חודש" },
@@ -58,6 +60,20 @@ const SC: Record<string, string> = { "קריטי": "bg-red-500/20 text-red-300 b
 const TC: Record<string, string> = { "עולה": "text-red-400", "יורד": "text-emerald-400", "יציב": "text-blue-400" };
 
 export default function AiProductionInsights() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["ai_production_insights"],
+    queryFn: () => authFetch("/api/ai/ai-production-insights").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const equipment = apiData?.equipment ?? FALLBACK_EQUIPMENT;
+  const schedule = apiData?.schedule ?? FALLBACK_SCHEDULE;
+  const stations = apiData?.stations ?? FALLBACK_STATIONS;
+  const orders = apiData?.orders ?? FALLBACK_ORDERS;
+  const energy = apiData?.energy ?? FALLBACK_ENERGY;
+  const waste = apiData?.waste ?? FALLBACK_WASTE;
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("maintenance");
 

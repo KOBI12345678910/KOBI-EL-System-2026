@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +20,7 @@ const SC: Record<CutStatus, string> = { "טיוטה": "bg-slate-500/20 text-slat
 const PC: Record<string, string> = { "רגילה": "bg-gray-500/20 text-gray-300", "דחופה": "bg-red-500/20 text-red-300", "גבוהה": "bg-orange-500/20 text-orange-300" };
 const MC: Record<string, string> = { "בתור": "bg-slate-500/20 text-slate-300", "פעיל": "bg-green-500/20 text-green-300", "הושלם": "bg-blue-500/20 text-blue-300" };
 
-const LISTS: CuttingList[] = [
+const FALLBACK_LISTS: CuttingList[] = [
   { id: "CL001", listNumber: "CL-2026-0041", orderRef: "HZ-1087", profilesCount: 8, pieces: 124, totalLengthM: 312.5, wastePct: 3.2, status: "הושלמה", operator: "יוסי כהן", date: "2026-04-08", priority: "רגילה" },
   { id: "CL002", listNumber: "CL-2026-0042", orderRef: "HZ-1088", profilesCount: 5, pieces: 86, totalLengthM: 198.3, wastePct: 4.1, status: "בחיתוך", operator: "אבי לוי", date: "2026-04-08", priority: "דחופה" },
   { id: "CL003", listNumber: "CL-2026-0043", orderRef: "HZ-1089", profilesCount: 12, pieces: 210, totalLengthM: 540.0, wastePct: 2.8, status: "מאושרת", operator: "משה דוד", date: "2026-04-08", priority: "גבוהה" },
@@ -33,7 +35,7 @@ const LISTS: CuttingList[] = [
   { id: "CL012", listNumber: "CL-2026-0052", orderRef: "HZ-1098", profilesCount: 5, pieces: 72, totalLengthM: 167.3, wastePct: 4.4, status: "טיוטה", operator: "—", date: "2026-04-06", priority: "דחופה" },
 ];
 
-const PATTERNS: CuttingPattern[] = [
+const FALLBACK_PATTERNS: CuttingPattern[] = [
   { id: "P1", profile: "4520 - אלומיניום כנף", barLength: 6500, pieces: [{ length: 1850, qty: 3 }, { length: 450, qty: 1 }], utilization: 96.2, waste: 3.8 },
   { id: "P2", profile: "7230 - אלומיניום אדן", barLength: 6500, pieces: [{ length: 2100, qty: 2 }, { length: 1120, qty: 2 }], utilization: 99.1, waste: 0.9 },
   { id: "P3", profile: "3310 - אלומיניום מסגרת", barLength: 6000, pieces: [{ length: 1500, qty: 4 }], utilization: 100.0, waste: 0.0 },
@@ -42,7 +44,7 @@ const PATTERNS: CuttingPattern[] = [
   { id: "P6", profile: "9940 - אלומיניום תריס", barLength: 6500, pieces: [{ length: 1600, qty: 4 }], utilization: 98.5, waste: 1.5 },
 ];
 
-const WASTE: WasteRecord[] = [
+const FALLBACK_WASTE: WasteRecord[] = [
   { profileType: "אלומיניום כנף", dailyWasteKg: 4.2, targetPct: 5.0, actualPct: 3.8, trend: "down", weekAvg: 4.1 },
   { profileType: "אלומיניום אדן", dailyWasteKg: 1.1, targetPct: 5.0, actualPct: 0.9, trend: "stable", weekAvg: 1.2 },
   { profileType: "אלומיניום מסגרת", dailyWasteKg: 0.0, targetPct: 5.0, actualPct: 0.0, trend: "down", weekAvg: 0.8 },
@@ -51,7 +53,7 @@ const WASTE: WasteRecord[] = [
   { profileType: "אלומיניום תריס", dailyWasteKg: 1.8, targetPct: 5.0, actualPct: 1.5, trend: "down", weekAvg: 2.0 },
 ];
 
-const QUEUE: MachineJob[] = [
+const FALLBACK_QUEUE: MachineJob[] = [
   { id: "MQ1", machine: "מסור CNC ראשי #1", listRef: "CL-2026-0042", profile: "4520 - אלומיניום כנף", pieces: 32, estMinutes: 45, status: "פעיל", position: 1 },
   { id: "MQ2", machine: "מסור CNC ראשי #1", listRef: "CL-2026-0042", profile: "7230 - אלומיניום אדן", pieces: 24, estMinutes: 30, status: "בתור", position: 2 },
   { id: "MQ3", machine: "מסור CNC ראשי #1", listRef: "CL-2026-0045", profile: "3310 - אלומיניום מסגרת", pieces: 48, estMinutes: 55, status: "בתור", position: 3 },
@@ -62,7 +64,7 @@ const QUEUE: MachineJob[] = [
   { id: "MQ8", machine: "מסור זוויות #3", listRef: "CL-2026-0043", profile: "7230 - אלומיניום אדן", pieces: 40, estMinutes: 48, status: "בתור", position: 2 },
 ];
 
-const SUGGESTIONS = [
+const FALLBACK_SUGGESTIONS = [
   { color: "emerald", icon: CheckCircle2, title: "שילוב הזמנות HZ-1088 ו-HZ-1096", desc: "שילוב חלקים מ-2 הזמנות יקטין פחת ב-1180 דלת כניסה מ-13.3% ל-4.2%", badge: "חיסכון משוער: 8.2 ק״ג" },
   { color: "blue", icon: CheckCircle2, title: "שינוי אורך מוט ל-7000 מ״מ בפרופיל 5560", desc: "מעבר למוט 7 מטר יאפשר 5 חלקים + שארית שמישה במקום פחת", badge: "שיפור ניצולת: +3.1%" },
   { color: "amber", icon: AlertTriangle, title: "התראה: פרופיל 1180 מעל יעד פחת", desc: "פחת ממוצע 13.3% - נדרש שינוי תבנית חיתוך או הזמנת מוטות באורך מותאם", badge: "חריגה: +8.3% מעל יעד" },
@@ -71,6 +73,40 @@ const SUGGESTIONS = [
 ];
 
 export default function FabCuttingLists() {
+  const { data: apiLISTS } = useQuery({
+    queryKey: ["/api/fabrication/fab-cutting-lists/lists"],
+    queryFn: () => authFetch("/api/fabrication/fab-cutting-lists/lists").then(r => r.json()).catch(() => null),
+  });
+  const LISTS = Array.isArray(apiLISTS) ? apiLISTS : (apiLISTS?.data ?? apiLISTS?.items ?? FALLBACK_LISTS);
+
+
+  const { data: apiPATTERNS } = useQuery({
+    queryKey: ["/api/fabrication/fab-cutting-lists/patterns"],
+    queryFn: () => authFetch("/api/fabrication/fab-cutting-lists/patterns").then(r => r.json()).catch(() => null),
+  });
+  const PATTERNS = Array.isArray(apiPATTERNS) ? apiPATTERNS : (apiPATTERNS?.data ?? apiPATTERNS?.items ?? FALLBACK_PATTERNS);
+
+
+  const { data: apiWASTE } = useQuery({
+    queryKey: ["/api/fabrication/fab-cutting-lists/waste"],
+    queryFn: () => authFetch("/api/fabrication/fab-cutting-lists/waste").then(r => r.json()).catch(() => null),
+  });
+  const WASTE = Array.isArray(apiWASTE) ? apiWASTE : (apiWASTE?.data ?? apiWASTE?.items ?? FALLBACK_WASTE);
+
+
+  const { data: apiQUEUE } = useQuery({
+    queryKey: ["/api/fabrication/fab-cutting-lists/queue"],
+    queryFn: () => authFetch("/api/fabrication/fab-cutting-lists/queue").then(r => r.json()).catch(() => null),
+  });
+  const QUEUE = Array.isArray(apiQUEUE) ? apiQUEUE : (apiQUEUE?.data ?? apiQUEUE?.items ?? FALLBACK_QUEUE);
+
+
+  const { data: apiSUGGESTIONS } = useQuery({
+    queryKey: ["/api/fabrication/fab-cutting-lists/suggestions"],
+    queryFn: () => authFetch("/api/fabrication/fab-cutting-lists/suggestions").then(r => r.json()).catch(() => null),
+  });
+  const SUGGESTIONS = Array.isArray(apiSUGGESTIONS) ? apiSUGGESTIONS : (apiSUGGESTIONS?.data ?? apiSUGGESTIONS?.items ?? FALLBACK_SUGGESTIONS);
+
   const [activeTab, setActiveTab] = useState("lists");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<CutStatus | "all">("all");

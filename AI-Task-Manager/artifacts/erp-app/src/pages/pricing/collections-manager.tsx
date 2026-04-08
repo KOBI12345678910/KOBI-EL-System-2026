@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,7 +23,7 @@ import {
   CalendarDays,
 } from "lucide-react";
 
-const accounts = [
+const FALLBACK_ACCOUNTS = [
   { id: 1, name: 'חברת בנייה א.ב. בע"מ', balance: 125000, overdue: 45000, lastPayment: "2026-03-15", daysOverdue: 22, risk: "בינוני" },
   { id: 2, name: "קבלנות הצפון", balance: 89000, overdue: 0, lastPayment: "2026-04-01", daysOverdue: 0, risk: "נמוך" },
   { id: 3, name: "אדריכלים מאוחדים", balance: 67000, overdue: 67000, lastPayment: "2026-01-20", daysOverdue: 78, risk: "גבוה" },
@@ -36,7 +38,7 @@ const accounts = [
   { id: 12, name: "אלומיניום פרויקטים", balance: 54000, overdue: 12000, lastPayment: "2026-03-25", daysOverdue: 14, risk: "נמוך" },
 ];
 
-const agingBuckets = [
+const FALLBACK_AGING_BUCKETS = [
   { range: "שוטף (0-30 ימים)", amount: 485000, count: 5, color: "bg-green-100 text-green-800" },
   { range: "30-60 ימים", amount: 217000, count: 3, color: "bg-yellow-100 text-yellow-800" },
   { range: "60-90 ימים", amount: 162000, count: 2, color: "bg-orange-100 text-orange-800" },
@@ -44,7 +46,7 @@ const agingBuckets = [
   { range: "120+ ימים", amount: 156000, count: 1, color: "bg-red-200 text-red-900" },
 ];
 
-const collectionActions = [
+const FALLBACK_COLLECTION_ACTIONS = [
   { id: 1, customer: "אדריכלים מאוחדים", action: "שיחת טלפון", date: "2026-04-08", status: "מתוכנן", amount: 67000, type: "phone" },
   { id: 2, customer: 'בניין וגמר בע"מ', action: "מכתב התראה שני", date: "2026-04-07", status: "נשלח", amount: 120000, type: "letter" },
   { id: 3, customer: "דירות יוקרה ת\"א", action: "העברה לגבייה משפטית", date: "2026-04-06", status: "בטיפול", amount: 156000, type: "legal" },
@@ -73,6 +75,16 @@ const actionIcon = (type: string) => {
 };
 
 export default function CollectionsManager() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["collections_manager"],
+    queryFn: () => authFetch("/api/pricing/collections-manager").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const accounts = apiData?.accounts ?? FALLBACK_ACCOUNTS;
+  const agingBuckets = apiData?.agingBuckets ?? FALLBACK_AGING_BUCKETS;
+  const collectionActions = apiData?.collectionActions ?? FALLBACK_COLLECTION_ACTIONS;
   const [search, setSearch] = useState("");
 
   const totalReceivables = accounts.reduce((s, a) => s + a.balance, 0);

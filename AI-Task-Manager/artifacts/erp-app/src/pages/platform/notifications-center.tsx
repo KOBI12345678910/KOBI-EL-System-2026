@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -55,7 +57,7 @@ const moduleConfig: Record<string, { label: string; icon: typeof Bell; color: st
   executive:    { label: "הנהלה", icon: Star, color: "text-red-400" },
 };
 
-const alerts: Alert[] = [
+const FALLBACK_ALERTS: Alert[] = [
   { id: 1, type: "executive_escalation", severity: "critical", module: "executive", title: "אסקלציה: עסקת אלון פרויקטים תקועה 14 יום", description: "עסקה בסך 2.8M NIS ללא התקדמות. הלקוח איים לעבור למתחרה.", reference: "DEAL-4521", time: "לפני 12 דקות", status: "active" },
   { id: 2, type: "production_delay", severity: "critical", module: "production", title: "קו ייצור C עצר — תקלת PLC", description: "קו ברזל/הרכבה מושבת. WO-002458 מתעכב. השפעה על 3 הזמנות.", reference: "WO-002458", time: "לפני 25 דקות", status: "active" },
   { id: 3, type: "stock_shortage", severity: "critical", module: "inventory", title: "מחסור קריטי: פרופיל אלומיניום 100mm", description: "מלאי נותר: 45 יח׳ (צריכה יומית: 120). ייגמר תוך 9 שעות.", reference: "SKU-AL100", time: "לפני 38 דקות", status: "active" },
@@ -75,7 +77,7 @@ const alerts: Alert[] = [
   { id: 17, type: "quality_failure", severity: "low", module: "quality", title: "סטיית מידות קלה — פרופיל Pro-X", description: "סטייה 0.5mm (מותר עד 1mm). בגבול. מומלץ מעקב.", reference: "QC-8839", time: "לפני 10 שעות", status: "resolved" },
 ];
 
-const alertRules: AlertRule[] = [
+const FALLBACK_ALERT_RULES: AlertRule[] = [
   { id: 1, module: "procurement", trigger: "איחור מעל 5 ימים בהזמנת רכש", severity: "high", recipients: ["מנהל רכש", "סמנכ״ל תפעול"], active: true },
   { id: 2, module: "import", trigger: "משלוח תקוע בנמל מעל 3 ימים", severity: "critical", recipients: ["מנהל יבוא", "מנהל לוגיסטיקה"], active: true },
   { id: 3, module: "inventory", trigger: "מלאי מתחת לנקודת הזמנה", severity: "critical", recipients: ["מנהל מחסן", "מנהל רכש"], active: true },
@@ -169,6 +171,14 @@ function AlertCard({ alert }: { alert: Alert }) {
 }
 
 export default function NotificationsCenter() {
+  const { data: notificationscenterData } = useQuery({
+    queryKey: ["notifications-center"],
+    queryFn: () => authFetch("/api/platform/notifications_center"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const alerts = notificationscenterData ?? FALLBACK_ALERTS;
+
   const [tab, setTab] = useState("all");
 
   const criticalAlerts = alerts.filter(a => a.severity === "critical" && a.status !== "resolved");

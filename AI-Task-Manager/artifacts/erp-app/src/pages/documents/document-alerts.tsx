@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -12,7 +14,7 @@ import {
 
 /* ── alert type definitions ── */
 
-const alertTypes = [
+const FALLBACK_ALERT_TYPES = [
   { type: "expired", label: "מסמך פג תוקף", icon: FileX, count: 3, color: "bg-red-600" },
   { type: "pending-sign", label: "חתימה ממתינה מעל 48 שעות", icon: PenTool, count: 2, color: "bg-orange-600" },
   { type: "sla-breach", label: "אישור ממתין מעל SLA", icon: Timer, count: 2, color: "bg-amber-600" },
@@ -25,7 +27,7 @@ const alertTypes = [
 
 /* ── alerts data ── */
 
-const alerts = [
+const FALLBACK_ALERTS = [
   { id: "ALR-001", type: "expired", title: "תעודת ISO 9001 פגה", description: "תעודה פגה ב-01/04/2026, יש לחדש מול מכון התקנים", doc: "DOC-620", time: "לפני 7 ימים", severity: "קריטי", action: "חדש תעודה" },
   { id: "ALR-002", type: "expired", title: "אישור רגולציה משרד הכלכלה", description: "אישור יצוא פג תוקף, חובה לחידוש לפני משלוח הבא", doc: "DOC-833", time: "לפני 3 ימים", severity: "קריטי", action: "הגש בקשה" },
   { id: "ALR-003", type: "pending-sign", title: "חוזה ספק מתכת כללי — חתימת מנכ״ל", description: "חוזה ממתין לחתימת דוד לוי כבר 72 שעות", doc: "DOC-301", time: "לפני 72 שעות", severity: "קריטי", action: "שלח תזכורת" },
@@ -43,7 +45,7 @@ const alerts = [
   { id: "ALR-015", type: "expired", title: "רישיון תוכנת ERP — פג תוקף", description: "רישיון שנתי פג ב-05/04/2026, יש לחדש לפני נעילה", doc: "LIC-008", time: "לפני 3 ימים", severity: "מידע", action: "חדש רישיון" },
 ];
 
-const closedAlerts = [
+const FALLBACK_CLOSED_ALERTS = [
   { id: "ALR-C01", title: "תעודת כיול מד לחץ חודשה", closedBy: "רחל אברהם", closedAt: "2026-04-06", severity: "אזהרה" },
   { id: "ALR-C02", title: "חתימת הזמנת רכש PO-2244 הושלמה", closedBy: "יוסי כהן", closedAt: "2026-04-05", severity: "אזהרה" },
   { id: "ALR-C03", title: "מסמך יתום סווג לקטגוריית ייצור", closedBy: "מערכת אוטומטית", closedAt: "2026-04-05", severity: "מידע" },
@@ -54,7 +56,7 @@ const closedAlerts = [
   { id: "ALR-C08", title: "חוזה ספק חשמל נחתם ואושר", closedBy: "דוד לוי", closedAt: "2026-03-31", severity: "קריטי" },
 ];
 
-const thresholds = [
+const FALLBACK_THRESHOLDS = [
   { rule: "מסמך פג תוקף", trigger: "0 ימים לאחר תפוגה", notify: "בעל המסמך + מנהל", severity: "קריטי", enabled: true },
   { rule: "חתימה ממתינה", trigger: "48 שעות", notify: "החותם + מנהל ישיר", severity: "אזהרה", enabled: true },
   { rule: "אישור חורג מ-SLA", trigger: "מעבר ל-SLA שהוגדר", notify: "מנהל תהליך + הנהלה", severity: "קריטי", enabled: true },
@@ -98,6 +100,17 @@ const severityBorder = (s: string) => {
 /* ── component ── */
 
 export default function DocumentAlertsPage() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["document_alerts"],
+    queryFn: () => authFetch("/api/documents/document-alerts").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const alertTypes = apiData?.alertTypes ?? FALLBACK_ALERT_TYPES;
+  const alerts = apiData?.alerts ?? FALLBACK_ALERTS;
+  const closedAlerts = apiData?.closedAlerts ?? FALLBACK_CLOSED_ALERTS;
+  const thresholds = apiData?.thresholds ?? FALLBACK_THRESHOLDS;
   const [tab, setTab] = useState("active");
 
   const summary = [

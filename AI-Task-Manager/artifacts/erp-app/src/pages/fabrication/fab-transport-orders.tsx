@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +20,7 @@ const statusColors: Record<string, string> = {
   "נמסר": "bg-green-500/20 text-green-300 border-green-500/30",
 };
 
-const transportOrders = [
+const FALLBACK_TRANSPORTORDERS = [
   { id: "TR-4001", customer: "אלומיניום הצפון בע\"מ", destination: "חיפה, רח׳ העצמאות 45", items: "פרופילים 6060-T5", weight: "2,400 ק\"ג", vehicle: "משאית 12 טון - 78-432-01", driver: "יוסי כהן", pickup: "07:00", delivery: "09:30", status: "נמסר" },
   { id: "TR-4002", customer: "חלונות המרכז", destination: "תל אביב, רח׳ הברזל 22", items: "חלונות מוגמרים x24", weight: "1,850 ק\"ג", vehicle: "משאית 8 טון - 54-218-03", driver: "מוחמד אבו-חמד", pickup: "07:30", delivery: "10:00", status: "בדרך" },
   { id: "TR-4003", customer: "קבוצת בנייה דרום", destination: "באר שבע, שד׳ רגר 110", items: "דלתות אלומיניום x36", weight: "3,100 ק\"ג", vehicle: "משאית 15 טון - 92-607-05", driver: "אלי ביטון", pickup: "06:30", delivery: "11:00", status: "בדרך" },
@@ -33,7 +35,7 @@ const transportOrders = [
   { id: "TR-4012", customer: "קיבוץ גליל", destination: "כרמיאל, אזור תעשייה", items: "גדרות אלומיניום x40", weight: "2,100 ק\"ג", vehicle: "משאית 8 טון - 54-218-03", driver: "מוחמד אבו-חמד", pickup: "15:00", delivery: "18:00", status: "מתוזמן" },
 ];
 
-const todayRoutes = [
+const FALLBACK_TODAYROUTES = [
   { id: "RT-01", driver: "יוסי כהן", vehicle: "משאית 12 טון", stops: 3, distance: "145 ק\"מ", estTime: "4:30 שעות", status: "פעיל", progress: 65, orders: ["TR-4001", "TR-4005"] },
   { id: "RT-02", driver: "מוחמד אבו-חמד", vehicle: "משאית 8 טון", stops: 2, distance: "78 ק\"מ", estTime: "2:45 שעות", status: "פעיל", progress: 50, orders: ["TR-4002", "TR-4012"] },
   { id: "RT-03", driver: "אלי ביטון", vehicle: "משאית 15 טון", stops: 2, distance: "210 ק\"מ", estTime: "5:00 שעות", status: "פעיל", progress: 40, orders: ["TR-4003", "TR-4008"] },
@@ -42,7 +44,7 @@ const todayRoutes = [
   { id: "RT-06", driver: "חיים גולן", vehicle: "טריילר 25 טון", stops: 2, distance: "120 ק\"מ", estTime: "3:15 שעות", status: "פעיל", progress: 85, orders: ["TR-4009", "TR-4011"] },
 ];
 
-const vehicles = [
+const FALLBACK_VEHICLES = [
   { id: "78-432-01", type: "משאית 12 טון", capacity: 12000, currentLoad: 2400, trips: 2, fuelUsed: 85, status: "בדרך" },
   { id: "54-218-03", type: "משאית 8 טון", capacity: 8000, currentLoad: 1850, trips: 2, fuelUsed: 62, status: "בדרך" },
   { id: "92-607-05", type: "משאית 15 טון", capacity: 15000, currentLoad: 3100, trips: 2, fuelUsed: 110, status: "בדרך" },
@@ -51,13 +53,40 @@ const vehicles = [
   { id: "11-555-04", type: "טריילר 25 טון", capacity: 25000, currentLoad: 7500, trips: 2, fuelUsed: 130, status: "פעיל" },
 ];
 
-const deliveryConfirmations = [
+const FALLBACK_DELIVERYCONFIRMATIONS = [
   { orderId: "TR-4001", customer: "אלומיניום הצפון בע\"מ", deliveredAt: "09:22", signedBy: "רונן אברהם", condition: "תקין", notes: "נמסר למחסן ראשי", hasPOD: true, hasDamage: false },
   { orderId: "TR-4007", customer: "בנייני המזרח", deliveredAt: "09:08", signedBy: "שרה מזרחי", condition: "תקין", notes: "נמסר לאתר בנייה קומה 3", hasPOD: true, hasDamage: false },
   { orderId: "TR-4009", customer: "חברת נגב בנייה", deliveredAt: "08:25", signedBy: "איתן דגן", condition: "נזק קל", notes: "שריטה קלה על יחידה #3, תועד בצילום", hasPOD: true, hasDamage: true },
 ];
 
 export default function FabTransportOrders() {
+  const { data: apitransportOrders } = useQuery({
+    queryKey: ["/api/fabrication/fab-transport-orders/transportorders"],
+    queryFn: () => authFetch("/api/fabrication/fab-transport-orders/transportorders").then(r => r.json()).catch(() => null),
+  });
+  const transportOrders = Array.isArray(apitransportOrders) ? apitransportOrders : (apitransportOrders?.data ?? apitransportOrders?.items ?? FALLBACK_TRANSPORTORDERS);
+
+
+  const { data: apitodayRoutes } = useQuery({
+    queryKey: ["/api/fabrication/fab-transport-orders/todayroutes"],
+    queryFn: () => authFetch("/api/fabrication/fab-transport-orders/todayroutes").then(r => r.json()).catch(() => null),
+  });
+  const todayRoutes = Array.isArray(apitodayRoutes) ? apitodayRoutes : (apitodayRoutes?.data ?? apitodayRoutes?.items ?? FALLBACK_TODAYROUTES);
+
+
+  const { data: apivehicles } = useQuery({
+    queryKey: ["/api/fabrication/fab-transport-orders/vehicles"],
+    queryFn: () => authFetch("/api/fabrication/fab-transport-orders/vehicles").then(r => r.json()).catch(() => null),
+  });
+  const vehicles = Array.isArray(apivehicles) ? apivehicles : (apivehicles?.data ?? apivehicles?.items ?? FALLBACK_VEHICLES);
+
+
+  const { data: apideliveryConfirmations } = useQuery({
+    queryKey: ["/api/fabrication/fab-transport-orders/deliveryconfirmations"],
+    queryFn: () => authFetch("/api/fabrication/fab-transport-orders/deliveryconfirmations").then(r => r.json()).catch(() => null),
+  });
+  const deliveryConfirmations = Array.isArray(apideliveryConfirmations) ? apideliveryConfirmations : (apideliveryConfirmations?.data ?? apideliveryConfirmations?.items ?? FALLBACK_DELIVERYCONFIRMATIONS);
+
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("orders");
   const [statusFilter, setStatusFilter] = useState("all");

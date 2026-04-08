@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +13,7 @@ import {
   XCircle, Zap, Shield, ThumbsUp, ThumbsDown, Minus, RefreshCw
 } from "lucide-react";
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "פניות שנפתרו אוטומטית", value: "1,847", change: "+12.3%", icon: Bot, color: "text-emerald-400", bg: "bg-emerald-500/10" },
   { label: "זמן תגובת AI", value: "0.8 שנ'", change: "-34%", icon: Clock, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "שביעות רצון לקוחות", value: "94.2%", change: "+2.1%", icon: SmilePlus, color: "text-amber-400", bg: "bg-amber-500/10" },
@@ -20,7 +22,7 @@ const kpis = [
   { label: "ציון סנטימנט", value: "8.6/10", change: "+0.4", icon: Brain, color: "text-rose-400", bg: "bg-rose-500/10" },
 ];
 
-const conversations = [
+const FALLBACK_CONVERSATIONS = [
   { id: "CS-4021", customer: "דני כהן", topic: "סטטוס משלוח", status: "פעיל", sentiment: "חיובי", duration: "2:14", confidence: 96 },
   { id: "CS-4022", customer: "מיכל לוי", topic: "אחריות מוצר", status: "פעיל", sentiment: "ניטרלי", duration: "5:30", confidence: 88 },
   { id: "CS-4023", customer: "אבי ישראלי", topic: "תמחור", status: "ממתין", sentiment: "שלילי", duration: "1:45", confidence: 72 },
@@ -29,14 +31,14 @@ const conversations = [
   { id: "CS-4026", customer: "שירה גולן", topic: "אחריות מוצר", status: "הוסלם", sentiment: "שלילי", duration: "12:05", confidence: 61 },
 ];
 
-const topicStats = [
+const FALLBACK_TOPIC_STATS = [
   { topic: "סטטוס משלוח", count: 482, auto: 94, avg: "1.2 דק'", icon: "📦" },
   { topic: "אחריות מוצר", count: 318, auto: 78, avg: "3.8 דק'", icon: "🛡️" },
   { topic: "תמחור", count: 256, auto: 65, avg: "2.4 דק'", icon: "💰" },
   { topic: "תמיכה טכנית", count: 198, auto: 52, avg: "6.1 דק'", icon: "🔧" },
 ];
 
-const kbArticles = [
+const FALLBACK_KB_ARTICLES = [
   { title: "מדיניות החזרות והחלפות", matches: 342, confidence: 98, lastUsed: "לפני 2 דק'", cat: "מדיניות" },
   { title: "מעקב משלוחים - שאלות נפוצות", matches: 289, confidence: 96, lastUsed: "לפני 5 דק'", cat: "משלוחים" },
   { title: "תנאי אחריות מורחבת", matches: 214, confidence: 91, lastUsed: "לפני 12 דק'", cat: "אחריות" },
@@ -45,19 +47,19 @@ const kbArticles = [
   { title: "הוראות התקנה ושימוש", matches: 134, confidence: 85, lastUsed: "לפני 20 דק'", cat: "טכני" },
 ];
 
-const sentimentTrends = [
+const FALLBACK_SENTIMENT_TRENDS = [
   { period: "ינואר", pos: 68, neu: 22, neg: 10 }, { period: "פברואר", pos: 71, neu: 20, neg: 9 },
   { period: "מרץ", pos: 74, neu: 18, neg: 8 }, { period: "אפריל", pos: 72, neu: 19, neg: 9 },
   { period: "מאי", pos: 76, neu: 17, neg: 7 }, { period: "יוני", pos: 78, neu: 16, neg: 6 },
 ];
 
-const negAlerts = [
+const FALLBACK_NEG_ALERTS = [
   { id: "ALT-01", customer: "אבי ישראלי", issue: "עיכוב משלוח חוזר - לקוח מתוסכל", severity: "גבוה", time: "לפני 5 דק'", score: 2.1 },
   { id: "ALT-02", customer: "שירה גולן", issue: "תלונה על איכות מוצר - בקשת החזר", severity: "בינוני", time: "לפני 18 דק'", score: 3.4 },
   { id: "ALT-03", customer: "עמית דר", issue: "חיוב כפול - דורש טיפול מיידי", severity: "גבוה", time: "לפני 32 דק'", score: 1.8 },
 ];
 
-const perfComp = [
+const FALLBACK_PERF_COMP = [
   { metric: "זמן תגובה ממוצע", ai: "0.8 שנ'", human: "4.2 דק'", imp: "99.7%" },
   { metric: "שיעור פתרון בפנייה ראשונה", ai: "87%", human: "72%", imp: "20.8%" },
   { metric: "שביעות רצון לקוח", ai: "94.2%", human: "89.5%", imp: "5.3%" },
@@ -70,6 +72,20 @@ const SC: Record<string, string> = { "פעיל": "bg-green-500/20 text-green-300
 const sIcon = (s: string) => s === "חיובי" ? <ThumbsUp className="w-3.5 h-3.5 text-emerald-400" /> : s === "שלילי" ? <ThumbsDown className="w-3.5 h-3.5 text-red-400" /> : <Minus className="w-3.5 h-3.5 text-yellow-400" />;
 
 export default function AiCustomerService() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["ai_customer_service"],
+    queryFn: () => authFetch("/api/ai/ai-customer-service").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const conversations = apiData?.conversations ?? FALLBACK_CONVERSATIONS;
+  const topicStats = apiData?.topicStats ?? FALLBACK_TOPIC_STATS;
+  const kbArticles = apiData?.kbArticles ?? FALLBACK_KB_ARTICLES;
+  const sentimentTrends = apiData?.sentimentTrends ?? FALLBACK_SENTIMENT_TRENDS;
+  const negAlerts = apiData?.negAlerts ?? FALLBACK_NEG_ALERTS;
+  const perfComp = apiData?.perfComp ?? FALLBACK_PERF_COMP;
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("dashboard");
 

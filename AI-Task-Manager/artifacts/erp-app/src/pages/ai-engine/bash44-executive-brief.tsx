@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,7 +16,7 @@ import {
 } from "lucide-react";
 
 // --- DATA ---
-const topPriorities = [
+const FALLBACK_TOP_PRIORITIES = [
   { id: 1, title: "פער תזרים מזומנים צפוי ב-15 לחודש", severity: "קריטי", owner: "דני כהן - CFO", urgency: "היום", desc: "חוסר של ₪1.2M בתזרים צפוי. נדרש שחרור כספים מפיקדון או הקדמת גבייה.", icon: DollarSign },
   { id: 2, title: "עיכוב אספקת חומרי גלם - קו ייצור 3", severity: "קריטי", owner: "שרון לוי - COO", urgency: "דחוף - 24 שעות", desc: "ספק מרכזי עיכב משלוח 2 שבועות. השפעה על 4 הזמנות לקוח בשווי ₪890K.", icon: Factory },
   { id: 3, title: "לקוח אסטרטגי מאיים בעזיבה", severity: "גבוה", owner: "מיכל אברהם - VP Sales", urgency: "48 שעות", desc: "טכנו-סיסטם (₪2.4M שנתי) לא שבע רצון מזמני תגובה. 3 תלונות בחודש האחרון.", icon: Users },
@@ -22,7 +24,7 @@ const topPriorities = [
   { id: 5, title: "תקלת ציוד חוזרת - מכונת CNC מספר 7", severity: "בינוני", owner: "יוסי מזרחי - מנהל ייצור", urgency: "השבוע", desc: "תקלה שלישית בחודש. עלות השבתה מצטברת ₪180K. המלצה להחלפה.", icon: Wrench },
 ];
 
-const financialWatchlist = [
+const FALLBACK_FINANCIAL_WATCHLIST = [
   { id: 1, title: "שחיקת מרווח - קו מוצרים B", metric: "מרווח גולמי ירד מ-34% ל-28%", impact: "₪620K אובדן שנתי", trend: -6, category: "מרווח" },
   { id: 2, title: "פער תזרים - ספקים מול גבייה", metric: "DSO: 52 יום | DPO: 31 יום", impact: "₪1.2M חוסר נזילות", trend: -8, category: "תזרים" },
   { id: 3, title: "חובות לקוחות באיחור 60+", metric: "₪1.8M ב-12 חשבוניות", impact: "סיכון מחיקה ₪340K", trend: -15, category: "גבייה" },
@@ -31,7 +33,7 @@ const financialWatchlist = [
   { id: 6, title: "חשיפת מט\"ח לא מגודרת", metric: "$380K חשיפה פתוחה", impact: "סיכון הפסד עד ₪95K", trend: -4, category: "מט\"ח" },
 ];
 
-const operationalWatchlist = [
+const FALLBACK_OPERATIONAL_WATCHLIST = [
   { id: 1, title: "עיכוב ייצור - הזמנה #4872", status: "מאחר 5 ימים", cause: "חוסר חומר גלם + תקלת ציוד", client: "אלקטרו-טק בע\"מ", risk: "קריטי" },
   { id: 2, title: "חסימת רכש - אישור תקציב ממתין", status: "ממתין 8 ימים", cause: "הזמנת רכש ₪340K ממתינה לאישור סמנכ\"ל", client: "פנימי", risk: "גבוה" },
   { id: 3, title: "כשל התקנה - פרויקט נתניה", status: "נדחה פעמיים", cause: "אי התאמת מפרט לשטח. דרוש סקר מחדש", client: "בניה-פלוס בע\"מ", risk: "גבוה" },
@@ -39,7 +41,7 @@ const operationalWatchlist = [
   { id: 5, title: "תקלת מערכת ERP - מודול מלאי", status: "חוזר כל 48 שעות", cause: "באג בסנכרון מלאי בין מחסנים", client: "פנימי", risk: "בינוני" },
 ];
 
-const projectWatchlist = [
+const FALLBACK_PROJECT_WATCHLIST = [
   { id: 1, name: "פרויקט מגדל-אור", health: 38, budget: "₪2.4M", spent: "₪2.84M", deadline: "15/06/2026", status: "חריגה קריטית", issues: ["חריגת תקציב 22%", "איחור 3 שבועות", "שינויי מפרט"] },
   { id: 2, name: "שדרוג קו ייצור 4", health: 55, budget: "₪1.8M", spent: "₪1.1M", deadline: "30/07/2026", status: "בסיכון", issues: ["עיכוב ציוד מיבוא", "חוסר כ\"א מוסמך"] },
   { id: 3, name: "פרויקט דיגיטציה - שלב ב'", health: 62, budget: "₪960K", spent: "₪580K", deadline: "01/09/2026", status: "אזהרה", issues: ["אינטגרציה מורכבת מהצפוי", "דרוש יועץ נוסף"] },
@@ -47,14 +49,14 @@ const projectWatchlist = [
   { id: 5, name: "מערכת CRM חדשה", health: 45, budget: "₪520K", spent: "₪490K", deadline: "20/05/2026", status: "בסיכון גבוה", issues: ["חריגת תקציב 94%", "הטמעה חלקית", "התנגדות משתמשים"] },
 ];
 
-const customerWatchlist = [
+const FALLBACK_CUSTOMER_WATCHLIST = [
   { id: 1, name: "טכנו-סיסטם בע\"מ", value: "₪2.4M/שנה", issue: "3 תלונות על זמני תגובה. NPS ירד מ-8 ל-4.", action: "פגישת הנהלה דחופה", risk: "קריטי", satisfaction: 35 },
   { id: 2, name: "אלקטרו-טק בע\"מ", value: "₪1.8M/שנה", issue: "עיכוב אספקה חוזר. שוקלים ספק חלופי.", action: "הצעת פיצוי + תוכנית שיפור", risk: "גבוה", satisfaction: 42 },
   { id: 3, name: "בניה-פלוס בע\"מ", value: "₪1.1M/שנה", issue: "כשל התקנה בפרויקט נתניה. דורשים פיצוי.", action: "שליחת צוות מיוחד + הנחה", risk: "גבוה", satisfaction: 48 },
   { id: 4, name: "סולאר-גרין בע\"מ", value: "₪860K/שנה", issue: "ירידה ברכישות 40% ב-Q1. עברו לקו מוצרים מתחרה.", action: "הצעה מותאמת + ביקור מנכ\"ל", risk: "בינוני", satisfaction: 55 },
 ];
 
-const decisionsNeeded = [
+const FALLBACK_DECISIONS_NEEDED = [
   { id: 1, title: "אישור תוספת תקציב - פרויקט מגדל-אור", deadline: "היום", context: "חריגה של ₪440K. ללא אישור, עצירת פרויקט ועלות פיצוי ₪200K.", options: [
     { label: "אישור תוספת מלאה (₪440K)", pros: "המשך ללא עיכוב", cons: "חריגה תקציבית" },
     { label: "אישור חלקי (₪280K) + צמצום היקף", pros: "חיסכון ₪160K", cons: "דחיית תכולה 2 חודשים" },
@@ -72,7 +74,7 @@ const decisionsNeeded = [
   ]},
 ];
 
-const suggestedActions = [
+const FALLBACK_SUGGESTED_ACTIONS = [
   { id: 1, title: "להפעיל תוכנית גבייה מואצת", priority: "קריטי", impact: "שחרור ₪1.8M תוך 30 יום", responsible: "מנהל כספים", timeline: "מיידי", desc: "מיקוד ב-12 חשבוניות באיחור 60+. הצעת הנחה 3% לתשלום מיידי." },
   { id: 2, title: "כנס חירום עם טכנו-סיסטם", priority: "קריטי", impact: "שימור לקוח ₪2.4M/שנה", responsible: "VP Sales + CEO", timeline: "48 שעות", desc: "פגישת הנהלה, הצגת תוכנית שיפור, הקצאת מנהל לקוח ייעודי." },
   { id: 3, title: "הקמת War Room לפרויקט מגדל-אור", priority: "גבוה", impact: "החזרת פרויקט למסלול", responsible: "מנהל פרויקטים", timeline: "מחר", desc: "ישיבת סטטוס יומית, דוח חריגות שבועי, הגדרת אבני דרך מחודשות." },
@@ -91,6 +93,20 @@ const healthBg = (h: number) => h >= 70 ? "bg-green-500" : h >= 50 ? "bg-yellow-
 
 // --- COMPONENT ---
 export default function Bash44ExecutiveBrief() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["bash44_executive_brief"],
+    queryFn: () => authFetch("/api/ai/bash44-executive-brief").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const topPriorities = apiData?.topPriorities ?? FALLBACK_TOP_PRIORITIES;
+  const financialWatchlist = apiData?.financialWatchlist ?? FALLBACK_FINANCIAL_WATCHLIST;
+  const operationalWatchlist = apiData?.operationalWatchlist ?? FALLBACK_OPERATIONAL_WATCHLIST;
+  const projectWatchlist = apiData?.projectWatchlist ?? FALLBACK_PROJECT_WATCHLIST;
+  const customerWatchlist = apiData?.customerWatchlist ?? FALLBACK_CUSTOMER_WATCHLIST;
+  const decisionsNeeded = apiData?.decisionsNeeded ?? FALLBACK_DECISIONS_NEEDED;
+  const suggestedActions = apiData?.suggestedActions ?? FALLBACK_SUGGESTED_ACTIONS;
   const [briefDate, setBriefDate] = useState("2026-04-08");
   const [activeTab, setActiveTab] = useState("priorities");
   const [generating, setGenerating] = useState(false);

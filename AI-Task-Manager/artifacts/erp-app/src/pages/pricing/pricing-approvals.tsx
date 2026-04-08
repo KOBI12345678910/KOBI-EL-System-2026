@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,7 +22,7 @@ const urgencyMap: Record<string, { label: string; cls: string }> = {
 };
 
 /* ── Pending Approvals Queue ─────────────────────────────────── */
-const pendingQueue = [
+const FALLBACK_PENDING_QUEUE = [
   { id: "PR-401", project: "חזית זכוכית - מגדל הים", customer: "אורבן נדל\"ן", totalCost: 485000, recommendedPrice: 642000, margin: 32.4, discount: 8, version: 3, requester: "רונן לוי", urgency: "critical" as const, daysWaiting: 5 },
   { id: "PR-402", project: "מעקות בטיחות - קניון הנגב", customer: "ביג מרכזי מסחר", totalCost: 215000, recommendedPrice: 296700, margin: 38.0, discount: 3, version: 1, requester: "אלון דוד", urgency: "high" as const, daysWaiting: 3 },
   { id: "PR-403", project: "חלונות תרמיים - בית חולים הדסה", customer: "הדסה מדיקל", totalCost: 535000, recommendedPrice: 695500, margin: 30.0, discount: 12, version: 1, requester: "שרון אברהם", urgency: "critical" as const, daysWaiting: 4 },
@@ -34,7 +36,7 @@ const pendingQueue = [
 ];
 
 /* ── Approved Today ──────────────────────────────────────────── */
-const approvedToday = [
+const FALLBACK_APPROVED_TODAY = [
   { id: "PR-391", project: "אטם סיליקון SG-7", customer: "תעשיות חן", totalCost: 5900, recommendedPrice: 8260, margin: 28.6, approvedBy: "עוזי טכנוכל", time: "08:45" },
   { id: "PR-392", project: "בורג נירוסטה M8", customer: "פלדה בע\"מ", totalCost: 3200, recommendedPrice: 4800, margin: 33.3, approvedBy: "שרה מנהלת", time: "10:20" },
   { id: "PR-393", project: "מכסה פלסטיק TK-200", customer: "פלסטיק פלוס", totalCost: 12400, recommendedPrice: 18600, margin: 33.3, approvedBy: "עוזי טכנוכל", time: "11:30" },
@@ -42,7 +44,7 @@ const approvedToday = [
 ];
 
 /* ── Rejected ────────────────────────────────────────────────── */
-const rejected = [
+const FALLBACK_REJECTED = [
   { id: "PR-381", project: "בורג נירוסטה M8 v2", customer: "פלדה בע\"מ", totalCost: 3450, recommendedPrice: 5175, margin: 33.3, rejectedBy: "עוזי טכנוכל", date: "2026-04-06", reason: "עליית מחיר ספק גבוהה מדי - לחפש ספק חלופי" },
   { id: "PR-382", project: "חלונות תרמיים - ניסיון 1", customer: "הדסה מדיקל", totalCost: 560000, recommendedPrice: 672000, margin: 20.0, rejectedBy: "שרה מנהלת", date: "2026-04-05", reason: "מרווח נמוך מ-25% - לא עומד במדיניות החברה" },
   { id: "PR-383", project: "שער חשמלי - גורדון", customer: "עיריית ת\"א", totalCost: 38000, recommendedPrice: 42000, margin: 10.5, rejectedBy: "עוזי טכנוכל", date: "2026-04-04", reason: "הנחה 20% חורגת ממדיניות - דורש אישור מנכ\"ל" },
@@ -50,7 +52,7 @@ const rejected = [
 ];
 
 /* ── Approval Rules ──────────────────────────────────────────── */
-const approvalRules = [
+const FALLBACK_APPROVAL_RULES = [
   { condition: "מחיר מעל ₪500,000", approver: "מנהל כללי", level: "CEO", color: "text-red-400" },
   { condition: "מחיר מעל ₪100,000", approver: "מנהל תפעול", level: "מנהל", color: "text-orange-400" },
   { condition: "מחיר עד ₪100,000", approver: "מנהל מכירות", level: "מנהל", color: "text-blue-400" },
@@ -64,13 +66,13 @@ const approvalRules = [
 ];
 
 /* ── KPIs ─────────────────────────────────────────────────────── */
-const highValuePending = pendingQueue.filter(p => p.recommendedPrice >= 500000).reduce((s, p) => s + p.recommendedPrice, 0);
-const escalated = pendingQueue.filter(p => p.discount > 10 || p.margin < 25).length;
+const highValuePending = FALLBACK_PENDING_QUEUE.filter(p => p.recommendedPrice >= 500000).reduce((s, p) => s + p.recommendedPrice, 0);
+const escalated = FALLBACK_PENDING_QUEUE.filter(p => p.discount > 10 || p.margin < 25).length;
 
-const kpis = [
-  { label: "ממתינים לאישור", value: String(pendingQueue.length), icon: Clock, color: "text-yellow-400", bg: "bg-yellow-500/10" },
-  { label: "אושרו היום", value: String(approvedToday.length), icon: CheckCircle, color: "text-green-400", bg: "bg-green-500/10" },
-  { label: "נדחו", value: String(rejected.length), icon: XCircle, color: "text-red-400", bg: "bg-red-500/10" },
+const FALLBACK_KPIS = [
+  { label: "ממתינים לאישור", value: String(FALLBACK_PENDING_QUEUE.length), icon: Clock, color: "text-yellow-400", bg: "bg-yellow-500/10" },
+  { label: "אושרו היום", value: String(FALLBACK_APPROVED_TODAY.length), icon: CheckCircle, color: "text-green-400", bg: "bg-green-500/10" },
+  { label: "נדחו", value: String(FALLBACK_REJECTED.length), icon: XCircle, color: "text-red-400", bg: "bg-red-500/10" },
   { label: "זמן אישור ממוצע", value: "2.8 ימים", icon: TrendingUp, color: "text-cyan-400", bg: "bg-cyan-500/10" },
   { label: "ערך גבוה ממתין", value: shekel(highValuePending), icon: DollarSign, color: "text-purple-400", bg: "bg-purple-500/10" },
   { label: "הוסלמו", value: String(escalated), icon: ArrowUpCircle, color: "text-orange-400", bg: "bg-orange-500/10" },
@@ -78,6 +80,18 @@ const kpis = [
 
 /* ── Component ────────────────────────────────────────────────── */
 export default function PricingApprovals() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["pricing_approvals"],
+    queryFn: () => authFetch("/api/pricing/pricing-approvals").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const pendingQueue = apiData?.pendingQueue ?? FALLBACK_PENDING_QUEUE;
+  const approvedToday = apiData?.approvedToday ?? FALLBACK_APPROVED_TODAY;
+  const rejected = apiData?.rejected ?? FALLBACK_REJECTED;
+  const approvalRules = apiData?.approvalRules ?? FALLBACK_APPROVAL_RULES;
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
   const [tab, setTab] = useState("pending");
 
   return (

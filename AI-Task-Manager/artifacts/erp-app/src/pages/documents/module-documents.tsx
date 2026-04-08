@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -15,7 +17,7 @@ import {
    ================================================================ */
 
 /* ── Module Overview Cards ── */
-const modules = [
+const FALLBACK_MODULES = [
   { key: "procurement", label: "רכש", icon: ShoppingCart, count: 645, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-200" },
   { key: "import", label: "ייבוא", icon: Ship, count: 180, color: "text-cyan-600", bg: "bg-cyan-50", border: "border-cyan-200" },
   { key: "finance", label: "כספים", icon: Landmark, count: 1530, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" },
@@ -27,7 +29,7 @@ const modules = [
 ];
 
 /* ── Per-Module Document Tables ── */
-const procurementDocs = [
+const FALLBACK_PROCUREMENT_DOCS = [
   { id: "PO-2026-1284", name: "הזמנת רכש — אלומיניום Alumil", type: "הזמנת רכש", entity: "Alumil Romania", date: "06/04/2026", status: "מאושר", version: "v2.1" },
   { id: "PO-2026-1279", name: "הזמנת רכש — זכוכית Foshan", type: "הזמנת רכש", entity: "Foshan Glass", date: "04/04/2026", status: "ממתין", version: "v1.0" },
   { id: "DN-5590", name: "תעודת משלוח — פרופילים", type: "תעודת משלוח", entity: "Alumil Romania", date: "05/04/2026", status: "מאושר", version: "v1.0" },
@@ -38,7 +40,7 @@ const procurementDocs = [
   { id: "PO-2026-1270", name: "הזמנת רכש — חומרי אריזה", type: "הזמנת רכש", entity: "אריזות ישראל", date: "25/03/2026", status: "מאושר", version: "v1.1" },
 ];
 
-const importDocs = [
+const FALLBACK_IMPORT_DOCS = [
   { id: "LC-2026-034", name: "מכתב אשראי — Foshan Glass", type: "LC", entity: "בנק לאומי / Foshan", date: "10/03/2026", status: "פעיל", version: "v1.0" },
   { id: "BL-FG-2026-18", name: "שטר מטען — מכולה FSCU7734", type: "Bill of Lading", entity: "Maersk Line", date: "22/03/2026", status: "מאושר", version: "v1.0" },
   { id: "PL-FG-2026-18", name: "רשימת אריזה — זכוכית מחוסמת", type: "Packing List", entity: "Foshan Glass", date: "20/03/2026", status: "מאושר", version: "v1.1" },
@@ -49,7 +51,7 @@ const importDocs = [
   { id: "BL-ALU-2026-12", name: "שטר מטען — מכולה ALRU4421", type: "Bill of Lading", entity: "ZIM Lines", date: "18/02/2026", status: "מאושר", version: "v1.0" },
 ];
 
-const financeDocs = [
+const FALLBACK_FINANCE_DOCS = [
   { id: "INV-2026-0312", name: "חשבונית מס — פרויקט מגדלי הים", type: "חשבונית", entity: "מגדלי הים בע\"מ", date: "07/04/2026", status: "מאושר", version: "v1.0" },
   { id: "REC-2026-0298", name: "קבלה — תשלום ספק Alumil", type: "קבלה", entity: "Alumil Romania", date: "05/04/2026", status: "מאושר", version: "v1.0" },
   { id: "FIN-Q1-2026", name: "דוח כספי רבעוני Q1 2026", type: "דוח כספי", entity: "טכנו-כל עוזי", date: "01/04/2026", status: "טיוטה", version: "v0.9" },
@@ -62,7 +64,7 @@ const financeDocs = [
   { id: "TAX-ANN-2025", name: "דוח שנתי מס הכנסה 2025", type: "הצהרת מס", entity: "רשות המסים", date: "31/03/2026", status: "ממתין", version: "v1.0" },
 ];
 
-const productionDocs = [
+const FALLBACK_PRODUCTION_DOCS = [
   { id: "WI-PRD-088", name: "הוראת עבודה — קו חיתוך CNC", type: "הוראת עבודה", entity: "קו ייצור A", date: "01/04/2026", status: "פעיל", version: "v5.2" },
   { id: "DWG-SH40-R3", name: "שרטוט ציר הנעה SH-40", type: "שרטוט", entity: "מחלקת הנדסה", date: "15/03/2026", status: "מאושר", version: "v3.0" },
   { id: "BOM-PRO-X-2026", name: "BOM — פרופיל Pro-X Premium", type: "BOM", entity: "מוצר Pro-X", date: "10/03/2026", status: "פעיל", version: "v2.4" },
@@ -73,7 +75,7 @@ const productionDocs = [
   { id: "DWG-PRO-X-R5", name: "שרטוט פרופיל Pro-X Premium", type: "שרטוט", entity: "מחלקת הנדסה", date: "01/04/2026", status: "מאושר", version: "v5.0" },
 ];
 
-const customerDocs = [
+const FALLBACK_CUSTOMER_DOCS = [
   { id: "Q-2026-0312", name: "הצעת מחיר — מגדלי הים", type: "הצעת מחיר", entity: "מגדלי הים בע\"מ", date: "25/03/2026", status: "נשלח", version: "v2.0" },
   { id: "CTR-CUS-091", name: "חוזה — פרויקט נהריה מערב", type: "חוזה", entity: "עיריית נהריה", date: "01/02/2026", status: "חתום", version: "v1.0" },
   { id: "HNDVR-2026-014", name: "פרוטוקול מסירה — דירה 12A", type: "פרוטוקול מסירה", entity: "רמת גן טאוורס", date: "04/04/2026", status: "מאושר", version: "v1.0" },
@@ -83,7 +85,7 @@ const customerDocs = [
   { id: "CTR-CUS-094", name: "חוזה — שיפוץ משרדי הייטק ת\"א", type: "חוזה", entity: "סטארטאפ ויז'ן", date: "01/04/2026", status: "ממתין", version: "v1.0" },
 ];
 
-const installationDocs = [
+const FALLBACK_INSTALLATION_DOCS = [
   { id: "INST-2026-078", name: "דוח התקנה — מגדלי הים קומה 14", type: "דוח התקנה", entity: "מגדלי הים בע\"מ", date: "07/04/2026", status: "מאושר", version: "v1.0" },
   { id: "INST-2026-075", name: "דוח התקנה — וילת פרימיום נתניה", type: "דוח התקנה", entity: "לקוח פרטי", date: "03/04/2026", status: "ממתין", version: "v1.0" },
   { id: "SFTY-INST-041", name: "אישור בטיחות — עבודה בגובה", type: "אישור בטיחות", entity: "צוות התקנות A", date: "01/04/2026", status: "פעיל", version: "v1.2" },
@@ -93,7 +95,7 @@ const installationDocs = [
   { id: "COMP-INST-2026-07", name: "תעודת השלמה — פרויקט נהריה", type: "השלמה", entity: "עיריית נהריה", date: "25/03/2026", status: "מאושר", version: "v1.0" },
 ];
 
-const supplierDocs = [
+const FALLBACK_SUPPLIER_DOCS = [
   { id: "CTR-SUP-048", name: "חוזה מסגרת — Alumil 2026", type: "חוזה", entity: "Alumil Romania", date: "15/01/2026", status: "פעיל", version: "v3.0" },
   { id: "EVAL-SUP-2026-Q1", name: "הערכת ספק — Foshan Glass", type: "הערכת ספק", entity: "Foshan Glass", date: "31/03/2026", status: "הושלם", version: "v1.0" },
   { id: "APR-SUP-YKK", name: "אישור ספק מאושר — YKK AP", type: "אישור ספק", entity: "YKK AP", date: "10/02/2026", status: "מאושר", version: "v2.0" },
@@ -103,7 +105,7 @@ const supplierDocs = [
   { id: "EVAL-SUP-2026-ALU", name: "הערכת ספק — Alumil Romania", type: "הערכת ספק", entity: "Alumil Romania", date: "28/03/2026", status: "הושלם", version: "v1.0" },
 ];
 
-const qualityDocs = [
+const FALLBACK_QUALITY_DOCS = [
   { id: "QMS-2026-001", name: "מדיניות איכות — טכנו-כל עוזי", type: "מדיניות", entity: "טכנו-כל עוזי", date: "01/01/2026", status: "פעיל", version: "v6.0" },
   { id: "AUD-INT-2026-Q1", name: "דוח מבדק פנימי — Q1 2026", type: "מבדק פנימי", entity: "מחלקת איכות", date: "31/03/2026", status: "מאושר", version: "v1.0" },
   { id: "NCR-2026-018", name: "דוח אי-התאמה — אצווה זכוכית", type: "NCR", entity: "קו ייצור B", date: "05/04/2026", status: "בטיפול", version: "v1.1" },
@@ -115,7 +117,7 @@ const qualityDocs = [
 ];
 
 /* ── Cross-Module Linking Examples ── */
-const crossModuleLinks = [
+const FALLBACK_CROSS_MODULE_LINKS = [
   {
     title: "הזמנת רכש → חשבונית ספק → תשלום",
     from: { module: "רכש", doc: "PO-2026-1284", label: "הזמנת רכש — Alumil" },
@@ -154,7 +156,7 @@ const linkStatusColor = (s: string) =>
   s === "הושלם" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700";
 
 /* ── Module Stats Summary ── */
-const moduleStats = [
+const FALLBACK_MODULE_STATS = [
   { module: "רכש", approved: 412, pending: 38, expired: 5, thisMonth: 22, growth: 8.4 },
   { module: "ייבוא", approved: 134, pending: 12, expired: 2, thisMonth: 8, growth: 5.1 },
   { module: "כספים", approved: 1205, pending: 85, expired: 12, thisMonth: 41, growth: 12.3 },
@@ -213,6 +215,24 @@ function DocTable({ docs }: { docs: typeof procurementDocs }) {
    MAIN COMPONENT
    ================================================================ */
 export default function ModuleDocuments() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["module_documents"],
+    queryFn: () => authFetch("/api/documents/module-documents").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const modules = apiData?.modules ?? FALLBACK_MODULES;
+  const procurementDocs = apiData?.procurementDocs ?? FALLBACK_PROCUREMENT_DOCS;
+  const importDocs = apiData?.importDocs ?? FALLBACK_IMPORT_DOCS;
+  const financeDocs = apiData?.financeDocs ?? FALLBACK_FINANCE_DOCS;
+  const productionDocs = apiData?.productionDocs ?? FALLBACK_PRODUCTION_DOCS;
+  const customerDocs = apiData?.customerDocs ?? FALLBACK_CUSTOMER_DOCS;
+  const installationDocs = apiData?.installationDocs ?? FALLBACK_INSTALLATION_DOCS;
+  const supplierDocs = apiData?.supplierDocs ?? FALLBACK_SUPPLIER_DOCS;
+  const qualityDocs = apiData?.qualityDocs ?? FALLBACK_QUALITY_DOCS;
+  const crossModuleLinks = apiData?.crossModuleLinks ?? FALLBACK_CROSS_MODULE_LINKS;
+  const moduleStats = apiData?.moduleStats ?? FALLBACK_MODULE_STATS;
   const [activeTab, setActiveTab] = useState("procurement");
   const totalDocs = modules.reduce((sum, m) => sum + m.count, 0);
 

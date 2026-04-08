@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +19,7 @@ const statusMap: Record<string, { label: string; color: string }> = {
   shipped: { label: "נשלחה", color: "bg-purple-500/20 text-purple-300 border-purple-500/30" },
 };
 
-const packingLists = [
+const FALLBACK_PACKINGLISTS = [
   { id: "PL-4801", orderRef: "ORD-1190", items: 24, weight: 1480, dims: "240x120x90", vehicle: "משאית 12 טון", dest: "תל אביב - מגדלי הים", status: "shipped" },
   { id: "PL-4802", orderRef: "ORD-1192", items: 18, weight: 920, dims: "200x100x80", vehicle: "משאית 8 טון", dest: "חיפה - מרכז הכרמל", status: "ready" },
   { id: "PL-4803", orderRef: "ORD-1195", items: 36, weight: 2150, dims: "300x140x110", vehicle: "טריילר", dest: "באר שבע - פארק הייטק", status: "packing" },
@@ -30,7 +32,7 @@ const packingLists = [
   { id: "PL-4810", orderRef: "ORD-1212", items: 28, weight: 1600, dims: "250x130x100", vehicle: "טריילר", dest: "רמת גן - בורסה", status: "packing" },
 ];
 
-const loadingVehicles = [
+const FALLBACK_LOADINGVEHICLES = [
   { id: "V-01", type: "טריילר", capacity: 3200, loaded: 2800, axles: 3, zones: [
     { zone: "קדמי", weight: 950, pct: 34, items: "חלונות גדולים PL-4805" },
     { zone: "אמצעי", weight: 1100, pct: 39, items: "דלתות + מסגרות PL-4805" },
@@ -43,7 +45,7 @@ const loadingVehicles = [
   ]},
 ];
 
-const protectionMaterials = [
+const FALLBACK_PROTECTIONMATERIALS = [
   { name: "קצף EPE", stock: 240, unit: "גליל", usage: 18, low: false, desc: "הגנה על פרופילים ומסגרות" },
   { name: "ניילון נצמד (שרינק)", stock: 85, unit: "גליל", usage: 12, low: false, desc: "עטיפה חיצונית למשטחים" },
   { name: "מגני פינות L", stock: 520, unit: "יח'", usage: 65, low: false, desc: "הגנת פינות חלונות ודלתות" },
@@ -54,7 +56,7 @@ const protectionMaterials = [
   { name: "כריות אוויר", stock: 45, unit: "שק", usage: 8, low: true, desc: "מילוי חללים במשטח" },
 ];
 
-const shippingSchedule = [
+const FALLBACK_SHIPPINGSCHEDULE = [
   { time: "07:00", listId: "PL-4805", carrier: "שילוח ברק", driver: "מוחמד חסן", dest: "ירושלים", status: "בדרך", eta: "09:30" },
   { time: "08:30", listId: "PL-4802", carrier: "הובלות הצפון", driver: "יוסי לוי", dest: "חיפה", status: "ממתין לטעינה", eta: "12:00" },
   { time: "09:00", listId: "PL-4809", carrier: "שילוח ברק", driver: "אבי כהן", dest: "פתח תקווה", status: "ממתין לטעינה", eta: "10:30" },
@@ -78,6 +80,33 @@ const kpis = [
 ];
 
 export default function FabPackingLists() {
+  const { data: apipackingLists } = useQuery({
+    queryKey: ["/api/fabrication/fab-packing-lists/packinglists"],
+    queryFn: () => authFetch("/api/fabrication/fab-packing-lists/packinglists").then(r => r.json()).catch(() => null),
+  });
+  const packingLists = Array.isArray(apipackingLists) ? apipackingLists : (apipackingLists?.data ?? apipackingLists?.items ?? FALLBACK_PACKINGLISTS);
+
+
+  const { data: apiloadingVehicles } = useQuery({
+    queryKey: ["/api/fabrication/fab-packing-lists/loadingvehicles"],
+    queryFn: () => authFetch("/api/fabrication/fab-packing-lists/loadingvehicles").then(r => r.json()).catch(() => null),
+  });
+  const loadingVehicles = Array.isArray(apiloadingVehicles) ? apiloadingVehicles : (apiloadingVehicles?.data ?? apiloadingVehicles?.items ?? FALLBACK_LOADINGVEHICLES);
+
+
+  const { data: apiprotectionMaterials } = useQuery({
+    queryKey: ["/api/fabrication/fab-packing-lists/protectionmaterials"],
+    queryFn: () => authFetch("/api/fabrication/fab-packing-lists/protectionmaterials").then(r => r.json()).catch(() => null),
+  });
+  const protectionMaterials = Array.isArray(apiprotectionMaterials) ? apiprotectionMaterials : (apiprotectionMaterials?.data ?? apiprotectionMaterials?.items ?? FALLBACK_PROTECTIONMATERIALS);
+
+
+  const { data: apishippingSchedule } = useQuery({
+    queryKey: ["/api/fabrication/fab-packing-lists/shippingschedule"],
+    queryFn: () => authFetch("/api/fabrication/fab-packing-lists/shippingschedule").then(r => r.json()).catch(() => null),
+  });
+  const shippingSchedule = Array.isArray(apishippingSchedule) ? apishippingSchedule : (apishippingSchedule?.data ?? apishippingSchedule?.items ?? FALLBACK_SHIPPINGSCHEDULE);
+
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("lists");
   const filteredLists = packingLists.filter(l => l.id.includes(search) || l.orderRef.includes(search) || l.dest.includes(search));

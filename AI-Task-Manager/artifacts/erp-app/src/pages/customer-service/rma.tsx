@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +13,7 @@ import {
   ArrowUpRight, ArrowDownRight, Truck, AlertTriangle, CreditCard, FileText
 } from "lucide-react";
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "RMA פתוחים", value: 12, icon: RotateCcw, color: "text-blue-500", bg: "bg-blue-50", change: "+3", up: true },
   { label: "יחידות שהוחזרו", value: 47, icon: Package, color: "text-amber-500", bg: "bg-amber-50", change: "+8", up: true },
   { label: "ערך החזרים ₪", value: "34,200", icon: Wallet, color: "text-red-500", bg: "bg-red-50", change: "+5,100", up: true },
@@ -20,7 +22,7 @@ const kpis = [
   { label: "שיעור RMA", value: "2.1%", icon: TrendingDown, color: "text-teal-500", bg: "bg-teal-50", change: "-0.3%", up: false },
 ];
 
-const rmaList = [
+const FALLBACK_RMA_LIST = [
   { id: "RMA-5001", customer: "אלומיניום הצפון בע\"מ", product: "פרופיל 6063 T5", reason: "סדק באורך", qty: 24, status: "התקבל", date: "07/04/2026", value: 3600 },
   { id: "RMA-5002", customer: "זגוגית השרון", product: "זכוכית מחוסמת 10 מ\"מ", reason: "שבר בהובלה", qty: 6, status: "בבדיקה", date: "06/04/2026", value: 4800 },
   { id: "RMA-5003", customer: "בניין ירוק בע\"מ", product: "חלון הזזה כפול", reason: "מידות שגויות", qty: 4, status: "אושר", date: "05/04/2026", value: 8200 },
@@ -33,7 +35,7 @@ const rmaList = [
   { id: "RMA-5010", customer: "מפעלי גולן מתכת", product: "נירוסטה 304 גיליון", reason: "שריטות", qty: 12, status: "בבדיקה", date: "07/04/2026", value: 3800 },
 ];
 
-const inspections = [
+const FALLBACK_INSPECTIONS = [
   { rma: "RMA-5001", product: "פרופיל 6063 T5", inspector: "אבי מלכה", date: "08/04/2026", result: "פגם ייצור", recommendation: "החלפה מלאה", qcScore: 35 },
   { rma: "RMA-5002", product: "זכוכית מחוסמת 10 מ\"מ", inspector: "רונן שפירא", date: "08/04/2026", result: "נזק הובלה", recommendation: "זיכוי חלקי", qcScore: 55 },
   { rma: "RMA-5004", product: "פח גלוון 0.5 מ\"מ", inspector: "אבי מלכה", date: "07/04/2026", result: "שימוש לא תקין", recommendation: "דחייה", qcScore: 78 },
@@ -41,14 +43,14 @@ const inspections = [
   { rma: "RMA-5010", product: "נירוסטה 304 גיליון", inspector: "אבי מלכה", date: "08/04/2026", result: "בבדיקה", recommendation: "ממתין", qcScore: 0 },
 ];
 
-const credits = [
+const FALLBACK_CREDITS = [
   { rma: "RMA-5005", customer: "פרויקט מגדלי ים", type: "זיכוי מלא", amount: 5400, invoiceRef: "INV-8834", date: "04/04/2026", status: "בוצע" },
   { rma: "RMA-5009", customer: "זכוכית אילת", type: "זיכוי מלא", amount: 6400, invoiceRef: "INV-8801", date: "03/04/2026", status: "בוצע" },
   { rma: "RMA-5003", customer: "בניין ירוק בע\"מ", type: "החלפת מוצר", amount: 8200, invoiceRef: "INV-8812", date: "06/04/2026", status: "בתהליך" },
   { rma: "RMA-5008", customer: "אלומטל תעשיות", type: "זיכוי חלקי", amount: 2940, invoiceRef: "INV-8790", date: "06/04/2026", status: "בתהליך" },
 ];
 
-const returnReasons = [
+const FALLBACK_RETURN_REASONS = [
   { reason: "פגם ייצור", count: 18, pct: 38, color: "bg-red-500" },
   { reason: "מידות שגויות", count: 10, pct: 21, color: "bg-amber-500" },
   { reason: "נזק בהובלה", count: 8, pct: 17, color: "bg-blue-500" },
@@ -71,6 +73,14 @@ const creditStatusColor: Record<string, string> = {
 };
 
 export default function Rma() {
+  const { data: rmaData } = useQuery({
+    queryKey: ["rma"],
+    queryFn: () => authFetch("/api/customer-service/rma"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = rmaData ?? FALLBACK_KPIS;
+
   const [search, setSearch] = useState("");
 
   return (

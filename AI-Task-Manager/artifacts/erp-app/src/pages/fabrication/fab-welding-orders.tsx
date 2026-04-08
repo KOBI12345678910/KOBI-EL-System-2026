@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,7 +33,7 @@ const MATERIAL_COLORS: Record<string, string> = {
   "נירוסטה": "bg-amber-500/20 text-amber-300 border-amber-500/30",
 };
 
-const weldingOrders = [
+const FALLBACK_WELDINGORDERS = [
   { id: "WO-4001", product: "שלדת פלדה תעשייתית", weldType: "MIG", material: "פלדה", joints: 48, fillerWire: "ER70S-6 1.2mm", status: "active", welder: "יוסי כהן", progress: 35 },
   { id: "WO-4002", product: "מיכל לחץ אלומיניום", weldType: "TIG", material: "אלומיניום", joints: 32, fillerWire: "ER4043 2.4mm", status: "welding", welder: "משה לוי", progress: 62 },
   { id: "WO-4003", product: "צינור נירוסטה 316L", weldType: "TIG", material: "נירוסטה", joints: 24, fillerWire: "ER316L 1.6mm", status: "inspection", welder: "אבי דוד", progress: 90 },
@@ -44,7 +46,7 @@ const weldingOrders = [
   { id: "WO-4010", product: "גוף רכב אלומיניום", weldType: "Spot", material: "אלומיניום", joints: 72, fillerWire: "---", status: "completed", welder: "דני רוזן", progress: 100 },
 ];
 
-const welders = [
+const FALLBACK_WELDERS = [
   { id: "W-01", name: "יוסי כהן", cert: "EN ISO 9606-1", skills: ["MIG", "Spot"], assignment: "WO-4001 / WO-4007", level: "בכיר", passRate: 98 },
   { id: "W-02", name: "משה לוי", cert: "EN ISO 9606-1/2", skills: ["TIG", "MIG"], assignment: "WO-4002", level: "בכיר", passRate: 97 },
   { id: "W-03", name: "אבי דוד", cert: "EN ISO 9606-1", skills: ["TIG", "MIG"], assignment: "WO-4003 / WO-4009", level: "מומחה", passRate: 99 },
@@ -55,7 +57,7 @@ const welders = [
   { id: "W-08", name: "עידו מזרחי", cert: "EN ISO 9606-1", skills: ["MIG"], assignment: "הכשרה TIG", level: "זוטר", passRate: 88 },
 ];
 
-const qualityInspections = [
+const FALLBACK_QUALITYINSPECTIONS = [
   { id: "QI-301", order: "WO-4003", joint: "J-12", method: "ויזואלי", result: "עובר", inspector: "ד\"ר שלמה", notes: "תקין - ללא פגמים נראים" },
   { id: "QI-302", order: "WO-4003", joint: "J-13", method: "חומר חודר (DPT)", result: "עובר", inspector: "ד\"ר שלמה", notes: "אין סדקים או נקבוביות" },
   { id: "QI-303", order: "WO-4002", joint: "J-08", method: "צילום רנטגן", result: "עובר", inspector: "ד\"ר שלמה", notes: "ללא פגמים פנימיים" },
@@ -68,7 +70,7 @@ const qualityInspections = [
   { id: "QI-310", order: "WO-4006", joint: "J-03", method: "צילום רנטגן", result: "עובר", inspector: "ד\"ר שלמה", notes: "ללא ליקויים" },
 ];
 
-const consumables = [
+const FALLBACK_CONSUMABLES = [
   { id: "C-01", name: "חוט מילוי ER70S-6 0.8mm", category: "חוט מילוי", stock: 120, unit: 'ק"ג', minStock: 50, status: "תקין" },
   { id: "C-02", name: "חוט מילוי ER70S-6 1.0mm", category: "חוט מילוי", stock: 85, unit: 'ק"ג', minStock: 40, status: "תקין" },
   { id: "C-03", name: "חוט מילוי ER70S-6 1.2mm", category: "חוט מילוי", stock: 30, unit: 'ק"ג', minStock: 60, status: "נמוך" },
@@ -93,6 +95,33 @@ const kpis = [
 ];
 
 export default function FabWeldingOrders() {
+  const { data: apiweldingOrders } = useQuery({
+    queryKey: ["/api/fabrication/fab-welding-orders/weldingorders"],
+    queryFn: () => authFetch("/api/fabrication/fab-welding-orders/weldingorders").then(r => r.json()).catch(() => null),
+  });
+  const weldingOrders = Array.isArray(apiweldingOrders) ? apiweldingOrders : (apiweldingOrders?.data ?? apiweldingOrders?.items ?? FALLBACK_WELDINGORDERS);
+
+
+  const { data: apiwelders } = useQuery({
+    queryKey: ["/api/fabrication/fab-welding-orders/welders"],
+    queryFn: () => authFetch("/api/fabrication/fab-welding-orders/welders").then(r => r.json()).catch(() => null),
+  });
+  const welders = Array.isArray(apiwelders) ? apiwelders : (apiwelders?.data ?? apiwelders?.items ?? FALLBACK_WELDERS);
+
+
+  const { data: apiqualityInspections } = useQuery({
+    queryKey: ["/api/fabrication/fab-welding-orders/qualityinspections"],
+    queryFn: () => authFetch("/api/fabrication/fab-welding-orders/qualityinspections").then(r => r.json()).catch(() => null),
+  });
+  const qualityInspections = Array.isArray(apiqualityInspections) ? apiqualityInspections : (apiqualityInspections?.data ?? apiqualityInspections?.items ?? FALLBACK_QUALITYINSPECTIONS);
+
+
+  const { data: apiconsumables } = useQuery({
+    queryKey: ["/api/fabrication/fab-welding-orders/consumables"],
+    queryFn: () => authFetch("/api/fabrication/fab-welding-orders/consumables").then(r => r.json()).catch(() => null),
+  });
+  const consumables = Array.isArray(apiconsumables) ? apiconsumables : (apiconsumables?.data ?? apiconsumables?.items ?? FALLBACK_CONSUMABLES);
+
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("orders");
 

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,7 +14,7 @@ import {
 const fmt = (v: number) => new Intl.NumberFormat("he-IL").format(v);
 const fmtCurrency = (v: number) => "₪" + new Intl.NumberFormat("he-IL").format(v);
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "החזרות פתוחות", value: "12", sub: "בקשות פעילות", icon: PackageX, color: "text-red-400", bg: "bg-red-500/10" },
   { label: "ממתין לאישור", value: "5", sub: "בתור אישורים", icon: ShieldCheck, color: "text-amber-400", bg: "bg-amber-500/10" },
   { label: "בשילוח", value: "4", sub: "בדרך לספק", icon: Truck, color: "text-blue-400", bg: "bg-blue-500/10" },
@@ -21,7 +23,7 @@ const kpis = [
   { label: "זמן החזרה ממוצע", value: "4.2", sub: "ימים", icon: Timer, color: "text-teal-400", bg: "bg-teal-500/10" },
 ];
 
-const returnRequests = [
+const FALLBACK_RETURN_REQUESTS = [
   { id: "RTN-001", supplier: "Foshan Glass Co.", item: "זכוכית מחוסמת 10מ״מ", qty: 15, reason: "פגם", requestedBy: "יוסי כהן", status: "ממתין לאישור", date: "2026-04-07" },
   { id: "RTN-002", supplier: "מפעלי ברזל השרון", item: "פלדה מגולוונת 2מ״מ", qty: 30, reason: "לא תואם", requestedBy: "שרה לוי", status: "אושר", date: "2026-04-06" },
   { id: "RTN-003", supplier: "Schüco International", item: "פרופיל אלומיניום 6060", qty: 50, reason: "עודף", requestedBy: "דוד מזרחי", status: "בשילוח", date: "2026-04-05" },
@@ -32,7 +34,7 @@ const returnRequests = [
   { id: "RTN-008", supplier: "מפעלי ברזל השרון", item: "ברזל בניין 12מ״מ", qty: 40, reason: "עודף", requestedBy: "נועה פרידמן", status: "בשילוח", date: "2026-04-04" },
 ];
 
-const approvalQueue = [
+const FALLBACK_APPROVAL_QUEUE = [
   { id: "RTN-001", supplier: "Foshan Glass Co.", item: "זכוכית מחוסמת 10מ״מ", qty: 15, value: 8250, reason: "פגם", submittedBy: "יוסי כהן", priority: "גבוה", waitDays: 1 },
   { id: "RTN-004", supplier: "אלום-טק בע״מ", item: "חיבורי פינה 90°", qty: 200, value: 3400, reason: "פגם", submittedBy: "רחל אברהם", priority: "בינוני", waitDays: 1 },
   { id: "RTN-007", supplier: "Foshan Glass Co.", item: "זכוכית למינציה 8מ״מ", qty: 10, value: 6200, reason: "פגם", submittedBy: "עומר חדד", priority: "גבוה", waitDays: 0 },
@@ -41,7 +43,7 @@ const approvalQueue = [
   { id: "RTN-011", supplier: "Schüco International", item: "חותמות EPDM", qty: 500, value: 2750, reason: "טעות", submittedBy: "אלון גולדשטיין", priority: "בינוני", waitDays: 1 },
 ];
 
-const shippingReturns = [
+const FALLBACK_SHIPPING_RETURNS = [
   { id: "RTN-003", supplier: "Schüco International", item: "פרופיל אלומיניום 6060", qty: 50, tracking: "IL-2026-88401", carrier: "שליחויות ישראל", shipped: "2026-04-06", eta: "2026-04-09", status: "במעבר" },
   { id: "RTN-008", supplier: "מפעלי ברזל השרון", item: "ברזל בניין 12מ״מ", qty: 40, tracking: "IL-2026-88402", carrier: "שלמה שילוח", shipped: "2026-04-05", eta: "2026-04-08", status: "הגיע לספק" },
   { id: "RTN-012", supplier: "Foshan Glass Co.", item: "זכוכית מחוסמת 8מ״מ", qty: 20, tracking: "CN-2026-55210", carrier: "DHL Express", shipped: "2026-04-03", eta: "2026-04-12", status: "במעבר" },
@@ -50,7 +52,7 @@ const shippingReturns = [
   { id: "RTN-015", supplier: "תעשיות זכוכית ים", item: "זכוכית שקופה 4מ״מ", qty: 30, tracking: "IL-2026-88404", carrier: "שלמה שילוח", shipped: "2026-04-06", eta: "2026-04-08", status: "הגיע לספק" },
 ];
 
-const refunds = [
+const FALLBACK_REFUNDS = [
   { creditNote: "CN-4501", rtn: "RTN-005", supplier: "Alumil SA", item: "ידיות נירוסטה L-200", amount: 11200, issued: "2026-04-04", status: "התקבל", paidDate: "2026-04-07" },
   { creditNote: "CN-4502", rtn: "RTN-002", supplier: "מפעלי ברזל השרון", item: "פלדה מגולוונת 2מ״מ", amount: 7650, issued: "2026-04-06", status: "ממתין לספק", paidDate: "—" },
   { creditNote: "CN-4503", rtn: "RTN-008", supplier: "מפעלי ברזל השרון", item: "ברזל בניין 12מ״מ", amount: 9800, issued: "2026-04-05", status: "אושר", paidDate: "—" },
@@ -60,7 +62,7 @@ const refunds = [
   { creditNote: "CN-4507", rtn: "RTN-006", supplier: "תעשיות זכוכית ים", item: "זכוכית שקופה 6מ״מ", amount: 5850, issued: "2026-04-06", status: "אושר", paidDate: "—" },
 ];
 
-const replacements = [
+const FALLBACK_REPLACEMENTS = [
   { rtn: "RTN-001", supplier: "Foshan Glass Co.", item: "זכוכית מחוסמת 10מ״מ", qty: 15, expectedDate: "2026-04-12", status: "בייצור", progress: 40 },
   { rtn: "RTN-004", supplier: "אלום-טק בע״מ", item: "חיבורי פינה 90°", qty: 200, expectedDate: "2026-04-10", status: "נשלח", progress: 80 },
   { rtn: "RTN-007", supplier: "Foshan Glass Co.", item: "זכוכית למינציה 8מ״מ", qty: 10, expectedDate: "2026-04-15", status: "ממתין לאישור ספק", progress: 10 },
@@ -106,6 +108,14 @@ const priorityBadge = (p: string) => {
 const TH = "text-right text-[10px] font-semibold";
 
 export default function SupplierReturns() {
+  const { data: supplierreturnsData } = useQuery({
+    queryKey: ["supplier-returns"],
+    queryFn: () => authFetch("/api/procurement/supplier_returns"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = supplierreturnsData ?? FALLBACK_KPIS;
+
   const [tab, setTab] = useState("requests");
 
   return (

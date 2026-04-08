@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -14,7 +16,7 @@ const fmt = (v: number) =>
 const pct = (v: number) => `${v >= 0 ? "+" : ""}${v.toFixed(1)}%`;
 
 // ---- static product catalog for comparison tab ----
-const catalogProducts = [
+const FALLBACK_CATALOG_PRODUCTS = [
   { id: 1, name: "פרופיל אלומיניום 6060", make: { material: 1200, labor: 800, overhead: 350, machine: 600 }, buy: { price: 3400, shipping: 180, import: 220 } },
   { id: 2, name: "זכוכית מחוסמת 10 מ\"מ", make: { material: 2800, labor: 1100, overhead: 500, machine: 900 }, buy: { price: 4800, shipping: 350, import: 400 } },
   { id: 3, name: "חיבורי נירוסטה", make: { material: 400, labor: 600, overhead: 200, machine: 350 }, buy: { price: 1200, shipping: 80, import: 60 } },
@@ -22,7 +24,7 @@ const catalogProducts = [
   { id: 5, name: "ידית אלומיניום CNC", make: { material: 350, labor: 900, overhead: 250, machine: 700 }, buy: { price: 1800, shipping: 120, import: 150 } },
 ];
 
-const scenarios = [
+const FALLBACK_SCENARIOS = [
   { id: 1, name: "עליית מחיר ספק +10%", field: "supplierUp", delta: 0.10, icon: TrendingUp, color: "text-red-400" },
   { id: 2, name: "החלפת ספק (זול ב-15%)", field: "supplierDown", delta: -0.15, icon: TrendingDown, color: "text-green-400" },
   { id: 3, name: "הנחת כמות (bulk -12%)", field: "bulkDiscount", delta: -0.12, icon: Package, color: "text-blue-400" },
@@ -30,6 +32,14 @@ const scenarios = [
 ];
 
 export default function MakeVsBuy() {
+  const { data: makevsbuyData } = useQuery({
+    queryKey: ["make-vs-buy"],
+    queryFn: () => authFetch("/api/procurement/make_vs_buy"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const catalogProducts = makevsbuyData ?? FALLBACK_CATALOG_PRODUCTS;
+
   // --- calculator state ---
   const [selectedProduct, setSelectedProduct] = useState("פרופיל אלומיניום 6060");
   const [material, setMaterial] = useState(1200);

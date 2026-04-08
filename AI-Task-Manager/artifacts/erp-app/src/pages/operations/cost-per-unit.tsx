@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { DollarSign, TrendingUp, TrendingDown, Search, Download, Package, Users, Building2, BarChart3, Target, Lightbulb, ArrowDown, ArrowUp, Layers } from "lucide-react";
 
-const products = [
+const FALLBACK_PRODUCTS = [
   { name: "חלון אלומיניום 100x120", total: 485, material: 210, labor: 145, overhead: 90, energy: 25, packaging: 15, target: 460, trend: "up", category: "חלונות" },
   { name: "חלון אלומיניום 150x180", total: 720, material: 340, labor: 195, overhead: 125, energy: 35, packaging: 25, target: 700, trend: "up", category: "חלונות" },
   { name: "דלת אלומיניום סטנדרט", total: 1250, material: 580, labor: 350, overhead: 210, energy: 60, packaging: 50, target: 1200, trend: "down", category: "דלתות" },
@@ -20,14 +22,14 @@ const products = [
   { name: "זכוכית מחוסמת (מ\"ר)", total: 195, material: 95, labor: 52, overhead: 30, energy: 10, packaging: 8, target: 185, trend: "up", category: "זכוכית" },
 ];
 
-const departments = [
+const FALLBACK_DEPARTMENTS = [
   { name: "חיתוך", totalCost: 245000, units: 4200, costPerUnit: 58.3, labor: 35, material: 10, overhead: 40, energy: 15, efficiency: 92.4, target: 55.0 },
   { name: "הרכבה", totalCost: 380000, units: 2800, costPerUnit: 135.7, labor: 55, material: 5, overhead: 30, energy: 10, efficiency: 87.8, target: 130.0 },
   { name: "ציפוי ואנודייז", totalCost: 185000, units: 3500, costPerUnit: 52.9, labor: 25, material: 30, overhead: 25, energy: 20, efficiency: 85.3, target: 48.0 },
   { name: "זיגוג", totalCost: 210000, units: 2100, costPerUnit: 100.0, labor: 30, material: 35, overhead: 20, energy: 15, efficiency: 90.1, target: 95.0 },
 ];
 
-const monthlyTrends = [
+const FALLBACK_MONTHLY_TRENDS = [
   { month: "נובמבר 2025", avgCost: 892, material: 412, labor: 258, overhead: 148, energy: 45, packaging: 29, change: null },
   { month: "דצמבר 2025", avgCost: 905, material: 425, labor: 260, overhead: 148, energy: 43, packaging: 29, change: +1.5 },
   { month: "ינואר 2026", avgCost: 918, material: 438, labor: 255, overhead: 152, energy: 44, packaging: 29, change: +1.4 },
@@ -36,7 +38,7 @@ const monthlyTrends = [
   { month: "אפריל 2026", avgCost: 870, material: 392, labor: 256, overhead: 148, energy: 45, packaging: 29, change: -0.9 },
 ];
 
-const optimizations = [
+const FALLBACK_OPTIMIZATIONS = [
   { area: "רכש חומרי גלם", potential: 45000, pctSave: 4.2, effort: "בינוני", timeline: "Q2 2026", description: "מו\"מ עם ספק אלומיניום חלופי מטורקיה - מחיר נמוך ב-8%", status: "בבדיקה", priority: "גבוה" },
   { area: "אוטומציה בקו הרכבה", potential: 62000, pctSave: 5.8, effort: "גבוה", timeline: "Q3 2026", description: "התקנת רובוט נוסף בתחנת הידוק - חיסכון 2 עובדים", status: "מאושר", priority: "גבוה" },
   { area: "הפחתת פסולת חיתוך", potential: 28000, pctSave: 2.6, effort: "נמוך", timeline: "Q2 2026", description: "אופטימיזציית תוכנת קינון (nesting) - הפחתת פסולת מ-12% ל-8%", status: "בביצוע", priority: "בינוני" },
@@ -53,6 +55,14 @@ const STAT: Record<string, string> = {
 };
 
 export default function CostPerUnit() {
+  const { data: costperunitData } = useQuery({
+    queryKey: ["cost-per-unit"],
+    queryFn: () => authFetch("/api/operations/cost_per_unit"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const products = costperunitData ?? FALLBACK_PRODUCTS;
+
   const [search, setSearch] = useState("");
 
   const avgCost = "870 \u20AA";

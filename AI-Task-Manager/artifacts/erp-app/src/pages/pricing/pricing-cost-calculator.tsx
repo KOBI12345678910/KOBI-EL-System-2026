@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +13,7 @@ import {
   DollarSign, Layers, Clock
 } from "lucide-react";
 
-const materials = [
+const FALLBACK_MATERIALS = [
   { name: "אלומיניום פרופיל T-60", unit: "מ״ר", pricePerUnit: 185, qty: 12 },
   { name: "זכוכית מחוסמת 10מ\"מ", unit: "מ״ר", pricePerUnit: 320, qty: 8 },
   { name: "חומר איטום EPDM", unit: "מטר", pricePerUnit: 18, qty: 24 },
@@ -19,7 +21,7 @@ const materials = [
   { name: "צבע אלקטרוסטטי", unit: "ק\"ג", pricePerUnit: 65, qty: 3 },
 ];
 
-const laborSteps = [
+const FALLBACK_LABOR_STEPS = [
   { name: "חיתוך פרופילים", hours: 4, ratePerHour: 120 },
   { name: "ריתוך ואיחוי", hours: 6, ratePerHour: 150 },
   { name: "הרכבת זכוכית", hours: 3, ratePerHour: 130 },
@@ -28,7 +30,7 @@ const laborSteps = [
   { name: "אריזה והכנה למשלוח", hours: 1.5, ratePerHour: 100 },
 ];
 
-const savedCalculations = [
+const FALLBACK_SAVED_CALCULATIONS = [
   { id: "CC-001", product: "חלון אלומיניום 1.5x1.2 מ׳", material: 5420, labor: 2535, overhead: 1591, total: 9546, margin: 25, finalPrice: 11933, date: "2026-04-05", status: "מאושר" },
   { id: "CC-002", product: "דלת כניסה אלומיניום+זכוכית", material: 8200, labor: 3800, overhead: 2400, total: 14400, margin: 30, finalPrice: 18720, date: "2026-04-03", status: "מאושר" },
   { id: "CC-003", product: "מעקה בטיחות 3 מטר", material: 2100, labor: 1200, overhead: 660, total: 3960, margin: 35, finalPrice: 5346, date: "2026-04-01", status: "טיוטה" },
@@ -45,6 +47,16 @@ const statusColors: Record<string, string> = {
 };
 
 export default function PricingCostCalculator() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["pricing_cost_calculator"],
+    queryFn: () => authFetch("/api/pricing/pricing-cost-calculator").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const materials = apiData?.materials ?? FALLBACK_MATERIALS;
+  const laborSteps = apiData?.laborSteps ?? FALLBACK_LABOR_STEPS;
+  const savedCalculations = apiData?.savedCalculations ?? FALLBACK_SAVED_CALCULATIONS;
   const [activeTab, setActiveTab] = useState("calculator");
   const [overheadPercent, setOverheadPercent] = useState(20);
   const [marginPercent, setMarginPercent] = useState(25);

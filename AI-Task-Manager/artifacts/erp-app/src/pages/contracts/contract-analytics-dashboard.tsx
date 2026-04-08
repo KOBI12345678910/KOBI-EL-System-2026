@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { BarChart3, LineChart as LineChartIcon, PieChart as PieChartIcon, TrendingUp, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 interface PortfolioSummary {
@@ -9,6 +11,12 @@ interface PortfolioSummary {
 }
 
 export default function ContractAnalyticsDashboard() {
+  const { data: contractanalyticsdashboardData } = useQuery({
+    queryKey: ["contract-analytics-dashboard"],
+    queryFn: () => authFetch("/api/contracts/contract_analytics_dashboard"),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [summary, setSummary] = useState<PortfolioSummary | null>(null);
   const [loading, setLoading] = useState(true);
 

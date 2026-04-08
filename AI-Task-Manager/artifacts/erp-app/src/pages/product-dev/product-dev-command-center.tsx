@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,7 +15,7 @@ import {
 } from "lucide-react";
 
 /* ── KPIs ── */
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "פרויקטי מו\"פ פעילים", value: "12", icon: FlaskConical, color: "text-blue-600", bg: "bg-blue-50", trend: "+2" },
   { label: "מוצרים בצנרת", value: "8", icon: Layers, color: "text-purple-600", bg: "bg-purple-50", trend: "+1" },
   { label: "שלב אב-טיפוס", value: "4", icon: Beaker, color: "text-amber-600", bg: "bg-amber-50", trend: "" },
@@ -25,7 +27,7 @@ const kpis = [
 ];
 
 /* ── Pipeline Stages ── */
-const pipelineStages = [
+const FALLBACK_PIPELINE_STAGES = [
   { stage: "רעיון / הערכה", count: 5, color: "bg-slate-400" },
   { stage: "מחקר ראשוני", count: 3, color: "bg-blue-400" },
   { stage: "תכנון מפורט", count: 2, color: "bg-purple-500" },
@@ -35,7 +37,7 @@ const pipelineStages = [
 ];
 
 /* ── Milestones ── */
-const milestones = [
+const FALLBACK_MILESTONES = [
   { date: "2026-04-06", project: "מערכת חלון Thermal Break", event: "אב-טיפוס v2 הושלם בהצלחה", type: "success" },
   { date: "2026-04-04", project: "זכוכית חכמה Smart Glass", event: "סיום סקר שוק — אישור להמשך פיתוח", type: "success" },
   { date: "2026-04-02", project: "תריס עמיד הוריקן", event: "בדיקת עמידות ASTM E1886 — עבר", type: "success" },
@@ -43,14 +45,14 @@ const milestones = [
   { date: "2026-03-28", project: "קיר מסך Triple-Glazed", event: "סיום שלב תכנון מפורט — מעבר לאב-טיפוס", type: "success" },
 ];
 
-const urgentItems = [
+const FALLBACK_URGENT_ITEMS = [
   { project: "דלת זכוכית חסינת אש", issue: "עיכוב באישור תקן — נדרש מעקב מול מכון התקנים", priority: "high" },
   { project: "לוּבר ממונע", issue: "ספק מנועים הודיע על שינוי מפרט — נדרשת הערכה מחדש", priority: "high" },
   { project: "פאנל אלומיניום קל-משקל", issue: "תוצאות מבחן כיפוף לא עמדו ביעד — דרוש עיצוב מחדש", priority: "medium" },
 ];
 
 /* ── R&D Projects (8) ── */
-const rdProjects = [
+const FALLBACK_RD_PROJECTS = [
   { id: "RD-101", name: "מערכת חלון Thermal Break", icon: Thermometer, stage: "אב-טיפוס", progress: 72, lead: "מהנדס דוד לוי", budget: 180000, spent: 126000, start: "2025-09", eta: "2026-08", status: "on_track", desc: "חלון אלומיניום עם גשר תרמי מתקדם — Uf 1.2 W/m²K" },
   { id: "RD-102", name: "קיר מסך Triple-Glazed", icon: Layers, stage: "אב-טיפוס", progress: 55, lead: "מהנדסת רונית כהן", budget: 320000, spent: 192000, start: "2025-07", eta: "2026-11", status: "on_track", desc: "קיר מסך חיצוני עם זיגוג משולש — חיסכון אנרגטי 40%" },
   { id: "RD-103", name: "דלת זכוכית חסינת אש EI-60", icon: Flame, stage: "בדיקות", progress: 85, lead: "מהנדס עומר חדד", budget: 150000, spent: 135000, start: "2025-05", eta: "2026-06", status: "at_risk", desc: "דלת זכוכית עמידה לאש 60 דקות — תקן ישראלי ואירופי" },
@@ -62,7 +64,7 @@ const rdProjects = [
 ];
 
 /* ── Innovation Backlog ── */
-const innovationIdeas = [
+const FALLBACK_INNOVATION_IDEAS = [
   { id: "IDEA-301", title: "ציפוי ננו אנטי-לכלוך לזכוכית", score: 92, market: "גבוה", effort: "בינוני", category: "חומרים", submitter: "צוות מו\"פ" },
   { id: "IDEA-302", title: "חלון סולארי — ייצור חשמל מזכוכית", score: 88, market: "גבוה מאוד", effort: "גבוה", category: "אנרגיה", submitter: "דוד לוי" },
   { id: "IDEA-303", title: "מערכת אוורור משולבת במסגרת", score: 81, market: "בינוני", effort: "נמוך", category: "אינטגרציה", submitter: "רונית כהן" },
@@ -81,6 +83,14 @@ const budgetSummary = {
 };
 
 export default function ProductDevCommandCenter() {
+  const { data: productdevcommandcenterData } = useQuery({
+    queryKey: ["product-dev-command-center"],
+    queryFn: () => authFetch("/api/product-dev/product_dev_command_center"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = productdevcommandcenterData ?? FALLBACK_KPIS;
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* Header */}

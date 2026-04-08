@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -13,7 +15,7 @@ import {
 
 /* ── mock: search results ── */
 
-const searchResults = [
+const FALLBACK_SEARCH_RESULTS = [
   { id: "DOC-1042", name: "מפרט טכני מסגרת T-400", snippet: "...תכנון <mark>מסגרת</mark> פלדה עם חתכים מיוחדים לפי תקן ISO 2768...", type: "PDF", dept: "הנדסה", date: "2026-03-28", size: "4.2 MB", version: "2.0", relevance: 98, format: "pdf", module: "ייצור" },
   { id: "DOC-0877", name: "חוזה ספק מתכת-פרו בע\"מ", snippet: "...תנאי תשלום שוטף+60, אספקת <mark>מתכת</mark> גולמית לפי מפרט...", type: "DOCX", dept: "רכש", date: "2026-04-05", size: "1.8 MB", version: "3.1", relevance: 94, format: "docx", module: "רכש" },
   { id: "DOC-0653", name: "שרטוט ציר הנעה SH-40", snippet: "...טולרנס סובבים ±0.02 מ\"מ, <mark>ציר</mark> מפלדת 4140...", type: "DWG", dept: "הנדסה", date: "2026-03-20", size: "12.7 MB", version: "4.3", relevance: 91, format: "dwg", module: "ייצור" },
@@ -28,7 +30,7 @@ const searchResults = [
   { id: "DOC-0199", name: "רישיון עסק טכנו-כל 2026", snippet: "...חידוש <mark>רישיון</mark> עסק תקף עד 30/04/2026...", type: "PDF", dept: "מנהלה", date: "2026-01-10", size: "450 KB", version: "1.0", relevance: 64, format: "pdf", module: "מנהלה" },
 ];
 
-const recentSearches = [
+const FALLBACK_RECENT_SEARCHES = [
   { term: "מסגרת T-400 שרטוט", date: "08/04/2026 09:14", results: 7 },
   { term: "חוזה ספק מתכת", date: "08/04/2026 08:42", results: 12 },
   { term: "חשבונית רכש 2026", date: "07/04/2026 16:30", results: 34 },
@@ -36,7 +38,7 @@ const recentSearches = [
   { term: "PCB-8L מפרט", date: "07/04/2026 11:20", results: 9 },
 ];
 
-const savedSearches = [
+const FALLBACK_SAVED_SEARCHES = [
   { name: "חוזים שפג תוקפם", filters: "סוג: חוזה | סטטוס: פג תוקף | מחלקה: הכל", count: 4, updated: "05/04/2026" },
   { name: "שרטוטים הנדסה - גרסה אחרונה", filters: "סוג: שרטוט | מחלקה: הנדסה | גרסה: אחרונה", count: 28, updated: "03/04/2026" },
   { name: "מסמכי רכש ממתינים", filters: "מודול: רכש | סטטוס: ממתין | פורמט: PDF,XLSX", count: 11, updated: "07/04/2026" },
@@ -75,7 +77,7 @@ function relevanceBar(score: number) {
 
 /* ── filters config ── */
 
-const filterSections = [
+const FALLBACK_FILTER_SECTIONS = [
   { label: "סוג מסמך", icon: <FileText className="w-4 h-4" />, options: ["חוזה", "שרטוט", "מפרט", "הצעה", "חשבונית", "תעודה", "נוהל", "דוח"] },
   { label: "מחלקה", icon: <Building2 className="w-4 h-4" />, options: ["הנדסה", "רכש", "מכירות", "כספים", "איכות", "לוגיסטיקה", "בטיחות", "תפעול", "מנהלה"] },
   { label: "סטטוס", icon: <Shield className="w-4 h-4" />, options: ["מאושר", "ממתין", "טיוטה", "פעיל", "פג תוקף", "מבוטל"] },
@@ -87,6 +89,17 @@ const filterSections = [
 /* ── component ── */
 
 export default function DocumentSearchPage() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["document_search"],
+    queryFn: () => authFetch("/api/documents/document-search").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const searchResults = apiData?.searchResults ?? FALLBACK_SEARCH_RESULTS;
+  const recentSearches = apiData?.recentSearches ?? FALLBACK_RECENT_SEARCHES;
+  const savedSearches = apiData?.savedSearches ?? FALLBACK_SAVED_SEARCHES;
+  const filterSections = apiData?.filterSections ?? FALLBACK_FILTER_SECTIONS;
   const [tab, setTab] = useState("results");
   const [query, setQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);

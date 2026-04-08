@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -33,7 +35,7 @@ const kpis = [
   { label: "פטנטים / חידושים", value: "6", icon: Lightbulb, color: "text-pink-400", trend: "+2", up: true },
 ];
 
-const engineers = [
+const FALLBACK_ENGINEERS = [
   { name: "יוסי כהן", hours: 168, output: 14, completion: 93, spec: "שרטוט ייצור" },
   { name: "שרה לוי", hours: 172, output: 16, completion: 97, spec: "שרטוט התקנה" },
   { name: "דוד מזרחי", hours: 160, output: 12, completion: 88, spec: "מדידות שטח" },
@@ -43,32 +45,32 @@ const engineers = [
   { name: "עומר חדד", hours: 162, output: 13, completion: 91, spec: "שרטוט ייצור" },
   { name: "נועה פרידמן", hours: 170, output: 15, completion: 94, spec: "שרטוט התקנה" },
 ];
-const prodTrend = [
+const FALLBACK_PRODTREND = [
   { m: "נובמבר", h: 1220, o: 92, c: 86 }, { m: "דצמבר", h: 1245, o: 97, c: 88 },
   { m: "ינואר", h: 1260, o: 101, c: 89 }, { m: "פברואר", h: 1280, o: 106, c: 91 },
   { m: "מרץ", h: 1300, o: 110, c: 92 }, { m: "אפריל", h: 1330, o: 113, c: 93 },
 ];
 
-const qualityData = [
+const FALLBACK_QUALITYDATA = [
   { metric: "שגיאות שנמצאו בבדיקה", review: 28, prod: 4, target: "< 5 בייצור" },
   { metric: "סטיות מידות (> 2 מ\"מ)", review: 12, prod: 2, target: "< 3 בייצור" },
   { metric: "חוסר התאמה לתקן", review: 6, prod: 1, target: "0 בייצור" },
   { metric: "שגיאות חומר/פרופיל", review: 9, prod: 1, target: "< 2 בייצור" },
   { metric: "בעיות ממשק בין מערכות", review: 5, prod: 2, target: "< 2 בייצור" },
 ];
-const qKpis = [
+const FALLBACK_QKPIS = [
   { label: "שיעור עיבוד חוזר", val: 3.2, target: 2.0, unit: "%", lb: true },
   { label: "תקינות מעבר ראשון", val: 96.8, target: 98, unit: "%" },
   { label: "שגיאות / 100 שרטוטים", val: 2.4, target: 1.5, unit: "", lb: true },
   { label: "זמן תיקון ממוצע", val: 1.8, target: 1.0, unit: "שע'", lb: true },
 ];
-const qTrend = [
+const FALLBACK_QTREND = [
   { m: "נובמבר", rw: 5.8, fpy: 92.1, er: 4.2 }, { m: "דצמבר", rw: 5.1, fpy: 93.0, er: 3.8 },
   { m: "ינואר", rw: 4.1, fpy: 95.2, er: 3.1 }, { m: "פברואר", rw: 3.8, fpy: 95.8, er: 2.9 },
   { m: "מרץ", rw: 3.5, fpy: 96.2, er: 2.6 }, { m: "אפריל", rw: 3.2, fpy: 96.8, er: 2.4 },
 ];
 
-const innovations = [
+const FALLBACK_INNOVATIONS = [
   { name: "פרופיל תרמי משולב", type: "מוצר חדש", savings: 45000, status: "הושלם", eng: "מיכל ברק" },
   { name: "מערכת חיתוך אוטומטית V2", type: "שיפור תהליך", savings: 78000, status: "הושלם", eng: "יוסי כהן" },
   { name: "זיגוג משולש לבידוד אקוסטי", type: "מוצר חדש", savings: 32000, status: "בפיתוח", eng: "שרה לוי" },
@@ -76,26 +78,26 @@ const innovations = [
   { name: "פרופיל אלומיניום קל משקל", type: "מוצר חדש", savings: 41000, status: "בפיתוח", eng: "רחל אברהם" },
   { name: "תבנית הרכבה מודולרית", type: "שיפור תהליך", savings: 32000, status: "הושלם", eng: "דוד מזרחי" },
 ];
-const innSummary = [
+const FALLBACK_INNSUMMARY = [
   { label: "מוצרים חדשים שפותחו", value: 4, icon: Lightbulb },
   { label: "שיפורים שיושמו", value: 9, icon: Wrench },
   { label: "חיסכון כולל מאופטימיזציה", value: "₪284,000", icon: TrendingUp },
   { label: "פטנטים שהוגשו", value: 2, icon: Award },
 ];
 
-const workload = [
+const FALLBACK_WORKLOAD = [
   { name: "יוסי כהן", alloc: 95, proj: 4, ot: 12 }, { name: "שרה לוי", alloc: 88, proj: 3, ot: 6 },
   { name: "דוד מזרחי", alloc: 72, proj: 2, ot: 0 }, { name: "רחל אברהם", alloc: 91, proj: 4, ot: 8 },
   { name: "אלון גולדשטיין", alloc: 65, proj: 2, ot: 0 }, { name: "מיכל ברק", alloc: 98, proj: 5, ot: 15 },
   { name: "עומר חדד", alloc: 80, proj: 3, ot: 4 }, { name: "נועה פרידמן", alloc: 85, proj: 3, ot: 5 },
 ];
-const skillsMatrix = [
+const FALLBACK_SKILLSMATRIX = [
   { skill: "AutoCAD", level: "מתקדם", count: 8 }, { skill: "SolidWorks", level: "מתקדם", count: 5 },
   { skill: "חישובי קונסטרוקציה", level: "מתקדם", count: 4 }, { skill: "BIM / Revit", level: "בינוני", count: 3 },
   { skill: "תכנון CNC", level: "מתקדם", count: 6 }, { skill: "ניהול פרויקטים", level: "בינוני", count: 4 },
   { skill: "אנליזת FEA", level: "בסיסי", count: 2 }, { skill: "תקינה ותקנים (ISO)", level: "מתקדם", count: 5 },
 ];
-const training = [
+const FALLBACK_TRAINING = [
   { topic: "BIM / Revit מתקדם", prio: "גבוהה", engs: 5, hrs: 40 },
   { topic: "אנליזת FEA", prio: "גבוהה", engs: 6, hrs: 32 },
   { topic: "תקן ISO 9001 עדכני", prio: "בינונית", engs: 8, hrs: 16 },
@@ -110,6 +112,75 @@ const prioClr = (s: string) => s === "גבוהה" ? "bg-red-500/20 text-red-300"
 const skillClr = (s: string) => s === "מתקדם" ? "bg-green-500/20 text-green-300" : s === "בינוני" ? "bg-amber-500/20 text-amber-300" : "bg-blue-500/20 text-blue-300";
 
 export default function EngineeringAnalyticsPage() {
+  const { data: apiengineers } = useQuery({
+    queryKey: ["/api/engineering/engineering-analytics/engineers"],
+    queryFn: () => authFetch("/api/engineering/engineering-analytics/engineers").then(r => r.json()).catch(() => null),
+  });
+  const engineers = Array.isArray(apiengineers) ? apiengineers : (apiengineers?.data ?? apiengineers?.items ?? FALLBACK_ENGINEERS);
+
+
+  const { data: apiprodTrend } = useQuery({
+    queryKey: ["/api/engineering/engineering-analytics/prodtrend"],
+    queryFn: () => authFetch("/api/engineering/engineering-analytics/prodtrend").then(r => r.json()).catch(() => null),
+  });
+  const prodTrend = Array.isArray(apiprodTrend) ? apiprodTrend : (apiprodTrend?.data ?? apiprodTrend?.items ?? FALLBACK_PRODTREND);
+
+
+  const { data: apiqualityData } = useQuery({
+    queryKey: ["/api/engineering/engineering-analytics/qualitydata"],
+    queryFn: () => authFetch("/api/engineering/engineering-analytics/qualitydata").then(r => r.json()).catch(() => null),
+  });
+  const qualityData = Array.isArray(apiqualityData) ? apiqualityData : (apiqualityData?.data ?? apiqualityData?.items ?? FALLBACK_QUALITYDATA);
+
+
+  const { data: apiqKpis } = useQuery({
+    queryKey: ["/api/engineering/engineering-analytics/qkpis"],
+    queryFn: () => authFetch("/api/engineering/engineering-analytics/qkpis").then(r => r.json()).catch(() => null),
+  });
+  const qKpis = Array.isArray(apiqKpis) ? apiqKpis : (apiqKpis?.data ?? apiqKpis?.items ?? FALLBACK_QKPIS);
+
+
+  const { data: apiqTrend } = useQuery({
+    queryKey: ["/api/engineering/engineering-analytics/qtrend"],
+    queryFn: () => authFetch("/api/engineering/engineering-analytics/qtrend").then(r => r.json()).catch(() => null),
+  });
+  const qTrend = Array.isArray(apiqTrend) ? apiqTrend : (apiqTrend?.data ?? apiqTrend?.items ?? FALLBACK_QTREND);
+
+
+  const { data: apiinnovations } = useQuery({
+    queryKey: ["/api/engineering/engineering-analytics/innovations"],
+    queryFn: () => authFetch("/api/engineering/engineering-analytics/innovations").then(r => r.json()).catch(() => null),
+  });
+  const innovations = Array.isArray(apiinnovations) ? apiinnovations : (apiinnovations?.data ?? apiinnovations?.items ?? FALLBACK_INNOVATIONS);
+
+
+  const { data: apiinnSummary } = useQuery({
+    queryKey: ["/api/engineering/engineering-analytics/innsummary"],
+    queryFn: () => authFetch("/api/engineering/engineering-analytics/innsummary").then(r => r.json()).catch(() => null),
+  });
+  const innSummary = Array.isArray(apiinnSummary) ? apiinnSummary : (apiinnSummary?.data ?? apiinnSummary?.items ?? FALLBACK_INNSUMMARY);
+
+
+  const { data: apiworkload } = useQuery({
+    queryKey: ["/api/engineering/engineering-analytics/workload"],
+    queryFn: () => authFetch("/api/engineering/engineering-analytics/workload").then(r => r.json()).catch(() => null),
+  });
+  const workload = Array.isArray(apiworkload) ? apiworkload : (apiworkload?.data ?? apiworkload?.items ?? FALLBACK_WORKLOAD);
+
+
+  const { data: apiskillsMatrix } = useQuery({
+    queryKey: ["/api/engineering/engineering-analytics/skillsmatrix"],
+    queryFn: () => authFetch("/api/engineering/engineering-analytics/skillsmatrix").then(r => r.json()).catch(() => null),
+  });
+  const skillsMatrix = Array.isArray(apiskillsMatrix) ? apiskillsMatrix : (apiskillsMatrix?.data ?? apiskillsMatrix?.items ?? FALLBACK_SKILLSMATRIX);
+
+
+  const { data: apitraining } = useQuery({
+    queryKey: ["/api/engineering/engineering-analytics/training"],
+    queryFn: () => authFetch("/api/engineering/engineering-analytics/training").then(r => r.json()).catch(() => null),
+  });
+  const training = Array.isArray(apitraining) ? apitraining : (apitraining?.data ?? apitraining?.items ?? FALLBACK_TRAINING);
+
   const [tab, setTab] = useState("productivity");
   const [search, setSearch] = useState("");
 

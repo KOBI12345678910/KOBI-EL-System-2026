@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -7,6 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertTriangle, CheckCircle, Clock, XCircle } from "lucide-react";
 
 export default function SLATracking() {
+  const { data: slatrackingData } = useQuery({
+    queryKey: ["sla-tracking"],
+    queryFn: () => authFetch("/api/support/sla_tracking"),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [filter, setFilter] = useState("all");
 
   const slaRules = [

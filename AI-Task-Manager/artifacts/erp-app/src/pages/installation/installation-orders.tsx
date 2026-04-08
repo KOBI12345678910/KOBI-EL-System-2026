@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -77,8 +79,8 @@ interface InstallationOrder {
   linked_delivery: string;
 }
 
-/* ───────── 15 orders ───────── */
-const orders: InstallationOrder[] = [
+/* ───────── 15 FALLBACK_ORDERS ───────── */
+const FALLBACK_ORDERS: InstallationOrder[] = [
   {
     id: "1", installation_order_number: "INS-001", project_name: "מגדלי הים התיכון - מגדל A",
     customer: "אאורה נדל\"ן", installation_type: "חלונות אלומיניום", product_family: "אלומיניום",
@@ -271,7 +273,7 @@ const tabGroups: { value: string; label: string; filter: (o: InstallationOrder) 
 ];
 
 /* ───────── KPIs ───────── */
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "סה\"כ הזמנות",       value: 22,  icon: ClipboardList, color: "text-blue-600" },
   { label: "טיוטה",              value: 3,   icon: Clock,          color: "text-gray-500" },
   { label: "מתוזמנות",           value: 6,   icon: CalendarCheck,  color: "text-indigo-600" },
@@ -284,6 +286,31 @@ const kpis = [
 
 /* ═══════════════════════════ Component ═══════════════════════════ */
 export default function InstallationOrders() {
+  const { data: orders = FALLBACK_ORDERS } = useQuery({
+    queryKey: ["installation-orders"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-orders/orders");
+      if (!res.ok) return FALLBACK_ORDERS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_ORDERS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: kpis = FALLBACK_KPIS } = useQuery({
+    queryKey: ["installation-kpis"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-orders/kpis");
+      if (!res.ok) return FALLBACK_KPIS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_KPIS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [activeTab, setActiveTab] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState<InstallationOrder | null>(null);
 

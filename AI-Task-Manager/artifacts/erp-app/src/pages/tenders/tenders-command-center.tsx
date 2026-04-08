@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -16,26 +18,26 @@ const kpis = {
   pendingDecisions: 7,
   avgBidValue: 1562500,
 };
-const activeTenders = [
+const FALLBACK_ACTIVE_TENDERS = [
   { id: "TND-301", name: "התקנת חלונות אלומיניום — בניין עירייה", customer: "עיריית חיפה", value: 2400000, deadline: "2026-04-22", status: "בהכנה", progress: 45, manager: "יוסי אברהם" },
   { id: "TND-302", name: "מעקות בטיחות למתחם צבאי", customer: "משרד הביטחון", value: 5200000, deadline: "2026-04-18", status: "בהכנה", progress: 72, manager: "דני כהן" },
   { id: "TND-303", name: "חזיתות זכוכית — מגדל משרדים", customer: "קבוצת אלון", value: 3800000, deadline: "2026-05-01", status: "בהכנה", progress: 20, manager: "מיכל לוי" },
   { id: "TND-304", name: "דלתות פלדה למוסד חינוכי", customer: "משרד החינוך", value: 980000, deadline: "2026-04-15", status: "הוגש", progress: 100, manager: "שרה גולד" },
   { id: "TND-305", name: "פרגולות אלומיניום — פארק תעשייה", customer: "חברת נכסים בע\"מ", value: 1450000, deadline: "2026-04-28", status: "בהכנה", progress: 60, manager: "שרה גולד" },
 ];
-const submittedBids = [
+const FALLBACK_SUBMITTED_BIDS = [
   { id: "TND-280", name: "חלונות למגדל מגורים A", customer: "שיכון ובינוי", value: 3200000, submittedDate: "2026-03-28", status: "ממתין להחלטה", competitors: 4, expectedDate: "2026-04-20" },
   { id: "TND-275", name: "ויטרינות חנויות — קניון", customer: "קבוצת אלון", value: 1850000, submittedDate: "2026-03-15", status: "ממתין להחלטה", competitors: 3, expectedDate: "2026-04-12" },
   { id: "TND-270", name: "מעקות למרפסות בפרויקט מגורים", customer: "אפריקה ישראל", value: 920000, submittedDate: "2026-03-10", status: "זכייה", competitors: 5, expectedDate: "—" },
   { id: "TND-265", name: "דלתות כניסה — בית חולים", customer: "משרד הבריאות", value: 4100000, submittedDate: "2026-03-01", status: "הפסד", competitors: 6, expectedDate: "—" },
   { id: "TND-290", name: "תריסים חשמליים — מגורים", customer: 'נדל"ן פלוס', value: 1100000, submittedDate: "2026-04-02", status: "ממתין להחלטה", competitors: 3, expectedDate: "2026-04-25" },
 ];
-const winLossAnalysis = [
+const FALLBACK_WIN_LOSS_ANALYSIS = [
   { quarter: "Q1 2026", submitted: 14, won: 5, lost: 6, pending: 3, winRate: 45, avgWonValue: 1420000, avgLostValue: 2800000, topLossReason: "מחיר גבוה" },
   { quarter: "Q4 2025", submitted: 18, won: 7, lost: 9, pending: 2, winRate: 44, avgWonValue: 1100000, avgLostValue: 3100000, topLossReason: "מחיר גבוה" },
   { quarter: "Q3 2025", submitted: 12, won: 3, lost: 8, pending: 1, winRate: 27, avgWonValue: 950000, avgLostValue: 2500000, topLossReason: "לו\"ז אספקה" },
 ];
-const deadlines = [
+const FALLBACK_DEADLINES = [
   { id: "TND-304", name: "דלתות פלדה למוסד חינוכי", customer: "משרד החינוך", deadline: "2026-04-15", daysLeft: 7, status: "הוגש", urgency: "low" },
   { id: "TND-302", name: "מעקות בטיחות למתחם צבאי", customer: "משרד הביטחון", deadline: "2026-04-18", daysLeft: 10, status: "בהכנה", urgency: "high" },
   { id: "TND-301", name: "התקנת חלונות — בניין עירייה", customer: "עיריית חיפה", deadline: "2026-04-22", daysLeft: 14, status: "בהכנה", urgency: "medium" },
@@ -59,6 +61,55 @@ const urgencyColor = (u: string) => {
   }
 };
 export default function TendersCommandCenter() {
+  const { data: activeTenders = FALLBACK_ACTIVE_TENDERS } = useQuery({
+    queryKey: ["tenders-active-tenders"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tenders-command-center/active-tenders");
+      if (!res.ok) return FALLBACK_ACTIVE_TENDERS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_ACTIVE_TENDERS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: submittedBids = FALLBACK_SUBMITTED_BIDS } = useQuery({
+    queryKey: ["tenders-submitted-bids"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tenders-command-center/submitted-bids");
+      if (!res.ok) return FALLBACK_SUBMITTED_BIDS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SUBMITTED_BIDS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: winLossAnalysis = FALLBACK_WIN_LOSS_ANALYSIS } = useQuery({
+    queryKey: ["tenders-win-loss-analysis"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tenders-command-center/win-loss-analysis");
+      if (!res.ok) return FALLBACK_WIN_LOSS_ANALYSIS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_WIN_LOSS_ANALYSIS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: deadlines = FALLBACK_DEADLINES } = useQuery({
+    queryKey: ["tenders-deadlines"],
+    queryFn: async () => {
+      const res = await authFetch("/api/tenders/tenders-command-center/deadlines");
+      if (!res.ok) return FALLBACK_DEADLINES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DEADLINES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div className="p-6 space-y-5 bg-slate-900 min-h-screen" dir="rtl">
       <div>

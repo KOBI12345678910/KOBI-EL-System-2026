@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +13,7 @@ import {
   Calendar, Shield, TrendingUp
 } from "lucide-react";
 
-const agreements = [
+const FALLBACK_AGREEMENTS = [
   { id: "SA-001", name: "תחזוקת מכונות CNC", vendor: "סרביס-טק בע\"מ", type: "תחזוקה", sla: "99.5%", slaActual: 99.2, value: "185,000", start: "2025-07-01", expiry: "2026-07-01", renewal: "אוטומטי", status: "פעיל", terms: "תגובה תוך 4 שעות" },
   { id: "SA-002", name: "שירותי IT ותקשורת", vendor: "נט-סולושנס", type: "IT", sla: "99.9%", slaActual: 99.8, value: "120,000", start: "2025-01-01", expiry: "2026-12-31", renewal: "אוטומטי", status: "פעיל", terms: "תמיכה 24/7" },
   { id: "SA-003", name: "תחזוקת מערכת כיבוי אש", vendor: "בטחון ובטיחות בע\"מ", type: "בטיחות", sla: "100%", slaActual: 100, value: "45,000", start: "2025-03-15", expiry: "2026-03-15", renewal: "ידני", status: "פעיל", terms: "בדיקה רבעונית" },
@@ -33,6 +35,14 @@ const statusColors: Record<string, string> = {
 };
 
 export default function ServiceAgreements() {
+  const { data: serviceagreementsData } = useQuery({
+    queryKey: ["service-agreements"],
+    queryFn: () => authFetch("/api/contracts/service_agreements"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const agreements = serviceagreementsData ?? FALLBACK_AGREEMENTS;
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("all");

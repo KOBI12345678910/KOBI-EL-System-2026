@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,7 +11,7 @@ import {
   TrendingUp, ArrowUpDown, ChevronRight, ChevronLeft, Printer, Eye
 } from "lucide-react";
 
-const kpis = [
+const FALLBACK_KPIS = [
   { title: "סה״כ חובות לקוחות", value: "₪4,285,600", icon: DollarSign, color: "text-blue-400", bg: "bg-blue-500/10", change: "+8.2%", changeColor: "text-red-400" },
   { title: "שוטף (0-30 יום)", value: "₪1,842,300", icon: TrendingUp, color: "text-green-400", bg: "bg-green-500/10", change: "43%", changeColor: "text-green-400" },
   { title: "30-60 יום", value: "₪1,156,400", icon: Clock, color: "text-yellow-400", bg: "bg-yellow-500/10", change: "27%", changeColor: "text-yellow-400" },
@@ -27,7 +29,7 @@ const riskBadge = (risk: string) => {
   return m[risk] || "bg-gray-500/20 text-gray-300";
 };
 
-const customers = [
+const FALLBACK_CUSTOMERS = [
   { id: 1, name: "אלומיניום הגליל בע״מ", current: 245000, d30: 180000, d60: 95000, d90: 42000, total: 562000, creditLimit: 700000, balance: 562000, lastPayment: "2026-03-28", risk: "בינוני" },
   { id: 2, name: "זגוגית הנגב", current: 198000, d30: 125000, d60: 88000, d90: 0, total: 411000, creditLimit: 500000, balance: 411000, lastPayment: "2026-04-01", risk: "נמוך" },
   { id: 3, name: "מתכת השרון", current: 156000, d30: 112000, d60: 67000, d90: 145000, total: 480000, creditLimit: 450000, balance: 480000, lastPayment: "2026-02-15", risk: "קריטי" },
@@ -48,6 +50,14 @@ const customers = [
 const fmt = (n: number) => "₪" + n.toLocaleString("he-IL");
 
 export default function ReportCustomerAgingPage() {
+  const { data: reportcustomeragingData } = useQuery({
+    queryKey: ["report-customer-aging"],
+    queryFn: () => authFetch("/api/reports/report_customer_aging"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = reportcustomeragingData ?? FALLBACK_KPIS;
+
   const [search, setSearch] = useState("");
   const [riskFilter, setRiskFilter] = useState("all");
   const [sortField, setSortField] = useState<string>("total");

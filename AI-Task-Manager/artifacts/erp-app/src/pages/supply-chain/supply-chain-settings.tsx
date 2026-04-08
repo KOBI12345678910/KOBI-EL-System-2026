@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +14,7 @@ import {
   RefreshCw, CheckCircle2, AlertTriangle, XCircle, DollarSign
 } from "lucide-react";
 
-const generalSettings = [
+const FALLBACK_GENERALSETTINGS = [
   { key: "lead_time", label: "זמן אספקה ברירת מחדל", value: "14", unit: "ימים", desc: "Lead Time ממוצע להזמנות חדשות" },
   { key: "safety_stock", label: "מדיניות מלאי ביטחון", value: "15%", unit: "מהצריכה החודשית", desc: "אחוז מלאי ביטחון מינימלי" },
   { key: "reorder_method", label: "שיטת נקודת הזמנה מחדש", value: "ROP דינמי", unit: "", desc: "חישוב אוטומטי לפי צריכה" },
@@ -24,7 +26,7 @@ const generalSettings = [
   { key: "uom", label: "יחידות מידה", value: "מטרי (ק\"ג, מ\')", unit: "", desc: "מערכת יחידות ברירת מחדל" },
 ];
 
-const supplierCriteria = [
+const FALLBACK_SUPPLIERCRITERIA = [
   { criterion: "איכות מוצר", weight: 30, color: "bg-blue-500" },
   { criterion: "אמינות אספקה", weight: 25, color: "bg-green-500" },
   { criterion: "מחיר תחרותי", weight: 20, color: "bg-amber-500" },
@@ -32,9 +34,9 @@ const supplierCriteria = [
   { criterion: "גמישות ותגובה", weight: 10, color: "bg-rose-500" },
 ];
 
-const approvedCountries = ["ישראל", "גרמניה", "איטליה", "טורקיה", "סין", "בלגיה", "יוון", "ספרד"];
+const FALLBACK_APPROVEDCOUNTRIES = ["ישראל", "גרמניה", "איטליה", "טורקיה", "סין", "בלגיה", "יוון", "ספרד"];
 
-const bomSettings = [
+const FALLBACK_BOMSETTINGS = [
   { key: "levels", label: "רמות BOM ברירת מחדל", value: "5", desc: "עומק מקסימלי של עץ מוצר" },
   { key: "cost_rollup", label: "שיטת צבירת עלויות", value: "Bottom-Up Rollup", desc: "צבירה מהרמה הנמוכה לגבוהה" },
   { key: "scrap", label: "אחוז פחת ברירת מחדל", value: "3.5%", desc: "פחת חומר סטנדרטי בייצור" },
@@ -43,7 +45,7 @@ const bomSettings = [
   { key: "archive", label: "ארכוב אוטומטי לאחר חוסר פעילות", value: "90", desc: "ימים עד ארכוב BOM לא פעיל" },
 ];
 
-const alertRules = [
+const FALLBACK_ALERTRULES = [
   { id: 1, name: "חוסר מלאי קריטי", desc: "מלאי מתחת לנקודת הזמנה", threshold: "< 10%", channel: "אימייל + SMS", enabled: true, icon: Warehouse },
   { id: 2, name: "חריגת זמן אספקה", desc: "עיכוב מעבר לסף מותר", threshold: "> 3 ימים", channel: "אימייל", enabled: true, icon: Clock },
   { id: 3, name: "שינוי מחיר ספק", desc: "עלייה במחיר מעבר לאחוז מוגדר", threshold: "> 5%", channel: "מערכת + אימייל", enabled: true, icon: DollarSign },
@@ -56,7 +58,7 @@ const alertRules = [
   { id: 10, name: "ספק חדש ללא הערכה", desc: "ספק שנוסף ללא תהליך הערכה", threshold: "כל ספק", channel: "מערכת", enabled: true, icon: Globe },
 ];
 
-const integrations = [
+const FALLBACK_INTEGRATIONS = [
   { name: "מודול רכש", type: "פנימי", status: "מחובר", sync: "זמן אמת", lastSync: "08/04/2026 09:15", health: 100 },
   { name: "מודול ייצור", type: "פנימי", status: "מחובר", sync: "כל 5 דקות", lastSync: "08/04/2026 09:12", health: 100 },
   { name: "מודול מלאי", type: "פנימי", status: "מחובר", sync: "זמן אמת", lastSync: "08/04/2026 09:15", health: 98 },
@@ -73,6 +75,47 @@ const statusBadge = (status: string) => {
 };
 
 export default function SupplyChainSettingsPage() {
+  const { data: apigeneralSettings } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-settings/generalsettings"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-settings/generalsettings").then(r => r.json()).catch(() => null),
+  });
+  const generalSettings = Array.isArray(apigeneralSettings) ? apigeneralSettings : (apigeneralSettings?.data ?? apigeneralSettings?.items ?? FALLBACK_GENERALSETTINGS);
+
+
+  const { data: apisupplierCriteria } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-settings/suppliercriteria"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-settings/suppliercriteria").then(r => r.json()).catch(() => null),
+  });
+  const supplierCriteria = Array.isArray(apisupplierCriteria) ? apisupplierCriteria : (apisupplierCriteria?.data ?? apisupplierCriteria?.items ?? FALLBACK_SUPPLIERCRITERIA);
+
+
+  const { data: apiapprovedCountries } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-settings/approvedcountries"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-settings/approvedcountries").then(r => r.json()).catch(() => null),
+  });
+  const approvedCountries = Array.isArray(apiapprovedCountries) ? apiapprovedCountries : (apiapprovedCountries?.data ?? apiapprovedCountries?.items ?? FALLBACK_APPROVEDCOUNTRIES);
+
+
+  const { data: apibomSettings } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-settings/bomsettings"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-settings/bomsettings").then(r => r.json()).catch(() => null),
+  });
+  const bomSettings = Array.isArray(apibomSettings) ? apibomSettings : (apibomSettings?.data ?? apibomSettings?.items ?? FALLBACK_BOMSETTINGS);
+
+
+  const { data: apialertRules } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-settings/alertrules"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-settings/alertrules").then(r => r.json()).catch(() => null),
+  });
+  const alertRules = Array.isArray(apialertRules) ? apialertRules : (apialertRules?.data ?? apialertRules?.items ?? FALLBACK_ALERTRULES);
+
+
+  const { data: apiintegrations } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-settings/integrations"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-settings/integrations").then(r => r.json()).catch(() => null),
+  });
+  const integrations = Array.isArray(apiintegrations) ? apiintegrations : (apiintegrations?.data ?? apiintegrations?.items ?? FALLBACK_INTEGRATIONS);
+
   return (
     <div className="p-6 space-y-6" dir="rtl">
       <div className="flex items-center justify-between">

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +25,12 @@ interface Competitor {
 }
 
 export default function CompetitorAnalysis() {
+  const { data: competitoranalysisData } = useQuery({
+    queryKey: ["competitor-analysis"],
+    queryFn: () => authFetch("/api/procurement/competitor_analysis"),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [competitors, setCompetitors] = useState<Competitor[]>([]);
   const [loading, setLoading] = useState(false);
   const [newCompetitor, setNewCompetitor] = useState("");

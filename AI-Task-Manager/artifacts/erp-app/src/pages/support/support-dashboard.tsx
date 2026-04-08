@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +13,7 @@ import {
   Phone, Mail, Timer, Star, UserCheck, ArrowUpRight
 } from "lucide-react";
 
-const tickets = [
+const FALLBACK_TICKETS = [
   { id: "TK-4501", subject: "תקלה בפרופיל T-60 - סדק אחרי התקנה", customer: "קונסטרקט מהנדסים", priority: "דחוף", category: "איכות", assignee: "אבי מזרחי", opened: "2026-04-08 08:30", sla: "4 שעות", status: "פתוח", channel: "טלפון" },
   { id: "TK-4502", subject: "עיכוב משלוח הזמנה #H-2890", customer: "ארקיטקט פלוס", priority: "גבוה", category: "לוגיסטיקה", assignee: "בני גולן", opened: "2026-04-08 09:15", sla: "8 שעות", status: "בטיפול", channel: "אימייל" },
   { id: "TK-4503", subject: "בקשת מפרט טכני - זכוכית Low-E", customer: "מלון הילטון חיפה", priority: "בינוני", category: "מידע טכני", assignee: "דנה לוי", opened: "2026-04-08 09:45", sla: "24 שעות", status: "בטיפול", channel: "אימייל" },
@@ -22,7 +24,7 @@ const tickets = [
   { id: "TK-4508", subject: "בקשת החלפת חלק - ידית נשברה", customer: "חברת הבנייה שקד", priority: "נמוך", category: "חלקי חילוף", assignee: "בני גולן", opened: "2026-04-06 09:00", sla: "72 שעות", status: "נסגר", channel: "טלפון" },
 ];
 
-const teamMembers = [
+const FALLBACK_TEAM_MEMBERS = [
   { name: "רועי כהן", role: "מנהל תמיכה", open: 3, closed: 12, avgTime: "3.2 שעות", satisfaction: 96, sla: 94 },
   { name: "אבי מזרחי", role: "טכנאי בכיר", open: 2, closed: 8, avgTime: "4.1 שעות", satisfaction: 92, sla: 88 },
   { name: "דנה לוי", role: "מהנדסת תמיכה", open: 2, closed: 10, avgTime: "2.8 שעות", satisfaction: 98, sla: 96 },
@@ -45,6 +47,14 @@ const priorityColors: Record<string, string> = {
 };
 
 export default function SupportDashboard() {
+  const { data: supportdashboardData } = useQuery({
+    queryKey: ["support-dashboard"],
+    queryFn: () => authFetch("/api/support/support_dashboard"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const tickets = supportdashboardData ?? FALLBACK_TICKETS;
+
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
 

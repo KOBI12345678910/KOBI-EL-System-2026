@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -62,7 +64,7 @@ const urgencyMap: Record<string, { label: string; cls: string }> = {
 };
 
 /* ── 19 Cost Categories ───────────────────────────────────────── */
-const costLines = [
+const FALLBACK_COST_LINES = [
   { category: "אלומיניום פרופילים",      amount: 184600, pctOfTotal: 20.7, color: "bg-blue-500" },
   { category: "זכוכית מחוסמת",            amount: 132400, pctOfTotal: 14.8, color: "bg-cyan-500" },
   { category: "חומרי איטום סיליקון",       amount: 28900,  pctOfTotal: 3.2,  color: "bg-teal-500" },
@@ -83,10 +85,10 @@ const costLines = [
   { category: "תקורה כללית",              amount: 44800,  pctOfTotal: 5.0,  color: "bg-gray-500" },
   { category: "רזרבת סיכון 3%",           amount: 31300,  pctOfTotal: 3.5,  color: "bg-red-500" },
 ];
-const totalCost = costLines.reduce((s, c) => s + c.amount, 0);
+const totalCost = FALLBACK_COST_LINES.reduce((s, c) => s + c.amount, 0);
 
 /* ── Material Sources ─────────────────────────────────────────── */
-const materialSources = [
+const FALLBACK_MATERIAL_SOURCES = [
   { material: "אלומיניום 6063-T5",     supplier: "Henan Mingtai",    origin: "סין",      unitPrice: 843,  qty: 120, total: 101160, lead: "45 ימים",  status: "אושר" },
   { material: "אלומיניום 6063-T5",     supplier: "אלוניל ישראל",     origin: "מקומי",    unitPrice: 920,  qty: 80,  total: 73600,  lead: "14 ימים",  status: "אושר" },
   { material: "זכוכית מחוסמת 8mm",     supplier: "AGC Europe",       origin: "בלגיה",    unitPrice: 185,  qty: 520, total: 96200,  lead: "60 ימים",  status: "בהזמנה" },
@@ -98,7 +100,7 @@ const materialSources = [
 ];
 
 /* ── Approval Trail ───────────────────────────────────────────── */
-const approvalTrail = [
+const FALLBACK_APPROVAL_TRAIL = [
   { step: 1, action: "נוצרה בקשה",       by: "רונן לוי",        role: "מתמחר בכיר",     date: "2026-03-18", time: "09:12", note: "גרסה ראשונית על בסיס BOQ מהנדס",    status: "done" },
   { step: 2, action: "עדכון עלויות",      by: "מיכל כהן",       role: "רכשת",            date: "2026-03-20", time: "14:30", note: "עדכון מחירי יבוא לפי הצעות ספקים",   status: "done" },
   { step: 3, action: "בדיקת מרווח",       by: "אלון דוד",       role: "מנהל תמחור",      date: "2026-03-22", time: "10:45", note: "מרווח יעד 34% — תקין",               status: "done" },
@@ -110,7 +112,7 @@ const approvalTrail = [
 ];
 
 /* ── Price Output Cards ───────────────────────────────────────── */
-const priceCards = [
+const FALLBACK_PRICE_CARDS = [
   { title: "מחיר רצפה (מינימום)", price: request.min_sale_price, margin: request.min_margin, profit: request.min_sale_price - request.estimated_total_cost, icon: ArrowDown, gradient: "from-red-600/30 to-red-900/10 border-red-500/30", text: "text-red-400" },
   { title: "מחיר יעד",           price: request.target_sale_price, margin: request.target_margin, profit: request.target_sale_price - request.estimated_total_cost, icon: Target, gradient: "from-amber-600/30 to-amber-900/10 border-amber-500/30", text: "text-amber-400" },
   { title: "מחיר מומלץ",         price: request.recommended_sale_price, margin: request.margin_percent, profit: request.gross_profit, icon: TrendingUp, gradient: "from-emerald-600/30 to-emerald-900/10 border-emerald-500/30", text: "text-emerald-400" },
@@ -118,6 +120,17 @@ const priceCards = [
 
 /* ── Component ─────────────────────────────────────────────────── */
 export default function ProjectPricingDetails() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["project_pricing_details"],
+    queryFn: () => authFetch("/api/pricing/project-pricing-details").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const costLines = apiData?.costLines ?? FALLBACK_COST_LINES;
+  const materialSources = apiData?.materialSources ?? FALLBACK_MATERIAL_SOURCES;
+  const approvalTrail = apiData?.approvalTrail ?? FALLBACK_APPROVAL_TRAIL;
+  const priceCards = apiData?.priceCards ?? FALLBACK_PRICE_CARDS;
   const [tab, setTab] = useState("summary");
   const st = statusMap[request.status] ?? statusMap.draft;
   const ur = urgencyMap[request.urgency] ?? urgencyMap.low;

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,7 +24,7 @@ import {
   MousePointerClick,
 } from "lucide-react";
 
-const campaignsData = [
+const FALLBACK_CAMPAIGNS_DATA = [
   { id: 1, name: "השקת חלונות אלומיניום פרימיום", type: "אימייל", status: "פעיל", budget: 12000, spent: 8400, leads: 145, conversion: 12.3 },
   { id: 2, name: "מבצע קיץ - דלתות זכוכית", type: "רשתות חברתיות", status: "פעיל", budget: 8500, spent: 6200, leads: 98, conversion: 9.8 },
   { id: 3, name: "תערוכת בנייה תל אביב 2026", type: "אירוע", status: "מתוכנן", budget: 25000, spent: 5000, leads: 0, conversion: 0 },
@@ -35,7 +37,7 @@ const campaignsData = [
   { id: 10, name: "לינקדאין - B2B קבלנים", type: "רשתות חברתיות", status: "פעיל", budget: 5500, spent: 3900, leads: 56, conversion: 10.4 },
 ];
 
-const upcomingCampaigns = [
+const FALLBACK_UPCOMING_CAMPAIGNS = [
   { name: "השקת קו ויטרינות חדש", date: "2026-04-20", type: "אימייל", budget: 9000 },
   { name: "יום פתוח במפעל", date: "2026-05-01", type: "אירוע", budget: 12000 },
   { name: "מבצע חורף - חלונות מבודדים", date: "2026-05-15", type: "רשתות חברתיות", budget: 7500 },
@@ -65,6 +67,14 @@ const statusColor = (status: string) => {
 };
 
 export default function Campaigns() {
+  const { data: campaignsData } = useQuery({
+    queryKey: ["campaigns"],
+    queryFn: () => authFetch("/api/marketing/campaigns"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const campaignsData = campaignsData ?? FALLBACK_CAMPAIGNS_DATA;
+
   const [search, setSearch] = useState("");
 
   const activeCampaigns = campaignsData.filter((c) => c.status === "פעיל").length;

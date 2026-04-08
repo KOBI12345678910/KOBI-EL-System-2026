@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -17,7 +19,7 @@ const fmtCurrency = (v: number) =>
 const pct = (v: number) => `${v.toFixed(1)}%`;
 
 /* ── static data ────────────────────────────────────────────────── */
-const suppliers = [
+const FALLBACK_SUPPLIERS = [
   { id: "SUP-001", name: "אלומיניום ישראל בע\"מ", spendPct: 28.5, criticalPct: 65.0, alternatives: 2, spof: true,  risk: "קריטי",  spend: 1420000, materials: ["פרופיל אלומיניום 40x40", "פרופיל אלומיניום 60x60", "אלומיניום גולמי T6"] },
   { id: "SUP-002", name: "פלדות השרון", spendPct: 19.2, criticalPct: 45.0, alternatives: 3, spof: false, risk: "בינוני", spend: 960000, materials: ["פרופיל ברזל U80", "פלטת ברזל 200x200", "קורות HEA"] },
   { id: "SUP-003", name: "זכוכית הגליל", spendPct: 14.8, criticalPct: 80.0, alternatives: 1, spof: true,  risk: "קריטי",  spend: 740000, materials: ["זכוכית מחוסמת 10 מ\"מ", "זכוכית למינציה", "זכוכית LOW-E"] },
@@ -37,7 +39,7 @@ const riskColor: Record<string, string> = {
 };
 
 /* ── alerts ──────────────────────────────────────────────────────── */
-const alerts = [
+const FALLBACK_ALERTS = [
   { supplier: "אלומיניום ישראל בע\"מ", message: "ספק יחיד ל-65% מהחומרים הקריטיים - נדרשת גיוון דחוף", severity: "קריטי" },
   { supplier: "זכוכית הגליל", message: "חלופה אחת בלבד - סיכון שרשרת אספקה גבוה", severity: "קריטי" },
   { supplier: "HPL ישראל", message: "תלות גבוהה בספק יחיד ללוחות HPL - נדרש ספק גיבוי", severity: "קריטי" },
@@ -46,6 +48,14 @@ const alerts = [
 
 /* ================================================================ */
 export default function SupplierDependency() {
+  const { data: supplierdependencyData } = useQuery({
+    queryKey: ["supplier-dependency"],
+    queryFn: () => authFetch("/api/procurement/supplier_dependency"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const suppliers = supplierdependencyData ?? FALLBACK_SUPPLIERS;
+
   const [search, setSearch] = useState("");
   const [riskFilter, setRiskFilter] = useState("all");
 

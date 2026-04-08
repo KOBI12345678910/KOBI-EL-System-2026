@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,7 +13,7 @@ import {
 
 /* ── Static mock data ─────────────────────────────────────────── */
 
-const teams = [
+const FALLBACK_TEAMS = [
   {
     name: "צוות אלפא",
     leader: "יוסי כהן",
@@ -70,7 +72,7 @@ const teams = [
   },
 ];
 
-const skillsMatrix: { name: string; team: string; skills: Record<string, string> }[] = [
+const FALLBACK_SKILLS_MATRIX: { name: string; team: string; skills: Record<string, string> }[] = [
   { name: "יוסי כהן", team: "אלפא", skills: { חיתוך: "מומחה", הרכבה: "מומחה", ריתוך: "מיומן", "התקנת זכוכית": "מיומן", איטום: "מומחה", חשמל: "בסיסי", גובה: "מומחה", מדידות: "מומחה" } },
   { name: "מוחמד עבד", team: "אלפא", skills: { חיתוך: "מומחה", הרכבה: "מיומן", ריתוך: "מומחה", "התקנת זכוכית": "בסיסי", איטום: "מיומן", חשמל: "—", גובה: "מיומן", מדידות: "מיומן" } },
   { name: "אלכס פטרוב", team: "אלפא", skills: { חיתוך: "מיומן", הרכבה: "מומחה", ריתוך: "מומחה", "התקנת זכוכית": "מיומן", איטום: "בסיסי", חשמל: "מיומן", גובה: "מומחה", מדידות: "מיומן" } },
@@ -89,9 +91,9 @@ const skillsMatrix: { name: string; team: string; skills: Record<string, string>
   { name: "ויקטור מלניק", team: "דלתא", skills: { חיתוך: "מומחה", הרכבה: "מיומן", ריתוך: "מומחה", "התקנת זכוכית": "מיומן", איטום: "—", חשמל: "—", גובה: "מומחה", מדידות: "מיומן" } },
 ];
 
-const skillColumns = ["חיתוך", "הרכבה", "ריתוך", "התקנת זכוכית", "איטום", "חשמל", "גובה", "מדידות"];
+const FALLBACK_SKILL_COLUMNS = ["חיתוך", "הרכבה", "ריתוך", "התקנת זכוכית", "איטום", "חשמל", "גובה", "מדידות"];
 
-const availability: { name: string; team: string; sun: string; mon: string; tue: string; wed: string; thu: string; fri: string }[] = [
+const FALLBACK_AVAILABILITY: { name: string; team: string; sun: string; mon: string; tue: string; wed: string; thu: string; fri: string }[] = [
   { name: "יוסי כהן", team: "אלפא", sun: "באתר", mon: "באתר", tue: "באתר", wed: "באתר", thu: "זמין", fri: "—" },
   { name: "מוחמד עבד", team: "אלפא", sun: "באתר", mon: "באתר", tue: "הדרכה", wed: "באתר", thu: "באתר", fri: "—" },
   { name: "אלכס פטרוב", team: "אלפא", sun: "באתר", mon: "באתר", tue: "באתר", wed: "זמין", thu: "באתר", fri: "—" },
@@ -110,7 +112,7 @@ const availability: { name: string; team: string; sun: string; mon: string; tue:
   { name: "ויקטור מלניק", team: "דלתא", sun: "באתר", mon: "באתר", tue: "באתר", wed: "זמין", thu: "באתר", fri: "—" },
 ];
 
-const dayLabels = [
+const FALLBACK_DAY_LABELS = [
   { key: "sun" as const, label: "ראשון" },
   { key: "mon" as const, label: "שני" },
   { key: "tue" as const, label: "שלישי" },
@@ -153,6 +155,67 @@ function renderStars(score: number) {
 /* ── Page ─────────────────────────────────────────────────────── */
 
 export default function InstallationTeamsPage() {
+  const { data: teams = FALLBACK_TEAMS } = useQuery({
+    queryKey: ["installation-teams"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-teams/teams");
+      if (!res.ok) return FALLBACK_TEAMS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TEAMS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: skillsMatrix = FALLBACK_SKILLS_MATRIX } = useQuery({
+    queryKey: ["installation-skills-matrix"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-teams/skills-matrix");
+      if (!res.ok) return FALLBACK_SKILLS_MATRIX;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SKILLS_MATRIX;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: skillColumns = FALLBACK_SKILL_COLUMNS } = useQuery({
+    queryKey: ["installation-skill-columns"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-teams/skill-columns");
+      if (!res.ok) return FALLBACK_SKILL_COLUMNS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SKILL_COLUMNS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: availability = FALLBACK_AVAILABILITY } = useQuery({
+    queryKey: ["installation-availability"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-teams/availability");
+      if (!res.ok) return FALLBACK_AVAILABILITY;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_AVAILABILITY;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: dayLabels = FALLBACK_DAY_LABELS } = useQuery({
+    queryKey: ["installation-day-labels"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-teams/day-labels");
+      if (!res.ok) return FALLBACK_DAY_LABELS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DAY_LABELS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div dir="rtl" className="p-6 space-y-6">
       {/* Header */}

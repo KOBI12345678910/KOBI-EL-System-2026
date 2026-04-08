@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { User, Star, Truck, Calendar, AlertTriangle, Shield, TrendingUp, Clock, Fuel, MapPin } from "lucide-react";
 
-const drivers = [
+const FALLBACK_DRIVERS = [
   { id: 1, name: "אבי כהן", tz: "304578921", licenseType: "C1", licenseExpiry: "2026-05-12", vehicle: "משאית 8.5 טון - 78-432-01", deliveriesMonth: 42, kmMonth: 3850, safetyRating: 5, status: "פעיל", phone: "050-7341256", hireDate: "2019-03-10", incidents: 0, trainings: ["נהיגה מתקדמת", "חומ\"ס"], vehicleHistory: ["משאית 8.5 טון", "ואן 3.5 טון"] },
   { id: 2, name: "משה לוי", tz: "208934156", licenseType: "C1", licenseExpiry: "2026-04-28", vehicle: "משאית 12 טון - 91-205-33", deliveriesMonth: 38, kmMonth: 4120, safetyRating: 4, status: "פעיל", phone: "052-8843291", hireDate: "2020-06-15", incidents: 1, trainings: ["נהיגה מתקדמת"], vehicleHistory: ["משאית 12 טון", "משאית 8.5 טון"] },
   { id: 3, name: "יוסי אזולאי", tz: "312876540", licenseType: "C", licenseExpiry: "2027-11-03", vehicle: "משאית 18 טון - 55-671-82", deliveriesMonth: 31, kmMonth: 5200, safetyRating: 4, status: "פעיל", phone: "054-6219873", hireDate: "2018-01-22", incidents: 0, trainings: ["נהיגה מתקדמת", "חומ\"ס", "גרירה"], vehicleHistory: ["משאית 18 טון"] },
@@ -26,7 +28,7 @@ const weeklySchedule: Record<number, Record<string, string>> = {
   7: { "ראשון": "מושעה", "שני": "מושעה", "שלישי": "מושעה", "רביעי": "מושעה", "חמישי": "מושעה" },
 };
 
-const days = ["ראשון", "שני", "שלישי", "רביעי", "חמישי"];
+const FALLBACK_DAYS = ["ראשון", "שני", "שלישי", "רביעי", "חמישי"];
 
 function statusColor(status: string) {
   if (status === "פעיל") return "bg-green-500/20 text-green-300 border-green-500/40";
@@ -46,6 +48,31 @@ function licenseExpiringIn30Days(expiry: string) {
 }
 
 export default function DriverManagement() {
+  const { data: drivers = FALLBACK_DRIVERS } = useQuery({
+    queryKey: ["logistics-drivers"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/driver-management/drivers");
+      if (!res.ok) return FALLBACK_DRIVERS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DRIVERS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: days = FALLBACK_DAYS } = useQuery({
+    queryKey: ["logistics-days"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/driver-management/days");
+      if (!res.ok) return FALLBACK_DAYS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DAYS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [selectedDriver, setSelectedDriver] = useState<number | null>(null);
 
   const activeCount = drivers.filter(d => d.status === "פעיל").length;

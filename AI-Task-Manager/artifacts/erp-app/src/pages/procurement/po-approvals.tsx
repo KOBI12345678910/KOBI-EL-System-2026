@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Check, X, AlertCircle, Clock, CheckCircle2 } from "lucide-react";
 
 interface ApprovalStep {
@@ -21,6 +23,12 @@ interface POApproval {
 }
 
 export default function POApprovals() {
+  const { data: poapprovalsData } = useQuery({
+    queryKey: ["po-approvals"],
+    queryFn: () => authFetch("/api/procurement/po_approvals"),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [activeTab, setActiveTab] = useState<"queue" | "thresholds">("queue");
   const [approvals, setApprovals] = useState<POApproval[]>([]);
   const [selectedApproval, setSelectedApproval] = useState<POApproval | null>(null);

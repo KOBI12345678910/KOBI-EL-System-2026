@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -29,7 +31,7 @@ interface AuditEntry {
 
 const fmt = Intl.DateTimeFormat("he-IL", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
-const MOCK_AUDIT_DATA: AuditEntry[] = [
+const FALLBACK_MOCK_AUDIT_DATA: AuditEntry[] = [
   { id: "AE001", timestamp: "2026-04-08T08:02:14", userId: "U008", userName: "ליאור שמש", action: "login", actionHe: "כניסה למערכת", entityType: "session", entityId: "SES-44801", permissionCode: "SYS.AUTH.LOGIN", result: "SUCCESS", ipAddress: "10.0.1.55", details: "התחברות מוצלחת — Chrome / Windows", severity: "low" },
   { id: "AE002", timestamp: "2026-04-08T08:05:22", userId: "U001", userName: "אבי כהן", action: "login", actionHe: "כניסה למערכת", entityType: "session", entityId: "SES-44802", permissionCode: "SYS.AUTH.LOGIN", result: "SUCCESS", ipAddress: "10.0.1.12", details: "התחברות מוצלחת — Firefox / macOS", severity: "low" },
   { id: "AE003", timestamp: "2026-04-08T08:12:45", userId: "U003", userName: "דוד מזרחי", action: "data_access", actionHe: "גישה לנתונים", entityType: "sales_orders", entityId: "SO-10234", permissionCode: "SALES.ORDER.VIEW", result: "SUCCESS", ipAddress: "10.0.2.30", details: "צפייה בהזמנת מכירה SO-10234", severity: "low" },
@@ -92,6 +94,14 @@ const SEVERITY_DOT: Record<string, string> = {
 // ─── Component ─────────────────────────────────────────────────────────────────
 
 export default function AccessAuditView() {
+  const { data: accessauditviewData } = useQuery({
+    queryKey: ["access-audit-view"],
+    queryFn: () => authFetch("/api/system/access_audit_view"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const MOCK_AUDIT_DATA = accessauditviewData ?? FALLBACK_MOCK_AUDIT_DATA;
+
   const [entries] = useState<AuditEntry[]>(MOCK_AUDIT_DATA);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterResult, setFilterResult] = useState("");

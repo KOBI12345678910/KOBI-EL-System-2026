@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,7 +24,7 @@ import {
   Globe,
 } from "lucide-react";
 
-const contentItems = [
+const FALLBACK_CONTENT_ITEMS = [
   { id: 1, title: "מאמר: יתרונות אלומיניום תרמי", type: "מאמר", channel: "בלוג", status: "פורסם", date: "2026-03-20", engagement: 342 },
   { id: 2, title: "סרטון: תהליך ייצור חלונות", type: "וידאו", channel: "יוטיוב", status: "פורסם", date: "2026-03-22", engagement: 1280 },
   { id: 3, title: "פוסט: מבצע אביב דלתות", type: "פוסט", channel: "פייסבוק", status: "פורסם", date: "2026-03-25", engagement: 567 },
@@ -72,7 +74,7 @@ const statusColor = (status: string) => {
   }
 };
 
-const calendarWeeks = [
+const FALLBACK_CALENDAR_WEEKS = [
   { week: "שבוע 1 אפריל", items: contentItems.filter((c) => c.date >= "2026-04-01" && c.date <= "2026-04-07") },
   { week: "שבוע 2 אפריל", items: contentItems.filter((c) => c.date >= "2026-04-08" && c.date <= "2026-04-14") },
   { week: "שבוע 3 אפריל", items: contentItems.filter((c) => c.date >= "2026-04-15" && c.date <= "2026-04-21") },
@@ -80,6 +82,14 @@ const calendarWeeks = [
 ];
 
 export default function ContentCalendar() {
+  const { data: contentcalendarData } = useQuery({
+    queryKey: ["content-calendar"],
+    queryFn: () => authFetch("/api/marketing/content_calendar"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const contentItems = contentcalendarData ?? FALLBACK_CONTENT_ITEMS;
+
   const [tab, setTab] = useState("calendar");
 
   const planned = contentItems.filter((c) => c.status === "מתוכנן").length;

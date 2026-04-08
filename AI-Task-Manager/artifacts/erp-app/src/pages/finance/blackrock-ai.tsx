@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useLocation } from "wouter";
 import {
   Brain, ArrowRight, Lightbulb, AlertTriangle, TrendingUp, Shield,
@@ -23,7 +25,7 @@ function fmt(val: number) {
   return `₪${val.toFixed(0)}`;
 }
 
-const RECOMMENDATIONS = [
+const FALLBACK_RECOMMENDATIONS = [
   {
     id: 1, title: "הסכמי Forward על אלומיניום — 12 חודשים",
     category: "חומרי גלם", priority: "critical", confidence: 94,
@@ -152,7 +154,7 @@ const IMPACT_CHART = RECOMMENDATIONS.map(r => ({
   confidence: r.confidence,
 }));
 
-const PORTFOLIO_EFFECT = [
+const FALLBACK_PORTFOLIO_EFFECT = [
   { metric: "VaR 95%", before: 3330, after: 2420, unit: "K₪" },
   { metric: "P(הפסד)", before: 30.86, after: 18.4, unit: "%" },
   { metric: "Sharpe", before: 0.44, after: 0.79, unit: "" },
@@ -162,6 +164,14 @@ const PORTFOLIO_EFFECT = [
 ];
 
 export default function BlackRockAI() {
+  const { data: blackrockaiData } = useQuery({
+    queryKey: ["blackrock-ai"],
+    queryFn: () => authFetch("/api/finance/blackrock_ai"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const RECOMMENDATIONS = blackrockaiData ?? FALLBACK_RECOMMENDATIONS;
+
   const [, navigate] = useLocation();
   const [tab, setTab] = useState("recommendations");
   const [expanded, setExpanded] = useState<number | null>(0);

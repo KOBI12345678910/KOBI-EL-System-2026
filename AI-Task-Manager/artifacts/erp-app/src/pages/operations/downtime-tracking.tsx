@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { AlertTriangle, Clock, Timer, TrendingDown, Search, Download, Wrench, BarChart3, Activity, XCircle, Calendar, AlertCircle, CheckCircle2 } from "lucide-react";
 
-const activeDowntimes = [
+const FALLBACK_ACTIVE_DOWNTIMES = [
   { id: "DT-001", machine: "תנור ציפוי אבקתי", reason: "תקלת אלמנט חימום", start: "08:22", duration: "4:15", impact: "עצירת קו ציפוי", severity: "קריטי", technician: "אבי כהן" },
   { id: "DT-002", machine: "מכונת חיתוך CNC #2", reason: "שחיקת כלי חיתוך", start: "10:05", duration: "1:30", impact: "ירידת קצב 40%", severity: "בינוני", technician: "משה לוי" },
   { id: "DT-003", machine: "מכונת כיפוף CNC", reason: "תקלת בקר PLC", start: "11:30", duration: "0:55", impact: "עצירת קו כיפוף", severity: "קריטי", technician: "דני שמש" },
@@ -16,7 +18,7 @@ const activeDowntimes = [
   { id: "DT-006", machine: "משאבת קירור מרכזית", reason: "דליפת נוזל קירור", start: "12:10", duration: "0:20", impact: "סיכון חימום יתר", severity: "גבוה", technician: "אלי דהן" },
 ];
 
-const downtimeHistory = [
+const FALLBACK_DOWNTIME_HISTORY = [
   { id: "DT-H01", machine: "מכונת חיתוך CNC #1", reason: "תקלת סרוו מוטור", rootCause: "שחיקת מסבים", date: "07/04", duration: "3:20", resolved: true, cost: 4200 },
   { id: "DT-H02", machine: "מכבש הידראולי 200T", reason: "דליפת שמן הידראולי", rootCause: "אטם פגום", date: "07/04", duration: "1:45", resolved: true, cost: 1800 },
   { id: "DT-H03", machine: "רובוט ריתוך KUKA", reason: "כיול חיישן לייזר", rootCause: "רעידות מצטברות", date: "06/04", duration: "0:50", resolved: true, cost: 650 },
@@ -34,7 +36,7 @@ const downtimeHistory = [
   { id: "DT-H15", machine: "מכונת כיפוף CNC", reason: "תקלת מנוע ציר Y", rootCause: "מנוע שרוף", date: "31/03", duration: "6:00", resolved: true, cost: 8500 },
 ];
 
-const paretoData = [
+const FALLBACK_PARETO_DATA = [
   { cause: "תקלות חשמליות", hours: 18.5, pct: 24.3, cumPct: 24.3, events: 12 },
   { cause: "שחיקת כלים / חלקים", hours: 14.2, pct: 18.7, cumPct: 43.0, events: 18 },
   { cause: "תקלות הידראוליקה/פנאומטיקה", hours: 11.8, pct: 15.5, cumPct: 58.5, events: 8 },
@@ -45,7 +47,7 @@ const paretoData = [
   { cause: "סביבתי (חום, אבק)", hours: 4.0, pct: 5.3, cumPct: 100.0, events: 4 },
 ];
 
-const maintenanceSchedule = [
+const FALLBACK_MAINTENANCE_SCHEDULE = [
   { machine: "מכונת חיתוך CNC #1", type: "מניעתית", nextDate: "10/04/2026", frequency: "כל 2 שבועות", lastDone: "27/03/2026", estimatedDown: "2 שעות", priority: "רגיל" },
   { machine: "מכבש הידראולי 200T", type: "שמן והידראוליקה", nextDate: "12/04/2026", frequency: "חודשי", lastDone: "12/03/2026", estimatedDown: "4 שעות", priority: "גבוה" },
   { machine: "רובוט ריתוך KUKA", type: "כיול ובדיקה", nextDate: "15/04/2026", frequency: "חודשי", lastDone: "15/03/2026", estimatedDown: "1.5 שעות", priority: "רגיל" },
@@ -69,6 +71,14 @@ const PRIO: Record<string, string> = {
 };
 
 export default function DowntimeTracking() {
+  const { data: downtimetrackingData } = useQuery({
+    queryKey: ["downtime-tracking"],
+    queryFn: () => authFetch("/api/operations/downtime_tracking"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const activeDowntimes = downtimetrackingData ?? FALLBACK_ACTIVE_DOWNTIMES;
+
   const [search, setSearch] = useState("");
 
   const totalDown = 76.0;

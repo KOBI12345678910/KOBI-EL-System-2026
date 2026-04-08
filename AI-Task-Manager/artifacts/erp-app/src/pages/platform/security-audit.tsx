@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,7 +17,7 @@ import {
    document_access_logs, stock_change_logs, price_change_logs, cost_override_logs,
    sensitive_action_approvals, deletion_controls, period_locking ── */
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "משתמשים פעילים", value: "34", icon: Users, color: "text-blue-400" },
   { label: "פעולות רגישות היום", value: "12", icon: ShieldAlert, color: "text-red-400" },
   { label: "אירועי ביקורת השבוע", value: "847", icon: FileText, color: "text-emerald-400" },
@@ -24,7 +26,7 @@ const kpis = [
   { label: "ניסיונות כניסה כושלים", value: "3", icon: AlertTriangle, color: "text-orange-400" },
 ];
 
-const auditTrail = [
+const FALLBACK_AUDIT_TRAIL = [
   { ts: "2026-04-08 09:12", user: "עוזי כהן", action: "עדכון מחיר", module: "מוצרים", entity: "ברגים M8", oldVal: "₪12.50", newVal: "₪14.00", ip: "192.168.1.10" },
   { ts: "2026-04-08 08:45", user: "רונית לוי", action: "מחיקת רשומה", module: "ספקים", entity: "ספק מתכת בע\"מ", oldVal: "פעיל", newVal: "נמחק", ip: "192.168.1.22" },
   { ts: "2026-04-08 08:30", user: "יוסי אברהם", action: "שינוי הרשאה", module: "הרשאות", entity: "תפקיד מחסנאי", oldVal: "קריאה", newVal: "קריאה+כתיבה", ip: "192.168.1.15" },
@@ -48,7 +50,7 @@ const permMatrix: Record<string, Record<string, string>> = {
   "צופה":        { "מוצרים": "r", "מלאי": "r", "רכש": "r", "מכירות": "r", "כספים": "r", "ייצור": "r", "דוחות": "r", "הרשאות": "-" },
 };
 
-const sensitiveActions = [
+const FALLBACK_SENSITIVE_ACTIONS = [
   { id: 1, action: "מחיקת ספק", user: "רונית לוי", ts: "2026-04-08 08:45", status: "approved", approver: "עוזי כהן", module: "ספקים", risk: "high" },
   { id: 2, action: "שינוי תנאי תשלום", user: "דנה שמיר", ts: "2026-04-08 07:30", status: "pending", approver: "—", module: "רכש", risk: "medium" },
   { id: 3, action: "עדכון שער מט\"ח", user: "מיכל דוד", ts: "2026-04-07 16:00", status: "approved", approver: "עוזי כהן", module: "כספים", risk: "high" },
@@ -59,7 +61,7 @@ const sensitiveActions = [
   { id: 8, action: "ייצוא נתוני לקוחות", user: "מיכל דוד", ts: "2026-04-06 15:30", status: "pending", approver: "—", module: "מכירות", risk: "high" },
 ];
 
-const periodLocking = [
+const FALLBACK_PERIOD_LOCKING = [
   { month: "ינואר 2026", status: "locked", lockedBy: "עוזי כהן", date: "2026-02-05" },
   { month: "פברואר 2026", status: "locked", lockedBy: "עוזי כהן", date: "2026-03-04" },
   { month: "מרץ 2026", status: "locked", lockedBy: "עוזי כהן", date: "2026-04-07" },
@@ -70,7 +72,7 @@ const periodLocking = [
   { month: "Q2 2026", status: "open", lockedBy: "—", date: "—" },
 ];
 
-const priceChanges = [
+const FALLBACK_PRICE_CHANGES = [
   { item: "ברגים M8", oldPrice: "₪12.50", newPrice: "₪14.00", changedBy: "עוזי כהן", reason: "עליית מחיר חומר גלם", ts: "2026-04-08 09:12" },
   { item: "אומים M10", oldPrice: "₪3.20", newPrice: "₪3.80", changedBy: "דנה שמיר", reason: "עדכון ספק", ts: "2026-04-07 14:30" },
   { item: "פלטת אלומיניום 3מ\"מ", oldPrice: "₪85.00", newPrice: "₪92.00", changedBy: "רונית לוי", reason: "שינוי עלות ייצור", ts: "2026-04-07 11:30" },
@@ -107,6 +109,14 @@ const statusCfg: Record<string, { label: string; cls: string; icon: typeof Check
 };
 
 export default function SecurityAudit() {
+  const { data: securityauditData } = useQuery({
+    queryKey: ["security-audit"],
+    queryFn: () => authFetch("/api/platform/security_audit"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = securityauditData ?? FALLBACK_KPIS;
+
   const [tab, setTab] = useState("audit");
 
   return (

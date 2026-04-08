@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -12,7 +14,7 @@ import {
 
 /* ── mock data ── */
 
-const outgoingQueue = [
+const FALLBACK_OUTGOING_QUEUE = [
   { id: "OUT-001", name: "הצעת מחיר פרויקט אלפא", type: "הצעת מחיר", recipient: "דלתא תעשיות / יוסי כהן", channel: "אימייל", needsSign: true, signed: "כן", status: "מוכן לשליחה", date: "2026-04-08" },
   { id: "OUT-002", name: "חשבונית מס 12045", type: "חשבונית", recipient: "מגה-טק בע\"מ / שרה לוי", channel: "אימייל", needsSign: false, signed: "—", status: "נשלח", date: "2026-04-07" },
   { id: "OUT-003", name: "תעודת משלוח SHP-445", type: "תעודת משלוח", recipient: "פלדות הצפון / דוד מזרחי", channel: "WhatsApp", needsSign: false, signed: "—", status: "נשלח", date: "2026-04-07" },
@@ -25,7 +27,7 @@ const outgoingQueue = [
   { id: "OUT-010", name: "תעודת משלוח SHP-446", type: "תעודת משלוח", recipient: "מגה-טק בע\"מ / שרה לוי", channel: "WhatsApp", needsSign: false, signed: "—", status: "בהכנה", date: "—" },
 ];
 
-const deliveryConfirmations = [
+const FALLBACK_DELIVERY_CONFIRMATIONS = [
   { id: "OUT-002", name: "חשבונית מס 12045", recipient: "מגה-טק בע\"מ", sentDate: "2026-04-07", readDate: "2026-04-07 14:32", readStatus: "נקרא" },
   { id: "OUT-003", name: "תעודת משלוח SHP-445", recipient: "פלדות הצפון", sentDate: "2026-04-07", readDate: "2026-04-07 16:10", readStatus: "נקרא" },
   { id: "OUT-005", name: "אישור הזמנה PO-7890", recipient: "טופ-מתכת", sentDate: "2026-04-06", readDate: "—", readStatus: "לא נקרא" },
@@ -33,7 +35,7 @@ const deliveryConfirmations = [
   { id: "OUT-011", name: "הצעת מחיר מערכת הנעה", recipient: "אומגה סולושנס", sentDate: "2026-04-04", readDate: "2026-04-04 11:20", readStatus: "נקרא" },
 ];
 
-const templates = [
+const FALLBACK_TEMPLATES = [
   { name: "הצעת מחיר סטנדרטית", type: "הצעת מחיר", lastUsed: "2026-04-07", uses: 34, icon: FileText, color: "text-blue-400", bg: "bg-blue-950/40 border-blue-800/40" },
   { name: "חשבונית מס / קבלה", type: "חשבונית", lastUsed: "2026-04-07", uses: 89, icon: FileCheck, color: "text-emerald-400", bg: "bg-emerald-950/40 border-emerald-800/40" },
   { name: "תעודת משלוח", type: "תעודת משלוח", lastUsed: "2026-04-06", uses: 67, icon: Truck, color: "text-orange-400", bg: "bg-orange-950/40 border-orange-800/40" },
@@ -74,7 +76,7 @@ const signedBadge = (v: string) => {
 
 /* ── KPIs ── */
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "נשלחו היום", value: 6, icon: <SendHorizontal className="w-5 h-5" />, color: "text-emerald-400" },
   { label: "ממתינים לשליחה", value: 3, icon: <Clock className="w-5 h-5" />, color: "text-amber-400" },
   { label: "דורשים חתימה לפני שליחה", value: 2, icon: <PenTool className="w-5 h-5" />, color: "text-red-400" },
@@ -84,6 +86,17 @@ const kpis = [
 /* ── component ── */
 
 export default function OutgoingDocuments() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["outgoing_documents"],
+    queryFn: () => authFetch("/api/documents/outgoing-documents").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const outgoingQueue = apiData?.outgoingQueue ?? FALLBACK_OUTGOING_QUEUE;
+  const deliveryConfirmations = apiData?.deliveryConfirmations ?? FALLBACK_DELIVERY_CONFIRMATIONS;
+  const templates = apiData?.templates ?? FALLBACK_TEMPLATES;
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
   const [tab, setTab] = useState("queue");
 
   const sentCount = outgoingQueue.filter((d) => d.status === "נשלח").length;

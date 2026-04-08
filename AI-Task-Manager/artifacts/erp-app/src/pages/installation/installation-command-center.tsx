@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,7 +13,7 @@ import {
 
 const fmt = (n: number) => new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", maximumFractionDigits: 0 }).format(n);
 
-const activeInstallations = [
+const FALLBACK_ACTIVE_INSTALLATIONS = [
   { id: "INS-2461", project: "מגדלי הים — חלונות קומה 12", crew: "צוות אלפא — יוסי כהן", location: "הרצליה, רח׳ הנשיא 40", progress: 72, status: "בשטח", eta: "16:30", phone: "050-7712345" },
   { id: "INS-2462", project: "פרויקט אקו-טאואר — ויטרינות לובי", crew: "צוות בטא — מוחמד עאמר", location: "תל אביב, שד׳ רוטשילד 88", progress: 45, status: "בשטח", eta: "18:00", phone: "052-3345678" },
   { id: "INS-2463", project: "קניון הגליל — חזיתות זכוכית", crew: "צוות גמא — דני לוי", location: "נהריה, סמוך לכיכר העצמאות", progress: 15, status: "בדרך", eta: "10:30", phone: "054-9987654" },
@@ -19,7 +21,7 @@ const activeInstallations = [
   { id: "INS-2465", project: "שכונת הפארק — חלונות דירות", crew: "צוות אלפא-2 — ראובן בן דוד", location: "באר שבע, שכונת רמות", progress: 0, status: "ממתין", eta: "11:00", phone: "053-6654321" },
   { id: "INS-2466", project: "בניין משרדים רמת החייל — מחיצות", crew: "צוות בטא-2 — סאמר חורי", location: "תל אביב, רמת החייל", progress: 35, status: "בשטח", eta: "17:30", phone: "058-4412345" },
 ];
-const todaySchedule = [
+const FALLBACK_TODAY_SCHEDULE = [
   { time: "06:00", event: "טעינת משאית — פרויקט אקו-טאואר", crew: "צוות בטא", type: "loading" },
   { time: "06:30", event: "יציאה למגדלי הים — הרצליה", crew: "צוות אלפא", type: "dispatch" },
   { time: "07:00", event: "תחילת התקנה — מגדלי הים קומה 12", crew: "צוות אלפא", type: "install" },
@@ -29,13 +31,13 @@ const todaySchedule = [
   { time: "14:00", event: "יציאה לבאר שבע — שכונת הפארק", crew: "צוות אלפא-2", type: "dispatch" },
   { time: "16:00", event: "סיכום יומי + דיווח מנהל פרויקט", crew: "הנהלה", type: "summary" },
 ];
-const teamPerformance = [
+const FALLBACK_TEAM_PERFORMANCE = [
   { team: "צוות אלפא — יוסי כהן", completed: 38, avgDays: 2.1, quality: 96, rating: 4.8, costEfficiency: 92, speciality: "חלונות + ויטרינות" },
   { team: "צוות בטא — מוחמד עאמר", completed: 32, avgDays: 2.4, quality: 94, rating: 4.6, costEfficiency: 88, speciality: "חזיתות זכוכית" },
   { team: "צוות גמא — דני לוי", completed: 28, avgDays: 2.8, quality: 91, rating: 4.3, costEfficiency: 85, speciality: "מחיצות + קירות מסך" },
   { team: "צוות דלתא — אבי מזרחי", completed: 35, avgDays: 1.9, quality: 97, rating: 4.9, costEfficiency: 95, speciality: "דלתות אש + ביטחון" },
 ];
-const exceptions = [
+const FALLBACK_EXCEPTIONS = [
   { id: "EX-301", type: "מידות", severity: "גבוהה", site: "מגדלי הים — קומה 12", desc: "פתח חלון חריג ב-3 ס\"מ — דרוש חיתוך מיוחד", crew: "צוות אלפא", status: "בטיפול", date: "2026-04-08" },
   { id: "EX-302", type: "חומר", severity: "בינונית", site: "אקו-טאואר — לובי", desc: "זכוכית Low-E הגיעה עם שריטות — 4 יחידות", crew: "צוות בטא", status: "ממתין לחלופה", date: "2026-04-07" },
   { id: "EX-303", type: "גישה", severity: "גבוהה", site: "קניון הגליל — חזית צפון", desc: "פיגום לא מאושר — דרוש אישור מהנדס", crew: "צוות גמא", status: "עוצר עבודה", date: "2026-04-08" },
@@ -43,7 +45,7 @@ const exceptions = [
   { id: "EX-305", type: "לקוח", severity: "בינונית", site: "שכונת הפארק — באר שבע", desc: "לקוח שינה צבע פרופיל ברגע האחרון", crew: "צוות אלפא-2", status: "ממתין לאישור", date: "2026-04-07" },
   { id: "EX-306", type: "מידות", severity: "נמוכה", site: "בית חולים שערי צדק", desc: "דלת אש רחבה ב-5 מ\"מ — מתאים עם אטם", crew: "צוות דלתא", status: "נסגר", date: "2026-04-05" },
 ];
-const weeklySchedule = [
+const FALLBACK_WEEKLY_SCHEDULE = [
   { day: "ראשון 06/04", installations: [
     { project: "מגדלי הים — קומה 11", crew: "צוות אלפא", status: "הושלם" },
     { project: "אקו-טאואר — קומה 3", crew: "צוות בטא", status: "הושלם" },
@@ -71,6 +73,67 @@ const weeklyStatusColor = (s: string) => s === "הושלם" ? "bg-emerald-100 te
 const typeIcon = (t: string) => t === "loading" ? "📦" : t === "dispatch" ? "🚛" : t === "install" ? "🔧" : t === "break" ? "☕" : t === "handover" ? "🤝" : "📋";
 
 export default function InstallationCommandCenter() {
+  const { data: activeInstallations = FALLBACK_ACTIVE_INSTALLATIONS } = useQuery({
+    queryKey: ["installation-active-installations"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-command-center/active-installations");
+      if (!res.ok) return FALLBACK_ACTIVE_INSTALLATIONS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_ACTIVE_INSTALLATIONS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: todaySchedule = FALLBACK_TODAY_SCHEDULE } = useQuery({
+    queryKey: ["installation-today-schedule"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-command-center/today-schedule");
+      if (!res.ok) return FALLBACK_TODAY_SCHEDULE;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TODAY_SCHEDULE;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: teamPerformance = FALLBACK_TEAM_PERFORMANCE } = useQuery({
+    queryKey: ["installation-team-performance"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-command-center/team-performance");
+      if (!res.ok) return FALLBACK_TEAM_PERFORMANCE;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TEAM_PERFORMANCE;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: exceptions = FALLBACK_EXCEPTIONS } = useQuery({
+    queryKey: ["installation-exceptions"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-command-center/exceptions");
+      if (!res.ok) return FALLBACK_EXCEPTIONS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_EXCEPTIONS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: weeklySchedule = FALLBACK_WEEKLY_SCHEDULE } = useQuery({
+    queryKey: ["installation-weekly-schedule"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-command-center/weekly-schedule");
+      if (!res.ok) return FALLBACK_WEEKLY_SCHEDULE;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_WEEKLY_SCHEDULE;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* Header */}

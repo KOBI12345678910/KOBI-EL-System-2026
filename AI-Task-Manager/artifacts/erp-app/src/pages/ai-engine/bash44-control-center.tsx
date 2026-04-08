@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,7 +18,7 @@ import {
 } from "lucide-react";
 
 // ──────────────── KPI DATA ────────────────
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "סוכנים פעילים", value: "12/15", delta: "3 מושהים", icon: Bot, color: "text-emerald-400", bg: "bg-emerald-500/10" },
   { label: "הרצות כושלות היום", value: "2", delta: "מתוך 187", icon: XCircle, color: "text-red-400", bg: "bg-red-500/10" },
   { label: "התראות פתוחות", value: "8", delta: "3 קריטיות", icon: AlertTriangle, color: "text-orange-400", bg: "bg-orange-500/10" },
@@ -25,7 +27,7 @@ const kpis = [
   { label: "ציון AI יומי", value: "87/100", delta: "+4 מאתמול", icon: Brain, color: "text-cyan-400", bg: "bg-cyan-500/10" },
 ];
 // ──────────────── 15 BASH44 AGENTS ────────────────
-const agents = [
+const FALLBACK_AGENTS = [
   { name: "תזמורן מנכ\"ל", code: "ceo_orchestrator", status: "active" as const, mode: "realtime" as const, model: "BASH44-Ultra", lastRun: "לפני 2 דקות", runsToday: 48, successRate: 97.9, confidence: 94, priority: "critical" as const, icon: Brain },
   { name: "מודיעין לידים", code: "lead_intelligence", status: "active" as const, mode: "event_driven" as const, model: "BASH44-Pro", lastRun: "לפני 5 דקות", runsToday: 34, successRate: 95.6, confidence: 91, priority: "high" as const, icon: Target },
   { name: "המרת מכירות", code: "sales_conversion", status: "active" as const, mode: "realtime" as const, model: "BASH44-Pro", lastRun: "לפני 1 דקות", runsToday: 62, successRate: 93.5, confidence: 88, priority: "critical" as const, icon: TrendingUp },
@@ -43,7 +45,7 @@ const agents = [
   { name: "שער אישורים", code: "approval_gate", status: "active" as const, mode: "realtime" as const, model: "BASH44-Pro", lastRun: "לפני 30 שניות", runsToday: 44, successRate: 100, confidence: 97, priority: "critical" as const, icon: CheckCircle2 },
 ];
 // ──────────────── RECENT RUNS ────────────────
-const recentRuns = [
+const FALLBACK_RECENT_RUNS = [
   { agent: "תזמורן מנכ\"ל", entityType: "סיכום יומי", entityId: "DS-20260408", trigger: "scheduled", status: "success" as const, confidence: 96, duration: "4.2s", timestamp: "08:02:14" },
   { agent: "המרת מכירות", entityType: "ליד", entityId: "LD-4821", trigger: "event", status: "success" as const, confidence: 91, duration: "1.8s", timestamp: "08:01:47" },
   { agent: "תזמון ייצור", entityType: "הזמנת עבודה", entityId: "WO-1587", trigger: "realtime", status: "success" as const, confidence: 94, duration: "2.3s", timestamp: "08:01:32" },
@@ -61,7 +63,7 @@ const recentRuns = [
   { agent: "גביה ותשלומים", entityType: "חוב לקוח", entityId: "DB-3310", trigger: "scheduled", status: "warning" as const, confidence: 64, duration: "4.8s", timestamp: "07:47:15" },
 ];
 // ──────────────── ALERTS ────────────────
-const alerts = [
+const FALLBACK_ALERTS = [
   { id: 1, severity: "critical" as const, agent: "דו\"חות הנהלה", entity: "RPT-201", message: "כשל בהפקת דו\"ח שבועי - timeout מול מסד נתונים. ניסיון חוזר נכשל.", role: "מנהל מערכות", time: "לפני 1 שעה" },
   { id: 2, severity: "critical" as const, agent: "סיכוני מלאי", entity: "INV-3392", message: "מלאי אלומיניום 6063-T5 ירד מתחת לסף קריטי. מספיק ל-2 ימי ייצור בלבד.", role: "מנהל רכש", time: "לפני 1 שעה" },
   { id: 3, severity: "critical" as const, agent: "המרת מכירות", entity: "DEAL-892", message: "עסקת מפתח ₪1.2M בסיכון - לקוח לא הגיב 5 ימים. סיכוי סגירה ירד ל-35%.", role: "מנהל מכירות", time: "לפני 2 שעות" },
@@ -74,7 +76,7 @@ const alerts = [
   { id: 10, severity: "low" as const, agent: "מוח מסמכים", entity: "DOC-SYS", message: "זוהו 12 מסמכים כפולים במערכת. המלצה לניקוי ומיזוג.", role: "מנהל מערכות", time: "לפני 7 שעות" },
 ];
 // ──────────────── APPROVAL QUEUE ────────────────
-const approvals = [
+const FALLBACK_APPROVALS = [
   { id: 1, recommendation: "הנחה 12% ללקוח 'מגדלי הים' על הזמנה של ₪890K - עמידה ביעד רבעוני", agent: "תמחור ומרווח", requestedRole: "סמנכ\"ל כספים", urgency: "high" as const, entity: "QT-2288", confidence: 91 },
   { id: 2, recommendation: "הזמנת חירום 5 טון אלומיניום 6063-T5 מספק חלופי במחיר +8%", agent: "אופטימיזציית רכש", requestedRole: "מנהל רכש", urgency: "critical" as const, entity: "PO-6615", confidence: 88 },
   { id: 3, recommendation: "הקצאת שעות נוספות לקו CNC - 3 משמרות סופ\"ש לסגירת פער", agent: "תזמון ייצור", requestedRole: "מנהל ייצור", urgency: "high" as const, entity: "WO-1582", confidence: 93 },
@@ -154,6 +156,18 @@ const urgencyConfig = {
 
 // ──────────────── COMPONENT ────────────────
 export default function Bash44ControlCenter() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["bash44_control_center"],
+    queryFn: () => authFetch("/api/ai/bash44-control-center").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const agents = apiData?.agents ?? FALLBACK_AGENTS;
+  const recentRuns = apiData?.recentRuns ?? FALLBACK_RECENT_RUNS;
+  const alerts = apiData?.alerts ?? FALLBACK_ALERTS;
+  const approvals = apiData?.approvals ?? FALLBACK_APPROVALS;
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("agents");
   const filteredAgents = agents.filter(

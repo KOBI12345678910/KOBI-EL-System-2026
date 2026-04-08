@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +10,7 @@ import { FileText, CheckCircle, XCircle, Clock, AlertTriangle, ShieldCheck, Cale
 
 type DocType = "commercial_invoices" | "packing_lists" | "bills_of_lading" | "airway_bills" | "certificates_of_origin" | "import_licenses" | "insurance_documents" | "customs_declarations" | "inspection_certificates" | "supplier_documents" | "checklists";
 
-const DOC_TYPES: { key: DocType; label: string }[] = [
+const FALLBACK_DOC_TYPES: { key: DocType; label: string }[] = [
   { key: "commercial_invoices", label: "חשבונית מסחרית" },
   { key: "packing_lists", label: "רשימת אריזה" },
   { key: "bills_of_lading", label: "שטר מטען ימי" },
@@ -22,7 +24,7 @@ const DOC_TYPES: { key: DocType; label: string }[] = [
   { key: "checklists", label: "צ׳קליסט" },
 ];
 
-const SHIPMENTS = [
+const FALLBACK_SHIPMENTS = [
   { id: "SH-2026-001", supplier: "Foshan Glass Co.", origin: "סין", port: "אשדוד", eta: "2026-04-20", docs: { commercial_invoices: "approved", packing_lists: "approved", bills_of_lading: "approved", airway_bills: "na", certificates_of_origin: "approved", import_licenses: "pending", insurance_documents: "approved", customs_declarations: "pending", inspection_certificates: "approved", supplier_documents: "approved", checklists: "approved" } },
   { id: "SH-2026-002", supplier: "Schüco International", origin: "גרמניה", port: "חיפה", eta: "2026-04-25", docs: { commercial_invoices: "approved", packing_lists: "approved", bills_of_lading: "approved", airway_bills: "na", certificates_of_origin: "approved", import_licenses: "approved", insurance_documents: "approved", customs_declarations: "approved", inspection_certificates: "approved", supplier_documents: "approved", checklists: "approved" } },
   { id: "SH-2026-003", supplier: "Alumil SA", origin: "יוון", port: "אשדוד", eta: "2026-05-01", docs: { commercial_invoices: "approved", packing_lists: "pending", bills_of_lading: "missing", airway_bills: "na", certificates_of_origin: "pending", import_licenses: "missing", insurance_documents: "approved", customs_declarations: "missing", inspection_certificates: "missing", supplier_documents: "pending", checklists: "missing" } },
@@ -33,7 +35,7 @@ const SHIPMENTS = [
   { id: "SH-2026-008", supplier: "Hydro Building Systems", origin: "נורווגיה", port: "חיפה", eta: "2026-05-15", docs: { commercial_invoices: "approved", packing_lists: "pending", bills_of_lading: "missing", airway_bills: "na", certificates_of_origin: "approved", import_licenses: "approved", insurance_documents: "expired", customs_declarations: "missing", inspection_certificates: "missing", supplier_documents: "pending", checklists: "missing" } },
 ];
 
-const ALL_DOCUMENTS = [
+const FALLBACK_ALL_DOCUMENTS = [
   { id: "DOC-001", type: "commercial_invoices", shipment: "SH-2026-001", supplier: "Foshan Glass Co.", uploadDate: "2026-03-15", status: "approved", expiry: "2026-09-15" },
   { id: "DOC-002", type: "packing_lists", shipment: "SH-2026-001", supplier: "Foshan Glass Co.", uploadDate: "2026-03-15", status: "approved", expiry: "-" },
   { id: "DOC-003", type: "bills_of_lading", shipment: "SH-2026-002", supplier: "Schüco International", uploadDate: "2026-03-20", status: "approved", expiry: "-" },
@@ -72,6 +74,43 @@ const statusBadge = (s: string) => {
 const docLabel = (key: string) => DOC_TYPES.find(d => d.key === key)?.label ?? key;
 
 export default function ImportDocuments() {
+  const { data: DOC_TYPES = FALLBACK_DOC_TYPES } = useQuery({
+    queryKey: ["import-doc-types"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-documents/doc-types");
+      if (!res.ok) return FALLBACK_DOC_TYPES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DOC_TYPES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: SHIPMENTS = FALLBACK_SHIPMENTS } = useQuery({
+    queryKey: ["import-shipments"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-documents/shipments");
+      if (!res.ok) return FALLBACK_SHIPMENTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SHIPMENTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: ALL_DOCUMENTS = FALLBACK_ALL_DOCUMENTS } = useQuery({
+    queryKey: ["import-all-documents"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-documents/all-documents");
+      if (!res.ok) return FALLBACK_ALL_DOCUMENTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_ALL_DOCUMENTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [tab, setTab] = useState("checklist");
 
   const allDocStatuses = SHIPMENTS.flatMap(s => Object.entries(s.docs).filter(([, v]) => v !== "na").map(([, v]) => v));

@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +13,7 @@ import {
   Eye, Search, SlidersHorizontal, BarChart3, CircleDot, ShieldCheck,
 } from "lucide-react";
 
-const alertTypes = [
+const FALLBACK_ALERTTYPES = [
   { label: "מחסור בחומר", icon: Package, count: 4, color: "bg-red-500/15 text-red-600" },
   { label: "עיכוב משלוח", icon: Truck, count: 3, color: "bg-amber-500/15 text-amber-600" },
   { label: "עצירת איכות", icon: FlaskConical, count: 2, color: "bg-purple-500/15 text-purple-600" },
@@ -33,7 +35,7 @@ const severityConfig: Record<Severity, { label: string; cls: string }> = {
   low: { label: "נמוך", cls: "bg-green-500/20 text-green-700" },
 };
 
-const activeAlerts = [
+const FALLBACK_ACTIVEALERTS = [
   { id: "ALR-301", severity: "critical" as Severity, type: "מחסור בחומר", title: "מלאי זכוכית מחוסמת קריטי", desc: "מלאי ירד ל-2 ימי ייצור בלבד", entity: "Foshan Glass Co.", entityType: "ספק", created: "08/04 07:12", assignee: "דניאל כ." },
   { id: "ALR-300", severity: "critical" as Severity, type: "עיכוב משלוח", title: "משלוח אלומיניום תקוע בנמל", desc: "עיכוב של 12 יום בנמל חיפה - שביתה", entity: "HZ-2026-1187", entityType: "הזמנה", created: "07/04 15:30", assignee: "אורי מ." },
   { id: "ALR-299", severity: "critical" as Severity, type: "עצירת איכות", title: "אצווה פסולה - פרופילי אלומיניום", desc: "17% פסילה באצווה 8842 - חריגת מידות", entity: "קבוצת אלומיל", entityType: "ספק", created: "07/04 11:45", assignee: "שרון ב." },
@@ -51,7 +53,7 @@ const activeAlerts = [
   { id: "ALR-287", severity: "low" as Severity, type: "סיכון חוסר מלאי", title: "גומיות EPDM - צריכה מעל הממוצע", desc: "צריכה 15% מעל ממוצע חודשי", entity: "גומיית EPDM 4x15", entityType: "מוצר", created: "02/04 11:20", assignee: "שרון ב." },
 ];
 
-const historyAlerts = [
+const FALLBACK_HISTORYALERTS = [
   { id: "ALR-286", type: "מחסור בחומר", title: "מלאי זכוכית LOW-E נמוך", resolved: "02/04 09:00", duration: "4.2 שעות", action: "הזמנה דחופה לספק חלופי", resolver: "דניאל כ." },
   { id: "ALR-285", type: "עיכוב משלוח", title: "עיכוב פרופילים מטורקיה", resolved: "01/04 17:30", duration: "18 שעות", action: "שינוי לשילוח אווירי", resolver: "אורי מ." },
   { id: "ALR-284", type: "עצירת איכות", title: "פסילת אצווה - גומיות", resolved: "01/04 14:00", duration: "6.5 שעות", action: "החלפת אצווה + זיכוי ספק", resolver: "שרון ב." },
@@ -74,7 +76,7 @@ const historyAlerts = [
   { id: "ALR-267", type: "סיכון חוסר מלאי", title: "ידיות אלומיניום צפויות להיגמר", resolved: "23/03 14:00", duration: "6 שעות", action: "הזמנה מזורזת מספק מקומי", resolver: "שרון ב." },
 ];
 
-const thresholds = [
+const FALLBACK_THRESHOLDS = [
   { id: 1, name: "ימי מלאי מינימלי", desc: "התראה כשמלאי חומר יורד מתחת לסף", value: 5, unit: "ימים", triggers: 12, active: true },
   { id: 2, name: "סטיית Lead Time מקסימלית", desc: "התראה על חריגה מזמן אספקה מוסכם", value: 20, unit: "%", triggers: 8, active: true },
   { id: 3, name: "סף שינוי מחיר", desc: "התראה על שינוי מחיר חומר גלם", value: 10, unit: "%", triggers: 4, active: true },
@@ -88,6 +90,33 @@ const thresholds = [
 ];
 
 export default function SupplyChainAlertsPage() {
+  const { data: apialertTypes } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-alerts/alerttypes"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-alerts/alerttypes").then(r => r.json()).catch(() => null),
+  });
+  const alertTypes = Array.isArray(apialertTypes) ? apialertTypes : (apialertTypes?.data ?? apialertTypes?.items ?? FALLBACK_ALERTTYPES);
+
+
+  const { data: apiactiveAlerts } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-alerts/activealerts"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-alerts/activealerts").then(r => r.json()).catch(() => null),
+  });
+  const activeAlerts = Array.isArray(apiactiveAlerts) ? apiactiveAlerts : (apiactiveAlerts?.data ?? apiactiveAlerts?.items ?? FALLBACK_ACTIVEALERTS);
+
+
+  const { data: apihistoryAlerts } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-alerts/historyalerts"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-alerts/historyalerts").then(r => r.json()).catch(() => null),
+  });
+  const historyAlerts = Array.isArray(apihistoryAlerts) ? apihistoryAlerts : (apihistoryAlerts?.data ?? apihistoryAlerts?.items ?? FALLBACK_HISTORYALERTS);
+
+
+  const { data: apithresholds } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-alerts/thresholds"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-alerts/thresholds").then(r => r.json()).catch(() => null),
+  });
+  const thresholds = Array.isArray(apithresholds) ? apithresholds : (apithresholds?.data ?? apithresholds?.items ?? FALLBACK_THRESHOLDS);
+
   const criticalCount = activeAlerts.filter(a => a.severity === "critical").length;
   const resolvedToday = 5;
   const avgResolution = 14.2;

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +13,7 @@ import {
   FileText, RefreshCw, ShieldAlert, Timer
 } from "lucide-react";
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "ממתינים לאישור", value: "8", delta: "+3 היום", icon: Clock, color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
   { label: "אושרו היום", value: "23", delta: "+5 מאתמול", icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
   { label: "נדחו היום", value: "4", delta: "-2 מאתמול", icon: XCircle, color: "text-red-400", bg: "bg-red-500/10 border-red-500/20" },
@@ -55,7 +57,7 @@ const riskColors: Record<string, string> = {
 };
 const riskLabels: Record<string, string> = { low: "נמוך", medium: "בינוני", high: "גבוה", critical: "קריטי" };
 
-const pendingItems: ApprovalItem[] = [
+const FALLBACK_PENDING_ITEMS: ApprovalItem[] = [
   { id: "APR-301", title: "שינוי מחיר מוצר X200 ל-₪1,850", module: "מכירות", tier: "finance_approval", status: "pending", recommendation: "אשר — המחיר תואם מגמת שוק ומרווח >35%", confidence: 92, risk: "סטייה של 8% מהמחיר הממוצע בקטגוריה", riskLevel: "medium", message: "שינוי מחיר דורש אישור מחלקת כספים לפי מדיניות מרווח מינימלי", minRole: "מנהל כספים", requestedBy: "שרה כהן", requestedAt: "08/04/2026 09:12" },
   { id: "APR-302", title: "שיבוץ משמרת לילה — צוות ב׳", module: "משאבי אנוש", tier: "manager_approval", status: "pending", recommendation: "אשר — תואם דרישות כ״א ותקנות עבודה", confidence: 88, risk: "עובד אחד חורג ממכסת שעות שבועית", riskLevel: "low", message: "שיבוץ משמרות דורש אישור מנהל משמרת", minRole: "מנהל משמרות", requestedBy: "AI-שיבוץ", requestedAt: "08/04/2026 07:30" },
   { id: "APR-303", title: "הזמנת רכש — 500 יח׳ חומר גלם T40", module: "רכש", tier: "manager_approval", status: "pending", recommendation: "אשר — מלאי צפוי להיגמר תוך 5 ימים", confidence: 95, risk: "עלות כוללת ₪42,000 — מתחת לתקרת אישור מנהל", riskLevel: "low", message: "הזמנת רכש מעל ₪10,000 דורשת אישור מנהל רכש", minRole: "מנהל רכש", requestedBy: "AI-מלאי", requestedAt: "08/04/2026 08:45" },
@@ -66,19 +68,19 @@ const pendingItems: ApprovalItem[] = [
   { id: "APR-308", title: "שינוי כלל מערכת — מרווח מינימלי 30%→28%", module: "הגדרות", tier: "admin_approval", status: "pending", recommendation: "דחה — הורדת מרווח מסוכנת ברבעון הנוכחי", confidence: 94, risk: "השפעה על כל הצעות המחיר + ירידה צפויה ברווח ₪220,000/שנה", riskLevel: "critical", message: "שינוי כללי מערכת גלובליים דורש אישור כפול — מנהל מערכת + CFO", minRole: "מנהל מערכת + CFO", requestedBy: "אבי גולד", requestedAt: "08/04/2026 11:30" },
 ];
 
-const approvedHistory: ApprovalItem[] = [
+const FALLBACK_APPROVED_HISTORY: ApprovalItem[] = [
   { id: "APR-291", title: "הזמנת רכש — 200 יח׳ ברגים M10", module: "רכש", tier: "manager_approval", status: "approved", recommendation: "אושר", confidence: 96, risk: "מינימלי", riskLevel: "low", message: "אישור שגרתי", minRole: "מנהל רכש", requestedBy: "AI-מלאי", requestedAt: "07/04/2026 14:20", resolvedBy: "רון דוד", resolvedAt: "07/04/2026 14:35" },
   { id: "APR-285", title: "עדכון מחיר מוצר G50 ל-₪980", module: "מכירות", tier: "finance_approval", status: "approved", recommendation: "אושר", confidence: 89, risk: "מינימלי", riskLevel: "low", message: "תואם מדיניות", minRole: "מנהל כספים", requestedBy: "שרה כהן", requestedAt: "07/04/2026 11:10", resolvedBy: "דן אלון", resolvedAt: "07/04/2026 11:45" },
   { id: "APR-275", title: "הקצאת תקציב שיווק Q2 — ₪120,000", module: "כספים", tier: "finance_approval", status: "approved", recommendation: "אושר", confidence: 82, risk: "עלייה של 15% מ-Q1", riskLevel: "medium", message: "אושר על ידי CFO", minRole: "סמנכ״ל כספים", requestedBy: "טלי וינר", requestedAt: "05/04/2026 13:30", resolvedBy: "דן אלון", resolvedAt: "05/04/2026 15:00" },
 ];
 
-const rejectedHistory: ApprovalItem[] = [
+const FALLBACK_REJECTED_HISTORY: ApprovalItem[] = [
   { id: "APR-295", title: "הנחה 20% ללקוח חד-פעמי", module: "מכירות", tier: "finance_approval", status: "rejected", recommendation: "נדחה — חורג ממדיניות הנחות", confidence: 96, risk: "פגיעה ברווחיות + תקדים מסוכן", riskLevel: "high", message: "הנחה מעל 15% לא מאושרת ללקוח ללא היסטוריה", minRole: "CFO", requestedBy: "עמית רז", requestedAt: "07/04/2026 16:00", resolvedBy: "דן אלון", resolvedAt: "07/04/2026 16:30" },
   { id: "APR-288", title: "שינוי ספק ראשי — חומר גלם T40", module: "רכש", tier: "admin_approval", status: "rejected", recommendation: "נדחה — ספק חלופי לא עבר אישור איכות", confidence: 91, risk: "סיכון איכות + עיכוב ייצור", riskLevel: "critical", message: "שינוי ספק ראשי דורש מעבר אישור QA מלא", minRole: "מנהל מערכת", requestedBy: "רון דוד", requestedAt: "06/04/2026 10:00", resolvedBy: "מנהל מערכת", resolvedAt: "06/04/2026 11:15" },
   { id: "APR-278", title: "שינוי מרווח מינימלי ל-25%", module: "הגדרות", tier: "admin_approval", status: "rejected", recommendation: "נדחה — מרווח נמוך מדי ברבעון חלש", confidence: 95, risk: "ירידה צפויה ברווח ₪380,000 בשנה", riskLevel: "critical", message: "שינוי גלובלי נדחה ע״י CFO", minRole: "מנהל מערכת + CFO", requestedBy: "אבי גולד", requestedAt: "04/04/2026 09:00", resolvedBy: "דן אלון", resolvedAt: "04/04/2026 10:30" },
 ];
 
-const policyTiers = [
+const FALLBACK_POLICY_TIERS = [
   {
     tier: "auto_execute" as ApprovalTier,
     actions: [
@@ -118,6 +120,18 @@ const policyTiers = [
 ];
 
 export default function Bash44ApprovalQueue() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["bash44_approval_queue"],
+    queryFn: () => authFetch("/api/ai/bash44-approval-queue").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const pendingItems = apiData?.pendingItems ?? FALLBACK_PENDING_ITEMS;
+  const approvedHistory = apiData?.approvedHistory ?? FALLBACK_APPROVED_HISTORY;
+  const rejectedHistory = apiData?.rejectedHistory ?? FALLBACK_REJECTED_HISTORY;
+  const policyTiers = apiData?.policyTiers ?? FALLBACK_POLICY_TIERS;
   const [tab, setTab] = useState("pending");
   const [search, setSearch] = useState("");
   const [items, setItems] = useState(pendingItems);

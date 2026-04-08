@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,7 +12,7 @@ import {
 
 /* ── Static mock data ─────────────────────────────────────────── */
 
-const equipment = [
+const FALLBACK_EQUIPMENT = [
   { id: "EQ-001", name: "מקדחה תעשייתית Hilti TE-70", category: "כלי חשמלי", location: "באתר INS-001", status: "תקין", lastCalibration: "2026-02-15", assignee: "צוות אלפא — יוסי כהן", value: 8500 },
   { id: "EQ-002", name: "פיגום 6m אלומיניום מודולרי", category: "הרמה", location: "באתר INS-005", status: "תקין", lastCalibration: "—", assignee: "צוות דלתא — מיכל ברק", value: 12000 },
   { id: "EQ-003", name: "מנוף זעיר 500 ק\"ג", category: "הרמה", location: "מחסן ראשי", status: "דורש תחזוקה", lastCalibration: "2025-11-20", assignee: "—", value: 35000 },
@@ -28,7 +30,7 @@ const equipment = [
   { id: "EQ-015", name: "רתמת בטיחות + קו חיים 15m", category: "בטיחות", location: "מחסן ראשי", status: "דורש תחזוקה", lastCalibration: "2025-12-10", assignee: "—", value: 3500 },
 ];
 
-const maintenanceSchedule = [
+const FALLBACK_MAINTENANCE_SCHEDULE = [
   { eqId: "EQ-003", name: "מנוף זעיר 500 ק\"ג", type: "שמן + בדיקת כבלים", dueDate: "2026-04-10", urgency: "גבוהה", assignedTo: "ניר אשכנזי" },
   { eqId: "EQ-004", name: "מכשיר מדידה לייזר Leica DISTO", type: "כיול מעבדתי", dueDate: "2026-04-12", urgency: "בינונית", assignedTo: "מעבדת כיול חיצונית" },
   { eqId: "EQ-008", name: "ערכת ריתוך TIG/MIG 250A", type: "בדיקה חשמלית + החלפת ראש", dueDate: "2026-04-14", urgency: "גבוהה", assignedTo: "ספק — ריתוך בע\"מ" },
@@ -37,7 +39,7 @@ const maintenanceSchedule = [
   { eqId: "EQ-015", name: "רתמת בטיחות + קו חיים 15m", type: "בדיקה שנתית תקן", dueDate: "2026-04-11", urgency: "גבוהה", assignedTo: "בודק מוסמך — SafetyPro" },
 ];
 
-const teamAllocations = [
+const FALLBACK_TEAM_ALLOCATIONS = [
   { team: "צוות אלפא", site: "INS-001 — מגדלי הים, חיפה", items: ["EQ-001 מקדחה תעשייתית", "EQ-005 אקדח איטום", "EQ-014 משאבת ואקום זכוכית"], count: 3 },
   { team: "צוות בטא", site: "לא משובץ — זמין", items: ["—"], count: 0 },
   { team: "צוות גמא", site: "INS-007 — בניין מגורים, נתניה", items: ["EQ-009 מברגה חשמלית", "EQ-007 סולם טלסקופי"], count: 2 },
@@ -46,7 +48,7 @@ const teamAllocations = [
 ];
 
 const costSummary = {
-  totalValue: equipment.reduce((s, e) => s + e.value, 0),
+  totalValue: FALLBACK_EQUIPMENT.reduce((s, e) => s + e.value, 0),
   maintenanceCostMonth: 8750,
   depreciationMonth: 4200,
   insuranceCostMonth: 1650,
@@ -81,7 +83,7 @@ const fmt = (n: number) => "₪" + n.toLocaleString("he-IL");
 
 /* ── KPI data ─────────────────────────────────────────────────── */
 
-const kpiData = [
+const FALLBACK_KPI_DATA = [
   { label: "סה\"כ פריטי ציוד", value: 45, icon: Package, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "זמינים", value: 32, icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10" },
   { label: "בשימוש", value: 10, icon: Users, color: "text-yellow-400", bg: "bg-yellow-500/10" },
@@ -92,6 +94,55 @@ const kpiData = [
 /* ── Component ────────────────────────────────────────────────── */
 
 export default function EquipmentTools() {
+  const { data: equipment = FALLBACK_EQUIPMENT } = useQuery({
+    queryKey: ["installation-equipment"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/equipment-tools/equipment");
+      if (!res.ok) return FALLBACK_EQUIPMENT;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_EQUIPMENT;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: maintenanceSchedule = FALLBACK_MAINTENANCE_SCHEDULE } = useQuery({
+    queryKey: ["installation-maintenance-schedule"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/equipment-tools/maintenance-schedule");
+      if (!res.ok) return FALLBACK_MAINTENANCE_SCHEDULE;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_MAINTENANCE_SCHEDULE;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: teamAllocations = FALLBACK_TEAM_ALLOCATIONS } = useQuery({
+    queryKey: ["installation-team-allocations"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/equipment-tools/team-allocations");
+      if (!res.ok) return FALLBACK_TEAM_ALLOCATIONS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TEAM_ALLOCATIONS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: kpiData = FALLBACK_KPI_DATA } = useQuery({
+    queryKey: ["installation-kpi-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/equipment-tools/kpi-data");
+      if (!res.ok) return FALLBACK_KPI_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_KPI_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* Header */}

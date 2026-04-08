@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +15,7 @@ import {
 
 /* ── structural_calculations, wind_load, thermal_analysis, glass_thickness,
    acoustic_insulation, water_tightness, deflection_checks ── */
-const calculations = [
+const FALLBACK_CALCULATIONS = [
   { id: "CALC-001", project: "מגדל מגורים תל אביב", type: "עומס רוח", desc: "חישוב לחץ רוח קיר מסך קומות 15-30", result: "1.82 kPa", status: "approved", engineer: "יוסי כהן" },
   { id: "CALC-002", project: "בניין משרדים רמת גן", type: "מוליכות תרמית", desc: "חישוב U-value חלון אלומיניום עם זיגוג כפול", result: "Uw=1.8 W/m²K", status: "approved", engineer: "שרה לוי" },
   { id: "CALC-003", project: "מרכז מסחרי באר שבע", type: "שקיעה מבנית", desc: "בדיקת שקיעה L/200 פרופיל 45x90 מפתח 2.4m", result: "6.2mm < 12mm", status: "approved", engineer: "דוד מזרחי" },
@@ -28,12 +30,12 @@ const calculations = [
   { id: "CALC-012", project: "מפעל תעופה לוד", type: "שקיעה מבנית", desc: "בדיקת שקיעה שער הזזה תעשייתי 6m", result: "18mm < 30mm", status: "failed", engineer: "מיכל ברק" },
 ];
 
-const windZones = [
+const FALLBACK_WINDZONES = [
   { zone: "A", label: "אזור A - חוף", qb: 0.73 },
   { zone: "B", label: "אזור B - פנים", qb: 0.55 },
   { zone: "C", label: "אזור C - הרים", qb: 0.65 },
 ];
-const thermalConfigs = [
+const FALLBACK_THERMALCONFIGS = [
   { id: 1, name: "חלון אלומיניום סטנדרטי - זיגוג בודד", uf: 5.8, ug: 5.7, psi: 0.08, af: 0.3, ag: 0.7, uw: "5.71" },
   { id: 2, name: "חלון אלומיניום - זיגוג כפול 4/16/4", uf: 5.8, ug: 2.7, psi: 0.08, af: 0.25, ag: 0.75, uw: "3.56" },
   { id: 3, name: "חלון שבירת גשר - זיגוג כפול 4/16/4", uf: 3.2, ug: 2.7, psi: 0.06, af: 0.25, ag: 0.75, uw: "2.87" },
@@ -41,7 +43,7 @@ const thermalConfigs = [
   { id: 5, name: "קיר מסך - זיגוג כפול Low-E ארגון", uf: 2.8, ug: 1.1, psi: 0.04, af: 0.15, ag: 0.85, uw: "1.41" },
   { id: 6, name: "חלון שבירת גשר - זיגוג משולש Low-E", uf: 3.2, ug: 0.6, psi: 0.04, af: 0.25, ag: 0.75, uw: "1.29" },
 ];
-const structProfiles = [
+const FALLBACK_STRUCTPROFILES = [
   { name: "45x90", ix: 48.6, wx: 10.8, span: 2.4, load: 1.5, deflMax: 12.0, deflActual: 6.2, stress: 85, stressAllow: 160, pass: true },
   { name: "60x120", ix: 138.0, wx: 23.0, span: 3.0, load: 1.8, deflMax: 15.0, deflActual: 8.7, stress: 102, stressAllow: 160, pass: true },
   { name: "60x150", ix: 220.0, wx: 29.3, span: 3.5, load: 2.0, deflMax: 17.5, deflActual: 11.3, stress: 118, stressAllow: 160, pass: true },
@@ -61,6 +63,33 @@ const th = "p-3 text-right text-muted-foreground font-medium text-xs";
 const td = "p-3 text-sm";
 
 export default function EngineeringCalculationsPage() {
+  const { data: apicalculations } = useQuery({
+    queryKey: ["/api/engineering/engineering-calculations/calculations"],
+    queryFn: () => authFetch("/api/engineering/engineering-calculations/calculations").then(r => r.json()).catch(() => null),
+  });
+  const calculations = Array.isArray(apicalculations) ? apicalculations : (apicalculations?.data ?? apicalculations?.items ?? FALLBACK_CALCULATIONS);
+
+
+  const { data: apiwindZones } = useQuery({
+    queryKey: ["/api/engineering/engineering-calculations/windzones"],
+    queryFn: () => authFetch("/api/engineering/engineering-calculations/windzones").then(r => r.json()).catch(() => null),
+  });
+  const windZones = Array.isArray(apiwindZones) ? apiwindZones : (apiwindZones?.data ?? apiwindZones?.items ?? FALLBACK_WINDZONES);
+
+
+  const { data: apithermalConfigs } = useQuery({
+    queryKey: ["/api/engineering/engineering-calculations/thermalconfigs"],
+    queryFn: () => authFetch("/api/engineering/engineering-calculations/thermalconfigs").then(r => r.json()).catch(() => null),
+  });
+  const thermalConfigs = Array.isArray(apithermalConfigs) ? apithermalConfigs : (apithermalConfigs?.data ?? apithermalConfigs?.items ?? FALLBACK_THERMALCONFIGS);
+
+
+  const { data: apistructProfiles } = useQuery({
+    queryKey: ["/api/engineering/engineering-calculations/structprofiles"],
+    queryFn: () => authFetch("/api/engineering/engineering-calculations/structprofiles").then(r => r.json()).catch(() => null),
+  });
+  const structProfiles = Array.isArray(apistructProfiles) ? apistructProfiles : (apistructProfiles?.data ?? apistructProfiles?.items ?? FALLBACK_STRUCTPROFILES);
+
   const [tab, setTab] = useState("list");
   const [search, setSearch] = useState("");
 

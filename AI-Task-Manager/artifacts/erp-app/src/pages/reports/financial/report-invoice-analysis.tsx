@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +13,7 @@ import {
   Eye, Filter, CreditCard, BarChart3, Users
 } from "lucide-react";
 
-const kpis = [
+const FALLBACK_KPIS = [
   { title: "חשבוניות שהונפקו", value: "342", icon: FileText, color: "text-blue-400", bg: "bg-blue-500/10", sub: "שנת 2026" },
   { title: "סה״כ ערך", value: "₪18,450,000", icon: DollarSign, color: "text-green-400", bg: "bg-green-500/10", sub: "+12.3% משנה קודמת" },
   { title: "ממוצע לחשבונית", value: "₪53,947", icon: TrendingUp, color: "text-purple-400", bg: "bg-purple-500/10", sub: "חציון: ₪42,500" },
@@ -30,7 +32,7 @@ const statusBadge = (status: string) => {
   return m[status] || "bg-gray-500/20 text-gray-300";
 };
 
-const invoices = [
+const FALLBACK_INVOICES = [
   { id: "INV-2026-001", customer: "אלומיניום הגליל בע״מ", date: "2026-01-05", due: "2026-02-04", amount: 286650, paid: 286650, status: "שולם", category: "ייצור" },
   { id: "INV-2026-015", customer: "זגוגית הנגב", date: "2026-01-18", due: "2026-02-17", amount: 208260, paid: 208260, status: "שולם", category: "זגוגית" },
   { id: "INV-2026-034", customer: "מתכת השרון", date: "2026-02-03", due: "2026-03-05", amount: 182520, paid: 95000, status: "חלקי", category: "מתכת" },
@@ -48,7 +50,7 @@ const invoices = [
   { id: "CR-2026-008", customer: "מתכת השרון", date: "2026-03-15", due: "-", amount: -45000, paid: 0, status: "זיכוי", category: "מתכת" },
 ];
 
-const agingData = [
+const FALLBACK_AGING_DATA = [
   { bucket: "שוטף (0-30 יום)", count: 42, amount: 1842300, pct: 43 },
   { bucket: "31-60 יום", count: 28, amount: 1156400, pct: 27 },
   { bucket: "61-90 יום", count: 18, amount: 728500, pct: 17 },
@@ -56,7 +58,7 @@ const agingData = [
   { bucket: "120+ יום", count: 5, amount: 213200, pct: 5 },
 ];
 
-const segmentData = [
+const FALLBACK_SEGMENT_DATA = [
   { segment: "ייצור תעשייתי", invoices: 98, amount: 5420000, avgInvoice: 55306, overdue: "15%", share: 29.4 },
   { segment: "זגוגית וחלונות", invoices: 82, amount: 4180000, avgInvoice: 50976, overdue: "12%", share: 22.7 },
   { segment: "אלומיניום ופרופילים", invoices: 76, amount: 3950000, avgInvoice: 51974, overdue: "22%", share: 21.4 },
@@ -64,7 +66,7 @@ const segmentData = [
   { segment: "שיפוצים ובנייה", invoices: 32, amount: 2010000, avgInvoice: 62813, overdue: "18%", share: 10.9 },
 ];
 
-const monthlyTrends = [
+const FALLBACK_MONTHLY_TRENDS = [
   { month: "ינואר", issued: 28, amount: 1520000, collected: 1380000, collectionRate: 91 },
   { month: "פברואר", issued: 32, amount: 1780000, collected: 1590000, collectionRate: 89 },
   { month: "מרץ", issued: 38, amount: 2150000, collected: 1820000, collectionRate: 85 },
@@ -77,6 +79,14 @@ const fmt = (n: number) => {
 };
 
 export default function ReportInvoiceAnalysisPage() {
+  const { data: reportinvoiceanalysisData } = useQuery({
+    queryKey: ["report-invoice-analysis"],
+    queryFn: () => authFetch("/api/reports/report_invoice_analysis"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = reportinvoiceanalysisData ?? FALLBACK_KPIS;
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortField, setSortField] = useState<string>("date");

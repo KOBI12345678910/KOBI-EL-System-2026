@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,7 +13,7 @@ import {
 } from "lucide-react";
 
 /* ───── fault type data ───── */
-const faultTypes = [
+const FALLBACK_FAULT_TYPES = [
   { type: "נזילת מים מהמסגרת", count: 9, avgHours: 5.2, cost: 2800, trend: "up" as const },
   { type: "תקלת מנוע חשמלי", count: 7, avgHours: 8.4, cost: 4200, trend: "up" as const },
   { type: "שבר בזכוכית מבודדת", count: 6, avgHours: 4.8, cost: 3600, trend: "down" as const },
@@ -23,7 +25,7 @@ const faultTypes = [
 ];
 
 /* ───── technician performance ───── */
-const technicians = [
+const FALLBACK_TECHNICIANS = [
   { name: "יוסי כהן", cases: 11, avgHours: 5.1, firstFix: 82, rating: 4.5 },
   { name: "מוטי לוי", cases: 9, avgHours: 6.3, firstFix: 78, rating: 4.3 },
   { name: "אבי דוד", cases: 8, avgHours: 5.8, firstFix: 88, rating: 4.6 },
@@ -35,7 +37,7 @@ const technicians = [
 ];
 
 /* ───── product failure analysis ───── */
-const productFailures = [
+const FALLBACK_PRODUCT_FAILURES = [
   { product: "חלונות אלומיניום", installed: 320, failures: 14, rate: 4.4, commonFault: "נזילת מים מהמסגרת", avgAge: "2.1 שנים" },
   { product: "דלתות כניסה", installed: 185, failures: 9, rate: 4.9, commonFault: "ציר/מנגנון סגירה שבור", avgAge: "1.8 שנים" },
   { product: "ויטרינות זכוכית", installed: 95, failures: 7, rate: 7.4, commonFault: "שבר בזכוכית מבודדת", avgAge: "1.3 שנים" },
@@ -46,7 +48,7 @@ const productFailures = [
 ];
 
 /* ───── satisfaction trend (6 months) ───── */
-const satisfactionTrend = [
+const FALLBACK_SATISFACTION_TREND = [
   { month: "נובמבר", rating: 3.8, responses: 28 },
   { month: "דצמבר", rating: 3.9, responses: 31 },
   { month: "ינואר", rating: 4.0, responses: 35 },
@@ -56,7 +58,7 @@ const satisfactionTrend = [
 ];
 
 /* ───── root cause pareto ───── */
-const rootCauses = [
+const FALLBACK_ROOT_CAUSES = [
   { cause: "התקנה לקויה", count: 14, pct: 33 },
   { cause: "חומר גלם פגום", count: 8, pct: 19 },
   { cause: "בלאי טבעי", count: 7, pct: 17 },
@@ -70,6 +72,14 @@ const cumulativePercents = rootCauses.reduce<number[]>((acc, rc) => {
 }, []);
 
 export default function ServiceAnalytics() {
+  const { data: serviceanalyticsData } = useQuery({
+    queryKey: ["service-analytics"],
+    queryFn: () => authFetch("/api/service/service_analytics"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const faultTypes = serviceanalyticsData ?? FALLBACK_FAULT_TYPES;
+
   const [activeTab, setActiveTab] = useState("overview");
 
   return (

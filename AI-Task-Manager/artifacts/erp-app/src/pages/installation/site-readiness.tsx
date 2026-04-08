@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,7 +13,7 @@ import {
 
 /* ── Static mock data ─────────────────────────────────────────── */
 
-const sites = [
+const FALLBACK_SITES = [
   { id: "INS-101", project: "מגדלי אקרו — תל אביב", address: "רח' יגאל אלון 94, ת\"א", access: true, power: true, measurements: true, drawings: true, materials: true, crane: true, safety: true, score: 100, status: "מוכן" },
   { id: "INS-102", project: "פארק הייטק הרצליה — בניין C", address: "רח' המסגר 7, הרצליה פיתוח", access: true, power: true, measurements: true, drawings: true, materials: true, crane: true, safety: true, score: 100, status: "מוכן" },
   { id: "INS-103", project: "מגדל המשרדים — חיפה", address: "שד' העצמאות 33, חיפה", access: true, power: true, measurements: true, drawings: true, materials: false, crane: true, safety: true, score: 86, status: "חלקי" },
@@ -24,7 +26,7 @@ const sites = [
   { id: "INS-110", project: "משרדי חברת ענן — רעננה", address: "רח' אחוזה 120, רעננה", access: true, power: true, measurements: true, drawings: true, materials: true, crane: true, safety: true, score: 100, status: "מוכן" },
 ];
 
-const checklistItems = [
+const FALLBACK_CHECKLIST_ITEMS = [
   { item: "סקר גישה לאתר — דרכי כניסה ופריקה", responsible: "יוסי כהן", due: "2026-04-01", status: "בוצע" },
   { item: "אישור חיבור חשמל זמני 32A", responsible: "דוד מזרחי", due: "2026-04-02", status: "בוצע" },
   { item: "מדידות שטח — אימות מול שרטוטים", responsible: "שרה לוי", due: "2026-04-03", status: "בוצע" },
@@ -39,7 +41,7 @@ const checklistItems = [
   { item: "תדריך בטיחות לצוות מתקינים", responsible: "גל שפירא", due: "2026-04-08", status: "לא התחיל" },
 ];
 
-const blockingIssues = [
+const FALLBACK_BLOCKING_ISSUES = [
   { id: "BLK-01", site: "INS-107", project: "מלון רויאל — אילת", issue: "אתר סגור — עבודות שלד טרם הושלמו", severity: "קריטי", type: "גישה", responsible: "ניר אשכנזי", deadline: "2026-04-20" },
   { id: "BLK-02", site: "INS-108", project: "מרכז רפואי — פתח תקווה", issue: "מדידות לא תואמות — הפרש 8 ס\"מ בפתחים", severity: "גבוה", type: "מדידות", responsible: "שרה לוי", deadline: "2026-04-12" },
   { id: "BLK-03", site: "INS-106", project: "בית הספר דרור — באר שבע", issue: "חיבור חשמל זמני לא אושר ע\"י חח\"י", severity: "גבוה", type: "חשמל", responsible: "דוד מזרחי", deadline: "2026-04-14" },
@@ -80,16 +82,65 @@ const Check = ({ ok }: { ok: boolean }) =>
 
 /* ── KPI summary ──────────────────────────────────────────────── */
 
-const kpiData = [
-  { label: "אתרים מוכנים", value: sites.filter(s => s.status === "מוכן").length, icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-  { label: "חלקית", value: sites.filter(s => s.status === "חלקי").length, icon: Clock, color: "text-amber-400", bg: "bg-amber-500/10" },
-  { label: "לא מוכנים", value: sites.filter(s => s.status === "לא מוכן").length, icon: XCircle, color: "text-red-400", bg: "bg-red-500/10" },
+const FALLBACK_KPI_DATA = [
+  { label: "אתרים מוכנים", value: FALLBACK_SITES.filter(s => s.status === "מוכן").length, icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+  { label: "חלקית", value: FALLBACK_SITES.filter(s => s.status === "חלקי").length, icon: Clock, color: "text-amber-400", bg: "bg-amber-500/10" },
+  { label: "לא מוכנים", value: FALLBACK_SITES.filter(s => s.status === "לא מוכן").length, icon: XCircle, color: "text-red-400", bg: "bg-red-500/10" },
   { label: "ממתינים לבדיקה", value: 2, icon: ClipboardCheck, color: "text-blue-400", bg: "bg-blue-500/10" },
 ];
 
 /* ── Component ────────────────────────────────────────────────── */
 
 export default function SiteReadiness() {
+  const { data: sites = FALLBACK_SITES } = useQuery({
+    queryKey: ["installation-sites"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/site-readiness/sites");
+      if (!res.ok) return FALLBACK_SITES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SITES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: checklistItems = FALLBACK_CHECKLIST_ITEMS } = useQuery({
+    queryKey: ["installation-checklist-items"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/site-readiness/checklist-items");
+      if (!res.ok) return FALLBACK_CHECKLIST_ITEMS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_CHECKLIST_ITEMS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: blockingIssues = FALLBACK_BLOCKING_ISSUES } = useQuery({
+    queryKey: ["installation-blocking-issues"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/site-readiness/blocking-issues");
+      if (!res.ok) return FALLBACK_BLOCKING_ISSUES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_BLOCKING_ISSUES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: kpiData = FALLBACK_KPI_DATA } = useQuery({
+    queryKey: ["installation-kpi-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/site-readiness/kpi-data");
+      if (!res.ok) return FALLBACK_KPI_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_KPI_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* Header */}

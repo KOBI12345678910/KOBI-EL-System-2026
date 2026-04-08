@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Button, Input, Label, Card } from "@/components/ui-components";
 import { CreditCard, CheckCircle2, XCircle, RefreshCw, Save, Globe, DollarSign, TestTube, AlertTriangle } from "lucide-react";
 import ActivityLog from "@/components/activity-log";
@@ -63,6 +65,12 @@ const PROVIDERS: PaymentProvider[] = [
 ];
 
 export default function PaymentServicesSection() {
+  const { data: paymentservicesData } = useQuery({
+    queryKey: ["payment-services"],
+    queryFn: () => authFetch("/api/settings/payment_services"),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [activeTab, setActiveTab] = useState("providers");
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
   const [providerData, setProviderData] = useState<Record<string, Record<string, string>>>({});

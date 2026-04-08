@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   Inbox,
   Mail,
@@ -43,7 +45,7 @@ const incomingSources: { name: string; detail: string; pct: number; icon: Lucide
 ];
 
 /* ── Incoming Queue — 12 documents ── */
-const incomingQueue = [
+const FALLBACK_INCOMING_QUEUE = [
   { id: "INC-301", file: "invoice_elco_032026.pdf", source: "אימייל", sender: "אלקו בע\"מ (ספק)", received: "08/04/2026 08:12", type: "חשבונית", size: "245 KB", ocr: true, status: "חדש", entity: null },
   { id: "INC-302", file: "delivery_note_mashbir.pdf", source: "אימייל", sender: "המשביר (ספק)", received: "08/04/2026 08:30", type: "תעודת משלוח", size: "182 KB", ocr: false, status: "בעיבוד", entity: "הזמנה PO-2026-1190" },
   { id: "INC-303", file: "quote_hadar_q2.pdf", source: "WhatsApp Business", sender: "הדר מתכות (ספק)", received: "08/04/2026 09:01", type: "הצעת מחיר", size: "310 KB", ocr: true, status: "חדש", entity: null },
@@ -59,7 +61,7 @@ const incomingQueue = [
 ];
 
 /* ── Processing / Routing Rules ── */
-const routingRules = [
+const FALLBACK_ROUTING_RULES = [
   { id: "RTR-01", name: "ספק אלקו → רכש", condition: "שולח מכיל 'אלקו' או 'elco'", target: "מחלקת רכש", action: "שיוך אוטומטי + התראה", docs: 124, active: true },
   { id: "RTR-02", name: "מילת מפתח 'חשבונית' → כספים", condition: "סוג מזוהה = חשבונית", target: "מחלקת כספים", action: "יצירת רשומת AP + OCR", docs: 312, active: true },
   { id: "RTR-03", name: "תעודת משלוח → מחסן", condition: "סוג = תעודת משלוח", target: "ניהול מחסן", action: "שיוך להזמנה פתוחה", docs: 198, active: true },
@@ -68,7 +70,7 @@ const routingRules = [
 ];
 
 /* ── History Log ── */
-const historyLog = [
+const FALLBACK_HISTORY_LOG = [
   { time: "11:35", action: "קבלה", doc: "INC-312", detail: "delivery_scan_007.jpg התקבל מסורק מחסן מרכזי" },
   { time: "11:20", action: "קבלה", doc: "INC-311", detail: "agreement_renewal_keter.pdf התקבל מאימייל" },
   { time: "11:05", action: "ניתוב", doc: "INC-307", detail: "שויך להזמנה PO-2026-1195 (כלל RTR-03)" },
@@ -111,6 +113,16 @@ function typeIcon(type: string) {
 
 /* ── Main Component ── */
 export default function IncomingDocumentsPage() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["incoming_documents"],
+    queryFn: () => authFetch("/api/documents/incoming-documents").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const incomingQueue = apiData?.incomingQueue ?? FALLBACK_INCOMING_QUEUE;
+  const routingRules = apiData?.routingRules ?? FALLBACK_ROUTING_RULES;
+  const historyLog = apiData?.historyLog ?? FALLBACK_HISTORY_LOG;
   const [tab, setTab] = useState("queue");
 
   return (

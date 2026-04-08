@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,15 +13,15 @@ import {
   MousePointerClick, ListChecks, ShieldAlert, Layers
 } from "lucide-react";
 
-const AGENTS = ["BASH-44-LEAD", "BASH-44-INV", "BASH-44-CRM", "BASH-44-HR", "BASH-44-PROD", "BASH-44-FIN", "BASH-44-QA"];
-const ENTITIES = ["לקוח", "הזמנה", "מוצר", "עובד", "ספק", "חשבונית", "פנייה", "משימה"];
+const FALLBACK_AGENTS = ["BASH-44-LEAD", "BASH-44-INV", "BASH-44-CRM", "BASH-44-HR", "BASH-44-PROD", "BASH-44-FIN", "BASH-44-QA"];
+const FALLBACK_ENTITIES = ["לקוח", "הזמנה", "מוצר", "עובד", "ספק", "חשבונית", "פנייה", "משימה"];
 const TRIGGERS: { key: string; label: string; icon: any }[] = [
   { key: "event", label: "אירוע", icon: Zap },
   { key: "scheduled", label: "מתוזמן", icon: CalendarClock },
   { key: "manual", label: "ידני", icon: MousePointerClick },
 ];
-const STATUSES = ["הצלחה", "נכשל", "ממתין", "רץ"];
-const ERRORS = [
+const FALLBACK_STATUSES = ["הצלחה", "נכשל", "ממתין", "רץ"];
+const FALLBACK_ERRORS = [
   "חריגת זמן ריצה - timeout 30s", "שגיאת חיבור ל-API חיצוני",
   "נתוני קלט חסרים - שדה חובה ריק", "חריגת מגבלת זיכרון",
   "שגיאת אימות - token פג תוקף", "קונפליקט נתונים - רשומה כפולה",
@@ -64,7 +66,7 @@ const withDur = allRuns.filter(r => r.duration > 0);
 const avgC = (withConf.reduce((s, r) => s + r.confidence, 0) / (withConf.length || 1)).toFixed(1);
 const avgD = Math.round(withDur.reduce((s, r) => s + r.duration, 0) / (withDur.length || 1));
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "ריצות היום", value: "20", icon: Bot, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
   { label: "אחוז הצלחה", value: `${((suc / 20) * 100).toFixed(1)}%`, icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
   { label: "ביטחון ממוצע", value: `${avgC}%`, icon: TrendingUp, color: "text-violet-400", bg: "bg-violet-500/10 border-violet-500/20" },
@@ -93,6 +95,18 @@ const confColor = (v: number) => v >= 80 ? "text-emerald-400" : v >= 50 ? "text-
 const durColor = (v: number) => v < 1000 ? "text-emerald-400" : v < 2500 ? "text-amber-400" : "text-red-400";
 
 export default function Bash44AgentRuns() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["bash44_agent_runs"],
+    queryFn: () => authFetch("/api/ai/bash44-agent-runs").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const AGENTS = apiData?.AGENTS ?? FALLBACK_AGENTS;
+  const ENTITIES = apiData?.ENTITIES ?? FALLBACK_ENTITIES;
+  const STATUSES = apiData?.STATUSES ?? FALLBACK_STATUSES;
+  const ERRORS = apiData?.ERRORS ?? FALLBACK_ERRORS;
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
   const [search, setSearch] = useState("");
   const [filterAgent, setFilterAgent] = useState("");
   const [tab, setTab] = useState("log");

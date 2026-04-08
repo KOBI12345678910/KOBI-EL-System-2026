@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   AlertTriangle, FileText, Shield, Users, Clock,
   CheckCircle2, XCircle, ChevronLeft, ChevronRight,
@@ -28,7 +30,7 @@ const stageColor: Record<string, string> = {
 };
 
 /* ── KPI data ── */
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "תיקים פתוחים", value: 4, icon: FileText, color: "text-orange-600", bg: "bg-orange-50" },
   { label: "אזהרות השנה", value: 8, icon: AlertTriangle, color: "text-yellow-600", bg: "bg-yellow-50" },
   { label: "שימועים", value: 2, icon: Gavel, color: "text-red-600", bg: "bg-red-50" },
@@ -37,7 +39,7 @@ const kpis = [
 ];
 
 /* ── 10 disciplinary cases ── */
-const cases = [
+const FALLBACK_CASES = [
   { id: "DIS-001", employee: "יוסף כהן", dept: "ייצור", type: "איחורים חוזרים", severity: "בינוני", date: "2026-01-15", stage: "אזהרה", handler: "רחל לוי" },
   { id: "DIS-002", employee: "מיכאל אברהם", dept: "מחסן", type: "היעדרות", severity: "גבוה", date: "2026-02-03", stage: "שימוע", handler: "דוד מזרחי" },
   { id: "DIS-003", employee: "שרה ביטון", dept: "אריזה", type: "התנהגות", severity: "בינוני", date: "2026-02-18", stage: "שיחה", handler: "רחל לוי" },
@@ -60,14 +62,14 @@ const workflowSteps = [
 ];
 
 /* ── 3 safety incidents ── */
-const safetyIncidents = [
+const FALLBACK_SAFETY_INCIDENTS = [
   { date: "2026-02-10", employee: "אמיר חסן", type: "נפילה מגובה", severity: "גבוה", daysLost: 5, corrective: "התקנת מעקות בטיחות נוספות בקו ייצור 3" },
   { date: "2026-03-05", employee: "יוסף כהן", type: "חשיפה לחומר כימי", severity: "בינוני", daysLost: 2, corrective: "הוספת ציוד מגן אישי ועדכון נהלי עבודה" },
   { date: "2026-03-28", employee: "רועי שמעוני", type: "פגיעה ממכונה", severity: "גבוה", daysLost: 7, corrective: "התקנת מגן בטיחות ועדכון הדרכה תקופתית" },
 ];
 
 /* ── Procedures ── */
-const procedures = [
+const FALLBACK_PROCEDURES = [
   { title: "נוהל משמעת כללי", code: "HR-DIS-001", updated: "2025-12-01", summary: "תהליך טיפול באירועי משמעת מתיעוד ועד החלטה סופית, כולל לוחות זמנים ואחריות." },
   { title: "נוהל שימוע", code: "HR-DIS-002", updated: "2025-11-15", summary: "הנחיות לקיום שימוע כחוק, כולל זכויות העובד, נוכחות נציגות, ותיעוד הדיון." },
   { title: "נוהל אירועי בטיחות", code: "HR-SAF-001", updated: "2026-01-10", summary: "דיווח, חקירה ותיקון אירועי בטיחות, כולל חובת דיווח למשרד העבודה." },
@@ -75,7 +77,7 @@ const procedures = [
 ];
 
 /* ── Statistics ── */
-const typeStats = [
+const FALLBACK_TYPE_STATS = [
   { type: "איחורים חוזרים", count: 2, pct: 20 },
   { type: "היעדרות", count: 2, pct: 20 },
   { type: "הפרת נהלים", count: 2, pct: 20 },
@@ -85,7 +87,7 @@ const typeStats = [
   { type: "אלימות", count: 1, pct: 10 },
 ];
 
-const deptStats = [
+const FALLBACK_DEPT_STATS = [
   { dept: "ייצור", count: 3, pct: 30 },
   { dept: "מחסן", count: 2, pct: 20 },
   { dept: "אריזה", count: 2, pct: 20 },
@@ -94,6 +96,14 @@ const deptStats = [
 ];
 
 export default function DisciplinaryIncidentsPage() {
+  const { data: disciplinaryincidentsData } = useQuery({
+    queryKey: ["disciplinary-incidents"],
+    queryFn: () => authFetch("/api/hr/disciplinary_incidents"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = disciplinaryincidentsData ?? FALLBACK_KPIS;
+
   const [activeTab, setActiveTab] = useState("cases");
 
   return (

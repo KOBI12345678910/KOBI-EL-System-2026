@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,7 +15,7 @@ import {
 } from "lucide-react";
 
 /* ── KPI Data ── */
-const kpis = [
+const FALLBACK_KPIS = [
   { label: 'סה"כ מפתחות API', value: "34", icon: Key, color: "text-blue-600 bg-blue-50", border: "border-blue-200" },
   { label: "לקוחות OAuth פעילים", value: "8", icon: Shield, color: "text-violet-600 bg-violet-50", border: "border-violet-200" },
   { label: "טוקנים פגים ב-7 ימים", value: "5", icon: AlertTriangle, color: "text-amber-600 bg-amber-50", border: "border-amber-200" },
@@ -23,7 +25,7 @@ const kpis = [
 ];
 
 /* ── API Keys ── */
-const apiKeys = [
+const FALLBACK_API_KEYS = [
   { id: 1, name: "ERP Production Gateway", prefix: "sk_live_4f8a...x9kR", owner: "עוזי כהן", scope: "production:full", created: "2025-08-12", lastUsed: "לפני 2 דקות", status: "active", rateLimit: "1,000/דקה", usage: 78 },
   { id: 2, name: "Salesforce Sync", prefix: "sk_live_7b2c...mT3q", owner: "מיכל לוי", scope: "crm:read,write", created: "2025-11-03", lastUsed: "לפני 5 דקות", status: "active", rateLimit: "500/דקה", usage: 62 },
   { id: 3, name: "Sandbox Testing", prefix: "sk_test_9d1e...pL5w", owner: "דני אברהם", scope: "sandbox:full", created: "2026-01-15", lastUsed: "לפני שעה", status: "active", rateLimit: "2,000/דקה", usage: 45 },
@@ -37,7 +39,7 @@ const apiKeys = [
 ];
 
 /* ── OAuth Clients ── */
-const oauthClients = [
+const FALLBACK_OAUTH_CLIENTS = [
   { id: 1, name: "Salesforce CRM", clientId: "sf_client_a4b2c8d1", grantType: "authorization_code", redirectUris: ["https://erp.techno-kol.co.il/callback/sf"], scopes: "api, refresh_token, full", status: "active" },
   { id: 2, name: "Google Workspace", clientId: "goog_client_e5f3g9h2", grantType: "authorization_code", redirectUris: ["https://erp.techno-kol.co.il/callback/google"], scopes: "drive, calendar, gmail.send", status: "active" },
   { id: 3, name: "Azure AD SSO", clientId: "azr_client_i6j4k0l3", grantType: "client_credentials", redirectUris: [], scopes: "Directory.Read, User.Read", status: "active" },
@@ -49,7 +51,7 @@ const oauthClients = [
 ];
 
 /* ── Active Tokens ── */
-const activeTokens = [
+const FALLBACK_ACTIVE_TOKENS = [
   { id: 1, type: "bearer", issuedTo: "עוזי כהן", scope: "production:full", issuedAt: "2026-04-08 06:30", expiresAt: "2026-04-08 18:30", lastActivity: "לפני 2 דקות" },
   { id: 2, type: "bearer", issuedTo: "מיכל לוי", scope: "crm:read,write", issuedAt: "2026-04-08 07:15", expiresAt: "2026-04-08 19:15", lastActivity: "לפני 5 דקות" },
   { id: 3, type: "refresh", issuedTo: "Salesforce OAuth", scope: "api, full", issuedAt: "2026-04-01 09:00", expiresAt: "2026-05-01 09:00", lastActivity: "לפני 8 דקות" },
@@ -65,7 +67,7 @@ const activeTokens = [
 ];
 
 /* ── Service Accounts ── */
-const serviceAccounts = [
+const FALLBACK_SERVICE_ACCOUNTS = [
   { id: 1, name: "n8n Automation Engine", serviceType: "Workflow Orchestrator", authMode: "bearer_token" as const, lastRotation: "2026-03-28", permissions: "workflows:*, triggers:*", status: "active" },
   { id: 2, name: "SAP S/4HANA Connector", serviceType: "ERP Integration", authMode: "oauth2" as const, lastRotation: "2026-04-01", permissions: "orders:sync, inventory:sync", status: "active" },
   { id: 3, name: "Webhook Signing Service", serviceType: "Event Delivery", authMode: "hmac_signature" as const, lastRotation: "2026-03-15", permissions: "webhooks:sign, events:emit", status: "active" },
@@ -77,7 +79,7 @@ const serviceAccounts = [
 ];
 
 /* ── Rotation Policies ── */
-const rotationPolicies = [
+const FALLBACK_ROTATION_POLICIES = [
   { id: 1, name: "מפתחות API ייצור", target: "API Keys (Production)", interval: "90 יום", nextRotation: "2026-04-15", autoRotate: true, notifyDays: 14, compliance: "SOC2", compStatus: "compliant" },
   { id: 2, name: "OAuth Refresh Tokens", target: "OAuth2 Refresh", interval: "30 יום", nextRotation: "2026-04-12", autoRotate: true, notifyDays: 7, compliance: "ISO 27001", compStatus: "compliant" },
   { id: 3, name: "חשבונות שירות", target: "Service Accounts", interval: "180 יום", nextRotation: "2026-06-15", autoRotate: false, notifyDays: 30, compliance: "SOC2", compStatus: "compliant" },
@@ -127,6 +129,19 @@ const complianceBadge = (s: string) => {
 };
 
 export default function AuthTokensPage() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["auth_tokens"],
+    queryFn: () => authFetch("/api/integrations/auth-tokens").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const apiKeys = apiData?.apiKeys ?? FALLBACK_API_KEYS;
+  const oauthClients = apiData?.oauthClients ?? FALLBACK_OAUTH_CLIENTS;
+  const activeTokens = apiData?.activeTokens ?? FALLBACK_ACTIVE_TOKENS;
+  const serviceAccounts = apiData?.serviceAccounts ?? FALLBACK_SERVICE_ACCOUNTS;
+  const rotationPolicies = apiData?.rotationPolicies ?? FALLBACK_ROTATION_POLICIES;
   const [search, setSearch] = useState("");
   return (
     <div dir="rtl" className="p-6 space-y-6">

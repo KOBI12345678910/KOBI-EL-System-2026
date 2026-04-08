@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +26,12 @@ interface Summary {
 }
 
 export default function ContractorPaymentDecisionModel() {
+  const { data: contractorpaymentdecisionmodelData } = useQuery({
+    queryKey: ["contractor-payment-decision-model"],
+    queryFn: () => authFetch("/api/finance/contractor_payment_decision_model"),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [invoiceAmount, setInvoiceAmount] = useState("");
   const [squareMeters, setSquareMeters] = useState("");
   const [ratePerSqm, setRatePerSqm] = useState("");

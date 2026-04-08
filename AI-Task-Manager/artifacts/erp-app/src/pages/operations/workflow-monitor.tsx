@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Activity, CheckCircle2, AlertTriangle, Clock, Search, Download, Workflow, Timer, Target, Zap, ArrowRight, Pause, Play, XCircle, Bot, User } from "lucide-react";
 
-const activeWorkflows = [
+const FALLBACK_ACTIVE_WORKFLOWS = [
   {
     id: "WF-1042", name: "ייצור חלונות אלומיניום - HN-4521", client: "קבלן אפק בניה",
     startDate: "06/04", dueDate: "10/04", progress: 65, currentStep: "ציפוי אבקתי",
@@ -139,7 +141,7 @@ const activeWorkflows = [
   },
 ];
 
-const bottlenecks = [
+const FALLBACK_BOTTLENECKS = [
   { step: "ציפוי אבקתי", avgDelay: "4.5 שעות", affectedWFs: 3, reason: "תנור בתחזוקת חירום", impact: "קריטי", suggestion: "הפנייה לציפוי חיצוני עד לתיקון" },
   { step: "אישור מנהל כספים", avgDelay: "8.2 שעות", affectedWFs: 2, reason: "עומס אישורים ידני", impact: "גבוה", suggestion: "הטמעת אישור אוטומטי עד 10,000 ש\"ח" },
   { step: "חיתוך זכוכית", avgDelay: "2.3 שעות", affectedWFs: 1, reason: "שולחן חיתוך עמוס", impact: "בינוני", suggestion: "תכנון ייצור מוקדם - מנגנון תור" },
@@ -147,7 +149,7 @@ const bottlenecks = [
   { step: "בקרת איכות", avgDelay: "1.2 שעות", affectedWFs: 1, reason: "בודק אחד במשמרת", impact: "נמוך", suggestion: "הכשרת בודק נוסף" },
 ];
 
-const slaTracking = [
+const FALLBACK_SLA_TRACKING = [
   { id: "WF-1042", name: "חלונות HN-4521", slaTarget: "10/04", forecast: "11/04", variance: "+1 יום", status: "בסיכון", reason: "עיכוב בציפוי" },
   { id: "WF-1041", name: "דלתות T-200", slaTarget: "12/04", forecast: "11/04", variance: "-1 יום", status: "בזמן", reason: "---" },
   { id: "WF-1040", name: "ויטרינה V-890", slaTarget: "11/04", forecast: "10/04", variance: "-1 יום", status: "בזמן", reason: "---" },
@@ -158,7 +160,7 @@ const slaTracking = [
   { id: "WF-1035", name: "חלונות IN-225", slaTarget: "17/04", forecast: "16/04", variance: "-1 יום", status: "בזמן", reason: "---" },
 ];
 
-const automationData = [
+const FALLBACK_AUTOMATION_DATA = [
   { process: "חיתוך CNC", automated: 95, manual: 5, savings: "4.2 שעות/יום", status: "מלא" },
   { process: "כיפוף CNC", automated: 90, manual: 10, savings: "3.5 שעות/יום", status: "מלא" },
   { process: "ריתוך רובוטי", automated: 80, manual: 20, savings: "6.0 שעות/יום", status: "חלקי" },
@@ -193,6 +195,14 @@ const IMP: Record<string, string> = {
 };
 
 export default function WorkflowMonitor() {
+  const { data: workflowmonitorData } = useQuery({
+    queryKey: ["workflow-monitor"],
+    queryFn: () => authFetch("/api/operations/workflow_monitor"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const activeWorkflows = workflowmonitorData ?? FALLBACK_ACTIVE_WORKFLOWS;
+
   const [search, setSearch] = useState("");
 
   const totalActive = activeWorkflows.length;

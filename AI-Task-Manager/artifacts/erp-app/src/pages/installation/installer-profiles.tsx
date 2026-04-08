@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,7 +12,7 @@ import {
 
 /* ── Installer data ──────────────────────────────────────────── */
 
-const installers = [
+const FALLBACK_INSTALLERS = [
   { id: 1, name: "יוסי כהן", idNum: "xxx-xxx-1234", team: "אלפא", role: "ראש צוות", specialty: "אלומיניום", certs: ["עבודה בגובה", "ריתוך"], completed: 312, score: 94, rating: 4.8, status: "פעיל" },
   { id: 2, name: "מוחמד חאלד", idNum: "xxx-xxx-2187", team: "אלפא", role: "מתקין בכיר", specialty: "זכוכית", certs: ["עבודה בגובה", "מנוף"], completed: 287, score: 91, rating: 4.7, status: "פעיל" },
   { id: 3, name: "אלכס פטרוב", idNum: "xxx-xxx-3341", team: "בטא", role: "מתקין בכיר", specialty: "ברזל", certs: ["ריתוך", "חשמל"], completed: 265, score: 88, rating: 4.5, status: "פעיל" },
@@ -31,7 +33,7 @@ const installers = [
 
 /* ── Skills matrix data ──────────────────────────────────────── */
 
-const skills = [
+const FALLBACK_SKILLS = [
   "התקנת אלומיניום", "התקנת זכוכית", "ריתוך MIG/TIG", "עבודה בגובה",
   "הפעלת מנוף", "חיבורי חשמל", "מדידות לייזר", "קריאת שרטוטים",
   "איטום ובידוד", "בטיחות אש"
@@ -91,7 +93,7 @@ interface InstallerKPI {
   safety_score: number;
 }
 
-const topKpis: InstallerKPI[] = [
+const FALLBACK_TOP_KPIS: InstallerKPI[] = [
   { name: "דוד לוי", installations_completed: 341, on_time_rate: 97.2, avg_installation_duration: "4.1 שעות", quality_issue_rate: 1.2, return_visit_rate: 2.1, customer_signoff_rate: 99.1, cost_per_installation_hour: 185, productivity_score: 96, safety_score: 98 },
   { name: "שמעון מזרחי", installations_completed: 356, on_time_rate: 95.8, avg_installation_duration: "4.3 שעות", quality_issue_rate: 1.8, return_visit_rate: 2.5, customer_signoff_rate: 98.5, cost_per_installation_hour: 192, productivity_score: 95, safety_score: 97 },
   { name: "יוסי כהן", installations_completed: 312, on_time_rate: 96.1, avg_installation_duration: "4.5 שעות", quality_issue_rate: 1.5, return_visit_rate: 2.8, customer_signoff_rate: 98.7, cost_per_installation_hour: 198, productivity_score: 94, safety_score: 95 },
@@ -101,7 +103,7 @@ const topKpis: InstallerKPI[] = [
 
 /* ── Training history ────────────────────────────────────────── */
 
-const trainings = [
+const FALLBACK_TRAININGS = [
   { id: 1, installer: "מיכאל שטרן", course: "הכשרת מתקין זכוכית — קורס יסוד", date: "2026-03-15", endDate: "2026-05-15", status: "בתהליך" },
   { id: 2, installer: "יוסי כהן", course: "ריענון בטיחות עבודה בגובה", date: "2026-02-20", endDate: "2026-02-20", status: "עבר" },
   { id: 3, installer: "חסן אבו סעיד", course: "הסמכת מנוף נייד 25 טון", date: "2026-04-20", endDate: "2026-04-24", status: "מתוכנן" },
@@ -153,6 +155,55 @@ const scoreColor = (v: number) => {
 /* ── Main component ──────────────────────────────────────────── */
 
 export default function InstallerProfilesPage() {
+  const { data: installers = FALLBACK_INSTALLERS } = useQuery({
+    queryKey: ["installation-installers"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installer-profiles/installers");
+      if (!res.ok) return FALLBACK_INSTALLERS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_INSTALLERS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: skills = FALLBACK_SKILLS } = useQuery({
+    queryKey: ["installation-skills"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installer-profiles/skills");
+      if (!res.ok) return FALLBACK_SKILLS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SKILLS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: topKpis = FALLBACK_TOP_KPIS } = useQuery({
+    queryKey: ["installation-top-kpis"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installer-profiles/top-kpis");
+      if (!res.ok) return FALLBACK_TOP_KPIS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TOP_KPIS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: trainings = FALLBACK_TRAININGS } = useQuery({
+    queryKey: ["installation-trainings"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installer-profiles/trainings");
+      if (!res.ok) return FALLBACK_TRAININGS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TRAININGS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const active = installers.filter(i => i.status === "פעיל").length;
   const inTraining = installers.filter(i => i.status === "בהכשרה").length;
   const onLeave = installers.filter(i => i.status === "בחופשה").length;

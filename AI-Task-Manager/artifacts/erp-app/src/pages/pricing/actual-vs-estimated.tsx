@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,7 +19,7 @@ type Project = {
   categories: { name: string; estimated: number; actual: number }[];
 };
 
-const projects: Project[] = [
+const FALLBACK_PROJECTS: Project[] = [
   {
     id: 1, name: "שער חשמלי תעשייתי - מפעל שטראוס", client: "שטראוס גרופ",
     estimated: 87500, actual: 94200, status: "over", completedDate: "2026-03-15",
@@ -131,7 +133,7 @@ const projects: Project[] = [
   },
 ];
 
-const insights = [
+const FALLBACK_INSIGHTS = [
   { text: "עלות ריתוך מוערכת חסר ב-12% בממוצע — יש לעדכן תעריף שעתי מ-180 ל-200 ₪/שעה", severity: "high" as const, category: "ריתוך" },
   { text: "חומר גלם — פלדה: דיוק של 94%. העלאת מקדם בטחון מ-3% ל-5% תשפר עוד", severity: "medium" as const, category: "חומר גלם" },
   { text: "עלויות הובלה והתקנה חורגות ב-15% כשהפרויקט מעל 200,000 ₪ — להוסיף מדרגה", severity: "high" as const, category: "הובלה" },
@@ -142,7 +144,7 @@ const insights = [
   { text: "גלוון חם — ירידת מחירים של 4% לא עודכנה בתמחור. להוזיל מקדם", severity: "medium" as const, category: "גלוון" },
 ];
 
-const trendData = [
+const FALLBACK_TREND_DATA = [
   { month: "אוק׳ 25", accuracy: 88, overBudget: 4, underBudget: 2 },
   { month: "נוב׳ 25", accuracy: 89, overBudget: 3, underBudget: 3 },
   { month: "דצמ׳ 25", accuracy: 91, overBudget: 3, underBudget: 2 },
@@ -158,6 +160,16 @@ const statusConfig = {
 };
 
 export default function ActualVsEstimated() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["actual_vs_estimated"],
+    queryFn: () => authFetch("/api/pricing/actual-vs-estimated").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const projects = apiData?.projects ?? FALLBACK_PROJECTS;
+  const insights = apiData?.insights ?? FALLBACK_INSIGHTS;
+  const trendData = apiData?.trendData ?? FALLBACK_TREND_DATA;
   const [tab, setTab] = useState("projects");
   const [expanded, setExpanded] = useState<number | null>(null);
 

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Gauge, Activity, Package, TrendingUp, TrendingDown, Target, Shield, Zap, Recycle, Users, Truck, BarChart3, Bell, AlertTriangle, CheckCircle2, XCircle, Download } from "lucide-react";
 
-const liveKpis = [
+const FALLBACK_LIVE_KPIS = [
   { id: "production", name: "תפוקת ייצור", value: 1185, target: 1200, unit: "יח'/יום", icon: Package, color: "text-blue-400", trend: "+3.2%", lowerBetter: false, gauge: 98.8 },
   { id: "quality", name: "שיעור איכות", value: 97.8, target: 98.0, unit: "%", icon: CheckCircle2, color: "text-green-400", trend: "+0.3%", lowerBetter: false, gauge: 97.8 },
   { id: "oee", name: "OEE כולל", value: 82.5, target: 85.0, unit: "%", icon: Gauge, color: "text-purple-400", trend: "+1.8%", lowerBetter: false, gauge: 82.5 },
@@ -17,7 +19,7 @@ const liveKpis = [
   { id: "waste", name: "שיעור פסולת", value: 3.8, target: 3.0, unit: "%", icon: Recycle, color: "text-red-400", trend: "-0.4%", lowerBetter: true, gauge: 78.9 },
 ];
 
-const weeklyTrends = [
+const FALLBACK_WEEKLY_TRENDS = [
   {
     kpi: "תפוקת ייצור",
     data: [
@@ -92,7 +94,7 @@ const weeklyTrends = [
   },
 ];
 
-const targetsVsActual = [
+const FALLBACK_TARGETS_VS_ACTUAL = [
   { kpi: "תפוקת ייצור יומית", actual: 1185, target: 1200, unit: "יח'", gap: -15, pctAchieved: 98.8, status: "קרוב ליעד" },
   { kpi: "שיעור איכות מצטבר", actual: 97.8, target: 98.0, unit: "%", gap: -0.2, pctAchieved: 99.8, status: "קרוב ליעד" },
   { kpi: "OEE ממוצע", actual: 82.5, target: 85.0, unit: "%", gap: -2.5, pctAchieved: 97.1, status: "מתחת ליעד" },
@@ -103,7 +105,7 @@ const targetsVsActual = [
   { kpi: "שיעור פסולת", actual: 3.8, target: 3.0, unit: "%", gap: 0.8, pctAchieved: 78.9, status: "חריגה" },
 ];
 
-const alerts = [
+const FALLBACK_ALERTS = [
   { id: "AL-001", kpi: "שיעור פסולת", message: "שיעור פסולת 3.8% חורג מהיעד 3.0%", severity: "גבוה", time: "10:30", threshold: "3.0%", actual: "3.8%", action: "בדיקת קו ציפוי - פסולת גבוהה בציפוי אבקתי" },
   { id: "AL-002", kpi: "צריכת אנרגיה", message: "צריכת אנרגיה 42.8 kWh/יח' מעל יעד 40.0", severity: "בינוני", time: "09:15", threshold: "40.0 kWh", actual: "42.8 kWh", action: "בדיקת תנור ציפוי - צריכה חריגה מאז תקלת החימום" },
   { id: "AL-003", kpi: "OEE", message: "OEE 82.5% מתחת ליעד 85.0% - שבוע רצוף", severity: "גבוה", time: "08:00", threshold: "85.0%", actual: "82.5%", action: "קו ציפוי מוריד ממוצע - תחזוקה מתמשכת" },
@@ -127,6 +129,14 @@ const TSTAT: Record<string, string> = {
 };
 
 export default function KpiMonitor() {
+  const { data: kpimonitorData } = useQuery({
+    queryKey: ["kpi-monitor"],
+    queryFn: () => authFetch("/api/operations/kpi_monitor"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const liveKpis = kpimonitorData ?? FALLBACK_LIVE_KPIS;
+
   const [selectedKpi, setSelectedKpi] = useState("all");
 
   return (

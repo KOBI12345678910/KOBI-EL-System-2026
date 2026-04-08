@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -29,7 +31,7 @@ const statusColors: Record<string, string> = {
   "פג תוקף": "bg-orange-500/20 text-orange-300 border-orange-500/30",
 };
 
-const orders = [
+const FALLBACK_ORDERS = [
   { po: "PO-2026-041", date: "2026-03-28", items: "פרופיל אלומיניום 6063-T5 x200", value: 148000, status: "ממתין לאישור", delivery: "2026-04-18" },
   { po: "PO-2026-038", date: "2026-03-25", items: "צינורות אלומיניום 50x50 x120", value: 86400, status: "אושר", delivery: "2026-04-12" },
   { po: "PO-2026-035", date: "2026-03-20", items: "גליל אלומיניום 1.5mm x30", value: 234000, status: "נשלח", delivery: "2026-04-10" },
@@ -40,7 +42,7 @@ const orders = [
   { po: "PO-2026-046", date: "2026-04-05", items: "אביזרי חיבור אלומיניום x1000", value: 18500, status: "בוטל", delivery: "" },
 ];
 
-const quotes = [
+const FALLBACK_QUOTES = [
   { rfq: "RFQ-2026-018", title: "פרופיל אלומיניום חדש TB-70", qty: "300 יח׳", deadline: "2026-04-15", status: "חדש", budget: 420000 },
   { rfq: "RFQ-2026-016", title: "גליל אלומיניום אנודייז 2mm", qty: "50 גליל", deadline: "2026-04-12", status: "הוגש", budget: 185000 },
   { rfq: "RFQ-2026-014", title: "מערכת חלונות הזזה SL-80", qty: "100 יח׳", deadline: "2026-04-08", status: "נבחר", budget: 520000 },
@@ -49,7 +51,7 @@ const quotes = [
   { rfq: "RFQ-2026-022", title: "אלומיניום מוברש למעטפת", qty: "120 מ״ר", deadline: "2026-04-22", status: "חדש", budget: 276000 },
 ];
 
-const documents = [
+const FALLBACK_DOCUMENTS = [
   { name: "תעודת ISO 9001:2025", type: "תקן איכות", status: "הועלה", expiry: "2027-01-15", uploaded: "2026-01-20" },
   { name: "ביטוח אחריות מקצועית", type: "ביטוח", status: "הועלה", expiry: "2026-12-31", uploaded: "2026-01-05" },
   { name: "אישור ניכוי מס במקור", type: "מס", status: "פג תוקף", expiry: "2026-03-31", uploaded: "2025-04-01" },
@@ -59,7 +61,7 @@ const documents = [
   { name: "דו״ח ביקורת מפעל 2026", type: "ביקורת", status: "חסר", expiry: "", uploaded: "" },
 ];
 
-const deliveries = [
+const FALLBACK_DELIVERIES = [
   { shipment: "SH-8841", po: "PO-2026-035", items: "גליל אלומיניום 1.5mm", qty: 30, eta: "2026-04-10", tracking: "IL-4488120", status: "בדרך", progress: 72 },
   { shipment: "SH-8839", po: "PO-2026-032", items: "זוויתנים 40x40", qty: 500, eta: "2026-04-08", tracking: "IL-4487655", status: "בדרך", progress: 95 },
   { shipment: "SH-8835", po: "PO-2026-029", items: "פלטות אלומיניום 3mm", qty: 80, eta: "2026-04-02", tracking: "IL-4486200", status: "התקבל", progress: 100 },
@@ -69,6 +71,14 @@ const deliveries = [
 ];
 
 export default function SupplierPortal() {
+  const { data: supplierportalData } = useQuery({
+    queryKey: ["supplier-portal"],
+    queryFn: () => authFetch("/api/procurement/supplier_portal"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const orders = supplierportalData ?? FALLBACK_ORDERS;
+
   const [tab, setTab] = useState("orders");
 
   const openOrders = orders.filter(o => !["התקבל", "בוטל"].includes(o.status)).length;

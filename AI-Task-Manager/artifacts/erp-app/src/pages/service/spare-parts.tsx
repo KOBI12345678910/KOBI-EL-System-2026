@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -28,7 +30,7 @@ const categoryCfg: Record<Category, string> = {
   "אביזרים": "bg-zinc-500/20 text-zinc-300",
 };
 
-const parts = [
+const FALLBACK_PARTS = [
   { id: "SPR-001", name: "ידית נעילה רב-נקודתית", category: "אביזרים" as Category, qty: 34, min: 10, status: "ok" as PartStatus, price: 85, monthly: 12, supplier: "נעלית בע\"מ" },
   { id: "SPR-002", name: "אטם סיליקון EPDM 3mm", category: "אביזרים" as Category, qty: 120, min: 50, status: "ok" as PartStatus, price: 12, monthly: 45, supplier: "איטום-פלוס" },
   { id: "SPR-003", name: "גלגלת תריס אלומיניום 180mm", category: "אלומיניום" as Category, qty: 8, min: 15, status: "low" as PartStatus, price: 65, monthly: 10, supplier: "אלוטק" },
@@ -48,7 +50,7 @@ const parts = [
 
 const lowStockParts = parts.filter(p => p.qty < p.min);
 
-const usageByFault = [
+const FALLBACK_USAGE_BY_FAULT = [
   { fault: "תקלת תריס", topParts: ["גלגלת תריס אלומיניום", "מנגנון גלילה", "אטם סיליקון"], avgPerCall: 2.3, callsMonth: 8 },
   { fault: "תקלת שער חשמלי", topParts: ["מנוע חשמלי 24V", "בקר אלקטרוני", "שלט רחוק"], avgPerCall: 1.8, callsMonth: 5 },
   { fault: "רטיבות חלון", topParts: ["גומיית איטום", "אטם סיליקון", "זכוכית חילוף"], avgPerCall: 3.1, callsMonth: 12 },
@@ -57,7 +59,7 @@ const usageByFault = [
   { fault: "תחזוקת פרופיל", topParts: ["פרופיל אלומיניום", "צבע פאודר", "מסילת הזזה"], avgPerCall: 2.7, callsMonth: 7 },
 ];
 
-const pendingOrders = [
+const FALLBACK_PENDING_ORDERS = [
   { id: "PO-401", partId: "SPR-004", name: "מנוע חשמלי 24V 350W", qty: 5, supplier: "חשמלית הצפון", orderDate: "2026-04-01", eta: "2026-04-12", total: 6000 },
   { id: "PO-402", partId: "SPR-009", name: "בקר אלקטרוני שער ProX", qty: 3, supplier: "חשמלית הצפון", orderDate: "2026-04-02", eta: "2026-04-15", total: 7200 },
   { id: "PO-403", partId: "SPR-010", name: "זכוכית חסינת אש 10mm", qty: 6, supplier: "זכוכית ישראל", orderDate: "2026-04-03", eta: "2026-04-10", total: 4080 },
@@ -71,6 +73,14 @@ const onOrder = parts.filter(p => p.status === "ordered").length;
 const inventoryValue = parts.reduce((s, p) => s + p.qty * p.price, 0);
 
 export default function SparePartsManagement() {
+  const { data: sparepartsData } = useQuery({
+    queryKey: ["spare-parts"],
+    queryFn: () => authFetch("/api/service/spare_parts"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const parts = sparepartsData ?? FALLBACK_PARTS;
+
   const [activeTab, setActiveTab] = useState("inventory");
 
   return (

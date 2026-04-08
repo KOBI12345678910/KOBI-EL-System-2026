@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,7 +37,7 @@ const kpis = {
   repeatRate: 65,
 };
 
-const pipelineStages = [
+const FALLBACK_PIPELINE_STAGES = [
   { stage: "ליד חדש", count: 45, value: 2200000, color: "bg-gray-400", pct: 10 },
   { stage: "פגישה ראשונה", count: 28, value: 1800000, color: "bg-blue-400", pct: 20 },
   { stage: "הצעת מחיר", count: 22, value: 1500000, color: "bg-indigo-400", pct: 40 },
@@ -44,7 +46,7 @@ const pipelineStages = [
   { stage: "נסגר ✓", count: 12, value: 2100000, color: "bg-emerald-500", pct: 100 },
 ];
 
-const topDeals = [
+const FALLBACK_TOP_DEALS = [
   { name: "פרויקט מגדל A - שלב ב'", customer: "קבוצת אלון", value: 850000, stage: "משא ומתן", probability: 65, closeDate: "2026-05-15", owner: "דני כהן" },
   { name: "חיפוי מגורים רמת גן", customer: "שיכון ובינוי", value: 620000, stage: "הצעת מחיר", probability: 40, closeDate: "2026-06-01", owner: "מיכל לוי" },
   { name: "משרדי hi-tech הרצליה", customer: "אמות השקעות", value: 480000, stage: "אישור סופי", probability: 85, closeDate: "2026-04-20", owner: "דני כהן" },
@@ -52,7 +54,7 @@ const topDeals = [
   { name: "מפעל אור יהודה", customer: "תעשיות ORT", value: 290000, stage: "הצעת מחיר", probability: 50, closeDate: "2026-05-30", owner: "מיכל לוי" },
 ];
 
-const recentOrders = [
+const FALLBACK_RECENT_ORDERS = [
   { number: "SO-002456", customer: "קבוצת שיכון ובינוי", date: "2026-04-08", amount: 145000, status: "confirmed" },
   { number: "SO-002455", customer: "חברת אלומיניום ישראל", date: "2026-04-07", amount: 85000, status: "in_progress" },
   { number: "SO-002454", customer: "עיריית חיפה", date: "2026-04-06", amount: 95000, status: "shipped" },
@@ -60,7 +62,7 @@ const recentOrders = [
   { number: "SO-002452", customer: 'נדל"ן פלוס', date: "2026-04-04", amount: 68000, status: "delivered" },
 ];
 
-const salesTeam = [
+const FALLBACK_SALES_TEAM = [
   { name: "דני כהן", quota: 5000000, actual: 3800000, deals: 18, winRate: 42, avgDeal: 211000 },
   { name: "מיכל לוי", quota: 4500000, actual: 3200000, deals: 22, winRate: 36, avgDeal: 145000 },
   { name: "יוסי אברהם", quota: 3500000, actual: 2100000, deals: 14, winRate: 35, avgDeal: 150000 },
@@ -69,6 +71,14 @@ const salesTeam = [
 const fmt = (v: number) => v >= 1000000 ? `₪${(v / 1000000).toFixed(1)}M` : `₪${(v / 1000).toFixed(0)}K`;
 
 export default function SalesDashboard() {
+  const { data: salesdashboardData } = useQuery({
+    queryKey: ["sales-dashboard"],
+    queryFn: () => authFetch("/api/sales/sales_dashboard"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const pipelineStages = salesdashboardData ?? FALLBACK_PIPELINE_STAGES;
+
   const [, navigate] = useLocation();
   const [period, setPeriod] = useState("ytd");
 

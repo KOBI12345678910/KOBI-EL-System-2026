@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,7 +51,7 @@ const EXEC_CONFIG: Record<string, { label: string; color: string }> = {
   skipped: { label: "דולג", color: "text-slate-500" },
 };
 
-const MOCK_DATA: Recommendation[] = [
+const FALLBACK_MOCK_DATA: Recommendation[] = [
   { id: 1, agentSource: "סוכן מלאי", severity: "critical", type: "מלאי", text: "מלאי חומר גלם #A205 מתחת לרמת מינימום - יש להזמין מיידית", ownerRole: "מנהל מלאי", urgency: "מיידי", approvalRequired: true, approvalStatus: "pending", executionStatus: "waiting", createdAt: "2026-04-08 09:15" },
   { id: 2, agentSource: "סוכן מכירות", severity: "high", type: "מכירות", text: "הזדמנות Cross-sell ללקוח אלקטרו-טק בע\"מ - פוטנציאל ₪85,000", ownerRole: "מנהל מכירות", urgency: "תוך 24 שעות", approvalRequired: true, approvalStatus: "approved", executionStatus: "completed", createdAt: "2026-04-07 14:30", result: "נשלחה הצעת מחיר, לקוח אישר פגישה" },
   { id: 3, agentSource: "סוכן ייצור", severity: "critical", type: "ייצור", text: "קו ייצור 3 - ירידה של 18% ביעילות OEE, נדרשת תחזוקה מונעת", ownerRole: "מנהל ייצור", urgency: "מיידי", approvalRequired: true, approvalStatus: "pending", executionStatus: "waiting", createdAt: "2026-04-08 08:45" },
@@ -68,6 +70,14 @@ const MOCK_DATA: Recommendation[] = [
 ];
 
 export default function Bash44Recommendations() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["bash44_recommendations"],
+    queryFn: () => authFetch("/api/ai/bash44-recommendations").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const MOCK_DATA = apiData?.MOCK_DATA ?? FALLBACK_MOCK_DATA;
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("all");
   const [data, setData] = useState<Recommendation[]>(MOCK_DATA);

@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -32,12 +34,12 @@ const deliveryStatusCls: Record<DeliveryStatus, string> = {
   "ממתין": "bg-gray-500/20 text-gray-400",
 };
 
-/* ── static data: vehicles ─────────────────────────────────── */
+/* ── static data: FALLBACK_VEHICLES ─────────────────────────────────── */
 interface Vehicle {
   plate: string; type: VehicleType; status: VehicleStatus;
   driver: string; location: string; nextMaintenance: string;
 }
-const vehicles: Vehicle[] = [
+const FALLBACK_VEHICLES: Vehicle[] = [
   { plate: "78-342-91", type: "משאית", status: "בדרך", driver: "מאיר אוחנה", location: "כביש 6 — קיסריה", nextMaintenance: "22/04/2026" },
   { plate: "55-118-07", type: "מנוף", status: "פעיל", driver: "דוד לוי", location: "מפעל — אשדוד", nextMaintenance: "05/05/2026" },
   { plate: "31-990-42", type: "טנדר", status: "פעיל", driver: "יוסי כהן", location: "אזור תעשייה נתניה", nextMaintenance: "18/04/2026" },
@@ -48,13 +50,13 @@ const vehicles: Vehicle[] = [
   { plate: "93-512-40", type: "משאית", status: "פעיל", driver: "רון ביטון", location: "חיפה — נמל", nextMaintenance: "28/04/2026" },
 ];
 
-/* ── static data: deliveries ───────────────────────────────── */
+/* ── static data: FALLBACK_DELIVERIES ───────────────────────────────── */
 interface Delivery {
   id: string; project: string; destination: string; driver: string;
   vehicle: string; load: string; departure: string; eta: string;
   status: DeliveryStatus;
 }
-const deliveries: Delivery[] = [
+const FALLBACK_DELIVERIES: Delivery[] = [
   { id: "DLV-301", project: "פרויקט גשר הצפון", destination: "חיפה", driver: "מאיר אוחנה", vehicle: "78-342-91", load: "קורות פלדה 8 טון", departure: "07:00", eta: "09:30", status: "בדרך" },
   { id: "DLV-302", project: "מגדלי הים", destination: "אשדוד", driver: "דוד לוי", vehicle: "55-118-07", load: "מנוף + עמודים", departure: "06:30", eta: "08:00", status: "נמסר" },
   { id: "DLV-303", project: "קניון השרון", destination: "נתניה", driver: "יוסי כהן", vehicle: "31-990-42", load: "חלונות אלומיניום", departure: "08:15", eta: "10:00", status: "נטען" },
@@ -70,7 +72,7 @@ interface Trip {
   route: string; stops: number; estimatedTime: string;
   loadWeight: string; vehicle: string; driver: string; status: string;
 }
-const trips: Trip[] = [
+const FALLBACK_TRIPS: Trip[] = [
   { route: "אשדוד ➜ נתניה ➜ חיפה", stops: 3, estimatedTime: "4:30 שעות", loadWeight: "14 טון", vehicle: "78-342-91 (משאית)", driver: "מאיר אוחנה", status: "מאושר" },
   { route: "באר שבע ➜ ירושלים", stops: 2, estimatedTime: "2:15 שעות", loadWeight: "8 טון", vehicle: "44-876-15 (נגרר)", driver: "אבי מזרחי", status: "מתוכנן" },
   { route: "ראשון לציון ➜ תל אביב ➜ הרצליה", stops: 3, estimatedTime: "2:00 שעות", loadWeight: "3 טון", vehicle: "19-203-68 (טנדר)", driver: "חיים פרץ", status: "מאושר" },
@@ -85,12 +87,12 @@ const tripStatusCls: Record<string, string> = {
   "בביצוע": "bg-amber-500/20 text-amber-400",
 };
 
-/* ── static data: costs ────────────────────────────────────── */
+/* ── static data: FALLBACK_COSTS ────────────────────────────────────── */
 interface Cost {
   vehicle: string; plate: string; fuel: number; maintenance: number;
   driverCost: number; allocatedProject: string; total: number;
 }
-const costs: Cost[] = [
+const FALLBACK_COSTS: Cost[] = [
   { vehicle: "משאית", plate: "78-342-91", fuel: 4200, maintenance: 1800, driverCost: 8500, allocatedProject: "פרויקט גשר הצפון", total: 14500 },
   { vehicle: "מנוף", plate: "55-118-07", fuel: 5100, maintenance: 3200, driverCost: 9200, allocatedProject: "מגדלי הים", total: 17500 },
   { vehicle: "טנדר", plate: "31-990-42", fuel: 1800, maintenance: 600, driverCost: 7000, allocatedProject: "קניון השרון", total: 9400 },
@@ -101,19 +103,68 @@ const costs: Cost[] = [
 ];
 
 /* ── KPI aggregations ──────────────────────────────────────── */
-const totalVehicles = vehicles.length;
-const activeDeliveries = deliveries.filter(d => d.status === "בדרך" || d.status === "נטען").length;
-const driversAvailable = vehicles.filter(v => v.status === "פעיל").length;
-const craneBookings = deliveries.filter(d => d.load.includes("מנוף") || d.load.includes("הרמה")).length;
-const fuelCostMonth = costs.reduce((s, c) => s + c.fuel, 0);
-const delivered = deliveries.filter(d => d.status === "נמסר").length;
-const delayed = deliveries.filter(d => d.status === "עיכוב").length;
+const totalVehicles = FALLBACK_VEHICLES.length;
+const activeDeliveries = FALLBACK_DELIVERIES.filter(d => d.status === "בדרך" || d.status === "נטען").length;
+const driversAvailable = FALLBACK_VEHICLES.filter(v => v.status === "פעיל").length;
+const craneBookings = FALLBACK_DELIVERIES.filter(d => d.load.includes("מנוף") || d.load.includes("הרמה")).length;
+const fuelCostMonth = FALLBACK_COSTS.reduce((s, c) => s + c.fuel, 0);
+const delivered = FALLBACK_DELIVERIES.filter(d => d.status === "נמסר").length;
+const delayed = FALLBACK_DELIVERIES.filter(d => d.status === "עיכוב").length;
 const onTimeRate = delivered + delayed > 0
   ? Math.round((delivered / (delivered + delayed)) * 100)
   : 100;
 
 /* ══════════════════════════════════════════════════════════════ */
 export default function FleetDelivery() {
+  const { data: vehicles = FALLBACK_VEHICLES } = useQuery({
+    queryKey: ["logistics-vehicles"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/fleet-delivery/vehicles");
+      if (!res.ok) return FALLBACK_VEHICLES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_VEHICLES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: deliveries = FALLBACK_DELIVERIES } = useQuery({
+    queryKey: ["logistics-deliveries"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/fleet-delivery/deliveries");
+      if (!res.ok) return FALLBACK_DELIVERIES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DELIVERIES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: trips = FALLBACK_TRIPS } = useQuery({
+    queryKey: ["logistics-trips"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/fleet-delivery/trips");
+      if (!res.ok) return FALLBACK_TRIPS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TRIPS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: costs = FALLBACK_COSTS } = useQuery({
+    queryKey: ["logistics-costs"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/fleet-delivery/costs");
+      if (!res.ok) return FALLBACK_COSTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_COSTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [activeTab, setActiveTab] = useState("vehicles");
 
   return (

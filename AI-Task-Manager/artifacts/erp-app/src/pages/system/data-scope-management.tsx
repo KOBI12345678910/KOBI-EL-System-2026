@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -33,7 +35,7 @@ interface ScopeConfig {
   rules: string[];
 }
 
-const SCOPE_DATA: ScopeConfig[] = [
+const FALLBACK_SCOPE_DATA: ScopeConfig[] = [
   {
     type: "branch",
     label: "סניף",
@@ -162,6 +164,14 @@ const fmt = Intl.DateTimeFormat("he-IL", { day: "2-digit", month: "2-digit", yea
 // ─── Component ─────────────────────────────────────────────────────────────────
 
 export default function DataScopeManagement() {
+  const { data: datascopemanagementData } = useQuery({
+    queryKey: ["data-scope-management"],
+    queryFn: () => authFetch("/api/system/data_scope_management"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const SCOPE_DATA = datascopemanagementData ?? FALLBACK_SCOPE_DATA;
+
   const [activeTab, setActiveTab] = useState<ScopeType>("branch");
   const [scopes, setScopes] = useState<ScopeConfig[]>(SCOPE_DATA);
   const [showAddForm, setShowAddForm] = useState(false);

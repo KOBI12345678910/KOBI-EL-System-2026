@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -11,7 +13,7 @@ import {
 } from "lucide-react";
 
 /* ── KPI Data ── */
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "סה\"כ מסמכים", value: "3,847", icon: FileText, color: "text-blue-600", bg: "bg-blue-50" },
   { label: "נוצרו החודש", value: "142", icon: Upload, color: "text-green-600", bg: "bg-green-50" },
   { label: "אחסון בשימוש", value: "389GB / 500GB", icon: HardDrive, color: "text-purple-600", bg: "bg-purple-50", progress: 77.8 },
@@ -21,7 +23,7 @@ const kpis = [
 ];
 
 /* ── Storage by Department ── */
-const storageDepts = [
+const FALLBACK_STORAGE_DEPTS = [
   { dept: "רכש", used: 98.5, docs: 1347, pct: 25.3 },
   { dept: "הנדסה", used: 72.3, docs: 624, pct: 18.6 },
   { dept: "איכות", used: 58.1, docs: 498, pct: 14.9 },
@@ -33,7 +35,7 @@ const storageDepts = [
 ];
 
 /* ── Monthly Trends (6 months) ── */
-const monthlyTrends = [
+const FALLBACK_MONTHLY_TRENDS = [
   { month: "נובמבר 2025", uploads: 118, downloads: 2340, approvals: 95, rejections: 4, uploadTrend: "up", downloadTrend: "up" },
   { month: "דצמבר 2025", uploads: 104, downloads: 2180, approvals: 88, rejections: 3, uploadTrend: "down", downloadTrend: "down" },
   { month: "ינואר 2026", uploads: 131, downloads: 2520, approvals: 107, rejections: 5, uploadTrend: "up", downloadTrend: "up" },
@@ -43,7 +45,7 @@ const monthlyTrends = [
 ];
 
 /* ── Top Documents ── */
-const mostDownloaded = [
+const FALLBACK_MOST_DOWNLOADED = [
   { name: "מפרט טכני מסגרת T-400", dept: "הנדסה", count: 342, type: "PDF" },
   { name: "חוזה מסגרת ספקים 2026", dept: "רכש", count: 287, type: "DOCX" },
   { name: "טבלת מחירונים עדכנית", dept: "מכירות", count: 264, type: "XLSX" },
@@ -56,7 +58,7 @@ const mostDownloaded = [
   { name: "מדריך הדרכת עובדים חדשים", dept: "משאבי אנוש", count: 131, type: "PDF" },
 ];
 
-const mostViewed = [
+const FALLBACK_MOST_VIEWED = [
   { name: "לוח זמנים ייצור שבועי", dept: "תפעול", count: 1240, type: "XLSX" },
   { name: "מפרט טכני מסגרת T-400", dept: "הנדסה", count: 1087, type: "PDF" },
   { name: "נוהל בטיחות מפעל", dept: "איכות", count: 945, type: "PDF" },
@@ -69,7 +71,7 @@ const mostViewed = [
   { name: "נהלי פינוי חירום", dept: "בטיחות", count: 421, type: "PDF" },
 ];
 
-const mostShared = [
+const FALLBACK_MOST_SHARED = [
   { name: "קטלוג מוצרים 2026", dept: "מכירות", count: 89, type: "PDF" },
   { name: "הצעת מחיר תבנית", dept: "מכירות", count: 76, type: "DOCX" },
   { name: "מפרט טכני מסגרת T-400", dept: "הנדסה", count: 64, type: "PDF" },
@@ -83,7 +85,7 @@ const mostShared = [
 ];
 
 /* ── Document Type Distribution ── */
-const docTypes = [
+const FALLBACK_DOC_TYPES = [
   { type: "PDF", count: 1245, pct: 32.4 },
   { type: "DOCX", count: 812, pct: 21.1 },
   { type: "XLSX", count: 634, pct: 16.5 },
@@ -97,7 +99,7 @@ const docTypes = [
 ];
 
 /* ── User Activity ── */
-const topUsers = [
+const FALLBACK_TOP_USERS = [
   { name: "יוסי כהן", dept: "רכש", uploads: 87, downloads: 412, approvals: 64 },
   { name: "שרה מזרחי", dept: "מכירות", uploads: 72, downloads: 356, approvals: 41 },
   { name: "אלון גולדשטיין", dept: "הנדסה", uploads: 68, downloads: 534, approvals: 58 },
@@ -111,7 +113,7 @@ const topUsers = [
 ];
 
 /* ── AI Insights ── */
-const insights = [
+const FALLBACK_INSIGHTS = [
   { text: "מחלקת רכש מייצרת 35% מהמסמכים — גבוה פי 2 מהממוצע. מומלץ לבדוק אם ניתן לאחד תבניות חוזים.", icon: TrendingUp, color: "text-blue-600", bg: "bg-blue-50" },
   { text: "ממוצע זמן אישור עלה ב-12% ברבעון האחרון (מ-3.7 ל-4.2 שעות). צוואר בקבוק זוהה באישורי מנהל כספים.", icon: Clock, bg: "bg-amber-50", color: "text-amber-600" },
   { text: "15 מסמכים לא נגישו מעולם מאז העלאתם — כולל 3 חוזים ו-4 מפרטים. מומלץ לסמן לארכיון או מחיקה.", icon: Lightbulb, bg: "bg-purple-50", color: "text-purple-600" },
@@ -131,6 +133,22 @@ const typeBadgeColor: Record<string, string> = {
 };
 
 export default function DocumentAnalyticsPage() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["document_analytics"],
+    queryFn: () => authFetch("/api/documents/document-analytics").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const storageDepts = apiData?.storageDepts ?? FALLBACK_STORAGE_DEPTS;
+  const monthlyTrends = apiData?.monthlyTrends ?? FALLBACK_MONTHLY_TRENDS;
+  const mostDownloaded = apiData?.mostDownloaded ?? FALLBACK_MOST_DOWNLOADED;
+  const mostViewed = apiData?.mostViewed ?? FALLBACK_MOST_VIEWED;
+  const mostShared = apiData?.mostShared ?? FALLBACK_MOST_SHARED;
+  const docTypes = apiData?.docTypes ?? FALLBACK_DOC_TYPES;
+  const topUsers = apiData?.topUsers ?? FALLBACK_TOP_USERS;
+  const insights = apiData?.insights ?? FALLBACK_INSIGHTS;
   const [mainTab, setMainTab] = useState("storage");
   const [docsSubTab, setDocsSubTab] = useState("downloaded");
 

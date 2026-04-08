@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -38,7 +40,7 @@ const urgencyCfg: Record<UrgencyLevel, { label: string; cls: string }> = {
   critical: { label: "קריטית", cls: "bg-red-500/20 text-red-400" },
 };
 
-const serviceCalls = [
+const FALLBACK_SERVICE_CALLS = [
   { id: "SVC-301", customer: "אלון מערכות בע\"מ", product: "שער חשמלי דגם Premium", issue: "מנוע לא מגיב לשלט", reported: "2026-04-01", technician: "יוסי כהן", status: "open" as SvcStatus },
   { id: "SVC-302", customer: "נדל\"ן צפון", product: "חלון אלומיניום כפול", issue: "רטיבות חודרת מהמסגרת", reported: "2026-03-28", technician: "מוטי לוי", status: "in_progress" as SvcStatus },
   { id: "SVC-303", customer: "קיבוץ דגניה", product: "מעקה נירוסטה 12 מ'", issue: "חלודה בנקודות ריתוך", reported: "2026-03-25", technician: "אבי דוד", status: "resolved" as SvcStatus },
@@ -49,7 +51,7 @@ const serviceCalls = [
   { id: "SVC-308", customer: "משרד הביטחון", product: "שער חשמלי דגם ProX", issue: "בקר אלקטרוני כבוי", reported: "2026-04-06", technician: "רפי אזולאי", status: "open" as SvcStatus },
 ];
 
-const warrantyCases = [
+const FALLBACK_WARRANTY_CASES = [
   { id: "WRT-101", product: "שער חשמלי דגם Premium", installed: "2024-08-15", expiry: "2026-08-15", claim: "מנוע שרוף — אחריות מקורית", status: "claimed" as WrtStatus },
   { id: "WRT-102", product: "חלון אלומיניום כפול", installed: "2025-01-10", expiry: "2027-01-10", claim: "—", status: "active" as WrtStatus },
   { id: "WRT-103", product: "מעקה נירוסטה 12 מ'", installed: "2023-06-20", expiry: "2025-06-20", claim: "חלודה בנקודות ריתוך", status: "expired" as WrtStatus },
@@ -60,7 +62,7 @@ const warrantyCases = [
   { id: "WRT-108", product: "שער חשמלי דגם ProX", installed: "2025-03-22", expiry: "2028-03-22", claim: "—", status: "active" as WrtStatus },
 ];
 
-const returnVisits = [
+const FALLBACK_RETURN_VISITS = [
   { id: "RV-01", serviceCall: "SVC-302", customer: "נדל\"ן צפון", product: "חלון אלומיניום כפול", scheduledDate: "2026-04-10", technician: "מוטי לוי", reason: "המשך איטום מסגרת", status: "scheduled" },
   { id: "RV-02", serviceCall: "SVC-305", customer: "מפעלי הדרום", product: "תריס גלילה חשמלי", scheduledDate: "2026-04-12", technician: "רפי אזולאי", reason: "החלפת מנגנון גלילה", status: "scheduled" },
   { id: "RV-03", serviceCall: "SVC-301", customer: "אלון מערכות בע\"מ", product: "שער חשמלי דגם Premium", scheduledDate: "2026-04-08", technician: "יוסי כהן", reason: "בדיקת מנוע חלופי", status: "today" },
@@ -69,7 +71,7 @@ const returnVisits = [
   { id: "RV-06", serviceCall: "SVC-304", customer: "עיריית חיפה", product: "גדר מתכת דקורטיבית", scheduledDate: "2026-04-14", technician: "יוסי כהן", reason: "חיזוק עוגנים", status: "scheduled" },
 ];
 
-const spareParts = [
+const FALLBACK_SPARE_PARTS = [
   { id: "SP-01", part: "מנוע 24V DC 350W", qty: 2, forProduct: "שער חשמלי דגם Premium", urgency: "high" as UrgencyLevel, status: "pending" },
   { id: "SP-02", part: "גומיית איטום 5x3000mm", qty: 8, forProduct: "חלון אלומיניום כפול", urgency: "medium" as UrgencyLevel, status: "ordered" },
   { id: "SP-03", part: "ציר כבד 120mm נירוסטה", qty: 4, forProduct: "דלת כניסה מפלדה", urgency: "high" as UrgencyLevel, status: "pending" },
@@ -86,7 +88,7 @@ const spareStatusCfg: Record<string, { label: string; cls: string }> = {
   in_stock: { label: "במלאי", cls: "bg-emerald-500/20 text-emerald-400" },
 };
 
-const costData = [
+const FALLBACK_COST_DATA = [
   { id: "SVC-301", customer: "אלון מערכות בע\"מ", product: "שער חשמלי Premium", laborCost: 450, partsCost: 1200, travelCost: 120, total: 1770 },
   { id: "SVC-302", customer: "נדל\"ן צפון", product: "חלון אלומיניום כפול", laborCost: 300, partsCost: 85, travelCost: 180, total: 565 },
   { id: "SVC-303", customer: "קיבוץ דגניה", product: "מעקה נירוסטה 12 מ'", laborCost: 600, partsCost: 320, travelCost: 250, total: 1170 },
@@ -104,6 +106,14 @@ const scheduledVisits = returnVisits.filter(v => v.status === "scheduled" || v.s
 const pendingParts = spareParts.filter(p => p.status === "pending").length;
 
 export default function ServiceWarranty() {
+  const { data: servicewarrantyData } = useQuery({
+    queryKey: ["service-warranty"],
+    queryFn: () => authFetch("/api/service/service_warranty"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const serviceCalls = servicewarrantyData ?? FALLBACK_SERVICE_CALLS;
+
   const [activeTab, setActiveTab] = useState("calls");
 
   return (

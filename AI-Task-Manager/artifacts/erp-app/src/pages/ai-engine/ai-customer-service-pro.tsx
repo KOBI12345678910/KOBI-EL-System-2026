@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,7 +16,7 @@ import {
   GraduationCap, Lightbulb, BarChart3
 } from "lucide-react";
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "פתרונות אוטומטיים", value: "1,847", change: "+22%", up: true, icon: Bot, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "זמן תגובה ראשון", value: "8 שניות", change: "-65%", up: true, icon: Clock, color: "text-green-400", bg: "bg-green-500/10" },
   { label: "שיפור CSAT", value: "+18.4%", change: "+3.2%", up: true, icon: ThumbsUp, color: "text-amber-400", bg: "bg-amber-500/10" },
@@ -23,7 +25,7 @@ const kpis = [
   { label: 'חיסכון עלויות', value: "₪284,500", change: "+31%", up: true, icon: DollarSign, color: "text-rose-400", bg: "bg-rose-500/10" },
 ];
 
-const conversations = [
+const FALLBACK_CONVERSATIONS = [
   { id: "CS-4821", topic: "שאלה על אחריות מוצר", customer: "יוסי כהן", channel: "צ'אט", resolution: "הופנה למסמך אחריות + אישור הארכה", confidence: 97, feedback: 5, status: "נפתר", time: "2 דק'" },
   { id: "CS-4820", topic: "בעיית תשלום בהזמנה", customer: "שרה לוי", channel: "אימייל", resolution: "עדכון אמצעי תשלום והפעלה מחדש", confidence: 94, feedback: 5, status: "נפתר", time: "4 דק'" },
   { id: "CS-4819", topic: "מעקב אחר משלוח", customer: "אבי דוד", channel: "צ'אט", resolution: "עדכון מיקום בזמן אמת + ETA מעודכן", confidence: 99, feedback: 4, status: "נפתר", time: "1 דק'" },
@@ -36,7 +38,7 @@ const conversations = [
   { id: "CS-4812", topic: "פנייה חוזרת - בעיה לא נפתרה", customer: "לינה חדד", channel: "צ'אט", resolution: "הועבר לנציג + התראת SLA", confidence: 55, feedback: null, status: "הועבר", time: "4 דק'" },
 ];
 
-const routingRules = [
+const FALLBACK_ROUTING_RULES = [
   { category: "תלונה על מוצר", priority: "גבוהה", team: "שירות בכיר", aiConfidence: 94, autoRoute: true, sla: "2 שעות" },
   { category: "שאלה טכנית", priority: "בינונית", team: "תמיכה טכנית", aiConfidence: 97, autoRoute: true, sla: "4 שעות" },
   { category: "בקשת החזר > ₪500", priority: "גבוהה", team: "מנהל צוות", aiConfidence: 89, autoRoute: false, sla: "1 שעה" },
@@ -46,7 +48,7 @@ const routingRules = [
   { category: "ביטול חוזה", priority: "גבוהה", team: "שימור לקוחות", aiConfidence: 91, autoRoute: false, sla: "1 שעה" },
 ];
 
-const proactiveOutreach = [
+const FALLBACK_PROACTIVE_OUTREACH = [
   { customer: "מפעלי תעשייה בע\"מ", issue: "אחריות פגה בעוד 14 יום", type: "אחריות", urgency: "בינונית", action: "שליחת הצעת הארכה", status: "ממתין", icon: ShieldAlert },
   { customer: "אלקטרו פתרונות", issue: "משלוח מתעכב ב-3 ימים", type: "משלוח", urgency: "גבוהה", action: "הודעת עדכון + פיצוי", status: "נשלח", icon: Truck },
   { customer: "בניה חכמה בע\"מ", issue: "3 תלונות איכות ברבעון", type: "איכות", urgency: "גבוהה", action: "שיחת מעקב + בדיקת שורש", status: "בטיפול", icon: Wrench },
@@ -55,7 +57,7 @@ const proactiveOutreach = [
   { customer: "יבואני פרמיום", issue: "4 פניות שירות בשבוע", type: "תדירות פניות", urgency: "דחופה", action: "הקצאת נציג ייעודי", status: "בטיפול", icon: PhoneCall },
 ];
 
-const trainingMetrics = [
+const FALLBACK_TRAINING_METRICS = [
   { model: "סיווג נושא פנייה", accuracy: 96.8, lastTrained: "לפני 3 ימים", samples: "124,500", trend: "up", improvement: "+0.7%" },
   { model: "ניתוח סנטימנט", accuracy: 93.2, lastTrained: "לפני 5 ימים", samples: "89,200", trend: "up", improvement: "+1.1%" },
   { model: "חיזוי עדיפות", accuracy: 91.5, lastTrained: "לפני 2 ימים", samples: "67,800", trend: "stable", improvement: "+0.2%" },
@@ -63,14 +65,14 @@ const trainingMetrics = [
   { model: "זיהוי כוונת לקוח", accuracy: 95.1, lastTrained: "לפני 1 יום", samples: "156,000", trend: "up", improvement: "+0.5%" },
 ];
 
-const newPatterns = [
+const FALLBACK_NEW_PATTERNS = [
   { pattern: "שאלות על מדיניות ESG חדשה", occurrences: 47, since: "השבוע", gap: false },
   { pattern: "בעיות אינטגרציה עם גרסה 4.2", occurrences: 23, since: "3 ימים", gap: true },
   { pattern: "שאלות על תוכנית נאמנות חדשה", occurrences: 61, since: "השבוע", gap: true },
   { pattern: "דיווח על עיכוב בהודעות SMS", occurrences: 18, since: "יומיים", gap: true },
 ];
 
-const knowledgeGaps = [
+const FALLBACK_KNOWLEDGE_GAPS = [
   { topic: "מדיניות החזרות למוצרים מותאמים אישית", queries: 34, urgency: "גבוהה" },
   { topic: "תנאי אחריות לאחר העברת בעלות", queries: 28, urgency: "גבוהה" },
   { topic: "תהליך שדרוג מגרסה ישנה (< 3.0)", queries: 19, urgency: "בינונית" },
@@ -86,6 +88,20 @@ const SC: Record<string, string> = {
 };
 
 export default function AiCustomerServicePro() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["ai_customer_service_pro"],
+    queryFn: () => authFetch("/api/ai/ai-customer-service-pro").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const conversations = apiData?.conversations ?? FALLBACK_CONVERSATIONS;
+  const routingRules = apiData?.routingRules ?? FALLBACK_ROUTING_RULES;
+  const proactiveOutreach = apiData?.proactiveOutreach ?? FALLBACK_PROACTIVE_OUTREACH;
+  const trainingMetrics = apiData?.trainingMetrics ?? FALLBACK_TRAINING_METRICS;
+  const newPatterns = apiData?.newPatterns ?? FALLBACK_NEW_PATTERNS;
+  const knowledgeGaps = apiData?.knowledgeGaps ?? FALLBACK_KNOWLEDGE_GAPS;
   const [search, setSearch] = useState("");
   return (
     <div className="p-6 space-y-6" dir="rtl">

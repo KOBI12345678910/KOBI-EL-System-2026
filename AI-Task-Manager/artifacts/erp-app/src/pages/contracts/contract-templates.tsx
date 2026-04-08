@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Plus, Edit, Trash2, Eye, Copy, FileText, Signature } from "lucide-react";
 import { translateStatus } from "@/lib/status-labels";
 
@@ -20,6 +22,12 @@ interface SignatureWorkflow {
 }
 
 export default function ContractTemplates() {
+  const { data: contracttemplatesData } = useQuery({
+    queryKey: ["contract-templates"],
+    queryFn: () => authFetch("/api/contracts/contract_templates"),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [templates, setTemplates] = useState<Template[]>([]);
   const [workflows, setWorkflows] = useState<SignatureWorkflow[]>([]);
   const [activeTab, setActiveTab] = useState<"templates" | "e-signature" | "create">("templates");

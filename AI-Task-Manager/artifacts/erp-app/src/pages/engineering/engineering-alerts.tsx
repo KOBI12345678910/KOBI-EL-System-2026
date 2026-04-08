@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +28,7 @@ const alertTypes: Record<string, { label: string; icon: typeof Bell; color: stri
 };
 
 // ── Active alerts (12) ──
-const activeAlerts = [
+const FALLBACK_ACTIVEALERTS = [
   { id: "ALR-301", type: "drawing_overdue", severity: "קריטי", desc: "שרטוט DWG-112 מפעל תעופה לוד -- איחור 5 ימים", assigned: "יוסי כהן", time: "2026-04-08 08:15" },
   { id: "ALR-302", type: "test_failure", severity: "קריטי", desc: "כשל בדיקת עומס פרופיל AL-6063 אצווה 78", assigned: "שרה לוי", time: "2026-04-08 07:42" },
   { id: "ALR-303", type: "material_nonconformance", severity: "קריטי", desc: "זכוכית מחוסמת LOT-445 לא עומדת בתקן EN-12150", assigned: "דוד מזרחי", time: "2026-04-08 06:30" },
@@ -42,7 +44,7 @@ const activeAlerts = [
 ];
 
 // ── History (15 resolved) ──
-const historyAlerts = [
+const FALLBACK_HISTORYALERTS = [
   { id: "ALR-280", type: "drawing_overdue", desc: "שרטוט DWG-098 בניין משרדים רמת גן", resolved: "יוסי כהן", date: "2026-04-05", duration: "4 שעות" },
   { id: "ALR-281", type: "test_failure", desc: "כשל בדיקת אטימות חלון סדרה W-200", resolved: "שרה לוי", date: "2026-04-05", duration: "6 שעות" },
   { id: "ALR-282", type: "material_nonconformance", desc: "אלומיניום 6060 LOT-432 מחוץ לסבילות", resolved: "דוד מזרחי", date: "2026-04-04", duration: "2 ימים" },
@@ -61,7 +63,7 @@ const historyAlerts = [
 ];
 
 // ── Threshold settings (10) ──
-const thresholds = [
+const FALLBACK_THRESHOLDS = [
   { id: 1, name: "איחור שרטוט (ימים)", type: "drawing_overdue", value: 3, min: 1, max: 14 },
   { id: 2, name: "ימים לפני פקיעת תקן", type: "standard_expiring", value: 30, min: 7, max: 90 },
   { id: 3, name: "כשלי בדיקה מקסימום באצווה", type: "test_failure", value: 2, min: 1, max: 10 },
@@ -85,6 +87,26 @@ const th = "p-3 text-right text-muted-foreground font-medium text-xs";
 const td = "p-3 text-sm";
 
 export default function EngineeringAlertsPage() {
+  const { data: apiactiveAlerts } = useQuery({
+    queryKey: ["/api/engineering/engineering-alerts/activealerts"],
+    queryFn: () => authFetch("/api/engineering/engineering-alerts/activealerts").then(r => r.json()).catch(() => null),
+  });
+  const activeAlerts = Array.isArray(apiactiveAlerts) ? apiactiveAlerts : (apiactiveAlerts?.data ?? apiactiveAlerts?.items ?? FALLBACK_ACTIVEALERTS);
+
+
+  const { data: apihistoryAlerts } = useQuery({
+    queryKey: ["/api/engineering/engineering-alerts/historyalerts"],
+    queryFn: () => authFetch("/api/engineering/engineering-alerts/historyalerts").then(r => r.json()).catch(() => null),
+  });
+  const historyAlerts = Array.isArray(apihistoryAlerts) ? apihistoryAlerts : (apihistoryAlerts?.data ?? apihistoryAlerts?.items ?? FALLBACK_HISTORYALERTS);
+
+
+  const { data: apithresholds } = useQuery({
+    queryKey: ["/api/engineering/engineering-alerts/thresholds"],
+    queryFn: () => authFetch("/api/engineering/engineering-alerts/thresholds").then(r => r.json()).catch(() => null),
+  });
+  const thresholds = Array.isArray(apithresholds) ? apithresholds : (apithresholds?.data ?? apithresholds?.items ?? FALLBACK_THRESHOLDS);
+
   const [tab, setTab] = useState("active");
   const [search, setSearch] = useState("");
 

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +13,7 @@ import {
   Building2, Truck, Wrench, Flame
 } from "lucide-react";
 
-const policies = [
+const FALLBACK_POLICIES = [
   { id: "POL-001", name: "ביטוח מבנה מפעל", type: "רכוש", insurer: "הראל", premium: 42000, coverage: 8500000, start: "2025-07-01", end: "2026-06-30", status: "בתוקף", assets: "מבנה ראשי, אולמות A-D" },
   { id: "POL-002", name: "ביטוח ציוד כבד", type: "ציוד", insurer: "מגדל", premium: 28500, coverage: 3200000, start: "2025-09-01", end: "2026-08-31", status: "בתוקף", assets: "מסורים CNC, מרכזי עיבוד, כיפוף" },
   { id: "POL-003", name: "ביטוח אחריות מקצועית", type: "אחריות", insurer: "כלל", premium: 18000, coverage: 5000000, start: "2025-04-01", end: "2026-03-31", status: "פג תוקף", assets: "כיסוי צד ג׳ ומוצר" },
@@ -22,14 +24,14 @@ const policies = [
   { id: "POL-008", name: "ביטוח מלאי וחומרי גלם", type: "רכוש", insurer: "הפניקס", premium: 12800, coverage: 1800000, start: "2025-08-01", end: "2026-07-31", status: "בתוקף", assets: "מלאי אלומיניום, זכוכית, אביזרים" },
 ];
 
-const coverageGaps = [
+const FALLBACK_COVERAGE_GAPS = [
   { asset: "מלגזה דיזל Hyster 5T", value: 220000, risk: "גבוה", reason: "לא נכלל בפוליסת ציוד כבד" },
   { asset: "ג'יג הרכבה מודולרי #1", value: 45000, risk: "נמוך", reason: "מתחת לסף מינימום ביטוח" },
   { asset: "מדחס בורגי 30HP גיבוי", value: 78000, risk: "בינוני", reason: "נרכש לאחרונה, טרם עודכנה פוליסה" },
   { asset: "כלי חיתוך ותבניות", value: 165000, risk: "בינוני", reason: "אין כיסוי לכלים ותבניות ייצור" },
 ];
 
-const claims = [
+const FALLBACK_CLAIMS = [
   { id: "CLM-101", policy: "POL-002", description: "נזק למסור CNC מקצר חשמלי", date: "2025-11-20", amount: 45000, approved: 38000, status: "אושר" },
   { id: "CLM-102", policy: "POL-004", description: "תאונת מלגזה בחצר", date: "2026-01-15", amount: 28000, approved: 28000, status: "אושר" },
   { id: "CLM-103", policy: "POL-006", description: "שבר בציר מכונת כיפוף", date: "2026-03-02", amount: 62000, approved: 0, status: "בבדיקה" },
@@ -37,7 +39,7 @@ const claims = [
   { id: "CLM-105", policy: "POL-005", description: "תקלה בתנור ציפוי", date: "2026-02-18", amount: 33000, approved: 0, status: "נדחה" },
 ];
 
-const renewalSchedule = [
+const FALLBACK_RENEWAL_SCHEDULE = [
   { policy: "POL-003", name: "ביטוח אחריות מקצועית", end: "2026-03-31", daysLeft: -8, status: "פג תוקף", premium: 18000 },
   { policy: "POL-006", name: "ביטוח שבר מכונות", end: "2026-05-31", daysLeft: 53, status: "לחידוש קרוב", premium: 22000 },
   { policy: "POL-001", name: "ביטוח מבנה מפעל", end: "2026-06-30", daysLeft: 83, status: "לחידוש בקרוב", premium: 42000 },
@@ -70,6 +72,14 @@ const typeIcon: Record<string, typeof Building2> = {
 };
 
 export default function EquipmentInsurance() {
+  const { data: equipmentinsuranceData } = useQuery({
+    queryKey: ["equipment-insurance"],
+    queryFn: () => authFetch("/api/assets/equipment_insurance"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const policies = equipmentinsuranceData ?? FALLBACK_POLICIES;
+
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("policies");
 

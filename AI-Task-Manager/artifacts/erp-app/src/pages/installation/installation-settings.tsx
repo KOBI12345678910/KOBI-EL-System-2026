@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,7 +13,7 @@ import {
 
 /* ── Static config data ──────────────────────────────────────── */
 
-const generalSettings = [
+const FALLBACK_GENERAL_SETTINGS = [
   { label: "שעות עבודה", value: "06:00 – 16:00", icon: Clock, note: "כולל הפסקה 12:00–12:30" },
   { label: "ימי עבודה", value: "א׳ – ה׳", icon: CalendarDays, note: "שישי/שבת — לפי אישור מנהל בלבד" },
   { label: "אזור שירות", value: "מרכז / צפון / דרום", icon: Globe, note: "כיסוי ארצי — עדיפות למרכז" },
@@ -20,7 +22,7 @@ const generalSettings = [
   { label: "שפת ממשק", value: "עברית", icon: Languages, note: "תמיכה נוספת: English, العربية" },
 ];
 
-const teamSettings = [
+const FALLBACK_TEAM_SETTINGS = [
   { label: "גודל צוות ברירת מחדל", value: "3 אנשים", icon: Users, note: "מינימום 2, מקסימום 6" },
   { label: "התקנות ליום לצוות", value: "2 התקנות", icon: CalendarDays, note: "חריגה דורשת אישור מנהל מחלקה" },
   { label: "כישורים נדרשים מינימום", value: "הסמכת בטיחות + רישיון גובה", icon: ShieldCheck, note: "חשמלאי מוסמך — לפי סוג התקנה" },
@@ -29,7 +31,7 @@ const teamSettings = [
   { label: "הגבלת שעות נוספות", value: "עד 2 שעות ליום", icon: Clock, note: "מעבר — דורש אישור סמנכ״ל תפעול" },
 ];
 
-const qualitySettings = [
+const FALLBACK_QUALITY_SETTINGS = [
   { label: "סף עובר בדיקת איכות", value: "85%", icon: ShieldCheck, note: "מתחת ל-70% — עצירת התקנה אוטומטית" },
   { label: "תמונות מינימום להתקנה", value: "4 תמונות", icon: Camera, note: "לפני, במהלך, לאחר, ואישור לקוח" },
   { label: "תבנית רשימת ביקורת QC", value: "v3.2 — 18 סעיפים", icon: FileText, note: "עדכון אחרון: מרץ 2026" },
@@ -38,7 +40,7 @@ const qualitySettings = [
   { label: "זמן תגובה לכשל QC", value: "4 שעות עבודה", icon: Clock, note: "מעבר — התקנה עוברת לסטטוס ׳מוקפאת׳" },
 ];
 
-const alertSettings = [
+const FALLBACK_ALERT_SETTINGS = [
   { label: "חריגת עלות", value: "10%", icon: AlertTriangle, note: "מעל 10% — התראה למנהל פרויקט + כספים" },
   { label: "עיכוב בימים", value: "2 ימים", icon: Clock, note: "מעל 5 ימים — אסקלציה להנהלה" },
   { label: "חומרים חסרים — זמן אספקה", value: "3 ימי עבודה", icon: Bell, note: "פחות מ-3 ימים — התראה דחופה למחסן" },
@@ -47,7 +49,7 @@ const alertSettings = [
   { label: "התקנה ללא אישור לקוח", value: "24 שעות מסיום", icon: Bell, note: "תזכורת אוטומטית ללקוח + נציג שירות" },
 ];
 
-const documentSettings = [
+const FALLBACK_DOCUMENT_SETTINGS = [
   { label: "סוגי מסמכים נדרשים", value: "פרוטוקול, אישור לקוח, דו״ח QC, תמונות", icon: FileText, note: "חובה בכל התקנה — ללא חריגים" },
   { label: "הפקת פרוטוקול אוטומטית", value: "פעיל — PDF + חתימה דיגיטלית", icon: Zap, note: "נשלח ללקוח תוך 24 שעות מסיום" },
   { label: "מוסכמת שמות קבצים", value: "INS-[מספר]-[סוג]-[תאריך]", icon: FolderOpen, note: 'דוגמה: INS-001-PROTOCOL-2026-04-08' },
@@ -56,7 +58,7 @@ const documentSettings = [
   { label: "חתימת לקוח דיגיטלית", value: "פעיל — OTP + אימות SMS", icon: ShieldCheck, note: "תקף משפטית לפי חוק חתימה אלקטרונית" },
 ];
 
-const integrationModules = [
+const FALLBACK_INTEGRATION_MODULES = [
   { module: "CRM", status: "מחובר", lastSync: "08/04/2026 08:15", records: "1,240", health: 98 },
   { module: "פרויקטים", status: "מחובר", lastSync: "08/04/2026 08:10", records: "356", health: 100 },
   { module: "ייצור", status: "מחובר", lastSync: "08/04/2026 07:45", records: "892", health: 95 },
@@ -87,6 +89,79 @@ function ConfigCard({ item }: { item: { label: string; value: string; icon: Reac
 /* ── Page component ──────────────────────────────────────────── */
 
 export default function InstallationSettingsPage() {
+  const { data: generalSettings = FALLBACK_GENERAL_SETTINGS } = useQuery({
+    queryKey: ["installation-general-settings"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-settings/general-settings");
+      if (!res.ok) return FALLBACK_GENERAL_SETTINGS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_GENERAL_SETTINGS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: teamSettings = FALLBACK_TEAM_SETTINGS } = useQuery({
+    queryKey: ["installation-team-settings"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-settings/team-settings");
+      if (!res.ok) return FALLBACK_TEAM_SETTINGS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TEAM_SETTINGS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: qualitySettings = FALLBACK_QUALITY_SETTINGS } = useQuery({
+    queryKey: ["installation-quality-settings"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-settings/quality-settings");
+      if (!res.ok) return FALLBACK_QUALITY_SETTINGS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_QUALITY_SETTINGS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: alertSettings = FALLBACK_ALERT_SETTINGS } = useQuery({
+    queryKey: ["installation-alert-settings"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-settings/alert-settings");
+      if (!res.ok) return FALLBACK_ALERT_SETTINGS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_ALERT_SETTINGS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: documentSettings = FALLBACK_DOCUMENT_SETTINGS } = useQuery({
+    queryKey: ["installation-document-settings"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-settings/document-settings");
+      if (!res.ok) return FALLBACK_DOCUMENT_SETTINGS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DOCUMENT_SETTINGS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: integrationModules = FALLBACK_INTEGRATION_MODULES } = useQuery({
+    queryKey: ["installation-integration-modules"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/installation-settings/integration-modules");
+      if (!res.ok) return FALLBACK_INTEGRATION_MODULES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_INTEGRATION_MODULES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div dir="rtl" className="p-6 space-y-6">
       {/* Header */}

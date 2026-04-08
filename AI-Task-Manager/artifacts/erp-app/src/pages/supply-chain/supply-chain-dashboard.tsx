@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +14,7 @@ import {
 } from "lucide-react";
 import { useLocation } from "wouter";
 
-const alerts = [
+const FALLBACK_ALERTS = [
   { id: 1, type: "critical", message: "חוסר מלאי - פרופיל אלומיניום 6063-T5", source: "מחסן ראשי", time: "לפני 15 דקות" },
   { id: 2, type: "warning", message: "עיכוב משלוח - Foshan Glass Co. (3 ימים)", source: "ספק סין", time: "לפני שעה" },
   { id: 3, type: "info", message: "הזמנה #PO-4521 נקלטה במחסן", source: "קליטת סחורה", time: "לפני 2 שעות" },
@@ -20,7 +22,7 @@ const alerts = [
   { id: 5, type: "critical", message: "ספק Schuco - אי עמידה באיכות, משלוח #SH-892", source: "בקרת איכות", time: "לפני 5 שעות" },
 ];
 
-const quickLinks = [
+const FALLBACK_QUICKLINKS = [
   { title: "מרכז פיקוד שרשרת אספקה", desc: "תצוגה מרכזית וניהול בזמן אמת", icon: Gauge, href: "/supply-chain/command-center", color: "text-emerald-400", bg: "bg-emerald-500/10" },
   { title: "תכנון ביקושים", desc: "תחזיות וניתוח צרכים עתידיים", icon: BarChart3, href: "/supply-chain/demand-planning", color: "text-blue-400", bg: "bg-blue-500/10" },
   { title: "נראות שרשרת אספקה", desc: "מעקב משלוחים ומפת ספקים", icon: Eye, href: "/supply-chain/visibility", color: "text-purple-400", bg: "bg-purple-500/10" },
@@ -28,7 +30,7 @@ const quickLinks = [
   { title: "אנליטיקה ודוחות", desc: "ביצועי שרשרת אספקה ומגמות", icon: TrendingUp, href: "/supply-chain/analytics", color: "text-cyan-400", bg: "bg-cyan-500/10" },
 ];
 
-const topSuppliers = [
+const FALLBACK_TOPSUPPLIERS = [
   { name: "Schuco International", category: "פרופילי אלומיניום", fillRate: 94, leadTime: 12, onTime: 91 },
   { name: "Foshan Glass Co.", category: "זכוכית מחוסמת", fillRate: 88, leadTime: 21, onTime: 82 },
   { name: "קבוצת אלומיל", category: "אלומיניום מקומי", fillRate: 97, leadTime: 5, onTime: 96 },
@@ -43,6 +45,26 @@ const alertColors: Record<string, { badge: string; icon: string }> = {
 };
 
 export default function SupplyChainDashboard() {
+  const { data: apialerts } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-dashboard/alerts"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-dashboard/alerts").then(r => r.json()).catch(() => null),
+  });
+  const alerts = Array.isArray(apialerts) ? apialerts : (apialerts?.data ?? apialerts?.items ?? FALLBACK_ALERTS);
+
+
+  const { data: apiquickLinks } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-dashboard/quicklinks"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-dashboard/quicklinks").then(r => r.json()).catch(() => null),
+  });
+  const quickLinks = Array.isArray(apiquickLinks) ? apiquickLinks : (apiquickLinks?.data ?? apiquickLinks?.items ?? FALLBACK_QUICKLINKS);
+
+
+  const { data: apitopSuppliers } = useQuery({
+    queryKey: ["/api/supply-chain/supply-chain-dashboard/topsuppliers"],
+    queryFn: () => authFetch("/api/supply-chain/supply-chain-dashboard/topsuppliers").then(r => r.json()).catch(() => null),
+  });
+  const topSuppliers = Array.isArray(apitopSuppliers) ? apitopSuppliers : (apitopSuppliers?.data ?? apitopSuppliers?.items ?? FALLBACK_TOPSUPPLIERS);
+
   const [, navigate] = useLocation();
 
   const kpis = [

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,7 +23,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-const emailCampaigns = [
+const FALLBACK_EMAIL_CAMPAIGNS = [
   { id: 1, name: "ניוזלטר חודשי - מרץ 2026", status: "נשלח", sent: 2450, opened: 892, clicked: 234, unsubscribed: 5, date: "2026-03-15" },
   { id: 2, name: "מבצע אביב - חלונות אלומיניום", status: "נשלח", sent: 1800, opened: 756, clicked: 189, unsubscribed: 8, date: "2026-03-20" },
   { id: 3, name: "הזמנה לתערוכת בנייה", status: "נשלח", sent: 3200, opened: 1408, clicked: 512, unsubscribed: 3, date: "2026-03-25" },
@@ -32,7 +34,7 @@ const emailCampaigns = [
   { id: 8, name: "הצעות מיוחדות לקבלנים", status: "מתוכנן", sent: 0, opened: 0, clicked: 0, unsubscribed: 0, date: "2026-05-10" },
 ];
 
-const templates = [
+const FALLBACK_TEMPLATES = [
   { id: 1, name: "ניוזלטר חודשי", category: "ניוזלטר", lastUsed: "2026-04-01", usage: 12 },
   { id: 2, name: "מבצע מיוחד", category: "קידום מכירות", lastUsed: "2026-03-20", usage: 8 },
   { id: 3, name: "הזמנה לאירוע", category: "אירועים", lastUsed: "2026-03-25", usage: 5 },
@@ -41,7 +43,7 @@ const templates = [
   { id: 6, name: "ברכת חג", category: "כללי", lastUsed: "2026-03-14", usage: 4 },
 ];
 
-const subscriberLists = [
+const FALLBACK_SUBSCRIBER_LISTS = [
   { name: "לקוחות פעילים", count: 2450, growth: 5.2, lastSent: "2026-04-01" },
   { name: "קבלנים ובנאים", count: 1800, growth: 8.1, lastSent: "2026-03-20" },
   { name: "אדריכלים ומעצבים", count: 980, growth: 12.3, lastSent: "2026-03-25" },
@@ -61,6 +63,14 @@ const statusColor = (status: string) => {
 };
 
 export default function EmailMarketing() {
+  const { data: emailmarketingData } = useQuery({
+    queryKey: ["email-marketing"],
+    queryFn: () => authFetch("/api/marketing/email_marketing"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const emailCampaigns = emailmarketingData ?? FALLBACK_EMAIL_CAMPAIGNS;
+
   const [search, setSearch] = useState("");
 
   const sentCampaigns = emailCampaigns.filter((c) => c.status === "נשלח");

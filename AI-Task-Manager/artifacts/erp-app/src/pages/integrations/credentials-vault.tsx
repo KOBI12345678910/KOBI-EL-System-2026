@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,7 +11,7 @@ import {
   RefreshCw, Clock, CheckCircle, XCircle, ShieldAlert, Globe,
 } from "lucide-react";
 
-const credentials = [
+const FALLBACK_CREDENTIALS = [
   { id: "CRD-001", name: "SAP ERP Production", type: "API Key", service: "SAP S/4HANA", createdBy: "עוזי כהן", createdAt: "2025-08-12", expiresAt: "2026-08-12", lastUsed: "2026-04-07", status: "active" },
   { id: "CRD-002", name: "Salesforce CRM", type: "OAuth2", service: "Salesforce", createdBy: "מיכל לוי", createdAt: "2025-11-03", expiresAt: "2026-11-03", lastUsed: "2026-04-08", status: "active" },
   { id: "CRD-003", name: "AWS S3 Storage", type: "API Key", service: "Amazon S3", createdBy: "עוזי כהן", createdAt: "2025-06-20", expiresAt: "2026-06-20", lastUsed: "2026-04-06", status: "active" },
@@ -30,7 +32,7 @@ const credentials = [
   { id: "CRD-018", name: "Partner API Cert", type: "Certificate", service: "שותפים B2B", createdBy: "עוזי כהן", createdAt: "2026-01-20", expiresAt: "2027-01-20", lastUsed: "2026-04-07", status: "active" },
 ];
 
-const apiKeys = [
+const FALLBACK_API_KEYS = [
   { prefix: "sk_live_4f8a...x9kR", scope: "production:full", rateLimit: "1,000/min", callsMonth: 42_850, createdBy: "עוזי כהן" },
   { prefix: "sk_live_7b2c...mT3q", scope: "payments:write", rateLimit: "500/min", callsMonth: 18_320, createdBy: "רונית שרון" },
   { prefix: "sk_test_9d1e...pL5w", scope: "sandbox:full", rateLimit: "2,000/min", callsMonth: 95_400, createdBy: "דני אברהם" },
@@ -41,7 +43,7 @@ const apiKeys = [
   { prefix: "sk_live_3g4k...dR2u", scope: "email:send", rateLimit: "200/min", callsMonth: 12_650, createdBy: "רונית שרון" },
 ];
 
-const oauthTokens = [
+const FALLBACK_OAUTH_TOKENS = [
   { service: "Salesforce", grantType: "Authorization Code", scopes: "api, refresh_token, full", expiresIn: "58 דקות", refreshStatus: "פעיל" },
   { service: "Google APIs", grantType: "Authorization Code + PKCE", scopes: "drive, calendar, gmail.send", expiresIn: "42 דקות", refreshStatus: "פעיל" },
   { service: "Microsoft Azure", grantType: "Client Credentials", scopes: "Directory.Read, User.Read", expiresIn: "3 שעות", refreshStatus: "פעיל" },
@@ -50,7 +52,7 @@ const oauthTokens = [
   { service: "GitHub", grantType: "Device Flow", scopes: "repo, workflow, read:org", expiresIn: "7 ימים", refreshStatus: "ידני" },
 ];
 
-const certificates = [
+const FALLBACK_CERTIFICATES = [
   { cn: "*.techno-kol.co.il", issuer: "DigiCert Global G2", validFrom: "2025-04-01", validTo: "2026-04-01", daysRemaining: 0 },
   { cn: "api.techno-kol.co.il", issuer: "Let's Encrypt R3", validFrom: "2026-01-15", validTo: "2026-07-15", daysRemaining: 98 },
   { cn: "gateway-internal.local", issuer: "Techno-Kol Internal CA", validFrom: "2025-09-01", validTo: "2026-09-01", daysRemaining: 146 },
@@ -103,6 +105,17 @@ function certColor(days: number) {
 }
 
 export default function CredentialsVaultPage() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["credentials_vault"],
+    queryFn: () => authFetch("/api/integrations/credentials-vault").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const credentials = apiData?.credentials ?? FALLBACK_CREDENTIALS;
+  const apiKeys = apiData?.apiKeys ?? FALLBACK_API_KEYS;
+  const oauthTokens = apiData?.oauthTokens ?? FALLBACK_OAUTH_TOKENS;
+  const certificates = apiData?.certificates ?? FALLBACK_CERTIFICATES;
   const [activeTab, setActiveTab] = useState("vault");
 
   const kpis = [

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -14,7 +16,7 @@ const fmt = (v: number) => `₪${v.toLocaleString("he-IL")}`;
 const pct = (v: number) => `${v}%`;
 
 /* ── KPI data ────────────────────────────────────────────── */
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "עלות שירות חודשית", value: fmt(34500), icon: Calculator, color: "text-blue-400", bg: "bg-blue-500/20" },
   { label: "עלות ממוצעת לקריאה", value: fmt(1200), icon: FileText, color: "text-emerald-400", bg: "bg-emerald-500/20" },
   { label: "חלקי חילוף", value: fmt(12000), icon: Wrench, color: "text-amber-400", bg: "bg-amber-500/20" },
@@ -24,7 +26,7 @@ const kpis = [
 ];
 
 /* ── Cost per case ───────────────────────────────────────── */
-const costCases = [
+const FALLBACK_COST_CASES = [
   { id: "SRV-401", customer: "אלון מערכות בע\"מ", fault: "מנוע שרוף", labor: 1800, parts: 2200, travel: 350, warranty: true, billable: 0 },
   { id: "SRV-402", customer: "נדל\"ן צפון", fault: "רטיבות מסגרת", labor: 900, parts: 400, travel: 500, warranty: false, billable: 1800 },
   { id: "SRV-403", customer: "קיבוץ דגניה", fault: "חלודה בריתוך", labor: 1200, parts: 800, travel: 600, warranty: true, billable: 0 },
@@ -38,7 +40,7 @@ const costCases = [
 ];
 
 /* ── Cost categories ─────────────────────────────────────── */
-const costCategories = [
+const FALLBACK_COST_CATEGORIES = [
   { label: 'כ"א', icon: Users, planned: 16000, actual: 18000, color: "text-purple-400", bg: "bg-purple-500/20" },
   { label: "חלקי חילוף", icon: Wrench, planned: 10000, actual: 12000, color: "text-amber-400", bg: "bg-amber-500/20" },
   { label: "נסיעות", icon: Car, planned: 5000, actual: 4500, color: "text-cyan-400", bg: "bg-cyan-500/20" },
@@ -60,7 +62,7 @@ const warrantySplit = {
 };
 
 /* ── Monthly trend ───────────────────────────────────────── */
-const monthlyTrend = [
+const FALLBACK_MONTHLY_TREND = [
   { month: "נובמבר 2025", cost: 28000, revenue: 9200, pl: -18800 },
   { month: "דצמבר 2025", cost: 31500, revenue: 8500, pl: -23000 },
   { month: "ינואר 2026", cost: 29000, revenue: 10800, pl: -18200 },
@@ -70,7 +72,7 @@ const monthlyTrend = [
 ];
 
 /* ── AI insights ─────────────────────────────────────────── */
-const insights = [
+const FALLBACK_INSIGHTS = [
   {
     title: "עלות חלקי חילוף עולה על התקציב ב-20%",
     body: "מומלץ לנהל משא ומתן מחדש עם ספקי חלקי חילוף או לעבור לספק חלופי. בקרים אלקטרוניים הם 29% מהעלות הכוללת.",
@@ -94,6 +96,14 @@ const insights = [
 /* ════════════════════════════════════════════════════════════ */
 
 export default function ServiceCostTracking() {
+  const { data: servicecosttrackingData } = useQuery({
+    queryKey: ["service-cost-tracking"],
+    queryFn: () => authFetch("/api/service/service_cost_tracking"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = servicecosttrackingData ?? FALLBACK_KPIS;
+
   const [tab, setTab] = useState("cases");
 
   return (

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,14 +11,14 @@ import {
   Calculator, Building2, BarChart3, PieChart, Target, Landmark
 } from "lucide-react";
 
-const kpis = [
+const FALLBACK_KPIS = [
   { title: "הכנסות שנתיות", value: "₪18,450,000", icon: TrendingUp, color: "text-green-400", bg: "bg-green-500/10", change: "+12.3%", changeUp: true },
   { title: "הוצאות שנתיות", value: "₪14,280,000", icon: TrendingDown, color: "text-red-400", bg: "bg-red-500/10", change: "+8.1%", changeUp: false },
   { title: "רווח נקי", value: "₪4,170,000", icon: DollarSign, color: "text-emerald-400", bg: "bg-emerald-500/10", change: "+22.6%", changeUp: true },
   { title: "הפרשה למס", value: "₪962,100", icon: Calculator, color: "text-orange-400", bg: "bg-orange-500/10", change: "23%", changeUp: false },
 ];
 
-const plSummary = [
+const FALLBACK_PL_SUMMARY = [
   { category: "הכנסות ממכירות", q1: 4120000, q2: 4580000, q3: 4950000, q4: 4800000, total: 18450000, pct: 100 },
   { category: "עלות המכר", q1: -2460000, q2: -2710000, q3: -2980000, q4: -2850000, total: -11000000, pct: -59.6 },
   { category: "רווח גולמי", q1: 1660000, q2: 1870000, q3: 1970000, q4: 1950000, total: 7450000, pct: 40.4 },
@@ -29,14 +31,14 @@ const plSummary = [
   { category: "רווח נקי", q1: 696850, q2: 820050, q3: 872410, q4: 818590, total: 3207900, pct: 17.4 },
 ];
 
-const quarterlyBreakdown = [
+const FALLBACK_QUARTERLY_BREAKDOWN = [
   { quarter: "Q1 2026", revenue: 4120000, cogs: 2460000, grossMargin: "40.3%", opex: 755000, ebitda: 1035000, netIncome: 696850 },
   { quarter: "Q2 2026", revenue: 4580000, cogs: 2710000, grossMargin: "40.8%", opex: 805000, ebitda: 1197000, netIncome: 820050 },
   { quarter: "Q3 2026", revenue: 4950000, cogs: 2980000, grossMargin: "39.8%", opex: 837000, ebitda: 1268000, netIncome: 872410 },
   { quarter: "Q4 2026", revenue: 4800000, cogs: 2850000, grossMargin: "40.6%", opex: 883000, ebitda: 1220000, netIncome: 818590 },
 ];
 
-const departmentExpenses = [
+const FALLBACK_DEPARTMENT_EXPENSES = [
   { dept: "ייצור", budget: 8200000, actual: 8050000, variance: 150000, pct: 56.4 },
   { dept: "הנהלה וכלליות", budget: 1450000, actual: 1380000, variance: 70000, pct: 9.7 },
   { dept: "מכירות ושיווק", budget: 1000000, actual: 950000, variance: 50000, pct: 6.7 },
@@ -49,7 +51,7 @@ const departmentExpenses = [
   { dept: "IT", budget: 350000, actual: 340000, variance: 10000, pct: 2.4 },
 ];
 
-const taxComputation = [
+const FALLBACK_TAX_COMPUTATION = [
   { item: "רווח לפני מס", amount: 4170000 },
   { item: "הוצאות לא מוכרות", amount: 125000 },
   { item: "הכנסות פטורות", amount: -82000 },
@@ -68,6 +70,14 @@ const fmt = (n: number) => {
 };
 
 export default function ReportFiscalPage() {
+  const { data: reportfiscalData } = useQuery({
+    queryKey: ["report-fiscal"],
+    queryFn: () => authFetch("/api/reports/report_fiscal"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = reportfiscalData ?? FALLBACK_KPIS;
+
   return (
     <div className="p-6 space-y-6" dir="rtl">
       {/* Header */}

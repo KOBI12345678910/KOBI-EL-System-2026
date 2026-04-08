@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -35,7 +37,7 @@ interface UserRecord {
   avatar: string;
 }
 
-const AVAILABLE_ROLES: Role[] = [
+const FALLBACK_AVAILABLE_ROLES: Role[] = [
   { id: "ADMIN", name: "System Admin", nameHe: "מנהל מערכת", color: "bg-red-500/20 text-red-400 border-red-500/30" },
   { id: "FINANCE_MANAGER", name: "Finance Manager", nameHe: "מנהל כספים", color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
   { id: "FINANCE_CLERK", name: "Finance Clerk", nameHe: "פקיד כספים", color: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" },
@@ -54,7 +56,7 @@ const AVAILABLE_ROLES: Role[] = [
   { id: "AUDITOR", name: "Auditor", nameHe: "מבקר", color: "bg-indigo-500/20 text-indigo-400 border-indigo-500/30" },
 ];
 
-const MOCK_USERS: UserRecord[] = [
+const FALLBACK_MOCK_USERS: UserRecord[] = [
   {
     id: "U001", name: "אבי כהן", email: "avi.cohen@company.co.il", department: "כספים", position: "מנהל כספים",
     avatar: "AC",
@@ -173,6 +175,14 @@ const fmt = Intl.DateTimeFormat("he-IL", { day: "2-digit", month: "2-digit", yea
 // ─── Component ─────────────────────────────────────────────────────────────────
 
 export default function UserRoleAssignment() {
+  const { data: userroleassignmentData } = useQuery({
+    queryKey: ["user-role-assignment"],
+    queryFn: () => authFetch("/api/system/user_role_assignment"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const AVAILABLE_ROLES = userroleassignmentData ?? FALLBACK_AVAILABLE_ROLES;
+
   const [users, setUsers] = useState<UserRecord[]>(MOCK_USERS);
   const [selectedUserId, setSelectedUserId] = useState<string | null>("U001");
   const [searchQuery, setSearchQuery] = useState("");

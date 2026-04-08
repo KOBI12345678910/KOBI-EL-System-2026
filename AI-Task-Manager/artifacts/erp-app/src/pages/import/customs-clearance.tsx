@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,11 +10,11 @@ import { Shield, Clock, CheckCircle, AlertTriangle, DollarSign, FileText, Ban, T
 
 const fmt = (v: number) => "₪" + v.toLocaleString("he-IL");
 
-const stages = ["submitted", "review", "payment", "inspection", "release"] as const;
+const FALLBACK_STAGES = ["submitted", "review", "payment", "inspection", "release"] as const;
 const stageLabel: Record<string, string> = { submitted: "הוגש", review: "בבדיקה", payment: "תשלום", inspection: "בדיקה פיזית", release: "שחרור" };
 const stagePercent: Record<string, number> = { submitted: 20, review: 40, payment: 60, inspection: 80, release: 100 };
 
-const customsEntries = [
+const FALLBACK_CUSTOMS_ENTRIES = [
   { id: "CE-4401", shipment: "SHP-1120", supplier: "Foshan Glass Co.", origin: "סין", port: "אשדוד", date: "2026-04-01", stage: "inspection", value: 184000, broker: "שמעון סחר בע\"מ" },
   { id: "CE-4402", shipment: "SHP-1121", supplier: "Schüco International", origin: "גרמניה", port: "חיפה", date: "2026-04-03", stage: "payment", value: 312000, broker: "גלובל לוגיסטיקה" },
   { id: "CE-4403", shipment: "SHP-1122", supplier: "Alumil SA", origin: "יוון", port: "אשדוד", date: "2026-04-05", stage: "review", value: 98500, broker: "שמעון סחר בע\"מ" },
@@ -23,7 +25,7 @@ const customsEntries = [
   { id: "CE-4408", shipment: "SHP-1127", supplier: "Xingfa Aluminium", origin: "סין", port: "חיפה", date: "2026-03-30", stage: "payment", value: 89000, broker: "גלובל לוגיסטיקה" },
 ];
 
-const payments = [
+const FALLBACK_PAYMENTS = [
   { id: "PAY-801", shipment: "SHP-1120", duty: 14720, vat: 31280, portFees: 4200, brokerFees: 3800, total: 54000, status: "שולם" },
   { id: "PAY-802", shipment: "SHP-1121", duty: 24960, vat: 53040, portFees: 5800, brokerFees: 4500, total: 88300, status: "ממתין" },
   { id: "PAY-803", shipment: "SHP-1122", duty: 7880, vat: 16745, portFees: 3100, brokerFees: 3200, total: 30925, status: "ממתין" },
@@ -34,7 +36,7 @@ const payments = [
   { id: "PAY-808", shipment: "SHP-1127", duty: 7120, vat: 15130, portFees: 3000, brokerFees: 3100, total: 28350, status: "שולם" },
 ];
 
-const documents = [
+const FALLBACK_DOCUMENTS = [
   { shipment: "SHP-1120", invoice: true, packingList: true, bl: true, coo: true, insurance: true, customsDecl: false, phyto: false, importLicense: true },
   { shipment: "SHP-1121", invoice: true, packingList: true, bl: true, coo: true, insurance: true, customsDecl: true, phyto: true, importLicense: true },
   { shipment: "SHP-1122", invoice: true, packingList: false, bl: true, coo: false, insurance: true, customsDecl: false, phyto: false, importLicense: true },
@@ -50,7 +52,7 @@ const docLabels: Record<string, string> = {
   insurance: "פוליסת ביטוח", customsDecl: "הצהרת מכס", phyto: "תעודה פיטוסניטרית", importLicense: "רישיון יבוא",
 };
 
-const exceptions = [
+const FALLBACK_EXCEPTIONS = [
   { id: "EXC-301", shipment: "SHP-1120", type: "עיכוב בדיקה", reason: "דגימת חומרים לבדיקת מעבדה", opened: "2026-04-05", status: "פתוח", severity: "medium" },
   { id: "EXC-302", shipment: "SHP-1122", type: "מסמך חסר", reason: "תעודת מקור לא הומצאה מהספק", opened: "2026-04-06", status: "פתוח", severity: "high" },
   { id: "EXC-303", shipment: "SHP-1124", type: "סיווג מכס", reason: "מחלוקת על קוד HS - 7610.10 vs 7610.90", opened: "2026-04-07", status: "פתוח", severity: "high" },
@@ -80,6 +82,67 @@ const stageBadge = (stage: string) => {
 };
 
 export default function CustomsClearance() {
+  const { data: stages = FALLBACK_STAGES } = useQuery({
+    queryKey: ["import-stages"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/customs-clearance/stages");
+      if (!res.ok) return FALLBACK_STAGES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_STAGES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: customsEntries = FALLBACK_CUSTOMS_ENTRIES } = useQuery({
+    queryKey: ["import-customs-entries"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/customs-clearance/customs-entries");
+      if (!res.ok) return FALLBACK_CUSTOMS_ENTRIES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_CUSTOMS_ENTRIES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: payments = FALLBACK_PAYMENTS } = useQuery({
+    queryKey: ["import-payments"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/customs-clearance/payments");
+      if (!res.ok) return FALLBACK_PAYMENTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_PAYMENTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: documents = FALLBACK_DOCUMENTS } = useQuery({
+    queryKey: ["import-documents"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/customs-clearance/documents");
+      if (!res.ok) return FALLBACK_DOCUMENTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DOCUMENTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: exceptions = FALLBACK_EXCEPTIONS } = useQuery({
+    queryKey: ["import-exceptions"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/customs-clearance/exceptions");
+      if (!res.ok) return FALLBACK_EXCEPTIONS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_EXCEPTIONS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [tab, setTab] = useState("entries");
 
   const inCustomsNow = customsEntries.filter(e => e.stage !== "release").length;

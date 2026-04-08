@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,7 +17,7 @@ type MaterialType = "iron" | "aluminum" | "stainless" | "glass";
 
 const VAT_RATE = 0.17;
 
-const PROFILES: { key: ProfileType; label: string; icon: typeof Layers }[] = [
+const FALLBACK_PROFILES: { key: ProfileType; label: string; icon: typeof Layers }[] = [
   { key: "square_tube", label: "צינור מרובע", icon: SquareSlash },
   { key: "round_tube", label: "צינור עגול", icon: CircleDot },
   { key: "angle", label: "זווית", icon: Minus },
@@ -24,7 +26,7 @@ const PROFILES: { key: ProfileType; label: string; icon: typeof Layers }[] = [
   { key: "i_beam", label: "I-beam", icon: Layers },
 ];
 
-const MATERIALS: { key: MaterialType; label: string; density: number; color: string }[] = [
+const FALLBACK_MATERIALS: { key: MaterialType; label: string; density: number; color: string }[] = [
   { key: "iron", label: "ברזל / פלדה", density: 7.85, color: "bg-gray-500" },
   { key: "aluminum", label: "אלומיניום", density: 2.70, color: "bg-blue-500" },
   { key: "stainless", label: "נירוסטה", density: 7.93, color: "bg-slate-400" },
@@ -95,6 +97,14 @@ function formulaDescription(profile: ProfileType): string {
 // ============================================================
 
 export default function WeightCalculator() {
+  const { data: weightcalculatorData } = useQuery({
+    queryKey: ["weight-calculator"],
+    queryFn: () => authFetch("/api/procurement/weight_calculator"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const PROFILES = weightcalculatorData ?? FALLBACK_PROFILES;
+
   // Inputs
   const [profile, setProfile] = useState<ProfileType>("square_tube");
   const [material, setMaterial] = useState<MaterialType>("iron");

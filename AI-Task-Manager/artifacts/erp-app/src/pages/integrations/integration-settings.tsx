@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -70,7 +72,7 @@ function SettingsTable({ rows }: { rows: SettingRow[] }) {
   );
 }
 
-const generalSettings: SettingRow[] = [
+const FALLBACK_GENERAL_SETTINGS: SettingRow[] = [
   { label: "Timeout ברירת מחדל", value: "30 שניות", status: "active" },
   { label: "מספר ניסיונות חוזרים מקסימלי", value: "3", status: "info" },
   { label: "שמירת לוגים", value: "90 יום" },
@@ -83,7 +85,7 @@ const generalSettings: SettingRow[] = [
   { label: "Health Check Interval", value: "30 שניות", status: "active" },
 ];
 
-const apiGatewaySettings: SettingRow[] = [
+const FALLBACK_API_GATEWAY_SETTINGS: SettingRow[] = [
   { label: "Rate Limit - ברירת מחדל", value: "1,000 בקשות / דקה", status: "active" },
   { label: "Rate Limit - פרימיום", value: "5,000 בקשות / דקה", status: "active" },
   { label: "CORS - Origins מורשים", value: "*.techno-kol-uzi.co.il", status: "info" },
@@ -97,7 +99,7 @@ const apiGatewaySettings: SettingRow[] = [
   { label: "Compression", value: "gzip, br", status: "active" },
 ];
 
-const webhookSettings: SettingRow[] = [
+const FALLBACK_WEBHOOK_SETTINGS: SettingRow[] = [
   { label: "אלגוריתם חתימה", value: "HMAC-SHA256", status: "active" },
   { label: "Timeout משלוח", value: "10 שניות" },
   { label: "ניסיונות חוזרים מקסימלי", value: "3" },
@@ -109,7 +111,7 @@ const webhookSettings: SettingRow[] = [
   { label: "Payload Size מקסימלי", value: "256 KB" },
 ];
 
-const eventSettings: SettingRow[] = [
+const FALLBACK_EVENT_SETTINGS: SettingRow[] = [
   { label: "מנויים מקסימלי לאירוע", value: "25", status: "info" },
   { label: "סף Dead Letter", value: "5 כשלונות רצופים", status: "warning" },
   { label: "Timeout עיבוד", value: "30 שניות" },
@@ -122,7 +124,7 @@ const eventSettings: SettingRow[] = [
   { label: "Replay מאירועים ישנים", value: "מופעל", status: "active" },
 ];
 
-const mcpSettings: SettingRow[] = [
+const FALLBACK_MCP_SETTINGS: SettingRow[] = [
   { label: "MCP Server Timeout", value: "60 שניות", status: "active" },
   { label: "קריאות מקבילות מקסימלי", value: "10", status: "info" },
   { label: "אישור כלים (Tool Approval)", value: "נדרש", status: "active" },
@@ -135,7 +137,7 @@ const mcpSettings: SettingRow[] = [
   { label: "Transport", value: "Streamable HTTP", status: "active" },
 ];
 
-const securitySettings: SettingRow[] = [
+const FALLBACK_SECURITY_SETTINGS: SettingRow[] = [
   { label: "גרסת TLS", value: "1.3", status: "active" },
   { label: "חידוש תעודות (Certificate Rotation)", value: "כל 90 יום", status: "info" },
   { label: "תעודה נוכחית - תוקף", value: "2026-07-15", status: "active" },
@@ -149,7 +151,7 @@ const securitySettings: SettingRow[] = [
   { label: "Secret Rotation", value: "כל 30 יום (אוטומטי)", status: "active" },
 ];
 
-const tabConfig: TabDef[] = [
+const FALLBACK_TAB_CONFIG: TabDef[] = [
   { id: "general", label: "כללי", icon: Globe, data: generalSettings,
     description: "הגדרות גלובליות של מערכת האינטגרציות, כולל timeouts, ניסיונות חוזרים ושמירת לוגים." },
   { id: "api-gateway", label: "API Gateway", icon: Network, data: apiGatewaySettings,
@@ -164,7 +166,7 @@ const tabConfig: TabDef[] = [
     description: "TLS, תעודות, tokens, הגבלות IP ורמת audit log." },
 ];
 
-const healthMetrics = [
+const FALLBACK_HEALTH_METRICS = [
   { label: "API Gateway Uptime", value: 99.97 },
   { label: "Webhook Delivery Rate", value: 98.4 },
   { label: "Event Processing", value: 99.8 },
@@ -172,6 +174,21 @@ const healthMetrics = [
 ];
 
 export default function IntegrationSettings() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["integration_settings"],
+    queryFn: () => authFetch("/api/integrations/integration-settings").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const generalSettings = apiData?.generalSettings ?? FALLBACK_GENERAL_SETTINGS;
+  const apiGatewaySettings = apiData?.apiGatewaySettings ?? FALLBACK_API_GATEWAY_SETTINGS;
+  const webhookSettings = apiData?.webhookSettings ?? FALLBACK_WEBHOOK_SETTINGS;
+  const eventSettings = apiData?.eventSettings ?? FALLBACK_EVENT_SETTINGS;
+  const mcpSettings = apiData?.mcpSettings ?? FALLBACK_MCP_SETTINGS;
+  const securitySettings = apiData?.securitySettings ?? FALLBACK_SECURITY_SETTINGS;
+  const tabConfig = apiData?.tabConfig ?? FALLBACK_TAB_CONFIG;
+  const healthMetrics = apiData?.healthMetrics ?? FALLBACK_HEALTH_METRICS;
   const [activeTab, setActiveTab] = useState("general");
 
   return (

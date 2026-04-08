@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,28 +13,28 @@ import {
   ArrowUpRight, ArrowDownRight, Target, Truck, FileCheck, PieChart
 } from "lucide-react";
 
-const pricePredictions = [
+const FALLBACK_PRICE_PREDICTIONS = [
   { material: "אלומיניום 6061", current: 12.8, predicted: 11.2, change: -12.5, confidence: 94, recommendation: "לקנות עכשיו", timing: "ירידה צפויה ב-3 שבועות", trend: "down" },
   { material: "זכוכית מחוסמת 10מ\"מ", current: 85, predicted: 92, change: 8.2, confidence: 87, recommendation: "להמתין", timing: "עלייה צפויה ב-2 שבועות", trend: "up" },
   { material: "פלדת אל-חלד 304", current: 24.5, predicted: 23.1, change: -5.7, confidence: 91, recommendation: "לקנות עכשיו", timing: "ירידה מתחילה", trend: "down" },
   { material: "נחושת C110", current: 38.2, predicted: 41.5, change: 8.6, confidence: 82, recommendation: "לקנות עכשיו", timing: "עלייה חדה צפויה", trend: "up" },
 ];
 
-const suppliers = [
+const FALLBACK_SUPPLIERS = [
   { name: "מתכות השרון בע\"מ", score: 96, risk: "נמוך", delivery: 98, quality: 97, price: 92, category: "מתכות", alternative: "פלדות הצפון" },
   { name: "זכוכית אופטיק", score: 91, risk: "נמוך", delivery: 94, quality: 96, price: 88, category: "זכוכית", alternative: "גלאסטק ישראל" },
   { name: "פלסטיק פרו", score: 87, risk: "בינוני", delivery: 85, quality: 90, price: 91, category: "פלסטיק", alternative: "פולימר טק" },
   { name: "אלקטרו-קום", score: 79, risk: "גבוה", delivery: 72, quality: 85, price: 88, category: "אלקטרוניקה", alternative: "טק-אלקטרו" },
 ];
 
-const demandForecasts = [
+const FALLBACK_DEMAND_FORECASTS = [
   { material: "אלומיניום 6061", currentStock: 2400, predictedNeed: 3800, reorderPoint: 1500, seasonality: "גבוה בקיץ", autoOrder: true, daysToReorder: 8 },
   { material: "זכוכית מחוסמת", currentStock: 850, predictedNeed: 1200, reorderPoint: 600, seasonality: "יציב", autoOrder: true, daysToReorder: 14 },
   { material: "נחושת C110", currentStock: 340, predictedNeed: 520, reorderPoint: 200, seasonality: "עולה", autoOrder: true, daysToReorder: 5 },
   { material: "רכיבים אלקטרוניים", currentStock: 12000, predictedNeed: 18500, reorderPoint: 8000, seasonality: "גבוה ברבעון 1", autoOrder: true, daysToReorder: 3 },
 ];
 
-const spendCategories = [
+const FALLBACK_SPEND_CATEGORIES = [
   { category: "חומרי גלם", budget: 2800000, actual: 2650000, compliance: 95, maverick: 3.2 },
   { category: "רכיבים אלקטרוניים", budget: 1500000, actual: 1620000, compliance: 88, maverick: 8.1 },
   { category: "אריזה ולוגיסטיקה", budget: 600000, actual: 680000, compliance: 82, maverick: 12.4 },
@@ -47,6 +49,17 @@ const riskColor = (risk: string) => {
 };
 
 export default function AiProcurementOptimizer() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["ai_procurement_optimizer"],
+    queryFn: () => authFetch("/api/ai/ai-procurement-optimizer").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const pricePredictions = apiData?.pricePredictions ?? FALLBACK_PRICE_PREDICTIONS;
+  const suppliers = apiData?.suppliers ?? FALLBACK_SUPPLIERS;
+  const demandForecasts = apiData?.demandForecasts ?? FALLBACK_DEMAND_FORECASTS;
+  const spendCategories = apiData?.spendCategories ?? FALLBACK_SPEND_CATEGORIES;
   const [searchTerm, setSearchTerm] = useState("");
 
   const kpis = [

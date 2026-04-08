@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +14,7 @@ import {
 
 // --- Static mock data ---
 
-const suppliers = [
+const FALLBACK_SUPPLIERS = [
   { name: "Foshan Glass Co.", country: "סין", avgLead: 28, min: 22, max: 35, reliability: 82, trend: "worsening" as const, openOrders: 5, lastDelivery: "2026-03-28" },
   { name: 'Schüco International', country: "גרמניה", avgLead: 14, min: 12, max: 18, reliability: 96, trend: "stable" as const, openOrders: 3, lastDelivery: "2026-04-02" },
   { name: "קבוצת אלומיל", country: "ישראל", avgLead: 7, min: 5, max: 10, reliability: 94, trend: "improving" as const, openOrders: 8, lastDelivery: "2026-04-06" },
@@ -27,7 +29,7 @@ const suppliers = [
   { name: "מפעלי ירון", country: "ישראל", avgLead: 5, min: 3, max: 8, reliability: 97, trend: "stable" as const, openOrders: 7, lastDelivery: "2026-04-07" },
 ];
 
-const categories = [
+const FALLBACK_CATEGORIES = [
   { name: "פרופילי אלומיניום", avgLead: 12, variance: 18, supplierCount: 4 },
   { name: "לוחות זכוכית", avgLead: 22, variance: 25, supplierCount: 3 },
   { name: "פחי פלדה", avgLead: 15, variance: 14, supplierCount: 2 },
@@ -38,7 +40,7 @@ const categories = [
   { name: "אריזה", avgLead: 4, variance: 5, supplierCount: 2 },
 ];
 
-const atRiskOrders = [
+const FALLBACK_ATRISKORDERS = [
   { po: "PO-2026-1847", supplier: "Foshan Glass Co.", promised: "2026-04-05", expected: "2026-04-14", delay: 9, impact: "עיכוב ייצור", mitigation: "הזמנת חירום מ-Guardian Glass" },
   { po: "PO-2026-1862", supplier: "Tostem (Lixil)", promised: "2026-04-08", expected: "2026-04-16", delay: 8, impact: "עיכוב לקוח", mitigation: "עדכון לקוח + תאריך אספקה חדש" },
   { po: "PO-2026-1901", supplier: "Foshan Glass Co.", promised: "2026-04-10", expected: "2026-04-17", delay: 7, impact: "עיכוב ייצור", mitigation: "תיאום עם קו ייצור 2" },
@@ -49,7 +51,7 @@ const atRiskOrders = [
   { po: "PO-2026-1967", supplier: "YKK AP", promised: "2026-04-14", expected: "2026-04-17", delay: 3, impact: "עיכוב לקוח", mitigation: "הזמנה חלופית מ-Hafele" },
 ];
 
-const optimizations = [
+const FALLBACK_OPTIMIZATIONS = [
   { type: "reduction", title: "קיצור Lead Time לזכוכית", desc: "מעבר לספק אירופי במקום סיני יקצר Lead Time ב-10 ימים בממוצע", saving: "10 ימים", priority: "גבוהה" },
   { type: "reduction", title: "הזמנות מרוכזות לפרזול", desc: "איחוד הזמנות מ-3 ספקים ל-2 עם הנחת כמות ושיפור זמני אספקה", saving: "3 ימים", priority: "בינונית" },
   { type: "safety", title: "מלאי ביטחון פרופילי אלומיניום", desc: "העלאת מלאי ביטחון ל-14 יום לכיסוי שונות Lead Time", saving: "כיסוי 95%", priority: "גבוהה" },
@@ -119,6 +121,33 @@ const improvementTrend = suppliers.filter(s => s.trend === "improving").length;
 // --- Component ---
 
 export default function LeadTimeManagementPage() {
+  const { data: apisuppliers } = useQuery({
+    queryKey: ["/api/supply-chain/lead-time-management/suppliers"],
+    queryFn: () => authFetch("/api/supply-chain/lead-time-management/suppliers").then(r => r.json()).catch(() => null),
+  });
+  const suppliers = Array.isArray(apisuppliers) ? apisuppliers : (apisuppliers?.data ?? apisuppliers?.items ?? FALLBACK_SUPPLIERS);
+
+
+  const { data: apicategories } = useQuery({
+    queryKey: ["/api/supply-chain/lead-time-management/categories"],
+    queryFn: () => authFetch("/api/supply-chain/lead-time-management/categories").then(r => r.json()).catch(() => null),
+  });
+  const categories = Array.isArray(apicategories) ? apicategories : (apicategories?.data ?? apicategories?.items ?? FALLBACK_CATEGORIES);
+
+
+  const { data: apiatRiskOrders } = useQuery({
+    queryKey: ["/api/supply-chain/lead-time-management/atriskorders"],
+    queryFn: () => authFetch("/api/supply-chain/lead-time-management/atriskorders").then(r => r.json()).catch(() => null),
+  });
+  const atRiskOrders = Array.isArray(apiatRiskOrders) ? apiatRiskOrders : (apiatRiskOrders?.data ?? apiatRiskOrders?.items ?? FALLBACK_ATRISKORDERS);
+
+
+  const { data: apioptimizations } = useQuery({
+    queryKey: ["/api/supply-chain/lead-time-management/optimizations"],
+    queryFn: () => authFetch("/api/supply-chain/lead-time-management/optimizations").then(r => r.json()).catch(() => null),
+  });
+  const optimizations = Array.isArray(apioptimizations) ? apioptimizations : (apioptimizations?.data ?? apioptimizations?.items ?? FALLBACK_OPTIMIZATIONS);
+
   return (
     <div className="p-6 space-y-6" dir="rtl">
       {/* Header */}

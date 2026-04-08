@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +13,7 @@ import {
   Zap, Target, ArrowUpRight, ArrowDownRight, Minus, FileText
 } from "lucide-react";
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "תובנות שנוצרו", value: "1,247", delta: "+89 היום", icon: Brain, color: "text-violet-400", bg: "bg-violet-500/10" },
   { label: "התראות קריטיות", value: "3", delta: "2 חדשות", icon: AlertTriangle, color: "text-red-400", bg: "bg-red-500/10" },
   { label: "חריגות הכנסה", value: "7", delta: "3 פתוחות", icon: TrendingDown, color: "text-orange-400", bg: "bg-orange-500/10" },
@@ -20,7 +22,7 @@ const kpis = [
   { label: "המלצות אסטרטגיות", value: "18", delta: "5 בעדיפות גבוהה", icon: Lightbulb, color: "text-amber-400", bg: "bg-amber-500/10" },
 ];
 
-const briefingSections = [
+const FALLBACK_BRIEFING_SECTIONS = [
   { title: "בריאות פיננסית", icon: DollarSign, score: 87, items: [
     { text: "הכנסות Q1 חצו את היעד ב-4.2%, סה\"כ ₪48.7M", trend: "up" as const },
     { text: "שולי רווח גולמי יציבים על 38.4%, עלייה של 1.1% מ-Q4", trend: "up" as const },
@@ -47,7 +49,7 @@ const briefingSections = [
   ]},
 ];
 
-const anomalies = [
+const FALLBACK_ANOMALIES = [
   { id: 1, title: "ירידת הכנסות חדה - מגזר דרום", severity: "קריטי", type: "הכנסה", detected: "לפני 2 שעות", change: -18.4, explanation: "ירידה של 18.4% בהכנסות מגזר דרום. AI מזהה קורלציה עם עזיבת 2 אנשי מכירות בכירים ומעבר לקוח מרכזי למתחרה.", confidence: 94 },
   { id: 2, title: "עלייה חריגה בעלויות תפעול", severity: "גבוה", type: "עלות", detected: "לפני 5 שעות", change: 23.1, explanation: "עלויות תפעול עלו ב-23.1% מעל הנורמה. שעות נוספות בקו ייצור 3 עקב תקלת ציוד. עלות מצטברת: ₪340K.", confidence: 89 },
   { id: 3, title: "שינוי בדפוסי פרודוקטיביות", severity: "בינוני", type: "תפעול", detected: "לפני 1 יום", change: -12.7, explanation: "ירידה של 12.7% בפרודוקטיביות מחלקת פיתוח. קורלציה עם מעבר למערכת ניהול פרויקטים חדשה. צפי שיפור תוך 2-3 שבועות.", confidence: 76 },
@@ -55,7 +57,7 @@ const anomalies = [
   { id: 5, title: "ירידה בשיעור המרה דיגיטלי", severity: "גבוה", type: "מכירות", detected: "לפני 8 שעות", change: -22.3, explanation: "שיעור המרה ירד מ-3.8% ל-2.95%. בעיית ביצועים בעמוד תשלום. זמן טעינה עלה מ-1.2 ל-4.7 שניות.", confidence: 91 },
 ];
 
-const forecasts = [
+const FALLBACK_FORECASTS = [
   { metric: "הכנסות Q2", current: "₪48.7M", forecast: "₪52.1M", confidence: 82, trend: "up", range: "₪49.8M - ₪54.4M" },
   { metric: "שולי רווח גולמי", current: "38.4%", forecast: "39.1%", confidence: 75, trend: "up", range: "37.8% - 40.4%" },
   { metric: "ביקוש מוצר A", current: "12,400 יח'", forecast: "14,800 יח'", confidence: 79, trend: "up", range: "13,200 - 16,400" },
@@ -64,7 +66,7 @@ const forecasts = [
   { metric: "שיעור נטישת לקוחות", current: "4.2%", forecast: "3.8%", confidence: 68, trend: "down", range: "3.2% - 4.5%" },
 ];
 
-const recommendations = [
+const FALLBACK_RECOMMENDATIONS = [
   { id: 1, title: "איחוד ספקי חומרי גלם", confidence: 92, impact: "₪1.8M חיסכון שנתי", effort: "בינוני", priority: "קריטי", category: "רכש", desc: "איחוד 7 ספקים ל-3 אסטרטגיים. פוטנציאל חיסכון 12% על בסיס נפח מצטבר ותנאי תשלום.", timeline: "3-4 חודשים" },
   { id: 2, title: "אוטומציה של תהליך הזמנות", confidence: 88, impact: "₪640K + 40% קיצור זמן", effort: "גבוה", priority: "גבוה", category: "תפעול", desc: "הטמעת RPA לחיסכון 2,400 שעות בשנה והפחתת שגיאות ב-95%.", timeline: "4-6 חודשים" },
   { id: 3, title: "הרחבת קו מוצרים לשוק SMB", confidence: 81, impact: "₪3.2M הכנסות חדשות", effort: "גבוה", priority: "גבוה", category: "אסטרטגיה", desc: "פער משמעותי בשוק SMB. התאמת מוצר A לפורמט קטן תפתח 340 לקוחות.", timeline: "6-8 חודשים" },
@@ -85,6 +87,18 @@ function TrendIcon({ t }: { t: string }) {
 }
 
 export default function AiExecutiveInsights() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["ai_executive_insights"],
+    queryFn: () => authFetch("/api/ai/ai-executive-insights").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const briefingSections = apiData?.briefingSections ?? FALLBACK_BRIEFING_SECTIONS;
+  const anomalies = apiData?.anomalies ?? FALLBACK_ANOMALIES;
+  const forecasts = apiData?.forecasts ?? FALLBACK_FORECASTS;
+  const recommendations = apiData?.recommendations ?? FALLBACK_RECOMMENDATIONS;
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("briefing");
   const [expandedAnomaly, setExpandedAnomaly] = useState<number | null>(null);

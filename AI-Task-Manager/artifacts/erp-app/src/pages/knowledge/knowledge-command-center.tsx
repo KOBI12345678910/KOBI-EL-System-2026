@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,7 +10,7 @@ import {
   TrendingUp, Award, Shield, Wrench, Factory, CheckCircle
 } from "lucide-react";
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "סה\"כ מאמרים", value: "347", icon: BookOpen, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "נהלי עבודה (SOP)", value: "84", icon: FileText, color: "text-emerald-400", bg: "bg-emerald-500/10" },
   { label: "לקחים נלמדים", value: "126", icon: Lightbulb, color: "text-amber-400", bg: "bg-amber-500/10" },
@@ -17,7 +19,7 @@ const kpis = [
   { label: "אחוז תרומה", value: "68%", icon: Users, color: "text-rose-400", bg: "bg-rose-500/10" },
 ];
 
-const knowledgeArticles = [
+const FALLBACK_KNOWLEDGE_ARTICLES = [
   { id: "KB-001", title: "תהליך חיתוך אלומיניום — הנחיות בטיחות", category: "בטיחות", author: "דוד לוי", views: 312, status: "פורסם", updated: "2026-04-02" },
   { id: "KB-002", title: "בדיקת איכות זכוכית מחוסמת — פרוטוקול", category: "איכות", author: "רונית כהן", views: 287, status: "פורסם", updated: "2026-04-05" },
   { id: "KB-003", title: "תחזוקת מכונת CNC — מדריך שבועי", category: "תחזוקה", author: "יוסי אברהם", views: 245, status: "פורסם", updated: "2026-03-28" },
@@ -26,7 +28,7 @@ const knowledgeArticles = [
   { id: "KB-006", title: "טיפול בתלונות לקוח — מדריך צוות", category: "איכות", author: "שרית בן דוד", views: 154, status: "טיוטה", updated: "2026-04-06" },
 ];
 
-const sopItems = [
+const FALLBACK_SOP_ITEMS = [
   { id: "SOP-041", title: "נוהל חירום — דליפת גז", dept: "בטיחות", version: "3.2", lastReview: "2026-03-01", nextReview: "2026-06-01", compliance: 100, owner: "דוד לוי" },
   { id: "SOP-042", title: "בקרת איכות — ריתוך מתכת", dept: "איכות", version: "2.8", lastReview: "2026-02-15", nextReview: "2026-05-15", compliance: 95, owner: "רונית כהן" },
   { id: "SOP-043", title: "תהליך ייצור פרופיל אלומיניום", dept: "ייצור", version: "5.1", lastReview: "2026-01-20", nextReview: "2026-04-20", compliance: 88, owner: "יוסי אברהם" },
@@ -34,7 +36,7 @@ const sopItems = [
   { id: "SOP-045", title: "קבלת משלוחים ואימות תעודות", dept: "ייצור", version: "2.0", lastReview: "2026-02-28", nextReview: "2026-05-28", compliance: 78, owner: "אבי מזרחי" },
 ];
 
-const lessons = [
+const FALLBACK_LESSONS = [
   { id: "LL-031", title: "כשל בריתוך — שינוי סוג אלקטרודה", source: "ייצור", date: "2026-04-03", severity: "high", impact: "הפחתת 40% פגמים בריתוך", author: "יוסי אברהם" },
   { id: "LL-032", title: "עיכוב אספקה — ספק חלופי לא אושר", source: "איכות", date: "2026-03-25", severity: "medium", impact: "שיפור תהליך אישור ספקים", author: "שרית בן דוד" },
   { id: "LL-033", title: "תאונת עבודה — ציוד מגן חסר", source: "בטיחות", date: "2026-03-18", severity: "high", impact: "עדכון נוהל ציוד מגן לכל קו", author: "דוד לוי" },
@@ -42,7 +44,7 @@ const lessons = [
   { id: "LL-035", title: "טעות מידות — כיול לא תקין", source: "תחזוקה", date: "2026-02-28", severity: "low", impact: "לוח כיול שבועי חדש", author: "עמית גולן" },
 ];
 
-const contributions = [
+const FALLBACK_CONTRIBUTIONS = [
   { dept: "ייצור", articles: 98, sops: 32, lessons: 45, faq: 61, rate: 82, trend: "up" },
   { dept: "בטיחות", articles: 64, sops: 22, lessons: 38, faq: 44, rate: 75, trend: "up" },
   { dept: "איכות", articles: 72, sops: 18, lessons: 24, faq: 52, rate: 70, trend: "stable" },
@@ -68,6 +70,14 @@ const deptIcons: Record<string, typeof Factory> = {
 };
 
 export default function KnowledgeCommandCenter() {
+  const { data: knowledgecommandcenterData } = useQuery({
+    queryKey: ["knowledge-command-center"],
+    queryFn: () => authFetch("/api/knowledge/knowledge_command_center"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = knowledgecommandcenterData ?? FALLBACK_KPIS;
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       <div className="flex items-center justify-between">

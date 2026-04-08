@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +14,7 @@ import {
 } from "lucide-react";
 
 /* ── 15 Engineering Standards ── */
-const standards = [
+const FALLBACK_STANDARDS = [
   { id: "STD-001", code: "ISO 9001:2015", name: "ניהול איכות", category: "איכות", status: "active", lastAudit: "2025-11-15", nextAudit: "2026-05-15", responsible: "יוסי כהן", scope: "כלל המפעל", certBody: "מכון התקנים" },
   { id: "STD-002", code: "ISO 14001:2015", name: "ניהול סביבתי", category: "סביבה", status: "active", lastAudit: "2025-10-20", nextAudit: "2026-04-20", responsible: "שרה לוי", scope: "כלל המפעל", certBody: "מכון התקנים" },
   { id: "STD-003", code: "EN 14351-1", name: "חלונות ודלתות -- ביצועים", category: "מוצר", status: "active", lastAudit: "2025-12-10", nextAudit: "2026-06-10", responsible: "דוד מזרחי", scope: "חלונות ודלתות", certBody: "TUV" },
@@ -31,7 +33,7 @@ const standards = [
 ];
 
 /* ── Compliance Matrix: standards vs products ── */
-const products = ["חלונות אלומיניום", "דלתות אלומיניום", "קירות מסך", "זכוכית מחוסמת", "זכוכית למינציה", "פרופילי PVC"];
+const FALLBACK_PRODUCTS = ["חלונות אלומיניום", "דלתות אלומיניום", "קירות מסך", "זכוכית מחוסמת", "זכוכית למינציה", "פרופילי PVC"];
 const complianceMatrix: Record<string, Record<string, "full" | "partial" | "none">> = {
   "ISO 9001:2015":  { "חלונות אלומיניום": "full", "דלתות אלומיניום": "full", "קירות מסך": "full", "זכוכית מחוסמת": "full", "זכוכית למינציה": "full", "פרופילי PVC": "full" },
   "ISO 14001:2015": { "חלונות אלומיניום": "full", "דלתות אלומיניום": "full", "קירות מסך": "full", "זכוכית מחוסמת": "full", "זכוכית למינציה": "full", "פרופילי PVC": "full" },
@@ -46,7 +48,7 @@ const complianceMatrix: Record<string, Record<string, "full" | "partial" | "none
 };
 
 /* ── Upcoming Audits ── */
-const audits = [
+const FALLBACK_AUDITS = [
   { id: "AUD-001", standard: "EN 1279", date: "2026-04-10", auditor: "TUV -- ד\"ר אנדריי ויס", type: "חידוש", status: "מאושר", scope: "קו זכוכית מבודדת" },
   { id: "AUD-002", standard: "EN 1090", date: "2026-04-15", auditor: "TUV -- מרק שטיינר", type: "חידוש דחוף", status: "בהכנה", scope: "קו מבני פלדה" },
   { id: "AUD-003", standard: "ISO 14001", date: "2026-04-20", auditor: "מכון התקנים -- רינה דנון", type: "מעקב שנתי", status: "מאושר", scope: "כלל המפעל" },
@@ -56,7 +58,7 @@ const audits = [
 ];
 
 /* ── Training & Certifications ── */
-const trainings = [
+const FALLBACK_TRAININGS = [
   { id: "TRN-001", name: "מבוא ל-ISO 9001:2015", trainer: "מכון התקנים", participants: 12, date: "2026-04-14", duration: "8 שעות", status: "מתוכנן", target: "כל מהנדסי המפעל" },
   { id: "TRN-002", name: "דרישות EN 14351-1 -- חלונות", trainer: "TUV Academy", participants: 8, date: "2026-04-18", duration: "16 שעות", status: "רישום פתוח", target: "צוות חלונות" },
   { id: "TRN-003", name: "בידוד תרמי ת\"י 1281", trainer: "פרופ' אבי שרון", participants: 15, date: "2026-04-25", duration: "4 שעות", status: "מתוכנן", target: "מהנדסי מוצר" },
@@ -98,6 +100,33 @@ const th = "p-3 text-right text-muted-foreground font-medium text-xs";
 const td = "p-3 text-sm";
 
 export default function EngineeringStandardsPage() {
+  const { data: apistandards } = useQuery({
+    queryKey: ["/api/engineering/engineering-standards/standards"],
+    queryFn: () => authFetch("/api/engineering/engineering-standards/standards").then(r => r.json()).catch(() => null),
+  });
+  const standards = Array.isArray(apistandards) ? apistandards : (apistandards?.data ?? apistandards?.items ?? FALLBACK_STANDARDS);
+
+
+  const { data: apiproducts } = useQuery({
+    queryKey: ["/api/engineering/engineering-standards/products"],
+    queryFn: () => authFetch("/api/engineering/engineering-standards/products").then(r => r.json()).catch(() => null),
+  });
+  const products = Array.isArray(apiproducts) ? apiproducts : (apiproducts?.data ?? apiproducts?.items ?? FALLBACK_PRODUCTS);
+
+
+  const { data: apiaudits } = useQuery({
+    queryKey: ["/api/engineering/engineering-standards/audits"],
+    queryFn: () => authFetch("/api/engineering/engineering-standards/audits").then(r => r.json()).catch(() => null),
+  });
+  const audits = Array.isArray(apiaudits) ? apiaudits : (apiaudits?.data ?? apiaudits?.items ?? FALLBACK_AUDITS);
+
+
+  const { data: apitrainings } = useQuery({
+    queryKey: ["/api/engineering/engineering-standards/trainings"],
+    queryFn: () => authFetch("/api/engineering/engineering-standards/trainings").then(r => r.json()).catch(() => null),
+  });
+  const trainings = Array.isArray(apitrainings) ? apitrainings : (apitrainings?.data ?? apitrainings?.items ?? FALLBACK_TRAININGS);
+
   const [tab, setTab] = useState("registry");
   const [search, setSearch] = useState("");
 

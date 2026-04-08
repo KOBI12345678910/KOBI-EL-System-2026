@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,14 +22,14 @@ import {
   ArrowDownRight,
 } from "lucide-react";
 
-const budgetByChannel = [
+const FALLBACK_BUDGET_BY_CHANNEL = [
   { channel: "דיגיטלי", allocated: 85000, spent: 62400, icon: Monitor, color: "text-blue-600", bg: "bg-blue-50" },
   { channel: "אירועים ותערוכות", allocated: 65000, spent: 42500, icon: PartyPopper, color: "text-purple-600", bg: "bg-purple-50" },
   { channel: "דפוס ומודפסים", allocated: 35000, spent: 28900, icon: Printer, color: "text-orange-600", bg: "bg-orange-50" },
   { channel: "רשתות חברתיות", allocated: 45000, spent: 31200, icon: Share2, color: "text-green-600", bg: "bg-green-50" },
 ];
 
-const monthlySpend = [
+const FALLBACK_MONTHLY_SPEND = [
   { month: "ינואר", planned: 18000, actual: 16500 },
   { month: "פברואר", planned: 19000, actual: 21200 },
   { month: "מרץ", planned: 22000, actual: 20800 },
@@ -42,7 +44,7 @@ const monthlySpend = [
   { month: "דצמבר", planned: 16000, actual: 0 },
 ];
 
-const roiByChannel = [
+const FALLBACK_ROI_BY_CHANNEL = [
   { channel: "דיגיטלי - גוגל", spend: 28000, revenue: 112000, leads: 156, roi: 300 },
   { channel: "דיגיטלי - אימייל", spend: 12000, revenue: 54000, leads: 89, roi: 350 },
   { channel: "רשתות חברתיות", spend: 31200, revenue: 78000, leads: 124, roi: 150 },
@@ -52,6 +54,14 @@ const roiByChannel = [
 ];
 
 export default function MarketingBudget() {
+  const { data: marketingbudgetData } = useQuery({
+    queryKey: ["marketing-budget"],
+    queryFn: () => authFetch("/api/marketing/marketing_budget"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const budgetByChannel = marketingbudgetData ?? FALLBACK_BUDGET_BY_CHANNEL;
+
   const [tab, setTab] = useState("allocation");
 
   const totalBudget = budgetByChannel.reduce((s, c) => s + c.allocated, 0);

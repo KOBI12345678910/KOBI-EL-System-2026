@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,11 +15,12 @@ const FUEL_TYPES: Record<string, string> = { diesel: "דיזל", gasoline: "בנ
 const VEHICLE_STATUS: Record<string, string> = { available: "זמין", in_use: "בשימוש", maintenance: "בטיפול", inactive: "לא פעיל" };
 const STATUS_COLORS: Record<string, string> = { available: "bg-green-500/20 text-green-300", in_use: "bg-blue-500/20 text-blue-300", maintenance: "bg-yellow-500/20 text-yellow-300", inactive: "bg-gray-500/20 text-gray-300", active: "bg-green-500/20 text-green-300", inactive2: "bg-gray-500/20 text-gray-300" };
 const ALERT_COLORS: Record<string, string> = { urgent: "bg-red-500/20 text-red-300 border-red-500/40", warning: "bg-yellow-500/20 text-yellow-300 border-yellow-500/40", notice: "bg-blue-500/20 text-blue-300 border-blue-500/40", ok: "bg-green-500/20 text-green-300 border-green-500/40" };
-const TABS = ["רכבים", "נהגים", "תדלוק", "תחזוקה", "ביטוח"] as const;
-type Tab = typeof TABS[number];
+const FALLBACK_TABS = ["רכבים", "נהגים", "תדלוק", "תחזוקה", "ביטוח"] as const;
+type Tab = typeof FALLBACK_TABS[number];
 
-function apiFetch(path: string, opts?: RequestInit) {
-  return fetch(BASE + path, { headers: { "Content-Type": "application/json" }, ...opts }).then(r => r.json());
+async function apiFetch(path: string, opts?: RequestInit) {
+  const res = await authFetch(BASE + path, { headers: { "Content-Type": "application/json" }, ...opts });
+  return res.json();
 }
 
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
@@ -660,6 +663,19 @@ function InsuranceTab() {
 }
 
 export default function FleetManagement() {
+  const { data: TABS = FALLBACK_TABS } = useQuery({
+    queryKey: ["logistics-t-a-b-s"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/fleet-management/t-a-b-s");
+      if (!res.ok) return FALLBACK_TABS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TABS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [tab, setTab] = useState<Tab>("רכבים");
 
   return (

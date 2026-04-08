@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,7 +18,7 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
   cancelled: { label: "בוטל", color: "bg-red-500/20 text-red-300" },
 };
 
-const EVENT_TYPES = [
+const FALLBACK_EVENT_TYPES = [
   { value: "dispatched", label: "יצא לדרך" },
   { value: "en_route", label: "בדרך" },
   { value: "checkpoint", label: "נקודת ביקורת" },
@@ -25,13 +27,13 @@ const EVENT_TYPES = [
   { value: "delay", label: "עיכוב" },
 ];
 
-const NOTIFICATION_CHANNELS = [
+const FALLBACK_NOTIFICATION_CHANNELS = [
   { value: "sms", label: "SMS" },
   { value: "whatsapp", label: "WhatsApp" },
   { value: "email", label: "אימייל" },
 ];
 
-const NOTIFICATION_TYPES = [
+const FALLBACK_NOTIFICATION_TYPES = [
   { value: "dispatched", label: "יצא לדרך" },
   { value: "en_route", label: "בדרך" },
   { value: "arriving_soon", label: "מגיע בקרוב (30 דק')" },
@@ -56,6 +58,43 @@ interface Tracking {
 }
 
 export default function ShipmentTrackingLive() {
+  const { data: EVENT_TYPES = FALLBACK_EVENT_TYPES } = useQuery({
+    queryKey: ["logistics-event-types"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/shipment-tracking-live/event-types");
+      if (!res.ok) return FALLBACK_EVENT_TYPES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_EVENT_TYPES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: NOTIFICATION_CHANNELS = FALLBACK_NOTIFICATION_CHANNELS } = useQuery({
+    queryKey: ["logistics-notification-channels"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/shipment-tracking-live/notification-channels");
+      if (!res.ok) return FALLBACK_NOTIFICATION_CHANNELS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_NOTIFICATION_CHANNELS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: NOTIFICATION_TYPES = FALLBACK_NOTIFICATION_TYPES } = useQuery({
+    queryKey: ["logistics-notification-types"],
+    queryFn: async () => {
+      const res = await authFetch("/api/logistics/shipment-tracking-live/notification-types");
+      if (!res.ok) return FALLBACK_NOTIFICATION_TYPES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_NOTIFICATION_TYPES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   const [trackings, setTrackings] = useState<Tracking[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
@@ -74,7 +113,7 @@ export default function ShipmentTrackingLive() {
   async function loadTrackings() {
     setLoading(true);
     try {
-      const r = await fetch(`${API}/delivery-tracking`);
+      const r = await authFetch(`${API}/delivery-tracking`);
       if (r.ok) setTrackings(await r.json());
     } catch {}
     setLoading(false);
@@ -84,8 +123,8 @@ export default function ShipmentTrackingLive() {
     setSelectedTracking(t);
     try {
       const [ev, notif] = await Promise.all([
-        fetch(`${API}/tracking-events/${t.delivery_id}`).then(r => r.json()),
-        fetch(`${API}/customer-notifications/${t.delivery_id}`).then(r => r.json()),
+        authFetch(`${API}/tracking-events/${t.delivery_id}`).then(r => r.json()),
+        authFetch(`${API}/customer-notifications/${t.delivery_id}`).then(r => r.json()),
       ]);
       setEvents(Array.isArray(ev) ? ev : []);
       setNotifications(Array.isArray(notif) ? notif : []);
@@ -94,7 +133,7 @@ export default function ShipmentTrackingLive() {
 
   async function createTracking() {
     try {
-      const r = await fetch(`${API}/delivery-tracking`, {
+      const r = await authFetch(`${API}/delivery-tracking`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(addForm),
@@ -106,7 +145,7 @@ export default function ShipmentTrackingLive() {
   async function updatePosition() {
     if (!selectedTracking) return;
     try {
-      const r = await fetch(`${API}/delivery-tracking/${selectedTracking.id}/position`, {
+      const r = await authFetch(`${API}/delivery-tracking/${selectedTracking.id}/position`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updateForm),
@@ -118,7 +157,7 @@ export default function ShipmentTrackingLive() {
   async function sendNotification() {
     if (!selectedTracking) return;
     try {
-      const r = await fetch(`${API}/customer-notifications`, {
+      const r = await authFetch(`${API}/customer-notifications`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...notifyForm, delivery_id: selectedTracking.delivery_id }),

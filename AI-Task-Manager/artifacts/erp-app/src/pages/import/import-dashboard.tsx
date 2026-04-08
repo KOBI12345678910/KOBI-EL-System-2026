@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,7 +11,7 @@ import {
 } from "lucide-react";
 
 // ── KPI data ──────────────────────────────────────────────────────────
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "הזמנות יבוא פתוחות", value: "8", icon: Package, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "משלוחים פעילים", value: "5", icon: Ship, color: "text-cyan-400", bg: "bg-cyan-500/10" },
   { label: "מכולות בדרך", value: "3", icon: Container, color: "text-indigo-400", bg: "bg-indigo-500/10" },
@@ -24,8 +26,8 @@ const kpis = [
   { label: "הגעות קרובות", value: "3", icon: CalendarClock, color: "text-sky-400", bg: "bg-sky-500/10" },
 ];
 
-// ── Active shipments table data ───────────────────────────────────────
-const shipments = [
+// ── Active FALLBACK_SHIPMENTS table data ───────────────────────────────────────
+const FALLBACK_SHIPMENTS = [
   {
     id: "SHP-401", supplier: "Zhongshan Glass Ltd.", country: "סין", flag: "\u{1F1E8}\u{1F1F3}",
     mode: "sea" as const, eta: "2026-04-18", status: "in_transit" as const,
@@ -54,7 +56,7 @@ const shipments = [
 ];
 
 // ── Alerts ────────────────────────────────────────────────────────────
-const alerts = [
+const FALLBACK_ALERTS = [
   { severity: "critical", text: "SHP-404 — עיכוב 5 ימים בנמל ג'נובה, צפי הגעה חדש 19/04", time: "לפני 2 שעות" },
   { severity: "critical", text: "מכס — מסמך EUR.1 חסר למשלוח SHP-401, שחרור מעוכב", time: "לפני 4 שעות" },
   { severity: "high", text: "תשלום מכס ₪82K למשלוח SHP-402 — דד-ליין מחר 09/04", time: "היום" },
@@ -89,7 +91,7 @@ const sevCfg: Record<string, { label: string; badge: string; border: string }> =
 };
 
 // ── Country breakdown mini data ───────────────────────────────────────
-const countries = [
+const FALLBACK_COUNTRIES = [
   { name: "טורקיה", flag: "\u{1F1F9}\u{1F1F7}", orders: 3, value: "$142K", pct: 29 },
   { name: "סין", flag: "\u{1F1E8}\u{1F1F3}", orders: 2, value: "$128K", pct: 26 },
   { name: "גרמניה", flag: "\u{1F1E9}\u{1F1EA}", orders: 1, value: "$94K", pct: 19 },
@@ -100,6 +102,55 @@ const countries = [
 
 // ══════════════════════════════════════════════════════════════════════
 export default function ImportDashboard() {
+  const { data: kpis = FALLBACK_KPIS } = useQuery({
+    queryKey: ["import-kpis"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-dashboard/kpis");
+      if (!res.ok) return FALLBACK_KPIS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_KPIS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: shipments = FALLBACK_SHIPMENTS } = useQuery({
+    queryKey: ["import-shipments"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-dashboard/shipments");
+      if (!res.ok) return FALLBACK_SHIPMENTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SHIPMENTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: alerts = FALLBACK_ALERTS } = useQuery({
+    queryKey: ["import-alerts"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-dashboard/alerts");
+      if (!res.ok) return FALLBACK_ALERTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_ALERTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: countries = FALLBACK_COUNTRIES } = useQuery({
+    queryKey: ["import-countries"],
+    queryFn: async () => {
+      const res = await authFetch("/api/import/import-dashboard/countries");
+      if (!res.ok) return FALLBACK_COUNTRIES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_COUNTRIES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 p-6 space-y-6" dir="rtl">
 

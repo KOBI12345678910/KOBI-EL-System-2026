@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -20,7 +22,7 @@ interface RiskFactor {
   description: string;
 }
 
-const defaultRiskFactors: RiskFactor[] = [
+const FALLBACK_DEFAULT_RISK_FACTORS: RiskFactor[] = [
   { id: "material", label: "תנודתיות מחירי חומרים", icon: Package, score: 4, weight: 25, description: "סיכון לשינויי מחיר אלומיניום, ברזל, זכוכית" },
   { id: "supplier", label: "אמינות ספקים", icon: Truck, score: 2, weight: 20, description: "זמינות ספק, עמידה בלו\"ז, חלופות" },
   { id: "complexity", label: "מורכבות פרויקט", icon: Factory, score: 3, weight: 20, description: "מורכבות טכנית, מפרט מיוחד, התאמות" },
@@ -29,13 +31,22 @@ const defaultRiskFactors: RiskFactor[] = [
   { id: "payment", label: "סיכון תשלום לקוח", icon: CreditCard, score: 2, weight: 10, description: "היסטוריית תשלומים, תנאי אשראי, ביטחונות" },
 ];
 
-const projects = [
+const FALLBACK_PROJECTS = [
   { id: "PRJ-1048", name: "שער כניסה Premium", client: "קבוצת אלון", totalCost: 150200, status: "פעיל" },
   { id: "PRJ-1052", name: "שער חשמלי כפול", client: "נכסי אריאל", totalCost: 178400, status: "פעיל" },
   { id: "PRJ-1055", name: "גדר אלומיניום מעוצבת", client: "גולדן הום", totalCost: 92600, status: "הצעה" },
 ];
 
 export default function RiskMarginTarget() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["risk_margin_target"],
+    queryFn: () => authFetch("/api/pricing/risk-margin-target").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const defaultRiskFactors = apiData?.defaultRiskFactors ?? FALLBACK_DEFAULT_RISK_FACTORS;
+  const projects = apiData?.projects ?? FALLBACK_PROJECTS;
   const [selectedProject, setSelectedProject] = useState(projects[0]);
   const [riskFactors, setRiskFactors] = useState<RiskFactor[]>(defaultRiskFactors);
   const [companyTargetMargin, setCompanyTargetMargin] = useState(25);

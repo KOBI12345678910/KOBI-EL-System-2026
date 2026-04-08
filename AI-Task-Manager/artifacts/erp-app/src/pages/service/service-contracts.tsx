@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -35,7 +37,7 @@ const tierCfg: Record<SlaTier, { label: string; cls: string }> = {
   silver: { label: "Silver", cls: "bg-zinc-500/20 text-zinc-300" },
 };
 
-const contracts = [
+const FALLBACK_CONTRACTS = [
   { id: "CNT-001", customer: "אלון מערכות בע\"מ", project: "שער חשמלי Premium — מפעל ראשי", type: "extended_warranty" as ContractType, start: "2025-01-15", end: "2027-01-15", slaHours: 4, coverage: "חלקים+עבודה", value: 24000, status: "active" as ContractStatus },
   { id: "CNT-002", customer: "נדל\"ן צפון", project: "חלונות אלומיניום — פרויקט הגליל", type: "basic_warranty" as ContractType, start: "2025-06-01", end: "2026-06-01", slaHours: 24, coverage: "עבודה בלבד", value: 8500, status: "expiring" as ContractStatus },
   { id: "CNT-003", customer: "עיריית חיפה", project: "גדרות מתכת — פארק הכרמל", type: "maintenance_contract" as ContractType, start: "2025-03-01", end: "2027-03-01", slaHours: 8, coverage: "מלא", value: 36000, status: "active" as ContractStatus },
@@ -48,13 +50,13 @@ const contracts = [
   { id: "CNT-010", customer: "חברת נמלי ישראל", project: "שערים תעשייתיים — נמל חיפה", type: "service_contract" as ContractType, start: "2026-01-01", end: "2026-12-31", slaHours: 8, coverage: "מלא", value: 15000, status: "draft" as ContractStatus },
 ];
 
-const slaTiers = [
+const FALLBACK_SLA_TIERS = [
   { tier: "platinum" as SlaTier, responseHours: 4, resolutionHours: 12, uptime: "99.5%", coverageHours: "24/7", price: "₪3,200/חודש", includes: "חלקים+עבודה+נסיעות, עדיפות מקסימלית, מנהל לקוח ייעודי" },
   { tier: "gold" as SlaTier, responseHours: 8, resolutionHours: 24, uptime: "99%", coverageHours: "א'-ה' 07:00-20:00", price: "₪1,800/חודש", includes: "חלקים+עבודה, עדיפות גבוהה, דוחות רבעוניים" },
   { tier: "silver" as SlaTier, responseHours: 24, resolutionHours: 48, uptime: "97%", coverageHours: "א'-ה' 08:00-17:00", price: "₪850/חודש", includes: "עבודה בלבד, תגובה רגילה, דוח שנתי" },
 ];
 
-const warrantyProjects = [
+const FALLBACK_WARRANTY_PROJECTS = [
   { project: "שער חשמלי Premium — מפעל ראשי", customer: "אלון מערכות", start: "2025-01-15", end: "2027-01-15", daysRemaining: 282, claims: 1 },
   { project: "חלונות אלומיניום — פרויקט הגליל", customer: "נדל\"ן צפון", start: "2025-06-01", end: "2026-06-01", daysRemaining: 54, claims: 2 },
   { project: "גדרות מתכת — פארק הכרמל", customer: "עיריית חיפה", start: "2025-03-01", end: "2027-03-01", daysRemaining: 692, claims: 0 },
@@ -65,7 +67,7 @@ const warrantyProjects = [
   { project: "שערי חשמל ProX — בסיס צפוני", customer: "משרד הביטחון", start: "2025-02-01", end: "2028-02-01", daysRemaining: 694, claims: 0 },
 ];
 
-const revenueByType = [
+const FALLBACK_REVENUE_BY_TYPE = [
   { type: "חוזה שירות", contracts: 3, annual: 75500, pctOfTotal: 28 },
   { type: "אחריות מורחבת", contracts: 3, annual: 85000, pctOfTotal: 31 },
   { type: "חוזה תחזוקה", contracts: 2, annual: 94000, pctOfTotal: 35 },
@@ -78,6 +80,14 @@ const slaCompliance = 87;
 const annualRevenue = 180000;
 
 export default function ServiceContracts() {
+  const { data: servicecontractsData } = useQuery({
+    queryKey: ["service-contracts"],
+    queryFn: () => authFetch("/api/service/service_contracts"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const contracts = servicecontractsData ?? FALLBACK_CONTRACTS;
+
   const [activeTab, setActiveTab] = useState("contracts");
 
   return (

@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,7 +10,7 @@ import {
   MessageSquare, Pen, AlertTriangle, Calendar, ShieldCheck, ThumbsUp, Minus
 } from "lucide-react";
 
-const handovers = [
+const FALLBACK_HANDOVERS = [
   { id: "HDV-101", installation: "INS-003", project: "בית חכם — הרצליה", customer: "אבי רוזנפלד", phone: "052-845-9901", date: "2026-04-06", crew: "צוות גמא", status: "אושר" },
   { id: "HDV-102", installation: "INS-008", project: "מרכז ספורט — ראשל\"צ", customer: "דנה כהן-מלמד", phone: "054-332-7718", date: "2026-04-07", crew: "צוות דלתא", status: "אושר" },
   { id: "HDV-103", installation: "INS-001", project: "מגדלי הים — חיפה", customer: "יורם חזן", phone: "050-611-4420", date: "2026-04-09", crew: "צוות אלפא", status: "בביצוע" },
@@ -19,7 +21,7 @@ const handovers = [
   { id: "HDV-108", installation: "INS-006", project: "משרדי הייטק — הרצליה פיתוח", customer: "ליאת ברגמן", phone: "050-998-3342", date: "2026-04-14", crew: "צוות בטא", status: "מתוכנן" },
 ];
 
-const punchListItems = [
+const FALLBACK_PUNCH_LIST_ITEMS = [
   { item: "איטום היקפי", hdv103: "pass", hdv104: "pass", hdv105: "fail" },
   { item: "יישור מסגרת", hdv103: "pass", hdv104: "pass", hdv105: "pass" },
   { item: "פעולת נעילה", hdv103: "pass", hdv104: "na", hdv105: "pass" },
@@ -32,7 +34,7 @@ const punchListItems = [
   { item: "תיעוד צילומי", hdv103: "pass", hdv104: "pass", hdv105: "pass" },
 ];
 
-const signoffData = [
+const FALLBACK_SIGNOFF_DATA = [
   { hdv: "HDV-101", customer: "אבי רוזנפלד", signed: true, rating: 5, comments: "התקנה מצוינת, מקצועיות גבוהה", photos: 12 },
   { hdv: "HDV-102", customer: "דנה כהן-מלמד", signed: true, rating: 4, comments: "ציר בדלת אש #3 צריך כיוון קל", photos: 8 },
   { hdv: "HDV-103", customer: "יורם חזן", signed: false, rating: 0, comments: "ממתין — מסירה בתהליך", photos: 5 },
@@ -40,7 +42,7 @@ const signoffData = [
   { hdv: "HDV-105", customer: "שלמה ביטון", signed: false, rating: 0, comments: "נדרש תיקון זכוכית + ניקיון חוזר", photos: 9 },
 ];
 
-const protocolTemplate: { num: number; category: string; check: string; mandatory: boolean }[] = [
+const FALLBACK_PROTOCOL_TEMPLATE: { num: number; category: string; check: string; mandatory: boolean }[] = [
   { num: 1, category: "בטיחות", check: "אין שברים או קצוות חדים", mandatory: true },
   { num: 2, category: "בטיחות", check: "נעילה תקינה בכל נקודות הנעילה", mandatory: true },
   { num: 3, category: "איטום", check: "איטום סיליקון רציף ללא פערים", mandatory: true },
@@ -58,7 +60,7 @@ const protocolTemplate: { num: number; category: string; check: string; mandator
   { num: 15, category: "תיעוד", check: "הנחיות תחזוקה הוסברו ללקוח", mandatory: false },
 ];
 
-const customerFeedback = [
+const FALLBACK_CUSTOMER_FEEDBACK = [
   { date: "2026-04-06", customer: "אבי רוזנפלד", project: "בית חכם — הרצליה", rating: 5, summary: "מרוצה מאוד. ציין מקצועיות הצוות ועמידה בזמנים." },
   { date: "2026-04-07", customer: "דנה כהן-מלמד", project: "מרכז ספורט — ראשל\"צ", rating: 4, summary: "רוב ההתקנה מצוינת, ציר בדלת אש דורש כיוון. תוקן תוך יום." },
   { date: "2026-03-28", customer: "משה אדרי", project: "בית ספר השלום — אשדוד", rating: 5, summary: "עבודה מושלמת. הלקוח ביקש הצעה לפרויקט נוסף." },
@@ -88,7 +90,7 @@ const Stars = ({ n }: { n: number }) => (
   ))}</span>
 );
 
-const kpiData = [
+const FALLBACK_KPI_DATA = [
   { label: "ממתינות למסירה", value: 4, icon: Clock, color: "text-orange-400", bg: "bg-orange-500/10" },
   { label: "מסירות השבוע", value: 3, icon: Calendar, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "אושרו ע\"י לקוח", value: 2, icon: ThumbsUp, color: "text-emerald-400", bg: "bg-emerald-500/10" },
@@ -97,6 +99,79 @@ const kpiData = [
 ];
 
 export default function CustomerHandover() {
+  const { data: handovers = FALLBACK_HANDOVERS } = useQuery({
+    queryKey: ["installation-handovers"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/customer-handover/handovers");
+      if (!res.ok) return FALLBACK_HANDOVERS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_HANDOVERS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: punchListItems = FALLBACK_PUNCH_LIST_ITEMS } = useQuery({
+    queryKey: ["installation-punch-list-items"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/customer-handover/punch-list-items");
+      if (!res.ok) return FALLBACK_PUNCH_LIST_ITEMS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_PUNCH_LIST_ITEMS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: signoffData = FALLBACK_SIGNOFF_DATA } = useQuery({
+    queryKey: ["installation-signoff-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/customer-handover/signoff-data");
+      if (!res.ok) return FALLBACK_SIGNOFF_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SIGNOFF_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: protocolTemplate = FALLBACK_PROTOCOL_TEMPLATE } = useQuery({
+    queryKey: ["installation-protocol-template"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/customer-handover/protocol-template");
+      if (!res.ok) return FALLBACK_PROTOCOL_TEMPLATE;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_PROTOCOL_TEMPLATE;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: customerFeedback = FALLBACK_CUSTOMER_FEEDBACK } = useQuery({
+    queryKey: ["installation-customer-feedback"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/customer-handover/customer-feedback");
+      if (!res.ok) return FALLBACK_CUSTOMER_FEEDBACK;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_CUSTOMER_FEEDBACK;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: kpiData = FALLBACK_KPI_DATA } = useQuery({
+    queryKey: ["installation-kpi-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/customer-handover/kpi-data");
+      if (!res.ok) return FALLBACK_KPI_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_KPI_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* Header */}

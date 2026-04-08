@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Upload, FileText, Truck, Award, AlertCircle, CheckCircle2 } from "lucide-react";
 
 interface DashboardData {
@@ -9,6 +11,12 @@ interface DashboardData {
 }
 
 export default function SupplierPortalDashboard() {
+  const { data: supplierportaldashboardData } = useQuery({
+    queryKey: ["supplier-portal-dashboard"],
+    queryFn: () => authFetch("/api/supplier-mgmt/supplier_portal_dashboard"),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [activeTab, setActiveTab] = useState<"overview" | "invoices" | "deliveries" | "certs">("overview");
 

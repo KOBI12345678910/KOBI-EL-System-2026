@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,7 +13,7 @@ import {
 
 /* ── Static mock data ─────────────────────────────────────────── */
 
-const shipments = [
+const FALLBACK_SHIPMENTS = [
   { id: "SHP-301", insId: "INS-001", project: "מגדלי הים — חיפה", vehicle: "832-45-971", driver: "מוטי אזולאי", items: "חלונות x8, דלתות x2", weightKg: 1450, loadTime: "06:00", status: "יצא", completeness: true },
   { id: "SHP-302", insId: "INS-002", project: "פארק המדע — רחובות", vehicle: "541-27-683", driver: "אבי כהן", items: "ויטרינות x4, מסגרות x4", weightKg: 2100, loadTime: "06:30", status: "נטען", completeness: true },
   { id: "SHP-303", insId: "INS-005", project: "קניון הדרום — באר שבע", vehicle: "278-93-415", driver: "סאמר חלבי", items: "פרגולות x3, עמודים x12", weightKg: 1820, loadTime: "07:00", status: "בהעמסה", completeness: false },
@@ -22,14 +24,14 @@ const shipments = [
   { id: "SHP-308", insId: "INS-008", project: "מרכז ספורט — ראשל״צ", vehicle: "659-18-302", driver: "יוסי ברק", items: "דלתות אש x6, מסגרות x6", weightKg: 1340, loadTime: "06:45", status: "יצא", completeness: true },
 ];
 
-const vehicles = [
+const FALLBACK_VEHICLES = [
   { plate: "832-45-971", type: "משאית 12T", driver: "מוטי אזולאי", available: "בדרך", location: "כביש 2 — צפון חדרה", nextAvailable: "09:30" },
   { plate: "541-27-683", type: "משאית 12T", driver: "אבי כהן", available: "בהעמסה", location: "מחסן ראשי — חולון", nextAvailable: "07:15" },
   { plate: "278-93-415", type: "טנדר 3.5T", driver: "סאמר חלבי", available: "בהעמסה", location: "מחסן ראשי — חולון", nextAvailable: "07:30" },
   { plate: "659-18-302", type: "משאית מנוף 8T", driver: "יוסי ברק", available: "זמין", location: "מחסן ראשי — חולון", nextAvailable: "07:30" },
 ];
 
-const materialChecklist = [
+const FALLBACK_MATERIAL_CHECKLIST = [
   { shipId: "SHP-303", item: "פרגולה אלומיניום 4x3", planned: 3, loaded: 2, missing: 1, qc: false },
   { shipId: "SHP-303", item: "עמוד תמיכה 3m", planned: 12, loaded: 12, missing: 0, qc: true },
   { shipId: "SHP-303", item: "ברגי חיבור M12", planned: 48, loaded: 48, missing: 0, qc: true },
@@ -43,7 +45,7 @@ const materialChecklist = [
   { shipId: "SHP-304", item: "סיליקון שקוף UV", planned: 8, loaded: 8, missing: 0, qc: true },
 ];
 
-const dispatchTimeline = [
+const FALLBACK_DISPATCH_TIMELINE = [
   { time: "05:45", event: "פתיחת מחסן — בדיקת מלאי בוקר", status: "הושלם", shipId: "—" },
   { time: "06:00", event: "תחילת העמסה — SHP-301 (מגדלי הים — חיפה)", status: "הושלם", shipId: "SHP-301" },
   { time: "06:15", event: "תחילת העמסה — SHP-307 (בית חכם — הרצליה)", status: "הושלם", shipId: "SHP-307" },
@@ -92,7 +94,7 @@ const Check = ({ ok }: { ok: boolean }) =>
 
 /* ── KPI cards ────────────────────────────────────────────────── */
 
-const kpiData = [
+const FALLBACK_KPI_DATA = [
   { label: "משלוחים היום", value: 5, icon: Truck, color: "text-sky-400", bg: "bg-sky-500/10" },
   { label: "נטענים כרגע", value: 2, icon: Package, color: "text-amber-400", bg: "bg-amber-500/10" },
   { label: "בדרך", value: 2, icon: Navigation, color: "text-blue-400", bg: "bg-blue-500/10" },
@@ -104,6 +106,67 @@ const kpiData = [
 /* ── Component ────────────────────────────────────────────────── */
 
 export default function LoadingDispatch() {
+  const { data: shipments = FALLBACK_SHIPMENTS } = useQuery({
+    queryKey: ["installation-shipments"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/loading-dispatch/shipments");
+      if (!res.ok) return FALLBACK_SHIPMENTS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SHIPMENTS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: vehicles = FALLBACK_VEHICLES } = useQuery({
+    queryKey: ["installation-vehicles"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/loading-dispatch/vehicles");
+      if (!res.ok) return FALLBACK_VEHICLES;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_VEHICLES;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: materialChecklist = FALLBACK_MATERIAL_CHECKLIST } = useQuery({
+    queryKey: ["installation-material-checklist"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/loading-dispatch/material-checklist");
+      if (!res.ok) return FALLBACK_MATERIAL_CHECKLIST;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_MATERIAL_CHECKLIST;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: dispatchTimeline = FALLBACK_DISPATCH_TIMELINE } = useQuery({
+    queryKey: ["installation-dispatch-timeline"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/loading-dispatch/dispatch-timeline");
+      if (!res.ok) return FALLBACK_DISPATCH_TIMELINE;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_DISPATCH_TIMELINE;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: kpiData = FALLBACK_KPI_DATA } = useQuery({
+    queryKey: ["installation-kpi-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/loading-dispatch/kpi-data");
+      if (!res.ok) return FALLBACK_KPI_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_KPI_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* Header */}

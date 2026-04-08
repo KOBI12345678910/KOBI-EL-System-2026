@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,14 +27,14 @@ const kpis = [
   { label: "BOMs לבדיקה", value: 23, icon: Eye, color: "text-orange-600", bg: "bg-orange-50" },
 ];
 
-const statusData = [
+const FALLBACK_STATUSDATA = [
   { label: "טיוטה", count: 35, color: "bg-slate-500", textColor: "text-slate-700", bgLight: "bg-slate-50", icon: PenLine },
   { label: "פעיל", count: 189, color: "bg-green-500", textColor: "text-green-700", bgLight: "bg-green-50", icon: CheckCircle2 },
   { label: "בארכיון", count: 18, color: "bg-blue-500", textColor: "text-blue-700", bgLight: "bg-blue-50", icon: Archive },
   { label: "מבוטל", count: 5, color: "bg-red-500", textColor: "text-red-700", bgLight: "bg-red-50", icon: XCircle },
 ];
 
-const topProducts = [
+const FALLBACK_TOPPRODUCTS = [
   { name: "חלון אלומיניום כפול TK-W200", levels: 6, components: 87, lastChange: "05/04/2026", status: "פעיל" },
   { name: "קיר מסך CW-5000 Premium", levels: 7, components: 124, lastChange: "03/04/2026", status: "פעיל" },
   { name: "דלת זכוכית מחוסמת GD-300", levels: 5, components: 63, lastChange: "01/04/2026", status: "פעיל" },
@@ -45,7 +47,7 @@ const topProducts = [
   { name: "חלון גג SL-600 Basic", levels: 4, components: 52, lastChange: "15/03/2026", status: "פעיל" },
 ];
 
-const recentChanges = [
+const FALLBACK_RECENTCHANGES = [
   { product: "CW-5000 Premium", change: "הוספת רכיב איטום חדש", by: "מוטי כהן", date: "05/04/2026" },
   { product: "TK-W200", change: "עדכון כמות ברגים M6", by: "שרון לוי", date: "04/04/2026" },
   { product: "GD-300", change: "החלפת ספק זכוכית", by: "דני אברהם", date: "03/04/2026" },
@@ -53,13 +55,13 @@ const recentChanges = [
   { product: "SL-900 Solar", change: "הוספת פנל סולארי משולב", by: "יעל מזרחי", date: "30/03/2026" },
 ];
 
-const productsWithoutBom = [
+const FALLBACK_PRODUCTSWITHOUTBOM = [
   { sku: "TK-W500", name: "חלון אלומיניום מיני", category: "חלונות אלומיניום", createdDate: "02/04/2026" },
   { sku: "GD-150", name: "דלת זכוכית דקורטיבית", category: "דלתות זכוכית", createdDate: "28/03/2026" },
   { sku: "RL-250", name: "מעקה זכוכית מעוקל", category: "מעקות", createdDate: "20/03/2026" },
 ];
 
-const productFamilies = [
+const FALLBACK_PRODUCTFAMILIES = [
   {
     name: "חלונות אלומיניום", icon: "🪟", subProducts: 38, components: 412,
     totalCost: 2850000, expanded: false,
@@ -116,7 +118,7 @@ const productFamilies = [
   },
 ];
 
-const costData = [
+const FALLBACK_COSTDATA = [
   { family: "חלונות אלומיניום", material: 1850000, labor: 620000, overhead: 380000, variance: -2.3 },
   { family: "דלתות זכוכית", material: 1250000, labor: 410000, overhead: 260000, variance: 1.8 },
   { family: "מסגרות פלדה", material: 1380000, labor: 450000, overhead: 270000, variance: -4.1 },
@@ -125,7 +127,7 @@ const costData = [
   { family: "מעקות", material: 620000, labor: 220000, overhead: 140000, variance: 0.8 },
 ];
 
-const topExpensiveBoms = [
+const FALLBACK_TOPEXPENSIVEBOMS = [
   { name: "קיר מסך CW-5000 Premium", cost: 8500, components: 124, trend: "up" },
   { name: "חלון גג SL-900 Solar", cost: 4500, components: 95, trend: "up" },
   { name: "קיר מסך CW-3000 Standard", cost: 4200, components: 68, trend: "stable" },
@@ -133,7 +135,7 @@ const topExpensiveBoms = [
   { name: "קיר מסך CW-1000 Basic", cost: 2800, components: 45, trend: "stable" },
 ];
 
-const ecoData = [
+const FALLBACK_ECODATA = [
   {
     id: "ECO-2026-041", product: "CW-5000 Premium", changeType: "הוספת רכיב",
     reason: "שיפור בידוד תרמי לעמידה בתקן SI 1045", requestor: "מוטי כהן",
@@ -221,6 +223,61 @@ const trendIcon = (trend: string) => {
 // ── Component ──────────────────────────────────────────────────────────────
 
 export default function BomCommandCenter() {
+  const { data: apistatusData } = useQuery({
+    queryKey: ["/api/supply-chain/bom-command-center/statusdata"],
+    queryFn: () => authFetch("/api/supply-chain/bom-command-center/statusdata").then(r => r.json()).catch(() => null),
+  });
+  const statusData = Array.isArray(apistatusData) ? apistatusData : (apistatusData?.data ?? apistatusData?.items ?? FALLBACK_STATUSDATA);
+
+
+  const { data: apitopProducts } = useQuery({
+    queryKey: ["/api/supply-chain/bom-command-center/topproducts"],
+    queryFn: () => authFetch("/api/supply-chain/bom-command-center/topproducts").then(r => r.json()).catch(() => null),
+  });
+  const topProducts = Array.isArray(apitopProducts) ? apitopProducts : (apitopProducts?.data ?? apitopProducts?.items ?? FALLBACK_TOPPRODUCTS);
+
+
+  const { data: apirecentChanges } = useQuery({
+    queryKey: ["/api/supply-chain/bom-command-center/recentchanges"],
+    queryFn: () => authFetch("/api/supply-chain/bom-command-center/recentchanges").then(r => r.json()).catch(() => null),
+  });
+  const recentChanges = Array.isArray(apirecentChanges) ? apirecentChanges : (apirecentChanges?.data ?? apirecentChanges?.items ?? FALLBACK_RECENTCHANGES);
+
+
+  const { data: apiproductsWithoutBom } = useQuery({
+    queryKey: ["/api/supply-chain/bom-command-center/productswithoutbom"],
+    queryFn: () => authFetch("/api/supply-chain/bom-command-center/productswithoutbom").then(r => r.json()).catch(() => null),
+  });
+  const productsWithoutBom = Array.isArray(apiproductsWithoutBom) ? apiproductsWithoutBom : (apiproductsWithoutBom?.data ?? apiproductsWithoutBom?.items ?? FALLBACK_PRODUCTSWITHOUTBOM);
+
+
+  const { data: apiproductFamilies } = useQuery({
+    queryKey: ["/api/supply-chain/bom-command-center/productfamilies"],
+    queryFn: () => authFetch("/api/supply-chain/bom-command-center/productfamilies").then(r => r.json()).catch(() => null),
+  });
+  const productFamilies = Array.isArray(apiproductFamilies) ? apiproductFamilies : (apiproductFamilies?.data ?? apiproductFamilies?.items ?? FALLBACK_PRODUCTFAMILIES);
+
+
+  const { data: apicostData } = useQuery({
+    queryKey: ["/api/supply-chain/bom-command-center/costdata"],
+    queryFn: () => authFetch("/api/supply-chain/bom-command-center/costdata").then(r => r.json()).catch(() => null),
+  });
+  const costData = Array.isArray(apicostData) ? apicostData : (apicostData?.data ?? apicostData?.items ?? FALLBACK_COSTDATA);
+
+
+  const { data: apitopExpensiveBoms } = useQuery({
+    queryKey: ["/api/supply-chain/bom-command-center/topexpensiveboms"],
+    queryFn: () => authFetch("/api/supply-chain/bom-command-center/topexpensiveboms").then(r => r.json()).catch(() => null),
+  });
+  const topExpensiveBoms = Array.isArray(apitopExpensiveBoms) ? apitopExpensiveBoms : (apitopExpensiveBoms?.data ?? apitopExpensiveBoms?.items ?? FALLBACK_TOPEXPENSIVEBOMS);
+
+
+  const { data: apiecoData } = useQuery({
+    queryKey: ["/api/supply-chain/bom-command-center/ecodata"],
+    queryFn: () => authFetch("/api/supply-chain/bom-command-center/ecodata").then(r => r.json()).catch(() => null),
+  });
+  const ecoData = Array.isArray(apiecoData) ? apiecoData : (apiecoData?.data ?? apiecoData?.items ?? FALLBACK_ECODATA);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedFamilies, setExpandedFamilies] = useState<Set<number>>(new Set());
 

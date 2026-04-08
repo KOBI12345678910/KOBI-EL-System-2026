@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +13,7 @@ import {
   TrendingUp, TrendingDown, Clock, AlertTriangle, CheckCircle2
 } from "lucide-react";
 
-const leases = [
+const FALLBACK_LEASES = [
   { id: "LS-001", item: "משאית איווקו 12T", category: "רכב", vendor: "אוטו-ליס בע\"מ", monthly: 8500, total: 306000, start: "2024-01-01", end: "2026-12-31", buyout: 85000, status: "פעיל" },
   { id: "LS-002", item: "משאית מרצדס 8T", category: "רכב", vendor: "אוטו-ליס בע\"מ", monthly: 6800, total: 244800, start: "2024-06-01", end: "2027-05-31", buyout: 72000, status: "פעיל" },
   { id: "LS-003", item: "מלגזה חשמלית Still 2.5T", category: "מלגזה", vendor: "סטיל ישראל", monthly: 4200, total: 151200, start: "2025-01-01", end: "2027-12-31", buyout: 45000, status: "פעיל" },
@@ -22,7 +24,7 @@ const leases = [
   { id: "LS-008", item: "מדפסת תעשייתית Xerox", category: "IT", vendor: "זירוקס ישראל", monthly: 2400, total: 86400, start: "2024-10-01", end: "2027-09-30", buyout: 12000, status: "פעיל" },
 ];
 
-const paymentSchedule = [
+const FALLBACK_PAYMENT_SCHEDULE = [
   { month: "אפריל 2026", amount: 36500, leases: 8, paid: false },
   { month: "מאי 2026", amount: 36500, leases: 8, paid: false },
   { month: "יוני 2026", amount: 36500, leases: 8, paid: false },
@@ -34,7 +36,7 @@ const paymentSchedule = [
   { month: "דצמבר 2026", amount: 32000, leases: 7, paid: false },
 ];
 
-const leaseVsBuy = [
+const FALLBACK_LEASE_VS_BUY = [
   { item: "משאית איווקו 12T", leaseTotal: 306000, buyPrice: 380000, buyResidual: 120000, leaseSaving: true, diff: 46000 },
   { item: "מלגזה חשמלית Still 2.5T", leaseTotal: 151200, buyPrice: 160000, buyResidual: 55000, leaseSaving: false, diff: 46200 },
   { item: "שרת HP ProLiant DL380", leaseTotal: 115200, buyPrice: 95000, buyResidual: 15000, leaseSaving: false, diff: 35200 },
@@ -42,7 +44,7 @@ const leaseVsBuy = [
   { item: "מדפסת תעשייתית Xerox", leaseTotal: 86400, buyPrice: 65000, buyResidual: 10000, leaseSaving: false, diff: 31400 },
 ];
 
-const renewals = [
+const FALLBACK_RENEWALS = [
   { id: "LS-007", item: "רכב שטח טויוטה היילקס", end: "2026-08-31", daysLeft: 145, buyout: 62000, recommend: "חידוש", reason: "רכב בשימוש יומיומי, מצב תקין" },
   { id: "LS-001", item: "משאית איווקו 12T", end: "2026-12-31", daysLeft: 267, buyout: 85000, recommend: "רכישה", reason: "שווי שוק גבוה מאופציית הרכישה" },
   { id: "LS-004", item: "מלגזה דיזל Linde 4T", end: "2027-02-28", daysLeft: 326, buyout: 55000, recommend: "החזרה", reason: "מעבר למלגזות חשמליות" },
@@ -64,6 +66,14 @@ const categoryIcon: Record<string, typeof Truck> = {
 };
 
 export default function Leasing() {
+  const { data: leasingData } = useQuery({
+    queryKey: ["leasing"],
+    queryFn: () => authFetch("/api/assets/leasing"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const leases = leasingData ?? FALLBACK_LEASES;
+
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("active");
 

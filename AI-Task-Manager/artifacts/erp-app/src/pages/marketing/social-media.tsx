@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,7 +26,7 @@ import {
   Link,
 } from "lucide-react";
 
-const posts = [
+const FALLBACK_POSTS = [
   { id: 1, title: "השקת קו חלונות פרימיום 2026", platform: "פייסבוק", type: "תמונה", likes: 245, comments: 34, shares: 18, reach: 3200, date: "2026-04-05" },
   { id: 2, title: "סרטון תהליך ייצור", platform: "אינסטגרם", type: "וידאו", likes: 567, comments: 89, shares: 45, reach: 8900, date: "2026-04-04" },
   { id: 3, title: "פרויקט מגדל השחר - סיום", platform: "לינקדאין", type: "מאמר", likes: 189, comments: 23, shares: 56, reach: 4500, date: "2026-04-03" },
@@ -37,7 +39,7 @@ const posts = [
   { id: 10, title: "מבצע סוף חורף", platform: "פייסבוק", type: "תמונה", likes: 198, comments: 41, shares: 23, reach: 3100, date: "2026-03-20" },
 ];
 
-const channels = [
+const FALLBACK_CHANNELS = [
   { name: "פייסבוק", icon: Facebook, followers: 8500, growth: 4.2, posts: 45, engagement: 3.8, color: "text-blue-600", bg: "bg-blue-50" },
   { name: "אינסטגרם", icon: Instagram, followers: 12300, growth: 8.5, posts: 62, engagement: 5.2, color: "text-pink-600", bg: "bg-pink-50" },
   { name: "לינקדאין", icon: Linkedin, followers: 4200, growth: 6.1, posts: 28, engagement: 4.1, color: "text-blue-800", bg: "bg-indigo-50" },
@@ -63,6 +65,14 @@ const platformIcon = (platform: string) => {
 };
 
 export default function SocialMedia() {
+  const { data: socialmediaData } = useQuery({
+    queryKey: ["social-media"],
+    queryFn: () => authFetch("/api/marketing/social_media"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const posts = socialmediaData ?? FALLBACK_POSTS;
+
   const [tab, setTab] = useState("posts");
 
   const totalFollowers = channels.reduce((s, c) => s + c.followers, 0);

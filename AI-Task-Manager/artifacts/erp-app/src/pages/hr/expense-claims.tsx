@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   Receipt, Search, Plus, Edit2, Trash2, X, Save, DollarSign,
   Clock, CheckCircle2, AlertTriangle, Users, Download, Filter,
@@ -41,7 +43,7 @@ const statusConfig: Record<string, { label: string; color: string }> = {
   paid: { label: "\u05E9\u05D5\u05DC\u05DD", color: "bg-emerald-100 text-emerald-800" },
 };
 
-const paymentMethods = [
+const FALLBACK_PAYMENT_METHODS = [
   { value: "company_card", label: "\u05DB\u05E8\u05D8\u05D9\u05E1 \u05D7\u05D1\u05E8\u05D4" },
   { value: "personal_card", label: "\u05DB\u05E8\u05D8\u05D9\u05E1 \u05D0\u05D9\u05E9\u05D9" },
   { value: "cash", label: "\u05DE\u05D6\u05D5\u05DE\u05DF" },
@@ -50,6 +52,14 @@ const paymentMethods = [
 ];
 
 export default function ExpenseClaimsPage() {
+  const { data: expenseclaimsData } = useQuery({
+    queryKey: ["expense-claims"],
+    queryFn: () => authFetch("/api/hr/expense_claims"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const paymentMethods = expenseclaimsData ?? FALLBACK_PAYMENT_METHODS;
+
   const [items, setItems] = useState<any[]>([]);
   const [stats, setStats] = useState<any>({});
   const [loading, setLoading] = useState(true);

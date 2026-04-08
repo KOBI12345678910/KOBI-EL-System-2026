@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -31,7 +33,7 @@ interface Project {
   materials: Material[];
 }
 
-const projects: Project[] = [
+const FALLBACK_PROJECTS: Project[] = [
   {
     id: "PRJ-1052", name: "שער חשמלי תעשייתי — מפעל שטראוס", client: "שטראוס גרופ",
     materials: [
@@ -82,6 +84,14 @@ const sourceBadge: Record<Source, string> = {
 const sourceIcon: Record<Source, typeof Warehouse> = { "מלאי": Warehouse, "רכישה": ShoppingCart, "יבוא": Ship };
 
 export default function StockVsBuyDecision() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["stock_vs_buy_decision"],
+    queryFn: () => authFetch("/api/pricing/stock-vs-buy-decision").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const projects = apiData?.projects ?? FALLBACK_PROJECTS;
   const [selectedProject, setSelectedProject] = useState(0);
   const proj = projects[selectedProject];
 

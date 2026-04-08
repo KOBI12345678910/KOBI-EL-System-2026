@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,7 +12,7 @@ import {
 } from "lucide-react";
 
 /* ───── KPIs ───── */
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "סה\"כ פריטים", value: "4,218", icon: Package, color: "text-blue-600", bg: "bg-blue-50" },
   { label: "קטגוריות", value: "37", icon: FolderTree, color: "text-purple-600", bg: "bg-purple-50" },
   { label: "יחידות מידה", value: "24", icon: Ruler, color: "text-indigo-600", bg: "bg-indigo-50" },
@@ -20,7 +22,7 @@ const kpis = [
 ];
 
 /* ───── Items Master ───── */
-const items = [
+const FALLBACK_ITEMS = [
   { code: "ITM-10001", name: "פרופיל אלומיניום T-60", category: "פרופילים", unit: 'מ"א', status: "active" },
   { code: "ITM-10002", name: "זכוכית מחוסמת 8mm שקוף", category: "זכוכית", unit: "יחידה", status: "active" },
   { code: "ITM-10003", name: "בורג נירוסטה M8x25", category: "חומרי חיבור", unit: "קופסה", status: "active" },
@@ -32,7 +34,7 @@ const items = [
 ];
 
 /* ───── Units of Measure ───── */
-const units = [
+const FALLBACK_UNITS = [
   { code: "MTR", name: 'מטר (מ"א)', type: "אורך", conversion: "1 מטר = 100 ס\"מ" },
   { code: "SQM", name: 'מ"ר', type: "שטח", conversion: '1 מ"ר = 10,000 סמ"ר' },
   { code: "PCS", name: "יחידה", type: "כמות", conversion: "בסיס" },
@@ -56,7 +58,7 @@ const categories = [
 ];
 
 /* ───── Color, Finish, Profile Codes ───── */
-const colorCodes = [
+const FALLBACK_COLOR_CODES = [
   { code: "RAL-9016", name: "לבן טראפיק", hex: "#F1F0EA", usage: "חלונות סטנדרט" },
   { code: "RAL-7016", name: "אפור אנתרציט", hex: "#383E42", usage: "דלתות פרימיום" },
   { code: "RAL-8017", name: "חום שוקולד", hex: "#44322D", usage: "פרגולות עץ-דמוי" },
@@ -65,7 +67,7 @@ const colorCodes = [
   { code: "RAL-5015", name: "כחול שמיים", hex: "#007CB0", usage: "מעקות חוץ" },
 ];
 
-const finishCodes = [
+const FALLBACK_FINISH_CODES = [
   { code: "FIN-01", name: "אנודייז טבעי", process: "אנודייזציה", thickness: "15\u00B5" },
   { code: "FIN-02", name: "אבקה מט", process: "צביעה אלקטרוסטטית", thickness: "60\u00B5" },
   { code: "FIN-03", name: "אבקה מבריק", process: "צביעה אלקטרוסטטית", thickness: "80\u00B5" },
@@ -73,7 +75,7 @@ const finishCodes = [
   { code: "FIN-05", name: "עץ-דמוי (סובלימציה)", process: "סובלימציה", thickness: "—" },
 ];
 
-const profileFamilies = [
+const FALLBACK_PROFILE_FAMILIES = [
   { code: "PRF-T", name: "פרופיל T", section: "T-Section", widths: "40 / 60 / 80 mm" },
   { code: "PRF-U", name: "פרופיל U", section: "U-Channel", widths: "50 / 70 / 100 mm" },
   { code: "PRF-L", name: "פרופיל L (זווית)", section: "L-Angle", widths: "30 / 50 mm" },
@@ -82,7 +84,7 @@ const profileFamilies = [
 ];
 
 /* ───── Rules Tab Data ───── */
-const numberingSeqs = [
+const FALLBACK_NUMBERING_SEQS = [
   { entity: "פריט חדש", prefix: "ITM-", next: 10009, step: 1, digits: 5 },
   { entity: "הזמנת עבודה", prefix: "WO-", next: 2461, step: 1, digits: 6 },
   { entity: "הזמנת רכש", prefix: "PO-", next: 8820, step: 1, digits: 6 },
@@ -91,13 +93,13 @@ const numberingSeqs = [
   { entity: "NCR", prefix: "NCR-", next: 330, step: 1, digits: 4 },
 ];
 
-const namingRules = [
+const FALLBACK_NAMING_RULES = [
   { scope: "פריטים", rule: "[קטגוריה] [חומר] [מידה] [גמר]", example: "פרופיל אלומיניום T-60 אנודייז" },
   { scope: "צבעים", rule: "RAL-XXXX [שם עברי]", example: "RAL-7016 אפור אנתרציט" },
   { scope: "BOMs", rule: "BOM-[קוד פריט]-VXX", example: "BOM-ITM10001-V03" },
 ];
 
-const mandatoryFields = [
+const FALLBACK_MANDATORY_FIELDS = [
   { entity: "פריט", field: "שם פריט", enforced: true },
   { entity: "פריט", field: "קטגוריה", enforced: true },
   { entity: "פריט", field: "יחידת מידה", enforced: true },
@@ -108,7 +110,7 @@ const mandatoryFields = [
   { entity: "הזמנת עבודה", field: "קו ייצור", enforced: false },
 ];
 
-const duplicateRules = [
+const FALLBACK_DUPLICATE_RULES = [
   { scope: "פריטים", keys: "שם + קטגוריה + יחידה", action: "חסימה + התראה", found: 2 },
   { scope: "לקוחות", keys: 'ח.פ / ע"מ', action: "חסימה", found: 0 },
   { scope: "ספקים", keys: 'ח.פ + שם חברה', action: "התראה בלבד", found: 1 },
@@ -127,6 +129,14 @@ const colorSwatch = (hex: string) => (
 
 /* ═══════════════════ Component ═══════════════════ */
 export default function MasterData() {
+  const { data: masterdataData } = useQuery({
+    queryKey: ["master-data"],
+    queryFn: () => authFetch("/api/platform/master_data"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const kpis = masterdataData ?? FALLBACK_KPIS;
+
   const [tab, setTab] = useState("items");
 
   return (

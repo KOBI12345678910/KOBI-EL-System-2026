@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +13,7 @@ import {
   Percent, Star, Calendar, Building2, DollarSign
 } from "lucide-react";
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "לידים שנוקדו", value: "2,847", change: "+184", up: true, icon: Users, color: "from-blue-500 to-blue-600" },
   { label: "ציון ממוצע", value: "64.3", change: "+2.8", up: true, icon: Brain, color: "from-purple-500 to-purple-600" },
   { label: "לידים חמים (80+)", value: "412", change: "+37", up: true, icon: Flame, color: "from-orange-500 to-red-500" },
@@ -20,7 +22,7 @@ const kpis = [
   { label: "הרצות ניקוד היום", value: "18", change: "-2", up: false, icon: Zap, color: "from-yellow-500 to-amber-500" },
 ];
 
-const leads = [
+const FALLBACK_LEADS = [
   { id: 1, name: "אבי כהן", co: "טכנולוגיות עתיד", score: 94, src: "אתר", budget: "₪350K", time: "30 יום", eng: "גבוהה", action: "תאם פגישה דחופה" },
   { id: 2, name: "מיכל לוי", co: "פתרונות ענן בע\"מ", score: 91, src: "הפניה", budget: "₪520K", time: "14 יום", eng: "גבוהה מאוד", action: "שלח הצעת מחיר" },
   { id: 3, name: "יוסף מזרחי", co: "דטה פרו", score: 87, src: "לינקדאין", budget: "₪180K", time: "60 יום", eng: "גבוהה", action: "תאם שיחה" },
@@ -38,7 +40,7 @@ const leads = [
   { id: 15, name: "ירון בן-דוד", co: "מיקרו סיסטמס", score: 27, src: "אתר", budget: "לא ידוע", time: "לא ידוע", eng: "מינימלית", action: "סיווג מחדש" },
 ];
 
-const scoringFactors = [
+const FALLBACK_SCORING_FACTORS = [
   { factor: "גודל חברה", weight: 22, impact: "גבוה", desc: "מספר עובדים, הכנסות שנתיות, נתח שוק", trend: "+3%" },
   { factor: "התאמת תעשייה", weight: 20, impact: "גבוה", desc: "מגזר, תת-ענף, מגמות שוק, רגולציה", trend: "+1%" },
   { factor: "תקציב", weight: 18, impact: "גבוה", desc: "תקציב מוצהר, היסטוריית רכישות, ROI צפוי", trend: "0%" },
@@ -47,7 +49,7 @@ const scoringFactors = [
   { factor: "רכישות עבר", weight: 10, impact: "בינוני", desc: "היסטוריית לקוח, חידושים, שדרוגים, NPS", trend: "-1%" },
 ];
 
-const scoreBands = [
+const FALLBACK_SCORE_BANDS = [
   { range: "90-100", label: "חם מאוד", count: 127, conversion: 72, color: "bg-red-500" },
   { range: "80-89", label: "חם", count: 285, conversion: 54, color: "bg-orange-500" },
   { range: "70-79", label: "חמים", count: 419, conversion: 38, color: "bg-yellow-500" },
@@ -58,12 +60,12 @@ const scoreBands = [
   { range: "0-29", label: "לא פעיל", count: 227, conversion: 1, color: "bg-slate-600" },
 ];
 
-const perfAccuracy = [
+const FALLBACK_PERF_ACCURACY = [
   { month: "ינואר", value: 87.4 }, { month: "פברואר", value: 88.1 }, { month: "מרץ", value: 88.9 },
   { month: "אפריל", value: 89.5 }, { month: "מאי", value: 90.2 }, { month: "יוני", value: 91.2 },
 ];
 const falseRates = { fp: 5.3, fn: 3.5, prevFp: 6.1, prevFn: 4.2 };
-const abTests = [
+const FALLBACK_AB_TESTS = [
   { name: "מודל V3 vs V2", metric: "דיוק", vA: 91.2, vB: 88.9, winner: "V3", lift: "+2.6%" },
   { name: "משקל מעורבות x2", metric: "המרה", vA: 36.4, vB: 34.7, winner: "A", lift: "+4.9%" },
   { name: "פיצ'ר תעשייה חדש", metric: "F1-Score", vA: 0.89, vB: 0.86, winner: "A", lift: "+3.5%" },
@@ -75,6 +77,19 @@ const engBadge = (e: string) => e.includes("גבוהה מאוד") ? "bg-emerald-
 const impactBadge = (i: string) => i === "גבוה" ? "bg-red-500/20 text-red-300" : i === "בינוני-גבוה" ? "bg-orange-500/20 text-orange-300" : "bg-yellow-500/20 text-yellow-300";
 
 export default function AiLeadScoringPro() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["ai_lead_scoring_pro"],
+    queryFn: () => authFetch("/api/ai/ai-lead-scoring-pro").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
+  const leads = apiData?.leads ?? FALLBACK_LEADS;
+  const scoringFactors = apiData?.scoringFactors ?? FALLBACK_SCORING_FACTORS;
+  const scoreBands = apiData?.scoreBands ?? FALLBACK_SCORE_BANDS;
+  const perfAccuracy = apiData?.perfAccuracy ?? FALLBACK_PERF_ACCURACY;
+  const abTests = apiData?.abTests ?? FALLBACK_AB_TESTS;
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("scored-leads");
   const filtered = leads.filter((l) => l.name.includes(search) || l.co.includes(search) || l.src.includes(search));

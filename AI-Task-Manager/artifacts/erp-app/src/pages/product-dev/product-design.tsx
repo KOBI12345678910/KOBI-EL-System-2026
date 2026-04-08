@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +13,7 @@ import {
   ArrowRight, Eye, FileCheck, Users, Lightbulb, Shield, Box, Maximize2
 } from "lucide-react";
 
-const designs = [
+const FALLBACK_DESIGNS = [
   { id: "DSN-001", name: "פרופיל אלומיניום T-60", designer: "דוד כהן", version: "3.2", stage: "סופי", approval: "מאושר", iterations: 8, completion: 100 },
   { id: "DSN-002", name: "מערכת חלון הזזה כפולה", designer: "שרה לוי", version: "2.1", stage: "מפורט", approval: "מאושר", iterations: 5, completion: 85 },
   { id: "DSN-003", name: "דלת כניסה מעוצבת Z-Pro", designer: "יוסי אברהם", version: "1.4", stage: "קונספט", approval: "ממתין", iterations: 4, completion: 35 },
@@ -26,7 +28,7 @@ const designs = [
   { id: "DSN-012", name: "מסגרת פנל סולארי", designer: "נועה גולן", version: "1.6", stage: "מפורט", approval: "בבדיקה", iterations: 3, completion: 55 },
 ];
 
-const libraryItems = [
+const FALLBACK_LIBRARY_ITEMS = [
   { category: "פרופילים", items: [
     { name: "פרופיל T-60 סטנדרט", type: "אלומיניום 6063", uses: 34, rating: 4.8 },
     { name: "פרופיל U-40 תרמי", type: "אלומיניום 6060", uses: 28, rating: 4.6 },
@@ -49,7 +51,7 @@ const libraryItems = [
   ]},
 ];
 
-const standards = [
+const FALLBACK_STANDARDS = [
   { title: "הנחיות עיצוב כלליות", items: [
     "כל עיצוב חייב לעמוד בתקן ישראלי ת\"י 23 לחלונות ודלתות",
     "מידות מינימום לפרופיל נושא: 60 מ\"מ רוחב, 1.4 מ\"מ עובי דופן",
@@ -70,7 +72,7 @@ const standards = [
   ]},
 ];
 
-const collaboration = [
+const FALLBACK_COLLABORATION = [
   { id: 1, design: "DSN-003", reviewer: "מנהל הנדסה", date: "2026-04-06", type: "הערה", status: "פתוח", text: "יש לבדוק עמידות הפרופיל בעומס רוח 120 קמ\"ש לפי תקן" },
   { id: 2, design: "DSN-005", reviewer: "מנהל ייצור", date: "2026-04-05", type: "משוב", status: "טופל", text: "החיתוך בזווית 45 מעלות מחייב כלי חיתוך ייעודי - לוודא זמינות" },
   { id: 3, design: "DSN-008", reviewer: "מנהל איכות", date: "2026-04-04", type: "בקשת שינוי", status: "בטיפול", text: "להוסיף איטום כפול בפינות התחתונות למניעת חדירת מים" },
@@ -104,6 +106,14 @@ const collabTypeColor: Record<string, string> = {
 };
 
 export default function ProductDesignPage() {
+  const { data: productdesignData } = useQuery({
+    queryKey: ["product-design"],
+    queryFn: () => authFetch("/api/product-dev/product_design"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const designs = productdesignData ?? FALLBACK_DESIGNS;
+
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState("all");
   const [collabFilter, setCollabFilter] = useState("all");

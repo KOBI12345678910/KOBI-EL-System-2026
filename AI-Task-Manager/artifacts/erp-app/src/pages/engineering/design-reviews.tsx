@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +15,7 @@ import {
 } from "lucide-react";
 
 // ── Design Reviews ──
-const reviews = [
+const FALLBACK_REVIEWS = [
   { id: "DR-001", project: "בניין משרדים רמת גן", product: "קיר מסך אלומיניום", type: "preliminary", status: "approved", reviewers: "יוסי כהן, שרה לוי", date: "2026-03-12", findings: 3 },
   { id: "DR-002", project: "מפעל אלקטרוניקה חיפה", product: "דלתות זכוכית מחוסמת", type: "critical", status: "in-progress", reviewers: "דוד מזרחי, רחל אברהם", date: "2026-04-02", findings: 7 },
   { id: "DR-003", project: "מרכז מסחרי באר שבע", product: "חלונות אלומיניום תרמיים", type: "final", status: "approved", reviewers: "אלון גולדשטיין, מיכל ברק", date: "2026-03-28", findings: 2 },
@@ -27,7 +29,7 @@ const reviews = [
 ];
 
 // ── Findings ──
-const findings = [
+const FALLBACK_FINDINGS = [
   { id: "F-001", reviewId: "DR-002", severity: "critical", category: "שלמות מבנית", desc: "עובי פרופיל לא מספיק בקומה 8 - עומס רוח", assignedTo: "דוד מזרחי", status: "open" },
   { id: "F-002", reviewId: "DR-002", severity: "major", category: "בחירת חומרים", desc: "זכוכית מחוסמת לא עומדת בתקן בידוד", assignedTo: "רחל אברהם", status: "in-progress" },
   { id: "F-003", reviewId: "DR-004", severity: "critical", category: "תאימות תקנים", desc: "חוסר עמידה בתקן אקוסטי ת\"י 1004", assignedTo: "עומר חדד", status: "open" },
@@ -46,7 +48,7 @@ const findings = [
 ];
 
 // ── Checklist ──
-const checklist = [
+const FALLBACK_CHECKLIST = [
   { item: "שלמות מבנית", icon: ShieldCheck, desc: "בדיקת עמידות מבנית, חישובי עומסים, רוח ורעידות", weight: 20, passRate: 88 },
   { item: "בחירת חומרים", icon: Factory, desc: "התאמת חומרי גלם, אלומיניום, זכוכית, איטומים", weight: 15, passRate: 92 },
   { item: "ביצועים תרמיים", icon: Thermometer, desc: "בידוד תרמי, U-value, גשר קור, עיבוי", weight: 15, passRate: 78 },
@@ -98,6 +100,26 @@ const th = "p-3 text-right text-muted-foreground font-medium text-xs";
 const td = "p-3 text-sm";
 
 export default function DesignReviewsPage() {
+  const { data: apireviews } = useQuery({
+    queryKey: ["/api/engineering/design-reviews/reviews"],
+    queryFn: () => authFetch("/api/engineering/design-reviews/reviews").then(r => r.json()).catch(() => null),
+  });
+  const reviews = Array.isArray(apireviews) ? apireviews : (apireviews?.data ?? apireviews?.items ?? FALLBACK_REVIEWS);
+
+
+  const { data: apifindings } = useQuery({
+    queryKey: ["/api/engineering/design-reviews/findings"],
+    queryFn: () => authFetch("/api/engineering/design-reviews/findings").then(r => r.json()).catch(() => null),
+  });
+  const findings = Array.isArray(apifindings) ? apifindings : (apifindings?.data ?? apifindings?.items ?? FALLBACK_FINDINGS);
+
+
+  const { data: apichecklist } = useQuery({
+    queryKey: ["/api/engineering/design-reviews/checklist"],
+    queryFn: () => authFetch("/api/engineering/design-reviews/checklist").then(r => r.json()).catch(() => null),
+  });
+  const checklist = Array.isArray(apichecklist) ? apichecklist : (apichecklist?.data ?? apichecklist?.items ?? FALLBACK_CHECKLIST);
+
   const [tab, setTab] = useState("reviews");
   const [search, setSearch] = useState("");
 

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -42,7 +44,7 @@ function ApprovalChain({ steps, current }: { steps: string[]; current: number })
 
 /* ── mock data ── */
 
-const pendingApprovals = [
+const FALLBACK_PENDING_APPROVALS = [
   { id: "APR-301", doc: "הזמנת רכש PO-8820", type: "הזמנת רכש", requester: "יוסי כהן", steps: ["מנהל ישיר", "מנהל מחלקה", "הנהלה"], currentStep: 1, since: "2026-04-06", urgency: "דחוף", status: "ממתין לשלב 2" },
   { id: "APR-302", doc: "חוזה לקוח דלתא-2026", type: "חוזה", requester: "שרה מזרחי", steps: ["מנהל ישיר", "משפטי", "מנהל מחלקה", "הנהלה"], currentStep: 0, since: "2026-04-07", urgency: "קריטי", status: "ממתין לשלב 1" },
   { id: "APR-303", doc: "שרטוט מסגרת T-500", type: "שרטוט", requester: "אלון גולדשטיין", steps: ["מנהל ישיר", "הנדסה ראשית"], currentStep: 1, since: "2026-04-05", urgency: "רגיל", status: "ממתין לשלב 2" },
@@ -57,7 +59,7 @@ const pendingApprovals = [
   { id: "APR-312", doc: "תשלום ספק חשמל-טק", type: "תשלום", requester: "רחל אברהם", steps: ["מנהל ישיר", "כספים", "הנהלה"], currentStep: 0, since: "2026-04-08", urgency: "רגיל", status: "ממתין לשלב 1" },
 ];
 
-const workflowTemplates = [
+const FALLBACK_WORKFLOW_TEMPLATES = [
   { name: "אישור הזמנת רכש", steps: 3, chain: ["מנהל ישיר", "מנהל מחלקה", "הנהלה"], avgTime: "3.8 שעות", activeCount: 5, color: "text-blue-400" },
   { name: "אישור חוזה לקוח", steps: 4, chain: ["מנהל ישיר", "משפטי", "מנהל מחלקה", "הנהלה"], avgTime: "6.1 שעות", activeCount: 3, color: "text-purple-400" },
   { name: "אישור שרטוט הנדסי", steps: 2, chain: ["מנהל ישיר", "הנדסה ראשית"], avgTime: "2.4 שעות", activeCount: 4, color: "text-cyan-400" },
@@ -66,7 +68,7 @@ const workflowTemplates = [
   { name: "אישור תשלום ספק", steps: 3, chain: ["מנהל ישיר", "כספים", "הנהלה"], avgTime: "5.2 שעות", activeCount: 2, color: "text-rose-400" },
 ];
 
-const approvalHistory = [
+const FALLBACK_APPROVAL_HISTORY = [
   { id: "APR-290", doc: "הזמנת רכש PO-8801", action: "מאושר", by: "דוד לוי", date: "2026-04-07 14:32", duration: "3.1 שעות" },
   { id: "APR-289", doc: "חוזה לקוח אלפא-טק", action: "מאושר", by: "אלון גולדשטיין", date: "2026-04-07 11:15", duration: "5.8 שעות" },
   { id: "APR-288", doc: "שרטוט מסגרת T-480", action: "מאושר", by: "מיכל ברק", date: "2026-04-07 09:44", duration: "2.0 שעות" },
@@ -79,7 +81,7 @@ const approvalHistory = [
   { id: "APR-281", doc: "תשלום ספק רכיבים-פלוס", action: "מאושר", by: "עומר חדד", date: "2026-04-04 17:05", duration: "4.8 שעות" },
 ];
 
-const slaDashboard = [
+const FALLBACK_SLA_DASHBOARD = [
   { workflow: "אישור הזמנת רכש", target: "4 שעות", avg: "3.8 שעות", compliance: 88, breaches: 3, total: 25 },
   { workflow: "אישור חוזה לקוח", target: "8 שעות", avg: "6.1 שעות", compliance: 94, breaches: 1, total: 18 },
   { workflow: "אישור שרטוט הנדסי", target: "3 שעות", avg: "2.4 שעות", compliance: 96, breaches: 1, total: 22 },
@@ -106,7 +108,7 @@ const statusColor: Record<string, string> = {
 
 /* ── KPIs ── */
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "ממתינים לאישור", value: 23, icon: <Clock className="w-5 h-5" />, color: "text-amber-400" },
   { label: "אושרו היום", value: 8, icon: <CheckCircle2 className="w-5 h-5" />, color: "text-emerald-400" },
   { label: "נדחו", value: 2, icon: <XCircle className="w-5 h-5" />, color: "text-red-400" },
@@ -117,6 +119,18 @@ const kpis = [
 /* ── component ── */
 
 export default function ApprovalWorkflows() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["approval_workflows"],
+    queryFn: () => authFetch("/api/documents/approval-workflows").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const pendingApprovals = apiData?.pendingApprovals ?? FALLBACK_PENDING_APPROVALS;
+  const workflowTemplates = apiData?.workflowTemplates ?? FALLBACK_WORKFLOW_TEMPLATES;
+  const approvalHistory = apiData?.approvalHistory ?? FALLBACK_APPROVAL_HISTORY;
+  const slaDashboard = apiData?.slaDashboard ?? FALLBACK_SLA_DASHBOARD;
+  const kpis = apiData?.kpis ?? FALLBACK_KPIS;
   const [tab, setTab] = useState("pending");
 
   return (

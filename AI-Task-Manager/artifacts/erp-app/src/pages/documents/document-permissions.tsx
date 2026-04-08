@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -13,15 +15,15 @@ import {
 
 /* ── mock data ── */
 
-const permissionLevels = [
+const FALLBACK_PERMISSION_LEVELS = [
   { level: "ציבורי", icon: Globe, desc: "כל העובדים", docs: 1230, color: "text-green-400", bg: "bg-green-900/30 border-green-700/40", pct: 32 },
   { level: "מחלקתי", icon: Building2, desc: "רק חברי מחלקה", docs: 1845, color: "text-blue-400", bg: "bg-blue-900/30 border-blue-700/40", pct: 48 },
   { level: "מוגבל", icon: EyeOff, desc: "רשימת משתמשים ספציפית", docs: 620, color: "text-amber-400", bg: "bg-amber-900/30 border-amber-700/40", pct: 16 },
   { level: "סודי", icon: ShieldAlert, desc: "הנהלה בלבד + אישור מיוחד", docs: 152, color: "text-red-400", bg: "bg-red-900/30 border-red-700/40", pct: 4 },
 ];
 
-const departments = ["הנדסה", "ייצור", "איכות", "רכש", "מכירות", "כספים", "לוגיסטיקה", "הנהלה"];
-const docTypes = ["חוזים", "שרטוטים", "מפרטים", "חשבוניות", "דוחות", "נהלים", "תעודות", "הצעות מחיר", "פרוטוקולים", "מסמכי סודיות"];
+const FALLBACK_DEPARTMENTS = ["הנדסה", "ייצור", "איכות", "רכש", "מכירות", "כספים", "לוגיסטיקה", "הנהלה"];
+const FALLBACK_DOC_TYPES = ["חוזים", "שרטוטים", "מפרטים", "חשבוניות", "דוחות", "נהלים", "תעודות", "הצעות מחיר", "פרוטוקולים", "מסמכי סודיות"];
 
 const accessMatrix: Record<string, Record<string, string>> = {
   "הנדסה":    { "חוזים": "r", "שרטוטים": "rw", "מפרטים": "rw", "חשבוניות": "x", "דוחות": "r", "נהלים": "r", "תעודות": "r", "הצעות מחיר": "x", "פרוטוקולים": "r", "מסמכי סודיות": "x" },
@@ -34,7 +36,7 @@ const accessMatrix: Record<string, Record<string, string>> = {
   "הנהלה":    { "חוזים": "rw", "שרטוטים": "rw", "מפרטים": "rw", "חשבוניות": "rw", "דוחות": "rw", "נהלים": "rw", "תעודות": "rw", "הצעות מחיר": "rw", "פרוטוקולים": "rw", "מסמכי סודיות": "rw" },
 };
 
-const externalShares = [
+const FALLBACK_EXTERNAL_SHARES = [
   { id: 1, doc: "חוזה ספק מתכת כללי v3.1", sharedWith: "מתכת-פרו בע\"מ", type: "קישור", expires: "2026-05-15", downloads: 4, status: "פעיל" },
   { id: 2, doc: "הצעת מחיר פרויקט דלתא v1.2", sharedWith: "דלתא תעשיות", type: "email", expires: "2026-04-20", downloads: 2, status: "פעיל" },
   { id: 3, doc: "מפרט טכני PCB-8L Rev C", sharedWith: "אלקטרו-טק בע\"מ", type: "portal", expires: "2026-06-01", downloads: 7, status: "פעיל" },
@@ -43,14 +45,14 @@ const externalShares = [
   { id: 6, doc: "תעודת ISO 9001:2015", sharedWith: "Lloyd's Register", type: "portal", expires: "2026-12-31", downloads: 12, status: "פעיל" },
 ];
 
-const accessRequests = [
+const FALLBACK_ACCESS_REQUESTS = [
   { id: "REQ-301", who: "שרה מזרחי", dept: "מכירות", doc: "דוח כספי שנתי 2025", reason: "הכנת הצעה ללקוח אסטרטגי", date: "2026-04-06", priority: "גבוה" },
   { id: "REQ-302", who: "דוד מזרחי", dept: "איכות", doc: "מסמך סודיות פרויקט אומגה", reason: "ביקורת פנימית תקופתית", date: "2026-04-07", priority: "בינוני" },
   { id: "REQ-303", who: "עומר חדד", dept: "לוגיסטיקה", doc: "חוזה ספק בינלאומי 2026", reason: "תיאום משלוח דחוף מחו\"ל", date: "2026-04-07", priority: "גבוה" },
   { id: "REQ-304", who: "מיכל ברק", dept: "בטיחות", doc: "שרטוט מערכת כיבוי אש מפעל", reason: "עדכון נוהל חירום", date: "2026-04-08", priority: "רגיל" },
 ];
 
-const accessLog = [
+const FALLBACK_ACCESS_LOG = [
   { time: "08:42", user: "יוסי כהן", action: "צפייה", doc: "חוזה ספק מתכת כללי", ip: "10.0.1.45" },
   { time: "09:15", user: "שרה מזרחי", action: "הורדה", doc: "הצעת מחיר פרויקט דלתא", ip: "10.0.2.12" },
   { time: "09:38", user: "אלון גולדשטיין", action: "עריכה", doc: "מפרט טכני PCB-8L Rev C", ip: "10.0.1.78" },
@@ -103,6 +105,19 @@ const actionColor: Record<string, string> = {
 /* ── component ── */
 
 export default function DocumentPermissions() {
+
+  const { data: apiData } = useQuery({
+    queryKey: ["document_permissions"],
+    queryFn: () => authFetch("/api/documents/document-permissions").then(r => r.json()),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const permissionLevels = apiData?.permissionLevels ?? FALLBACK_PERMISSION_LEVELS;
+  const departments = apiData?.departments ?? FALLBACK_DEPARTMENTS;
+  const docTypes = apiData?.docTypes ?? FALLBACK_DOC_TYPES;
+  const externalShares = apiData?.externalShares ?? FALLBACK_EXTERNAL_SHARES;
+  const accessRequests = apiData?.accessRequests ?? FALLBACK_ACCESS_REQUESTS;
+  const accessLog = apiData?.accessLog ?? FALLBACK_ACCESS_LOG;
   const [tab, setTab] = useState("matrix");
   const totalDocs = permissionLevels.reduce((s, p) => s + p.docs, 0);
 

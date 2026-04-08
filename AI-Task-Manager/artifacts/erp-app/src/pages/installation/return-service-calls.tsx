@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,7 +12,7 @@ import {
 
 /* ── Static mock data ─────────────────────────────────────────── */
 
-const serviceCalls = [
+const FALLBACK_SERVICE_CALLS = [
   { id: "SVC-301", insId: "INS-001", project: "מגדלי הים — חיפה", client: "אלון נדל\"ן", date: "2026-04-06", fault: "נזילה", urgency: "קריטי", crew: "צוות שירות א׳", status: "בביצוע", days: 2, cost: 1800, warranty: true },
   { id: "SVC-302", insId: "INS-003", project: "בית חכם — הרצליה", client: "רוזנפלד בע\"מ", date: "2026-04-04", fault: "פעולת נעילה", urgency: "דחוף", crew: "צוות שירות ב׳", status: "ממתין לחלק", days: 4, cost: 950, warranty: true },
   { id: "SVC-303", insId: "INS-005", project: "קניון הדרום — באר שבע", client: "קניון הדרום בע\"מ", date: "2026-04-01", fault: "איטום לקוי", urgency: "קריטי", crew: "צוות שירות א׳", status: "חדש", days: 7, cost: 2200, warranty: true },
@@ -25,7 +27,7 @@ const serviceCalls = [
   { id: "SVC-312", insId: "INS-007", project: "בניין מגורים — נתניה", client: "שיכון ופיתוח", date: "2026-04-02", fault: "זכוכית סדוקה", urgency: "דחוף", crew: "צוות שירות א׳", status: "בביצוע", days: 6, cost: 2800, warranty: true },
 ];
 
-const rootCauseAnalysis = [
+const FALLBACK_ROOT_CAUSE_ANALYSIS = [
   { fault: "נזילה", pct: 22, avgCost: 1575, count: 2, suggestion: "שיפור בדיקת לחץ מים לפני מסירה" },
   { fault: "איטום לקוי", pct: 19, avgCost: 1900, count: 2, suggestion: "מעבר לחומר איטום SikaPro במפרט" },
   { fault: "פעולת נעילה", pct: 17, avgCost: 735, count: 2, suggestion: "בדיקת מנגנון נעילה כפולה בקבלה" },
@@ -36,7 +38,7 @@ const rootCauseAnalysis = [
   { fault: "חלודה", pct: 6, avgCost: 750, count: 1, suggestion: "ציפוי אנודייז כפול לסביבת ים" },
 ];
 
-const warrantyImpact = [
+const FALLBACK_WARRANTY_IMPACT = [
   { label: "עלות אחריות כוללת", value: "₪11,470", desc: "סה\"כ תיקונים באחריות החודש", icon: DollarSign, color: "text-red-400", bg: "bg-red-500/10" },
   { label: "תביעות אחריות בהמתנה", value: "3", desc: "קריאות פתוחות תחת אחריות", icon: ShieldAlert, color: "text-amber-400", bg: "bg-amber-500/10" },
   { label: "אחריות / לא-אחריות", value: "75% / 25%", desc: "9 באחריות מתוך 12 קריאות", icon: Shield, color: "text-blue-400", bg: "bg-blue-500/10" },
@@ -60,7 +62,7 @@ const statusColor: Record<string, string> = {
 
 /* ── KPI cards ────────────────────────────────────────────────── */
 
-const kpiData = [
+const FALLBACK_KPI_DATA = [
   { label: "קריאות פתוחות", value: "7", icon: Phone, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "קריטיות", value: "2", icon: AlertTriangle, color: "text-red-400", bg: "bg-red-500/10" },
   { label: "נסגרו החודש", value: "9", icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10" },
@@ -72,6 +74,55 @@ const kpiData = [
 /* ── Component ────────────────────────────────────────────────── */
 
 export default function ReturnServiceCalls() {
+  const { data: serviceCalls = FALLBACK_SERVICE_CALLS } = useQuery({
+    queryKey: ["installation-service-calls"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/return-service-calls/service-calls");
+      if (!res.ok) return FALLBACK_SERVICE_CALLS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_SERVICE_CALLS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: rootCauseAnalysis = FALLBACK_ROOT_CAUSE_ANALYSIS } = useQuery({
+    queryKey: ["installation-root-cause-analysis"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/return-service-calls/root-cause-analysis");
+      if (!res.ok) return FALLBACK_ROOT_CAUSE_ANALYSIS;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_ROOT_CAUSE_ANALYSIS;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: warrantyImpact = FALLBACK_WARRANTY_IMPACT } = useQuery({
+    queryKey: ["installation-warranty-impact"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/return-service-calls/warranty-impact");
+      if (!res.ok) return FALLBACK_WARRANTY_IMPACT;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_WARRANTY_IMPACT;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: kpiData = FALLBACK_KPI_DATA } = useQuery({
+    queryKey: ["installation-kpi-data"],
+    queryFn: async () => {
+      const res = await authFetch("/api/installation/return-service-calls/kpi-data");
+      if (!res.ok) return FALLBACK_KPI_DATA;
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || json.items || FALLBACK_KPI_DATA;
+    },
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+
   return (
     <div className="p-6 space-y-5" dir="rtl">
       {/* Header */}

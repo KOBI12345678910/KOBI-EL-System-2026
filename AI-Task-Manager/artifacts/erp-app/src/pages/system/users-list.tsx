@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import {
   Users, Search, UserPlus, Pencil, Lock, Unlock, Eye, XCircle,
   ChevronLeft, ChevronRight, Shield, ShieldCheck, ShieldAlert, ShieldOff,
@@ -34,11 +36,11 @@ const STATUS_CONFIG: Record<UserStatus, { label: string; bg: string; text: strin
 };
 
 // ─── Constants ──────────────────────────────────────────────────
-const DEPARTMENTS = [
+const FALLBACK_DEPARTMENTS = [
   "הנהלה", "כספים", "רכש", "מחסן", "ייצור", "מכירות", "הנדסה", "IT", "משאבי אנוש"
 ];
 
-const ALL_ROLES = [
+const FALLBACK_ALL_ROLES = [
   'מנכ"ל', "מנהל מערכת", "מנהל כספים", "מנהל רכש", "מנהל מחסן",
   "מנהל פרויקט", "מנהל מכירות", "חשב/ת", "רכש", "מחסנאי", "צפייה בלבד"
 ];
@@ -58,7 +60,7 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 // ─── Mock Data ──────────────────────────────────────────────────
-const MOCK_USERS: SystemUser[] = [
+const FALLBACK_MOCK_USERS: SystemUser[] = [
   {
     id: 1, employeeCode: "EMP-001", fullName: "דוד כהן", email: "david.cohen@company.co.il",
     phone: "050-1234567", department: "הנהלה", jobTitle: 'מנכ"ל',
@@ -180,6 +182,14 @@ function timeAgo(dateStr: string): string {
 
 // ─── Component ──────────────────────────────────────────────────
 export default function UsersListPage() {
+  const { data: userslistData } = useQuery({
+    queryKey: ["users-list"],
+    queryFn: () => authFetch("/api/system/users_list"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const DEPARTMENTS = userslistData ?? FALLBACK_DEPARTMENTS;
+
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [departmentFilter, setDepartmentFilter] = useState<string>("");

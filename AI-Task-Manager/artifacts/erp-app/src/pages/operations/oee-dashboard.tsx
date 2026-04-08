@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Gauge, Activity, CheckCircle2, AlertTriangle, Clock, TrendingUp, TrendingDown, Search, Download, Settings2, Zap, ShieldCheck, BarChart3, Timer } from "lucide-react";
 
-const productionLines = [
+const FALLBACK_PRODUCTION_LINES = [
   { id: "L1", name: "קו חיתוך אלומיניום A", oee: 87.3, availability: 92.1, performance: 96.5, quality: 98.2, status: "מעולה", product: "פרופיל אלומיניום 6060" },
   { id: "L2", name: "קו חיתוך אלומיניום B", oee: 78.5, availability: 85.0, performance: 94.2, quality: 98.0, status: "טוב", product: "פרופיל אלומיניום 6063" },
   { id: "L3", name: "קו כיפוף מתכת", oee: 72.1, availability: 80.3, performance: 91.8, quality: 97.5, status: "בינוני", product: "מסגרות פלדה" },
@@ -18,7 +20,7 @@ const productionLines = [
   { id: "L8", name: "קו חיתוך זכוכית", oee: 76.9, availability: 83.5, performance: 93.8, quality: 98.1, status: "בינוני", product: "זכוכית מחוסמת" },
 ];
 
-const machineUptime = [
+const FALLBACK_MACHINE_UPTIME = [
   { machine: "מכונת חיתוך CNC #1", uptime: 94.2, downtime: 5.8, plannedDown: 3.2, unplannedDown: 2.6, lastIncident: "תקלת סרוו", status: "פעיל" },
   { machine: "מכונת חיתוך CNC #2", uptime: 88.5, downtime: 11.5, plannedDown: 6.0, unplannedDown: 5.5, lastIncident: "שחיקת כלי", status: "פעיל" },
   { machine: "מכבש הידראולי 200T", uptime: 96.1, downtime: 3.9, plannedDown: 2.5, unplannedDown: 1.4, lastIncident: "דליפת שמן", status: "פעיל" },
@@ -29,7 +31,7 @@ const machineUptime = [
   { machine: "שולחן חיתוך זכוכית", uptime: 89.3, downtime: 10.7, plannedDown: 5.5, unplannedDown: 5.2, lastIncident: "החלפת גלגל", status: "פעיל" },
 ];
 
-const performanceData = [
+const FALLBACK_PERFORMANCE_DATA = [
   { line: "קו חיתוך אלומיניום A", theoretical: 120, actual: 116, rate: 96.5, gap: 4, reason: "החלפת כלי" },
   { line: "קו חיתוך אלומיניום B", theoretical: 120, actual: 113, rate: 94.2, gap: 7, reason: "הזנה איטית" },
   { line: "קו כיפוף מתכת", theoretical: 80, actual: 73, rate: 91.8, gap: 7, reason: "חומר קשה" },
@@ -40,7 +42,7 @@ const performanceData = [
   { line: "קו חיתוך זכוכית", theoretical: 150, actual: 141, rate: 93.8, gap: 9, reason: "פגם בחומר גלם" },
 ];
 
-const qualityData = [
+const FALLBACK_QUALITY_DATA = [
   { product: "פרופיל אלומיניום 6060", fpy: 98.2, defectRate: 1.8, scrap: 0.5, rework: 1.3, topDefect: "שריטות משטח" },
   { product: "פרופיל אלומיניום 6063", fpy: 98.0, defectRate: 2.0, scrap: 0.7, rework: 1.3, topDefect: "סטיית מידות" },
   { product: "מסגרות פלדה", fpy: 97.5, defectRate: 2.5, scrap: 1.0, rework: 1.5, topDefect: "ריתוך לקוי" },
@@ -59,6 +61,14 @@ const SC: Record<string, string> = {
 };
 
 export default function OeeDashboard() {
+  const { data: oeedashboardData } = useQuery({
+    queryKey: ["oee-dashboard"],
+    queryFn: () => authFetch("/api/operations/oee_dashboard"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const productionLines = oeedashboardData ?? FALLBACK_PRODUCTION_LINES;
+
   const [search, setSearch] = useState("");
 
   const avgOee = (productionLines.reduce((s, l) => s + l.oee, 0) / productionLines.length).toFixed(1);

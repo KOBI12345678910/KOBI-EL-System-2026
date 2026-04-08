@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,7 +30,7 @@ const STAGES = [
   { value: "closed_lost", label: "אבד ✗", color: "bg-red-500", probability: 0 },
 ];
 
-const opportunities = [
+const FALLBACK_OPPORTUNITIES = [
   { id: 1, name: "פרויקט מגדל A - שלב ב'", customer: "קבוצת אלון", contact: "אבי כהן", value: 850000, stage: "negotiation", probability: 65, expectedClose: "2026-05-15", owner: "דני כהן", source: "referral", created: "2026-02-10", lastActivity: "2026-04-07", nextAction: "פגישת סיכום מחירים" },
   { id: 2, name: "חיפוי מגורים רמת גן", customer: "שיכון ובינוי", contact: "רונית לוי", value: 620000, stage: "proposal", probability: 40, expectedClose: "2026-06-01", owner: "מיכל לוי", source: "website", created: "2026-03-01", lastActivity: "2026-04-05", nextAction: "שליחת הצעה מעודכנת" },
   { id: 3, name: "משרדי hi-tech הרצליה", customer: "אמות השקעות", contact: "דוד שמיר", value: 480000, stage: "closing", probability: 85, expectedClose: "2026-04-20", owner: "דני כהן", source: "cold_call", created: "2026-01-15", lastActivity: "2026-04-08", nextAction: "חתימת חוזה" },
@@ -42,6 +44,14 @@ const opportunities = [
 const fmt = (v: number) => v >= 1000000 ? `₪${(v / 1000000).toFixed(1)}M` : `₪${(v / 1000).toFixed(0)}K`;
 
 export default function Opportunities() {
+  const { data: opportunitiesData } = useQuery({
+    queryKey: ["opportunities"],
+    queryFn: () => authFetch("/api/sales/opportunities"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const opportunities = opportunitiesData ?? FALLBACK_OPPORTUNITIES;
+
   const [, navigate] = useLocation();
   const [viewMode, setViewMode] = useState<"table" | "kanban">("kanban");
   const [stageFilter, setStageFilter] = useState("all");

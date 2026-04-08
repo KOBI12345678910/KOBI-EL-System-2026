@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -17,7 +19,7 @@ const fmtPct = (v: number) => v.toFixed(1) + "%";
 // ============================================================
 // NEGOTIATION SESSIONS (Active)
 // ============================================================
-const negotiationSessions = [
+const FALLBACK_NEGOTIATION_SESSIONS = [
   { id: "NEG-2026-041", supplier: "Alumil SA", material: "פרופיל אלומיניום 100mm", initialPrice: 55.0, targetPrice: 44.0, currentOffer: 47.5, rounds: 4, discountPct: 13.6, status: "במו\"מ", urgency: "גבוהה", startDate: "2026-03-15", volume: "12,000 מ' רץ" },
   { id: "NEG-2026-042", supplier: "Foshan Glass Co.", material: "זכוכית מחוסמת 10mm", initialPrice: 220.0, targetPrice: 185.0, currentOffer: 195.0, rounds: 3, discountPct: 11.4, status: "המתנה להצעה", urgency: "בינונית", startDate: "2026-03-22", volume: '800 מ"ר' },
   { id: "NEG-2026-043", supplier: "מפעלי ברזל השרון", material: 'ברזל T-45 מגולוון', initialPrice: 14.5, targetPrice: 11.0, currentOffer: 12.8, rounds: 2, discountPct: 11.7, status: "במו\"מ", urgency: "גבוהה", startDate: "2026-04-01", volume: '25,000 ק"ג' },
@@ -31,7 +33,7 @@ const negotiationSessions = [
 // ============================================================
 // NEGOTIATION HISTORY (Completed)
 // ============================================================
-const negotiationHistory = [
+const FALLBACK_NEGOTIATION_HISTORY = [
   { id: "NEG-2026-031", supplier: "Alumil SA", material: "פרופיל אלומיניום 80mm", initialPrice: 42.0, finalPrice: 35.5, targetPrice: 34.0, discountPct: 15.5, rounds: 6, outcome: "הצלחה", savings: 39000, closedDate: "2026-02-28" },
   { id: "NEG-2026-028", supplier: "Foshan Glass Co.", material: "זכוכית מחוסמת 8mm", initialPrice: 195.0, finalPrice: 178.0, targetPrice: 170.0, discountPct: 8.7, rounds: 4, outcome: "הצלחה חלקית", savings: 13600, closedDate: "2026-02-15" },
   { id: "NEG-2026-025", supplier: "מפעלי ברזל השרון", material: "ברזל T-30", initialPrice: 11.0, finalPrice: 9.8, targetPrice: 9.5, discountPct: 10.9, rounds: 3, outcome: "הצלחה", savings: 18000, closedDate: "2026-02-01" },
@@ -44,7 +46,7 @@ const negotiationHistory = [
 // ============================================================
 // PRICE TARGET VS ACTUAL COMPARISON
 // ============================================================
-const priceComparisons = [
+const FALLBACK_PRICE_COMPARISONS = [
   { material: "פרופיל אלומיניום 100mm", supplier: "Alumil SA", initialPrice: 55.0, targetPrice: 44.0, currentOffer: 47.5, gap: 3.5, gapPct: 8.0, achievedPct: 68.2 },
   { material: "זכוכית מחוסמת 10mm", supplier: "Foshan Glass Co.", initialPrice: 220.0, targetPrice: 185.0, currentOffer: 195.0, gap: 10.0, gapPct: 5.4, achievedPct: 71.4 },
   { material: 'ברזל T-45 מגולוון', supplier: "מפעלי ברזל השרון", initialPrice: 14.5, targetPrice: 11.0, currentOffer: 12.8, gap: 1.8, gapPct: 16.4, achievedPct: 48.6 },
@@ -58,7 +60,7 @@ const priceComparisons = [
 // ============================================================
 // AI STRATEGY RECOMMENDATIONS
 // ============================================================
-const aiStrategies = [
+const FALLBACK_AI_STRATEGIES = [
   { id: "NEG-2026-041", supplier: "Alumil SA", material: "פרופיל אלומיניום 100mm", confidence: 87, recommendation: "הגדל נפח הזמנה ל-15,000 מ' רץ ודרוש הנחת כמות נוספת. ספק זה רגיש במיוחד לנפח — היסטורית הציע הנחות של 3-5% נוספים בהזמנות מעל 14,000. המלצה: הצע חוזה שנתי עם התחייבות כמותית.", strategy: "הנחת כמות + חוזה שנתי", risk: "נמוכה", expectedDiscount: "16-18%" },
   { id: "NEG-2026-042", supplier: "Foshan Glass Co.", material: "זכוכית מחוסמת 10mm", confidence: 72, recommendation: "הצג הצעה מתחרה מ-AGC Glass כמנוף לחץ. ספק זה הוריד מחירים ב-4 מתוך 5 מו\"מ קודמים כשהוצגה הצעה חלופית. שקול גם תשלום מוקדם (30 יום במקום 60) כתמריץ להנחה נוספת.", strategy: "הצעה מתחרה + תנאי תשלום", risk: "בינונית", expectedDiscount: "13-15%" },
   { id: "NEG-2026-043", supplier: "מפעלי ברזל השרון", material: 'ברזל T-45 מגולוון', confidence: 65, recommendation: "מחירי הברזל בשוק העולמי ירדו ב-8% ברבעון האחרון. הצג נתוני שוק עדכניים ודרוש התאמת מחיר. ספק זה לרוב מגיב לנתוני שוק תוך סבב אחד. טקטיקה: הצג גרף מחירי LME.", strategy: "מינוף נתוני שוק", risk: "נמוכה", expectedDiscount: "14-16%" },
@@ -92,6 +94,14 @@ const riskColors: Record<string, string> = {
 };
 
 export default function VendorNegotiation() {
+  const { data: vendornegotiationData } = useQuery({
+    queryKey: ["vendor-negotiation"],
+    queryFn: () => authFetch("/api/procurement/vendor_negotiation"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const negotiationSessions = vendornegotiationData ?? FALLBACK_NEGOTIATION_SESSIONS;
+
   const [activeTab, setActiveTab] = useState("active");
 
   const totalActive = negotiationSessions.length;

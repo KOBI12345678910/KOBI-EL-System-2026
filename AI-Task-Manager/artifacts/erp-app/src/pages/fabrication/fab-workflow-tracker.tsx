@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +31,7 @@ interface Order {
   progress: number; timeAtStation: string; delay: string | null; priority: "רגיל" | "דחוף" | "קריטי";
 }
 
-const ORDERS: Order[] = [
+const FALLBACK_ORDERS: Order[] = [
   { id: "WO-4401", customer: "אלומיניום הגליל", product: "חלון דו-כנפי 180x150", station: "ציפוי", progress: 71, timeAtStation: "2:15 שעות", delay: null, priority: "רגיל" },
   { id: "WO-4402", customer: "קבוצת שפיר", product: "דלת כניסה מחוזקת", station: "הרכבה", progress: 43, timeAtStation: "3:40 שעות", delay: "עיכוב חומרים - 45 דק'", priority: "דחוף" },
   { id: "WO-4403", customer: "מנרב הנדסה", product: "ויטרינה מסחרית 300x250", station: "חיתוך", progress: 14, timeAtStation: "0:50 שעות", delay: null, priority: "רגיל" },
@@ -47,7 +49,7 @@ interface WorkStation {
   efficiency: number; operator: string; status: "פעיל" | "עומס" | "תחזוקה";
 }
 
-const WORKSTATIONS: WorkStation[] = [
+const FALLBACK_WORKSTATIONS: WorkStation[] = [
   { name: "חיתוך", queue: 4, throughputPerHour: 12, efficiency: 88, operator: "יוסי כהן", status: "פעיל" },
   { name: "עיבוד שבבי", queue: 7, throughputPerHour: 8, efficiency: 72, operator: "מוחמד חסן", status: "עומס" },
   { name: "הרכבה", queue: 3, throughputPerHour: 6, efficiency: 81, operator: "דני לוי", status: "פעיל" },
@@ -58,19 +60,19 @@ const WORKSTATIONS: WorkStation[] = [
   { name: "עיבוד שבבי", queue: 6, throughputPerHour: 7, efficiency: 65, operator: "סרגיי ב.", status: "תחזוקה" },
 ];
 
-const BOTTLENECKS = [
+const FALLBACK_BOTTLENECKS = [
   { station: "עיבוד שבבי", avgWait: "47 דק'", maxWait: "1:32 שעות", queueDepth: 13, recommendation: "הוספת משמרת שנייה או מכונת CNC נוספת" },
   { station: "ציפוי", avgWait: "28 דק'", maxWait: "0:55 שעות", queueDepth: 5, recommendation: "אופטימיזציה של תהליך הייבוש — מייבש UV" },
   { station: "הרכבה", avgWait: "22 דק'", maxWait: "0:40 שעות", queueDepth: 3, recommendation: "תקנון חומרים מראש (Kit) לכל הזמנה" },
 ];
 
-const DAILY_THROUGHPUT = [
+const FALLBACK_DAILY_THROUGHPUT = [
   { day: "א'", completed: 42, target: 45 }, { day: "ב'", completed: 48, target: 45 },
   { day: "ג'", completed: 38, target: 45 }, { day: "ד'", completed: 51, target: 45 },
   { day: "ה'", completed: 44, target: 45 }, { day: "ו'", completed: 29, target: 30 },
 ];
 
-const WEEKLY_CYCLE = [
+const FALLBACK_WEEKLY_CYCLE = [
   { week: "שבוע 10", avgCycle: 6.2, target: 5.5 }, { week: "שבוע 11", avgCycle: 5.8, target: 5.5 },
   { week: "שבוע 12", avgCycle: 5.4, target: 5.5 }, { week: "שבוע 13", avgCycle: 5.9, target: 5.5 },
   { week: "שבוע 14", avgCycle: 5.1, target: 5.5 },
@@ -84,6 +86,40 @@ const stationStatusColor: Record<string, string> = {
 };
 
 export default function FabWorkflowTracker() {
+  const { data: apiORDERS } = useQuery({
+    queryKey: ["/api/fabrication/fab-workflow-tracker/orders"],
+    queryFn: () => authFetch("/api/fabrication/fab-workflow-tracker/orders").then(r => r.json()).catch(() => null),
+  });
+  const ORDERS = Array.isArray(apiORDERS) ? apiORDERS : (apiORDERS?.data ?? apiORDERS?.items ?? FALLBACK_ORDERS);
+
+
+  const { data: apiWORKSTATIONS } = useQuery({
+    queryKey: ["/api/fabrication/fab-workflow-tracker/workstations"],
+    queryFn: () => authFetch("/api/fabrication/fab-workflow-tracker/workstations").then(r => r.json()).catch(() => null),
+  });
+  const WORKSTATIONS = Array.isArray(apiWORKSTATIONS) ? apiWORKSTATIONS : (apiWORKSTATIONS?.data ?? apiWORKSTATIONS?.items ?? FALLBACK_WORKSTATIONS);
+
+
+  const { data: apiBOTTLENECKS } = useQuery({
+    queryKey: ["/api/fabrication/fab-workflow-tracker/bottlenecks"],
+    queryFn: () => authFetch("/api/fabrication/fab-workflow-tracker/bottlenecks").then(r => r.json()).catch(() => null),
+  });
+  const BOTTLENECKS = Array.isArray(apiBOTTLENECKS) ? apiBOTTLENECKS : (apiBOTTLENECKS?.data ?? apiBOTTLENECKS?.items ?? FALLBACK_BOTTLENECKS);
+
+
+  const { data: apiDAILY_THROUGHPUT } = useQuery({
+    queryKey: ["/api/fabrication/fab-workflow-tracker/daily-throughput"],
+    queryFn: () => authFetch("/api/fabrication/fab-workflow-tracker/daily-throughput").then(r => r.json()).catch(() => null),
+  });
+  const DAILY_THROUGHPUT = Array.isArray(apiDAILY_THROUGHPUT) ? apiDAILY_THROUGHPUT : (apiDAILY_THROUGHPUT?.data ?? apiDAILY_THROUGHPUT?.items ?? FALLBACK_DAILY_THROUGHPUT);
+
+
+  const { data: apiWEEKLY_CYCLE } = useQuery({
+    queryKey: ["/api/fabrication/fab-workflow-tracker/weekly-cycle"],
+    queryFn: () => authFetch("/api/fabrication/fab-workflow-tracker/weekly-cycle").then(r => r.json()).catch(() => null),
+  });
+  const WEEKLY_CYCLE = Array.isArray(apiWEEKLY_CYCLE) ? apiWEEKLY_CYCLE : (apiWEEKLY_CYCLE?.data ?? apiWEEKLY_CYCLE?.items ?? FALLBACK_WEEKLY_CYCLE);
+
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("live");
 

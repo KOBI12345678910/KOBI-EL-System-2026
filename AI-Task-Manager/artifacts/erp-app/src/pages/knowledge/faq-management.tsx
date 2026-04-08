@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { HelpCircle, FolderOpen, Eye, MessageCircleQuestion, ThumbsUp, Search, Plus, Download, BarChart3, TrendingUp, AlertCircle } from "lucide-react";
 
-const faqs = [
+const FALLBACK_FAQS = [
   { id: 1, question: "מהם סוגי האלומיניום שאתם עובדים איתם?", answer: "אנו עובדים עם פרופילי אלומיניום 6063-T5 ו-6061-T6, כולל פרופילים תרמיים עם גשר תרמי מפוליאמיד.", category: "מוצרים", views: 456, helpful: 412 },
   { id: 2, question: "מה ההבדל בין זכוכית מחוסמת לזכוכית רב-שכבתית?", answer: "זכוכית מחוסמת עוברת חימום וקירור מהיר, חזקה פי 5 מרגילה. זכוכית רב-שכבתית מורכבת משתי שכבות זכוכית עם שכבת PVB ביניהן — במקרה שבירה, השברים נשארים מוחזקים.", category: "מוצרים", views: 389, helpful: 367 },
   { id: 3, question: "כמה זמן לוקחת התקנת חלונות לדירה?", answer: "התקנת חלונות לדירת 4 חדרים נמשכת בדרך כלל 2-3 ימי עבודה, תלוי בכמות ובמורכבות הפתחים.", category: "התקנה", views: 678, helpful: 623 },
@@ -25,7 +27,7 @@ const faqs = [
   { id: 15, question: "האם ניתן להחליף זכוכית בלבד?", answer: "כן, ניתן להחליף זכוכית בלבד ללא החלפת מסגרת. נדרש ביקור טכנאי למדידה ואז הזמנת זכוכית בהתאמה. זמן טיפול: 5-7 ימי עבודה.", category: "אחריות", views: 267, helpful: 234 },
 ];
 
-const faqCategories = [
+const FALLBACK_FAQ_CATEGORIES = [
   { name: "מוצרים", count: 4, color: "bg-blue-500/20 text-blue-300" },
   { name: "התקנה", count: 3, color: "bg-emerald-500/20 text-emerald-300" },
   { name: "אחריות", count: 3, color: "bg-orange-500/20 text-orange-300" },
@@ -33,7 +35,7 @@ const faqCategories = [
   { name: "טכני", count: 3, color: "bg-cyan-500/20 text-cyan-300" },
 ];
 
-const unanswered = [
+const FALLBACK_UNANSWERED = [
   { id: 1, question: "האם יש אפשרות לחלונות עגולים?", askedBy: "לקוח — פרויקט מגדלי הים", date: "2026-04-07", category: "מוצרים" },
   { id: 2, question: "מה עלות תיקון שבר בזכוכית בידוד?", askedBy: "לקוח — אורי מזרחי", date: "2026-04-06", category: "מחירים" },
   { id: 3, question: "האם יש פתרון לחלון שלא נסגר הרמטית?", askedBy: "לקוח — דירת הפארק", date: "2026-04-05", category: "טכני" },
@@ -41,7 +43,7 @@ const unanswered = [
   { id: 5, question: "מהי עמידות הציפוי לקרינת שמש?", askedBy: "לקוח — מלון הים", date: "2026-04-03", category: "טכני" },
 ];
 
-const analyticsData = [
+const FALLBACK_ANALYTICS_DATA = [
   { term: "מחיר חלון אלומיניום", searches: 245, clicks: 198, ctr: 81 },
   { term: "אחריות חלונות", searches: 189, clicks: 156, ctr: 83 },
   { term: "זמן התקנה", searches: 167, clicks: 142, ctr: 85 },
@@ -56,7 +58,7 @@ const totalViews = faqs.reduce((s, f) => s + f.views, 0);
 const totalHelpful = faqs.reduce((s, f) => s + f.helpful, 0);
 const satisfactionPct = Math.round((totalHelpful / totalViews) * 100);
 
-const kpis = [
+const FALLBACK_KPIS = [
   { label: "סה\"כ שאלות", value: faqs.length.toString(), icon: HelpCircle, color: "text-blue-400", bg: "bg-blue-500/10" },
   { label: "קטגוריות", value: faqCategories.length.toString(), icon: FolderOpen, color: "text-emerald-400", bg: "bg-emerald-500/10" },
   { label: "צפיות החודש", value: totalViews.toLocaleString(), icon: Eye, color: "text-purple-400", bg: "bg-purple-500/10" },
@@ -65,6 +67,14 @@ const kpis = [
 ];
 
 export default function FaqManagement() {
+  const { data: faqmanagementData } = useQuery({
+    queryKey: ["faq-management"],
+    queryFn: () => authFetch("/api/knowledge/faq_management"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const faqs = faqmanagementData ?? FALLBACK_FAQS;
+
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("all");
 

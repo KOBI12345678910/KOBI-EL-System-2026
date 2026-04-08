@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { authFetch } from "@/lib/utils";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +14,7 @@ import {
 } from "lucide-react";
 
 // ── Prototypes ──
-const prototypes = [
+const FALLBACK_PROTOTYPES = [
   { id: "PRT-001", name: "פרופיל תרמי 78 מ\"מ", material: "אלומיניום 6063-T5", stage: "אושר", designer: "יוסי כהן", startDate: "2026-01-15", progress: 100, tests: 6 },
   { id: "PRT-002", name: "חלון הזזה כפול אטום", material: "אלומיניום + זכוכית כפולה", stage: "בבדיקה", designer: "שרה לוי", startDate: "2026-02-10", progress: 72, tests: 4 },
   { id: "PRT-003", name: "דלת כניסה משוריינת", material: "פלדה + אלומיניום", stage: "ייצור", designer: "דוד מזרחי", startDate: "2026-03-01", progress: 45, tests: 0 },
@@ -24,7 +26,7 @@ const prototypes = [
 ];
 
 // ── Test Results ──
-const testResults = [
+const FALLBACK_TESTRESULTS = [
   { id: "TST-001", prototype: "PRT-001", test: "עמידות לרוח", standard: "EN 12210", result: "C5/B5", pass: true, date: "2026-03-15", tester: "מעבדת עמידות" },
   { id: "TST-002", prototype: "PRT-001", test: "אטימות מים", standard: "EN 12208", result: "E1050", pass: true, date: "2026-03-17", tester: "מעבדת עמידות" },
   { id: "TST-003", prototype: "PRT-002", test: "חדירות אוויר", standard: "EN 12207", result: "Class 4", pass: true, date: "2026-03-22", tester: "מעבדת אטימות" },
@@ -40,7 +42,7 @@ const testResults = [
 ];
 
 // ── Test Schedule ──
-const schedule = [
+const FALLBACK_SCHEDULE = [
   { date: "2026-04-10", prototype: "PRT-003", test: "עמידות לרוח", lab: "מעבדת עמידות", priority: "גבוהה" },
   { date: "2026-04-12", prototype: "PRT-005", test: "חדירות אוויר", lab: "מעבדת אטימות", priority: "רגילה" },
   { date: "2026-04-14", prototype: "PRT-003", test: "אטימות מים", lab: "מעבדת עמידות", priority: "גבוהה" },
@@ -52,7 +54,7 @@ const schedule = [
 ];
 
 // ── Lab Equipment ──
-const equipment = [
+const FALLBACK_EQUIPMENT = [
   { id: "EQP-01", name: "תא לחץ רוח", lab: "מעבדת עמידות", lastCal: "2026-02-01", nextCal: "2026-08-01", status: "תקין" },
   { id: "EQP-02", name: "מערכת ריסוס מים", lab: "מעבדת עמידות", lastCal: "2026-01-15", nextCal: "2026-07-15", status: "תקין" },
   { id: "EQP-03", name: "מד חדירות אוויר", lab: "מעבדת אטימות", lastCal: "2025-12-20", nextCal: "2026-06-20", status: "דרוש כיול" },
@@ -100,6 +102,33 @@ const th = "p-3 text-right text-muted-foreground font-medium text-xs";
 const td = "p-3 text-sm";
 
 export default function PrototypeTestingPage() {
+  const { data: apiprototypes } = useQuery({
+    queryKey: ["/api/engineering/prototype-testing/prototypes"],
+    queryFn: () => authFetch("/api/engineering/prototype-testing/prototypes").then(r => r.json()).catch(() => null),
+  });
+  const prototypes = Array.isArray(apiprototypes) ? apiprototypes : (apiprototypes?.data ?? apiprototypes?.items ?? FALLBACK_PROTOTYPES);
+
+
+  const { data: apitestResults } = useQuery({
+    queryKey: ["/api/engineering/prototype-testing/testresults"],
+    queryFn: () => authFetch("/api/engineering/prototype-testing/testresults").then(r => r.json()).catch(() => null),
+  });
+  const testResults = Array.isArray(apitestResults) ? apitestResults : (apitestResults?.data ?? apitestResults?.items ?? FALLBACK_TESTRESULTS);
+
+
+  const { data: apischedule } = useQuery({
+    queryKey: ["/api/engineering/prototype-testing/schedule"],
+    queryFn: () => authFetch("/api/engineering/prototype-testing/schedule").then(r => r.json()).catch(() => null),
+  });
+  const schedule = Array.isArray(apischedule) ? apischedule : (apischedule?.data ?? apischedule?.items ?? FALLBACK_SCHEDULE);
+
+
+  const { data: apiequipment } = useQuery({
+    queryKey: ["/api/engineering/prototype-testing/equipment"],
+    queryFn: () => authFetch("/api/engineering/prototype-testing/equipment").then(r => r.json()).catch(() => null),
+  });
+  const equipment = Array.isArray(apiequipment) ? apiequipment : (apiequipment?.data ?? apiequipment?.items ?? FALLBACK_EQUIPMENT);
+
   const [tab, setTab] = useState("prototypes");
   const [search, setSearch] = useState("");
 
