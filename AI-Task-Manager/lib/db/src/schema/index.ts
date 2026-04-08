@@ -1,4 +1,5 @@
 export * from "./tenants";
+export * from "./bash44-ai-system";
 export * from "./ai-providers";
 export * from "./ai-models";
 export * from "./ai-api-keys";
