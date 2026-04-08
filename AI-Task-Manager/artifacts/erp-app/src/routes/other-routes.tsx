@@ -413,6 +413,19 @@ const ProductDesignPage = lazyPage(() => import("@/pages/product-dev/product-des
 const ProductCertificationsPage = lazyPage(() => import("@/pages/product-dev/product-certifications"));
 const ProductLaunchesPage = lazyPage(() => import("@/pages/product-dev/product-launches"));
 
+// Projects Module Expansion (11 new pages)
+const Project360Page = lazyPage(() => import("@/pages/projects/project-360"));
+const ProjectFinanceHubPage = lazyPage(() => import("@/pages/projects/project-finance-hub"));
+const ProjectProcurementHubPage = lazyPage(() => import("@/pages/projects/project-procurement-hub"));
+const ProjectProductionTrackingPage = lazyPage(() => import("@/pages/projects/project-production-tracking"));
+const ProjectInstallationHubPage = lazyPage(() => import("@/pages/projects/project-installation-hub"));
+const ProjectAiInsightsPage = lazyPage(() => import("@/pages/projects/project-ai-insights"));
+const ProjectWorkflowPage = lazyPage(() => import("@/pages/projects/project-workflow"));
+const ProjectProfitabilityPage = lazyPage(() => import("@/pages/projects/project-profitability"));
+const ProjectEventsAuditPage = lazyPage(() => import("@/pages/projects/project-events-audit"));
+const ProjectAlertsNewPage = lazyPage(() => import("@/pages/projects/project-alerts"));
+const ProjectSettingsNewPage = lazyPage(() => import("@/pages/projects/project-settings"));
+
 export const OtherRoutes = (
 
     <>
@@ -872,6 +885,19 @@ export const OtherRoutes = (
       <Route path="/product-dev/design" component={ProductDesignPage} />
       <Route path="/product-dev/certifications" component={ProductCertificationsPage} />
       <Route path="/product-dev/launches" component={ProductLaunchesPage} />
+
+      {/* Projects Module Expansion */}
+      <Route path="/projects/360/:id?" component={Project360Page} />
+      <Route path="/projects/finance-hub" component={ProjectFinanceHubPage} />
+      <Route path="/projects/procurement-hub" component={ProjectProcurementHubPage} />
+      <Route path="/projects/production-tracking" component={ProjectProductionTrackingPage} />
+      <Route path="/projects/installation-hub" component={ProjectInstallationHubPage} />
+      <Route path="/projects/ai-insights" component={ProjectAiInsightsPage} />
+      <Route path="/projects/workflow" component={ProjectWorkflowPage} />
+      <Route path="/projects/profitability" component={ProjectProfitabilityPage} />
+      <Route path="/projects/events-audit" component={ProjectEventsAuditPage} />
+      <Route path="/projects/alerts" component={ProjectAlertsNewPage} />
+      <Route path="/projects/settings" component={ProjectSettingsNewPage} />
 
     </>
 );
