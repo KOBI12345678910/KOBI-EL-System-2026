@@ -1,193 +1,245 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { authFetch } from "@/lib/utils";
-import { duplicateRecord } from "@/lib/duplicate-record";
-import { globalConfirm } from "@/components/confirm-dialog";
-import { usePermissions } from "@/hooks/use-permissions";
-import ExportDropdown from "@/components/export-dropdown";
-import { Search, Plus, Edit2, Trash2, ArrowUpDown, X, Save, Loader2, ArrowRightLeft , Copy } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { toast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  ArrowLeftRight, PackagePlus, PackageMinus, Repeat2, SlidersHorizontal,
+  TrendingUp, Warehouse, Clock, User, FileText, Search, ShieldCheck,
+} from "lucide-react";
 
-const API = "/api";
-const PAGE_SIZE = 25;
-const INPUT_CLS = "w-full rounded-lg border border-border bg-muted/50 px-3 py-2 text-foreground focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors";
-const FIELD = (props: { label: string; children: React.ReactNode }) => (<div><label className="block text-sm font-medium text-gray-300 mb-1">{props.label}</label>{props.children}</div>);
-const TYPE_COLORS: Record<string, string> = { in: "bg-green-500/20 text-green-400", out: "bg-red-500/20 text-red-400", transfer: "bg-blue-500/20 text-blue-400", adjustment: "bg-amber-500/20 text-amber-400" };
-const TYPE_LABELS: Record<string, string> = { in: "\u05DB\u05E0\u05D9\u05E1\u05D4", out: "\u05D9\u05E6\u05D9\u05D0\u05D4", transfer: "\u05D4\u05E2\u05D1\u05E8\u05D4", adjustment: "\u05D4\u05EA\u05D0\u05DE\u05D4" };
+/* ── helpers ── */
+const fmt = (n: number) => "₪" + n.toLocaleString("he-IL");
+const ts = (d: string) => new Date(d).toLocaleString("he-IL", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" });
+
+type MoveType = "כניסה" | "יציאה" | "העברה" | "התאמה" | "שריון" | "הנפקה";
+
+interface Movement {
+  id: number;
+  timestamp: string;
+  type: MoveType;
+  item: string;
+  sku: string;
+  qty: number;
+  unitPrice: number;
+  fromWarehouse: string;
+  fromZone: string;
+  toWarehouse: string;
+  toZone: string;
+  reference: string;
+  user: string;
+  notes: string;
+}
+
+const TYPE_META: Record<MoveType, { color: string; icon: typeof PackagePlus }> = {
+  "כניסה":  { color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30", icon: PackagePlus },
+  "יציאה":  { color: "bg-red-500/20 text-red-400 border-red-500/30", icon: PackageMinus },
+  "העברה":  { color: "bg-blue-500/20 text-blue-400 border-blue-500/30", icon: Repeat2 },
+  "התאמה":  { color: "bg-amber-500/20 text-amber-400 border-amber-500/30", icon: SlidersHorizontal },
+  "שריון":  { color: "bg-purple-500/20 text-purple-400 border-purple-500/30", icon: ShieldCheck },
+  "הנפקה":  { color: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30", icon: FileText },
+};
+
+const MOVEMENTS: Movement[] = [
+  { id: 1, timestamp: "2026-04-08T07:12:00", type: "כניסה", item: "פלדה גלוונית 2 מ\"מ", sku: "STL-G2", qty: 500, unitPrice: 28, fromWarehouse: "ספק חיצוני", fromZone: "-", toWarehouse: "מחסן מרכזי", toZone: "A-01", reference: "PO-4410", user: "דני כהן", notes: "קבלה מספק מרכזי" },
+  { id: 2, timestamp: "2026-04-08T07:35:00", type: "כניסה", item: "ברגים M8x30 נירוסטה", sku: "BLT-M8", qty: 2000, unitPrice: 1.2, fromWarehouse: "ספק חיצוני", fromZone: "-", toWarehouse: "מחסן מרכזי", toZone: "C-03", reference: "PO-4412", user: "דני כהן", notes: "הזמנה חוזרת" },
+  { id: 3, timestamp: "2026-04-08T08:05:00", type: "יציאה", item: "אלומיניום 6061 T6", sku: "ALU-6061", qty: 120, unitPrice: 45, fromWarehouse: "מחסן מרכזי", fromZone: "B-02", toWarehouse: "קו ייצור 1", toZone: "-", reference: "WO-7801", user: "שירה לוי", notes: "הנפקה לפקודת עבודה" },
+  { id: 4, timestamp: "2026-04-08T08:22:00", type: "העברה", item: "מנועי סרוו 400W", sku: "SRV-400", qty: 10, unitPrice: 890, fromWarehouse: "מחסן מרכזי", fromZone: "D-05", toWarehouse: "מחסן קו 2", toZone: "E-01", reference: "TR-1150", user: "יוסי אברהם", notes: "העברה לקו הרכבה" },
+  { id: 5, timestamp: "2026-04-08T08:48:00", type: "התאמה", item: "צינורות PVC 3 אינץ'", sku: "PVC-3IN", qty: -15, unitPrice: 18, fromWarehouse: "מחסן מרכזי", fromZone: "F-02", toWarehouse: "מחסן מרכזי", toZone: "F-02", reference: "ADJ-0088", user: "מיכל רוזן", notes: "התאמה לאחר ספירה" },
+  { id: 6, timestamp: "2026-04-08T09:10:00", type: "כניסה", item: "לוחות PCB דגם X7", sku: "PCB-X7", qty: 300, unitPrice: 32, fromWarehouse: "ספק חיצוני", fromZone: "-", toWarehouse: "מחסן אלקטרוניקה", toZone: "G-01", reference: "GRN-2245", user: "דני כהן", notes: "קבלת סחורה - בדיקת איכות עברה" },
+  { id: 7, timestamp: "2026-04-08T09:30:00", type: "שריון", item: "פלדה גלוונית 2 מ\"מ", sku: "STL-G2", qty: 200, unitPrice: 28, fromWarehouse: "מחסן מרכזי", fromZone: "A-01", toWarehouse: "מחסן מרכזי", toZone: "A-01", reference: "WO-7805", user: "שירה לוי", notes: "שריון להזמנת לקוח #1189" },
+  { id: 8, timestamp: "2026-04-08T09:55:00", type: "יציאה", item: "חוט ריתוך 1.2 מ\"מ", sku: "WLD-12", qty: 50, unitPrice: 65, fromWarehouse: "מחסן מרכזי", fromZone: "H-04", toWarehouse: "קו ייצור 3", toZone: "-", reference: "WO-7803", user: "אבי מזרחי", notes: "חומר מתכלה לקו ריתוך" },
+  { id: 9, timestamp: "2026-04-08T10:15:00", type: "הנפקה", item: "ציפוי אפוקסי 5 ליטר", sku: "EPX-5L", qty: 8, unitPrice: 220, fromWarehouse: "מחסן כימיקלים", fromZone: "K-01", toWarehouse: "תחנת ציפוי", toZone: "-", reference: "WO-7806", user: "יוסי אברהם", notes: "הנפקה לתחנת ציפוי" },
+  { id: 10, timestamp: "2026-04-08T10:40:00", type: "העברה", item: "ברגים M8x30 נירוסטה", sku: "BLT-M8", qty: 500, unitPrice: 1.2, fromWarehouse: "מחסן מרכזי", fromZone: "C-03", toWarehouse: "מחסן קו 1", toZone: "L-02", reference: "TR-1151", user: "מיכל רוזן", notes: "חידוש מלאי קו ייצור" },
+  { id: 11, timestamp: "2026-04-08T11:00:00", type: "כניסה", item: "רצועות גומי תעשייתי", sku: "RBR-IND", qty: 150, unitPrice: 14, fromWarehouse: "ספק חיצוני", fromZone: "-", toWarehouse: "מחסן מרכזי", toZone: "M-03", reference: "PO-4415", user: "דני כהן", notes: "אספקה מתוזמנת" },
+  { id: 12, timestamp: "2026-04-08T11:22:00", type: "יציאה", item: "מנועי סרוו 400W", sku: "SRV-400", qty: 4, unitPrice: 890, fromWarehouse: "מחסן קו 2", fromZone: "E-01", toWarehouse: "קו הרכבה 2", toZone: "-", reference: "WO-7808", user: "שירה לוי", notes: "הנפקה להרכבת מכלול" },
+  { id: 13, timestamp: "2026-04-08T11:45:00", type: "התאמה", item: "מסבים SKF 6205", sku: "BRG-6205", qty: 8, unitPrice: 42, fromWarehouse: "מחסן מרכזי", fromZone: "N-02", toWarehouse: "מחסן מרכזי", toZone: "N-02", reference: "ADJ-0089", user: "אבי מזרחי", notes: "נמצאו יח' נוספות בספירה" },
+  { id: 14, timestamp: "2026-04-08T12:10:00", type: "שריון", item: "לוחות PCB דגם X7", sku: "PCB-X7", qty: 100, unitPrice: 32, fromWarehouse: "מחסן אלקטרוניקה", fromZone: "G-01", toWarehouse: "מחסן אלקטרוניקה", toZone: "G-01", reference: "WO-7810", user: "מיכל רוזן", notes: "שריון לפרויקט אלפא" },
+  { id: 15, timestamp: "2026-04-08T12:35:00", type: "הנפקה", item: "דבק תעשייתי 3M", sku: "GLU-3M", qty: 12, unitPrice: 85, fromWarehouse: "מחסן כימיקלים", fromZone: "K-02", toWarehouse: "קו הרכבה 1", toZone: "-", reference: "WO-7811", user: "יוסי אברהם", notes: "הנפקה לפי דרישת מנהל קו" },
+  { id: 16, timestamp: "2026-04-08T13:00:00", type: "העברה", item: "אלומיניום 6061 T6", sku: "ALU-6061", qty: 80, unitPrice: 45, fromWarehouse: "מחסן מרכזי", fromZone: "B-02", toWarehouse: "מחסן חיצוני דרום", toZone: "P-01", reference: "TR-1152", user: "דני כהן", notes: "העברה למחסן גלישה" },
+  { id: 17, timestamp: "2026-04-08T13:25:00", type: "יציאה", item: "רצועות גומי תעשייתי", sku: "RBR-IND", qty: 30, unitPrice: 14, fromWarehouse: "מחסן מרכזי", fromZone: "M-03", toWarehouse: "קו ייצור 2", toZone: "-", reference: "WO-7812", user: "אבי מזרחי", notes: "חומר מתכלה" },
+  { id: 18, timestamp: "2026-04-08T13:50:00", type: "כניסה", item: "מחברים חשמליים DB25", sku: "CON-DB25", qty: 400, unitPrice: 8.5, fromWarehouse: "ספק חיצוני", fromZone: "-", toWarehouse: "מחסן אלקטרוניקה", toZone: "G-03", reference: "GRN-2246", user: "שירה לוי", notes: "קבלה + בדיקת דגימה" },
+];
+
+const TAB_MAP: Record<string, MoveType[] | null> = {
+  "all": null,
+  "in": ["כניסה"],
+  "out": ["יציאה"],
+  "transfer": ["העברה"],
+  "adjust": ["התאמה"],
+};
 
 export default function StockMovementsPage() {
-  const { permissions } = usePermissions();
-  const isSuperAdmin = permissions?.isSuperAdmin === true;
-  const [items, setItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<any>({});
-  const [editId, setEditId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [sortField, setSortField] = useState<string>("created_at");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [typeFilter, setTypeFilter] = useState("all");
-  const [page, setPage] = useState(1);
 
-  useEffect(() => { const t = setTimeout(() => setDebouncedSearch(search), 300); return () => clearTimeout(t); }, [search]);
-
-  const load = useCallback(async () => {
-    try { setLoading(true); setError(null);
-      const res = await authFetch(`${API}/stock-movements`);
-      if (res.ok) { const data = await res.json(); setItems(Array.isArray(data) ? data : data.data || data.items || []); }
-      else setError("\u05E9\u05D2\u05D9\u05D0\u05D4 \u05D1\u05D8\u05E2\u05D9\u05E0\u05EA \u05E0\u05EA\u05D5\u05E0\u05D9\u05DD");
-    } catch (e: any) { setError(e.message); }
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { load(); }, [load]);
-
-  const save = async () => {
-    setSaving(true);
-    try {
-      const method = editId ? "PUT" : "POST";
-      const url = editId ? `${API}/stock-movements/${editId}` : `${API}/stock-movements`;
-      const res = await authFetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
-      if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || "\u05E9\u05D2\u05D9\u05D0\u05D4 \u05D1\u05E9\u05DE\u05D9\u05E8\u05D4"); }
-      toast({ title: editId ? "\u05EA\u05E0\u05D5\u05E2\u05D4 \u05E2\u05D5\u05D3\u05DB\u05E0\u05D4 \u05D1\u05D4\u05E6\u05DC\u05D7\u05D4" : "\u05EA\u05E0\u05D5\u05E2\u05D4 \u05E0\u05D5\u05E1\u05E4\u05D4 \u05D1\u05D4\u05E6\u05DC\u05D7\u05D4" });
-      setForm({}); setEditId(null); setShowForm(false); await load();
-    } catch (e: any) { toast({ title: "\u05E9\u05D2\u05D9\u05D0\u05D4", description: e.message, variant: "destructive" }); }
-    setSaving(false);
-  };
-
-  const remove = async (id: number) => {
-    if (!await globalConfirm("\u05D4\u05D0\u05DD \u05DC\u05DE\u05D7\u05D5\u05E7 \u05EA\u05E0\u05D5\u05E2\u05D4 \u05D6\u05D5?")) return;
-    try { const res = await authFetch(`${API}/stock-movements/${id}`, { method: "DELETE" }); if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "\u05E9\u05D2\u05D9\u05D0\u05D4"); toast({ title: "\u05EA\u05E0\u05D5\u05E2\u05D4 \u05E0\u05DE\u05D7\u05E7\u05D4" }); load(); }
-    catch (e: any) { toast({ title: "\u05E9\u05D2\u05D9\u05D0\u05D4", description: e.message, variant: "destructive" }); }
-  };
-
-  const toggleSort = (field: string) => { if (sortField === field) setSortDir(d => d === "asc" ? "desc" : "asc"); else { setSortField(field); setSortDir("asc"); } };
-
+  /* ── computed ── */
   const filtered = useMemo(() => {
-    let d = [...items];
-    if (debouncedSearch) { const s = debouncedSearch.toLowerCase(); d = d.filter(r => r.reference_number?.toLowerCase().includes(s) || r.notes?.toLowerCase().includes(s) || String(r.product_id).includes(s)); }
-    if (typeFilter !== "all") d = d.filter(r => r.movement_type === typeFilter);
-    if (sortField) d.sort((a, b) => { const av = a[sortField] ?? ""; const bv = b[sortField] ?? ""; const cmp = typeof av === "number" ? av - bv : String(av).localeCompare(String(bv), "he"); return sortDir === "asc" ? cmp : -cmp; });
-    return d;
-  }, [items, debouncedSearch, typeFilter, sortField, sortDir]);
+    let rows = [...MOVEMENTS];
+    const types = TAB_MAP[activeTab];
+    if (types) rows = rows.filter((m) => types.includes(m.type));
+    if (search) {
+      const q = search.toLowerCase();
+      rows = rows.filter(
+        (m) =>
+          m.item.toLowerCase().includes(q) ||
+          m.sku.toLowerCase().includes(q) ||
+          m.reference.toLowerCase().includes(q) ||
+          m.user.toLowerCase().includes(q) ||
+          m.notes.toLowerCase().includes(q)
+      );
+    }
+    return rows;
+  }, [activeTab, search]);
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const pageData = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  useEffect(() => { setPage(1); }, [debouncedSearch, typeFilter]);
-  useEffect(() => { if (page > 1 && page > totalPages) setPage(Math.max(1, totalPages)); }, [totalPages]);
+  const receipts  = MOVEMENTS.filter((m) => m.type === "כניסה");
+  const issues    = MOVEMENTS.filter((m) => m.type === "יציאה" || m.type === "הנפקה");
+  const transfers = MOVEMENTS.filter((m) => m.type === "העברה");
+  const adjusts   = MOVEMENTS.filter((m) => m.type === "התאמה");
+  const totalValue = MOVEMENTS.reduce((s, m) => s + Math.abs(m.qty) * m.unitPrice, 0);
 
-  const SortHeader = ({ field, label }: { field: string; label: string }) => (
-    <th className="px-4 py-3 text-right text-sm font-medium text-gray-300 cursor-pointer select-none hover:text-foreground" onClick={() => toggleSort(field)}>
-      <span className="inline-flex items-center gap-1">{label}<ArrowUpDown className="w-3 h-3 opacity-40" /></span>
-    </th>
-  );
+  /* ── KPI cards ── */
+  const kpis = [
+    { label: "תנועות היום", value: MOVEMENTS.length, icon: ArrowLeftRight, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
+    { label: "כניסות", value: receipts.length, icon: PackagePlus, color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
+    { label: "יציאות / הנפקות", value: issues.length, icon: PackageMinus, color: "text-red-400", bg: "bg-red-500/10 border-red-500/20" },
+    { label: "העברות", value: transfers.length, icon: Repeat2, color: "text-sky-400", bg: "bg-sky-500/10 border-sky-500/20" },
+    { label: "התאמות", value: adjusts.length, icon: SlidersHorizontal, color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
+    { label: "שווי תנועות ₪", value: fmt(totalValue), icon: TrendingUp, color: "text-violet-400", bg: "bg-violet-500/10 border-violet-500/20" },
+  ];
 
+  /* ── render row ── */
+  const renderRow = (m: Movement) => {
+    const meta = TYPE_META[m.type];
+    const Icon = meta.icon;
+    return (
+      <TableRow key={m.id} className="hover:bg-muted/30 transition-colors border-border/30">
+        <TableCell className="text-xs text-gray-400 font-mono whitespace-nowrap">
+          <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3" />{ts(m.timestamp)}</span>
+        </TableCell>
+        <TableCell>
+          <Badge variant="outline" className={`${meta.color} gap-1 text-xs`}>
+            <Icon className="w-3 h-3" />{m.type}
+          </Badge>
+        </TableCell>
+        <TableCell>
+          <div className="font-medium text-foreground text-sm">{m.item}</div>
+          <div className="text-xs text-gray-500 font-mono">{m.sku}</div>
+        </TableCell>
+        <TableCell className="font-bold text-foreground tabular-nums">{Math.abs(m.qty).toLocaleString("he-IL")}</TableCell>
+        <TableCell className="text-sm">
+          <span className="flex items-center gap-1 text-gray-300"><Warehouse className="w-3 h-3 text-gray-500" />{m.fromWarehouse}</span>
+          <span className="text-[10px] text-gray-500">{m.fromZone}</span>
+        </TableCell>
+        <TableCell className="text-sm">
+          <span className="flex items-center gap-1 text-gray-300"><Warehouse className="w-3 h-3 text-gray-500" />{m.toWarehouse}</span>
+          <span className="text-[10px] text-gray-500">{m.toZone}</span>
+        </TableCell>
+        <TableCell className="font-mono text-xs text-blue-400">{m.reference}</TableCell>
+        <TableCell className="text-sm">
+          <span className="inline-flex items-center gap-1 text-gray-300"><User className="w-3 h-3 text-gray-500" />{m.user}</span>
+        </TableCell>
+        <TableCell className="text-xs text-gray-400 max-w-[180px] truncate">{m.notes}</TableCell>
+      </TableRow>
+    );
+  };
+
+  /* ── page ── */
   return (
-    <div className="p-6 space-y-6" dir="rtl">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div><h1 className="text-2xl font-bold text-foreground">{'\u05EA\u05E0\u05D5\u05E2\u05D5\u05EA \u05DE\u05DC\u05D0\u05D9'}</h1><p className="text-sm text-gray-400 mt-1">{items.length} {'\u05EA\u05E0\u05D5\u05E2\u05D5\u05EA'}</p></div>
-        <div className="flex items-center gap-2">
-          <ExportDropdown data={filtered} headers={{ product_id: "\u05DE\u05D5\u05E6\u05E8", movement_type: "\u05E1\u05D5\u05D2", quantity: "\u05DB\u05DE\u05D5\u05EA", reference_number: "\u05D0\u05E1\u05DE\u05DB\u05EA\u05D0", notes: "\u05D4\u05E2\u05E8\u05D5\u05EA" }} filename="stock_movements" />
-          <Button onClick={() => { setShowForm(!showForm); setForm({}); setEditId(null); }} className="gap-1">
-            {showForm ? <><X className="w-4 h-4" />{'\u05E1\u05D2\u05D5\u05E8'}</> : <><Plus className="w-4 h-4" />{'\u05D4\u05D5\u05E1\u05E3 \u05EA\u05E0\u05D5\u05E2\u05D4'}</>}
-          </Button>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0e1a] to-[#1a1f35] text-foreground p-6" dir="rtl">
+      <div className="max-w-[1440px] mx-auto space-y-6">
 
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="relative flex-1 min-w-[200px] max-w-md">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input placeholder={'\u05D7\u05D9\u05E4\u05D5\u05E9 \u05EA\u05E0\u05D5\u05E2\u05D5\u05EA...'} value={search} onChange={e => setSearch(e.target.value)} className="pr-9" />
-        </div>
-        <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="rounded-lg border border-border bg-muted/50 px-3 py-2 text-foreground text-sm">
-          <option value="all">{'\u05DB\u05DC \u05D4\u05E1\u05D5\u05D2\u05D9\u05DD'}</option>
-          <option value="in">{'\u05DB\u05E0\u05D9\u05E1\u05D4'}</option><option value="out">{'\u05D9\u05E6\u05D9\u05D0\u05D4'}</option><option value="transfer">{'\u05D4\u05E2\u05D1\u05E8\u05D4'}</option><option value="adjustment">{'\u05D4\u05EA\u05D0\u05DE\u05D4'}</option>
-        </select>
-      </div>
-
-      {showForm && (
-        <Card><CardContent className="p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4">{editId ? '\u05E2\u05E8\u05D9\u05DB\u05EA \u05EA\u05E0\u05D5\u05E2\u05D4' : '\u05EA\u05E0\u05D5\u05E2\u05D4 \u05D7\u05D3\u05E9\u05D4'}</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <FIELD label={'\u05DE\u05E1\u05E4\u05E8 \u05DE\u05D5\u05E6\u05E8'}><input type="number" className={INPUT_CLS} value={form.product_id ?? ""} onChange={e => setForm({...form, product_id: e.target.value === "" ? null : Number(e.target.value)})} /></FIELD>
-            <FIELD label={'\u05DE\u05D7\u05E1\u05DF'}><input type="number" className={INPUT_CLS} value={form.warehouse_id ?? ""} onChange={e => setForm({...form, warehouse_id: e.target.value === "" ? null : Number(e.target.value)})} /></FIELD>
-            <FIELD label={'\u05E1\u05D5\u05D2 \u05EA\u05E0\u05D5\u05E2\u05D4'}>
-              <select className={INPUT_CLS} value={form.movement_type || "in"} onChange={e => setForm({...form, movement_type: e.target.value})}>
-                <option value="in">{'\u05DB\u05E0\u05D9\u05E1\u05D4'}</option><option value="out">{'\u05D9\u05E6\u05D9\u05D0\u05D4'}</option><option value="transfer">{'\u05D4\u05E2\u05D1\u05E8\u05D4'}</option><option value="adjustment">{'\u05D4\u05EA\u05D0\u05DE\u05D4'}</option>
-              </select>
-            </FIELD>
-            <FIELD label={'\u05DB\u05DE\u05D5\u05EA'}><input type="number" className={INPUT_CLS} value={form.quantity ?? ""} onChange={e => setForm({...form, quantity: e.target.value === "" ? null : Number(e.target.value)})} /></FIELD>
-            <FIELD label={'\u05DE\u05D7\u05D9\u05E8 \u05DC\u05D9\u05D7\u05D9\u05D3\u05D4 (\u05D0\u05D2\u05D5\u05E8\u05D5\u05EA)'}><input type="number" className={INPUT_CLS} value={form.unit_price_cents ?? ""} onChange={e => setForm({...form, unit_price_cents: e.target.value === "" ? null : Number(e.target.value)})} /></FIELD>
-            <FIELD label={'\u05D0\u05E1\u05DE\u05DB\u05EA\u05D0'}><input type="text" className={INPUT_CLS} value={form.reference_number || ""} onChange={e => setForm({...form, reference_number: e.target.value})} /></FIELD>
-            <FIELD label={'\u05D4\u05E2\u05E8\u05D5\u05EA'}><input type="text" className={INPUT_CLS} value={form.notes || ""} onChange={e => setForm({...form, notes: e.target.value})} /></FIELD>
-          </div>
-          <div className="mt-4 flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => { setShowForm(false); setForm({}); setEditId(null); }}>{'\u05D1\u05D9\u05D8\u05D5\u05DC'}</Button>
-            <Button onClick={save} disabled={saving} className="gap-1">{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}{editId ? '\u05E2\u05D3\u05DB\u05DF' : '\u05E9\u05DE\u05D5\u05E8'}</Button>
-          </div>
-        </CardContent></Card>
-      )}
-
-      {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-red-400">{error}</div>}
-
-      <div className="rounded-xl border border-border/50 bg-muted/30 overflow-hidden">
-        {loading ? (
-          <div className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin text-blue-400 mx-auto mb-2" /><span className="text-gray-400">{'\u05D8\u05D5\u05E2\u05DF...'}</span></div>
-        ) : pageData.length === 0 ? (
-          <div className="p-12 text-center text-gray-400"><ArrowRightLeft className="w-12 h-12 mx-auto mb-3 opacity-30" /><p className="text-lg font-medium">{'\u05D0\u05D9\u05DF \u05EA\u05E0\u05D5\u05E2\u05D5\u05EA \u05E2\u05D3\u05D9\u05D9\u05DF'}</p></div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-muted/60 border-b border-border/50">
-                  <tr>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-gray-300 w-12">#</th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-gray-300">{'\u05DE\u05D5\u05E6\u05E8'}</th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-gray-300">{'\u05E1\u05D5\u05D2'}</th>
-                    <SortHeader field="quantity" label={'\u05DB\u05DE\u05D5\u05EA'} />
-                    <th className="px-4 py-3 text-right text-sm font-medium text-gray-300">{'\u05D0\u05E1\u05DE\u05DB\u05EA\u05D0'}</th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-gray-300">{'\u05D4\u05E2\u05E8\u05D5\u05EA'}</th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-gray-300">{'\u05E4\u05E2\u05D5\u05DC\u05D5\u05EA'}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-700/30">
-                  {pageData.map(item => (
-                    <tr key={item.id} className="hover:bg-muted/20 transition-colors">
-                      <td className="px-4 py-3 text-sm text-gray-500">{item.id}</td>
-                      <td className="px-4 py-3 text-sm text-gray-300">{item.product_id}</td>
-                      <td className="px-4 py-3"><Badge variant="secondary" className={TYPE_COLORS[item.movement_type] || "bg-gray-500/20 text-gray-400"}>{TYPE_LABELS[item.movement_type] || item.movement_type}</Badge></td>
-                      <td className="px-4 py-3 text-sm text-foreground font-bold">{item.quantity}</td>
-                      <td className="px-4 py-3 text-sm text-gray-300 font-mono">{item.reference_number || "-"}</td>
-                      <td className="px-4 py-3 text-sm text-gray-300 max-w-[200px] truncate">{item.notes || "-"}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex gap-1">
-                          <button onClick={() => { setForm(item); setEditId(item.id); setShowForm(true); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="p-1.5 hover:bg-muted/50 rounded-lg"><Edit2 className="w-3.5 h-3.5 text-yellow-400" /></button><button title="שכפול" onClick={async () => { const res = await duplicateRecord(`${API}/stock-movements`, r.id); if (res.ok) { load(); } else { alert("שגיאה בשכפול: " + res.error); } }} className="p-1.5 hover:bg-muted rounded-lg"><Copy className="w-3.5 h-3.5 text-slate-400" /></button>
-                          <button onClick={() => remove(item.id)} className="p-1.5 hover:bg-muted/50 rounded-lg"><Trash2 className="w-3.5 h-3.5 text-red-400" /></button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        {/* header */}
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-blue-500/15 border border-blue-500/25">
+              <ArrowLeftRight className="w-6 h-6 text-blue-400" />
             </div>
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t border-border/50">
-                <span className="text-sm text-gray-400">{'\u05DE\u05E6\u05D9\u05D2'} {(page-1)*PAGE_SIZE+1}-{Math.min(page*PAGE_SIZE, filtered.length)} {'\u05DE\u05EA\u05D5\u05DA'} {filtered.length}</span>
-                <div className="flex gap-1">
-                  <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>{'\u05D4\u05E7\u05D5\u05D3\u05DD'}</Button>
-                  <span className="px-3 py-1 text-sm text-gray-300">{page} / {totalPages}</span>
-                  <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>{'\u05D4\u05D1\u05D0'}</Button>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">תנועות מלאי והעברות</h1>
+              <p className="text-sm text-gray-400 mt-0.5">טכנו-כל עוזי &mdash; מעקב תנועות מלאי בזמן אמת</p>
+            </div>
+          </div>
+          <div className="relative min-w-[240px]">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="חיפוש פריט, SKU, אסמכתא..."
+              className="w-full rounded-lg border border-border/50 bg-muted/40 pr-9 pl-3 py-2 text-sm text-foreground placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/50 transition-colors"
+            />
+          </div>
+        </div>
+
+        {/* KPI row */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {kpis.map((k) => (
+            <Card key={k.label} className={`border ${k.bg} bg-card/60 backdrop-blur`}>
+              <CardContent className="p-4 flex items-center gap-3">
+                <k.icon className={`w-8 h-8 ${k.color} shrink-0`} />
+                <div className="min-w-0">
+                  <p className="text-[11px] text-gray-400 truncate">{k.label}</p>
+                  <p className={`text-xl font-extrabold ${k.color} leading-tight`}>{typeof k.value === "number" ? k.value.toLocaleString("he-IL") : k.value}</p>
                 </div>
-              </div>
-            )}
-          </>
-        )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* tabs + table */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <TabsList className="bg-muted/40 border border-border/40 p-1 rounded-xl">
+            <TabsTrigger value="all" className="data-[state=active]:bg-blue-600/80 data-[state=active]:text-white rounded-lg text-sm px-4">כל התנועות</TabsTrigger>
+            <TabsTrigger value="in" className="data-[state=active]:bg-emerald-600/80 data-[state=active]:text-white rounded-lg text-sm px-4">כניסות</TabsTrigger>
+            <TabsTrigger value="out" className="data-[state=active]:bg-red-600/70 data-[state=active]:text-white rounded-lg text-sm px-4">יציאות</TabsTrigger>
+            <TabsTrigger value="transfer" className="data-[state=active]:bg-sky-600/80 data-[state=active]:text-white rounded-lg text-sm px-4">העברות</TabsTrigger>
+            <TabsTrigger value="adjust" className="data-[state=active]:bg-amber-600/80 data-[state=active]:text-white rounded-lg text-sm px-4">התאמות</TabsTrigger>
+          </TabsList>
+
+          {/* shared content for all tabs */}
+          {Object.keys(TAB_MAP).map((tab) => (
+            <TabsContent key={tab} value={tab} className="mt-0">
+              <Card className="border-border/40 bg-card/50 backdrop-blur overflow-hidden">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50 border-border/30 hover:bg-muted/50">
+                        <TableHead className="text-right text-gray-400 text-xs">זמן</TableHead>
+                        <TableHead className="text-right text-gray-400 text-xs">סוג</TableHead>
+                        <TableHead className="text-right text-gray-400 text-xs">פריט</TableHead>
+                        <TableHead className="text-right text-gray-400 text-xs">כמות</TableHead>
+                        <TableHead className="text-right text-gray-400 text-xs">ממחסן / אזור</TableHead>
+                        <TableHead className="text-right text-gray-400 text-xs">למחסן / אזור</TableHead>
+                        <TableHead className="text-right text-gray-400 text-xs">אסמכתא</TableHead>
+                        <TableHead className="text-right text-gray-400 text-xs">משתמש</TableHead>
+                        <TableHead className="text-right text-gray-400 text-xs">הערות</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filtered.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={9} className="text-center py-12 text-gray-500">
+                            <ArrowLeftRight className="w-10 h-10 mx-auto mb-2 opacity-20" />
+                            אין תנועות להצגה
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        filtered.map(renderRow)
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+                {/* footer summary */}
+                <div className="flex items-center justify-between px-4 py-3 border-t border-border/30 bg-muted/20 text-xs text-gray-400">
+                  <span>{filtered.length} תנועות מוצגות</span>
+                  <span>שווי מוצג: {fmt(filtered.reduce((s, m) => s + Math.abs(m.qty) * m.unitPrice, 0))}</span>
+                </div>
+              </Card>
+            </TabsContent>
+          ))}
+        </Tabs>
       </div>
     </div>
   );

@@ -54,6 +54,51 @@ const DataMigrationPage = lazyPage(() => import("@/pages/data-migration"));
 const ImportManagementPage = lazyPage(() => import("@/pages/import-management"));
 const RawMaterialsPage = lazyPage(() => import("@/pages/modules/raw-materials"));
 
+// Procurement main pages
+const ProcurementCommandCenterPage = lazyPage(() => import("@/pages/procurement/procurement-command-center"));
+const SupplierManagementPage = lazyPage(() => import("@/pages/procurement/supplier-management"));
+const PriceManagementPage = lazyPage(() => import("@/pages/procurement/price-management"));
+const PurchaseOrdersUltraPage = lazyPage(() => import("@/pages/procurement/purchase-orders"));
+const GoodsReceivingPage = lazyPage(() => import("@/pages/procurement/goods-receiving"));
+const DeliveryDocumentsPage = lazyPage(() => import("@/pages/procurement/delivery-documents"));
+const ContractsManagementPage = lazyPage(() => import("@/pages/procurement/contracts-management"));
+const ProcurementAlertsPage = lazyPage(() => import("@/pages/procurement/procurement-alerts"));
+const DocumentsSignaturesPage = lazyPage(() => import("@/pages/procurement/documents-signatures"));
+const LogisticsTrackingPage = lazyPage(() => import("@/pages/procurement/logistics-tracking"));
+const QualityControlPage = lazyPage(() => import("@/pages/procurement/quality-control"));
+const ProcurementAutomationPage = lazyPage(() => import("@/pages/procurement/procurement-automation"));
+const ProcurementAnalyticsPage = lazyPage(() => import("@/pages/procurement/procurement-analytics"));
+const ProcurementSettingsPage = lazyPage(() => import("@/pages/procurement/procurement-settings"));
+const InventorySyncPage = lazyPage(() => import("@/pages/procurement/inventory-sync"));
+const VendorNegotiationPage = lazyPage(() => import("@/pages/procurement/vendor-negotiation"));
+const DemandPlanningPage = lazyPage(() => import("@/pages/procurement/demand-planning"));
+const ProcurementExceptionsPage = lazyPage(() => import("@/pages/procurement/procurement-exceptions"));
+const SubcontractorManagementPage = lazyPage(() => import("@/pages/procurement/subcontractor-management"));
+const MarketPriceTrackingPage = lazyPage(() => import("@/pages/procurement/market-price-tracking"));
+const MakeVsBuyPage = lazyPage(() => import("@/pages/procurement/make-vs-buy"));
+const SupplierReturnsPage = lazyPage(() => import("@/pages/procurement/supplier-returns"));
+const BlanketOrdersPage = lazyPage(() => import("@/pages/procurement/blanket-orders"));
+const ProcurementBudgetsPage = lazyPage(() => import("@/pages/procurement/procurement-budgets"));
+const SupplierPortalPage = lazyPage(() => import("@/pages/procurement/supplier-portal"));
+const SupplierDependencyPage = lazyPage(() => import("@/pages/procurement/supplier-dependency"));
+const ProcurementCompliancePage = lazyPage(() => import("@/pages/procurement/procurement-compliance"));
+const ProcurementProfitImpactPage = lazyPage(() => import("@/pages/procurement/procurement-profit-impact"));
+const ProcurementSimulationPage = lazyPage(() => import("@/pages/procurement/procurement-simulation"));
+
+// Raw Materials sub-pages
+const RawMaterialsDashboardPage = lazyPage(() => import("@/pages/procurement/raw-materials/raw-materials-dashboard"));
+const RawMaterialsListPage = lazyPage(() => import("@/pages/procurement/raw-materials/raw-materials-list"));
+const WeightCalculatorPage = lazyPage(() => import("@/pages/procurement/raw-materials/weight-calculator"));
+const RawMaterialStockPage = lazyPage(() => import("@/pages/procurement/raw-materials/raw-material-stock"));
+const RawMaterialsCostAnalysisPage = lazyPage(() => import("@/pages/procurement/raw-materials/cost-analysis"));
+const ScrapWastePage = lazyPage(() => import("@/pages/procurement/raw-materials/scrap-waste"));
+
+// Products sub-pages
+const ProductsDashboardPage = lazyPage(() => import("@/pages/procurement/products/products-dashboard"));
+const ProductsListPage = lazyPage(() => import("@/pages/procurement/products/products-list"));
+const ProductBomPage = lazyPage(() => import("@/pages/procurement/products/product-bom"));
+const ProductCostingPage = lazyPage(() => import("@/pages/procurement/products/product-costing"));
+
 export const ProcurementRoutes = (
 
     <>
@@ -126,5 +171,50 @@ export const ProcurementRoutes = (
       <Route path="/procurement/supplier-evaluations"><Redirect to="/supplier-evaluations" /></Route>
       <Route path="/procurement/supplier-contracts"><Redirect to="/supplier-contracts" /></Route>
       <Route path="/procurement/purchase-returns"><Redirect to="/purchase-returns" /></Route>
+
+      {/* Procurement main pages */}
+      <Route path="/procurement/command-center" component={ProcurementCommandCenterPage} />
+      <Route path="/procurement/supplier-management" component={SupplierManagementPage} />
+      <Route path="/procurement/price-management" component={PriceManagementPage} />
+      <Route path="/procurement/purchase-orders-ultra" component={PurchaseOrdersUltraPage} />
+      <Route path="/procurement/goods-receiving" component={GoodsReceivingPage} />
+      <Route path="/procurement/delivery-documents" component={DeliveryDocumentsPage} />
+      <Route path="/procurement/contracts-management" component={ContractsManagementPage} />
+      <Route path="/procurement/alerts" component={ProcurementAlertsPage} />
+      <Route path="/procurement/documents-signatures" component={DocumentsSignaturesPage} />
+      <Route path="/procurement/logistics-tracking" component={LogisticsTrackingPage} />
+      <Route path="/procurement/quality-control" component={QualityControlPage} />
+      <Route path="/procurement/automation" component={ProcurementAutomationPage} />
+      <Route path="/procurement/analytics" component={ProcurementAnalyticsPage} />
+      <Route path="/procurement/settings" component={ProcurementSettingsPage} />
+      <Route path="/procurement/inventory-sync" component={InventorySyncPage} />
+      <Route path="/procurement/vendor-negotiation" component={VendorNegotiationPage} />
+      <Route path="/procurement/demand-planning" component={DemandPlanningPage} />
+      <Route path="/procurement/exceptions" component={ProcurementExceptionsPage} />
+      <Route path="/procurement/subcontractor-management" component={SubcontractorManagementPage} />
+      <Route path="/procurement/market-price-tracking" component={MarketPriceTrackingPage} />
+      <Route path="/procurement/make-vs-buy" component={MakeVsBuyPage} />
+      <Route path="/procurement/supplier-returns" component={SupplierReturnsPage} />
+      <Route path="/procurement/blanket-orders" component={BlanketOrdersPage} />
+      <Route path="/procurement/budgets" component={ProcurementBudgetsPage} />
+      <Route path="/procurement/supplier-portal" component={SupplierPortalPage} />
+      <Route path="/procurement/supplier-dependency" component={SupplierDependencyPage} />
+      <Route path="/procurement/compliance" component={ProcurementCompliancePage} />
+      <Route path="/procurement/profit-impact" component={ProcurementProfitImpactPage} />
+      <Route path="/procurement/simulation" component={ProcurementSimulationPage} />
+
+      {/* Raw Materials sub-pages */}
+      <Route path="/procurement/raw-materials" component={RawMaterialsDashboardPage} />
+      <Route path="/procurement/raw-materials/list" component={RawMaterialsListPage} />
+      <Route path="/procurement/raw-materials/weight-calculator" component={WeightCalculatorPage} />
+      <Route path="/procurement/raw-materials/stock" component={RawMaterialStockPage} />
+      <Route path="/procurement/raw-materials/cost-analysis" component={RawMaterialsCostAnalysisPage} />
+      <Route path="/procurement/raw-materials/scrap-waste" component={ScrapWastePage} />
+
+      {/* Products sub-pages */}
+      <Route path="/procurement/products" component={ProductsDashboardPage} />
+      <Route path="/procurement/products/list" component={ProductsListPage} />
+      <Route path="/procurement/products/bom" component={ProductBomPage} />
+      <Route path="/procurement/products/costing" component={ProductCostingPage} />
     </>
 );

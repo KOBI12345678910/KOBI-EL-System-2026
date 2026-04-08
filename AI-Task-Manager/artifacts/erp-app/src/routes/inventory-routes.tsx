@@ -27,6 +27,15 @@ const WmsConsignmentPage = lazyPage(() => import("@/pages/inventory/wms-consignm
 const WmsCrossDockingPage = lazyPage(() => import("@/pages/inventory/wms-cross-docking"));
 const ExpiryAlertsPage = lazyPage(() => import("@/pages/inventory/expiry-alerts"));
 const InventoryManagementPage = lazyPage(() => import("@/pages/modules/inventory-management"));
+const InventoryUltraDashboardPage = lazyPage(() => import("@/pages/inventory/inventory-ultra-dashboard"));
+const StockItemsManagementPage = lazyPage(() => import("@/pages/inventory/stock-items-management"));
+const StockValuationAgingPage = lazyPage(() => import("@/pages/inventory/stock-valuation-aging"));
+const CycleCountsPage = lazyPage(() => import("@/pages/inventory/cycle-counts"));
+const ReservationsAllocationsPage = lazyPage(() => import("@/pages/inventory/reservations-allocations"));
+const DamagedQuarantinePage = lazyPage(() => import("@/pages/inventory/damaged-quarantine"));
+const InventoryAlertsPage = lazyPage(() => import("@/pages/inventory/inventory-alerts"));
+const WarehousesManagementPage = lazyPage(() => import("@/pages/inventory/warehouses-management"));
+const InventoryCommandCenterPage = lazyPage(() => import("@/pages/inventory/inventory-command-center"));
 
 export const InventoryRoutes = (
 
@@ -58,5 +67,14 @@ export const InventoryRoutes = (
       <Route path="/inventory/wms-cross-docking" component={WmsCrossDockingPage} />
       <Route path="/inventory/expiry-alerts" component={ExpiryAlertsPage} />
       <Route path="/inventory/inventory-dashboard"><Redirect to="/inventory/dashboard" /></Route>
+      <Route path="/inventory/ultra" component={InventoryUltraDashboardPage} />
+      <Route path="/inventory/stock-items" component={StockItemsManagementPage} />
+      <Route path="/inventory/valuation-aging" component={StockValuationAgingPage} />
+      <Route path="/inventory/cycle-counts" component={CycleCountsPage} />
+      <Route path="/inventory/reservations" component={ReservationsAllocationsPage} />
+      <Route path="/inventory/damaged-quarantine" component={DamagedQuarantinePage} />
+      <Route path="/inventory/alerts" component={InventoryAlertsPage} />
+      <Route path="/inventory/warehouses-management" component={WarehousesManagementPage} />
+      <Route path="/inventory/command-center" component={InventoryCommandCenterPage} />
     </>
 );

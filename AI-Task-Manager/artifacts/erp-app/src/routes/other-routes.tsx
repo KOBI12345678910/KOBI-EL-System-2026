@@ -219,6 +219,107 @@ const PayrollStandalonePage = lazyPage(() => import("@/pages/payroll"));
 const IntegrationsHubDataPage = lazyPage(() => import("@/pages/integrations-hub-data"));
 const PricingPriceListsPage2 = lazyPage(() => import("@/pages/pricing/pricing-price-lists"));
 
+// Command Centers
+const ExecutiveCommandCenterPage = lazyPage(() => import("@/pages/executive/executive-command-center"));
+const BICommandCenterPage = lazyPage(() => import("@/pages/executive/bi-command-center"));
+const OperationsCommandCenterPage = lazyPage(() => import("@/pages/operations/operations-command-center"));
+const SupportCommandCenterPage = lazyPage(() => import("@/pages/support/support-command-center"));
+const KnowledgeCommandCenterPage = lazyPage(() => import("@/pages/knowledge/knowledge-command-center"));
+const TendersCommandCenterPage = lazyPage(() => import("@/pages/tenders/tenders-command-center"));
+const ProjectsCommandCenterPage = lazyPage(() => import("@/pages/projects/projects-command-center"));
+
+// Import Department
+const ImportDashboardPage = lazyPage(() => import("@/pages/import/import-dashboard"));
+const ForeignSuppliersPage = lazyPage(() => import("@/pages/import/foreign-suppliers"));
+const ImportPurchaseOrdersPage = lazyPage(() => import("@/pages/import/import-purchase-orders"));
+const ImportShipmentsPage = lazyPage(() => import("@/pages/import/import-shipments"));
+const CustomsClearancePage = lazyPage(() => import("@/pages/import/customs-clearance"));
+const LandedCostCalculatorPage = lazyPage(() => import("@/pages/import/landed-cost-calculator"));
+const ImportDocumentsPage = lazyPage(() => import("@/pages/import/import-documents"));
+const ImportTrackingPage = lazyPage(() => import("@/pages/import/import-tracking"));
+const ImportReceivingPage = lazyPage(() => import("@/pages/import/import-receiving"));
+const ImportRiskAlertsPage = lazyPage(() => import("@/pages/import/import-risk-alerts"));
+const ImportApprovalsPage = lazyPage(() => import("@/pages/import/import-approvals"));
+const ImportAnalyticsPage = lazyPage(() => import("@/pages/import/import-analytics"));
+const ImportSettingsPage = lazyPage(() => import("@/pages/import/import-settings"));
+const ContainersPackagesPage = lazyPage(() => import("@/pages/import/containers-packages"));
+const ShippingForwardersPage = lazyPage(() => import("@/pages/import/shipping-forwarders"));
+
+// Pricing Engine
+const PricingDashboardPage = lazyPage(() => import("@/pages/pricing/pricing-dashboard"));
+const PricingCostBuilderPage = lazyPage(() => import("@/pages/pricing/pricing-cost-builder"));
+const RecommendedPricePage = lazyPage(() => import("@/pages/pricing/recommended-price"));
+const ActualVsEstimatedPage = lazyPage(() => import("@/pages/pricing/actual-vs-estimated"));
+const PricingVersionsPage = lazyPage(() => import("@/pages/pricing/pricing-versions"));
+const PricingRequestsListPage = lazyPage(() => import("@/pages/pricing/pricing-requests-list"));
+const MaterialPricePullPage = lazyPage(() => import("@/pages/pricing/material-price-pull"));
+const LaborOperationsCostPage = lazyPage(() => import("@/pages/pricing/labor-operations-cost"));
+const RiskMarginTargetPage = lazyPage(() => import("@/pages/pricing/risk-margin-target"));
+const PricingApprovalsPage = lazyPage(() => import("@/pages/pricing/pricing-approvals"));
+const SupplierComparisonProjectPage = lazyPage(() => import("@/pages/pricing/supplier-comparison-project"));
+const StockVsBuyDecisionPage = lazyPage(() => import("@/pages/pricing/stock-vs-buy-decision"));
+const LandedCostSourcePage = lazyPage(() => import("@/pages/pricing/landed-cost-source"));
+const ProjectPricingDetailsPage = lazyPage(() => import("@/pages/pricing/project-pricing-details"));
+
+// Backbone / New Modules
+const EngineeringOfficePage = lazyPage(() => import("@/pages/engineering/engineering-office"));
+const InstallationManagementPage = lazyPage(() => import("@/pages/installation/installation-management"));
+const ServiceWarrantyPage = lazyPage(() => import("@/pages/service/service-warranty"));
+const FleetDeliveryPage = lazyPage(() => import("@/pages/logistics/fleet-delivery"));
+const QualityManagementSystemPage = lazyPage(() => import("@/pages/quality/quality-management-system"));
+const ProfitabilityFeedbackLoopPage = lazyPage(() => import("@/pages/finance/profitability-feedback-loop"));
+const ProjectExecutionPage = lazyPage(() => import("@/pages/projects/project-execution"));
+
+// Additional unrouted pages
+const KPIMonitorPage = lazyPage(() => import("@/pages/operations/kpi-monitor"));
+const WorkflowMonitorPage = lazyPage(() => import("@/pages/operations/workflow-monitor"));
+const SLATrackingPage = lazyPage(() => import("@/pages/support/sla-tracking"));
+const SupportDashboardPage = lazyPage(() => import("@/pages/support/support-dashboard"));
+const FAQManagementPage = lazyPage(() => import("@/pages/knowledge/faq-management"));
+const TenderDashboardPage = lazyPage(() => import("@/pages/tenders/tender-dashboard"));
+
+// Installation Operations System (20 pages)
+const InstallationCommandCenterPage = lazyPage(() => import("@/pages/installation/installation-command-center"));
+const InstallationOrdersPage = lazyPage(() => import("@/pages/installation/installation-orders"));
+const SiteReadinessPage = lazyPage(() => import("@/pages/installation/site-readiness"));
+const MeasurementsSurveysPage = lazyPage(() => import("@/pages/installation/measurements-surveys"));
+const InstallationSchedulingPage = lazyPage(() => import("@/pages/installation/installation-scheduling"));
+const InstallationTeamsPage = lazyPage(() => import("@/pages/installation/installation-teams"));
+const InstallerProfilesPage = lazyPage(() => import("@/pages/installation/installer-profiles"));
+const EquipmentToolsPage = lazyPage(() => import("@/pages/installation/equipment-tools"));
+const LoadingDispatchPage = lazyPage(() => import("@/pages/installation/loading-dispatch"));
+const InstallationExecutionPage = lazyPage(() => import("@/pages/installation/installation-execution"));
+const InstallationProgressPage = lazyPage(() => import("@/pages/installation/installation-progress"));
+const FieldExceptionsPage = lazyPage(() => import("@/pages/installation/field-exceptions"));
+const InstallationQualityControlPage = lazyPage(() => import("@/pages/installation/installation-quality-control"));
+const CustomerHandoverPage = lazyPage(() => import("@/pages/installation/customer-handover"));
+const InstallationDocumentsPage = lazyPage(() => import("@/pages/installation/installation-documents"));
+const InstallationCostTrackingPage = lazyPage(() => import("@/pages/installation/installation-cost-tracking"));
+const InstallationProfitabilityPage = lazyPage(() => import("@/pages/installation/installation-profitability"));
+const InstallationAlertsPage = lazyPage(() => import("@/pages/installation/installation-alerts"));
+const ReturnServiceCallsPage = lazyPage(() => import("@/pages/installation/return-service-calls"));
+const InstallationSettingsPage = lazyPage(() => import("@/pages/installation/installation-settings"));
+
+// Document Management System (18 new pages)
+const DMSCommandCenterPage = lazyPage(() => import("@/pages/documents/dms-command-center"));
+const DocumentRegistryPage = lazyPage(() => import("@/pages/documents/document-registry"));
+const VersionControlPage = lazyPage(() => import("@/pages/documents/version-control"));
+const DocApprovalWorkflowsPage = lazyPage(() => import("@/pages/documents/approval-workflows"));
+const OCRProcessingPage = lazyPage(() => import("@/pages/documents/ocr-processing"));
+const RetentionCompliancePage = lazyPage(() => import("@/pages/documents/retention-compliance"));
+const DocumentSearchPage = lazyPage(() => import("@/pages/documents/document-search"));
+const DocumentPermissionsPage = lazyPage(() => import("@/pages/documents/document-permissions"));
+const DocumentAuditTrailPage = lazyPage(() => import("@/pages/documents/document-audit-trail"));
+const DocumentAnalyticsPage = lazyPage(() => import("@/pages/documents/document-analytics"));
+const BulkOperationsPage = lazyPage(() => import("@/pages/documents/bulk-operations"));
+const DocumentCategoriesPage = lazyPage(() => import("@/pages/documents/document-categories"));
+const EntityLinkedDocumentsPage = lazyPage(() => import("@/pages/documents/entity-linked-documents"));
+const IncomingDocumentsPage = lazyPage(() => import("@/pages/documents/incoming-documents"));
+const OutgoingDocumentsPage = lazyPage(() => import("@/pages/documents/outgoing-documents"));
+const ModuleDocumentsPage = lazyPage(() => import("@/pages/documents/module-documents"));
+const DocumentAlertsNewPage = lazyPage(() => import("@/pages/documents/document-alerts"));
+const DocumentSettingsNewPage = lazyPage(() => import("@/pages/documents/document-settings"));
+
 export const OtherRoutes = (
 
     <>
@@ -462,6 +563,26 @@ export const OtherRoutes = (
       <Route path="/documents/templates" component={TemplatesLibraryPage} />
       <Route path="/documents/dms" component={DMSRepositoryPage} />
 
+      {/* DMS Enterprise */}
+      <Route path="/documents/command-center" component={DMSCommandCenterPage} />
+      <Route path="/documents/registry" component={DocumentRegistryPage} />
+      <Route path="/documents/versions" component={VersionControlPage} />
+      <Route path="/documents/approvals" component={DocApprovalWorkflowsPage} />
+      <Route path="/documents/ocr" component={OCRProcessingPage} />
+      <Route path="/documents/retention" component={RetentionCompliancePage} />
+      <Route path="/documents/search" component={DocumentSearchPage} />
+      <Route path="/documents/permissions" component={DocumentPermissionsPage} />
+      <Route path="/documents/audit-trail" component={DocumentAuditTrailPage} />
+      <Route path="/documents/analytics" component={DocumentAnalyticsPage} />
+      <Route path="/documents/bulk-operations" component={BulkOperationsPage} />
+      <Route path="/documents/categories" component={DocumentCategoriesPage} />
+      <Route path="/documents/entity-links" component={EntityLinkedDocumentsPage} />
+      <Route path="/documents/incoming" component={IncomingDocumentsPage} />
+      <Route path="/documents/outgoing" component={OutgoingDocumentsPage} />
+      <Route path="/documents/by-module" component={ModuleDocumentsPage} />
+      <Route path="/documents/alerts" component={DocumentAlertsNewPage} />
+      <Route path="/documents/settings" component={DocumentSettingsNewPage} />
+
       {/* Portal */}
       <Route path="/portal-management" component={PortalManagementPage} />
 
@@ -484,6 +605,87 @@ export const OtherRoutes = (
 
       {/* Marketing extra */}
       <Route path="/marketing/email-marketing" component={EmailMarketingPage} />
+
+      {/* Command Centers */}
+      <Route path="/executive/command-center" component={ExecutiveCommandCenterPage} />
+      <Route path="/executive/bi-command-center" component={BICommandCenterPage} />
+      <Route path="/operations/command-center" component={OperationsCommandCenterPage} />
+      <Route path="/support/command-center" component={SupportCommandCenterPage} />
+      <Route path="/knowledge/command-center" component={KnowledgeCommandCenterPage} />
+      <Route path="/tenders/command-center" component={TendersCommandCenterPage} />
+      <Route path="/projects/command-center" component={ProjectsCommandCenterPage} />
+
+      {/* Import Department */}
+      <Route path="/import/dashboard" component={ImportDashboardPage} />
+      <Route path="/import/foreign-suppliers" component={ForeignSuppliersPage} />
+      <Route path="/import/purchase-orders" component={ImportPurchaseOrdersPage} />
+      <Route path="/import/shipments" component={ImportShipmentsPage} />
+      <Route path="/import/customs-clearance" component={CustomsClearancePage} />
+      <Route path="/import/landed-cost" component={LandedCostCalculatorPage} />
+      <Route path="/import/documents" component={ImportDocumentsPage} />
+      <Route path="/import/tracking" component={ImportTrackingPage} />
+      <Route path="/import/receiving" component={ImportReceivingPage} />
+      <Route path="/import/risk-alerts" component={ImportRiskAlertsPage} />
+      <Route path="/import/approvals" component={ImportApprovalsPage} />
+      <Route path="/import/analytics" component={ImportAnalyticsPage} />
+      <Route path="/import/settings" component={ImportSettingsPage} />
+      <Route path="/import/containers" component={ContainersPackagesPage} />
+      <Route path="/import/forwarders" component={ShippingForwardersPage} />
+
+      {/* Pricing Engine */}
+      <Route path="/pricing/dashboard" component={PricingDashboardPage} />
+      <Route path="/pricing/cost-builder" component={PricingCostBuilderPage} />
+      <Route path="/pricing/recommended-price" component={RecommendedPricePage} />
+      <Route path="/pricing/actual-vs-estimated" component={ActualVsEstimatedPage} />
+      <Route path="/pricing/versions" component={PricingVersionsPage} />
+      <Route path="/pricing/requests" component={PricingRequestsListPage} />
+      <Route path="/pricing/material-prices" component={MaterialPricePullPage} />
+      <Route path="/pricing/labor-cost" component={LaborOperationsCostPage} />
+      <Route path="/pricing/risk-margin" component={RiskMarginTargetPage} />
+      <Route path="/pricing/approvals" component={PricingApprovalsPage} />
+      <Route path="/pricing/supplier-comparison" component={SupplierComparisonProjectPage} />
+      <Route path="/pricing/stock-vs-buy" component={StockVsBuyDecisionPage} />
+      <Route path="/pricing/landed-cost-source" component={LandedCostSourcePage} />
+      <Route path="/pricing/project-details" component={ProjectPricingDetailsPage} />
+
+      {/* Backbone / New Modules */}
+      <Route path="/engineering" component={EngineeringOfficePage} />
+      <Route path="/installation" component={InstallationManagementPage} />
+      <Route path="/service/warranty" component={ServiceWarrantyPage} />
+      <Route path="/logistics/fleet-delivery" component={FleetDeliveryPage} />
+      <Route path="/quality/management-system" component={QualityManagementSystemPage} />
+      <Route path="/finance/profitability-feedback" component={ProfitabilityFeedbackLoopPage} />
+      <Route path="/projects/execution" component={ProjectExecutionPage} />
+
+      {/* Additional Operations / Support / Knowledge / Tenders */}
+      <Route path="/operations/kpi-monitor" component={KPIMonitorPage} />
+      <Route path="/operations/workflow-monitor" component={WorkflowMonitorPage} />
+      <Route path="/support/sla-tracking" component={SLATrackingPage} />
+      <Route path="/support/dashboard" component={SupportDashboardPage} />
+      <Route path="/knowledge/faq" component={FAQManagementPage} />
+      <Route path="/tenders/dashboard" component={TenderDashboardPage} />
+
+      {/* Installation Operations System */}
+      <Route path="/installation/command-center" component={InstallationCommandCenterPage} />
+      <Route path="/installation/orders" component={InstallationOrdersPage} />
+      <Route path="/installation/site-readiness" component={SiteReadinessPage} />
+      <Route path="/installation/measurements" component={MeasurementsSurveysPage} />
+      <Route path="/installation/scheduling" component={InstallationSchedulingPage} />
+      <Route path="/installation/teams" component={InstallationTeamsPage} />
+      <Route path="/installation/installers" component={InstallerProfilesPage} />
+      <Route path="/installation/equipment" component={EquipmentToolsPage} />
+      <Route path="/installation/loading-dispatch" component={LoadingDispatchPage} />
+      <Route path="/installation/execution" component={InstallationExecutionPage} />
+      <Route path="/installation/progress" component={InstallationProgressPage} />
+      <Route path="/installation/field-exceptions" component={FieldExceptionsPage} />
+      <Route path="/installation/quality-control" component={InstallationQualityControlPage} />
+      <Route path="/installation/handover" component={CustomerHandoverPage} />
+      <Route path="/installation/documents" component={InstallationDocumentsPage} />
+      <Route path="/installation/cost-tracking" component={InstallationCostTrackingPage} />
+      <Route path="/installation/profitability" component={InstallationProfitabilityPage} />
+      <Route path="/installation/alerts" component={InstallationAlertsPage} />
+      <Route path="/installation/return-service" component={ReturnServiceCallsPage} />
+      <Route path="/installation/settings" component={InstallationSettingsPage} />
 
     </>
 );

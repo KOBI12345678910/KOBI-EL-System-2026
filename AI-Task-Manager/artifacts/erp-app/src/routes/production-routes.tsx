@@ -57,6 +57,29 @@ const FabInstallationOrdersPage = lazyPage(() => import("@/pages/fabrication/fab
 const FabServiceTicketsPage = lazyPage(() => import("@/pages/fabrication/fab-service-tickets"));
 const FabWorkflowTrackerPage = lazyPage(() => import("@/pages/fabrication/fab-workflow-tracker"));
 
+const ProductionCommandCenterPage = lazyPage(() => import("@/pages/production/production-command-center"));
+const SmartFactoryDashboardPage = lazyPage(() => import("@/pages/production/smart-factory-dashboard"));
+const ProductionOrdersPage = lazyPage(() => import("@/pages/production/production-orders"));
+const ShopFloorControlPage = lazyPage(() => import("@/pages/production/shop-floor-control"));
+const WorkStationsPage = lazyPage(() => import("@/pages/production/work-stations"));
+const ProductionCostTrackingPage = lazyPage(() => import("@/pages/production/production-cost-tracking"));
+const MasterProductionSchedulePage = lazyPage(() => import("@/pages/production/master-production-schedule"));
+const WorkOrdersListPage = lazyPage(() => import("@/pages/production/work-orders-list"));
+const MaterialIssuancePage = lazyPage(() => import("@/pages/production/material-issuance"));
+const CutJobsPage = lazyPage(() => import("@/pages/production/cut-jobs"));
+const WeldingJobsPage = lazyPage(() => import("@/pages/production/welding-jobs"));
+const FinishingJobsPage = lazyPage(() => import("@/pages/production/finishing-jobs"));
+const AssemblyJobsPage = lazyPage(() => import("@/pages/production/assembly-jobs"));
+const QualityDefectsReworkPage = lazyPage(() => import("@/pages/production/quality-defects-rework"));
+const MaintenanceDowntimePage = lazyPage(() => import("@/pages/production/maintenance-downtime"));
+const ProductionAnalyticsPage = lazyPage(() => import("@/pages/production/production-analytics"));
+const LaborControlPage = lazyPage(() => import("@/pages/production/labor-control"));
+const ProductionAlertsPage = lazyPage(() => import("@/pages/production/production-alerts"));
+const ProductionExceptionsPage = lazyPage(() => import("@/pages/production/production-exceptions"));
+const CapacityPlanningPage = lazyPage(() => import("@/pages/production/capacity-planning"));
+const LaborTimeTrackingPage = lazyPage(() => import("@/pages/production/labor-time-tracking"));
+const ShortagesPage = lazyPage(() => import("@/pages/production/shortages-page"));
+
 const CostPerUnitPage = lazyPage(() => import("@/pages/operations/cost-per-unit"));
 const DowntimeTrackingPage = lazyPage(() => import("@/pages/operations/downtime-tracking"));
 const ShiftHandoverPage = lazyPage(() => import("@/pages/operations/shift-handover"));
@@ -118,6 +141,29 @@ export const ProductionRoutes = (
       <Route path="/document-control" component={DocumentControlPage} />
       <Route path="/work-orders"><Redirect to="/production/work-orders" /></Route>
       <Route path="/bom-products" component={BomProductsPage} />
+
+      <Route path="/production/command-center" component={ProductionCommandCenterPage} />
+      <Route path="/production/smart-factory" component={SmartFactoryDashboardPage} />
+      <Route path="/production/production-orders" component={ProductionOrdersPage} />
+      <Route path="/production/shop-floor" component={ShopFloorControlPage} />
+      <Route path="/production/work-stations" component={WorkStationsPage} />
+      <Route path="/production/cost-tracking" component={ProductionCostTrackingPage} />
+      <Route path="/production/master-schedule" component={MasterProductionSchedulePage} />
+      <Route path="/production/work-orders-list" component={WorkOrdersListPage} />
+      <Route path="/production/material-issuance" component={MaterialIssuancePage} />
+      <Route path="/production/cut-jobs" component={CutJobsPage} />
+      <Route path="/production/welding-jobs" component={WeldingJobsPage} />
+      <Route path="/production/finishing-jobs" component={FinishingJobsPage} />
+      <Route path="/production/assembly-jobs" component={AssemblyJobsPage} />
+      <Route path="/production/quality-defects" component={QualityDefectsReworkPage} />
+      <Route path="/production/maintenance-downtime" component={MaintenanceDowntimePage} />
+      <Route path="/production/analytics" component={ProductionAnalyticsPage} />
+      <Route path="/production/labor-control" component={LaborControlPage} />
+      <Route path="/production/alerts" component={ProductionAlertsPage} />
+      <Route path="/production/exceptions" component={ProductionExceptionsPage} />
+      <Route path="/production/capacity-planning" component={CapacityPlanningPage} />
+      <Route path="/production/labor-time-tracking" component={LaborTimeTrackingPage} />
+      <Route path="/production/shortages" component={ShortagesPage} />
 
       <Route path="/fabrication/profiles" component={FabProfilesPage} />
       <Route path="/fabrication/systems" component={FabSystemsPage} />

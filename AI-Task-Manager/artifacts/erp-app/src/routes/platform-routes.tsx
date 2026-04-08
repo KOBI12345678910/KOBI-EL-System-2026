@@ -49,6 +49,14 @@ const AnalyticsEnginePage = lazyPage(() => import("@/pages/analytics-engine"));
 const WhatsAppAIPage = lazyPage(() => import("@/pages/whatsapp-ai"));
 const CompanyFinancialsPage = lazyPage(() => import("@/pages/company-financials"));
 const ProductCatalogPage = lazyPage(() => import("@/pages/modules/product-catalog"));
+const WorkflowEnginePage = lazyPage(() => import("@/pages/platform/workflow-engine"));
+const NotificationsCenterPage = lazyPage(() => import("@/pages/platform/notifications-center"));
+const SecurityAuditPage = lazyPage(() => import("@/pages/platform/security-audit"));
+const MasterDataPage = lazyPage(() => import("@/pages/platform/master-data"));
+const ApprovalChainsPage = lazyPage(() => import("@/pages/platform/approval-chains"));
+const DataFlowAutomationsPage = lazyPage(() => import("@/pages/platform/data-flow-automations"));
+const RecycleBinPage = lazyPage(() => import("@/pages/platform/recycle-bin"));
+const SlaDashboardPage = lazyPage(() => import("@/pages/platform/sla-dashboard"));
 
 export const PlatformRoutes = (
 
@@ -101,5 +109,13 @@ export const PlatformRoutes = (
       <Route path="/whatsapp-ai" component={WhatsAppAIPage} />
       <Route path="/company-financials" component={CompanyFinancialsPage} />
       <Route path="/inventory/products" component={ProductCatalogPage} />
+      <Route path="/platform/workflow-engine" component={WorkflowEnginePage} />
+      <Route path="/platform/notifications" component={NotificationsCenterPage} />
+      <Route path="/platform/security-audit" component={SecurityAuditPage} />
+      <Route path="/platform/master-data" component={MasterDataPage} />
+      <Route path="/platform/approval-chains" component={ApprovalChainsPage} />
+      <Route path="/platform/automations" component={DataFlowAutomationsPage} />
+      <Route path="/platform/recycle-bin" component={RecycleBinPage} />
+      <Route path="/platform/sla" component={SlaDashboardPage} />
     </>
 );
