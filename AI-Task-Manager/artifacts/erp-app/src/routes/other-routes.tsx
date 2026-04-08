@@ -382,6 +382,37 @@ const BomComparisonPage = lazyPage(() => import("@/pages/supply-chain/bom-compar
 const BomTemplatesPage = lazyPage(() => import("@/pages/supply-chain/bom-templates"));
 const EngineeringChangeOrdersPage = lazyPage(() => import("@/pages/supply-chain/engineering-change-orders"));
 
+// Engineering Office (13 new pages)
+const EngineeringCommandCenterPage = lazyPage(() => import("@/pages/engineering/engineering-command-center"));
+const DrawingManagementPage = lazyPage(() => import("@/pages/engineering/drawing-management"));
+const MaterialSpecificationsPage = lazyPage(() => import("@/pages/engineering/material-specifications"));
+const EngineeringStandardsPage = lazyPage(() => import("@/pages/engineering/engineering-standards"));
+const EngineeringCalculationsPage = lazyPage(() => import("@/pages/engineering/engineering-calculations"));
+const ProductCatalogPage = lazyPage(() => import("@/pages/engineering/product-catalog"));
+const EngineeringProjectsPage = lazyPage(() => import("@/pages/engineering/engineering-projects"));
+const PrototypeTestingPage = lazyPage(() => import("@/pages/engineering/prototype-testing"));
+const DesignReviewsPage = lazyPage(() => import("@/pages/engineering/design-reviews"));
+const EngineeringDocumentsNewPage = lazyPage(() => import("@/pages/engineering/engineering-documents"));
+const EngineeringAnalyticsPage = lazyPage(() => import("@/pages/engineering/engineering-analytics"));
+const EngineeringAlertsPage = lazyPage(() => import("@/pages/engineering/engineering-alerts"));
+const EngineeringSettingsPage = lazyPage(() => import("@/pages/engineering/engineering-settings"));
+
+// Tenders Expansion (8 new pages)
+const TenderSubmissionsPage = lazyPage(() => import("@/pages/tenders/tender-submissions"));
+const TenderEvaluationPage = lazyPage(() => import("@/pages/tenders/tender-evaluation"));
+const TenderDocumentsNewPage = lazyPage(() => import("@/pages/tenders/tender-documents"));
+const TenderPricingPage = lazyPage(() => import("@/pages/tenders/tender-pricing"));
+const TenderTimelinePage = lazyPage(() => import("@/pages/tenders/tender-timeline"));
+const TenderCompetitorsPage = lazyPage(() => import("@/pages/tenders/tender-competitors"));
+const TenderAnalyticsPage = lazyPage(() => import("@/pages/tenders/tender-analytics"));
+const TenderAlertsPage = lazyPage(() => import("@/pages/tenders/tender-alerts"));
+
+// Product Development Expansion (4 new pages)
+const ProductDevCommandCenterPage = lazyPage(() => import("@/pages/product-dev/product-dev-command-center"));
+const ProductDesignPage = lazyPage(() => import("@/pages/product-dev/product-design"));
+const ProductCertificationsPage = lazyPage(() => import("@/pages/product-dev/product-certifications"));
+const ProductLaunchesPage = lazyPage(() => import("@/pages/product-dev/product-launches"));
+
 export const OtherRoutes = (
 
     <>
@@ -810,6 +841,37 @@ export const OtherRoutes = (
       <Route path="/supply-chain/bom-comparison" component={BomComparisonPage} />
       <Route path="/supply-chain/bom-templates" component={BomTemplatesPage} />
       <Route path="/supply-chain/eco" component={EngineeringChangeOrdersPage} />
+
+      {/* Engineering Office */}
+      <Route path="/engineering/command-center" component={EngineeringCommandCenterPage} />
+      <Route path="/engineering/drawings" component={DrawingManagementPage} />
+      <Route path="/engineering/materials" component={MaterialSpecificationsPage} />
+      <Route path="/engineering/standards" component={EngineeringStandardsPage} />
+      <Route path="/engineering/calculations" component={EngineeringCalculationsPage} />
+      <Route path="/engineering/product-catalog" component={ProductCatalogPage} />
+      <Route path="/engineering/projects" component={EngineeringProjectsPage} />
+      <Route path="/engineering/prototypes" component={PrototypeTestingPage} />
+      <Route path="/engineering/design-reviews" component={DesignReviewsPage} />
+      <Route path="/engineering/documents" component={EngineeringDocumentsNewPage} />
+      <Route path="/engineering/analytics" component={EngineeringAnalyticsPage} />
+      <Route path="/engineering/alerts" component={EngineeringAlertsPage} />
+      <Route path="/engineering/settings" component={EngineeringSettingsPage} />
+
+      {/* Tenders Expansion */}
+      <Route path="/tenders/submissions" component={TenderSubmissionsPage} />
+      <Route path="/tenders/evaluation" component={TenderEvaluationPage} />
+      <Route path="/tenders/documents" component={TenderDocumentsNewPage} />
+      <Route path="/tenders/pricing" component={TenderPricingPage} />
+      <Route path="/tenders/timeline" component={TenderTimelinePage} />
+      <Route path="/tenders/competitors" component={TenderCompetitorsPage} />
+      <Route path="/tenders/analytics" component={TenderAnalyticsPage} />
+      <Route path="/tenders/alerts" component={TenderAlertsPage} />
+
+      {/* Product Development Expansion */}
+      <Route path="/product-dev/command-center" component={ProductDevCommandCenterPage} />
+      <Route path="/product-dev/design" component={ProductDesignPage} />
+      <Route path="/product-dev/certifications" component={ProductCertificationsPage} />
+      <Route path="/product-dev/launches" component={ProductLaunchesPage} />
 
     </>
 );
