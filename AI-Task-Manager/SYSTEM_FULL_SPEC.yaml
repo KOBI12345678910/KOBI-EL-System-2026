@@ -1,1136 +1,489 @@
 # ============================================================
-# KOBI EL - Full ERP System Specification
-# Enterprise Product Architecture - SAP/Oracle/Priority Level
+# KOBI EL - Complete ERP System Specification
+# 50 Modules | 775+ Pages | 260+ API Routes | 182+ DB Schemas
+# Enterprise Level: SAP / Oracle / Priority / Monday
 # ============================================================
 # Source of Truth:
 #   UI/UX → New system design
-#   Business Logic → Old system (AI-Task-Manager)
+#   Business Logic → Existing AI-Task-Manager codebase
 # ============================================================
 
+system_overview:
+  total_modules: 50
+  total_pages: 775
+  total_api_routes: 260
+  total_db_schemas: 194
+  stack:
+    frontend: React + Vite + Tailwind CSS + shadcn/ui
+    backend: Express 5 + Node.js
+    database: PostgreSQL + Drizzle ORM
+    ai: Claude AI + Kimi + OpenAI integrations
+    realtime: WebSockets
+    monorepo: pnpm workspaces
+
 # ============================================================
-# LAYER 1: FULL SYSTEM MAP
+# COMPLETE MODULE REGISTRY (50 MODULES)
 # ============================================================
-system_map:
+
+modules:
+
+  # ===================== DASHBOARD & EXECUTIVE =====================
   dashboard:
-    purpose: "מסך על מרכזי עם KPI, קיצורי דרך, משימות פתוחות, חריגים והתראות"
-    priority: critical
+    purpose: "מסך ראשי - KPI, קיצורי דרך, משימות פתוחות, התראות"
+    pages: [dashboard]
+    category: core
 
+  executive:
+    purpose: "מסכי מנכ\"ל - KPI board, war room, live ops, bottlenecks, risk"
+    pages: [ceo-dashboard, company-health, data-flow-dashboard, delayed-projects, executive-kpi-board, executive-scorecard, financial-risk, live-alerts-center, live-ops, operational-bottlenecks, order-lifecycle, procurement-risk, production-efficiency, profitability-dashboard, war-room, workforce-status]
+    page_count: 16
+    category: executive
+
+  # ===================== CRM & SALES =====================
   crm:
-    purpose: "ניהול לקוחות, לידים, אנשי קשר, פעילויות, תקשורת ומסמכים"
-    priority: high
+    purpose: "ניהול קשרי לקוחות - לידים, אנשי קשר, פעילויות, תקשורת, אוטומציות"
+    pages: [advanced-search, agent-control-tower, ai-insights, anomaly, audit, campaign-analytics, cloud, cohort, collaboration, collections, commission-management, contract-management, contractor-decision, crm-activities, crm-automations, crm-communications-hub, crm-dashboard, crm-messaging, crm-ultimate-dashboard, custom-reports, daily-profitability, dynamic-pricing, email-sync, encryption, feeds, field-agents, filters, lead-profile, lead-quality, lead-scoring, leads-management, leads-ultimate, mobile, next-action, notifications, nurture-sequences, predictive, predictive-analytics, realtime-feed, rest-api, row-security, segmentation-dashboard, sla-management, smart-routing, sso, sync, territory-management, trends, triggers, webhooks, whatsapp-sms]
+    sub_modules: [ai, analytics, integrations, realtime, security]
+    page_count: 51
+    category: sales
 
   sales:
-    purpose: "ניהול הצעות מחיר, הזדמנויות, הזמנות לקוח, pipeline ומעקב מכירות"
-    priority: high
+    purpose: "מכירות - הצעות מחיר, הזמנות, pipeline, analytics, commissions"
+    pages: [ai-customer-service, crm-pipeline, customer-management, customer-portal, customer-service, delivery-notes, quotations, sales-analytics, sales-commissions, sales-forecast, sales-invoicing, sales-orders, sales-returns, sales-scoring, sales-territories]
+    page_count: 15
+    category: sales
 
-  customers:
-    purpose: "ניהול לקוחות פעילים, כרטיס לקוח, מסמכים, יתרות והיסטוריה"
-    priority: critical
+  customer-service:
+    purpose: "שירות לקוחות - תלונות, RMA, אחריות"
+    pages: [complaints, rma, warranty-management]
+    page_count: 3
+    category: sales
 
-  suppliers:
-    purpose: "ניהול ספקים, התקשרויות, מסמכי רכש, תשלומים והיסטוריה"
-    priority: critical
-
-  products_services:
-    purpose: "קטלוג מוצרים ושירותים, מחירים, קטגוריות, יחידות מידה ומדיניות"
-    priority: high
-
-  projects:
-    purpose: "ניהול פרויקטים, משימות, אבני דרך, תקציב, רווחיות וקבצים"
-    priority: medium
-
-  procurement:
-    purpose: "דרישות רכש, הזמנות רכש, קבלת סחורה/שירות, התאמות ומעקב"
-    priority: high
-
-  inventory:
-    purpose: "מלאי, מחסנים, תנועות, מקטים, רמות מלאי, הקצאות וספירות"
-    priority: medium
-
+  # ===================== FINANCIAL =====================
   finance:
-    purpose: "הכנסות, הוצאות, מסמכים, תשלומים, התאמות, גבייה וחשבונאות"
-    priority: critical
+    purpose: "פיננסים מלא - חשבונאות, חשבוניות, תשלומים, בנקים, מט\"ח, מס, גיול, דוחות"
+    pages: [accounting-export, accounting-inventory, accounting-portal, accounting-reports, accounting-settings, accounts-payable, accounts-receivable, adjusting-entries, aging-report, analytical-reports, annual-report, audit-control, balance-sheet, bank-accounts, bank-reconciliation, blackrock-ai, blackrock-dashboard, blackrock-hedging, blackrock-monte-carlo, blackrock-risk-matrix, blackrock-var, budget-departments, budget-vs-actual, budgets, cash-flow, change-tracking, chart-of-accounts, checks-management, consolidated-reports, contractor-payment-decision-model, cost-centers, credit-card-processing, credit-management, credit-notes, currencies-management, customer-aging-page, customer-profitability, debit-notes, debtors-balances, deferred-expenses, deferred-revenue, depreciation-schedule, entity-ledger, executive-summary-page, expense-breakdown, expense-claims, expense-files, expense-filing, expense-items, expense-reports, expense-upload, expenses, fin-control-center, finance-control-center, finance-dashboard, finance-fixed-assets, financial-analytics, financial-reports, financial-transactions, fiscal-report-page, fixed-assets, general-ledger, income, income-expenses-report, invoice-analysis-page, invoices, israeli-integrations, journal, journal-report, journal-transactions, loan-analysis, management-reporting, operational-profit, payment-anomalies, payment-reminders, payment-runs, payment-terms, payments, period-close, petty-cash, profit-centers, profit-loss-page, project-profitability, projects, receipts, refunds, registrations, reports, revenue-tracking, revenues-page, standing-orders, supplier-aging, supplier-cost-analysis, tax-management, treasury-management, trial-balance, vat-report-page, withholding-tax, working-files]
+    sub_modules: [customers, suppliers]
+    page_count: 100
+    category: finance
 
-  billing:
-    purpose: "חשבוניות, קבלות, דרישות תשלום, מסמכים מחזוריים, זיכויים"
-    priority: critical
+  fin:
+    purpose: "מודול פיננסי חדש - מסמכים מאוחדים, תשלומים, סליקה, מחזוריים, הו\"ק"
+    pages: [fin-dashboard, fin-documents-list, fin-document-create, fin-document-details, fin-standing-orders, fin-credit-clearing, fin-recurring, fin-accounting]
+    page_count: 8
+    category: finance
+    status: new
 
-  payments:
-    purpose: "סליקה, העברות, מס\"ב, הוראות קבע, שיוך תשלומים למסמכים"
-    priority: critical
+  pricing:
+    purpose: "תמחור - מחירונים, עלויות, חישובי עלות, גבייה"
+    pages: [collection-management, collections-manager, cost-calculations, cost-calculator, price-lists-ent, price-lists-manager, pricing-cost-calculator, pricing-price-lists]
+    page_count: 8
+    category: finance
 
-  hr:
-    purpose: "עובדים, תפקידים, נוכחות, שכר, משימות והרשאות"
-    priority: medium
-
-  operations:
-    purpose: "תהליכי עבודה, סטטוסים, SLA, תורים, ביצוע ותפעול"
-    priority: medium
-
-  documents:
-    purpose: "מרכז מסמכים, קבצים, חתימות, גרסאות, שיוכים וישויות קשורות"
-    priority: high
-
-  reports:
-    purpose: "דוחות, KPI, חתכים, ייצוא, בקרה וניתוחים"
-    priority: high
-
-  automations:
-    purpose: "טריגרים, חוקים, אוטומציות, תזמונים, webhooks, integrations"
-    priority: medium
-
-  settings:
-    purpose: "הגדרות מערכת, מאסטר דאטה, הרשאות, סטטוסים, מספור, לוגים"
-    priority: critical
-
-# ============================================================
-# LAYER 2: MAIN SIDE MENU
-# ============================================================
-main_menu:
-  - icon: dashboard
-    label: "דשבורד"
-    route: /dashboard
-
-  - icon: people
-    label: "CRM"
-    route: /crm
-    children:
-      - label: "לידים"
-        route: /crm/leads
-      - label: "אנשי קשר"
-        route: /crm/contacts
-      - label: "פעילויות"
-        route: /crm/activities
-
-  - icon: trending_up
-    label: "מכירות"
-    route: /sales
-    children:
-      - label: "הזדמנויות"
-        route: /sales/opportunities
-      - label: "הצעות מחיר"
-        route: /sales/quotes
-      - label: "הזמנות לקוח"
-        route: /sales/orders
-      - label: "Pipeline"
-        route: /sales/pipeline
-
-  - icon: person
-    label: "לקוחות"
-    route: /customers
-    children:
-      - label: "רשימת לקוחות"
-        route: /customers/list
-      - label: "לקוח חדש"
-        route: /customers/create
-
-  - icon: local_shipping
-    label: "ספקים"
-    route: /suppliers
-    children:
-      - label: "רשימת ספקים"
-        route: /suppliers/list
-      - label: "ספק חדש"
-        route: /suppliers/create
-
-  - icon: inventory_2
-    label: "מוצרים ושירותים"
-    route: /products
-    children:
-      - label: "קטלוג"
-        route: /products/catalog
-      - label: "קטגוריות"
-        route: /products/categories
-      - label: "מחירונים"
-        route: /products/price-lists
-
-  - icon: assignment
-    label: "פרויקטים"
-    route: /projects
-    children:
-      - label: "רשימת פרויקטים"
-        route: /projects/list
-      - label: "משימות"
-        route: /projects/tasks
-      - label: "אבני דרך"
-        route: /projects/milestones
-
-  - icon: shopping_cart
-    label: "רכש"
-    route: /procurement
-    children:
-      - label: "דרישות רכש"
-        route: /procurement/requests
-      - label: "הזמנות רכש"
-        route: /procurement/orders
-      - label: "קבלת סחורה"
-        route: /procurement/receipts
-
-  - icon: warehouse
-    label: "מלאי"
-    route: /inventory
-    children:
-      - label: "מצב מלאי"
-        route: /inventory/stock
-      - label: "מחסנים"
-        route: /inventory/warehouses
-      - label: "תנועות מלאי"
-        route: /inventory/movements
-      - label: "ספירת מלאי"
-        route: /inventory/counts
-
-  - icon: account_balance
-    label: "פיננסים"
-    route: /finance
-    children:
-      - label: "סקירה כללית"
-        route: /finance/overview
-      - label: "הכנסות"
-        route: /finance/income
-      - label: "הוצאות"
-        route: /finance/expenses
-      - label: "התאמות"
-        route: /finance/reconciliation
-
-  - icon: receipt_long
-    label: "חיוב ומסמכים"
-    route: /billing
-    children:
-      - label: "חשבוניות"
-        route: /billing/invoices
-      - label: "קבלות"
-        route: /billing/receipts
-      - label: "דרישות תשלום"
-        route: /billing/payment-requests
-      - label: "זיכויים"
-        route: /billing/credit-notes
-      - label: "מסמכים מחזוריים"
-        route: /billing/recurring
-
-  - icon: payments
-    label: "תשלומים"
-    route: /payments
-    children:
-      - label: "סליקת אשראי"
-        route: /payments/credit-clearing
-      - label: "העברות בנקאיות"
-        route: /payments/bank-transfers
-      - label: "מס\"ב"
-        route: /payments/masav
-      - label: "הוראות קבע"
-        route: /payments/standing-orders
-      - label: "שיוך תשלומים"
-        route: /payments/matching
-
-  - icon: groups
-    label: "משאבי אנוש"
-    route: /hr
-    children:
-      - label: "עובדים"
-        route: /hr/employees
-      - label: "נוכחות"
-        route: /hr/attendance
-      - label: "שכר"
-        route: /hr/payroll
-      - label: "תפקידים"
-        route: /hr/roles
-
-  - icon: engineering
-    label: "תפעול"
-    route: /operations
-    children:
-      - label: "תהליכי עבודה"
-        route: /operations/workflows
-      - label: "תורי עבודה"
-        route: /operations/queues
-      - label: "SLA"
-        route: /operations/sla
-
-  - icon: folder
-    label: "מסמכים"
-    route: /documents
-    children:
-      - label: "מרכז מסמכים"
-        route: /documents/center
-      - label: "קבצים"
-        route: /documents/files
-      - label: "תבניות"
-        route: /documents/templates
-
-  - icon: bar_chart
-    label: "דוחות"
-    route: /reports
-    children:
-      - label: "דוחות כספיים"
-        route: /reports/financial
-      - label: "דוחות מכירות"
-        route: /reports/sales
-      - label: "דוחות מלאי"
-        route: /reports/inventory
-      - label: "KPI"
-        route: /reports/kpi
-
-  - icon: smart_toy
-    label: "אוטומציות"
-    route: /automations
-    children:
-      - label: "חוקים"
-        route: /automations/rules
-      - label: "תזמונים"
-        route: /automations/schedules
-      - label: "Webhooks"
-        route: /automations/webhooks
-
-  - icon: settings
-    label: "הגדרות"
-    route: /settings
-    children:
-      - label: "כללי"
-        route: /settings/general
-      - label: "משתמשים"
-        route: /settings/users
-      - label: "הרשאות"
-        route: /settings/permissions
-      - label: "סטטוסים"
-        route: /settings/statuses
-      - label: "סוגי מסמכים"
-        route: /settings/document-types
-      - label: "אמצעי תשלום"
-        route: /settings/payment-methods
-      - label: "קטגוריות"
-        route: /settings/categories
-      - label: "מספור אוטומטי"
-        route: /settings/auto-numbering
-      - label: "לוג מערכת"
-        route: /settings/audit-log
-
-# ============================================================
-# LAYER 3: SUB-MENU TREE PER MODULE
-# ============================================================
-sub_menus:
-  dashboard:
-    pages:
-      - main_dashboard
-
-  crm:
-    pages:
-      - leads_list
-      - lead_create
-      - lead_details
-      - contacts_list
-      - contact_create
-      - contact_details
-      - activities_list
-      - activity_create
-      - activity_details
-
-  sales:
-    pages:
-      - opportunities_list
-      - opportunity_create
-      - opportunity_details
-      - quotes_list
-      - quote_create
-      - quote_details
-      - sales_orders_list
-      - sales_order_create
-      - sales_order_details
-      - pipeline_view
-
-  customers:
-    pages:
-      - customers_list
-      - customer_create
-      - customer_edit
-      - customer_profile
-      - customer_documents
-      - customer_payments
-      - customer_activity_log
-
-  suppliers:
-    pages:
-      - suppliers_list
-      - supplier_create
-      - supplier_edit
-      - supplier_profile
-      - supplier_documents
-      - supplier_payments
-      - supplier_activity_log
-
-  products_services:
-    pages:
-      - catalog_list
-      - product_create
-      - product_edit
-      - product_details
-      - categories_list
-      - category_create
-      - price_lists
-      - price_list_details
-
-  projects:
-    pages:
-      - projects_list
-      - project_create
-      - project_details
-      - project_tasks
-      - project_milestones
-      - project_budget
-      - project_files
-      - project_activity_log
-
+  # ===================== PROCUREMENT & SUPPLY CHAIN =====================
   procurement:
-    pages:
-      - purchase_requests_list
-      - purchase_request_create
-      - purchase_request_details
-      - purchase_orders_list
-      - purchase_order_create
-      - purchase_order_details
-      - goods_receipts_list
-      - goods_receipt_create
-      - goods_receipt_details
+    purpose: "רכש - דרישות, הזמנות, RFQ, אישורים, ניתוח עלויות, three-way matching"
+    pages: [competitor-analysis, landed-cost, po-approval-workflow, po-approvals, profitability-dashboard, purchase-requisitions, rfq-management, risk-hedging, spend-analysis, stock-counts, stock-movements, three-way-matching, vendor-evaluation]
+    page_count: 13
+    category: procurement
 
+  supplier-mgmt:
+    purpose: "ניהול ספקים מתקדם - פורטל, כרטיסי ניקוד, פיתוח, compliance"
+    pages: [supplier-development, supplier-portal-dashboard, supplier-scorecards, supply-chain-risk, vendor-compliance]
+    page_count: 5
+    category: procurement
+
+  supply-chain:
+    purpose: "שרשרת אספקה - EDI"
+    pages: [edi-admin, edi-dashboard]
+    page_count: 2
+    category: procurement
+
+  import:
+    purpose: "יבוא - חישוב עלויות יבוא, ביטוח"
+    pages: [import-cost-calculator, import-insurance]
+    page_count: 2
+    category: procurement
+
+  tenders:
+    purpose: "מכרזים - ניהול מכרזים, ניתוח הצעות"
+    pages: [bid-analysis, tenders-management]
+    page_count: 2
+    category: procurement
+
+  # ===================== INVENTORY & LOGISTICS =====================
   inventory:
-    pages:
-      - stock_overview
-      - warehouses_list
-      - warehouse_details
-      - movements_list
-      - movement_create
-      - inventory_counts_list
-      - inventory_count_create
-      - inventory_count_details
+    purpose: "מלאי - WMS מלא, מחסנים, תנועות, ספירות, VMI, barcode, lot tracking"
+    pages: [expiry-alerts, finished-goods-stock, inventory-dashboard, raw-material-stock, reorder-intelligence, stock-counts, stock-movements, vmi-management, vmi-supplier-portal, warehouse-locations, warehouses, wms-analytics, wms-barcode, wms-consignment, wms-cross-docking, wms-cycle-counting, wms-expiry-dashboard, wms-kits, wms-location-hierarchy, wms-lot-traceability, wms-pick-pack-ship, wms-putaway-rules, wms-stock-inquiry, wms-transfer-orders, wms-valuation]
+    page_count: 25
+    category: inventory
 
-  finance:
-    pages:
-      - finance_overview
-      - income_documents_list
-      - income_document_create
-      - income_document_details
-      - expense_documents_list
-      - expense_document_create
-      - expense_document_details
-      - reconciliation_screen
-      - document_relations
+  logistics:
+    purpose: "לוגיסטיקה - הובלה, ניתוב, צי רכב, מעקב, POD, reverse logistics"
+    pages: [barcode-rfid, cross-border, customer-tracking-portal, delivery-scheduling, fleet-management, freight, freight-audit, loading-dock, logistics-dashboard, packaging, proof-of-delivery, reverse-logistics, route-planning, shipment-tracking-live]
+    page_count: 14
+    category: inventory
 
-  billing:
-    pages:
-      - invoices_list
-      - invoice_create
-      - invoice_details
-      - receipts_list
-      - receipt_create
-      - receipt_details
-      - payment_requests_list
-      - payment_request_create
-      - payment_request_details
-      - credit_notes_list
-      - credit_note_create
-      - credit_note_details
-      - recurring_templates_list
-      - recurring_template_create
-      - recurring_template_details
+  # ===================== PRODUCTION & MANUFACTURING =====================
+  production:
+    purpose: "ייצור - BOM, MRP, MES, SCADA, עבודה, איכות, תחזוקה, CMMS"
+    pages: [batch-serial-tracking, bom-manager, bom-tree, cmms-dashboard, corrective-actions, cost-report, efficiency-report, equipment-management, field-measurements-page, installations-list, installers, machine-maintenance, mes-system, mrp-planning, ncr-reports, oee-dashboard, output-report, product-design, product-testing, production-dashboard, production-gantt, production-kanban, production-lines, production-planning, production-reports, production-work-orders, prototypes, qc-inspections, quality-checklists, quality-control-ent, safety-management, scada-system, tool-management, waste-report, work-instructions-ent]
+    page_count: 35
+    category: production
 
-  payments:
-    pages:
-      - credit_transactions_list
-      - credit_charge_create
-      - bank_transfers_list
-      - bank_transfer_create
-      - masav_batches_list
-      - masav_batch_create
-      - standing_orders_list
-      - standing_order_create
-      - payment_matching_screen
+  fabrication:
+    purpose: "ייצור אלומיניום/זכוכית - פרופילים, חיתוך, ריתוך, הרכבה, ציפוי, הובלה"
+    pages: [accessories, assembly-orders, coating-orders, cutting-lists, fab-accessories, fab-assembly-orders, fab-coating-orders, fab-cutting-lists, fab-finishes-colors, fab-glass-catalog, fab-glazing-orders, fab-installation-orders, fab-packing-lists, fab-profiles, fab-service-tickets, fab-systems, fab-transport-orders, fab-welding-orders, fab-workflow-tracker, finishes-colors, glass-catalog, glazing-orders, installation-orders, packing-lists, profiles, service-tickets, systems, transport-orders, welding-orders, workflow-tracker]
+    page_count: 30
+    category: production
 
+  quality:
+    purpose: "איכות - ISO, CAPA, audits, calibration, SPC, testing lab, supplier quality"
+    pages: [calibration, capa, complaints, document-control, internal-audit, iso-management, material-certs, quality-dashboard, spc, supplier-quality, test-certificates, testing-lab]
+    page_count: 12
+    category: production
+
+  # ===================== PROJECTS =====================
+  projects:
+    purpose: "פרויקטים - gantt, משימות, אבני דרך, תקציב, סיכונים, timesheets, earned value"
+    pages: [change-orders-page, contractors, customer-project-portal-page, earned-value, gantt-chart-page, kiryati10, milestones-page, permits, portfolio-dashboard-page, project-budget-page, project-documents-page, project-portal-page, project-tasks-page, project-templates-page, projects-dashboard, resource-planning, resources-page, risk-dashboard-page, risk-register, risk-register-page, subcontractors, timesheets-page, units]
+    sub_modules: [real-estate]
+    page_count: 23
+    category: projects
+
+  # ===================== HR =====================
   hr:
-    pages:
-      - employees_list
-      - employee_create
-      - employee_profile
-      - attendance_list
-      - attendance_report
-      - payroll_list
-      - payroll_run
-      - roles_list
-      - role_create
+    purpose: "משאבי אנוש - עובדים, נוכחות, שכר, גיוס, הכשרה, ביצועים, onboarding"
+    pages: [ats-recruitment, attendance, benefits, bonuses, candidates, compliance-dashboard, contractor-contracts, contractor-insurance, contractor-payments, departments, employee-card, employee-goals, employee-portfolio, employee-self-service, employees-list, employer-cost, employment-history, expense-claims, health-safety, hr-dashboard, hr-meetings, interviews, labor-cost-allocation, leave-management, onboarding, open-positions, org-chart, payroll, payroll-center, payroll-engine, payslips, performance-reviews, policies, recruitment, shifts, skills-matrix, talent-management, training, training-management, workforce-planning]
+    page_count: 40
+    category: hr
 
+  workforce:
+    purpose: "ניתוח כוח אדם"
+    pages: [workforce-analysis]
+    page_count: 1
+    category: hr
+
+  # ===================== OPERATIONS =====================
   operations:
-    pages:
-      - workflows_list
-      - workflow_create
-      - workflow_details
-      - queues_list
-      - queue_details
-      - sla_list
-      - sla_create
+    purpose: "תפעול - OEE, downtime, shift handover, cost per unit"
+    pages: [cost-per-unit, downtime-tracking, oee-dashboard, shift-handover]
+    page_count: 4
+    category: operations
 
+  installations:
+    purpose: "התקנות - נכסים, לוח שנה, מתקנים, GPS, עבודות"
+    pages: [assets, calendar, facilities, gps-map, work]
+    page_count: 5
+    category: operations
+
+  # ===================== AI & INTELLIGENCE =====================
+  ai:
+    purpose: "יכולות AI - anomaly detection, lead scoring, procurement optimizer, production insights"
+    pages: [ai-anomaly-detection, ai-customer-service-pro, ai-executive-insights, ai-follow-up, ai-lead-scoring, ai-procurement-optimizer, ai-production-insights, ai-quotation-assistant, ai-sales-assistant]
+    page_count: 9
+    category: ai
+
+  ai-engine:
+    purpose: "מנוע AI מרכזי - Kimi terminal, KOBI IDE, NLP, ML pipeline, chatbot"
+    pages: [SuperAgentPage, ai-admin-settings, ai-anomaly-detection, ai-audit-log, ai-automated-reports, ai-chatbot-settings, ai-customer-service, ai-customer-service-pro, ai-engine-hub, ai-executive-insights, ai-follow-up, ai-lead-scoring-pro, ai-procurement-optimizer, ai-production-insights, ai-quotation-assistant, ai-recommendation-engine, ai-sales-assistant, call-nlp-analysis, cross-module-transactions, employee-chatbot, kimi-terminal, kobi-ide, kobi-prompts, kobi-terminal, lead-scoring, ml-training-pipeline, nl-query, predictive-analytics, render-content-with-charts, sentiment-analysis]
+    page_count: 30
+    category: ai
+
+  # ===================== DOCUMENTS & KNOWLEDGE =====================
   documents:
-    pages:
-      - document_center
-      - file_upload
-      - file_details
-      - templates_list
-      - template_create
-      - template_details
+    purpose: "מרכז מסמכים - DMS, חתימות, ארכיון, תבניות, checklists"
+    pages: [archive-files, checklists, company-report, contracts, digital-archive, digital-signatures, dms-repository, quality-docs, system-spec, templates-library]
+    page_count: 10
+    category: documents
 
+  knowledge:
+    purpose: "ניהול ידע - בסיס ידע, SOP, לקחים"
+    pages: [knowledge-base, lessons-learned, sop-procedures]
+    page_count: 3
+    category: documents
+
+  # ===================== REPORTS & BI =====================
   reports:
-    pages:
-      - financial_reports
-      - sales_reports
-      - inventory_reports
-      - kpi_dashboard
-      - custom_report_builder
+    purpose: "דוחות - פיננסי, HR, מלאי, ייצור, מכירות, KPI, executive"
+    pages: [analytics, bi-dashboard, bi-financial-statements, bi-hr-analytics, bi-inventory-analytics, bi-production-analytics, bi-sales-analytics, customer-aging, customer-vendor-ledger, executive-summary, financial-reports, fiscal-report, funnel-analysis, invoice-analysis, kpi-dashboard, operational-reports, period-filter, report-customer-aging, report-executive-summary, report-fiscal, report-invoice-analysis, report-vat, report-vendor-aging, reports-hub, risk-analysis, vat-report, vendor-aging]
+    sub_modules: [components, financial]
+    page_count: 27
+    category: reports
 
-  automations:
-    pages:
-      - rules_list
-      - rule_create
-      - rule_details
-      - schedules_list
-      - schedule_create
-      - webhooks_list
-      - webhook_create
+  bi:
+    purpose: "Business Intelligence - custom dashboards, data explorer, ad-hoc, scheduled"
+    pages: [bi-hub, comparative-analytics, custom-dashboards, data-explorer, scheduled-reports]
+    page_count: 5
+    category: reports
 
+  # ===================== MARKETING =====================
+  marketing:
+    purpose: "שיווק - קמפיינים, email marketing, social media, content calendar, budget"
+    pages: [campaigns, campaigns-page, content-calendar, content-calendar-page, email-campaigns-page, email-marketing, marketing-analytics, marketing-budget, marketing-budget-page, marketing-hub, marketing-integrations, social-media, social-media-page]
+    page_count: 13
+    category: marketing
+
+  # ===================== STRATEGY =====================
+  strategy:
+    purpose: "אסטרטגיה - BSC, SWOT, OKR, business plan, competitive analysis"
+    pages: [balanced-scorecard-page, business-plan-page, competitive-analysis-page, goals-page, market-analysis, okrs, planning, swot-page]
+    page_count: 8
+    category: strategy
+
+  # ===================== CONTRACTS =====================
+  contracts:
+    purpose: "חוזים - ניהול, תבניות, AI analysis, risk scoring, NDA, service agreements"
+    pages: [contract-ai-analysis, contract-analytics-dashboard, contract-risk-scoring, contract-templates, contracts-dashboard, contracts-management, nda-agreements, service-agreements]
+    page_count: 8
+    category: legal
+
+  # ===================== SAFETY & EHS =====================
+  safety:
+    purpose: "בטיחות - דוחות תאונות, נהלים, הדרכה"
+    pages: [accident-reports, procedures, safety-procedures, safety-training, training]
+    page_count: 5
+    category: safety
+
+  ehs:
+    purpose: "EHS מתקדם - סביבה, חומ\"ס, היתרים, אנרגיה, חירום, PPE"
+    pages: [annual-safety-report, ehs-dashboard, emergency-preparedness, energy-management, environmental-permits, hazardous-materials, israeli-regulatory, ppe-management, risk-assessment, safety-incidents, safety-inspections, safety-training-certs, waste-management, work-permits]
+    page_count: 14
+    category: safety
+
+  # ===================== PRODUCT DEVELOPMENT =====================
+  product-dev:
+    purpose: "פיתוח מוצר - roadmap, R&D, QA testing, feature requests"
+    pages: [feature-requests, product-roadmap, qa-testing, rd-projects, roadmap]
+    page_count: 5
+    category: product
+
+  # ===================== ASSETS =====================
+  assets:
+    purpose: "נכסים - דשבורד, ביטוח ציוד, ליסינג, כלים"
+    pages: [assets-dashboard, equipment-insurance, leasing, tools-dies]
+    page_count: 4
+    category: assets
+
+  # ===================== COMMUNICATION =====================
+  chat:
+    purpose: "צ'אט פנימי"
+    pages: [chat-page]
+    page_count: 1
+    category: communication
+
+  calendar:
+    purpose: "לוח שנה"
+    pages: [user-calendar]
+    page_count: 1
+    category: communication
+
+  meetings:
+    purpose: "פגישות"
+    pages: [meetings-calendar]
+    page_count: 1
+    category: communication
+
+  # ===================== PLATFORM & BUILDER =====================
+  builder:
+    purpose: "בונה מודולים - entity editor, form builder, workflow builder, automation"
+    pages: [actions-builder, automation-builder, automation-dashboard, builder-dashboard, builder-section, business-rules-builder, buttons-builder, calendar-view, categories-builder, context-builder, dashboard-builder, detail-page-builder, dynamic-data-view, dynamic-detail-page, dynamic-form-renderer, entity-buttons-tab, entity-editor, form-builder, form-field-components, inline-child-grid, kanban-view, module-editor, module-version-history, permissions-builder, scheduled-tasks, status-builder, sub-tables-builder, summary-cards-view, template-builder, tool-builder, validation-builder, versioning-builder, view-builder, visual-workflow-builder, visual-workflow-designer, webhook-management, widget-builder, workflow-builder]
+    page_count: 38
+    category: platform
+
+  platform:
+    purpose: "פלטפורמה - approval chains, data flow, recycle bin, SLA"
+    pages: [approval-chains, data-flow-automations, recycle-bin, sla-dashboard]
+    page_count: 4
+    category: platform
+
+  modules:
+    purpose: "ניהול מודולים - CRUD כלליים לכל הישויות"
+    pages: [ai-document-processor, ai-settings, asset-management, budget-tracking, claude-chat, compliance-certificates, customs-clearance, data-sender, document-control, documents, exchange-rates, foreign-suppliers, goods-receipt, hi-tech-dashboard, import-cost-calculator, import-dashboard, import-orders, inventory-management, letters-of-credit, maintenance-management, media-library, price-comparison, price-history, price-quotes, procurement-ai, procurement-competitors, procurement-dashboard, procurement-profitability, procurement-risk-hedging, product-catalog, project-analyses, project-analysis-detail, purchase-approvals, purchase-orders, purchase-requests, purchase-returns, quality-control, raw-materials, safety-management, shipment-tracking, supplier-card, supplier-communications, supplier-contracts, supplier-evaluations, suppliers, work-orders]
+    page_count: 46
+    category: platform
+
+  # ===================== SECURITY =====================
+  security:
+    purpose: "אבטחה - RBAC, MFA, SSO, API keys, encryption, GDPR, backup, vulnerability"
+    pages: [api-keys-security, backup-dr, compliance-reports, cors-management, data-retention, encryption-management, gdpr-center, geo-blocking, ip-management, rate-limit-config, security-dashboard, vulnerability-tracker, webhook-secrets]
+    sub_modules: [tabs]
+    page_count: 13
+    category: security
+
+  # ===================== SETTINGS =====================
   settings:
-    pages:
-      - general_settings
-      - users_list
-      - user_create
-      - user_details
-      - permissions_matrix
-      - statuses_list
-      - document_types_list
-      - payment_methods_list
-      - categories_list
-      - auto_numbering
-      - audit_log
+    purpose: "הגדרות - חברה, משתמשים, הרשאות, אינטגרציות, webhooks, templates, audit"
+    pages: [access-requests, advanced-analytics, api-connection-hub, api-connections, api-keys, audit-log, automation, backups, communication-integrations, company-profile, departments, escalation-channels, feature-flags, field-level-security, general-settings, import-export, integration-hub, integrations, israeli-integrations, languages-settings, mfa-settings, modules-fields, n8n-integrations, onboarding-center, payment-services, plugins, record-sharing, roles, security-settings, session-management, settings-hub, sso-settings, system-settings, team-collaboration, template-management, triggers, user-management, user-profile, webhooks]
+    sub_modules: [sections]
+    page_count: 39
+    category: settings
+
+  # ===================== PORTALS =====================
+  portal:
+    purpose: "פורטלים חיצוניים - לקוח, ספק, עובד, קבלן"
+    pages: [contractor-portal, customer-portal-dashboard, customer-portal-login, employee-portal, portal-login, portal-management, supplier-portal]
+    page_count: 7
+    category: portals
+
+  # ===================== SUPPORT & SYSTEM =====================
+  support:
+    purpose: "תמיכה - טיקטים"
+    pages: [tickets]
+    page_count: 1
+    category: support
+
+  system:
+    purpose: "מערכת - audit log, model catalog"
+    pages: [audit-log, model-catalog]
+    page_count: 2
+    category: system
+
+  notification-settings:
+    purpose: "הגדרות התראות - email templates, delivery dashboard"
+    pages: [delivery-dashboard, email-templates]
+    page_count: 2
+    category: system
 
 # ============================================================
-# LAYER 4: ALL PAGES IN SYSTEM
+# ROOT-LEVEL PAGES (52)
 # ============================================================
-total_pages_count: 147
-# See sub_menus above for complete list per module
-
-# ============================================================
-# LAYER 5: ALL ENTITIES/TABLES
-# ============================================================
-entities:
-  # === Foundation ===
-  statuses:
-    type: seed_table
-    seed: [draft, pending, open, paid, partially_paid, cancelled, archived, failed, recurring_active, recurring_paused]
-
-  document_types:
-    type: seed_table
-    seed: [receipt, invoice, invoice_receipt, payment_request, expense_invoice, expense_receipt, credit_note, other_document, recurring_document_template]
-
-  payment_methods:
-    type: seed_table
-    seed: [cash, credit_card, bank_transfer, check, standing_order, masav, other]
-
-  categories:
-    type: hierarchical
-    fields: [id, name, direction, parent_category_id, is_active]
-
-  # === Core Business ===
-  customers:
-    type: master_data
-    fields: [id, customer_number, full_name, phone, email, company_name, tax_id, address, city, zip_code, notes, status_id, created_at, updated_at]
-
-  suppliers:
-    type: master_data
-    fields: [id, supplier_number, full_name, company_name, phone, email, tax_id, address, city, zip_code, notes, status_id, created_at, updated_at]
-
-  contacts:
-    type: master_data
-    fields: [id, first_name, last_name, phone, email, company, position, customer_id, supplier_id, notes, created_at, updated_at]
-
-  leads:
-    type: transactional
-    fields: [id, name, company, phone, email, source, status_id, assigned_to, notes, created_at, updated_at]
-
-  # === Products & Services ===
-  products:
-    type: master_data
-    fields: [id, sku, name, description, category_id, unit_of_measure, default_price, tax_rate, is_active, created_at, updated_at]
-
-  price_lists:
-    type: master_data
-    fields: [id, name, currency, effective_from, effective_to, is_active, created_at]
-
-  price_list_items:
-    type: junction
-    fields: [id, price_list_id, product_id, price, min_quantity, created_at]
-
-  # === Sales ===
-  opportunities:
-    type: transactional
-    fields: [id, name, customer_id, contact_id, stage, probability, expected_amount, expected_close_date, assigned_to, notes, status_id, created_at, updated_at]
-
-  quotes:
-    type: transactional
-    fields: [id, quote_number, customer_id, contact_id, opportunity_id, issue_date, valid_until, subtotal, tax_amount, total_amount, status_id, notes, created_at, updated_at]
-
-  quote_items:
-    type: line_items
-    fields: [id, quote_id, product_id, description, quantity, unit_price, discount_percent, tax_rate, line_total, sort_order]
-
-  sales_orders:
-    type: transactional
-    fields: [id, order_number, customer_id, quote_id, order_date, delivery_date, subtotal, tax_amount, total_amount, status_id, notes, created_at, updated_at]
-
-  sales_order_items:
-    type: line_items
-    fields: [id, sales_order_id, product_id, description, quantity, unit_price, discount_percent, tax_rate, line_total, delivered_quantity, sort_order]
-
-  # === Documents (Central) ===
-  documents:
-    type: central_transactional
-    fields: [id, document_number, document_type_id, direction, customer_id, supplier_id, issue_date, due_date, reference_number, title, description, currency, subtotal_amount, tax_amount, total_amount, paid_amount, balance_due, payment_method_id, status_id, is_recurring_template, parent_recurring_id, created_by, created_at, updated_at]
-    rules:
-      - "direction=income → customer_id required"
-      - "direction=expense → supplier_id required"
-      - "document_number unique per document_type"
-      - "status auto-updates based on payment"
-
-  document_items:
-    type: line_items
-    fields: [id, document_id, product_id, description, quantity, unit_price, discount_percent, tax_rate, line_total, sort_order]
-
-  document_links:
-    type: junction
-    fields: [id, source_document_id, target_document_id, link_type, notes, created_at]
-    link_types: [based_on, converted_to, paid_by, receipt_for, related_to, attachment_reference]
-
-  attachments:
-    type: supporting
-    fields: [id, document_id, file_name, file_url, file_type, uploaded_at, uploaded_by]
-
-  # === Payments ===
-  payments:
-    type: transactional
-    fields: [id, document_id, payment_method_id, payment_date, amount, reference_number, external_transaction_id, status_id, notes, created_at]
-    rules:
-      - "full payment → status = paid"
-      - "partial payment → status = partially_paid"
-      - "updates paid_amount and balance_due on document"
-
-  credit_transactions:
-    type: transactional
-    fields: [id, customer_id, document_id, transaction_date, amount, transaction_code, provider_reference, status_id, notes, created_at]
-
-  standing_orders:
-    type: transactional
-    fields: [id, customer_id, related_document_id, amount, frequency, start_date, end_date, status_id, notes, created_at]
-
-  recurring_documents:
-    type: transactional
-    fields: [id, template_document_id, frequency, interval_value, next_run_date, end_date, auto_send, status_id, created_at, updated_at]
-
-  # === Procurement ===
-  purchase_requests:
-    type: transactional
-    fields: [id, request_number, requested_by, department, request_date, needed_by, status_id, notes, approved_by, approved_at, created_at, updated_at]
-
-  purchase_request_items:
-    type: line_items
-    fields: [id, purchase_request_id, product_id, description, quantity, estimated_price, supplier_id, sort_order]
-
-  purchase_orders:
-    type: transactional
-    fields: [id, order_number, supplier_id, purchase_request_id, order_date, expected_delivery, subtotal, tax_amount, total_amount, status_id, notes, created_at, updated_at]
-
-  purchase_order_items:
-    type: line_items
-    fields: [id, purchase_order_id, product_id, description, quantity, unit_price, tax_rate, line_total, received_quantity, sort_order]
-
-  goods_receipts:
-    type: transactional
-    fields: [id, receipt_number, purchase_order_id, supplier_id, receipt_date, warehouse_id, status_id, notes, received_by, created_at]
-
-  goods_receipt_items:
-    type: line_items
-    fields: [id, goods_receipt_id, purchase_order_item_id, product_id, quantity_received, quality_status, notes, sort_order]
-
-  # === Inventory ===
-  warehouses:
-    type: master_data
-    fields: [id, name, code, address, city, manager, is_active, created_at]
-
-  stock_levels:
-    type: computed
-    fields: [id, product_id, warehouse_id, quantity_on_hand, quantity_reserved, quantity_available, reorder_level, last_updated]
-
-  inventory_movements:
-    type: transactional
-    fields: [id, product_id, warehouse_from_id, warehouse_to_id, movement_type, quantity, reference_type, reference_id, notes, performed_by, created_at]
-    movement_types: [in, out, transfer, adjustment, count]
-
-  inventory_counts:
-    type: transactional
-    fields: [id, count_number, warehouse_id, count_date, status_id, counted_by, approved_by, notes, created_at]
-
-  inventory_count_items:
-    type: line_items
-    fields: [id, inventory_count_id, product_id, system_quantity, counted_quantity, variance, notes]
-
-  # === Projects ===
-  projects:
-    type: transactional
-    fields: [id, project_number, name, customer_id, start_date, end_date, budget, actual_cost, status_id, manager, description, created_at, updated_at]
-
-  project_tasks:
-    type: transactional
-    fields: [id, project_id, name, description, assigned_to, start_date, due_date, actual_hours, estimated_hours, status_id, priority, parent_task_id, sort_order, created_at, updated_at]
-
-  project_milestones:
-    type: transactional
-    fields: [id, project_id, name, due_date, completed_date, status_id, deliverable, notes, created_at]
-
-  # === HR ===
-  employees:
-    type: master_data
-    fields: [id, employee_number, first_name, last_name, email, phone, department, position, manager_id, hire_date, status_id, created_at, updated_at]
-
-  attendance:
-    type: transactional
-    fields: [id, employee_id, date, clock_in, clock_out, total_hours, status_id, notes, created_at]
-
-  payroll_runs:
-    type: transactional
-    fields: [id, period_start, period_end, run_date, total_gross, total_deductions, total_net, status_id, created_by, created_at]
-
-  payroll_items:
-    type: line_items
-    fields: [id, payroll_run_id, employee_id, gross_pay, deductions, net_pay, notes]
-
-  # === Operations ===
-  workflows:
-    type: master_data
-    fields: [id, name, description, trigger_entity, trigger_event, is_active, created_at, updated_at]
-
-  workflow_steps:
-    type: master_data
-    fields: [id, workflow_id, step_order, action_type, action_config_json, condition_json]
-
-  work_queues:
-    type: transactional
-    fields: [id, name, entity_type, assigned_team, priority, sla_hours, is_active, created_at]
-
-  # === System ===
-  users:
-    type: master_data
-    fields: [id, username, email, full_name, role_id, is_active, last_login, created_at, updated_at]
-
-  roles:
-    type: master_data
-    fields: [id, name, description, created_at]
-
-  role_permissions:
-    type: junction
-    fields: [id, role_id, module, action, is_allowed]
-
-  activity_logs:
-    type: audit
-    fields: [id, entity_type, entity_id, action_type, old_value_json, new_value_json, actor, created_at]
-    action_types: [created, updated, deleted, linked, unlinked, uploaded_file, payment_recorded, status_changed]
-
-  auto_number_sequences:
-    type: system
-    fields: [id, entity_type, prefix, next_value, padding_length]
-
-  notifications:
-    type: system
-    fields: [id, user_id, title, message, entity_type, entity_id, is_read, created_at]
+root_pages:
+  - dashboard
+  - login
+  - forbidden
+  - not-found
+  - forgot-password
+  - reset-password
+  - ApiHub
+  - IntegrationHub
+  - ai-builder
+  - alert-terminal
+  - analytics-engine
+  - api-keys
+  - audit-log
+  - bom-products
+  - company-financials
+  - customer-service
+  - data-migration
+  - document-builder
+  - goods-receipt
+  - governance
+  - import-management
+  - integration-builder
+  - integration-settings
+  - integrations-hub
+  - integrations-hub-data
+  - inventory
+  - kimi-task-challenges
+  - lead-scoring
+  - menu-builder
+  - models
+  - module-view
+  - notification-preferences
+  - notification-routing
+  - notifications
+  - operations-control-center
+  - payroll
+  - permissions
+  - procurement
+  - prompt-templates
+  - providers
+  - purchase-orders
+  - purchase-requests
+  - queries
+  - raw-materials
+  - recommendations
+  - report-builder
+  - responses
+  - risk-management
+  - settings
+  - suppliers
+  - usage-logs
+  - whatsapp-ai
 
 # ============================================================
-# LAYER 6: FIELDS PER ENTITY
+# API ROUTES (260 files)
 # ============================================================
-# See entities section above - all fields defined per entity
-
-# ============================================================
-# LAYER 7: ACTIONS PER PAGE
-# ============================================================
-page_actions:
-  # Dashboard
-  main_dashboard:
-    quick_actions:
-      - {action: create_customer, target: /customers/create}
-      - {action: create_supplier, target: /suppliers/create}
-      - {action: create_income_document, target: /finance/income/create}
-      - {action: upload_expense, target: /finance/expenses/create}
-      - {action: create_invoice, target: /billing/invoices/create}
-      - {action: create_invoice_receipt, target: /billing/receipts/create}
-      - {action: create_recurring_document, target: /billing/recurring/create}
-      - {action: create_standing_order, target: /payments/standing-orders/create}
-      - {action: quick_credit_charge, target: /payments/credit-clearing/create}
-
-  # Customers
-  customers_list:
-    actions:
-      - {action: create, target: /customers/create}
-      - {action: edit, target: "/customers/:id/edit"}
-      - {action: view_profile, target: "/customers/:id"}
-      - {action: export, type: bulk}
-      - {action: search, type: filter}
-      - {action: filter_by_status, type: filter}
-
-  customer_profile:
-    actions:
-      - {action: edit, target: "/customers/:id/edit"}
-      - {action: create_document, target: "/finance/income/create?customer_id=:id"}
-      - {action: create_quote, target: "/sales/quotes/create?customer_id=:id"}
-      - {action: view_documents, tab: documents}
-      - {action: view_payments, tab: payments}
-      - {action: view_standing_orders, tab: standing_orders}
-      - {action: view_activity, tab: activity_log}
-
-  # Suppliers
-  suppliers_list:
-    actions:
-      - {action: create, target: /suppliers/create}
-      - {action: edit, target: "/suppliers/:id/edit"}
-      - {action: view_profile, target: "/suppliers/:id"}
-      - {action: export, type: bulk}
-
-  supplier_profile:
-    actions:
-      - {action: edit, target: "/suppliers/:id/edit"}
-      - {action: create_expense, target: "/finance/expenses/create?supplier_id=:id"}
-      - {action: create_purchase_order, target: "/procurement/orders/create?supplier_id=:id"}
-      - {action: view_documents, tab: documents}
-      - {action: view_payments, tab: payments}
-      - {action: view_activity, tab: activity_log}
-
-  # Income Documents
-  income_documents_list:
-    actions:
-      - {action: create, target: /finance/income/create}
-      - {action: view, target: "/finance/income/:id"}
-      - {action: duplicate, type: inline}
-      - {action: link_document, type: modal}
-      - {action: record_payment, type: modal}
-      - {action: filter_by_type, type: filter}
-      - {action: filter_by_customer, type: filter}
-      - {action: filter_by_date, type: filter}
-      - {action: filter_by_status, type: filter}
-      - {action: filter_by_amount, type: filter}
-
-  income_document_details:
-    actions:
-      - {action: edit, target: "/finance/income/:id/edit"}
-      - {action: record_payment, type: modal}
-      - {action: link_document, type: modal}
-      - {action: upload_attachment, type: modal}
-      - {action: duplicate, type: action}
-      - {action: cancel_document, type: action}
-      - {action: convert_to_invoice, type: action, condition: "type=payment_request"}
-      - {action: create_receipt, type: action, condition: "type=invoice"}
-
-  # Expense Documents
-  expense_documents_list:
-    actions:
-      - {action: upload_expense, target: /finance/expenses/create}
-      - {action: create_expense, target: /finance/expenses/create}
-      - {action: view, target: "/finance/expenses/:id"}
-      - {action: attach_file, type: modal}
-      - {action: link_document, type: modal}
-
-  expense_document_details:
-    actions:
-      - {action: edit, target: "/finance/expenses/:id/edit"}
-      - {action: record_payment, type: modal}
-      - {action: link_document, type: modal}
-      - {action: upload_attachment, type: modal}
-
-  # Billing
-  invoices_list:
-    actions:
-      - {action: create, target: /billing/invoices/create}
-      - {action: view, target: "/billing/invoices/:id"}
-      - {action: send_to_customer, type: action}
-      - {action: record_payment, type: modal}
-      - {action: create_credit_note, type: action}
-
-  # Payments
-  credit_transactions_list:
-    actions:
-      - {action: create_charge, target: /payments/credit-clearing/create}
-      - {action: view, target: "/payments/credit-clearing/:id"}
-      - {action: match_to_document, type: modal}
-
-  standing_orders_list:
-    actions:
-      - {action: create, target: /payments/standing-orders/create}
-      - {action: view, target: "/payments/standing-orders/:id"}
-      - {action: pause, type: action}
-      - {action: resume, type: action}
-      - {action: cancel, type: action}
-
-  payment_matching_screen:
-    actions:
-      - {action: match_payment_to_document, type: modal}
-      - {action: mark_as_paid, type: action}
-      - {action: mark_as_partial, type: action}
-      - {action: unmatch, type: action}
+api_routes_by_category:
+  ai_engine: [ai-api-keys, ai-autonomous-agent, ai-business-automation, ai-data-flow, ai-document-intelligence-engine, ai-document-processor, ai-engine-routes, ai-gaps, ai-models, ai-operations, ai-orchestration, ai-permissions, ai-prompt-templates, ai-providers, ai-queries, ai-recommendations, ai-responses, ai-search-enhance, ai-smart-alerts, ai-usage-logs]
+  analytics: [analytics-engine, anomaly-detection, executive-control, executive-scorecard, executive-war-room]
+  auth_security: [auth, mfa, sso, session-admin, security, security-compliance]
+  builder_platform: [builder-seed, dedicated-entity-routes, entity-crud-registry, generic-crud, module-path-aliases, route-aliases]
+  chat_comms: [chat, notifications, notifications-hub, push-notifications, whatsapp-ai-engine, whatsapp-business-engine]
+  contracts: [contract-ai-analysis, contract-analytics, contract-lifecycle, contract-templates, contracts, digital-contracts-engine, digital-contracts-signatures-engine]
+  crm: [crm, crm-analytics-sync, crm-communications, crm-customer360, crm-enterprise, crm-new-capabilities, crm-sales-pipeline, crm-sap-upgrade, crm-seed, crm-ultimate, customer-service-ai-engine, lead-scoring-agent-analytics-engine, sentiment-analysis]
+  finance: [accounting-export, ap-enterprise, ar-enterprise, budgets, chart-of-accounts, commission-calculator-engine, company-financials-realtime-engine, contractor-payment-decision, contractor-payment-engine, exchange-rates, finance, finance-accounting, finance-control, finance-customers-suppliers, finance-enterprise, finance-enterprise2, finance-enterprise3, finance-enterprise4, finance-new-pages, finance-sap-upgrade, investment-portfolio, israeli-accounting-engine, israeli-business-integrations, israeli-business-integrations-new, israeli-payroll, oracle-financial-core, realtime-financials-engine, risk-monte-carlo-engine]
+  fin_new: [fin-router, fin-documents, fin-payments, fin-master-data, fin-seed]
+  hr: [attendance-leave-engine, attendance-payroll-engine, employee-chatbot, employee-portfolio-engine, employee-value-engine, hr, hr-attendance-advanced, hr-enterprise, hr-sap-upgrade, hr-workforce, payroll-engine, payroll-module]
+  integrations: [api-connection-hub, api-hub, api-keys, data-flow-automations, data-flow-system, data-import-export, data-migration, edi, email-templates, external-api, external-portal, integration-hub, integrations, n8n-integrations]
+  inventory_wms: [inventory-management, inventory-warehouse, stock_counts, stock_movements, warehouse-intelligence, warehouses, wms-core, wms-operations]
+  logistics: [delivery-returns, fleet-logistics, logistics-tracking-pod-rma, shipping-freight, shipment-tracking]
+  manufacturing: [bom-product-engine, fabrication-catalog, fabrication-logistics, fabrication-production, factory-seed, field-measurements, field-operations, installations-module, installer-management-engine, maintenance-enterprise, production-enterprise, production-enterprise2, production-gaps, production-product-dev, production-sap-upgrade]
+  marketing: [communication-marketing-engine, marketing-automation-engine, marketing-enterprise, marketing-module, marketing-sync]
+  procurement: [compliance-certificates, customs-clearances, foreign-suppliers, goods-receipts, import-cost-calculations, import-management-engine, import-orders, landed-cost, letters-of-credit, po-approval-workflow, price-history, price-quotes, pricing-enterprise, procurement-analysis, procurement-rfq, procurement-sap-upgrade, product-catalog, product-quote-engine, purchase-orders, purchase-requests, purchase-returns, raw-materials, rfq, sales-pricing-enterprise, supplier-communications, supplier-contracts, supplier-details, supplier-evaluations, supplier-intelligence, supplier-intelligence-new, supplier-notification-trigger, suppliers, supply-chain-lifecycle-engine, three-way-matching]
+  projects: [project-analyses, project-costing-engine, project-pm-extended, project-resources-budget, project-risks-timesheets, projects-module, projects-sap-upgrade]
+  quality: [hse, hse-routes, qms, qms-inspection, quality-control-engine, quality-management]
+  reports: [bi-adhoc-query, bi-comparative-analytics, bi-dashboards, bi-export, bi-scheduled-reports, business-analytics, dashboard-kpi, dashboard-stats, nl-query, pdf-generator-engine, reports-center]
+  settings: [audit-log, global-search, health, live-ops, metrics, missing-entities, openapi, graphql, products, recycle-bin, server-health, settings, storage, strategy-growth-engine, strategy-module, system-data-reset, system-settings-upgrade, task-challenges, vector-search, work-orders, workforce-analysis]
 
 # ============================================================
-# LAYER 8: NAVIGATION MAP
+# DATABASE SCHEMAS (194 files)
 # ============================================================
-navigation_map:
-  dashboard:
-    navigates_to:
-      - customers_list
-      - suppliers_list
-      - income_documents_list
-      - expense_documents_list
-      - credit_transactions_list
-      - standing_orders_list
-      - billing_invoices_list
-      - reports_kpi
-
-  customer_profile:
-    navigates_to:
-      - customer_edit
-      - income_document_create
-      - quote_create
-      - document_details (via documents tab)
-      - payment_details (via payments tab)
-      - standing_order_details (via standing_orders tab)
-
-  supplier_profile:
-    navigates_to:
-      - supplier_edit
-      - expense_document_create
-      - purchase_order_create
-      - document_details (via documents tab)
-
-  income_document_details:
-    navigates_to:
-      - customer_profile (click customer name)
-      - linked_document_details (via links tab)
-      - attachment_download (via attachments tab)
-      - payment_details (via payments tab)
-      - income_document_edit
-
-  expense_document_details:
-    navigates_to:
-      - supplier_profile (click supplier name)
-      - linked_document_details (via links tab)
-      - attachment_download (via attachments tab)
-      - payment_details (via payments tab)
-
-  invoice_details:
-    navigates_to:
-      - customer_profile
-      - receipt_create (action: create receipt)
-      - credit_note_create (action: create credit note)
-      - payment_record (action: record payment)
-      - quote_details (if based on quote)
-      - sales_order_details (if based on order)
-
-  purchase_order_details:
-    navigates_to:
-      - supplier_profile
-      - goods_receipt_create
-      - purchase_request_details (if based on request)
-      - expense_document_create
-
-  project_details:
-    navigates_to:
-      - project_tasks_list
-      - project_milestones_list
-      - project_budget
-      - project_files
-      - customer_profile
-      - document_details (linked invoices/expenses)
+db_schema_count: 194
+db_schema_categories:
+  ai: [ai-api-keys, ai-builder-configs, ai-models, ai-orchestration, ai-permissions, ai-prompt-templates, ai-providers, ai-queries, ai-recommendations, ai-responses, ai-usage-logs]
+  finance_new: [fin-statuses, fin-document-types, fin-payment-methods, fin-categories, fin-documents, fin-document-links, fin-attachments, fin-payments, fin-recurring-documents, fin-standing-orders, fin-credit-transactions, fin-activity-logs]
+  finance_legacy: [accounts-payable, accounts-receivable, bank-reconciliation, budgets, cash-flow, exchange-rates, expense-reports, finance-accounts, fixed-assets, general-ledger, invoices, journal-entries, tax-records]
+  hr: [attendance, departments, employees, onboarding-checklists, payroll-records, performance-reviews, shifts, workforce-analysis]
+  crm_sales: [contacts, customers, leads, sales-customers, sales-orders]
+  procurement: [compliance-certificates, customs-clearances, foreign-suppliers, goods-receipts, import-cost-calculations, import-orders, letters-of-credit, price-history, price-quotes, procurement-analysis, procurement-rfq, purchase-orders, purchase-requests, purchase-returns, raw-materials, shipment-tracking, shipping-freight, supplier-communications, supplier-contacts, supplier-contracts, supplier-documents, supplier-evaluations, supplier-intelligence, supplier-notes, supplier-performance, suppliers]
+  production: [fabrication-profiles, fabrication-workflow, machines, pricing-enterprise, product-catalog, product-development, production-bom, production-enterprise, production-plans, production-work-orders, qc-inspections, qa-testing, work-order-assignments, work-order-notes, work-order-photos, work-order-qr-codes, work-order-templates]
+  projects: [project-budget-lines, project-change-orders, project-documents, project-milestones, project-resources, project-risks, project-task-dependencies, project-tasks, project-templates, projects, timesheet-entries]
+  platform: [action-definitions, approval-requests, auto-number-counters, bi-scheduled-reports, bi-tables, business-rules, button-definitions, calendar, category-definitions, category-items, chat, claude-audit-logs, claude-chat, claude-connection-tests, claude-governance, claude-sessions, contracts, contract-analytics, contract-templates, data-scope-rules, detail-definitions, detail-page-definitions, document-templates, documents, edi, entity-categories, entity-fields, entity-records, entity-relations, entity-statuses, form-definitions, integration-connections, integration-messages, inventory, inventory-alerts, inventory-movements, ip-allowlist, kimi-agents, menu-definitions, module-entities, module-versions, notification-preferences, notification-routing, notifications, platform-automations, platform-contexts, platform-modules, platform-roles, platform-settings, platform-tools, platform-widgets, platform-workflows, push-subscriptions, record-audit-log, record-versions, report-definitions, report-snapshots, role-permissions, scaffolding-tables, security, template-definitions, users, validation-rules, view-definitions, warehouse-intelligence, webhooks-scheduled-tasks, whatsapp-messages, workflow-steps]
+  strategy: [bsc-objectives, business-analytics, business-plan-sections, competitive-analyses, marketing, marketing-campaigns, project-analyses, strategic-goals, swot-items]
+  other: [api-keys, email-templates, external-portal, feature-requests, payment-reminders, roadmap-items, server-health-logs]
 
 # ============================================================
-# LAYER 9: RELATED RECORDS (TABS/RELATIONS/CARDS)
+# BUILD PRIORITY
 # ============================================================
-related_records:
-  customer_profile:
-    tabs:
-      - {name: "פרטים", entity: customers, type: detail_card}
-      - {name: "מסמכים", entity: documents, filter: "customer_id=:id", type: table}
-      - {name: "הצעות מחיר", entity: quotes, filter: "customer_id=:id", type: table}
-      - {name: "הזמנות", entity: sales_orders, filter: "customer_id=:id", type: table}
-      - {name: "תשלומים", entity: payments, filter: "via documents.customer_id=:id", type: table}
-      - {name: "הוראות קבע", entity: standing_orders, filter: "customer_id=:id", type: table}
-      - {name: "סליקות", entity: credit_transactions, filter: "customer_id=:id", type: table}
-      - {name: "אנשי קשר", entity: contacts, filter: "customer_id=:id", type: table}
-      - {name: "לוג פעילות", entity: activity_logs, filter: "entity_type=customer,entity_id=:id", type: timeline}
+build_phases:
+  phase_1_done:
+    description: "Financial module foundation"
+    modules: [fin]
+    status: complete
 
-  supplier_profile:
-    tabs:
-      - {name: "פרטים", entity: suppliers, type: detail_card}
-      - {name: "מסמכי הוצאה", entity: documents, filter: "supplier_id=:id,direction=expense", type: table}
-      - {name: "הזמנות רכש", entity: purchase_orders, filter: "supplier_id=:id", type: table}
-      - {name: "קבלות סחורה", entity: goods_receipts, filter: "supplier_id=:id", type: table}
-      - {name: "תשלומים", entity: payments, filter: "via documents.supplier_id=:id", type: table}
-      - {name: "אנשי קשר", entity: contacts, filter: "supplier_id=:id", type: table}
-      - {name: "לוג פעילות", entity: activity_logs, filter: "entity_type=supplier,entity_id=:id", type: timeline}
+  phase_2_current:
+    description: "Strengthen existing modules - fill gaps"
+    targets:
+      - "Connect fin module to existing finance pages"
+      - "Add missing CRUD pages where modules have list but no create/edit"
+      - "Wire all routes to main router"
+      - "Ensure all 50 modules have navigation entries"
 
-  income_document_details:
-    tabs:
-      - {name: "פרטי מסמך", entity: documents, type: detail_card}
-      - {name: "שורות מסמך", entity: document_items, filter: "document_id=:id", type: editable_table}
-      - {name: "מסמכים מקושרים", entity: document_links, filter: "source_document_id=:id OR target_document_id=:id", type: table}
-      - {name: "קבצים", entity: attachments, filter: "document_id=:id", type: file_grid}
-      - {name: "תשלומים", entity: payments, filter: "document_id=:id", type: table}
-      - {name: "לוג פעילות", entity: activity_logs, filter: "entity_type=document,entity_id=:id", type: timeline}
+  phase_3_next:
+    description: "Cross-module integration"
+    targets:
+      - "Document links between all modules"
+      - "Activity logs everywhere"
+      - "Global search across all entities"
+      - "Dashboard widgets from all modules"
 
-  project_details:
-    tabs:
-      - {name: "פרטי פרויקט", entity: projects, type: detail_card}
-      - {name: "משימות", entity: project_tasks, filter: "project_id=:id", type: kanban_or_table}
-      - {name: "אבני דרך", entity: project_milestones, filter: "project_id=:id", type: timeline}
-      - {name: "תקציב", type: budget_summary}
-      - {name: "קבצים", entity: attachments, filter: "entity_type=project,entity_id=:id", type: file_grid}
-      - {name: "לוג פעילות", entity: activity_logs, filter: "entity_type=project,entity_id=:id", type: timeline}
+  phase_4_automation:
+    description: "Business process automation"
+    targets:
+      - "Payment auto-status"
+      - "Recurring document generation"
+      - "Approval workflows"
+      - "Notification triggers"
+      - "SLA monitoring"
 
-# ============================================================
-# LAYER 10: STATUSES, FILTERS, SEARCH, VIEWS
-# ============================================================
-statuses:
-  global:
-    seed: [draft, pending, open, paid, partially_paid, cancelled, archived, failed, recurring_active, recurring_paused]
-
-  opportunities:
-    stages: [new, qualification, proposal, negotiation, closed_won, closed_lost]
-
-  purchase_orders:
-    statuses: [draft, sent, confirmed, partially_received, received, cancelled]
-
-  projects:
-    statuses: [planning, active, on_hold, completed, cancelled]
-
-  tasks:
-    statuses: [todo, in_progress, review, done, cancelled]
-
-  inventory_movements:
-    types: [in, out, transfer, adjustment, count]
-
-filters:
-  customers_list: [status, city, created_date_range, search_name_phone_email]
-  suppliers_list: [status, city, search_name_phone_email]
-  income_documents: [document_type, customer, date_range, status, amount_range, payment_method]
-  expense_documents: [supplier, document_type, date_range, status, category]
-  invoices: [customer, date_range, status, amount_range, due_date_range]
-  payments: [payment_method, date_range, status, amount_range]
-  products: [category, is_active, price_range]
-  projects: [status, manager, customer, date_range]
-  employees: [department, status, role]
-  purchase_orders: [supplier, status, date_range]
-  inventory: [warehouse, product, movement_type, date_range]
-
-search:
-  global_search:
-    searches_in: [customers, suppliers, documents, products, projects, employees]
-    fields: [name, number, phone, email, reference]
-
-views:
-  list_view: default
-  kanban_view: [opportunities, tasks]
-  calendar_view: [tasks, milestones, attendance]
-  timeline_view: [activity_logs, project_milestones]
-
-# ============================================================
-# LAYER 11: SETTINGS / PERMISSIONS / AUDIT
-# ============================================================
-settings:
-  general:
-    - company_name
-    - company_logo
-    - default_currency
-    - default_tax_rate
-    - fiscal_year_start
-    - date_format
-    - language
-
-  auto_numbering:
-    entities:
-      - {entity: customers, prefix: "CUS-", padding: 5}
-      - {entity: suppliers, prefix: "SUP-", padding: 5}
-      - {entity: invoices, prefix: "INV-", padding: 6}
-      - {entity: receipts, prefix: "RCP-", padding: 6}
-      - {entity: payment_requests, prefix: "PRQ-", padding: 6}
-      - {entity: credit_notes, prefix: "CRN-", padding: 6}
-      - {entity: quotes, prefix: "QUO-", padding: 5}
-      - {entity: sales_orders, prefix: "SO-", padding: 5}
-      - {entity: purchase_orders, prefix: "PO-", padding: 5}
-      - {entity: projects, prefix: "PRJ-", padding: 4}
-
-  master_data:
-    - statuses
-    - document_types
-    - payment_methods
-    - categories
-    - warehouses
-    - departments
-    - roles
-
-permissions:
-  model: RBAC (Role-Based Access Control)
-  actions: [view, create, edit, delete, export, approve]
-  modules: [dashboard, crm, sales, customers, suppliers, products, projects, procurement, inventory, finance, billing, payments, hr, operations, documents, reports, automations, settings]
-  special_permissions:
-    - approve_purchase_orders
-    - approve_credit_notes
-    - run_payroll
-    - access_audit_log
-    - manage_users
-    - manage_automations
-
-audit:
-  activity_logs:
-    tracked_entities: [customers, suppliers, documents, payments, products, projects, employees, purchase_orders, sales_orders, quotes, inventory_movements]
-    tracked_actions: [created, updated, deleted, linked, unlinked, uploaded_file, payment_recorded, status_changed]
-    retention: 365_days
-    fields: [entity_type, entity_id, action_type, old_value_json, new_value_json, actor, created_at]
-
-# ============================================================
-# LAYER 12: MISSING ASSUMPTIONS
-# ============================================================
-missing_assumptions:
-  - name: "multi_tenant"
-    question: "האם המערכת תומכת במספר חברות/סניפים?"
-    default: "single company"
-
-  - name: "multi_currency"
-    question: "האם יש תמיכה במטבעות מרובים? שערי חליפין?"
-    default: "ILS primary, USD/EUR supported"
-
-  - name: "tax_engine"
-    question: "חישוב מע\"מ - שיעור אחיד או מרובה? פטורים?"
-    default: "17% VAT default, configurable per product"
-
-  - name: "israeli_compliance"
-    question: "חיבור לרשות המיסים? חשבונית ממוחשבת? e-invoice?"
-    default: "not in phase 1, planned for phase 2"
-
-  - name: "document_numbering"
-    question: "מספור רציף לפי חוק? reset שנתי?"
-    default: "sequential per type, no reset"
-
-  - name: "approval_workflows"
-    question: "אישור הזמנות רכש מעל סכום מסוים?"
-    default: "simple approval, no multi-level"
-
-  - name: "email_integration"
-    question: "שליחת מסמכים במייל?"
-    default: "planned for phase 2"
-
-  - name: "api_external"
-    question: "API חיצוני לאינטגרציות?"
-    default: "REST API, planned for phase 2"
-
-  - name: "mobile"
-    question: "גרסת מובייל?"
-    default: "responsive web, no native app"
-
-  - name: "backup_strategy"
-    question: "גיבויים ו-disaster recovery?"
-    default: "daily DB backup, GitHub code backup"
+  phase_5_polish:
+    description: "Enterprise polish"
+    targets:
+      - "Breadcrumbs on every page"
+      - "No dead-end pages"
+      - "Export from every list"
+      - "Saved views/filters"
+      - "Bulk actions"
+      - "Print/PDF for documents"
