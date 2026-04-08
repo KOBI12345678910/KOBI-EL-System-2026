@@ -27,6 +27,7 @@ import { InventoryRoutes } from "@/routes/inventory-routes";
 import { PlatformRoutes } from "@/routes/platform-routes";
 import { AIRoutes } from "@/routes/ai-routes";
 import { OtherRoutes } from "@/routes/other-routes";
+import { FinRoutes } from "@/routes/fin-routes";
 
 const OnboardingTour = lazy(() =>
   import("@/components/onboarding-tour").then((m) => ({ default: m.OnboardingTour }))
@@ -157,6 +158,7 @@ function Router() {
           {InventoryRoutes}
           {PlatformRoutes}
           {AIRoutes}
+          <FinRoutes />
           {OtherRoutes}
 
           <Route path="/403" component={ForbiddenPage} />

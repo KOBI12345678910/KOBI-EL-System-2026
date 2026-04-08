@@ -127,6 +127,7 @@ import entityCrudRouter from "./entity-crud-registry";
 import securityComplianceRouter from "./security-compliance";
 import aiDataFlowRouter from "./ai-data-flow";
 import dedicatedEntityRoutes from "./dedicated-entity-routes";
+import finRouter from "./fin-router";
 import factorySeedRouter from "./factory-seed";
 import taskChallengesRouter from "./task-challenges";
 import kobiRouter from "./kobi";
@@ -416,6 +417,9 @@ router.use(wmsOperationsRouter);
 router.use(apiConnectionHubRouter);
 router.use(apiHubRouter);
 router.use(integrationHubRouter);
+
+// Financial Module (New Architecture)
+router.use("/fin", finRouter);
 startContractAIReminderScheduler();
 
 // H-02: Computed Customer Balance endpoint
