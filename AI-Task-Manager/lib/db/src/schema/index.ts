@@ -1,3 +1,4 @@
+export * from "./tenants";
 export * from "./ai-providers";
 export * from "./ai-models";
 export * from "./ai-api-keys";
