@@ -10,7 +10,6 @@ import {
   Archive, Scale, ShieldAlert, Bell, CalendarClock, Timer, Gauge, ScanSearch,
   Plug, Mail, ScanLine, Cloud, Eye, PenTool, Wifi, WifiOff,
 } from "lucide-react";
-
 /* -- general config -- */
 const generalConfig = [
   { label: "מגבלת אחסון כוללת", value: "500 GB", used: "312 GB", pct: 62, icon: HardDrive, note: "188 GB פנויים" },
@@ -43,8 +42,7 @@ const approvalDefaults = [
   { docType: "הצעת מחיר", chain: 3, escalation: "24 שעות", signatures: 2, mandatory: true },
   { docType: "שרטוט הנדסי", chain: 2, escalation: "48 שעות", signatures: 2, mandatory: true },
   { docType: "חשבונית", chain: 2, escalation: "12 שעות", signatures: 1, mandatory: false },
-  { docType: "נוהל איכות", chain: 3, escalation: "24 שעות", signatures: 2, mandatory: true },
-  { docType: "מסמך בטיחות", chain: 3, escalation: "24 שעות", signatures: 2, mandatory: true },
+  { docType: "נוהל איכות / בטיחות", chain: 3, escalation: "24 שעות", signatures: 2, mandatory: true },
   { docType: "דוח כספי", chain: 4, escalation: "24 שעות", signatures: 3, mandatory: true },
   { docType: "מסמך כללי", chain: 1, escalation: "72 שעות", signatures: 1, mandatory: false },
 ];
@@ -57,20 +55,19 @@ const retentionPolicies = [
   { docType: "שרטוטים הנדסיים", retention: 15, autoArchive: false, legalHold: false },
   { docType: "תעודות ISO / תקנים", retention: 10, autoArchive: true, legalHold: false },
   { docType: "חוזי עבודה", retention: 7, autoArchive: true, legalHold: true },
-  { docType: "מסמכי בטיחות", retention: 20, autoArchive: true, legalHold: false },
-  { docType: "דוחות QC", retention: 10, autoArchive: true, legalHold: false },
+  { docType: "מסמכי בטיחות / QC", retention: 20, autoArchive: true, legalHold: false },
   { docType: "הצעות מחיר", retention: 5, autoArchive: true, legalHold: false },
   { docType: "מסמכי יבוא/יצוא", retention: 3, autoArchive: true, legalHold: false },
 ];
 
 /* -- alert thresholds -- */
 const alertThresholds = [
-  { label: "התראת פקיעת תוקף", value: "30 יום", detail: "מסמכים עם תוקף — התראה 30 יום לפני פקיעה", icon: CalendarClock },
-  { label: "הפרת SLA אישור", value: "4 שעות", detail: "אישור שלא טופל בזמן — הסלמה למנהל", icon: Timer },
+  { label: "התראת פקיעת תוקף", value: "30 יום", detail: "התראה 30 יום לפני פקיעת תוקף מסמך", icon: CalendarClock },
+  { label: "הפרת SLA אישור", value: "4 שעות", detail: "הסלמה למנהל כשאישור לא טופל בזמן", icon: Timer },
   { label: "אזהרת נפח אחסון", value: "90%", detail: "התראה כשנפח האחסון חוצה 90% מהמכסה", icon: Gauge },
   { label: "סריקת מסמכים יתומים", value: "כל 7 ימים", detail: "חיפוש קבצים ללא קטגוריה, בעלים או גישה", icon: ScanSearch },
   { label: "גיבוי כושל", value: "מיידי", detail: "התראת SMS + מייל בכשל גיבוי", icon: DatabaseBackup },
-  { label: "גירסה ללא אישור", value: "48 שעות", detail: "טיוטה שעברו 48 שעות ללא תחילת אישור", icon: ClockAlert },
+  { label: "גירסה ללא אישור", value: "48 שעות", detail: "טיוטה 48+ שעות ללא תחילת אישור", icon: ClockAlert },
 ];
 
 /* -- integrations -- */
@@ -88,17 +85,13 @@ export default function DocumentSettingsPage() {
 
   return (
     <div dir="rtl" className="p-6 space-y-6">
-      {/* header */}
       <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-slate-100">
-          <Settings className="h-7 w-7 text-slate-700" />
-        </div>
+        <div className="p-2 rounded-lg bg-slate-100"><Settings className="h-7 w-7 text-slate-700" /></div>
         <div>
           <h1 className="text-2xl font-bold">הגדרות ניהול מסמכים</h1>
           <p className="text-muted-foreground text-sm">טכנו-כל עוזי — קונפיגורציה מרכזית של מערכת ה-DMS</p>
         </div>
       </div>
-
       {/* tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="flex-wrap h-auto gap-1">
@@ -109,7 +102,6 @@ export default function DocumentSettingsPage() {
           <TabsTrigger value="alerts"><Bell className="h-4 w-4 ml-1" />התראות</TabsTrigger>
           <TabsTrigger value="integrations"><Plug className="h-4 w-4 ml-1" />אינטגרציות</TabsTrigger>
         </TabsList>
-
         {/* -- general -- */}
         <TabsContent value="general" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -129,7 +121,6 @@ export default function DocumentSettingsPage() {
             ))}
           </div>
         </TabsContent>
-
         {/* -- categories -- */}
         <TabsContent value="categories" className="space-y-4">
           <Card>
@@ -141,15 +132,9 @@ export default function DocumentSettingsPage() {
               </div>
               <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-right">קטגוריה</TableHead>
-                      <TableHead className="text-right">תתי-קטגוריות</TableHead>
-                      <TableHead className="text-right">מסמכים</TableHead>
-                      <TableHead className="text-right">סטטוס</TableHead>
-                      <TableHead className="text-right">פעולות</TableHead>
-                    </TableRow>
-                  </TableHeader>
+                  <TableHeader><TableRow>
+                    <TableHead className="text-right">קטגוריה</TableHead><TableHead className="text-right">תתי-קטגוריות</TableHead><TableHead className="text-right">מסמכים</TableHead><TableHead className="text-right">סטטוס</TableHead><TableHead className="text-right">פעולות</TableHead>
+                  </TableRow></TableHeader>
                   <TableBody>
                     {categories.map((cat) => (
                       <TableRow key={cat.name}>
@@ -166,7 +151,6 @@ export default function DocumentSettingsPage() {
             </CardContent>
           </Card>
         </TabsContent>
-
         {/* -- approvals -- */}
         <TabsContent value="approvals" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -190,15 +174,9 @@ export default function DocumentSettingsPage() {
             <CardContent className="p-4">
               <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-right">סוג מסמך</TableHead>
-                      <TableHead className="text-right">שלבי אישור</TableHead>
-                      <TableHead className="text-right">זמן הסלמה</TableHead>
-                      <TableHead className="text-right">חתימות נדרשות</TableHead>
-                      <TableHead className="text-right">חובה</TableHead>
-                    </TableRow>
-                  </TableHeader>
+                  <TableHeader><TableRow>
+                    <TableHead className="text-right">סוג מסמך</TableHead><TableHead className="text-right">שלבי אישור</TableHead><TableHead className="text-right">זמן הסלמה</TableHead><TableHead className="text-right">חתימות נדרשות</TableHead><TableHead className="text-right">חובה</TableHead>
+                  </TableRow></TableHeader>
                   <TableBody>
                     {approvalDefaults.map((a) => (
                       <TableRow key={a.docType}>
@@ -215,7 +193,6 @@ export default function DocumentSettingsPage() {
             </CardContent>
           </Card>
         </TabsContent>
-
         {/* -- retention -- */}
         <TabsContent value="retention" className="space-y-4">
           <Card>
@@ -227,14 +204,9 @@ export default function DocumentSettingsPage() {
               </div>
               <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-right">סוג מסמך</TableHead>
-                      <TableHead className="text-right">תקופת שימור</TableHead>
-                      <TableHead className="text-right">ארכיון אוטומטי</TableHead>
-                      <TableHead className="text-right">החזקה משפטית</TableHead>
-                    </TableRow>
-                  </TableHeader>
+                  <TableHeader><TableRow>
+                    <TableHead className="text-right">סוג מסמך</TableHead><TableHead className="text-right">תקופת שימור</TableHead><TableHead className="text-right">ארכיון אוטומטי</TableHead><TableHead className="text-right">החזקה משפטית</TableHead>
+                  </TableRow></TableHeader>
                   <TableBody>
                     {retentionPolicies.map((r) => (
                       <TableRow key={r.docType}>
@@ -247,49 +219,38 @@ export default function DocumentSettingsPage() {
                   </TableBody>
                 </Table>
               </div>
-              <div className="mt-4 p-3 bg-muted/50 rounded-lg text-sm text-muted-foreground">
-                <Scale className="h-4 w-4 inline ml-1 text-orange-600" />
-                מדיניות שימור עומדת בדרישות רשות המסים, חוק הארכיון, ותקנות הגנת הפרטיות. מסמכים בהחזקה משפטית לא יימחקו גם לאחר תום תקופת השימור.
-              </div>
+              <p className="mt-4 p-3 bg-muted/50 rounded-lg text-sm text-muted-foreground"><Scale className="h-4 w-4 inline ml-1 text-orange-600" />מדיניות שימור עומדת בדרישות רשות המסים, חוק הארכיון, ותקנות הגנת הפרטיות.</p>
             </CardContent>
           </Card>
         </TabsContent>
-
         {/* -- alerts -- */}
         <TabsContent value="alerts" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {alertThresholds.map((a) => {
-              const Icon = a.icon;
-              return (
-                <Card key={a.label}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 rounded-md bg-amber-100">
-                        <Icon className="h-5 w-5 text-amber-700" />
-                      </div>
-                      <span className="font-semibold">{a.label}</span>
-                      <Badge className="mr-auto bg-amber-100 text-amber-800">{a.value}</Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{a.detail}</p>
-                  </CardContent>
-                </Card>
-              );
-            })}
+            {alertThresholds.map((a) => (
+              <Card key={a.label}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="p-2 rounded-md bg-amber-100"><a.icon className="h-5 w-5 text-amber-700" /></div>
+                    <span className="font-semibold">{a.label}</span>
+                    <Badge className="mr-auto bg-amber-100 text-amber-800">{a.value}</Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{a.detail}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </TabsContent>
-
         {/* -- integrations -- */}
         <TabsContent value="integrations" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {integrations.map((intg) => {
-              const Icon = intg.icon;
               const ok = intg.status === "מחובר";
               return (
                 <Card key={intg.name} className={!ok ? "border-red-200" : ""}>
                   <CardContent className="p-4 space-y-3">
                     <div className="flex items-center gap-3">
                       <div className={`p-2 rounded-md ${ok ? "bg-green-100" : "bg-red-100"}`}>
-                        <Icon className={`h-5 w-5 ${ok ? "text-green-700" : "text-red-700"}`} />
+                        <intg.icon className={`h-5 w-5 ${ok ? "text-green-700" : "text-red-700"}`} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-sm truncate">{intg.name}</p>

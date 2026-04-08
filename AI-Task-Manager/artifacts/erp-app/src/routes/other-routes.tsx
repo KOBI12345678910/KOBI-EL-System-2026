@@ -320,6 +320,34 @@ const ModuleDocumentsPage = lazyPage(() => import("@/pages/documents/module-docu
 const DocumentAlertsNewPage = lazyPage(() => import("@/pages/documents/document-alerts"));
 const DocumentSettingsNewPage = lazyPage(() => import("@/pages/documents/document-settings"));
 
+// Fleet Management (7 new pages)
+const FleetCommandCenterPage = lazyPage(() => import("@/pages/logistics/fleet-command-center"));
+const VehicleRegistryPage = lazyPage(() => import("@/pages/logistics/vehicle-registry"));
+const DriverManagementPage = lazyPage(() => import("@/pages/logistics/driver-management"));
+const FuelManagementPage = lazyPage(() => import("@/pages/logistics/fuel-management"));
+const VehicleMaintenancePage = lazyPage(() => import("@/pages/logistics/vehicle-maintenance"));
+const DeliveryCostAnalysisPage = lazyPage(() => import("@/pages/logistics/delivery-cost-analysis"));
+const FleetAlertsPage = lazyPage(() => import("@/pages/logistics/fleet-alerts"));
+
+// Service Department (7 new pages)
+const ServiceCommandCenterPage = lazyPage(() => import("@/pages/service/service-command-center"));
+const ServiceCasesPage = lazyPage(() => import("@/pages/service/service-cases"));
+const TechnicianManagementPage = lazyPage(() => import("@/pages/service/technician-management"));
+const SparePartsPage = lazyPage(() => import("@/pages/service/spare-parts"));
+const ServiceContractsPage = lazyPage(() => import("@/pages/service/service-contracts"));
+const ServiceCostTrackingPage = lazyPage(() => import("@/pages/service/service-cost-tracking"));
+const ServiceAnalyticsPage = lazyPage(() => import("@/pages/service/service-analytics"));
+
+// HR Missing Pages (8 new pages)
+const Feedback360Page = lazyPage(() => import("@/pages/hr/feedback-360"));
+const EmployeeDocumentsPage = lazyPage(() => import("@/pages/hr/employee-documents"));
+const EmployeeEquipmentPage = lazyPage(() => import("@/pages/hr/employee-equipment"));
+const DisciplinaryIncidentsPage = lazyPage(() => import("@/pages/hr/disciplinary-incidents"));
+const OffboardingRetirementPage = lazyPage(() => import("@/pages/hr/offboarding-retirement"));
+const HRAnalyticsPage = lazyPage(() => import("@/pages/hr/hr-analytics"));
+const HRAlertsPage = lazyPage(() => import("@/pages/hr/hr-alerts"));
+const HRSettingsPage = lazyPage(() => import("@/pages/hr/hr-settings"));
+
 export const OtherRoutes = (
 
     <>
@@ -686,6 +714,34 @@ export const OtherRoutes = (
       <Route path="/installation/alerts" component={InstallationAlertsPage} />
       <Route path="/installation/return-service" component={ReturnServiceCallsPage} />
       <Route path="/installation/settings" component={InstallationSettingsPage} />
+
+      {/* Fleet Management */}
+      <Route path="/logistics/command-center" component={FleetCommandCenterPage} />
+      <Route path="/logistics/vehicle-registry" component={VehicleRegistryPage} />
+      <Route path="/logistics/drivers" component={DriverManagementPage} />
+      <Route path="/logistics/fuel" component={FuelManagementPage} />
+      <Route path="/logistics/vehicle-maintenance" component={VehicleMaintenancePage} />
+      <Route path="/logistics/delivery-costs" component={DeliveryCostAnalysisPage} />
+      <Route path="/logistics/alerts" component={FleetAlertsPage} />
+
+      {/* Service Department */}
+      <Route path="/service/command-center" component={ServiceCommandCenterPage} />
+      <Route path="/service/cases" component={ServiceCasesPage} />
+      <Route path="/service/technicians" component={TechnicianManagementPage} />
+      <Route path="/service/spare-parts" component={SparePartsPage} />
+      <Route path="/service/contracts" component={ServiceContractsPage} />
+      <Route path="/service/cost-tracking" component={ServiceCostTrackingPage} />
+      <Route path="/service/analytics" component={ServiceAnalyticsPage} />
+
+      {/* HR Extended */}
+      <Route path="/hr/feedback-360" component={Feedback360Page} />
+      <Route path="/hr/employee-documents" component={EmployeeDocumentsPage} />
+      <Route path="/hr/employee-equipment" component={EmployeeEquipmentPage} />
+      <Route path="/hr/disciplinary" component={DisciplinaryIncidentsPage} />
+      <Route path="/hr/offboarding" component={OffboardingRetirementPage} />
+      <Route path="/hr/analytics" component={HRAnalyticsPage} />
+      <Route path="/hr/alerts" component={HRAlertsPage} />
+      <Route path="/hr/settings" component={HRSettingsPage} />
 
     </>
 );

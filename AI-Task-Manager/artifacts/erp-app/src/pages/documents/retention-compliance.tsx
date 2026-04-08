@@ -50,10 +50,8 @@ const israeliRegulations = [
 
 /* ── helpers ── */
 const statusColor: Record<string, string> = { "תקין": "bg-emerald-900/60 text-emerald-300", "אזהרה": "bg-amber-900/60 text-amber-300", "חריגה": "bg-red-900/60 text-red-300" };
-
 const severityColor: Record<string, string> = { "גבוהה": "bg-red-900/60 text-red-300", "בינונית": "bg-amber-900/60 text-amber-300", "נמוכה": "bg-emerald-900/60 text-emerald-300" };
 const auditStatusColor: Record<string, string> = { "בטיפול": "bg-amber-900/60 text-amber-300", "הושלם": "bg-emerald-900/60 text-emerald-300" };
-
 const daysLeftBadge = (d: number) => <Badge className={d <= 7 ? "bg-red-900/60 text-red-300" : d <= 21 ? "bg-amber-900/60 text-amber-300" : "bg-emerald-900/60 text-emerald-300"}>{d} ימים</Badge>;
 
 const kpis = [
@@ -63,6 +61,7 @@ const kpis = [
   { label: "בהקפאה משפטית", value: "3", icon: <Lock className="w-5 h-5" />, color: "text-purple-400" },
   { label: "עמידה ברגולציה", value: "94%", icon: <ShieldCheck className="w-5 h-5" />, color: "text-emerald-400", isPercent: true },
 ];
+
 export default function RetentionCompliance() {
   const [tab, setTab] = useState("policies");
 
@@ -90,8 +89,6 @@ export default function RetentionCompliance() {
           </Card>
         ))}
       </div>
-
-      {/* Tabs */}
       <Tabs value={tab} onValueChange={setTab} className="space-y-4">
         <TabsList className="bg-[#12121a] border border-[#1e1e2e] flex-wrap">
           <TabsTrigger value="policies">מדיניות שימור</TabsTrigger>
@@ -100,22 +97,14 @@ export default function RetentionCompliance() {
           <TabsTrigger value="audit">ביקורת תאימות</TabsTrigger>
           <TabsTrigger value="regulation">רגולציה ישראלית</TabsTrigger>
         </TabsList>
-
         {/* ── Retention Policies ── */}
         <TabsContent value="policies">
           <Card className="bg-[#12121a] border-[#1e1e2e]">
             <CardContent className="p-0 overflow-x-auto">
               <Table>
-                <TableHeader>
-                  <TableRow className="border-[#1e1e2e]">
-                    <TableHead className="text-right text-slate-400">סוג מסמך</TableHead>
-                    <TableHead className="text-right text-slate-400">תקופת שימור</TableHead>
-                    <TableHead className="text-right text-slate-400">בסיס רגולטורי</TableHead>
-                    <TableHead className="text-right text-slate-400">מסמכים בקטגוריה</TableHead>
-                    <TableHead className="text-right text-slate-400">הבא לפקיעה</TableHead>
-                    <TableHead className="text-right text-slate-400">סטטוס</TableHead>
-                  </TableRow>
-                </TableHeader>
+                <TableHeader><TableRow className="border-[#1e1e2e]">
+                  {["סוג מסמך","תקופת שימור","בסיס רגולטורי","מסמכים בקטגוריה","הבא לפקיעה","סטטוס"].map(h=><TableHead key={h} className="text-right text-slate-400">{h}</TableHead>)}
+                </TableRow></TableHeader>
                 <TableBody>
                   {retentionPolicies.map((p) => (
                     <TableRow key={p.type} className="border-[#1e1e2e] hover:bg-[#1a1a2e]">
@@ -136,7 +125,6 @@ export default function RetentionCompliance() {
             </CardContent>
           </Card>
         </TabsContent>
-
         {/* ── Expiring Documents ── */}
         <TabsContent value="expiring">
           <Card className="bg-[#12121a] border-[#1e1e2e]">
@@ -147,15 +135,9 @@ export default function RetentionCompliance() {
               </div>
               <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader>
-                    <TableRow className="border-[#1e1e2e]">
-                      <TableHead className="text-right text-slate-400">שם מסמך</TableHead>
-                      <TableHead className="text-right text-slate-400">סוג</TableHead>
-                      <TableHead className="text-right text-slate-400">תאריך פקיעה</TableHead>
-                      <TableHead className="text-right text-slate-400">ימים שנותרו</TableHead>
-                      <TableHead className="text-right text-slate-400">פעולה נדרשת</TableHead>
-                    </TableRow>
-                  </TableHeader>
+                  <TableHeader><TableRow className="border-[#1e1e2e]">
+                    {["שם מסמך","סוג","תאריך פקיעה","ימים שנותרו","פעולה נדרשת"].map(h=><TableHead key={h} className="text-right text-slate-400">{h}</TableHead>)}
+                  </TableRow></TableHeader>
                   <TableBody>
                     {expiringDocuments.map((d) => (
                       <TableRow key={d.name} className="border-[#1e1e2e] hover:bg-[#1a1a2e]">
@@ -174,7 +156,6 @@ export default function RetentionCompliance() {
             </CardContent>
           </Card>
         </TabsContent>
-
         {/* ── Legal Hold ── */}
         <TabsContent value="legalhold">
           <Card className="bg-[#12121a] border-[#1e1e2e]">
@@ -186,14 +167,9 @@ export default function RetentionCompliance() {
               <p className="text-xs text-slate-500 mb-3">מסמכים תחת הקפאה משפטית אינם ניתנים להשמדה, שינוי או העברה עד להסרת ההקפאה.</p>
               <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader>
-                    <TableRow className="border-[#1e1e2e]">
-                      <TableHead className="text-right text-slate-400">אסמכתא / תיק</TableHead>
-                      <TableHead className="text-right text-slate-400">מסמכים מושפעים</TableHead>
-                      <TableHead className="text-right text-slate-400">תחילת הקפאה</TableHead>
-                      <TableHead className="text-right text-slate-400">אושר ע\"י</TableHead>
-                    </TableRow>
-                  </TableHeader>
+                  <TableHeader><TableRow className="border-[#1e1e2e]">
+                    {["אסמכתא / תיק","מסמכים מושפעים","תחילת הקפאה","אושר ע\"י"].map(h=><TableHead key={h} className="text-right text-slate-400">{h}</TableHead>)}
+                  </TableRow></TableHeader>
                   <TableBody>
                     {legalHolds.map((h) => (
                       <TableRow key={h.caseRef} className="border-[#1e1e2e] hover:bg-[#1a1a2e]">
@@ -218,7 +194,6 @@ export default function RetentionCompliance() {
             </CardContent>
           </Card>
         </TabsContent>
-
         {/* ── Compliance Audit ── */}
         <TabsContent value="audit">
           <div className="space-y-4">
@@ -245,15 +220,9 @@ export default function RetentionCompliance() {
                 </div>
                 <div className="overflow-x-auto">
                   <Table>
-                    <TableHeader>
-                      <TableRow className="border-[#1e1e2e]">
-                        <TableHead className="text-right text-slate-400">מזהה</TableHead>
-                        <TableHead className="text-right text-slate-400">ממצא</TableHead>
-                        <TableHead className="text-right text-slate-400">חומרה</TableHead>
-                        <TableHead className="text-right text-slate-400">פעולה מתקנת</TableHead>
-                        <TableHead className="text-right text-slate-400">סטטוס</TableHead>
-                      </TableRow>
-                    </TableHeader>
+                    <TableHeader><TableRow className="border-[#1e1e2e]">
+                      {["מזהה","ממצא","חומרה","פעולה מתקנת","סטטוס"].map(h=><TableHead key={h} className="text-right text-slate-400">{h}</TableHead>)}
+                    </TableRow></TableHeader>
                     <TableBody>
                       {auditFindings.map((f) => (
                         <TableRow key={f.id} className="border-[#1e1e2e] hover:bg-[#1a1a2e]">
@@ -273,7 +242,6 @@ export default function RetentionCompliance() {
                 </div>
               </CardContent>
             </Card>
-
             {/* Compliance Progress */}
             <Card className="bg-[#12121a] border-[#1e1e2e]">
               <CardContent className="p-4 space-y-3">
@@ -290,7 +258,6 @@ export default function RetentionCompliance() {
             </Card>
           </div>
         </TabsContent>
-
         {/* ── Israeli Regulatory ── */}
         <TabsContent value="regulation">
           <div className="space-y-4">
@@ -303,15 +270,9 @@ export default function RetentionCompliance() {
                 <p className="text-xs text-slate-500 mb-3">סיכום דרישות שימור על-פי חקיקה ישראלית. אי-עמידה עלולה לגרור קנסות, אי-הכרה בהוצאות, וחשיפה משפטית.</p>
                 <div className="overflow-x-auto">
                   <Table>
-                    <TableHeader>
-                      <TableRow className="border-[#1e1e2e]">
-                        <TableHead className="text-right text-slate-400">חוק / תקנה</TableHead>
-                        <TableHead className="text-right text-slate-400">דרישה</TableHead>
-                        <TableHead className="text-right text-slate-400">תקופת שימור</TableHead>
-                        <TableHead className="text-right text-slate-400">היקף מסמכים</TableHead>
-                        <TableHead className="text-right text-slate-400">מסמכים במערכת</TableHead>
-                      </TableRow>
-                    </TableHeader>
+                    <TableHeader><TableRow className="border-[#1e1e2e]">
+                      {["חוק / תקנה","דרישה","תקופת שימור","היקף מסמכים","מסמכים במערכת"].map(h=><TableHead key={h} className="text-right text-slate-400">{h}</TableHead>)}
+                    </TableRow></TableHeader>
                     <TableBody>
                       {israeliRegulations.map((r) => (
                         <TableRow key={r.law} className="border-[#1e1e2e] hover:bg-[#1a1a2e]">
@@ -329,7 +290,6 @@ export default function RetentionCompliance() {
                 </div>
               </CardContent>
             </Card>
-
             <Card className="bg-[#12121a] border-[#1e1e2e]">
               <CardContent className="p-4 space-y-2">
                 <span className="font-semibold text-amber-300">הערות חשובות לעמידה ברגולציה</span>
