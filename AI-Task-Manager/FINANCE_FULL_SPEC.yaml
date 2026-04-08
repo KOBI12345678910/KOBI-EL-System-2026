@@ -561,3 +561,12 @@ calculation_rules:
   - "value_at_risk = percentile(loss_distribution, confidence_level)"
   - "expected_shortfall = average(losses_beyond_var)"
   - "cash_runway_months = available_cash / monthly_net_burn"
+
+# ============================================================
+# CRM DOMAIN EXTENSION (14 categories, 130+ submodules)
+# ============================================================
+crm_domain:
+  categories: [crm_dashboard, leads_management, accounts_management, contacts_management, opportunities_management, activities_and_tasks, communication_center, customer_360, quotations_and_commercial, customer_service_cases, crm_analytics, crm_ai, crm_integrations, crm_security_and_admin]
+  total_submodules: 130+
+  existing_pages: 51
+  gap_pages_needed: ~40
