@@ -436,6 +436,18 @@ const Bash44ExecutiveBriefPage = lazyPage(() => import("@/pages/ai-engine/bash44
 const Bash44AgentConfigPage = lazyPage(() => import("@/pages/ai-engine/bash44-agent-config"));
 const Bash44KnowledgeContextsPage = lazyPage(() => import("@/pages/ai-engine/bash44-knowledge-contexts"));
 
+// Permission System Pages
+const UsersListPage = lazyPage(() => import("@/pages/system/users-list"));
+const UserCardPage = lazyPage(() => import("@/pages/system/user-card"));
+const RolesListPage = lazyPage(() => import("@/pages/system/roles-list"));
+const RoleCardPage = lazyPage(() => import("@/pages/system/role-card"));
+const PermissionsMatrixPage = lazyPage(() => import("@/pages/system/permissions-matrix"));
+const UserRoleAssignmentPage = lazyPage(() => import("@/pages/system/user-role-assignment"));
+const UserPermissionOverridePage = lazyPage(() => import("@/pages/system/user-permission-override"));
+const DataScopeManagementPage = lazyPage(() => import("@/pages/system/data-scope-management"));
+const ApprovalPolicyManagementPage = lazyPage(() => import("@/pages/system/approval-policy-management"));
+const AccessAuditViewPage = lazyPage(() => import("@/pages/system/access-audit-view"));
+
 export const OtherRoutes = (
 
     <>
@@ -918,6 +930,18 @@ export const OtherRoutes = (
       <Route path="/ai-engine/bash44/executive-brief" component={Bash44ExecutiveBriefPage} />
       <Route path="/ai-engine/bash44/config" component={Bash44AgentConfigPage} />
       <Route path="/ai-engine/bash44/knowledge" component={Bash44KnowledgeContextsPage} />
+
+      {/* Enterprise Permission System */}
+      <Route path="/system/users" component={UsersListPage} />
+      <Route path="/system/users/:id" component={UserCardPage} />
+      <Route path="/system/roles" component={RolesListPage} />
+      <Route path="/system/roles/:id" component={RoleCardPage} />
+      <Route path="/system/permissions-matrix" component={PermissionsMatrixPage} />
+      <Route path="/system/user-role-assignment" component={UserRoleAssignmentPage} />
+      <Route path="/system/user-permission-override" component={UserPermissionOverridePage} />
+      <Route path="/system/data-scopes" component={DataScopeManagementPage} />
+      <Route path="/system/approval-policies" component={ApprovalPolicyManagementPage} />
+      <Route path="/system/access-audit" component={AccessAuditViewPage} />
 
     </>
 );

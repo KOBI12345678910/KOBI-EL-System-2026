@@ -209,3 +209,6 @@ export * from "./fin-statements";
 export * from "./crm-intelligence";
 export * from "./crm-agent-control";
 export * from "./crm-agent-control-ext";
+
+// Enterprise Permission System (RBAC + Data Scopes + Approval + Audit)
+export * from "./permission-system";

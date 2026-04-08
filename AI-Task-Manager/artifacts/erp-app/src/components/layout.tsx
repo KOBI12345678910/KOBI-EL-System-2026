@@ -140,6 +140,7 @@ import {
   FileCheck,
   Calculator,
   Target,
+  Grid3X3,
   Map as MapIcon,
   Megaphone,
   CalendarDays,
@@ -485,11 +486,21 @@ export const NAV_ITEMS: NavItem[] = [
     { href: "/ai-builder", label: "בונה AI", icon: Brain, section: "מנהלת מערכת", subSection: "כלים" },
     { href: "/audit-log", label: "יומן ביקורת", icon: SearchCode, section: "מנהלת מערכת", subSection: "כלים" },
 
+    // ─── מערכת הרשאות Enterprise ───
+    { href: "/system/users", label: "ניהול משתמשים", icon: Users, section: "מנהלת מערכת", subSection: "הרשאות Enterprise" },
+    { href: "/system/roles", label: "ניהול תפקידים", icon: Shield, section: "מנהלת מערכת", subSection: "הרשאות Enterprise" },
+    { href: "/system/permissions-matrix", label: "מטריצת הרשאות", icon: Grid3X3, section: "מנהלת מערכת", subSection: "הרשאות Enterprise" },
+    { href: "/system/user-role-assignment", label: "הקצאת תפקידים", icon: UserPlus, section: "מנהלת מערכת", subSection: "הרשאות Enterprise" },
+    { href: "/system/user-permission-override", label: "דריסת הרשאות", icon: ShieldAlert, section: "מנהלת מערכת", subSection: "הרשאות Enterprise" },
+    { href: "/system/data-scopes", label: "טווחי נתונים", icon: Filter, section: "מנהלת מערכת", subSection: "הרשאות Enterprise" },
+    { href: "/system/approval-policies", label: "מדיניות אישורים", icon: CheckCircle, section: "מנהלת מערכת", subSection: "הרשאות Enterprise" },
+    { href: "/system/access-audit", label: "לוג ביקורת גישה", icon: SearchCode, section: "מנהלת מערכת", subSection: "הרשאות Enterprise" },
+
     // ─── מנהלת מערכת ───
     { href: "/settings", label: "הגדרות כלליות", icon: Settings, section: "מנהלת מערכת", subSection: "כלליות" },
-    { href: "/settings?tab=users", label: "משתמשים", icon: Users, section: "מנהלת מערכת", subSection: "כלליות" },
-    { href: "/permissions", label: "הרשאות", icon: Shield, section: "מנהלת מערכת", subSection: "כלליות" },
-    { href: "/settings/roles", label: "תפקידים", icon: Briefcase, section: "מנהלת מערכת", subSection: "כלליות" },
+    { href: "/settings?tab=users", label: "משתמשים (ישן)", icon: Users, section: "מנהלת מערכת", subSection: "כלליות" },
+    { href: "/permissions", label: "הרשאות (ישן)", icon: Shield, section: "מנהלת מערכת", subSection: "כלליות" },
+    { href: "/settings/roles", label: "תפקידים (ישן)", icon: Briefcase, section: "מנהלת מערכת", subSection: "כלליות" },
     { href: "/integrations-hub", label: "אינטגרציות", icon: Plug, section: "מנהלת מערכת", subSection: "אינטגרציות" },
     { href: "/settings/webhooks", label: "התראות אוטומטיות (Webhooks)", icon: Globe, section: "מנהלת מערכת", subSection: "אינטגרציות" },
     { href: "/settings/api-keys", label: "מפתחות API", icon: Key, section: "מנהלת מערכת", subSection: "אינטגרציות" },
