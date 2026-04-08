@@ -206,3 +206,4 @@ export * from "./fin-statements";
 // CRM Ultra - Intelligence, Agent Control
 export * from "./crm-intelligence";
 export * from "./crm-agent-control";
+export * from "./crm-agent-control-ext";
