@@ -95,6 +95,8 @@ const emptyForm = {
   budgetCode: "", approvedBy: "",
 };
 
+
+const load: any[] = [];
 export default function PurchaseRequestsPage() {
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;

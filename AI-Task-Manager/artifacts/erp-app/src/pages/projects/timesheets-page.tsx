@@ -47,6 +47,8 @@ function getWeekEnding(offset = 0) {
 
 type Tab = "list" | "weekly" | "approval" | "billable";
 
+
+const load: any[] = [];
 export default function TimesheetsPage() {
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;

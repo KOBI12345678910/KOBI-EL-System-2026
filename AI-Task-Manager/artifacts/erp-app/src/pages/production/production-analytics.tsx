@@ -85,7 +85,7 @@ const fmtVal = (v: number, unit: string) => {
   return `${v} ${unit}`;
 };
 
-function MetricsTable({ metrics }: { metrics: typeof efficiencyMetrics }) {
+function MetricsTable({ metrics }: { metrics: any[] }) {
   return (
     <Table>
       <TableHeader>

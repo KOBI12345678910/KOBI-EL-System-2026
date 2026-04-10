@@ -116,6 +116,10 @@ export default function SecurityAudit() {
   });
 
   const kpis = securityauditData ?? FALLBACK_KPIS;
+  const auditTrail = FALLBACK_AUDIT_TRAIL;
+  const periodLocking = FALLBACK_PERIOD_LOCKING;
+  const priceChanges = FALLBACK_PRICE_CHANGES;
+  const sensitiveActions = FALLBACK_SENSITIVE_ACTIONS;
 
   const [tab, setTab] = useState("audit");
 

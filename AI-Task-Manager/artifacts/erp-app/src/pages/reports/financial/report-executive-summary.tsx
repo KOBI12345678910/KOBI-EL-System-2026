@@ -96,6 +96,11 @@ export default function ReportExecutiveSummaryPage() {
   });
 
   const kpis = reportexecutivesummaryData ?? FALLBACK_KPIS;
+  const financialHighlights = FALLBACK_FINANCIAL_HIGHLIGHTS;
+  const operationalKpis = FALLBACK_OPERATIONAL_KPIS;
+  const opportunities = FALLBACK_OPPORTUNITIES;
+  const outlook = FALLBACK_OUTLOOK;
+  const risks = FALLBACK_RISKS;
 
   return (
     <div className="p-6 space-y-6" dir="rtl">

@@ -14,6 +14,8 @@ import ImportButton from "@/components/import-button";
   const SC: Record<string, string> = { "טיוטה": "bg-gray-500/20 text-gray-300", "פעיל": "bg-green-500/20 text-green-300", "ממתין לחידוש": "bg-yellow-500/20 text-yellow-300", "פג תוקף": "bg-orange-500/20 text-orange-300", "מבוטל": "bg-red-500/20 text-red-300" };
   const CATEGORIES = ["עבודות מתכת","חשמל","אינסטלציה","שינוע","ניקיון","אבטחה","IT","ייעוץ"];
   const EMP = ["יוסי כהן","שרה לוי","דוד מזרחי","רחל אברהם","אלון גולדשטיין","מיכל ברק","עומר חדד","נועה פרידמן","איתן רוזנברג","תמר שלום"];
+
+const load: any[] = [];
 export default function ContractorContracts() {
     const [data, setData] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);

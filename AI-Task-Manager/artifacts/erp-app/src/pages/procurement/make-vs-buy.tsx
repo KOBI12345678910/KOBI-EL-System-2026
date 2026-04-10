@@ -39,6 +39,7 @@ export default function MakeVsBuy() {
   });
 
   const catalogProducts = makevsbuyData ?? FALLBACK_CATALOG_PRODUCTS;
+  const scenarios = FALLBACK_SCENARIOS;
 
   // --- calculator state ---
   const [selectedProduct, setSelectedProduct] = useState("פרופיל אלומיניום 6060");

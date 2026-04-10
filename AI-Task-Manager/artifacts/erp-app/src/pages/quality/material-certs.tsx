@@ -78,6 +78,7 @@ export default function MaterialCerts() {
   });
 
   const certificates = materialcertsData ?? FALLBACK_CERTIFICATES;
+  const suppliers = FALLBACK_SUPPLIERS;
 
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("certificates");

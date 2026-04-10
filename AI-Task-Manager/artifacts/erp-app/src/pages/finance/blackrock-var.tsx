@@ -92,6 +92,10 @@ export default function BlackRockVaR() {
   });
 
   const VAR_LEVELS = blackrockvarData ?? FALLBACK_VAR_LEVELS;
+  const BACKTESTING = FALLBACK_BACKTESTING;
+  const EXTREME = FALLBACK_EXTREME;
+  const RISK_CATEGORIES = FALLBACK_RISK_CATEGORIES;
+  const RISK_FACTORS = FALLBACK_RISK_FACTORS;
 
   const [, navigate] = useLocation();
   const [tab, setTab] = useState("overview");

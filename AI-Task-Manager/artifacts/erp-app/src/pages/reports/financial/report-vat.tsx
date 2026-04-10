@@ -78,6 +78,10 @@ export default function ReportVatPage() {
   });
 
   const kpis = reportvatData ?? FALLBACK_KPIS;
+  const inputInvoices = FALLBACK_INPUT_INVOICES;
+  const monthlySummary = FALLBACK_MONTHLY_SUMMARY;
+  const outputInvoices = FALLBACK_OUTPUT_INVOICES;
+  const reconciliation = FALLBACK_RECONCILIATION;
 
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);

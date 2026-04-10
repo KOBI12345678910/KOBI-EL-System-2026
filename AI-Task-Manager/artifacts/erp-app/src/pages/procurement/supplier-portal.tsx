@@ -78,6 +78,9 @@ export default function SupplierPortal() {
   });
 
   const orders = supplierportalData ?? FALLBACK_ORDERS;
+  const deliveries = FALLBACK_DELIVERIES;
+  const documents = FALLBACK_DOCUMENTS;
+  const quotes = FALLBACK_QUOTES;
 
   const [tab, setTab] = useState("orders");
 

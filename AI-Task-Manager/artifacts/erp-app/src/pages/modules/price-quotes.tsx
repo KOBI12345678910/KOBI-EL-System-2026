@@ -76,6 +76,8 @@ function cs(currency: string | null) {
   switch (currency) { case "USD": return "$"; case "EUR": return "€"; case "GBP": return "£"; default: return "₪"; }
 }
 
+
+const load: any[] = [];
 export default function PriceQuotesPage() {
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;

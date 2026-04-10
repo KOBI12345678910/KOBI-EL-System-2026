@@ -103,6 +103,9 @@ export default function SupportCommandCenter() {
   });
 
   const openTickets = supportcommandcenterData ?? FALLBACK_OPEN_TICKETS;
+  const slaTracking = FALLBACK_SLA_TRACKING;
+  const teamPerformance = FALLBACK_TEAM_PERFORMANCE;
+  const vipCustomers = FALLBACK_VIP_CUSTOMERS;
 
   return (
     <div className="p-6 space-y-6" dir="rtl">

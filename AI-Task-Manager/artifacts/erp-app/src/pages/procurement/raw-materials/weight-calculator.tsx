@@ -104,6 +104,7 @@ export default function WeightCalculator() {
   });
 
   const PROFILES = weightcalculatorData ?? FALLBACK_PROFILES;
+  const MATERIALS = FALLBACK_MATERIALS;
 
   // Inputs
   const [profile, setProfile] = useState<ProfileType>("square_tube");

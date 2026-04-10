@@ -101,6 +101,8 @@ const FALLBACK_MONTHLY_TREND: MonthTrend[] = [
 const maxRegionDeliveries = Math.max(...FALLBACK_REGIONS.map(r => r.deliveries));
 
 /* ── component ────────────────────────────────────────────────── */
+
+const FALLBACK_DELIVERIES: any[] = [];
 export default function DeliveryCostAnalysisPage() {
   const { data: kpis = FALLBACK_KPIS } = useQuery({
     queryKey: ["logistics-kpis"],

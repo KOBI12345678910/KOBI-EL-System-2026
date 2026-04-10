@@ -71,10 +71,11 @@ const statusBadge = (s: string) => {
   }
 };
 
+const DOC_TYPES = FALLBACK_DOC_TYPES;
 const docLabel = (key: string) => DOC_TYPES.find(d => d.key === key)?.label ?? key;
 
 export default function ImportDocuments() {
-  const { data: DOC_TYPES = FALLBACK_DOC_TYPES } = useQuery({
+  const { data: DOC_TYPES_API = FALLBACK_DOC_TYPES } = useQuery<any>({
     queryKey: ["import-doc-types"],
     queryFn: async () => {
       const res = await authFetch("/api/import/import-documents/doc-types");
@@ -86,7 +87,7 @@ export default function ImportDocuments() {
     retry: 1,
   });
 
-  const { data: SHIPMENTS = FALLBACK_SHIPMENTS } = useQuery({
+  const { data: SHIPMENTS = FALLBACK_SHIPMENTS } = useQuery<any[]>({
     queryKey: ["import-shipments"],
     queryFn: async () => {
       const res = await authFetch("/api/import/import-documents/shipments");
@@ -98,7 +99,7 @@ export default function ImportDocuments() {
     retry: 1,
   });
 
-  const { data: ALL_DOCUMENTS = FALLBACK_ALL_DOCUMENTS } = useQuery({
+  const { data: ALL_DOCUMENTS = FALLBACK_ALL_DOCUMENTS } = useQuery<any[]>({
     queryKey: ["import-all-documents"],
     queryFn: async () => {
       const res = await authFetch("/api/import/import-documents/all-documents");

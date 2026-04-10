@@ -48,6 +48,8 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
 
 
 
+
+const MOCK_INSIGHTS: any[] = [];
 export default function ProcurementAIPage() {
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;

@@ -55,6 +55,9 @@ const FALLBACK_RETIREMENT_PLANNING = [{
   advanceNoticeSent: true, severanceCalc: "מלא – 100% פיצויים לפי סעיף 14",
 }];
 
+
+const checklistTemplate = FALLBACK_CHECKLIST_TEMPLATE;
+
 /* ── helpers ── */
 const reasonColor = (r: string) =>
   r === "התפטרות" ? "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"
@@ -77,6 +80,9 @@ export default function OffboardingRetirementPage() {
   });
 
   const checklistTemplate = offboardingretirementData ?? FALLBACK_CHECKLIST_TEMPLATE;
+  const activeOffboardings = FALLBACK_ACTIVE_OFFBOARDINGS;
+  const offboardingHistory = FALLBACK_OFFBOARDING_HISTORY;
+  const retirementPlanning = FALLBACK_RETIREMENT_PLANNING;
 
   const [activeTab, setActiveTab] = useState("active");
   const [expandedEmployee, setExpandedEmployee] = useState<number | null>(null);

@@ -221,6 +221,8 @@ function TreeBranch({
   );
 }
 
+
+const exportToExcel: any[] = [];
 export default function OrgChartPage() {
   const [search, setSearch] = useState("");
   const [selectedNode, setSelectedNode] = useState<OrgNode | null>(null);

@@ -44,6 +44,7 @@ export default function TeamCollaborationSection() {
   });
 
   const INITIAL_TEAMS = teamcollaborationData ?? FALLBACK_INITIAL_TEAMS;
+  const INITIAL_CHANNELS = FALLBACK_INITIAL_CHANNELS;
 
   const [teams, setTeams] = useState<Team[]>(INITIAL_TEAMS);
   const [channels, setChannels] = useState<Channel[]>(INITIAL_CHANNELS);

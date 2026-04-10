@@ -62,6 +62,10 @@ const FALLBACK_OPTIMIZATIONS = [
   { type: "buffer", title: "חוצץ חגים ועונתיות", desc: "הוספת 5 ימים לפני חגי סוף שנה וראש השנה הסיני", saving: "הפחתת סיכון 25%", priority: "בינונית" },
 ];
 
+
+const atRiskOrders = FALLBACK_ATRISKORDERS;
+const suppliers = FALLBACK_SUPPLIERS;
+
 // --- Helpers ---
 
 const trendIcon = (trend: "improving" | "stable" | "worsening") => {

@@ -115,6 +115,8 @@ function StarRating({ value, onChange, size = 20 }: { value: number; onChange?: 
   );
 }
 
+
+const load: any[] = [];
 export default function SupplierEvaluationsPage() {
   const qc = useQueryClient();
   const [viewMode, setViewMode] = useState<ViewMode>("dashboard");

@@ -113,6 +113,8 @@ const emptyItem = (): any => ({
   lotNumber: "", serialNumber: "", inspectionNotes: "",
 });
 
+
+const load: any[] = [];
 export default function PurchaseReturnsPage() {
   const qc = useQueryClient();
   const [viewMode, setViewMode] = useState<ViewMode>("dashboard");

@@ -77,6 +77,10 @@ export default function KnowledgeCommandCenter() {
   });
 
   const kpis = knowledgecommandcenterData ?? FALLBACK_KPIS;
+  const contributions = FALLBACK_CONTRIBUTIONS;
+  const knowledgeArticles = FALLBACK_KNOWLEDGE_ARTICLES;
+  const lessons = FALLBACK_LESSONS;
+  const sopItems = FALLBACK_SOP_ITEMS;
 
   return (
     <div className="p-6 space-y-5" dir="rtl">

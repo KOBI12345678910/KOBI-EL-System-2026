@@ -148,6 +148,7 @@ export default function ProductsDashboard() {
   });
 
   const kpis = productsdashboardData ?? FALLBACK_KPIS;
+  const topProducts = FALLBACK_TOP_PRODUCTS;
 
   return (
     <div className="p-6 space-y-6" dir="rtl">

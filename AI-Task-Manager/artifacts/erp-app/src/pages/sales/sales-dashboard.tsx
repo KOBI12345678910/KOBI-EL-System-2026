@@ -78,6 +78,9 @@ export default function SalesDashboard() {
   });
 
   const pipelineStages = salesdashboardData ?? FALLBACK_PIPELINE_STAGES;
+  const recentOrders = FALLBACK_RECENT_ORDERS;
+  const salesTeam = FALLBACK_SALES_TEAM;
+  const topDeals = FALLBACK_TOP_DEALS;
 
   const [, navigate] = useLocation();
   const [period, setPeriod] = useState("ytd");

@@ -101,6 +101,9 @@ export default function VendorNegotiation() {
   });
 
   const negotiationSessions = vendornegotiationData ?? FALLBACK_NEGOTIATION_SESSIONS;
+  const aiStrategies = FALLBACK_AI_STRATEGIES;
+  const negotiationHistory = FALLBACK_NEGOTIATION_HISTORY;
+  const priceComparisons = FALLBACK_PRICE_COMPARISONS;
 
   const [activeTab, setActiveTab] = useState("active");
 

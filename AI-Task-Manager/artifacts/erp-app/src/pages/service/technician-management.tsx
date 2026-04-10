@@ -86,6 +86,9 @@ const FALLBACK_TRAINING_ENTRIES = [
   { id: "TR-05", techId: "T-02", techName: "מוטי לוי", course: "זכוכית מחוסמת — בטיחות והתקנה", date: "2026-01-10", endDate: "2026-01-12", status: "completed" as TrainingStatus },
   { id: "TR-06", techId: "T-05", techName: "סאמר חוסיין", course: "מנועי סרוו ובקרת תנועה", date: "2026-04-10", endDate: "2026-04-30", status: "in_progress" as TrainingStatus },
 ];
+
+
+const technicians = FALLBACK_TECHNICIANS;
 const activeTechs = technicians.filter(t => t.status === "active").length;
 const trainingTechs = technicians.filter(t => t.status === "training").length;
 const vacationTechs = technicians.filter(t => t.status === "vacation").length;
@@ -99,6 +102,8 @@ export default function TechnicianManagement() {
   });
 
   const technicians = technicianmanagementData ?? FALLBACK_TECHNICIANS;
+  const performanceKPIs = FALLBACK_PERFORMANCE_KPIS;
+  const trainingEntries = FALLBACK_TRAINING_ENTRIES;
 
   const [activeTab, setActiveTab] = useState("roster");
   const hCls = "text-right text-[10px] font-semibold text-muted-foreground";

@@ -103,6 +103,10 @@ export default function ServiceCostTracking() {
   });
 
   const kpis = servicecosttrackingData ?? FALLBACK_KPIS;
+  const costCases = FALLBACK_COST_CASES;
+  const costCategories = FALLBACK_COST_CATEGORIES;
+  const insights = FALLBACK_INSIGHTS;
+  const monthlyTrend = FALLBACK_MONTHLY_TREND;
 
   const [tab, setTab] = useState("cases");
 

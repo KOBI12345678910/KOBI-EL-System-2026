@@ -120,6 +120,9 @@ export default function BlackRockHedging() {
   });
 
   const STRATEGIES = blackrockhedgingData ?? FALLBACK_STRATEGIES;
+  const BEFORE_AFTER = FALLBACK_BEFORE_AFTER;
+  const COVERAGE_RADAR = FALLBACK_COVERAGE_RADAR;
+  const EFFICIENCY = FALLBACK_EFFICIENCY;
 
   const [, navigate] = useLocation();
   const [tab, setTab] = useState("strategies");

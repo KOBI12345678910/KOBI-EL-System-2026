@@ -78,6 +78,9 @@ export default function DowntimeTracking() {
   });
 
   const activeDowntimes = downtimetrackingData ?? FALLBACK_ACTIVE_DOWNTIMES;
+  const downtimeHistory = FALLBACK_DOWNTIME_HISTORY;
+  const maintenanceSchedule = FALLBACK_MAINTENANCE_SCHEDULE;
+  const paretoData = FALLBACK_PARETO_DATA;
 
   const [search, setSearch] = useState("");
 

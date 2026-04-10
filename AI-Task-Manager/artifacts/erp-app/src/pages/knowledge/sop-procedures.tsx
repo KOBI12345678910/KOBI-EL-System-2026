@@ -76,6 +76,10 @@ export default function SopProcedures() {
   });
 
   const sops = sopproceduresData ?? FALLBACK_SOPS;
+  const departments = FALLBACK_DEPARTMENTS;
+  const kpis = FALLBACK_KPIS;
+  const revisionHistory = FALLBACK_REVISION_HISTORY;
+  const trainingLinks = FALLBACK_TRAINING_LINKS;
 
   const [search, setSearch] = useState("");
 

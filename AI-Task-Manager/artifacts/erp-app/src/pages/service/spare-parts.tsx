@@ -66,6 +66,9 @@ const FALLBACK_PENDING_ORDERS = [
   { id: "PO-404", partId: "SPR-015", name: "מנגנון גלילה תריס סטנדרט", qty: 8, supplier: "אלוטק", orderDate: "2026-04-05", eta: "2026-04-14", total: 2560 },
 ];
 
+
+const parts = FALLBACK_PARTS;
+
 const totalItems = 145;
 const inStock = 120;
 const missing = lowStockParts.length;
@@ -80,6 +83,8 @@ export default function SparePartsManagement() {
   });
 
   const parts = sparepartsData ?? FALLBACK_PARTS;
+  const pendingOrders = FALLBACK_PENDING_ORDERS;
+  const usageByFault = FALLBACK_USAGE_BY_FAULT;
 
   const [activeTab, setActiveTab] = useState("inventory");
 

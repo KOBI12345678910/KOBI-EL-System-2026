@@ -309,6 +309,9 @@ function MatrixCell({
 // Main Component
 // ---------------------------------------------------------------------------
 
+const PERMISSIONS = FALLBACK_PERMISSIONS;
+const ROLES = FALLBACK_ROLES;
+
 export default function PermissionsMatrixPage() {
   const { data: permissionsmatrixData } = useQuery({
     queryKey: ["permissions-matrix"],
@@ -317,6 +320,8 @@ export default function PermissionsMatrixPage() {
   });
 
   const MODULES = permissionsmatrixData ?? FALLBACK_MODULES;
+  const PERMISSIONS = FALLBACK_PERMISSIONS;
+  const ROLES = FALLBACK_ROLES;
 
   const [matrix, setMatrix] = useState<Record<string, Record<string, CellValue>>>(buildInitialMatrix);
   const [activeModule, setActiveModule] = useState<ModuleKey>("all");
@@ -375,7 +380,7 @@ export default function PermissionsMatrixPage() {
     const groups: { module: ModuleDef; perms: PermissionDef[] }[] = [];
     const moduleOrder = MODULES.filter((m) => m.key !== "all");
     for (const mod of moduleOrder) {
-      const perms = filteredPermissions.filter((p) => p.module === mod.key);
+      const perms = filteredPermissions.filter((p: any) => p.module === mod.key);
       if (perms.length > 0) {
         groups.push({ module: mod, perms });
       }
@@ -856,7 +861,7 @@ export default function PermissionsMatrixPage() {
             const granted = PERMISSIONS.filter((p) => matrix[p.code]?.[role.id] === "granted").length;
             const denied = PERMISSIONS.filter((p) => matrix[p.code]?.[role.id] === "denied").length;
             const unset = PERMISSIONS.length - granted - denied;
-            const pct = Math.round((granted / PERMISSIONS.length) * 100);
+            const pct = PERMISSIONS.length > 0 ? Math.round((granted / PERMISSIONS.length) * 100) : 0;
 
             // Module breakdown
             const moduleBreakdown = MODULES.filter((m) => m.key !== "all").map((mod) => {
@@ -1010,15 +1015,15 @@ export default function PermissionsMatrixPage() {
                 </thead>
                 <tbody>
                   {MODULES.filter((m) => m.key !== "all").map((mod) => {
-                    const modPerms = PERMISSIONS.filter((p) => p.module === mod.key);
                     return (
                       <tr key={mod.key}>
                         <td className="p-2 border-b border-white/[0.06]">
                           <span className={`text-xs font-medium ${mod.color}`}>{mod.label}</span>
                         </td>
                         {ROLES.map((role) => {
-                          const granted = modPerms.filter((p) => matrix[p.code]?.[role.id] === "granted").length;
-                          const pct = modPerms.length > 0 ? Math.round((granted / modPerms.length) * 100) : 0;
+                          const modPerms = PERMISSIONS.filter((p) => p.module === mod.key);
+                          const modGranted = modPerms.filter((p) => matrix[p.code]?.[role.id] === "granted").length;
+                          const pct = modPerms.length > 0 ? Math.round((modGranted / modPerms.length) * 100) : 0;
                           const intensity =
                             pct === 100 ? "bg-emerald-500/30 text-emerald-300" :
                             pct >= 75  ? "bg-emerald-500/20 text-emerald-400" :

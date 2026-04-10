@@ -33,6 +33,8 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
 
 
 
+
+const MOCK_PLATFORMS: any[] = [];
 export default function MobileIntegrationsPage() {
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;

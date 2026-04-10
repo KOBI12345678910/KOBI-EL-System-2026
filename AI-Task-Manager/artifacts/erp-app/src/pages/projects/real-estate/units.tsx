@@ -14,6 +14,8 @@ import ImportButton from "@/components/import-button";
   const SC: Record<string, string> = { "תכנון": "bg-gray-500/20 text-gray-300", "בבנייה": "bg-blue-500/20 text-blue-300", "גמר": "bg-yellow-500/20 text-yellow-300", "מוכר": "bg-green-500/20 text-green-300", "נמסר": "bg-emerald-500/20 text-emerald-300", "אחריות": "bg-purple-500/20 text-purple-300" };
   const UNIT_TYPES = ["2 חדרים","3 חדרים","4 חדרים","5 חדרים","פנטהאוז","דופלקס","גן","מסחרי"];
   const EMP = ["יוסי כהן","שרה לוי","דוד מזרחי","רחל אברהם","אלון גולדשטיין","מיכל ברק","עומר חדד","נועה פרידמן","איתן רוזנברג","תמר שלום"];
+
+const load: any[] = [];
 export default function RealEstateUnits() {
     const [data, setData] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);

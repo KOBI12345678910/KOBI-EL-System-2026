@@ -68,6 +68,9 @@ const emptyRateForm: any = { rateNumber: "", currencyCode: "USD", currencyName: 
 const emptyHedgeForm: any = { contractNumber: "", contractType: "פורוורד", status: "פעיל", currencyCode: "USD", amount: "", hedgedRate: "", spotRateAtContract: "", startDate: "", maturityDate: "", settlementDate: "", counterparty: "", bankName: "", linkedImportOrder: "", linkedLc: "", premiumCost: "", strikePrice: "", optionType: "", notionalAmount: "", settlementAmount: "", realizedPnl: "", unrealizedPnl: "", marginRequired: "", marginDeposited: "", referenceNumber: "", priority: "רגיל", notes: "" };
 const emptyExposureForm: any = { exposureNumber: "", currencyCode: "USD", exposureType: "יבוא", category: "סחורות", totalExposure: "", hedgedAmount: "", unhedgedAmount: "", hedgeRatio: "", currentRate: "", budgetRate: "", impactAtCurrent: "", impactAtBudget: "", variance: "", linkedSupplier: "", linkedOrders: "", maturityMonth: "", status: "פתוח", riskLevel: "בינוני", notes: "" };
 
+
+const exportToExcel: any[] = [];
+const load: any[] = [];
 export default function ExchangeRatesPage() {
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;

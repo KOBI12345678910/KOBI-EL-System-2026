@@ -132,6 +132,8 @@ const fmt = Intl.DateTimeFormat("he-IL", { day: "2-digit", month: "2-digit", yea
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
+const PERMISSION_CATALOG = FALLBACK_PERMISSION_CATALOG;
+
 export default function UserPermissionOverride() {
   const { data: userpermissionoverrideData } = useQuery({
     queryKey: ["user-permission-override"],
@@ -140,6 +142,7 @@ export default function UserPermissionOverride() {
   });
 
   const PERMISSION_CATALOG = userpermissionoverrideData ?? FALLBACK_PERMISSION_CATALOG;
+  const MOCK_USERS = FALLBACK_MOCK_USERS;
 
   const [users, setUsers] = useState<UserRecord[]>(MOCK_USERS);
   const [selectedUserId, setSelectedUserId] = useState<string>("U001");

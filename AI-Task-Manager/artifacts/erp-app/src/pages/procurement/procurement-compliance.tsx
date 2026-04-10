@@ -60,6 +60,7 @@ export default function ProcurementCompliance() {
   });
 
   const controls = procurementcomplianceData ?? FALLBACK_CONTROLS;
+  const supplierCompliance = FALLBACK_SUPPLIER_COMPLIANCE;
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");

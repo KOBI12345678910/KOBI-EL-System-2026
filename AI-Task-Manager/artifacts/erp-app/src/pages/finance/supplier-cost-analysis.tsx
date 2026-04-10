@@ -12,7 +12,8 @@ import { authFetch } from "@/lib/utils";
     const SC: Record<string, string> = { "תחרותי": "bg-green-500/20 text-green-300", "סביר": "bg-blue-500/20 text-blue-300", "יקר": "bg-yellow-500/20 text-yellow-300", "יקר מאוד": "bg-red-500/20 text-red-300" };
     const CATS = ["חומרי גלם","ציוד","שירותים","הובלה","קבלנות"];
     const EMP = ["יוסי כהן","שרה לוי","דוד מזרחי","רחל אברהם","אלון גולדשטיין","מיכל ברק","עומר חדד","נועה פרידמן","איתן רוזנברג","תמר שלום"];
-MOCK.forEach(r => { r.variance = Number(((r.unitPrice - r.marketPrice) / r.marketPrice * 100).toFixed(1)); });
+const MOCK: any[] = [];
+MOCK.forEach((r: any) => { r.variance = Number(((r.unitPrice - r.marketPrice) / r.marketPrice * 100).toFixed(1)); });
 
     export default function SupplierCostAnalysis() {
       const [data, setData] = useState<any[]>([]);

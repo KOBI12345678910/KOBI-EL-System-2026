@@ -86,6 +86,9 @@ export default function HRCommandCenter() {
   });
 
   const departments = hrcommandcenterData ?? FALLBACK_DEPARTMENTS;
+  const atRiskEmployees = FALLBACK_AT_RISK_EMPLOYEES;
+  const recentEvents = FALLBACK_RECENT_EVENTS;
+  const topPerformers = FALLBACK_TOP_PERFORMERS;
 
   return (
     <div className="p-6 space-y-5" dir="rtl">

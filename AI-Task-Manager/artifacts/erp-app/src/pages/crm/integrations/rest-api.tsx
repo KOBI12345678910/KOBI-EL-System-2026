@@ -48,6 +48,8 @@ function DetailField({ label, value, children }: { label: string; value?: string
 
 const emptyForm: any = { path: "", method: "GET", description: "", status: "active", rate_limit: 1000, auth: "Bearer Token" };
 
+
+const MOCK_ENDPOINTS: any[] = [];
 export default function RestApiPage() {
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;

@@ -79,6 +79,10 @@ export default function LessonsLearned() {
   });
 
   const lessons = lessonslearnedData ?? FALLBACK_LESSONS;
+  const actionItems = FALLBACK_ACTION_ITEMS;
+  const categorySummary = FALLBACK_CATEGORY_SUMMARY;
+  const impactTracking = FALLBACK_IMPACT_TRACKING;
+  const kpis = FALLBACK_KPIS;
 
   const [search, setSearch] = useState("");
 

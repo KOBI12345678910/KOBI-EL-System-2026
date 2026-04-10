@@ -15,6 +15,9 @@ const SC: Record<string, string> = { "טיוטה": "bg-gray-500/20 text-gray-300
 const TYPES = ["בונוס שנתי", "בונוס רבעוני", "בונוס ביצועים", "בונוס חד-פעמי", "מענק חג", "מענק לידה", "בונוס המלצה", "בונוס פרויקט"];
 const DEPTS = ["ייצור", "הנהלה", "כספים", "שיווק", "לוגיסטיקה", "טכנולוגיה", "מכירות", "משאבי אנוש"];
 const EMP = ["יוסי כהן", "שרה לוי", "דוד מזרחי", "רחל אברהם", "אלון גולדשטיין", "מיכל ברק", "עומר חדד", "נועה פרידמן", "איתן רוזנברג", "תמר שלום"];
+
+const isLoading: any[] = [];
+const setIsLoading: any[] = [];
 export default function Bonuses() {
   const [data, setData] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);

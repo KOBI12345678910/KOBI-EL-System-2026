@@ -91,6 +91,10 @@ export default function Complaints() {
   });
 
   const kpis = complaintsData ?? FALLBACK_KPIS;
+  const complaints = FALLBACK_COMPLAINTS;
+  const correctiveActions = FALLBACK_CORRECTIVE_ACTIONS;
+  const resolutionTimeline = FALLBACK_RESOLUTION_TIMELINE;
+  const rootCauseData = FALLBACK_ROOT_CAUSE_DATA;
 
   const [search, setSearch] = useState("");
 

@@ -81,6 +81,9 @@ const FALLBACK_CALENDAR_WEEKS = [
   { week: "שבוע 4 אפריל", items: contentItems.filter((c) => c.date >= "2026-04-22" && c.date <= "2026-04-30") },
 ];
 
+
+const contentItems = FALLBACK_CONTENT_ITEMS;
+
 export default function ContentCalendar() {
   const { data: contentcalendarData } = useQuery({
     queryKey: ["content-calendar"],
@@ -89,6 +92,7 @@ export default function ContentCalendar() {
   });
 
   const contentItems = contentcalendarData ?? FALLBACK_CONTENT_ITEMS;
+  const calendarWeeks = FALLBACK_CALENDAR_WEEKS;
 
   const [tab, setTab] = useState("calendar");
 

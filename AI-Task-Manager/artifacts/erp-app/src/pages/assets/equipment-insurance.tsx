@@ -79,6 +79,9 @@ export default function EquipmentInsurance() {
   });
 
   const policies = equipmentinsuranceData ?? FALLBACK_POLICIES;
+  const claims = FALLBACK_CLAIMS;
+  const coverageGaps = FALLBACK_COVERAGE_GAPS;
+  const renewalSchedule = FALLBACK_RENEWAL_SCHEDULE;
 
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("policies");

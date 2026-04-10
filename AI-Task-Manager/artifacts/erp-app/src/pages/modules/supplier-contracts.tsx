@@ -96,6 +96,8 @@ function expiryBadge(days: number | null) {
   return <span className="px-2 py-0.5 rounded-full text-xs bg-green-500/20 text-green-400 border border-green-500/30">{days} ימים</span>;
 }
 
+
+const load: any[] = [];
 export default function SupplierContractsPage() {
   const qc = useQueryClient();
   const [viewMode, setViewMode] = useState<ViewMode>("dashboard");

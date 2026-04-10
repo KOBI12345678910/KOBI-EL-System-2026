@@ -70,6 +70,9 @@ const FALLBACK_LESSONS = [
   { id: 6, tender: "TND-030", outcome: "ביטול", title: "פרויקט תיירות - אילת", lesson: "המכרז בוטל עקב חוסר תקציב. בעתיד יש לבדוק את מצבו הפיננסי של הלקוח לפני השקעת משאבים בהכנת הצעה.", category: "סינון", date: "2026-01-02" },
 ];
 
+
+const CRITERIA = FALLBACK_CRITERIA;
+
 const calcWeighted = (scores: Record<string, number>) =>
   CRITERIA.reduce((sum, c) => sum + (scores[c.key] * c.weight) / 100, 0);
 
@@ -87,7 +90,7 @@ const decisionBadge = (d: string) => {
 };
 
 export default function TenderEvaluationPage() {
-  const { data: CRITERIA = FALLBACK_CRITERIA } = useQuery({
+  const { data: CRITERIA = FALLBACK_CRITERIA } = useQuery<any>({
     queryKey: ["tenders-criteria"],
     queryFn: async () => {
       const res = await authFetch("/api/tenders/tender-evaluation/criteria");
@@ -99,10 +102,10 @@ export default function TenderEvaluationPage() {
     retry: 1,
   });
 
-  const { data: TENDERS_EVAL = FALLBACK_TENDERS_EVAL } = useQuery({
+  const { data: TENDERS_EVAL = FALLBACK_TENDERS_EVAL } = useQuery<any[]>({
     queryKey: ["tenders-tenders-eval"],
     queryFn: async () => {
-      const res = await authFetch("/api/tenders/tender-evaluation/tenders-eval");
+      const res = await authFetch("/api/tenders/tender-evaluation/tenders");
       if (!res.ok) return FALLBACK_TENDERS_EVAL;
       const json = await res.json();
       return Array.isArray(json) ? json : json.data || json.items || FALLBACK_TENDERS_EVAL;
@@ -111,7 +114,7 @@ export default function TenderEvaluationPage() {
     retry: 1,
   });
 
-  const { data: GO_NOGO = FALLBACK_GO_NOGO } = useQuery({
+  const { data: GO_NOGO = FALLBACK_GO_NOGO } = useQuery<any[]>({
     queryKey: ["tenders-go-nogo"],
     queryFn: async () => {
       const res = await authFetch("/api/tenders/tender-evaluation/go-nogo");
@@ -123,7 +126,7 @@ export default function TenderEvaluationPage() {
     retry: 1,
   });
 
-  const { data: COMPETITORS = FALLBACK_COMPETITORS } = useQuery({
+  const { data: COMPETITORS = FALLBACK_COMPETITORS } = useQuery<any[]>({
     queryKey: ["tenders-competitors"],
     queryFn: async () => {
       const res = await authFetch("/api/tenders/tender-evaluation/competitors");
@@ -135,7 +138,7 @@ export default function TenderEvaluationPage() {
     retry: 1,
   });
 
-  const { data: LESSONS = FALLBACK_LESSONS } = useQuery({
+  const { data: LESSONS = FALLBACK_LESSONS } = useQuery<any[]>({
     queryKey: ["tenders-lessons"],
     queryFn: async () => {
       const res = await authFetch("/api/tenders/tender-evaluation/lessons");

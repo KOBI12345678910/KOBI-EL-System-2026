@@ -101,6 +101,9 @@ const FALLBACK_KPIS = [
   { label: "קטגוריות", value: categories.length.toString(), sub: "ברזל, אלומיניום, זכוכית, ממונע", icon: Layers, gradient: "from-amber-600 to-amber-800" },
 ];
 
+
+const products = FALLBACK_PRODUCTS;
+
 // ============================================================
 // COMPONENT
 // ============================================================
@@ -112,6 +115,7 @@ export default function ProductsList() {
   });
 
   const products = productslistData ?? FALLBACK_PRODUCTS;
+  const kpis = FALLBACK_KPIS;
 
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
@@ -329,11 +333,11 @@ export default function ProductsList() {
 
       {/* ---- Category Breakdown Summary ---- */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {categories.map(cat => {
-          const catProducts = products.filter(p => p.category === cat);
+        {categories.map((cat: any) => {
+          const catProducts = products.filter((p: any) => p.category === cat);
           const conf = categoryConfig[cat] || { color: "bg-gray-500/20 text-gray-400 border-gray-500/30", icon: Package };
           const CatIcon = conf.icon;
-          const catAvgMargin = catProducts.reduce((s, p) => s + p.gross_margin, 0) / catProducts.length;
+          const catAvgMargin = catProducts.reduce((s: any, p: any) => s + p.gross_margin, 0) / catProducts.length;
           const catActive = catProducts.filter(p => p.active_status === "active").length;
           const catRevenue = catProducts.filter(p => p.active_status === "active").reduce((s, p) => s + p.sale_price, 0);
 

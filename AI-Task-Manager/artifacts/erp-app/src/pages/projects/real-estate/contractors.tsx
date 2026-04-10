@@ -14,6 +14,8 @@ import ImportButton from "@/components/import-button";
   const SC: Record<string, string> = { "פעיל": "bg-green-500/20 text-green-300", "מושהה": "bg-yellow-500/20 text-yellow-300", "הסתיים": "bg-blue-500/20 text-blue-300", "מבוטל": "bg-red-500/20 text-red-300" };
   const TRADES = ["שלד","גמר","חשמל","אינסטלציה","אלומיניום","מתכת","זכוכית","צבע"];
   const EMP = ["יוסי כהן","שרה לוי","דוד מזרחי","רחל אברהם","אלון גולדשטיין","מיכל ברק","עומר חדד","נועה פרידמן","איתן רוזנברג","תמר שלום"];
+
+const load: any[] = [];
 export default function REContractors() {
     const [data, setData] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);

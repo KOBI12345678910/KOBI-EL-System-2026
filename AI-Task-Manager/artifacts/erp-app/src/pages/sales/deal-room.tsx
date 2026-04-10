@@ -98,6 +98,9 @@ const activityIcon = (type: string) => {
   }
 };
 
+
+const Activity: any[] = [];
+const Brain: any[] = [];
 export default function DealRoom() {
   const { data: dealroomData } = useQuery({
     queryKey: ["deal-room"],

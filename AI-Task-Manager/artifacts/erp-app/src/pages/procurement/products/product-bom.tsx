@@ -69,6 +69,8 @@ export default function ProductBOM() {
   });
 
   const PRODUCTS = productbomData ?? FALLBACK_PRODUCTS;
+  const BOM_LINES = FALLBACK_BOM_LINES;
+  const BOM_VERSIONS = FALLBACK_BOM_VERSIONS;
 
   const [selectedProduct, setSelectedProduct] = useState(PRODUCTS[0]);
   const [activeTab, setActiveTab] = useState("components");

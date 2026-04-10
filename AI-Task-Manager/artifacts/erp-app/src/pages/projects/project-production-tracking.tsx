@@ -251,11 +251,11 @@ export default function ProjectProductionTracking() {
         <TabsContent value="quality" className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { l: "סה״כ פחת (יח׳)", v: productionOrders.reduce((s, o) => s + o.scrapQty, 0).toString(), c: "text-red-400" },
-              { l: "עלות פחת כוללת", v: fmt(totalScrapCost), c: "text-red-400" },
-              { l: "סה״כ תיקונים (יח׳)", v: productionOrders.reduce((s, o) => s + o.reworkQty, 0).toString(), c: "text-orange-400" },
-              { l: "עלות תיקונים כוללת", v: fmt(totalReworkCost), c: "text-orange-400" },
-            ].map(q => (
+              { l: "סה״כ פחת (יח׳)", v: productionOrders.reduce((s: number, o: any) => s + o.scrapQty, 0).toString(), c: "text-red-400" },
+              { l: "עלות פחת כוללת", v: fmt(productionOrders.reduce((s: number, o: any) => s + (o.scrapQty * (o.unitCost || 0)), 0)), c: "text-red-400" },
+              { l: "סה״כ תיקונים (יח׳)", v: productionOrders.reduce((s: number, o: any) => s + o.reworkQty, 0).toString(), c: "text-orange-400" },
+              { l: "עלות תיקונים כוללת", v: fmt(productionOrders.reduce((s: number, o: any) => s + (o.reworkQty * (o.reworkCostPerUnit || 0)), 0)), c: "text-orange-400" },
+            ].map((q: any) => (
               <Card key={q.l} className="bg-[#1e293b] border-slate-700">
                 <CardContent className="p-4 text-center">
                   <p className="text-xs text-slate-500">{q.l}</p>

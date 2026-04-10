@@ -54,6 +54,7 @@ export default function SupportDashboard() {
   });
 
   const tickets = supportdashboardData ?? FALLBACK_TICKETS;
+  const teamMembers = FALLBACK_TEAM_MEMBERS;
 
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("overview");

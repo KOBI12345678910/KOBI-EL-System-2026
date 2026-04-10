@@ -75,6 +75,8 @@ export default function HRAlerts() {
   });
 
   const alertTypes = hralertsData ?? FALLBACK_ALERT_TYPES;
+  const alerts = FALLBACK_ALERTS;
+  const closedAlerts = FALLBACK_CLOSED_ALERTS;
 
   const [activeTab, setActiveTab] = useState("active");
   const [filterSeverity, setFilterSeverity] = useState<Severity | "all">("all");

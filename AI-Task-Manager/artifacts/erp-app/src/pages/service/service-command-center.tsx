@@ -94,6 +94,11 @@ export default function ServiceCommandCenter() {
   });
 
   const kpis = servicecommandcenterData ?? FALLBACK_KPIS;
+  const openCases = FALLBACK_OPEN_CASES;
+  const slaBreaches = FALLBACK_SLA_BREACHES;
+  const technicians = FALLBACK_TECHNICIANS;
+  const todaySchedule = FALLBACK_TODAY_SCHEDULE;
+  const warrantyClaims = FALLBACK_WARRANTY_CLAIMS;
 
   return (
     <div className="p-6 space-y-5" dir="rtl">

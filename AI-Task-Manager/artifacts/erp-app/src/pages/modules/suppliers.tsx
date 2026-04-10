@@ -72,6 +72,8 @@ function generateSupplierNumber(suppliers: Supplier[]) {
   return `SUP-${next}`;
 }
 
+
+const load: any[] = [];
 export default function SuppliersPage() {
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;

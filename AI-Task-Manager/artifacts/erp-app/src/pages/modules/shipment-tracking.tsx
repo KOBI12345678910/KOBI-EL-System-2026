@@ -128,6 +128,8 @@ const emptyForm: Partial<Shipment> = {
   delayDays: 0, delayReason: "", notes: "", status: "הוזמן", priority: "רגילה",
 };
 
+
+const load: any[] = [];
 export default function ShipmentTrackingPage() {
   const [activeTab, setActiveTab] = useState<"dashboard" | "list" | "timeline" | "delays">("dashboard");
   const { permissions } = usePermissions();

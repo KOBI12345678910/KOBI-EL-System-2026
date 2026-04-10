@@ -66,6 +66,9 @@ const FALLBACK_ROOT_CAUSES = [
   { cause: "שימוש לא תקין", count: 6, pct: 14 },
 ];
 
+
+const rootCauses = FALLBACK_ROOT_CAUSES;
+
 const cumulativePercents = rootCauses.reduce<number[]>((acc, rc) => {
   acc.push((acc.length > 0 ? acc[acc.length - 1] : 0) + rc.pct);
   return acc;
@@ -79,6 +82,10 @@ export default function ServiceAnalytics() {
   });
 
   const faultTypes = serviceanalyticsData ?? FALLBACK_FAULT_TYPES;
+  const rootCauses = FALLBACK_ROOT_CAUSES;
+  const productFailures = FALLBACK_PRODUCT_FAILURES;
+  const satisfactionTrend = FALLBACK_SATISFACTION_TREND;
+  const technicians = FALLBACK_TECHNICIANS;
 
   const [activeTab, setActiveTab] = useState("overview");
 

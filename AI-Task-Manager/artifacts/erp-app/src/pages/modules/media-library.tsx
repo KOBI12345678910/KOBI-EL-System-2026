@@ -106,6 +106,8 @@ export default function MediaLibraryPage() {
   });
 
   const INSTALL_TYPES = medialibraryData ?? FALLBACK_INSTALL_TYPES;
+  const INITIAL_ALBUMS = FALLBACK_INITIAL_ALBUMS;
+  const INITIAL_FILES = FALLBACK_INITIAL_FILES;
 
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;

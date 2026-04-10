@@ -94,6 +94,10 @@ export default function ServiceDashboard() {
   });
 
   const kpis = servicedashboardData ?? FALLBACK_KPIS;
+  const agents = FALLBACK_AGENTS;
+  const slaCategories = FALLBACK_SLA_CATEGORIES;
+  const ticketDistribution = FALLBACK_TICKET_DISTRIBUTION;
+  const tickets = FALLBACK_TICKETS;
 
   const [search, setSearch] = useState("");
 

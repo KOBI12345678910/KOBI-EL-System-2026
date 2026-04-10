@@ -163,6 +163,11 @@ export default function UserCardPage() {
   });
 
   const mockRoles = usercardData ?? FALLBACK_MOCK_ROLES;
+  const mockApprovalLimits = FALLBACK_MOCK_APPROVAL_LIMITS;
+  const mockAuditHistory = FALLBACK_MOCK_AUDIT_HISTORY;
+  const mockDataScopes = FALLBACK_MOCK_DATA_SCOPES;
+  const mockPermissions = FALLBACK_MOCK_PERMISSIONS;
+  const mockSessions = FALLBACK_MOCK_SESSIONS;
 
   const [activeTab, setActiveTab] = useState("general");
   const user = mockUser;

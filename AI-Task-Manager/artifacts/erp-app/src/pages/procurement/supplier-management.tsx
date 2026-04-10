@@ -165,6 +165,8 @@ function SupplierTable({ data, showContact }: { data: Supplier[]; showContact?: 
   );
 }
 
+const suppliers = FALLBACK_SUPPLIERS;
+
 export default function SupplierManagement() {
   const { data: suppliermanagementData } = useQuery({
     queryKey: ["supplier-management"],

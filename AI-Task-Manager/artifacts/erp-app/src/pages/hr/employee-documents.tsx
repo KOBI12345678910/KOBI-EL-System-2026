@@ -80,6 +80,8 @@ export default function EmployeeDocumentsPage() {
   });
 
   const checklists = employeedocumentsData ?? FALLBACK_CHECKLISTS;
+  const docs = FALLBACK_DOCS;
+  const missingGroups = FALLBACK_MISSING_GROUPS;
 
   const [activeTab, setActiveTab] = useState("overview");
   const [search, setSearch] = useState("");

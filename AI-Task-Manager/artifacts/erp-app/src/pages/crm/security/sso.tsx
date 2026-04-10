@@ -48,6 +48,8 @@ function DetailField({ label, value, children }: { label: string; value?: string
   return (<div><div className="text-xs text-muted-foreground mb-1">{label}</div>{children || <div className="text-sm text-foreground font-medium">{value || "—"}</div>}</div>);
 }
 
+
+const MOCK_PROVIDERS: any[] = [];
 export default function SSOPage() {
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;

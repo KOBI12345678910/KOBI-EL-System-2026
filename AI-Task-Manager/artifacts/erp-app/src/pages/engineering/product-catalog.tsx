@@ -179,7 +179,7 @@ export default function ProductCatalogPage() {
             <div className="relative max-w-sm">
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="חיפוש לפי שם, מק\"ט או משפחה..."
+                placeholder={"חיפוש לפי שם, מק\"ט או משפחה..."}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pr-10 bg-card/60 border-border text-sm"

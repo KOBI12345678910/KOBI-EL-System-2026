@@ -44,6 +44,8 @@ function DetailField({ label, value, children }: { label: string; value?: string
 
 const emptyForm: any = { role: ROLES[0], table: TABLES[0], permission: "read", status: "active", conditions: "" };
 
+
+const MOCK_POLICIES: any[] = [];
 export default function RowSecurityPage() {
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;

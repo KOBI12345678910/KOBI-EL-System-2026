@@ -62,6 +62,9 @@ export default function CostPerUnit() {
   });
 
   const products = costperunitData ?? FALLBACK_PRODUCTS;
+  const departments = FALLBACK_DEPARTMENTS;
+  const monthlyTrends = FALLBACK_MONTHLY_TRENDS;
+  const optimizations = FALLBACK_OPTIMIZATIONS;
 
   const [search, setSearch] = useState("");
 

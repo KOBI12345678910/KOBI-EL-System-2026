@@ -12,7 +12,8 @@ import { authFetch } from "@/lib/utils";
     const SC: Record<string, string> = { "בגבולות": "bg-green-500/20 text-green-300", "סטייה קלה": "bg-yellow-500/20 text-yellow-300", "חריגה": "bg-orange-500/20 text-orange-300", "חריגה חמורה": "bg-red-500/20 text-red-300" };
     const CATS = ["הכנסות","הוצאות","השקעות","תפעול","כא"];
     const EMP = ["יוסי כהן","שרה לוי","דוד מזרחי","רחל אברהם","אלון גולדשטיין","מיכל ברק","עומר חדד","נועה פרידמן","איתן רוזנברג","תמר שלום"];
-MOCK.forEach(r => { r.variance = r.actual - r.budget; r.variancePercent = ((r.variance / r.budget) * 100).toFixed(1); r.favorable = r.variance < 0; });
+const MOCK: any[] = [];
+MOCK.forEach((r: any) => { r.variance = r.actual - r.budget; r.variancePercent = ((r.variance / r.budget) * 100).toFixed(1); r.favorable = r.variance < 0; });
 
     export default function BudgetVsActual() {
       const [data, setData] = useState<any[]>([]);

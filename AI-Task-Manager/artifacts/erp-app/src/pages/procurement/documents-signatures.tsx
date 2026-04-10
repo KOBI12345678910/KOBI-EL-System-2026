@@ -87,6 +87,10 @@ export default function DocumentsSignatures() {
   });
 
   const documents = documentssignaturesData ?? FALLBACK_DOCUMENTS;
+  const auditTrail = FALLBACK_AUDIT_TRAIL;
+  const kpis = FALLBACK_KPIS;
+  const signatures = FALLBACK_SIGNATURES;
+  const versions = FALLBACK_VERSIONS;
 
   const [activeTab, setActiveTab] = useState("documents");
   const [searchTerm, setSearchTerm] = useState("");

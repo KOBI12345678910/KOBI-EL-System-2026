@@ -97,6 +97,7 @@ export default function RawMaterialsDashboard() {
   });
 
   const kpis = rawmaterialsdashboardData ?? FALLBACK_KPIS;
+  const attentionItems = FALLBACK_ATTENTION_ITEMS;
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 

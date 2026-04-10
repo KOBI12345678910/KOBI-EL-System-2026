@@ -121,6 +121,8 @@ const emptyAmendment: any = {
   requestedBy: "", bankReference: "", feeAmount: "0", notes: "",
 };
 
+
+const load: any[] = [];
 export default function LettersOfCreditPage() {
   const [activeTab, setActiveTab] = useState<"dashboard" | "list" | "amendments" | "expiry">("dashboard");
   const { permissions } = usePermissions();

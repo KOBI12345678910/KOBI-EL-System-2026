@@ -153,6 +153,8 @@ function recalc(f: any) {
   };
 }
 
+
+const calculations: any[] = [];
 export default function ImportCostCalculatorPage() {
   const [activeTab, setActiveTab] = useState<"calculator" | "saved" | "comparison">("calculator");
   const { permissions } = usePermissions();

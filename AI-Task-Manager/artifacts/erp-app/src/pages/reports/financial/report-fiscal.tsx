@@ -77,6 +77,10 @@ export default function ReportFiscalPage() {
   });
 
   const kpis = reportfiscalData ?? FALLBACK_KPIS;
+  const departmentExpenses = FALLBACK_DEPARTMENT_EXPENSES;
+  const plSummary = FALLBACK_PL_SUMMARY;
+  const quarterlyBreakdown = FALLBACK_QUARTERLY_BREAKDOWN;
+  const taxComputation = FALLBACK_TAX_COMPUTATION;
 
   return (
     <div className="p-6 space-y-6" dir="rtl">

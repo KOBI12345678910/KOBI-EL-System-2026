@@ -103,6 +103,8 @@ function generateProductNumber(products: Product[]) {
   return `PRD-${next}`;
 }
 
+
+const load: any[] = [];
 export default function ProductCatalogPage() {
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;

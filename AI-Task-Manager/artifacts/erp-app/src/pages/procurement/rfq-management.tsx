@@ -50,6 +50,8 @@ function StarRating({ value }: { value: number }) {
   );
 }
 
+
+const load: any[] = [];
 export default function RfqManagement() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");

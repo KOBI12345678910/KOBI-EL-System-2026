@@ -145,7 +145,9 @@ const FALLBACK_TEMPLATES: Template[] = [
   },
 ];
 
-const categories = [...new Set(nodeTypes.map(n => n.category))];
+const nodeTypes = FALLBACK_NODE_TYPES;
+
+const categories = [...new Set(nodeTypes.map((n: any) => n.category))];
 
 let idCounter = 1;
 const genId = () => `node_${Date.now()}_${idCounter++}`;
@@ -157,7 +159,7 @@ export default function VisualWorkflowBuilderPage() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const nodeTypes = visualworkflowbuilderData ?? FALLBACK_NODE_TYPES;
+  const templates = FALLBACK_TEMPLATES;
 
   const [nodes, setNodes] = useState<WorkflowNode[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -203,7 +205,7 @@ export default function VisualWorkflowBuilderPage() {
   const duplicateNode = (nodeId: string) => {
     const node = nodes.find(n => n.id === nodeId);
     if (!node) return;
-    const newNode: WorkflowNode = { ...node, id: genId(), x: node.x + 40, y: node.y + 40, properties: { ...node.properties } };
+    const newNode = { ...node, id: `${node.id}-copy-${Date.now()}`, x: node.x + 40, y: node.y + 40 };
     setNodes(prev => [...prev, newNode]);
   };
 
@@ -392,7 +394,7 @@ export default function VisualWorkflowBuilderPage() {
 
           {/* Nodes */}
           {nodes.map(node => {
-            const nt = nodeTypes.find(t => t.type === node.type);
+            const nt = nodeTypes.find((t: any) => t.type === node.type);
             if (!nt) return null;
             const Icon = nt.icon;
             const isSelected = selectedNode === node.id;
@@ -405,7 +407,7 @@ export default function VisualWorkflowBuilderPage() {
               >
                 {/* Header */}
                 <div className="flex items-center gap-2 px-3 py-2 rounded-t-lg" style={{ backgroundColor: nt.color + "15" }}>
-                  <Icon className="w-4 h-4 flex-shrink-0" style={{ color: nt.color }} />
+                  {Icon && <Icon className="w-4 h-4 flex-shrink-0" style={{ color: nt.color }} />}
                   <span className="text-xs font-medium truncate">{node.label || nt.label}</span>
                   <div className="mr-auto flex gap-0.5">
                     <button onClick={e => { e.stopPropagation(); duplicateNode(node.id); }} className="opacity-0 group-hover:opacity-100 hover:text-blue-500"><Copy className="w-3 h-3" /></button>

@@ -105,6 +105,10 @@ export default function MarketPriceTracking() {
   });
 
   const steelIndex = marketpricetrackingData ?? FALLBACK_STEEL_INDEX;
+  const aluminumIndex = FALLBACK_ALUMINUM_INDEX;
+  const commodityTrends = FALLBACK_COMMODITY_TRENDS;
+  const currencyRates = FALLBACK_CURRENCY_RATES;
+  const kpis = FALLBACK_KPIS;
 
   const [activeTab, setActiveTab] = useState("steel");
 

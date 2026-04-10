@@ -136,6 +136,9 @@ export default function KpiMonitor() {
   });
 
   const liveKpis = kpimonitorData ?? FALLBACK_LIVE_KPIS;
+  const alerts = FALLBACK_ALERTS;
+  const targetsVsActual = FALLBACK_TARGETS_VS_ACTUAL;
+  const weeklyTrends = FALLBACK_WEEKLY_TRENDS;
 
   const [selectedKpi, setSelectedKpi] = useState("all");
 

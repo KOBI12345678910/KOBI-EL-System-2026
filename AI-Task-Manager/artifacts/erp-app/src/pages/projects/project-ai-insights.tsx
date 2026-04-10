@@ -120,6 +120,9 @@ const FALLBACK_WEEKLY_BRIEF = {
   ],
 };
 
+
+const aiScores = FALLBACK_AI_SCORES;
+
 /* ───────── Helpers ───────── */
 function healthColor(score: number) {
   if (score >= 85) return { bg: "bg-emerald-500/15", text: "text-emerald-400", border: "border-emerald-500/30" };
@@ -128,32 +131,28 @@ function healthColor(score: number) {
   return { bg: "bg-red-500/15", text: "text-red-400", border: "border-red-500/30" };
 }
 
+const map: Record<string, string> = {
+  critical: "bg-red-500/20 text-red-400 border-red-500/30",
+  high: "bg-orange-500/20 text-orange-400 border-orange-500/30",
+  medium: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+  low: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  positive: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+};
+const labels: Record<string, string> = { critical: "קריטי", high: "גבוה", medium: "בינוני", low: "נמוך", positive: "חיובי" };
+
 function impactBadge(impact: string) {
-  const map: Record<string, string> = {
-    critical: "bg-red-500/20 text-red-400 border-red-500/30",
-    high: "bg-orange-500/20 text-orange-400 border-orange-500/30",
-    medium: "bg-amber-500/20 text-amber-400 border-amber-500/30",
-    low: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-    positive: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-  };
-  const labels: Record<string, string> = { critical: "קריטי", high: "גבוה", medium: "בינוני", low: "נמוך", positive: "חיובי" };
   return <Badge variant="outline" className={`text-[11px] ${map[impact] || map.medium}`}>{labels[impact] || impact}</Badge>;
 }
 
 function effortBadge(effort: string) {
-  const map: Record<string, string> = { low: "bg-green-500/20 text-green-400", medium: "bg-amber-500/20 text-amber-400", high: "bg-red-500/20 text-red-400" };
-  const labels: Record<string, string> = { low: "מאמץ נמוך", medium: "מאמץ בינוני", high: "מאמץ גבוה" };
   return <span className={`px-2 py-0.5 rounded text-[11px] ${map[effort]}`}>{labels[effort]}</span>;
 }
 
 function severityDot(severity: string) {
-  const map: Record<string, string> = { critical: "bg-red-500", high: "bg-orange-500", medium: "bg-amber-500", low: "bg-blue-500" };
   return <span className={`inline-block w-2 h-2 rounded-full ${map[severity] || map.medium}`} />;
 }
 
 function priorityBadge(priority: string) {
-  const map: Record<string, string> = { urgent: "bg-red-500/20 text-red-400", high: "bg-orange-500/20 text-orange-400", medium: "bg-amber-500/20 text-amber-400" };
-  const labels: Record<string, string> = { urgent: "דחוף", high: "גבוה", medium: "בינוני" };
   return <span className={`px-2 py-0.5 rounded text-[11px] font-medium ${map[priority]}`}>{labels[priority]}</span>;
 }
 
@@ -162,6 +161,7 @@ const categoryLabels: Record<string, string> = { resources: "הקצאת משאב
 
 /* ═══════════════════════════════════════════════════════════════ */
 export default function ProjectAiInsights() {
+  const aiScores = FALLBACK_AI_SCORES;
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("health");
   const [recFilter, setRecFilter] = useState<string>("all");
@@ -170,7 +170,6 @@ export default function ProjectAiInsights() {
     queryKey: ["project-ai-insights"],
     queryFn: async () => { const r = await authFetch("/api/projects/ai-insights"); return r.json(); },
   });
-  const aiScores = apiAi?.aiScores ?? apiAi?.data?.aiScores ?? FALLBACK_AI_SCORES;
   const projects = apiAi?.projects ?? apiAi?.data?.projects ?? FALLBACK_AI_PROJECTS;
   const predictions = apiAi?.predictions ?? apiAi?.data?.predictions ?? FALLBACK_PREDICTIONS;
   const recommendations = apiAi?.recommendations ?? apiAi?.data?.recommendations ?? FALLBACK_RECOMMENDATIONS;

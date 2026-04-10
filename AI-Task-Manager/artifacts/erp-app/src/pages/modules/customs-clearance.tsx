@@ -163,6 +163,8 @@ const emptyForm: Partial<CustomsClearance> = {
   priority: "רגילה",
 };
 
+
+const load: any[] = [];
 export default function CustomsClearancePage() {
   const [activeTab, setActiveTab] = useState<"dashboard" | "list" | "documents" | "taxes">("dashboard");
   const { permissions } = usePermissions();

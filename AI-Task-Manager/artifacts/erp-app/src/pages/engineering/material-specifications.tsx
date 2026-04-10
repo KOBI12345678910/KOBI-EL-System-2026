@@ -71,6 +71,11 @@ const FALLBACK_NCRS = [
   { id: "NCR-005", material: "זכוכית למינציה", desc: "בועות אוויר בשכבת PVB — 3 יחידות מ-50", severity: "קל", date: "2026-04-06", assignee: "מיכל ברק", status: "נסגר", action: "פסילת יחידות, עדכון הוראות אחסון" },
 ];
 
+
+const allMaterials = FALLBACK_ALLMATERIALS;
+const materials = FALLBACK_MATERIALS;
+const ncrs = FALLBACK_NCRS;
+
 // ── KPI data ──
 const kpis = [
   { label: "סה\"כ חומרים", value: allMaterials.length, icon: Layers, color: "text-blue-600 bg-blue-50" },
@@ -129,7 +134,7 @@ export default function MaterialSpecificationsPage() {
     queryKey: ["/api/engineering/material-specifications/ncrs"],
     queryFn: () => authFetch("/api/engineering/material-specifications/ncrs").then(r => r.json()).catch(() => null),
   });
-  const ncrs = Array.isArray(apincrs) ? apincrs : (apincrs?.data ?? apincrs?.items ?? FALLBACK_NCRS);
+  const ncrs = FALLBACK_NCRS;
 
   const [search, setSearch] = useState("");
   const [familyFilter, setFamilyFilter] = useState("all");

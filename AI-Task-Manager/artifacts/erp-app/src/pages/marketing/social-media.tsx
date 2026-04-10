@@ -72,6 +72,7 @@ export default function SocialMedia() {
   });
 
   const posts = socialmediaData ?? FALLBACK_POSTS;
+  const channels = FALLBACK_CHANNELS;
 
   const [tab, setTab] = useState("posts");
 

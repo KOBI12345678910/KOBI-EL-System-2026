@@ -90,6 +90,11 @@ export default function ProductDevCommandCenter() {
   });
 
   const kpis = productdevcommandcenterData ?? FALLBACK_KPIS;
+  const innovationIdeas = FALLBACK_INNOVATION_IDEAS;
+  const milestones = FALLBACK_MILESTONES;
+  const pipelineStages = FALLBACK_PIPELINE_STAGES;
+  const rdProjects = FALLBACK_RD_PROJECTS;
+  const urgentItems = FALLBACK_URGENT_ITEMS;
 
   return (
     <div className="p-6 space-y-5" dir="rtl">

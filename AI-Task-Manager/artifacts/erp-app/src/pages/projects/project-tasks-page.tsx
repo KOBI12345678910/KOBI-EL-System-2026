@@ -243,6 +243,8 @@ function flattenTree(nodes: any[], depth = 0, expanded: Set<number>): any[] {
   return result;
 }
 
+
+const load: any[] = [];
 export default function ProjectTasksPage() {
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;

@@ -80,6 +80,9 @@ export default function ProductCertificationsPage() {
   });
 
   const certifications = productcertificationsData ?? FALLBACK_CERTIFICATIONS;
+  const complianceMatrix = FALLBACK_COMPLIANCE_MATRIX;
+  const costData = FALLBACK_COST_DATA;
+  const testingSchedule = FALLBACK_TESTING_SCHEDULE;
 
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("certifications");

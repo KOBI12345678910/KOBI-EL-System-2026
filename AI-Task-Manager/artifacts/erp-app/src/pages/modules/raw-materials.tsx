@@ -168,6 +168,8 @@ function getStockStatus(m: Material) {
   return { text: "תקין", color: "text-emerald-400", bg: "bg-emerald-500/20", icon: CheckCircle2 };
 }
 
+
+const load: any[] = [];
 export default function RawMaterialsPage() {
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;

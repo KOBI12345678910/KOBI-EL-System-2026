@@ -167,6 +167,16 @@ const FALLBACK_MODULE_STATS = [
   { module: "איכות", approved: 72, pending: 9, expired: 2, thisMonth: 6, growth: 7.1 },
 ];
 
+
+const customerDocs = FALLBACK_CUSTOMER_DOCS;
+const financeDocs = FALLBACK_FINANCE_DOCS;
+const importDocs = FALLBACK_IMPORT_DOCS;
+const installationDocs = FALLBACK_INSTALLATION_DOCS;
+const procurementDocs = FALLBACK_PROCUREMENT_DOCS;
+const productionDocs = FALLBACK_PRODUCTION_DOCS;
+const qualityDocs = FALLBACK_QUALITY_DOCS;
+const supplierDocs = FALLBACK_SUPPLIER_DOCS;
+
 /* ── Tab config ── */
 const tabConfig: { key: string; label: string; docs: typeof procurementDocs }[] = [
   { key: "procurement", label: "רכש", docs: procurementDocs },
@@ -222,15 +232,15 @@ export default function ModuleDocuments() {
     staleTime: 60_000,
     retry: 1,
   });
+  const customerDocs = FALLBACK_CUSTOMER_DOCS;
+  const financeDocs = FALLBACK_FINANCE_DOCS;
+  const importDocs = FALLBACK_IMPORT_DOCS;
+  const installationDocs = FALLBACK_INSTALLATION_DOCS;
+  const procurementDocs = FALLBACK_PROCUREMENT_DOCS;
+  const productionDocs = FALLBACK_PRODUCTION_DOCS;
+  const qualityDocs = FALLBACK_QUALITY_DOCS;
+  const supplierDocs = FALLBACK_SUPPLIER_DOCS;
   const modules = apiData?.modules ?? FALLBACK_MODULES;
-  const procurementDocs = apiData?.procurementDocs ?? FALLBACK_PROCUREMENT_DOCS;
-  const importDocs = apiData?.importDocs ?? FALLBACK_IMPORT_DOCS;
-  const financeDocs = apiData?.financeDocs ?? FALLBACK_FINANCE_DOCS;
-  const productionDocs = apiData?.productionDocs ?? FALLBACK_PRODUCTION_DOCS;
-  const customerDocs = apiData?.customerDocs ?? FALLBACK_CUSTOMER_DOCS;
-  const installationDocs = apiData?.installationDocs ?? FALLBACK_INSTALLATION_DOCS;
-  const supplierDocs = apiData?.supplierDocs ?? FALLBACK_SUPPLIER_DOCS;
-  const qualityDocs = apiData?.qualityDocs ?? FALLBACK_QUALITY_DOCS;
   const crossModuleLinks = apiData?.crossModuleLinks ?? FALLBACK_CROSS_MODULE_LINKS;
   const moduleStats = apiData?.moduleStats ?? FALLBACK_MODULE_STATS;
   const [activeTab, setActiveTab] = useState("procurement");

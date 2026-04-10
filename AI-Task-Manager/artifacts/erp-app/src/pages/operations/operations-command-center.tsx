@@ -72,6 +72,10 @@ export default function OperationsCommandCenter() {
   });
 
   const kpis = operationscommandcenterData ?? FALLBACK_KPIS;
+  const bottlenecks = FALLBACK_BOTTLENECKS;
+  const costData = FALLBACK_COST_DATA;
+  const productionLines = FALLBACK_PRODUCTION_LINES;
+  const shiftData = FALLBACK_SHIFT_DATA;
 
   return (
     <div className="p-6 space-y-5 bg-slate-900 min-h-screen" dir="rtl">

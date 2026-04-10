@@ -38,6 +38,8 @@ const TYPE_COLORS: Record<string, string> = { lead: "bg-green-500/20 text-green-
 
 
 
+
+const MOCK_EVENTS: any[] = [];
 export default function RealtimeFeedPage() {
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;

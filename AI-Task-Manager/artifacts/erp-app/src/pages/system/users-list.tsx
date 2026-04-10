@@ -189,6 +189,8 @@ export default function UsersListPage() {
   });
 
   const DEPARTMENTS = userslistData ?? FALLBACK_DEPARTMENTS;
+  const ALL_ROLES = FALLBACK_ALL_ROLES;
+  const MOCK_USERS = FALLBACK_MOCK_USERS;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");

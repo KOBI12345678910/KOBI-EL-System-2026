@@ -95,6 +95,8 @@ const SWOT_FIELDS: { key: keyof Competitor; label: string; color: string }[] = [
   { key: "swotThreats", label: "איומים", color: "border-amber-500/30 bg-amber-500/5" },
 ];
 
+
+const loadData: any[] = [];
 export default function ProcurementCompetitorsPage() {
   const { toast } = useToast();
   const qc = useQueryClient();

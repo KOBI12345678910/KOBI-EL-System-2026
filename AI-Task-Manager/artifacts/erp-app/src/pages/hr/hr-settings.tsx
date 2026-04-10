@@ -98,6 +98,11 @@ export default function HRSettings() {
   });
 
   const generalSettings = hrsettingsData ?? FALLBACK_GENERAL_SETTINGS;
+  const documentSettings = FALLBACK_DOCUMENT_SETTINGS;
+  const integrations = FALLBACK_INTEGRATIONS;
+  const leaveTypes = FALLBACK_LEAVE_TYPES;
+  const performanceSettings = FALLBACK_PERFORMANCE_SETTINGS;
+  const salarySettings = FALLBACK_SALARY_SETTINGS;
 
   const [activeTab, setActiveTab] = useState("general");
 

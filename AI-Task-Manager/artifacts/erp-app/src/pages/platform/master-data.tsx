@@ -136,6 +136,15 @@ export default function MasterData() {
   });
 
   const kpis = masterdataData ?? FALLBACK_KPIS;
+  const colorCodes = FALLBACK_COLOR_CODES;
+  const duplicateRules = FALLBACK_DUPLICATE_RULES;
+  const finishCodes = FALLBACK_FINISH_CODES;
+  const items = FALLBACK_ITEMS;
+  const mandatoryFields = FALLBACK_MANDATORY_FIELDS;
+  const namingRules = FALLBACK_NAMING_RULES;
+  const numberingSeqs = FALLBACK_NUMBERING_SEQS;
+  const profileFamilies = FALLBACK_PROFILE_FAMILIES;
+  const units = FALLBACK_UNITS;
 
   const [tab, setTab] = useState("items");
 

@@ -14,6 +14,8 @@ import ImportButton from "@/components/import-button";
   const SC: Record<string, string> = { "חדש": "bg-gray-500/20 text-gray-300", "סינון ראשוני": "bg-blue-500/20 text-blue-300", "ראיון טלפוני": "bg-cyan-500/20 text-cyan-300", "ראיון אישי": "bg-purple-500/20 text-purple-300", "מבחן": "bg-yellow-500/20 text-yellow-300", "הצעה": "bg-orange-500/20 text-orange-300", "התקבל": "bg-green-500/20 text-green-300", "נדחה": "bg-red-500/20 text-red-300" };
   const POSITIONS = ["מהנדס ייצור","מנהל פרויקטים","חשבונאי","טכנאי CNC","מנהל מכירות","מעצב גרפי"];
   const EMP = ["יוסי כהן","שרה לוי","דוד מזרחי","רחל אברהם","אלון גולדשטיין","מיכל ברק","עומר חדד","נועה פרידמן","איתן רוזנברג","תמר שלום"];
+
+const load: any[] = [];
 export default function Candidates() {
     const [data, setData] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);

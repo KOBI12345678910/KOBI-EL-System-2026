@@ -26,6 +26,7 @@ export default function ImportExportSection() {
   });
 
   const IMPORT_HISTORY = importexportData ?? FALLBACK_IMPORT_HISTORY;
+  const EXPORT_HISTORY = FALLBACK_EXPORT_HISTORY;
 
   const [activeTab, setActiveTab] = useState("import");
   const [selectedModule, setSelectedModule] = useState("");

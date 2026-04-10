@@ -14,6 +14,8 @@ import ImportButton from "@/components/import-button";
   const SC: Record<string, string> = { "חדש": "bg-gray-500/20 text-gray-300", "פעיל": "bg-green-500/20 text-green-300", "בראיון": "bg-blue-500/20 text-blue-300", "הוצע": "bg-purple-500/20 text-purple-300", "אויש": "bg-emerald-500/20 text-emerald-300", "מבוטל": "bg-red-500/20 text-red-300" };
   const DEPTS = ["ייצור","הנהלה","כספים","שיווק","לוגיסטיקה","טכנולוגיה","מכירות","משאבי אנוש"];
   const EMP = ["יוסי כהן","שרה לוי","דוד מזרחי","רחל אברהם","אלון גולדשטיין","מיכל ברק","עומר חדד","נועה פרידמן","איתן רוזנברג","תמר שלום"];
+
+const load: any[] = [];
 export default function OpenPositions() {
     const [data, setData] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);

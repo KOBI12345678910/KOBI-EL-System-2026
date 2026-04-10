@@ -273,6 +273,8 @@ function CandidateDetail({ candidate, onClose, onStageChange, onEdit }: {
   );
 }
 
+
+const load: any[] = [];
 export default function RecruitmentPage() {
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;

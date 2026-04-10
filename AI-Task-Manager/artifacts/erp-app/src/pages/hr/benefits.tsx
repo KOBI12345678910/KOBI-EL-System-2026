@@ -74,6 +74,8 @@ const coverageLevelMap: Record<string, string> = {
   individual: "אישי", couple: "זוגי", family: "משפחתי", parent_child: "הורה+ילד"
 };
 
+
+const exportToExcel: any[] = [];
 export default function BenefitsPage() {
   const [tab, setTab] = useState<"plans" | "enrollments" | "analytics">("plans");
   const [plans, setPlans] = useState<BenefitPlan[]>([]);

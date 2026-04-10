@@ -154,6 +154,8 @@ function formatDate(d: string): string {
   return new Date(d).toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
+
+const r: any[] = [];
 export default function DocumentsPage() {
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;

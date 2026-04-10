@@ -136,6 +136,9 @@ function daysUntil(dateStr: string | null): number | null {
   return Math.ceil((new Date(dateStr).getTime() - Date.now()) / 86400000);
 }
 
+
+const exportToExcel: any[] = [];
+const load: any[] = [];
 export default function ImportOrdersPage() {
   const qc = useQueryClient();
   const [viewMode, setViewMode] = useState<ViewMode>("dashboard");

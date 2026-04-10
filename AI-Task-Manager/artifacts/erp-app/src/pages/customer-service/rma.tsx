@@ -80,6 +80,10 @@ export default function Rma() {
   });
 
   const kpis = rmaData ?? FALLBACK_KPIS;
+  const credits = FALLBACK_CREDITS;
+  const inspections = FALLBACK_INSPECTIONS;
+  const returnReasons = FALLBACK_RETURN_REASONS;
+  const rmaList = FALLBACK_RMA_LIST;
 
   const [search, setSearch] = useState("");
 

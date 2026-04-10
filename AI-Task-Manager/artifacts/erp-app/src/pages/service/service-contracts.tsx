@@ -74,6 +74,9 @@ const FALLBACK_REVENUE_BY_TYPE = [
   { type: "אחריות בסיסית", contracts: 2, annual: 14700, pctOfTotal: 6 },
 ];
 
+
+const contracts = FALLBACK_CONTRACTS;
+
 const activeContracts = contracts.filter(c => c.status === "active").length;
 const warrantyCustomers = 89;
 const slaCompliance = 87;
@@ -87,6 +90,9 @@ export default function ServiceContracts() {
   });
 
   const contracts = servicecontractsData ?? FALLBACK_CONTRACTS;
+  const revenueByType = FALLBACK_REVENUE_BY_TYPE;
+  const slaTiers = FALLBACK_SLA_TIERS;
+  const warrantyProjects = FALLBACK_WARRANTY_PROJECTS;
 
   const [activeTab, setActiveTab] = useState("contracts");
 

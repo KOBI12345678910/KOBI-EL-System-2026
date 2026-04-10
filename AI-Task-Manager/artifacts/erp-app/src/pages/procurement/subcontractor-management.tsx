@@ -80,6 +80,9 @@ export default function SubcontractorManagement() {
   });
 
   const subcontractors = subcontractormanagementData ?? FALLBACK_SUBCONTRACTORS;
+  const costData = FALLBACK_COST_DATA;
+  const kpis = FALLBACK_KPIS;
+  const orders = FALLBACK_ORDERS;
 
   const [tab, setTab] = useState("profiles");
   const [search, setSearch] = useState("");

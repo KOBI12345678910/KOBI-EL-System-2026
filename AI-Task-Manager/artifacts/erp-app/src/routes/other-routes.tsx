@@ -448,6 +448,53 @@ const DataScopeManagementPage = lazyPage(() => import("@/pages/system/data-scope
 const ApprovalPolicyManagementPage = lazyPage(() => import("@/pages/system/approval-policy-management"));
 const AccessAuditViewPage = lazyPage(() => import("@/pages/system/access-audit-view"));
 
+// Orphan Pages Registration — CRM Advanced
+const CrmAgentControlDashboardPage = lazyPage(() => import("@/pages/crm/agent-control-dashboard"));
+const CrmBehavioralAnalyticsPage = lazyPage(() => import("@/pages/crm/behavioral-analytics"));
+const CrmCommunicationIntelligencePage = lazyPage(() => import("@/pages/crm/communication-intelligence"));
+const CrmCustomer360Page = lazyPage(() => import("@/pages/crm/customer-360"));
+const CrmDecisionEnginePage = lazyPage(() => import("@/pages/crm/decision-engine"));
+const CrmIntelligenceEnginePage = lazyPage(() => import("@/pages/crm/intelligence-engine"));
+const CrmPipelineFinancialPage = lazyPage(() => import("@/pages/crm/pipeline-financial"));
+const CrmPredictiveForecastingPage = lazyPage(() => import("@/pages/crm/predictive-forecasting"));
+const CrmRelationshipGraphPage = lazyPage(() => import("@/pages/crm/relationship-graph"));
+
+// Orphan Pages — Finance Advanced
+const FinanceAnalyticalReportsPage = lazyPage(() => import("@/pages/finance/analytical-reports-page"));
+const FinanceCollectionsDashboardPage = lazyPage(() => import("@/pages/finance/collections-dashboard"));
+const FinanceCustomerAgingPage = lazyPage(() => import("@/pages/finance/customer-aging-page"));
+const FinanceEntityLedgerPage = lazyPage(() => import("@/pages/finance/entity-ledger-page"));
+const FinanceExecutiveSummaryPage = lazyPage(() => import("@/pages/finance/executive-summary-page"));
+const FinanceAlertsPage = lazyPage(() => import("@/pages/finance/finance-alerts"));
+const FinanceFiscalReportPage = lazyPage(() => import("@/pages/finance/fiscal-report-page"));
+const FinanceInstMonteCarloPage = lazyPage(() => import("@/pages/finance/institutional/monte-carlo-engine"));
+const FinanceInstRatioDashboardPage = lazyPage(() => import("@/pages/finance/institutional/ratio-dashboard"));
+const FinanceInstTreasuryDashboardPage = lazyPage(() => import("@/pages/finance/institutional/treasury-dashboard"));
+const FinanceInvoiceAnalysisPage = lazyPage(() => import("@/pages/finance/invoice-analysis-page"));
+const FinanceMasavManagementPage = lazyPage(() => import("@/pages/finance/masav-management"));
+const FinancePayablesDashboardPage = lazyPage(() => import("@/pages/finance/payables-dashboard"));
+const FinancePaymentOperationsPage = lazyPage(() => import("@/pages/finance/payment-operations"));
+const FinanceSupplierAgingPage = lazyPage(() => import("@/pages/finance/supplier-aging-page"));
+const FinanceTrialBalancePage = lazyPage(() => import("@/pages/finance/trial-balance-page"));
+const FinanceVatReportPage = lazyPage(() => import("@/pages/finance/vat-report-page"));
+
+// Orphan Pages — Others
+const CustomerServiceDashboardPage = lazyPage(() => import("@/pages/customer-service/service-dashboard"));
+const HrCommandCenterPage = lazyPage(() => import("@/pages/hr/hr-command-center"));
+const SalesDashboardPage = lazyPage(() => import("@/pages/sales/sales-dashboard"));
+const SalesDealRoomPage = lazyPage(() => import("@/pages/sales/deal-room"));
+const SalesOpportunitiesPage = lazyPage(() => import("@/pages/sales/opportunities"));
+const SupplyChainDashboardV2Page = lazyPage(() => import("@/pages/supply-chain/supply-chain-dashboard"));
+const VisualWorkflowBuilderPage = lazyPage(() => import("@/pages/builder/visual-workflow-builder"));
+const VisualWorkflowDesignerPage = lazyPage(() => import("@/pages/builder/visual-workflow-designer"));
+
+// Portal Pages
+const ContractorPortalPage = lazyPage(() => import("@/pages/portal/contractor-portal"));
+const CustomerPortalDashboardPage = lazyPage(() => import("@/pages/portal/customer-portal-dashboard"));
+const CustomerPortalLoginPage = lazyPage(() => import("@/pages/portal/customer-portal-login"));
+const EmployeePortalPage = lazyPage(() => import("@/pages/portal/employee-portal"));
+const PortalLoginPage = lazyPage(() => import("@/pages/portal/portal-login"));
+
 export const OtherRoutes = (
 
     <>
@@ -942,6 +989,53 @@ export const OtherRoutes = (
       <Route path="/system/data-scopes" component={DataScopeManagementPage} />
       <Route path="/system/approval-policies" component={ApprovalPolicyManagementPage} />
       <Route path="/system/access-audit" component={AccessAuditViewPage} />
+
+      {/* CRM Advanced Pages */}
+      <Route path="/crm/agent-control-dashboard" component={CrmAgentControlDashboardPage} />
+      <Route path="/crm/behavioral-analytics" component={CrmBehavioralAnalyticsPage} />
+      <Route path="/crm/communication-intelligence" component={CrmCommunicationIntelligencePage} />
+      <Route path="/crm/customer-360" component={CrmCustomer360Page} />
+      <Route path="/crm/decision-engine" component={CrmDecisionEnginePage} />
+      <Route path="/crm/intelligence-engine" component={CrmIntelligenceEnginePage} />
+      <Route path="/crm/pipeline-financial" component={CrmPipelineFinancialPage} />
+      <Route path="/crm/predictive-forecasting" component={CrmPredictiveForecastingPage} />
+      <Route path="/crm/relationship-graph" component={CrmRelationshipGraphPage} />
+
+      {/* Finance Advanced Pages */}
+      <Route path="/finance/analytical-reports" component={FinanceAnalyticalReportsPage} />
+      <Route path="/finance/collections-dashboard" component={FinanceCollectionsDashboardPage} />
+      <Route path="/finance/customer-aging" component={FinanceCustomerAgingPage} />
+      <Route path="/finance/entity-ledger" component={FinanceEntityLedgerPage} />
+      <Route path="/finance/executive-summary" component={FinanceExecutiveSummaryPage} />
+      <Route path="/finance/alerts-center" component={FinanceAlertsPage} />
+      <Route path="/finance/fiscal-report" component={FinanceFiscalReportPage} />
+      <Route path="/finance/institutional/monte-carlo" component={FinanceInstMonteCarloPage} />
+      <Route path="/finance/institutional/ratios" component={FinanceInstRatioDashboardPage} />
+      <Route path="/finance/institutional/treasury" component={FinanceInstTreasuryDashboardPage} />
+      <Route path="/finance/invoice-analysis" component={FinanceInvoiceAnalysisPage} />
+      <Route path="/finance/masav-management" component={FinanceMasavManagementPage} />
+      <Route path="/finance/payables-dashboard" component={FinancePayablesDashboardPage} />
+      <Route path="/finance/payment-operations" component={FinancePaymentOperationsPage} />
+      <Route path="/finance/supplier-aging" component={FinanceSupplierAgingPage} />
+      <Route path="/finance/trial-balance" component={FinanceTrialBalancePage} />
+      <Route path="/finance/vat-report" component={FinanceVatReportPage} />
+
+      {/* Other Orphan Pages */}
+      <Route path="/customer-service/dashboard" component={CustomerServiceDashboardPage} />
+      <Route path="/hr/command-center" component={HrCommandCenterPage} />
+      <Route path="/sales/dashboard" component={SalesDashboardPage} />
+      <Route path="/sales/deal-room" component={SalesDealRoomPage} />
+      <Route path="/sales/opportunities" component={SalesOpportunitiesPage} />
+      <Route path="/supply-chain/dashboard-v2" component={SupplyChainDashboardV2Page} />
+      <Route path="/builder/visual-workflow-builder" component={VisualWorkflowBuilderPage} />
+      <Route path="/builder/visual-workflow-designer" component={VisualWorkflowDesignerPage} />
+
+      {/* Portal Pages */}
+      <Route path="/portal/contractor" component={ContractorPortalPage} />
+      <Route path="/portal/customer-dashboard" component={CustomerPortalDashboardPage} />
+      <Route path="/portal/customer-login" component={CustomerPortalLoginPage} />
+      <Route path="/portal/employee" component={EmployeePortalPage} />
+      <Route path="/portal/login" component={PortalLoginPage} />
 
     </>
 );

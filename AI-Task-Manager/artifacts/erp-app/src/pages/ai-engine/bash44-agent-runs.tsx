@@ -31,6 +31,11 @@ function rand(a: number, b: number) { return Math.floor(Math.random() * (b - a +
 function rF(a: number, b: number) { return +(Math.random() * (b - a) + a).toFixed(1); }
 function pick<T>(arr: T[]): T { return arr[rand(0, arr.length - 1)]; }
 
+const AGENTS = FALLBACK_AGENTS;
+const ENTITIES = FALLBACK_ENTITIES;
+const STATUSES = FALLBACK_STATUSES;
+const ERRORS = FALLBACK_ERRORS;
+
 const allRuns = Array.from({ length: 20 }, (_, i) => {
   const now = Date.now();
   const status = i < 3 ? pick(["הצלחה", "הצלחה", "הצלחה", "נכשל"]) : i < 5 ? pick(["הצלחה", "ממתין"]) : pick(STATUSES);
@@ -96,16 +101,12 @@ const durColor = (v: number) => v < 1000 ? "text-emerald-400" : v < 2500 ? "text
 
 export default function Bash44AgentRuns() {
 
-  const { data: apiData } = useQuery({
+  const { data: apiData } = useQuery<any>({
     queryKey: ["bash44_agent_runs"],
     queryFn: () => authFetch("/api/ai/bash44-agent-runs").then(r => r.json()),
     staleTime: 60_000,
     retry: 1,
   });
-  const AGENTS = apiData?.AGENTS ?? FALLBACK_AGENTS;
-  const ENTITIES = apiData?.ENTITIES ?? FALLBACK_ENTITIES;
-  const STATUSES = apiData?.STATUSES ?? FALLBACK_STATUSES;
-  const ERRORS = apiData?.ERRORS ?? FALLBACK_ERRORS;
   const kpis = apiData?.kpis ?? FALLBACK_KPIS;
   const [search, setSearch] = useState("");
   const [filterAgent, setFilterAgent] = useState("");
@@ -260,7 +261,7 @@ export default function Bash44AgentRuns() {
                       </div>
                     </div>
                     <div className="space-y-1.5">
-                      {agentRuns.slice(0, 3).map((r, j) => {
+                      {agentRuns.slice(0, 3).map((r: any, j: number) => {
                         const SIcon = SI[r.status] || Activity;
                         return (
                           <div key={j} className="flex items-center justify-between text-xs px-2 py-1.5 rounded bg-slate-800/40">

@@ -54,6 +54,7 @@ export default function ReportVendorAgingPage() {
   });
 
   const kpis = reportvendoragingData ?? FALLBACK_KPIS;
+  const vendors = FALLBACK_VENDORS;
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");

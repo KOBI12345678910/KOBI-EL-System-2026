@@ -53,6 +53,8 @@ const CATEGORY_COLORS: Record<string, string> = {
   production: "bg-rose-500",
 };
 
+
+const fetchData: any[] = [];
 export default function DataFlowAutomations() {
   const queryClient = useQueryClient();
   const [runningFlow, setRunningFlow] = useState<string | null>(null);

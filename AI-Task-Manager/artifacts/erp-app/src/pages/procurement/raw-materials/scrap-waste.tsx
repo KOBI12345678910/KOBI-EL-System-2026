@@ -126,6 +126,10 @@ export default function ScrapWaste() {
   });
 
   const kpis = scrapwasteData ?? FALLBACK_KPIS;
+  const monthlyTrends = FALLBACK_MONTHLY_TRENDS;
+  const opportunities = FALLBACK_OPPORTUNITIES;
+  const scrapInventory = FALLBACK_SCRAP_INVENTORY;
+  const wasteByMaterial = FALLBACK_WASTE_BY_MATERIAL;
 
   const [tab, setTab] = useState("by-material");
 

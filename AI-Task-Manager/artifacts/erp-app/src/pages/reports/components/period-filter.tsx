@@ -123,6 +123,7 @@ export default function PeriodFilter({
   });
 
   const PERIOD_OPTIONS = periodfilterData ?? FALLBACK_PERIOD_OPTIONS;
+  const MONTH_OPTIONS = FALLBACK_MONTH_OPTIONS;
 
   return (
     <div className="flex flex-wrap gap-2 items-center">

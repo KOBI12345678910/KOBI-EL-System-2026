@@ -38,6 +38,9 @@ const FALLBACK_TREND_DATA = [
   { month: "מרץ 26", materials: 2450, labor: 1200, overhead: 380 },
 ];
 
+
+const PRODUCTS = FALLBACK_PRODUCTS;
+
 function calcProduct(p: (typeof PRODUCTS)[0]) {
   const totalCost = p.costs.reduce((s, c) => s + c.amount, 0);
   const grossProfit = p.salePrice - totalCost;
@@ -54,6 +57,7 @@ export default function ProductCosting() {
   });
 
   const PRODUCTS = productcostingData ?? FALLBACK_PRODUCTS;
+  const TREND_DATA = FALLBACK_TREND_DATA;
 
   const [selectedId, setSelectedId] = useState(1);
   const [activeTab, setActiveTab] = useState("breakdown");
@@ -70,10 +74,7 @@ export default function ProductCosting() {
       if (c.name.includes("עבודה")) return { ...c, amount: c.amount * (1 + simLab / 100) };
       return c;
     });
-    const totalCost = adjCosts.reduce((s, c) => s + c.amount, 0);
     const adjPrice = product.salePrice * (1 + simPrice / 100);
-    const grossProfit = adjPrice - totalCost;
-    const grossMargin = (grossProfit / adjPrice) * 100;
     return { totalCost, grossProfit, grossMargin, adjPrice };
   }, [product, simMat, simLab, simPrice]);
 

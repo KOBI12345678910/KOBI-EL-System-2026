@@ -65,6 +65,9 @@ const FALLBACK_KPIS = [
   { label: "ערך כולל",       value: fmtCur(125000), icon: DollarSign, color: "text-purple-600" },
 ];
 
+
+const assignments = FALLBACK_ASSIGNMENTS;
+
 function groupByEmployee() {
   const grouped: Record<string, typeof assignments> = {};
   for (const a of assignments) {
@@ -82,6 +85,9 @@ export default function EmployeeEquipmentPage() {
   });
 
   const assignments = employeeequipmentData ?? FALLBACK_ASSIGNMENTS;
+  const equipmentTypes = FALLBACK_EQUIPMENT_TYPES;
+  const kpis = FALLBACK_KPIS;
+  const pendingReturns = FALLBACK_PENDING_RETURNS;
 
   const [activeTab, setActiveTab] = useState("assignments");
 
@@ -195,8 +201,8 @@ export default function EmployeeEquipmentPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {items.map((i) => {
-                          const st = statusMap[i.status];
+                        {items.map((i: any) => {
+                          const st = statusMap[i.status] || { label: i.status, color: "bg-gray-500/20 text-gray-400" };
                           return (
                             <TableRow key={i.id}>
                               <TableCell>{i.item}</TableCell>

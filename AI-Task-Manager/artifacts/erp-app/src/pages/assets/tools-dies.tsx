@@ -76,6 +76,9 @@ export default function ToolsDies() {
   });
 
   const tools = toolsdiesData ?? FALLBACK_TOOLS;
+  const consumptionData = FALLBACK_CONSUMPTION_DATA;
+  const maintenanceSchedule = FALLBACK_MAINTENANCE_SCHEDULE;
+  const orderNeeded = FALLBACK_ORDER_NEEDED;
 
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("registry");

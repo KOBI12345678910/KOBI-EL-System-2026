@@ -97,6 +97,9 @@ const FALLBACK_DETAIL_PARTS = [
   { part: "\u05D1\u05D5\u05E8\u05D2 \u05E4\u05DC\u05D3\u05D4 M8", qty: 4, cost: 15 },
 ];
 
+
+const cases = FALLBACK_CASES;
+
 const detailCost = { labor: 450, parts: 305, travel: 120, total: 875 };
 
 /* KPI calculations */
@@ -114,6 +117,8 @@ export default function ServiceCases() {
   });
 
   const cases = servicecasesData ?? FALLBACK_CASES;
+  const detailParts = FALLBACK_DETAIL_PARTS;
+  const detailTimeline = FALLBACK_DETAIL_TIMELINE;
 
   const [activeTab, setActiveTab] = useState("all");
   const [expandedCase, setExpandedCase] = useState<string | null>(null);

@@ -73,6 +73,9 @@ export default function Leasing() {
   });
 
   const leases = leasingData ?? FALLBACK_LEASES;
+  const leaseVsBuy = FALLBACK_LEASE_VS_BUY;
+  const paymentSchedule = FALLBACK_PAYMENT_SCHEDULE;
+  const renewals = FALLBACK_RENEWALS;
 
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("active");

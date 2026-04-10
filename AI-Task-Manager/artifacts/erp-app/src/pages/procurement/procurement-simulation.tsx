@@ -61,6 +61,7 @@ export default function ProcurementSimulation() {
   });
 
   const materials = procurementsimulationData ?? FALLBACK_MATERIALS;
+  const savedScenarios = FALLBACK_SAVED_SCENARIOS;
 
   const [scenario, setScenario] = useState<string>("price_increase");
   const [priceChange, setPriceChange] = useState(15);

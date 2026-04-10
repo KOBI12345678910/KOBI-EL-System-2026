@@ -117,6 +117,11 @@ export default function QualityControl() {
   });
 
   const kpis = qualitycontrolData ?? FALLBACK_KPIS;
+  const defectsBySupplier = FALLBACK_DEFECTS_BY_SUPPLIER;
+  const defectsByType = FALLBACK_DEFECTS_BY_TYPE;
+  const inspections = FALLBACK_INSPECTIONS;
+  const returns = FALLBACK_RETURNS;
+  const supplierRanking = FALLBACK_SUPPLIER_RANKING;
 
   const [tab, setTab] = useState("inspections");
 

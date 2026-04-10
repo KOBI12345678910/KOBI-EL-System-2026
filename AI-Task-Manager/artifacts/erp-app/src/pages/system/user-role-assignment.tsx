@@ -174,6 +174,8 @@ const fmt = Intl.DateTimeFormat("he-IL", { day: "2-digit", month: "2-digit", yea
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
+const AVAILABLE_ROLES = FALLBACK_AVAILABLE_ROLES;
+
 export default function UserRoleAssignment() {
   const { data: userroleassignmentData } = useQuery({
     queryKey: ["user-role-assignment"],
@@ -182,6 +184,7 @@ export default function UserRoleAssignment() {
   });
 
   const AVAILABLE_ROLES = userroleassignmentData ?? FALLBACK_AVAILABLE_ROLES;
+  const MOCK_USERS = FALLBACK_MOCK_USERS;
 
   const [users, setUsers] = useState<UserRecord[]>(MOCK_USERS);
   const [selectedUserId, setSelectedUserId] = useState<string | null>("U001");
@@ -252,7 +255,7 @@ export default function UserRoleAssignment() {
   const handleBulkAssign = () => {
     if (!bulkRoleId || bulkSelected.size === 0) return;
     const today = new Date().toISOString().slice(0, 10);
-    const nextYear = new Date(Date.now() + 365 * 86400000).toISOString().slice(0, 10);
+    const nextYear = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
     setUsers((prev) =>
       prev.map((u) =>
         bulkSelected.has(u.id)
@@ -519,7 +522,7 @@ export default function UserRoleAssignment() {
                         </thead>
                         <tbody>
                           {selectedUser.roles.map((r, idx) => {
-                            const def = getRoleDef(r.roleId);
+                            const def = AVAILABLE_ROLES.find((ar: any) => ar.id === r.roleId) || { id: r.roleId, name: r.roleId, nameHe: r.roleId, color: "border-gray-700 text-gray-400" };
                             const isExpired = new Date(r.validTo) < new Date();
                             const isExpiringSoon =
                               !isExpired &&

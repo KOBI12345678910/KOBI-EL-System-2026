@@ -129,6 +129,11 @@ export default function BICommandCenter() {
   });
 
   const execKPIs = bicommandcenterData ?? FALLBACK_EXEC_KPIS;
+  const alerts = FALLBACK_ALERTS;
+  const exceptions = FALLBACK_EXCEPTIONS;
+  const kpiScorecard = FALLBACK_KPI_SCORECARD;
+  const modules = FALLBACK_MODULES;
+  const profitabilityData = FALLBACK_PROFITABILITY_DATA;
 
   const [tab, setTab] = useState("overview");
 

@@ -14,7 +14,8 @@ import ImportButton from "@/components/import-button";
     const SC: Record<string, string> = { "פעיל": "bg-green-500/20 text-green-300", "לא פעיל": "bg-gray-500/20 text-gray-300", "מוגבל": "bg-yellow-500/20 text-yellow-300", "מעקב": "bg-blue-500/20 text-blue-300" };
     
     const EMP = ["יוסי כהן","שרה לוי","דוד מזרחי","רחל אברהם","אלון גולדשטיין","מיכל ברק","עומר חדד","נועה פרידמן","איתן רוזנברג","תמר שלום"];
-MOCK.forEach(r => { r.change = Number(((r.rate - r.previousRate) / r.previousRate * 100).toFixed(2)); });
+const MOCK: any[] = [];
+MOCK.forEach((r: any) => { r.change = Number(((r.rate - r.previousRate) / r.previousRate * 100).toFixed(2)); });
 
     export default function CurrenciesManagement() {
       const [data, setData] = useState<any[]>([]);

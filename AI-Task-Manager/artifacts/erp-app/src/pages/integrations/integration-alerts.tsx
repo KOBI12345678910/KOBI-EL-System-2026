@@ -81,6 +81,9 @@ const FALLBACK_LATENCY_DATA = [
   { service: "ERP Gateway", p50: 85, p95: 290, p99: 740 },
 ];
 
+
+const TRAFFIC_DATA = FALLBACK_TRAFFIC_DATA;
+
 const DAILY_VOLUME = { events: 48720, apiCalls: 155600, webhooks: 12340 };
 const maxCalls = Math.max(...TRAFFIC_DATA.map((d) => d.calls));
 
@@ -92,9 +95,9 @@ export default function IntegrationAlertsPage() {
     staleTime: 60_000,
     retry: 1,
   });
+  const TRAFFIC_DATA = FALLBACK_TRAFFIC_DATA;
   const ALERT_TYPES = apiData?.ALERT_TYPES ?? FALLBACK_ALERT_TYPES;
   const ALERTS = apiData?.ALERTS ?? FALLBACK_ALERTS;
-  const TRAFFIC_DATA = apiData?.TRAFFIC_DATA ?? FALLBACK_TRAFFIC_DATA;
   const ERROR_TREND = apiData?.ERROR_TREND ?? FALLBACK_ERROR_TREND;
   const LATENCY_DATA = apiData?.LATENCY_DATA ?? FALLBACK_LATENCY_DATA;
   const [activeTab, setActiveTab] = useState("alerts");

@@ -90,6 +90,8 @@ export default function ShiftHandover() {
   });
 
   const handoverLog = shifthandoverData ?? FALLBACK_HANDOVER_LOG;
+  const pendingItems = FALLBACK_PENDING_ITEMS;
+  const weeklySchedule = FALLBACK_WEEKLY_SCHEDULE;
 
   const [search, setSearch] = useState("");
 

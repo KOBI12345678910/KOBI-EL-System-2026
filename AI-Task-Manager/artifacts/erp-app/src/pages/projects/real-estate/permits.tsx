@@ -14,6 +14,8 @@ import ImportButton from "@/components/import-button";
   const SC: Record<string, string> = { "טיוטה": "bg-gray-500/20 text-gray-300", "הוגש": "bg-blue-500/20 text-blue-300", "בבדיקה": "bg-yellow-500/20 text-yellow-300", "מאושר": "bg-green-500/20 text-green-300", "נדחה": "bg-red-500/20 text-red-300", "תקף": "bg-emerald-500/20 text-emerald-300" };
   const PERMIT_TYPES = ["היתר בנייה","רישיון עסק","אישור כיבוי","אישור סביבתי","היתר חפירה","אישור תברואה","היתר שילוט"];
   const EMP = ["יוסי כהן","שרה לוי","דוד מזרחי","רחל אברהם","אלון גולדשטיין","מיכל ברק","עומר חדד","נועה פרידמן","איתן רוזנברג","תמר שלום"];
+
+const load: any[] = [];
 export default function Permits() {
     const [data, setData] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);

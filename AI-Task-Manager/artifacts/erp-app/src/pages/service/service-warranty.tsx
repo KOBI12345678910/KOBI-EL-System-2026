@@ -99,6 +99,13 @@ const FALLBACK_COST_DATA = [
   { id: "SVC-308", customer: "משרד הביטחון", product: "שער חשמלי ProX", laborCost: 500, partsCost: 2400, travelCost: 150, total: 3050 },
 ];
 
+
+const costData = FALLBACK_COST_DATA;
+const returnVisits = FALLBACK_RETURN_VISITS;
+const serviceCalls = FALLBACK_SERVICE_CALLS;
+const spareParts = FALLBACK_SPARE_PARTS;
+const warrantyCases = FALLBACK_WARRANTY_CASES;
+
 const totalServiceCost = costData.reduce((s, c) => s + c.total, 0);
 const openCalls = serviceCalls.filter(s => s.status === "open").length;
 const activeWarranties = warrantyCases.filter(w => w.status === "active").length;
@@ -113,6 +120,10 @@ export default function ServiceWarranty() {
   });
 
   const serviceCalls = servicewarrantyData ?? FALLBACK_SERVICE_CALLS;
+  const costData = FALLBACK_COST_DATA;
+  const returnVisits = FALLBACK_RETURN_VISITS;
+  const spareParts = FALLBACK_SPARE_PARTS;
+  const warrantyCases = FALLBACK_WARRANTY_CASES;
 
   const [activeTab, setActiveTab] = useState("calls");
 

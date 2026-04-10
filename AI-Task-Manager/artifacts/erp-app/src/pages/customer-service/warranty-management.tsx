@@ -87,6 +87,10 @@ export default function WarrantyManagement() {
   });
 
   const kpis = warrantymanagementData ?? FALLBACK_KPIS;
+  const claims = FALLBACK_CLAIMS;
+  const coverageTerms = FALLBACK_COVERAGE_TERMS;
+  const financials = FALLBACK_FINANCIALS;
+  const warranties = FALLBACK_WARRANTIES;
 
   const [search, setSearch] = useState("");
 

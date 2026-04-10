@@ -102,6 +102,8 @@ function priorityColor(p: string | null): string {
   return c[p || ""] || "text-muted-foreground";
 }
 
+
+const load: any[] = [];
 export default function BudgetTrackingPage() {
   const qc = useQueryClient();
   const [viewMode, setViewMode] = useState<ViewMode>("dashboard");

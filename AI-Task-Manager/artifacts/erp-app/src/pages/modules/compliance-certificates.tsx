@@ -110,6 +110,8 @@ const emptyForm: any = {
   priority: "רגיל", category: "סחר", tags: "", notes: "", createdBy: "",
 };
 
+
+const load: any[] = [];
 export default function ComplianceCertificatesPage() {
   const [activeTab, setActiveTab] = useState<"dashboard" | "list" | "expiry" | "matrix">("dashboard");
   const { permissions } = usePermissions();

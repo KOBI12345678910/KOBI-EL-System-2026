@@ -35,6 +35,8 @@ export default function ApiConnectionsSection() {
   });
 
   const API_KEYS = apiconnectionsData ?? FALLBACK_API_KEYS;
+  const ENDPOINTS = FALLBACK_ENDPOINTS;
+  const WEBHOOKS = FALLBACK_WEBHOOKS;
 
   const [activeTab, setActiveTab] = useState("keys");
   const [visibleKeys, setVisibleKeys] = useState<Set<number>>(new Set());

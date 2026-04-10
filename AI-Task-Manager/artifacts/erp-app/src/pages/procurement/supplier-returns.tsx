@@ -115,6 +115,11 @@ export default function SupplierReturns() {
   });
 
   const kpis = supplierreturnsData ?? FALLBACK_KPIS;
+  const approvalQueue = FALLBACK_APPROVAL_QUEUE;
+  const refunds = FALLBACK_REFUNDS;
+  const replacements = FALLBACK_REPLACEMENTS;
+  const returnRequests = FALLBACK_RETURN_REQUESTS;
+  const shippingReturns = FALLBACK_SHIPPING_RETURNS;
 
   const [tab, setTab] = useState("requests");
 

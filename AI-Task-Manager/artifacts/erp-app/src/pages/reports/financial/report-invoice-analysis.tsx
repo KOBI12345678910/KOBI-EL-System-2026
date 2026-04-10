@@ -86,6 +86,10 @@ export default function ReportInvoiceAnalysisPage() {
   });
 
   const kpis = reportinvoiceanalysisData ?? FALLBACK_KPIS;
+  const agingData = FALLBACK_AGING_DATA;
+  const invoices = FALLBACK_INVOICES;
+  const monthlyTrends = FALLBACK_MONTHLY_TRENDS;
+  const segmentData = FALLBACK_SEGMENT_DATA;
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");

@@ -126,6 +126,10 @@ export default function WorkflowEngine() {
   });
 
   const kpis = workflowengineData ?? FALLBACK_KPIS;
+  const historyLog = FALLBACK_HISTORY_LOG;
+  const matrixRules = FALLBACK_MATRIX_RULES;
+  const pendingApprovals = FALLBACK_PENDING_APPROVALS;
+  const workflowDefs = FALLBACK_WORKFLOW_DEFS;
 
   const [tab, setTab] = useState("pending");
 

@@ -15,10 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { authFetch } from "@/lib/utils";
 import {
-  TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, XCircle,
-  Target, BarChart3, Shield, Gauge, DollarSign, Activity, Percent,
-  ArrowUpRight, ArrowDownRight, RefreshCw, Download, Plus, Info,
-  Calculator, Eye, History, Layers, Search, Filter, ChevronRight
+  Activity, AlertTriangle, ArrowDownRight, ArrowUpRight, BarChart3, Calculator, CheckCircle, ChevronDown, ChevronRight, DollarSign, Download, Eye, Filter, Gauge, History, Info, Layers, Minus, Percent, Plus, RefreshCw, Search, Shield, Target, TrendingDown, TrendingUp, XCircle
 } from "lucide-react";
 
 // ============================================================
@@ -224,6 +221,8 @@ function StatusDot({ status }: { status: "good" | "warning" | "critical" }) {
 // ============================================================
 // MAIN COMPONENT
 // ============================================================
+
+const Hash: any[] = [];
 export default function RatioDashboard() {
   const queryClient = useQueryClient();
   const [selectedCategory, setSelectedCategory] = useState<RatioCategory>("profitability");

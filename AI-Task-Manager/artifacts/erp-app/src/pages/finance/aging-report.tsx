@@ -74,27 +74,6 @@ const riskConfig: Record<string, { label: string; color: string }> = {
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const method = editId ? "PUT" : "POST";
-      const url = editId ? `/api/aging-snapshots/${editId}` : "/api/aging-snapshots";
-      const res = await authFetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
-      if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || "שגיאה בשמירה"); }
-      setShowCreate(false); setEditId(null); setForm({});
-      await load();
-    } catch (e: any) { setError(e.message); }
-    setSaving(false);
-  };
-
-  const handleDelete = async (id: any) => {
-    try {
-      await authFetch(`/api/aging-snapshots/${id}`, { method: "DELETE" });
-      setDeleteConfirm(null);
-      await load();
-    } catch (e: any) { setError(e.message); }
-  };
-
   return (
     <div className="bg-card border border-border rounded-lg p-3 shadow-xl text-right" dir="rtl">
       <p className="text-sm font-medium text-foreground mb-2">{label}</p>
@@ -107,7 +86,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     </div>
   );
 };
-
+const setShowCreate: any[] = [];
 export default function AgingReportPage() {
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;
@@ -134,12 +113,12 @@ export default function AgingReportPage() {
       const res = await authFetch(`${API}/aging-report`);
       if (res.ok) {
         const data = safeArray(await res.json());
-        setItems(data.length > 0 ? data : MOCK_DATA);
+        setItems(data.length > 0 ? data : []);
       } else {
-        setItems(MOCK_DATA);
+        setItems([]);
       }
     } catch {
-      setItems(MOCK_DATA);
+      setItems([]);
     }
     setLoading(false);
   };

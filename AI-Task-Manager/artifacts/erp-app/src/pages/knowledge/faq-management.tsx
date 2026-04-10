@@ -66,6 +66,11 @@ const FALLBACK_KPIS = [
   { label: "שביעות רצון", value: `${satisfactionPct}%`, icon: ThumbsUp, color: "text-orange-400", bg: "bg-orange-500/10" },
 ];
 
+
+const faqCategories = FALLBACK_FAQ_CATEGORIES;
+const faqs = FALLBACK_FAQS;
+const unanswered = FALLBACK_UNANSWERED;
+
 export default function FaqManagement() {
   const { data: faqmanagementData } = useQuery({
     queryKey: ["faq-management"],
@@ -74,6 +79,10 @@ export default function FaqManagement() {
   });
 
   const faqs = faqmanagementData ?? FALLBACK_FAQS;
+  const faqCategories = FALLBACK_FAQ_CATEGORIES;
+  const unanswered = FALLBACK_UNANSWERED;
+  const analyticsData = FALLBACK_ANALYTICS_DATA;
+  const kpis = FALLBACK_KPIS;
 
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("all");

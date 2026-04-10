@@ -163,6 +163,9 @@ const FALLBACK_PORTFOLIO_EFFECT = [
   { metric: "E[Profit]", before: 210, after: 395, unit: "K₪" },
 ];
 
+
+const RECOMMENDATIONS = FALLBACK_RECOMMENDATIONS;
+
 export default function BlackRockAI() {
   const { data: blackrockaiData } = useQuery({
     queryKey: ["blackrock-ai"],
@@ -171,6 +174,7 @@ export default function BlackRockAI() {
   });
 
   const RECOMMENDATIONS = blackrockaiData ?? FALLBACK_RECOMMENDATIONS;
+  const PORTFOLIO_EFFECT = FALLBACK_PORTFOLIO_EFFECT;
 
   const [, navigate] = useLocation();
   const [tab, setTab] = useState("recommendations");
@@ -380,8 +384,12 @@ export default function BlackRockAI() {
                   </tr>
                 </thead>
                 <tbody>
-                  {RECOMMENDATIONS.map((r) => {
-                    const pc = PRIORITY_COLORS[r.priority];
+                  {RECOMMENDATIONS.map((r: any) => {
+                    const pc = r.priority === "critical"
+                      ? { bg: "bg-red-500/20", text: "text-red-400", label: "קריטי" }
+                      : r.priority === "high"
+                      ? { bg: "bg-orange-500/20", text: "text-orange-400", label: "גבוה" }
+                      : { bg: "bg-blue-500/20", text: "text-blue-400", label: "רגיל" };
                     return (
                       <tr key={r.id} className="border-b border-slate-800/40 hover:bg-slate-800/20">
                         <td className="p-2 text-muted-foreground">{r.id}</td>

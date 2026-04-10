@@ -113,6 +113,9 @@ export default function ProductDesignPage() {
   });
 
   const designs = productdesignData ?? FALLBACK_DESIGNS;
+  const collaboration = FALLBACK_COLLABORATION;
+  const libraryItems = FALLBACK_LIBRARY_ITEMS;
+  const standards = FALLBACK_STANDARDS;
 
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState("all");

@@ -36,6 +36,8 @@ function DetailField({ label, value, children }: { label: string; value?: string
 
 const emptyForm: any = { name: "", url: "", event: "lead.created", status: "active", secret: "" };
 
+
+const MOCK_WEBHOOKS: any[] = [];
 export default function WebhooksPage() {
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;

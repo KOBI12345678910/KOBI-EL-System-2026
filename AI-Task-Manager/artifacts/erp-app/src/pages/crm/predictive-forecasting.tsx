@@ -10,10 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Slider } from "@/components/ui/slider";
 import {
-  TrendingUp, TrendingDown, Target, BarChart3, Activity,
-  DollarSign, AlertTriangle, CheckCircle, Clock, Zap,
-  ArrowUpRight, ArrowDownRight, Brain, Shield, Sigma,
-  Gauge, Eye, RefreshCw, Layers, Calendar
+  Activity, AlertTriangle, ArrowDownRight, ArrowUpRight, BarChart3, Brain, Calendar, CheckCircle, Clock, DollarSign, Eye, Gauge, Layers, RefreshCw, Shield, Sigma, Target, TrendingDown, TrendingUp, XCircle, Zap
 } from "lucide-react";
 import { authFetch } from "@/lib/utils";
 

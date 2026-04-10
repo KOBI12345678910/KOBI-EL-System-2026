@@ -61,6 +61,8 @@ export default function MarketingBudget() {
   });
 
   const budgetByChannel = marketingbudgetData ?? FALLBACK_BUDGET_BY_CHANNEL;
+  const monthlySpend = FALLBACK_MONTHLY_SPEND;
+  const roiByChannel = FALLBACK_ROI_BY_CHANNEL;
 
   const [tab, setTab] = useState("allocation");
 

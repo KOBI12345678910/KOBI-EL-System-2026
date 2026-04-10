@@ -42,12 +42,13 @@ interface TrackingData {
   events?: any[];
 }
 
+const STATUS_TIMELINE = FALLBACK_STATUS_TIMELINE;
 function getStatusIndex(status: string): number {
   return STATUS_TIMELINE.findIndex(s => s.key === status);
 }
 
 export default function CustomerTrackingPortal() {
-  const { data: STATUS_TIMELINE = FALLBACK_STATUS_TIMELINE } = useQuery({
+  const { data: STATUS_TIMELINE_API = FALLBACK_STATUS_TIMELINE } = useQuery<any>({
     queryKey: ["logistics-status-timeline"],
     queryFn: async () => {
       const res = await authFetch("/api/logistics/customer-tracking-portal/status-timeline");

@@ -105,6 +105,9 @@ const emptyForm = {
   notes: "",
 };
 
+
+const load: any[] = [];
+const r: any[] = [];
 export default function SupplierCommunicationsPage() {
   const { token, user } = useAuth();
   const { toast } = useToast();

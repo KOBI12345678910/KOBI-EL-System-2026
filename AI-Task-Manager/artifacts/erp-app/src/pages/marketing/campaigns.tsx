@@ -67,13 +67,14 @@ const statusColor = (status: string) => {
 };
 
 export default function Campaigns() {
-  const { data: campaignsData } = useQuery({
+  const { data: apiData } = useQuery<any>({
     queryKey: ["campaigns"],
     queryFn: () => authFetch("/api/marketing/campaigns"),
     staleTime: 5 * 60 * 1000,
   });
 
-  const campaignsData = campaignsData ?? FALLBACK_CAMPAIGNS_DATA;
+  const campaignsData: any[] = apiData ?? FALLBACK_CAMPAIGNS_DATA;
+  const upcomingCampaigns = FALLBACK_UPCOMING_CAMPAIGNS;
 
   const [search, setSearch] = useState("");
 

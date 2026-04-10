@@ -55,6 +55,7 @@ export default function SupplierDependency() {
   });
 
   const suppliers = supplierdependencyData ?? FALLBACK_SUPPLIERS;
+  const alerts = FALLBACK_ALERTS;
 
   const [search, setSearch] = useState("");
   const [riskFilter, setRiskFilter] = useState("all");

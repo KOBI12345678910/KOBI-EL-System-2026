@@ -44,6 +44,9 @@ const FALLBACK_PRODUCTS = [
   { id: 12, name: "מעקה פלדה-זכוכית משולב", phase: "prototype", quarter: "Q2", progress: 60, team: "צוות מעקות", priority: "בינוני" },
 ];
 
+
+const phases = FALLBACK_PHASES;
+
 const quarters = ["Q1", "Q2", "Q3", "Q4"];
 
 const phaseColor = (phase: string) => {
@@ -68,6 +71,7 @@ export default function ProductRoadmap() {
   });
 
   const phases = productroadmapData ?? FALLBACK_PHASES;
+  const products = FALLBACK_PRODUCTS;
 
   const [tab, setTab] = useState("timeline");
 
@@ -203,8 +207,8 @@ export default function ProductRoadmap() {
         </TabsContent>
 
         <TabsContent value="products" className="space-y-3">
-          {products.sort((a, b) => b.progress - a.progress).map((p) => {
-            const phaseInfo = phases.find((ph) => ph.key === p.phase);
+          {products.sort((a: any, b: any) => b.progress - a.progress).map((p: any) => {
+            const phaseInfo = phases.find((ph: any) => ph.key === p.phase);
             return (
               <Card key={p.id}>
                 <CardContent className="p-4">

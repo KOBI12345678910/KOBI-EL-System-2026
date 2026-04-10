@@ -202,6 +202,9 @@ export default function WorkflowMonitor() {
   });
 
   const activeWorkflows = workflowmonitorData ?? FALLBACK_ACTIVE_WORKFLOWS;
+  const automationData = FALLBACK_AUTOMATION_DATA;
+  const bottlenecks = FALLBACK_BOTTLENECKS;
+  const slaTracking = FALLBACK_SLA_TRACKING;
 
   const [search, setSearch] = useState("");
 

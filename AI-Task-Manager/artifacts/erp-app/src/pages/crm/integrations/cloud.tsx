@@ -35,6 +35,8 @@ function DetailField({ label, value, children }: { label: string; value?: string
 
 const emptyForm: any = { provider: "AWS S3", status: "pending", region: "", description: "" };
 
+
+const MOCK_PROVIDERS: any[] = [];
 export default function CloudIntegrationsPage() {
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;

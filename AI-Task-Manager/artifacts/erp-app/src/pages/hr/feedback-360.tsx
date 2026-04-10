@@ -76,6 +76,9 @@ export default function Feedback360Page() {
   });
 
   const feedbackCycles = feedback360Data ?? FALLBACK_FEEDBACK_CYCLES;
+  const anonymousComments = FALLBACK_ANONYMOUS_COMMENTS;
+  const employees = FALLBACK_EMPLOYEES;
+  const historyData = FALLBACK_HISTORY_DATA;
 
   const [activeTab, setActiveTab] = useState("cycles");
   const [expandedEmployee, setExpandedEmployee] = useState<number | null>(null);

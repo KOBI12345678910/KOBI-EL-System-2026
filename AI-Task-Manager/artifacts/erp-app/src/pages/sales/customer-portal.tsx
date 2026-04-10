@@ -51,6 +51,8 @@ function StatusBadge({ status, map }: { status: string; map: Record<string, { la
   return <span className={`px-2 py-0.5 rounded text-xs font-medium ${s.color}`}>{s.label}</span>;
 }
 
+
+const getProductionProgress: any[] = [];
 export default function CustomerPortal() {
   const [activeTab, setActiveTab] = useState("quotes");
   const [quotes, setQuotes] = useState<any[]>([]);

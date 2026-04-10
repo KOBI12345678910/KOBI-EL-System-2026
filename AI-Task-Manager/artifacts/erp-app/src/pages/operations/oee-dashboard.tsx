@@ -68,6 +68,9 @@ export default function OeeDashboard() {
   });
 
   const productionLines = oeedashboardData ?? FALLBACK_PRODUCTION_LINES;
+  const machineUptime = FALLBACK_MACHINE_UPTIME;
+  const performanceData = FALLBACK_PERFORMANCE_DATA;
+  const qualityData = FALLBACK_QUALITY_DATA;
 
   const [search, setSearch] = useState("");
 

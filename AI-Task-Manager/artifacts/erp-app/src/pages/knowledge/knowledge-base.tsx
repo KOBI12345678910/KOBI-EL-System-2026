@@ -67,6 +67,8 @@ export default function KnowledgeBase() {
   });
 
   const articles = knowledgebaseData ?? FALLBACK_ARTICLES;
+  const kpis = FALLBACK_KPIS;
+  const popularArticles = FALLBACK_POPULAR_ARTICLES;
 
   const [search, setSearch] = useState("");
   const [searchQuery, setSearchQuery] = useState("");

@@ -224,6 +224,8 @@ function SingleChatPane({ tabId, channel: initialChannel, conversationId: initia
   conversationId: number | null;
   onTabUpdate: (tabId: string, label: string, channel: string, convId: number | null, isSending?: boolean) => void;
 }) {
+  const { permissions } = usePermissions();
+  const isSuperAdmin = permissions?.isSuperAdmin === true;
   const qc = useQueryClient();
   const [activeChannel, setActiveChannel] = useState(initialChannel);
   const [activeConvId, setActiveConvId] = useState<number | null>(initialConvId);

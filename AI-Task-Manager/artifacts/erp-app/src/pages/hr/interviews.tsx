@@ -14,6 +14,8 @@ import ImportButton from "@/components/import-button";
   const SC: Record<string, string> = { "מתוכנן": "bg-blue-500/20 text-blue-300", "בביצוע": "bg-yellow-500/20 text-yellow-300", "הושלם": "bg-green-500/20 text-green-300", "בוטל": "bg-red-500/20 text-red-300" };
   const TYPES = ["ראיון טלפוני","ראיון אישי","ראיון צוותי","מבחן מעשי","ראיון סופי"];
   const EMP = ["יוסי כהן","שרה לוי","דוד מזרחי","רחל אברהם","אלון גולדשטיין","מיכל ברק","עומר חדד","נועה פרידמן","איתן רוזנברג","תמר שלום"];
+
+const load: any[] = [];
 export default function Interviews() {
     const [data, setData] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);

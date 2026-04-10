@@ -74,6 +74,9 @@ export default function AssetsDashboard() {
   });
 
   const assets = assetsdashboardData ?? FALLBACK_ASSETS;
+  const depreciationSchedule = FALLBACK_DEPRECIATION_SCHEDULE;
+  const maintenanceHistory = FALLBACK_MAINTENANCE_HISTORY;
+  const utilizationData = FALLBACK_UTILIZATION_DATA;
 
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("registry");

@@ -131,6 +131,7 @@ export default function OnboardingCenterSection() {
   });
 
   const INITIAL_CHECKLIST = onboardingcenterData ?? FALLBACK_INITIAL_CHECKLIST;
+  const INITIAL_TRACKS = FALLBACK_INITIAL_TRACKS;
 
   const [tracks, setTracks] = useState<TrainingTrack[]>(INITIAL_TRACKS);
   const [checklist, setChecklist] = useState<OnboardingStep[]>(INITIAL_CHECKLIST);

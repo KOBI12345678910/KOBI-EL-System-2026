@@ -156,6 +156,16 @@ export default function HRAnalyticsPage() {
   });
 
   const kpiData = hranalyticsData ?? FALLBACK_KPI_DATA;
+  const absenceByDay = FALLBACK_ABSENCE_BY_DAY;
+  const absenceByDept = FALLBACK_ABSENCE_BY_DEPT;
+  const absenceByMonth = FALLBACK_ABSENCE_BY_MONTH;
+  const costByDept = FALLBACK_COST_BY_DEPT;
+  const headcountTrend = FALLBACK_HEADCOUNT_TREND;
+  const trainingByDept = FALLBACK_TRAINING_BY_DEPT;
+  const trainingByTopic = FALLBACK_TRAINING_BY_TOPIC;
+  const turnoverByDept = FALLBACK_TURNOVER_BY_DEPT;
+  const turnoverByReason = FALLBACK_TURNOVER_BY_REASON;
+  const turnoverByTenure = FALLBACK_TURNOVER_BY_TENURE;
 
   const [activeTab, setActiveTab] = useState("headcount");
 

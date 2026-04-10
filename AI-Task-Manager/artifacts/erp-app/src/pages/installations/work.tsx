@@ -14,6 +14,8 @@ import ImportButton from "@/components/import-button";
   const SC: Record<string, string> = { "מתוכנן": "bg-muted text-muted-foreground", "בביצוע": "bg-blue-500/20 text-blue-600 dark:text-blue-300", "הושלם": "bg-green-500/20 text-green-600 dark:text-green-300", "מבוטל": "bg-red-500/20 text-red-600 dark:text-red-300", "בהמתנה": "bg-yellow-500/20 text-yellow-600 dark:text-yellow-300" };
   const WORK_TYPES = ["התקנת מתכת","התקנת אלומיניום","התקנת זכוכית","שיפוץ","תחזוקה","פירוק","בנייה"];
   const EMP = ["יוסי כהן","שרה לוי","דוד מזרחי","רחל אברהם","אלון גולדשטיין","מיכל ברק","עומר חדד","נועה פרידמן","איתן רוזנברג","תמר שלום"];
+
+const load: any[] = [];
 export default function InstallationsWork() {
     const [data, setData] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);

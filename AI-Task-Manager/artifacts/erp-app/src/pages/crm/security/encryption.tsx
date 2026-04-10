@@ -42,6 +42,8 @@ const SENSITIVITY_MAP: Record<string, { label: string; color: string }> = {
   low: { label: "נמוך", color: "bg-green-500/20 text-green-400" },
 };
 
+
+const MOCK_FIELDS: any[] = [];
 export default function EncryptionPage() {
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;

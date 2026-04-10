@@ -57,6 +57,7 @@ export default function ReportCustomerAgingPage() {
   });
 
   const kpis = reportcustomeragingData ?? FALLBACK_KPIS;
+  const customers = FALLBACK_CUSTOMERS;
 
   const [search, setSearch] = useState("");
   const [riskFilter, setRiskFilter] = useState("all");

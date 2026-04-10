@@ -139,6 +139,8 @@ const emptyForm: Partial<ForeignSupplier> = {
   rating: "B", notes: "", status: "פעיל",
 };
 
+
+const load: any[] = [];
 export default function ForeignSuppliersPage() {
   const [activeTab, setActiveTab] = useState<"dashboard" | "list" | "compliance" | "history">("dashboard");
   const { permissions } = usePermissions();

@@ -70,6 +70,8 @@ export default function EmailMarketing() {
   });
 
   const emailCampaigns = emailmarketingData ?? FALLBACK_EMAIL_CAMPAIGNS;
+  const subscriberLists = FALLBACK_SUBSCRIBER_LISTS;
+  const templates = FALLBACK_TEMPLATES;
 
   const [search, setSearch] = useState("");
 

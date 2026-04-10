@@ -43,6 +43,8 @@ const SEVERITY_MAP: Record<string, { label: string; color: string }> = {
 
 
 
+
+const MOCK_LOGS: any[] = [];
 export default function AuditPage() {
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;

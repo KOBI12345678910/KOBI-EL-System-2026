@@ -113,6 +113,10 @@ export default function ExecutiveCommandCenter() {
   });
 
   const divisionPerformance = executivecommandcenterData ?? FALLBACK_DIVISION_PERFORMANCE;
+  const criticalAlerts = FALLBACK_CRITICAL_ALERTS;
+  const monthlyTrend = FALLBACK_MONTHLY_TREND;
+  const strategicInitiatives = FALLBACK_STRATEGIC_INITIATIVES;
+  const topDeals = FALLBACK_TOP_DEALS;
 
   return (
     <div className="p-6 space-y-6" dir="rtl">

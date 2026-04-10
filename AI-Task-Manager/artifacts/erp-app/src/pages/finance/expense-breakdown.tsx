@@ -12,7 +12,8 @@ import { authFetch } from "@/lib/utils";
     const SC: Record<string, string> = { "בתקציב": "bg-green-500/20 text-green-300", "חריגה קלה": "bg-yellow-500/20 text-yellow-300", "חריגה": "bg-orange-500/20 text-orange-300", "חריגה חמורה": "bg-red-500/20 text-red-300" };
     const CATS = ["שכר","חומרים","אנרגיה","תחזוקה","שיווק","נסיעות","ביטוח","אחר"];
     const EMP = ["יוסי כהן","שרה לוי","דוד מזרחי","רחל אברהם","אלון גולדשטיין","מיכל ברק","עומר חדד","נועה פרידמן","איתן רוזנברג","תמר שלום"];
-MOCK.forEach(r => { r.variance = r.amount - r.budget; });
+const MOCK: any[] = [];
+MOCK.forEach((r: any) => { r.variance = r.amount - r.budget; });
 
     export default function ExpenseBreakdown() {
       const [data, setData] = useState<any[]>([]);

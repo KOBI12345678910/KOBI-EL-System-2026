@@ -124,6 +124,11 @@ export default function QualityManagementSystem() {
   });
 
   const inspections = qualitymanagementsystemData ?? FALLBACK_INSPECTIONS;
+  const capas = FALLBACK_CAPAS;
+  const defectCosts = FALLBACK_DEFECT_COSTS;
+  const installers = FALLBACK_INSTALLERS;
+  const ncrs = FALLBACK_NCRS;
+  const suppliers = FALLBACK_SUPPLIERS;
 
   const [tab, setTab] = useState("inspections");
 

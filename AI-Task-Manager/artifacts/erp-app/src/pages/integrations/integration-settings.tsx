@@ -173,6 +173,14 @@ const FALLBACK_HEALTH_METRICS = [
   { label: "MCP Availability", value: 100 },
 ];
 
+
+const apiGatewaySettings = FALLBACK_API_GATEWAY_SETTINGS;
+const eventSettings = FALLBACK_EVENT_SETTINGS;
+const generalSettings = FALLBACK_GENERAL_SETTINGS;
+const mcpSettings = FALLBACK_MCP_SETTINGS;
+const securitySettings = FALLBACK_SECURITY_SETTINGS;
+const webhookSettings = FALLBACK_WEBHOOK_SETTINGS;
+
 export default function IntegrationSettings() {
 
   const { data: apiData } = useQuery({
@@ -181,12 +189,12 @@ export default function IntegrationSettings() {
     staleTime: 60_000,
     retry: 1,
   });
-  const generalSettings = apiData?.generalSettings ?? FALLBACK_GENERAL_SETTINGS;
-  const apiGatewaySettings = apiData?.apiGatewaySettings ?? FALLBACK_API_GATEWAY_SETTINGS;
-  const webhookSettings = apiData?.webhookSettings ?? FALLBACK_WEBHOOK_SETTINGS;
-  const eventSettings = apiData?.eventSettings ?? FALLBACK_EVENT_SETTINGS;
-  const mcpSettings = apiData?.mcpSettings ?? FALLBACK_MCP_SETTINGS;
-  const securitySettings = apiData?.securitySettings ?? FALLBACK_SECURITY_SETTINGS;
+  const apiGatewaySettings = FALLBACK_API_GATEWAY_SETTINGS;
+  const eventSettings = FALLBACK_EVENT_SETTINGS;
+  const generalSettings = FALLBACK_GENERAL_SETTINGS;
+  const mcpSettings = FALLBACK_MCP_SETTINGS;
+  const securitySettings = FALLBACK_SECURITY_SETTINGS;
+  const webhookSettings = FALLBACK_WEBHOOK_SETTINGS;
   const tabConfig = apiData?.tabConfig ?? FALLBACK_TAB_CONFIG;
   const healthMetrics = apiData?.healthMetrics ?? FALLBACK_HEALTH_METRICS;
   const [activeTab, setActiveTab] = useState("general");

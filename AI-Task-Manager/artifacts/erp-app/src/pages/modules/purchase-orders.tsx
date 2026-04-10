@@ -102,6 +102,8 @@ function getCurrencySymbol(currency: string | null) {
   }
 }
 
+
+const load: any[] = [];
 export default function PurchaseOrdersPage() {
   const { permissions } = usePermissions();
   const isSuperAdmin = permissions?.isSuperAdmin === true;

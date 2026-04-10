@@ -103,6 +103,11 @@ export default function DisciplinaryIncidentsPage() {
   });
 
   const kpis = disciplinaryincidentsData ?? FALLBACK_KPIS;
+  const cases = FALLBACK_CASES;
+  const deptStats = FALLBACK_DEPT_STATS;
+  const procedures = FALLBACK_PROCEDURES;
+  const safetyIncidents = FALLBACK_SAFETY_INCIDENTS;
+  const typeStats = FALLBACK_TYPE_STATS;
 
   const [activeTab, setActiveTab] = useState("cases");
 

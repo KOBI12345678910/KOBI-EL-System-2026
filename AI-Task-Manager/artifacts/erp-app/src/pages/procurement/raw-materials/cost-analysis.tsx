@@ -82,6 +82,10 @@ export default function CostAnalysis() {
   });
 
   const kpis = costanalysisData ?? FALLBACK_KPIS;
+  const categoryData = FALLBACK_CATEGORY_DATA;
+  const priceComparison = FALLBACK_PRICE_COMPARISON;
+  const trendData = FALLBACK_TREND_DATA;
+  const wasteData = FALLBACK_WASTE_DATA;
 
   const [tab, setTab] = useState("categories");
 

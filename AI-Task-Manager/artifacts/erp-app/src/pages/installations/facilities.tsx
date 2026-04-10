@@ -14,6 +14,8 @@ import ImportButton from "@/components/import-button";
   const SC: Record<string, string> = { "פעיל": "bg-green-500/20 text-green-600 dark:text-green-300", "בתחזוקה": "bg-yellow-500/20 text-yellow-600 dark:text-yellow-300", "לא פעיל": "bg-red-500/20 text-red-600 dark:text-red-300", "בבנייה": "bg-blue-500/20 text-blue-600 dark:text-blue-300" };
   const FAC_TYPES = ["מפעל","מחסן","משרד","אולם ייצור","מעבדה","חניון","מבנה טכני","גינה"];
   const EMP = ["יוסי כהן","שרה לוי","דוד מזרחי","רחל אברהם","אלון גולדשטיין","מיכל ברק","עומר חדד","נועה פרידמן","איתן רוזנברג","תמר שלום"];
+
+const load: any[] = [];
 export default function Facilities() {
     const [data, setData] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);

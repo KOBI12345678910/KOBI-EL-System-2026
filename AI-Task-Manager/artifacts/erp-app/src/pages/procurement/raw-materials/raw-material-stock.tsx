@@ -94,6 +94,9 @@ export default function RawMaterialStock() {
   });
 
   const stockData = rawmaterialstockData ?? FALLBACK_STOCK_DATA;
+  const historyData = FALLBACK_HISTORY_DATA;
+  const movements = FALLBACK_MOVEMENTS;
+  const openPOs = FALLBACK_OPEN_POS;
 
   const [tab, setTab] = useState("stock");
 

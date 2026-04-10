@@ -80,6 +80,9 @@ export default function ProductLaunchesPage() {
   });
 
   const launches = productlaunchesData ?? FALLBACK_LAUNCHES;
+  const feedbackData = FALLBACK_FEEDBACK_DATA;
+  const kpis = FALLBACK_KPIS;
+  const postLaunchData = FALLBACK_POST_LAUNCH_DATA;
 
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState("all");

@@ -170,6 +170,8 @@ function AlertCard({ alert }: { alert: Alert }) {
   );
 }
 
+const alerts = FALLBACK_ALERTS;
+
 export default function NotificationsCenter() {
   const { data: notificationscenterData } = useQuery({
     queryKey: ["notifications-center"],
@@ -178,6 +180,7 @@ export default function NotificationsCenter() {
   });
 
   const alerts = notificationscenterData ?? FALLBACK_ALERTS;
+  const alertRules = FALLBACK_ALERT_RULES;
 
   const [tab, setTab] = useState("all");
 
@@ -329,12 +332,12 @@ export default function NotificationsCenter() {
                   <tbody>
                     {alertRules.map(rule => {
                       const cfg = moduleConfig[rule.module];
-                      const Icon = cfg?.icon ?? Bell;
+                      const Icon = cfg?.icon;
                       return (
                         <tr key={rule.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                           <td className="py-2.5 px-2">
                             <span className={`flex items-center gap-1.5 ${cfg?.color ?? "text-white/60"}`}>
-                              <Icon className="h-3.5 w-3.5" />{cfg?.label ?? rule.module}
+                              {Icon && <Icon className="h-3.5 w-3.5" />}{cfg?.label ?? rule.module}
                             </span>
                           </td>
                           <td className="py-2.5 px-2 text-white/70">{rule.trigger}</td>
