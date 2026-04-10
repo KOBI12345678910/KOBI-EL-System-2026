@@ -158,7 +158,7 @@ function Router() {
           {InventoryRoutes}
           {PlatformRoutes}
           {AIRoutes}
-          <FinRoutes />
+          {FinRoutes}
           {OtherRoutes}
 
           <Route path="/403" component={ForbiddenPage} />

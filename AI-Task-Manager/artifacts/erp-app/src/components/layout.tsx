@@ -511,8 +511,8 @@ export const NAV_ITEMS: NavItem[] = [
     { href: "/system/permissions-matrix", label: "מטריצת הרשאות", icon: Grid3X3, section: "מנהלת מערכת", subSection: "הרשאות Enterprise" },
     { href: "/system/user-role-assignment", label: "הקצאת תפקידים", icon: UserPlus, section: "מנהלת מערכת", subSection: "הרשאות Enterprise" },
     { href: "/system/user-permission-override", label: "דריסת הרשאות", icon: ShieldAlert, section: "מנהלת מערכת", subSection: "הרשאות Enterprise" },
-    { href: "/system/data-scopes", label: "טווחי נתונים", icon: Filter, section: "מנהלת מערכת", subSection: "הרשאות Enterprise" },
-    { href: "/system/approval-policies", label: "מדיניות אישורים", icon: CheckCircle, section: "מנהלת מערכת", subSection: "הרשאות Enterprise" },
+    { href: "/system/data-scopes", label: "טווחי נתונים", icon: Funnel, section: "מנהלת מערכת", subSection: "הרשאות Enterprise" },
+    { href: "/system/approval-policies", label: "מדיניות אישורים", icon: CheckCircle2, section: "מנהלת מערכת", subSection: "הרשאות Enterprise" },
     { href: "/system/access-audit", label: "לוג ביקורת גישה", icon: SearchCode, section: "מנהלת מערכת", subSection: "הרשאות Enterprise" },
 
     // ─── מנהלת מערכת ───

@@ -182,13 +182,17 @@ function timeAgo(dateStr: string): string {
 
 // ─── Component ──────────────────────────────────────────────────
 export default function UsersListPage() {
-  const { data: userslistData } = useQuery({
+  const { data: userslistData } = useQuery<any>({
     queryKey: ["users-list"],
-    queryFn: () => authFetch("/api/system/users_list"),
+    queryFn: async () => {
+      const r = await authFetch("/api/system/users_list");
+      if (!r.ok) return null;
+      try { return await r.json(); } catch { return null; }
+    },
     staleTime: 5 * 60 * 1000,
   });
 
-  const DEPARTMENTS = userslistData ?? FALLBACK_DEPARTMENTS;
+  const DEPARTMENTS = Array.isArray(userslistData?.departments) ? userslistData.departments : FALLBACK_DEPARTMENTS;
   const ALL_ROLES = FALLBACK_ALL_ROLES;
   const MOCK_USERS = FALLBACK_MOCK_USERS;
 

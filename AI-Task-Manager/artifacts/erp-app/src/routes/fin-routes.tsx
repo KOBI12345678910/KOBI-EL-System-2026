@@ -13,8 +13,7 @@ const FinCreditClearing = lazyPage(() => import("@/pages/fin/fin-credit-clearing
 const FinRecurring = lazyPage(() => import("@/pages/fin/fin-recurring"));
 const FinAccounting = lazyPage(() => import("@/pages/fin/fin-accounting"));
 
-export function FinRoutes() {
-  return (
+export const FinRoutes = (
     <>
       {/* Dashboard */}
       <Route path="/fin" component={FinDashboard} />
@@ -45,5 +44,4 @@ export function FinRoutes() {
       <Route path="/fin/recurring" component={FinRecurring} />
       <Route path="/fin/recurring/create" component={FinRecurring} />
     </>
-  );
-}
+);
