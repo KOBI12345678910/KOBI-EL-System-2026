@@ -1,0 +1,6 @@
+node_modules/
+nexus-data/*.log
+nexus-data/*.json
+!nexus-data/.gitkeep
+.env
+*.tmp
