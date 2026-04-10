@@ -1,42 +1,66 @@
 import json
-from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db import get_db
+from app.repositories.event_repo import EventRepository
 from app.repositories.ontology_repo import OntologyRepository
-from app.schemas.ontology import OntologyObjectOut
+from app.repositories.state_repo import StateRepository
+from app.services.ai_context_service import AIContextService
 
-router = APIRouter(prefix="/entities", tags=["entities"])
-
-
-def _to_out(obj) -> OntologyObjectOut:
-    return OntologyObjectOut(
-        id=obj.id,
-        tenant_id=obj.tenant_id,
-        object_type=obj.object_type,
-        name=obj.name,
-        status=obj.status,
-        canonical_external_key=obj.canonical_external_key,
-        properties=json.loads(obj.properties_json or "{}"),
-        relationships=json.loads(obj.relationships_json or "{}"),
-        created_at=obj.created_at,
-        updated_at=obj.updated_at,
-    )
+router = APIRouter(prefix="/ontology", tags=["ontology"])
 
 
-@router.get("/{entity_id}", response_model=OntologyObjectOut)
-def get_entity(entity_id: str, db: Session = Depends(get_db)) -> OntologyObjectOut:
+@router.get("/object/{object_id}")
+def get_object(object_id: str, db: Session = Depends(get_db)):
     repo = OntologyRepository(db)
-    obj = repo.get_by_id(entity_id)
+    state_repo = StateRepository(db)
+
+    obj = repo.get_by_id(object_id)
     if obj is None:
-        raise HTTPException(status_code=404, detail="entity_not_found")
-    return _to_out(obj)
+        raise HTTPException(status_code=404, detail="Object not found")
+
+    state = state_repo.get(object_id)
+
+    return {
+        "object": {
+            "id": obj.id,
+            "tenant_id": obj.tenant_id,
+            "type": obj.object_type,
+            "name": obj.name,
+            "status": obj.status,
+            "properties": json.loads(obj.properties_json or "{}"),
+            "relationships": json.loads(obj.relationships_json or "{}"),
+        },
+        "state": None if state is None else {
+            "status": state.current_status,
+            "risk_score": state.risk_score,
+            "blockers": json.loads(state.blockers_json or "[]"),
+            "alerts": json.loads(state.alerts_json or "[]"),
+        },
+    }
 
 
-@router.get("", response_model=List[OntologyObjectOut])
-def list_entities(tenant_id: str, db: Session = Depends(get_db)) -> List[OntologyObjectOut]:
-    repo = OntologyRepository(db)
-    objs = repo.list_by_tenant(tenant_id)
-    return [_to_out(o) for o in objs]
+@router.get("/object/{object_id}/timeline")
+def get_object_timeline(object_id: str, db: Session = Depends(get_db)):
+    repo = EventRepository(db)
+    return {
+        "entity_id": object_id,
+        "events": [
+            {
+                "id": e.id,
+                "type": e.event_type,
+                "severity": e.severity,
+                "payload": json.loads(e.payload_json or "{}"),
+                "created_at": e.created_at,
+            }
+            for e in repo.list_recent_for_entity(object_id, limit=200)
+        ],
+    }
+
+
+@router.get("/object/{object_id}/ai-context")
+def get_ai_context(object_id: str, db: Session = Depends(get_db)):
+    service = AIContextService(db)
+    return service.build_entity_context(object_id)
