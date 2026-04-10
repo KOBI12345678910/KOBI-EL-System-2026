@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from app.api.engines import router as engines_router
 from app.api.ingest import router as ingest_router
 from app.api.live import router as live_router
 from app.api.ontology import router as ontology_router
@@ -19,6 +20,7 @@ def create_app() -> FastAPI:
     app.include_router(ingest_router)
     app.include_router(ontology_router)
     app.include_router(live_router)
+    app.include_router(engines_router)
     app.include_router(ws_router)
 
     @app.get("/")
