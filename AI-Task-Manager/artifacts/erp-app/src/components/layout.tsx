@@ -486,6 +486,14 @@ export const NAV_ITEMS: NavItem[] = [
     { href: "/ai-builder", label: "בונה AI", icon: Brain, section: "מנהלת מערכת", subSection: "כלים" },
     { href: "/audit-log", label: "יומן ביקורת", icon: SearchCode, section: "מנהלת מערכת", subSection: "כלים" },
 
+    // ─── Command Center — Real-Time Operational Intelligence ───
+    { href: "/command-center", label: "מרכז שליטה חי", icon: Gauge, section: "פלטפורמה", subSection: "Command Center" },
+    { href: "/command-center/events", label: "זרם אירועים חי", icon: Activity, section: "פלטפורמה", subSection: "Command Center" },
+    { href: "/command-center/causal", label: "ניתוח השפעות סיבתיות", icon: Network, section: "פלטפורמה", subSection: "Command Center" },
+    { href: "/command-center/decisions", label: "תור החלטות AI", icon: Target, section: "פלטפורמה", subSection: "Command Center" },
+    { href: "/command-center/executions", label: "יומן ביצוע אוטונומי", icon: Zap, section: "פלטפורמה", subSection: "Command Center" },
+    { href: "/command-center/profit", label: "אינטליגנציית רווח", icon: DollarSign, section: "פלטפורמה", subSection: "Command Center" },
+
     // ─── Palantir Foundry Platform ───
     { href: "/palantir/ontology", label: "Ontology Manager", icon: Database, section: "פלטפורמה", subSection: "Palantir Foundry" },
     { href: "/palantir/objects", label: "Object Explorer", icon: Search, section: "פלטפורמה", subSection: "Palantir Foundry" },

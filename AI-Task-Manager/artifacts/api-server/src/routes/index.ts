@@ -200,9 +200,11 @@ import wmsOperationsRouter from "./wms-operations";
 import apiConnectionHubRouter from "./api-connection-hub";
 import apiHubRouter from "./api-hub";
 import integrationHubRouter from "./integration-hub";
+import realtimePlatformRouter from "./realtime-platform";
 
 const router: IRouter = Router();
 
+router.use("/realtime", realtimePlatformRouter);
 router.use(healthRouter);
 router.use(dashboardStatsRouter);
 router.use(dedicatedEntityRoutes);

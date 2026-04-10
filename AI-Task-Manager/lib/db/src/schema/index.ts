@@ -218,3 +218,6 @@ export * from "./advanced-tech";
 
 // Palantir-Style Foundry Platform (Ontology, Dossiers, Pipelines, AIP, Code Workspace)
 export * from "./palantir-foundry";
+
+// Real-Time Operational Intelligence Platform — unified event bus, entity states, causal graph
+export * from "./realtime-platform";

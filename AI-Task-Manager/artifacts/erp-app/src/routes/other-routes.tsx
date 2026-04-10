@@ -514,6 +514,14 @@ const PipelineBuilderPage = lazyPage(() => import("@/pages/palantir/pipeline-bui
 const CodeWorkspacePage = lazyPage(() => import("@/pages/palantir/code-workspace"));
 const ActionsStudioPage = lazyPage(() => import("@/pages/palantir/actions-studio"));
 
+// Command Center — Real-Time Operational Intelligence Platform
+const CommandCenterPage = lazyPage(() => import("@/pages/command-center/command-center"));
+const LiveEventStreamPage = lazyPage(() => import("@/pages/command-center/live-event-stream"));
+const CausalImpactViewerPage = lazyPage(() => import("@/pages/command-center/causal-impact-viewer"));
+const DecisionQueuePage = lazyPage(() => import("@/pages/command-center/decision-queue"));
+const ExecutionLogPage = lazyPage(() => import("@/pages/command-center/execution-log"));
+const ProfitIntelligencePage = lazyPage(() => import("@/pages/command-center/profit-intelligence"));
+
 export const OtherRoutes = (
 
     <>
@@ -1074,6 +1082,14 @@ export const OtherRoutes = (
       <Route path="/palantir/pipeline" component={PipelineBuilderPage} />
       <Route path="/palantir/workspace" component={CodeWorkspacePage} />
       <Route path="/palantir/actions" component={ActionsStudioPage} />
+
+      {/* Command Center — Real-Time Operational Intelligence */}
+      <Route path="/command-center" component={CommandCenterPage} />
+      <Route path="/command-center/events" component={LiveEventStreamPage} />
+      <Route path="/command-center/causal" component={CausalImpactViewerPage} />
+      <Route path="/command-center/decisions" component={DecisionQueuePage} />
+      <Route path="/command-center/executions" component={ExecutionLogPage} />
+      <Route path="/command-center/profit" component={ProfitIntelligencePage} />
 
     </>
 );
