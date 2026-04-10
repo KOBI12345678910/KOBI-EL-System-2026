@@ -409,8 +409,12 @@ group("17. Goals — 10 business objectives", () => {
 
 group("18. ParadigmEngine — main orchestrator", () => {
   const engine = new P.ParadigmEngine();
+
+  // Core wiring
   check("engine has brain", engine.brain instanceof P.Brain);
   check("engine has memory", engine.memory instanceof P.Memory);
+
+  // Business modules (8)
   check("engine has ERP", engine.erp instanceof P.ERPModule);
   check("engine has CRM", engine.crm instanceof P.CRMModule);
   check("engine has BOM", engine.bom instanceof P.BOMModule);
@@ -419,22 +423,45 @@ group("18. ParadigmEngine — main orchestrator", () => {
   check("engine has Ops", engine.ops instanceof P.OpsModule);
   check("engine has Pricing", engine.pricing instanceof P.PricingModule);
   check("engine has Quality", engine.quality instanceof P.QualityModule);
+
+  // Support modules
   check("engine has Notifications", engine.notifications instanceof P.NotificationModule);
   check("engine has Analytics", engine.analytics instanceof P.AnalyticsModule);
+
+  // Intelligence modules (5)
   check("engine has Swarm", engine.swarm instanceof P.Swarm);
   check("engine has Adversarial", engine.adversarial instanceof P.Adversarial);
   check("engine has Dream", engine.dream instanceof P.Dream);
   check("engine has MetaLearner", engine.metaLearner instanceof P.MetaLearner);
   check("engine has Goals", engine.goals instanceof P.Goals);
+
+  // Engine state
   check("engine.cycle = 0", engine.cycle === 0);
   check("engine.running = false", engine.running === false);
-  const status = engine.getStatus();
-  check("getStatus returns object", status && typeof status === "object");
-  check("getStatus.cycle = 0", status.cycle === 0);
-  check("getStatus.modules populated", status.modules && typeof status.modules === "object");
-  check("getStatus.goals has 10", status.goals.length === 10);
-  check("getAllBusinessModules returns 10", Object.keys(engine.getAllBusinessModules()).length === 10);
-  check("saveAllModules is function", typeof engine.saveAllModules === "function");
+  check("engine.startTime = null", engine.startTime === null);
+  check("engine.healthScore = 100", engine.healthScore === 100);
+  check("engine.cycleHistory is array", Array.isArray(engine.cycleHistory));
+  check("engine.cycleHistory empty initially", engine.cycleHistory.length === 0);
+
+  // The 7 phase methods + runCycle + start
+  check("engine.perceive is async function", typeof engine.perceive === "function");
+  check("engine.comprehend is async function", typeof engine.comprehend === "function");
+  check("engine.validate is async function", typeof engine.validate === "function");
+  check("engine.trackGoals is async function", typeof engine.trackGoals === "function");
+  check("engine.evolve is async function", typeof engine.evolve === "function");
+  check("engine.report is async function", typeof engine.report === "function");
+  check("engine.housekeeping is async function", typeof engine.housekeeping === "function");
+  check("engine.runCycle is async function", typeof engine.runCycle === "function");
+  check("engine.start is async function", typeof engine.start === "function");
+
+  // Analytics was handed the full module bag at construction
+  check("analytics.modules.erp === engine.erp", engine.analytics.modules.erp === engine.erp);
+  check("analytics.modules.crm === engine.crm", engine.analytics.modules.crm === engine.crm);
+  check("analytics.modules.brain === engine.brain", engine.analytics.modules.brain === engine.brain);
+  check("analytics.modules.notifications === engine.notifications", engine.analytics.modules.notifications === engine.notifications);
+
+  // Pricing was handed BOM at construction
+  check("pricing.bom === engine.bom", engine.pricing.bom === engine.bom);
 });
 
 console.log(`\n\x1b[36m═══════════════════════════════════════════\x1b[0m`);

@@ -15,7 +15,7 @@ The engine reasons, debates, self-attacks, dreams, and improves on its own. Powe
 cd paradigm_engine
 npm install
 export ANTHROPIC_API_KEY=sk-ant-xxx   # optional — smoke test runs without it
-npm test                              # 226 assertions, < 1s, no API calls
+npm test                              # 238 assertions, < 1s, no API calls
 npm start                             # runs the full cycle loop
 ```
 
@@ -30,8 +30,8 @@ paradigm_engine/
 ├── paradigm-part2.js     ← BOMModule · HRModule · FinanceModule · OpsModule
 ├── paradigm-part3.js     ← PricingModule · QualityModule · NotificationModule · AnalyticsModule
 │                           Swarm · Adversarial · Dream · MetaLearner · Goals
-├── paradigm-part4.js     ← ParadigmEngine (orchestrator + cycle loop)
-├── smoke-test.js         ← 226-assertion test harness (stubs Anthropic SDK)
+├── paradigm-part4.js     ← ParadigmEngine — 7-phase orchestrator with setInterval loop
+├── smoke-test.js         ← 238-assertion test harness (stubs Anthropic SDK)
 ├── package.json
 ├── README.md
 └── paradigm-data/        ← auto-created; all state persisted here
@@ -103,21 +103,19 @@ Tunes the learning process itself — tracks learning rate, exploration/exploita
 
 ## The cycle loop (Part 4)
 
-Every 60 seconds the orchestrator runs 11 stages:
+The orchestrator runs a **7-phase cycle** on an infinite `setInterval`:
 
-1. **Perceive** — snapshot all modules (L0→L1 consciousness)
-2. **Analyze** — rotating module deep-dive with AI (L2) — ERP/CRM/BOM/HR/Finance/Ops/Pricing/Quality
-3. **Score leads** — every 3 cycles (if CRM exposes `scoreAllLeads`)
-4. **Predict marker** — every 5 cycles (L3)
-5. **Decide via Swarm** — if `status === "critical"` or `score < 50`
-6. **Adversarial self-test** — every 15 cycles
-7. **Stress test** — every 45 cycles
-8. **Dream** — every 50 cycles
-9. **Meta-learn** — every 25 cycles
-10. **Goals evaluation** — every 5 cycles (update g1/g6/g7/g8 from snapshot)
-11. **Executive report** — every 10 cycles + Notifications if `overallScore < 60`
+| Phase | Name | When | What |
+|-------|------|------|------|
+| **1** | 👁️ Perceive | every cycle | Parallel `analyze()` across all 8 business modules with per-module timing + status icon |
+| **2** | 🧠 Comprehend | every cycle | 7-agent Swarm debate on top priority; CRM lead scoring every 3 cycles |
+| **3** | 🔴 Validate | every 15 cycles | Red Team attacks the Swarm decision across 8 vectors; critical vulnerabilities → notifications |
+| **4** | 🎯 Track Goals | every 5 cycles | AI evaluates all 10 goals; `behind` → warning, `achieved` → success, `at_risk` → yellow |
+| **5** | 🧬 Evolve | varies | 5a Meta-learn every 25 cycles · 5b Dream every 50 (novelty > 0.7 → breakthrough notification) · 5c Stress Test every 100 |
+| **6** | 📊 Report | every 10 cycles | Executive report with module scores, priorities, wins, risks, AI recommendations; saved to `reports/` |
+| **7** | 🔧 Housekeeping | varies | Backup every 50 cycles · Log cleanup every 200 · AI investigation of critical alerts with escalation to קובי/דימה/קורין |
 
-Final stage: L5 meta-consciousness + cycle stat increment.
+Each cycle ends with a summary line showing duration, API calls/tokens/errors, decision count, improvements, dreams, unread notifications, health score, and consciousness level.
 
 ---
 
@@ -159,7 +157,7 @@ Without `ANTHROPIC_API_KEY`, the engine still:
 - Persists state to `paradigm-data/`
 - Returns `null` from `brain.think()` without crashing
 
-The smoke test runs fully in stub mode — **no API calls, 226 assertions across 18 groups, < 1 second**.
+The smoke test runs fully in stub mode — **no API calls, 238 assertions across 18 groups, < 1 second**.
 
 ---
 
