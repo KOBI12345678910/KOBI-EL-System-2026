@@ -6,6 +6,7 @@ from app.api.advanced import router as advanced_router
 from app.api.analytics import router as analytics_router
 from app.api.command_center import router as command_center_router
 from app.api.engines import router as engines_router
+from app.api.governance import router as governance_router
 from app.api.ingest import router as ingest_router
 from app.api.intelligence import router as intelligence_router
 from app.api.live import router as live_router
@@ -95,6 +96,7 @@ def create_app() -> FastAPI:
     app.include_router(analytics_router)
     app.include_router(advanced_router)
     app.include_router(security_router)
+    app.include_router(governance_router)
     app.include_router(ws_router)
 
     @app.get("/")
@@ -149,6 +151,10 @@ def create_app() -> FastAPI:
                 "encryption_vault": True,
                 "backup_engine": True,
                 "template_engine": True,
+                "feature_flags": True,
+                "user_directory": True,
+                "query_dsl": True,
+                "data_catalog": True,
                 "kafka_ready": True,
                 "redis_ready": True,
             },
