@@ -1,0 +1,19 @@
+{
+  "name": "paradigm-engine",
+  "version": "4.0.0",
+  "description": "PARADIGM v4.0 — Autonomous Business OS for Techno-Kol Uzi + Kobi Elkayam Real Estate. 10 business modules, 7 C-level agents, adversarial self-testing, dream mode, meta-learning.",
+  "main": "paradigm-engine.js",
+  "scripts": {
+    "start": "node paradigm-engine.js",
+    "test": "node smoke-test.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0"
+  },
+  "author": "קובי אלקיים",
+  "license": "UNLICENSED",
+  "private": true
+}

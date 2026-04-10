@@ -1,0 +1,5 @@
+node_modules/
+paradigm-data/
+_stub_anthropic.js
+*.log
+.env
