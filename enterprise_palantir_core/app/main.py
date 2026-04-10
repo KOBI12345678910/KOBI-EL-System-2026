@@ -2,6 +2,7 @@ import os
 
 from fastapi import FastAPI
 
+from app.api.analytics import router as analytics_router
 from app.api.command_center import router as command_center_router
 from app.api.engines import router as engines_router
 from app.api.ingest import router as ingest_router
@@ -82,6 +83,7 @@ def create_app() -> FastAPI:
     app.include_router(engines_router)
     app.include_router(platform_router)
     app.include_router(intelligence_router)
+    app.include_router(analytics_router)
     app.include_router(ws_router)
 
     @app.get("/")
@@ -118,6 +120,12 @@ def create_app() -> FastAPI:
                 "data_quality_engine": True,
                 "metrics_exporter": True,
                 "cli_tool": True,
+                "cost_engine": True,
+                "capacity_planning": True,
+                "risk_scoring": True,
+                "sla_manager": True,
+                "export_engine": True,
+                "deep_health": True,
                 "kafka_ready": True,
                 "redis_ready": True,
             },
