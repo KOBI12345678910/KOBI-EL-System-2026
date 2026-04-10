@@ -1,55 +1,62 @@
-from __future__ import annotations
-
-from typing import Any, Dict, List, Optional
+import hashlib
 
 from sqlalchemy.orm import Session
 
-from app.models.ontology import OntologyObject, OntologyRelationship
 from app.repositories.ontology_repo import OntologyRepository
 
 
 class OntologyService:
-    def __init__(self, session: Session):
-        self.repo = OntologyRepository(session)
+    def __init__(self, db: Session) -> None:
+        self.repo = OntologyRepository(db)
+
+    def resolve_object_id(
+        self,
+        tenant_id: str,
+        entity_type: str,
+        source_system: str,
+        source_record_id: str,
+        canonical_external_key: str | None = None,
+    ) -> str:
+        if canonical_external_key:
+            existing = self.repo.get_by_external_key(tenant_id, entity_type, canonical_external_key)
+            if existing:
+                return existing.id
+
+            base = f"{tenant_id}:{entity_type}:{canonical_external_key}"
+        else:
+            base = f"{tenant_id}:{entity_type}:{source_system}:{source_record_id}"
+
+        digest = hashlib.sha256(base.encode("utf-8")).hexdigest()[:24]
+        return f"obj_{digest}"
 
     def upsert_object(
         self,
         *,
-        object_id: str,
         tenant_id: str,
-        object_type: str,
-        name: str,
-        properties: Optional[Dict[str, Any]] = None,
-        relationships: Optional[Dict[str, List[str]]] = None,
-    ) -> OntologyObject:
-        obj = self.repo.upsert_object(
+        entity_type: str,
+        entity_name: str,
+        source_system: str,
+        source_record_id: str,
+        canonical_external_key: str | None,
+        properties: dict,
+        relationships: dict,
+        status: str = "active",
+    ):
+        object_id = self.resolve_object_id(
+            tenant_id=tenant_id,
+            entity_type=entity_type,
+            source_system=source_system,
+            source_record_id=source_record_id,
+            canonical_external_key=canonical_external_key,
+        )
+
+        return self.repo.upsert_object(
             object_id=object_id,
             tenant_id=tenant_id,
-            object_type=object_type,
-            name=name,
+            object_type=entity_type,
+            name=entity_name,
+            canonical_external_key=canonical_external_key,
             properties=properties,
+            relationships=relationships,
+            status=status,
         )
-        if relationships:
-            for rel_type, target_ids in relationships.items():
-                for target_id in target_ids:
-                    self.repo.upsert_relationship(
-                        tenant_id=tenant_id,
-                        from_object_id=object_id,
-                        to_object_id=target_id,
-                        relation_type=rel_type,
-                    )
-        return obj
-
-    def get_object(self, object_id: str) -> Optional[OntologyObject]:
-        return self.repo.get_object(object_id)
-
-    def list_by_tenant(
-        self, tenant_id: str, object_type: Optional[str] = None
-    ) -> List[OntologyObject]:
-        return self.repo.list_by_tenant(tenant_id, object_type=object_type)
-
-    def related(self, object_id: str) -> List[OntologyRelationship]:
-        return self.repo.relationships_for(object_id, direction="outgoing")
-
-    def count_by_type(self, tenant_id: str) -> Dict[str, int]:
-        return self.repo.count_by_type(tenant_id)

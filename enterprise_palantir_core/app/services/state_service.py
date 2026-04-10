@@ -1,86 +1,83 @@
-from __future__ import annotations
-
-from typing import Any, Dict, List, Optional
+import json
 
 from sqlalchemy.orm import Session
 
-from app.core.enums import EntityStatus, EventType, FreshnessStatus
-from app.core.time_utils import utc_now
-from app.models.events import DomainEvent
-from app.models.state import EntityStateRow
 from app.repositories.state_repo import StateRepository
 
 
 class StateService:
-    """
-    The State Engine. Takes domain events and updates the live state of the
-    targeted entity. This is the core of real-time operational awareness.
-    """
+    def __init__(self, db: Session) -> None:
+        self.repo = StateRepository(db)
 
-    def __init__(self, session: Session):
-        self.repo = StateRepository(session)
+    def apply_domain_event(
+        self,
+        *,
+        tenant_id: str,
+        canonical_entity_id: str,
+        entity_type: str,
+        event_type: str,
+        payload: dict,
+    ):
+        current = self.repo.get(canonical_entity_id)
 
-    def apply_event(self, event: DomainEvent) -> EntityStateRow:
-        row = self.repo.get(event.canonical_entity_id)
-        current_status = row.current_status if row else EntityStatus.ACTIVE.value
-        risk_score = row.risk_score if row else 0.0
-        blockers = list(row.blockers or []) if row else []
-        alerts = list(row.alerts or []) if row else []
-        properties = dict(row.properties or {}) if row else {}
+        current_status = "active"
+        workflow_step = None
+        owner = None
+        risk_score = 0.0
+        freshness_status = "fresh"
+        blockers = []
+        alerts = []
+        state = {}
 
-        event_type = event.event_type
+        if current:
+            current_status = current.current_status
+            workflow_step = current.workflow_step
+            owner = current.owner
+            risk_score = current.risk_score
+            freshness_status = current.freshness_status
+            blockers = json.loads(current.blockers_json or "[]")
+            alerts = json.loads(current.alerts_json or "[]")
+            state = json.loads(current.state_json or "{}")
 
-        if event_type == EventType.SUPPLIER_DELAYED.value:
-            current_status = EntityStatus.AT_RISK.value
+        if event_type == "supplier_delayed":
+            current_status = "at_risk"
             risk_score = max(risk_score, 0.85)
             if "supplier_delay" not in blockers:
                 blockers.append("supplier_delay")
-            if "supplier_delay_alert" not in alerts:
-                alerts.append("supplier_delay_alert")
 
-        elif event_type == EventType.INVENTORY_LOW.value:
-            current_status = EntityStatus.AT_RISK.value
+        elif event_type == "inventory_low":
+            current_status = "at_risk"
             risk_score = max(risk_score, 0.75)
             if "inventory_shortage" not in blockers:
                 blockers.append("inventory_shortage")
 
-        elif event_type == EventType.PROJECT_AT_RISK.value:
-            current_status = EntityStatus.AT_RISK.value
-            risk_score = max(risk_score, 0.90)
-
-        elif event_type == EventType.WORKFLOW_STALLED.value:
-            current_status = EntityStatus.BLOCKED.value
+        elif event_type == "workflow_stalled":
+            current_status = "blocked"
+            risk_score = max(risk_score, 0.70)
             if "workflow_stalled" not in blockers:
                 blockers.append("workflow_stalled")
-            risk_score = max(risk_score, 0.70)
 
-        elif event_type == EventType.PAYMENT_RECEIVED.value:
-            current_status = EntityStatus.ACTIVE.value
-            properties["last_payment_received"] = event.timestamp.isoformat()
+        elif event_type == "project_at_risk":
+            current_status = "at_risk"
+            risk_score = max(risk_score, 0.90)
 
-        elif event_type == EventType.STATUS_CHANGED.value:
-            new_status = (event.payload or {}).get("status")
+        elif event_type == "status_changed":
+            new_status = payload.get("status")
             if new_status:
                 current_status = str(new_status)
 
-        return self.repo.upsert(
-            canonical_entity_id=event.canonical_entity_id,
-            tenant_id=event.tenant_id,
-            entity_type=event.entity_type,
+        state["last_payload"] = payload
+
+        return self.repo.upsert_state(
+            canonical_entity_id=canonical_entity_id,
+            tenant_id=tenant_id,
+            entity_type=entity_type,
             current_status=current_status,
+            workflow_step=workflow_step,
+            owner=owner,
             risk_score=risk_score,
-            freshness_status=FreshnessStatus.FRESH.value,
+            freshness_status=freshness_status,
             blockers=blockers,
             alerts=alerts,
-            properties=properties,
-            last_event_at=event.timestamp,
+            state=state,
         )
-
-    def get(self, canonical_entity_id: str) -> Optional[EntityStateRow]:
-        return self.repo.get(canonical_entity_id)
-
-    def list_by_tenant(self, tenant_id: str) -> List[EntityStateRow]:
-        return self.repo.list_by_tenant(tenant_id)
-
-    def at_risk(self, tenant_id: str) -> List[EntityStateRow]:
-        return self.repo.at_risk(tenant_id)

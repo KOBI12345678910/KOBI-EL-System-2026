@@ -1,15 +1,9 @@
-from __future__ import annotations
-
-from typing import List, Optional
-
 from sqlalchemy.orm import Session
 
-from app.models.alerts import Alert
-from app.models.events import DomainEvent
+from app.core.ids import new_id
 from app.repositories.alert_repo import AlertRepository
 
 
-# Baseline built-in rules. In production these would come from AlertRule rows.
 BUILTIN_RULES = {
     "supplier_delayed": {"severity": "high", "title": "Supplier delay detected"},
     "inventory_low": {"severity": "warning", "title": "Inventory below threshold"},
@@ -19,38 +13,62 @@ BUILTIN_RULES = {
 
 
 class AlertService:
-    def __init__(self, session: Session):
-        self.repo = AlertRepository(session)
+    def __init__(self, db: Session) -> None:
+        self.repo = AlertRepository(db)
 
-    def evaluate_event(self, event: DomainEvent) -> Optional[Alert]:
-        """
-        Match an event against built-in rules. If a rule fires,
-        raise (or increment) the matching alert.
-        """
-        rule = BUILTIN_RULES.get(event.event_type)
+    def raise_from_event(
+        self,
+        *,
+        tenant_id: str,
+        event_type: str,
+        entity_id: str,
+        description: str = "",
+        metadata: dict | None = None,
+    ):
+        rule = BUILTIN_RULES.get(event_type)
         if rule is None:
             return None
-        alert_key = f"{event.entity_type}:{event.canonical_entity_id}:{event.event_type}"
-        return self.repo.raise_or_increment(
-            tenant_id=event.tenant_id,
-            alert_key=alert_key,
-            alert_type=event.event_type,
-            title=rule["title"],
+        return self.repo.create(
+            alert_id=new_id("alrt"),
+            tenant_id=tenant_id,
             severity=rule["severity"],
-            message=f"{event.event_type} on {event.entity_type}:{event.canonical_entity_id}",
-            entity_type=event.entity_type,
-            entity_id=event.canonical_entity_id,
-            source_event_id=event.event_id,
+            alert_type=event_type,
+            entity_id=entity_id,
+            title=rule["title"],
+            description=description or rule["title"],
+            metadata=metadata,
         )
 
-    def list_open(self, tenant_id: str) -> List[Alert]:
-        return self.repo.open_alerts(tenant_id)
+    def raise_manual(
+        self,
+        *,
+        tenant_id: str,
+        severity: str,
+        alert_type: str,
+        title: str,
+        description: str,
+        entity_id: str | None = None,
+        metadata: dict | None = None,
+    ):
+        return self.repo.create(
+            alert_id=new_id("alrt"),
+            tenant_id=tenant_id,
+            severity=severity,
+            alert_type=alert_type,
+            entity_id=entity_id,
+            title=title,
+            description=description,
+            metadata=metadata,
+        )
 
-    def list_critical(self, tenant_id: str) -> List[Alert]:
-        return self.repo.critical_open(tenant_id)
+    def list_open(self, tenant_id: str):
+        return self.repo.list_open(tenant_id)
 
-    def acknowledge(self, alert_id: str, by: str) -> Optional[Alert]:
-        return self.repo.acknowledge(alert_id, by)
+    def list_critical(self, tenant_id: str):
+        return self.repo.list_by_severity(tenant_id, "critical")
 
-    def resolve(self, alert_id: str) -> Optional[Alert]:
-        return self.repo.resolve(alert_id)
+    def acknowledge(self, alert_id: str):
+        return self.repo.set_status(alert_id, "acknowledged")
+
+    def resolve(self, alert_id: str):
+        return self.repo.set_status(alert_id, "resolved")

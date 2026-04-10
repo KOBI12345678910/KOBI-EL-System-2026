@@ -1,20 +1,37 @@
-from __future__ import annotations
+import json
+from typing import List, Optional
 
-from typing import Any, Dict, List, Optional
-
-from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
-from app.core.ids import new_id
-from app.core.time_utils import utc_now
-from app.models.ontology import OntologyObject, OntologyRelationship
+from app.models.ontology import OntologyObject
 
 
 class OntologyRepository:
-    def __init__(self, session: Session):
-        self.s = session
+    def __init__(self, db: Session) -> None:
+        self.db = db
 
-    # ─── Objects ──────────────────────────────────────────────
+    def get_by_id(self, object_id: str) -> Optional[OntologyObject]:
+        return self.db.query(OntologyObject).filter(OntologyObject.id == object_id).first()
+
+    def get_by_external_key(
+        self,
+        tenant_id: str,
+        object_type: str,
+        external_key: str,
+    ) -> Optional[OntologyObject]:
+        return (
+            self.db.query(OntologyObject)
+            .filter(
+                OntologyObject.tenant_id == tenant_id,
+                OntologyObject.object_type == object_type,
+                OntologyObject.canonical_external_key == external_key,
+            )
+            .first()
+        )
+
+    def list_by_tenant(self, tenant_id: str) -> List[OntologyObject]:
+        return self.db.query(OntologyObject).filter(OntologyObject.tenant_id == tenant_id).all()
+
     def upsert_object(
         self,
         *,
@@ -22,104 +39,42 @@ class OntologyRepository:
         tenant_id: str,
         object_type: str,
         name: str,
-        properties: Optional[Dict[str, Any]] = None,
+        canonical_external_key: str | None,
+        properties: dict,
+        relationships: dict,
+        status: str = "active",
     ) -> OntologyObject:
-        row = self.s.get(OntologyObject, object_id)
-        now = utc_now()
-        if row is None:
-            row = OntologyObject(
-                object_id=object_id,
+        obj = self.get_by_id(object_id)
+
+        if obj is None:
+            obj = OntologyObject(
+                id=object_id,
                 tenant_id=tenant_id,
                 object_type=object_type,
                 name=name,
-                properties=properties or {},
-                status="active",
-                freshness_status="fresh",
+                canonical_external_key=canonical_external_key,
+                properties_json=json.dumps(properties, ensure_ascii=False),
+                relationships_json=json.dumps(relationships, ensure_ascii=False),
+                status=status,
             )
-            self.s.add(row)
+            self.db.add(obj)
         else:
-            if name:
-                row.name = name
-            merged = dict(row.properties or {})
-            if properties:
-                merged.update(properties)
-            row.properties = merged
-            row.freshness_status = "fresh"
-            row.updated_at = now
-        self.s.flush()
-        return row
+            obj.name = name
+            obj.status = status
+            obj.canonical_external_key = canonical_external_key
+            old_properties = json.loads(obj.properties_json or "{}")
+            old_relationships = json.loads(obj.relationships_json or "{}")
 
-    def get_object(self, object_id: str) -> Optional[OntologyObject]:
-        return self.s.get(OntologyObject, object_id)
+            old_properties.update(properties)
 
-    def list_by_tenant(
-        self, tenant_id: str, object_type: Optional[str] = None, limit: int = 500
-    ) -> List[OntologyObject]:
-        stmt = select(OntologyObject).where(OntologyObject.tenant_id == tenant_id)
-        if object_type:
-            stmt = stmt.where(OntologyObject.object_type == object_type)
-        stmt = stmt.limit(limit)
-        return list(self.s.scalars(stmt))
+            for rel_name, targets in relationships.items():
+                existing = old_relationships.get(rel_name, [])
+                merged = list(dict.fromkeys(existing + targets))
+                old_relationships[rel_name] = merged
 
-    def count_by_type(self, tenant_id: str) -> Dict[str, int]:
-        rows = self.s.scalars(select(OntologyObject).where(OntologyObject.tenant_id == tenant_id))
-        counts: Dict[str, int] = {}
-        for r in rows:
-            counts[r.object_type] = counts.get(r.object_type, 0) + 1
-        return counts
+            obj.properties_json = json.dumps(old_properties, ensure_ascii=False)
+            obj.relationships_json = json.dumps(old_relationships, ensure_ascii=False)
 
-    # ─── Relationships ────────────────────────────────────────
-    def upsert_relationship(
-        self,
-        *,
-        tenant_id: str,
-        from_object_id: str,
-        to_object_id: str,
-        relation_type: str,
-        attributes: Optional[Dict[str, Any]] = None,
-    ) -> OntologyRelationship:
-        stmt = select(OntologyRelationship).where(
-            and_(
-                OntologyRelationship.tenant_id == tenant_id,
-                OntologyRelationship.from_object_id == from_object_id,
-                OntologyRelationship.to_object_id == to_object_id,
-                OntologyRelationship.relation_type == relation_type,
-            )
-        )
-        existing = self.s.scalars(stmt).first()
-        if existing is not None:
-            if attributes:
-                merged = dict(existing.attributes or {})
-                merged.update(attributes)
-                existing.attributes = merged
-                existing.updated_at = utc_now()
-            return existing
-        row = OntologyRelationship(
-            rel_id=new_id("rel"),
-            tenant_id=tenant_id,
-            from_object_id=from_object_id,
-            to_object_id=to_object_id,
-            relation_type=relation_type,
-            attributes=attributes or {},
-        )
-        self.s.add(row)
-        self.s.flush()
-        return row
-
-    def relationships_for(
-        self, object_id: str, direction: str = "outgoing"
-    ) -> List[OntologyRelationship]:
-        if direction == "outgoing":
-            stmt = select(OntologyRelationship).where(
-                OntologyRelationship.from_object_id == object_id
-            )
-        elif direction == "incoming":
-            stmt = select(OntologyRelationship).where(
-                OntologyRelationship.to_object_id == object_id
-            )
-        else:
-            stmt = select(OntologyRelationship).where(
-                (OntologyRelationship.from_object_id == object_id)
-                | (OntologyRelationship.to_object_id == object_id)
-            )
-        return list(self.s.scalars(stmt))
+        self.db.commit()
+        self.db.refresh(obj)
+        return obj

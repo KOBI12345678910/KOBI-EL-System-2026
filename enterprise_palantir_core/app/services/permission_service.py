@@ -1,74 +1,57 @@
-from __future__ import annotations
+import json
+from typing import List
 
-from typing import List, Optional
-
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.enums import Permission
-from app.core.exceptions import PermissionDenied
-from app.models.permissions import Role, User, UserRole
-from app.security import Principal
+from app.core.ids import new_id
+from app.models.permissions import RoleModel, UserRoleAssignmentModel
 
 
 class PermissionService:
-    def __init__(self, session: Session):
-        self.s = session
+    def __init__(self, db: Session) -> None:
+        self.db = db
 
-    def build_principal(self, user_id: str) -> Principal:
-        """Load a Principal from the DB (roles + permissions)."""
-        user = self.s.get(User, user_id)
-        if user is None:
-            raise PermissionDenied(f"user_not_found:{user_id}")
-
-        assignments = list(
-            self.s.scalars(select(UserRole).where(UserRole.user_id == user_id))
+    def create_role(self, *, tenant_id: str, name: str, permissions: List[str]) -> RoleModel:
+        row = RoleModel(
+            id=new_id("role"),
+            tenant_id=tenant_id,
+            name=name,
+            permissions_json=json.dumps(permissions, ensure_ascii=False),
         )
-        role_ids = [a.role_id for a in assignments]
+        self.db.add(row)
+        self.db.commit()
+        self.db.refresh(row)
+        return row
 
-        permissions: set[Permission] = set()
-        roles: List[str] = []
-        for rid in role_ids:
-            role = self.s.get(Role, rid)
-            if role is None:
-                continue
-            roles.append(role.name)
-            for p in (role.permissions or []):
-                try:
-                    permissions.add(Permission(p))
-                except ValueError:
-                    continue
-
-        return Principal(
-            user_id=user.user_id,
-            tenant_id=user.tenant_id,
-            roles=roles,
-            permissions=permissions,
-            is_platform_admin=user.is_platform_admin,
-        )
-
-    def create_role(
-        self, *, role_id: str, tenant_id: str, name: str, permissions: List[str]
-    ) -> Role:
-        role = Role(role_id=role_id, tenant_id=tenant_id, name=name, permissions=permissions)
-        self.s.add(role)
-        self.s.flush()
-        return role
-
-    def grant_role(self, *, user_id: str, role_id: str, granted_by: Optional[str] = None) -> UserRole:
-        from app.core.ids import new_id
-        from app.core.time_utils import utc_now
-        user = self.s.get(User, user_id)
-        if user is None:
-            raise PermissionDenied(f"user_not_found:{user_id}")
-        assignment = UserRole(
+    def assign_role(self, *, tenant_id: str, user_id: str, role_id: str) -> UserRoleAssignmentModel:
+        row = UserRoleAssignmentModel(
             id=new_id("ur"),
-            tenant_id=user.tenant_id,
+            tenant_id=tenant_id,
             user_id=user_id,
             role_id=role_id,
-            granted_by=granted_by,
-            granted_at=utc_now(),
         )
-        self.s.add(assignment)
-        self.s.flush()
-        return assignment
+        self.db.add(row)
+        self.db.commit()
+        self.db.refresh(row)
+        return row
+
+    def list_roles(self, tenant_id: str) -> List[RoleModel]:
+        return self.db.query(RoleModel).filter(RoleModel.tenant_id == tenant_id).all()
+
+    def user_permissions(self, *, tenant_id: str, user_id: str) -> List[str]:
+        assignments = (
+            self.db.query(UserRoleAssignmentModel)
+            .filter(
+                UserRoleAssignmentModel.tenant_id == tenant_id,
+                UserRoleAssignmentModel.user_id == user_id,
+            )
+            .all()
+        )
+        permissions: set[str] = set()
+        for a in assignments:
+            role = self.db.query(RoleModel).filter(RoleModel.id == a.role_id).first()
+            if role is None:
+                continue
+            for p in json.loads(role.permissions_json or "[]"):
+                permissions.add(p)
+        return sorted(permissions)

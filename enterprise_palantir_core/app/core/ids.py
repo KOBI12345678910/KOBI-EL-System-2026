@@ -1,21 +1,14 @@
-from __future__ import annotations
-
 import hashlib
 import uuid
 
 
 def new_id(prefix: str) -> str:
-    """Generate a new opaque ID with a type prefix (e.g. `obj_a1b2c3...`)."""
     return f"{prefix}_{uuid.uuid4().hex}"
 
 
+# ─── Convenience wrappers used by repositories/services ──────
 def canonical_id(tenant_id: str, entity_type: str, external_key: str) -> str:
-    """
-    Deterministic canonical ID derived from (tenant, entity_type, external_key).
-
-    The same external key in the same tenant+type always resolves to the same
-    canonical ID. This is the foundation of cross-source identity resolution.
-    """
+    """Deterministic canonical ID from tenant + type + external key."""
     base = f"{tenant_id}:{entity_type}:{external_key}"
     digest = hashlib.sha256(base.encode("utf-8")).hexdigest()[:24]
     return f"obj_{digest}"

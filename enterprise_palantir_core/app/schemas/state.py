@@ -1,27 +1,20 @@
-from __future__ import annotations
-
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 
-class EntityStateRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class EntityStateOut(BaseModel):
     canonical_entity_id: str
     tenant_id: str
     entity_type: str
     current_status: str
+    workflow_step: Optional[str]
+    owner: Optional[str]
     risk_score: float
     freshness_status: str
-    blockers: Optional[List[str]] = None
-    dependencies: Optional[List[str]] = None
-    alerts: Optional[List[str]] = None
-    workflow_step: Optional[str] = None
-    owner: Optional[str] = None
-    sla_status: Optional[str] = None
-    financial_exposure: Optional[float] = None
-    properties: Optional[Dict[str, Any]] = None
-    last_event_at: Optional[datetime] = None
+    blockers: List[str]
+    alerts: List[str]
+    state: Dict[str, Any]
+    created_at: datetime
     updated_at: datetime

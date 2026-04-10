@@ -1,91 +1,93 @@
-from __future__ import annotations
-
+import json
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import PlatformError
-from app.db import get_session
+from app.core.exceptions import NotFoundError
+from app.db import get_db
 from app.schemas.workflow import (
-    WorkflowDefinitionCreate,
-    WorkflowDefinitionRead,
-    WorkflowInstanceRead,
-    WorkflowInstanceStart,
+    WorkflowDefinitionIn,
+    WorkflowDefinitionOut,
+    WorkflowInstanceIn,
+    WorkflowInstanceOut,
 )
 from app.services.workflow_service import WorkflowService
 
 router = APIRouter(prefix="/workflows", tags=["workflows"])
 
 
-@router.post("/definitions", response_model=WorkflowDefinitionRead)
-def create_workflow_definition(
-    body: WorkflowDefinitionCreate, session: Session = Depends(get_session)
-) -> WorkflowDefinitionRead:
-    service = WorkflowService(session)
-    defn = service.define(
-        tenant_id=body.tenant_id,
-        name=body.name,
-        version=body.version,
-        description=body.description,
-        entry_state=body.entry_state,
-        states=[s.model_dump() for s in body.states],
-        transitions=[t.model_dump() for t in body.transitions],
-        terminal_states=body.terminal_states,
-        sla_seconds=body.sla_seconds,
+def _def_out(d) -> WorkflowDefinitionOut:
+    return WorkflowDefinitionOut(
+        id=d.id,
+        tenant_id=d.tenant_id,
+        workflow_type=d.workflow_type,
+        definition=json.loads(d.definition_json or "{}"),
+        created_at=d.created_at,
+        updated_at=d.updated_at,
     )
-    session.commit()
-    return WorkflowDefinitionRead.model_validate(defn)
 
 
-@router.get("/definitions/{tenant_id}", response_model=List[WorkflowDefinitionRead])
-def list_definitions(tenant_id: str, session: Session = Depends(get_session)) -> List[WorkflowDefinitionRead]:
-    defs = WorkflowService(session).list_definitions(tenant_id)
-    return [WorkflowDefinitionRead.model_validate(d) for d in defs]
+def _inst_out(i) -> WorkflowInstanceOut:
+    return WorkflowInstanceOut(
+        id=i.id,
+        tenant_id=i.tenant_id,
+        workflow_type=i.workflow_type,
+        target_entity_id=i.target_entity_id,
+        current_step=i.current_step,
+        status=i.status,
+        history=json.loads(i.history_json or "[]"),
+        context=json.loads(i.context_json or "{}"),
+        created_at=i.created_at,
+        updated_at=i.updated_at,
+    )
 
 
-@router.post("/instances", response_model=WorkflowInstanceRead)
-def start_instance(
-    body: WorkflowInstanceStart, session: Session = Depends(get_session)
-) -> WorkflowInstanceRead:
-    service = WorkflowService(session)
-    try:
-        instance = service.start(
-            tenant_id=body.tenant_id,
-            workflow_id=body.workflow_id,
-            canonical_entity_id=body.canonical_entity_id,
-            owner=body.owner,
-            context=body.context,
-        )
-    except PlatformError as e:
-        raise HTTPException(status_code=e.status_code, detail=str(e))
-    session.commit()
-    return WorkflowInstanceRead.model_validate(instance)
+@router.post("/definitions", response_model=WorkflowDefinitionOut)
+def create_definition(body: WorkflowDefinitionIn, db: Session = Depends(get_db)) -> WorkflowDefinitionOut:
+    d = WorkflowService(db).define(
+        tenant_id=body.tenant_id,
+        workflow_type=body.workflow_type,
+        definition=body.definition,
+    )
+    return _def_out(d)
 
 
-@router.post("/instances/{instance_id}/transition", response_model=WorkflowInstanceRead)
+@router.get("/definitions/{tenant_id}", response_model=List[WorkflowDefinitionOut])
+def list_definitions(tenant_id: str, db: Session = Depends(get_db)) -> List[WorkflowDefinitionOut]:
+    defs = WorkflowService(db).list_definitions(tenant_id)
+    return [_def_out(d) for d in defs]
+
+
+@router.post("/instances", response_model=WorkflowInstanceOut)
+def start_instance(body: WorkflowInstanceIn, db: Session = Depends(get_db)) -> WorkflowInstanceOut:
+    inst = WorkflowService(db).start(
+        tenant_id=body.tenant_id,
+        workflow_type=body.workflow_type,
+        target_entity_id=body.target_entity_id,
+        context=body.context,
+    )
+    return _inst_out(inst)
+
+
+@router.post("/instances/{instance_id}/transition", response_model=WorkflowInstanceOut)
 def transition_instance(
     instance_id: str,
-    to_state: str,
+    to_step: str,
     actor: str = "system",
     reason: str = "manual",
-    session: Session = Depends(get_session),
-) -> WorkflowInstanceRead:
-    service = WorkflowService(session)
+    db: Session = Depends(get_db),
+) -> WorkflowInstanceOut:
     try:
-        instance = service.transition(
-            instance_id=instance_id,
-            to_state=to_state,
-            actor=actor,
-            reason=reason,
+        inst = WorkflowService(db).transition(
+            instance_id=instance_id, to_step=to_step, actor=actor, reason=reason
         )
-    except PlatformError as e:
-        raise HTTPException(status_code=e.status_code, detail=str(e))
-    session.commit()
-    return WorkflowInstanceRead.model_validate(instance)
+    except NotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    return _inst_out(inst)
 
 
-@router.get("/instances/stalled/{tenant_id}", response_model=List[WorkflowInstanceRead])
-def list_stalled(tenant_id: str, session: Session = Depends(get_session)) -> List[WorkflowInstanceRead]:
-    instances = WorkflowService(session).list_stalled(tenant_id)
-    return [WorkflowInstanceRead.model_validate(i) for i in instances]
+@router.get("/instances/active/{tenant_id}", response_model=List[WorkflowInstanceOut])
+def list_active(tenant_id: str, db: Session = Depends(get_db)) -> List[WorkflowInstanceOut]:
+    instances = WorkflowService(db).list_active(tenant_id)
+    return [_inst_out(i) for i in instances]

@@ -1,26 +1,13 @@
-from __future__ import annotations
+from sqlalchemy import Column, DateTime, String
 
-from datetime import datetime
-
-from sqlalchemy import DateTime, String, func
-from sqlalchemy.orm import Mapped, mapped_column
+from app.core.time_utils import utc_now
+from app.db import Base
 
 
 class TimestampMixin:
-    """Adds created_at / updated_at to any model."""
-
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        onupdate=func.now(),
-        nullable=False,
-    )
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
 
 
-class TenantMixin:
-    """Adds tenant_id to any model — the basis of multi-tenant isolation."""
-
-    tenant_id: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+class TenantScopedMixin:
+    tenant_id = Column(String, index=True, nullable=False)

@@ -1,20 +1,16 @@
 """
 AI Context Service — Claude-ready enterprise context builder.
 
-Given an entity ID, builds a rich context packet that includes:
+Given an entity ID, assembles everything Claude needs to reason about it:
   - the entity itself (ontology object)
   - its live state
   - its recent events (timeline)
-  - its related entities (one hop out)
   - a rough token estimate
 
-This is what Claude receives when you call /entities/{id}/ai-context.
+This is what /live/ai-context returns.
 """
 
-from __future__ import annotations
-
 import json
-from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -22,49 +18,62 @@ from app.core.time_utils import utc_now
 from app.repositories.event_repo import EventRepository
 from app.repositories.ontology_repo import OntologyRepository
 from app.repositories.state_repo import StateRepository
-from app.schemas.events import DomainEventRead
-from app.schemas.ontology import OntologyObjectRead
-from app.schemas.snapshot import AIContextResponse
-from app.schemas.state import EntityStateRead
 
 
 class AIContextService:
-    def __init__(self, session: Session):
-        self.s = session
-        self.ontology = OntologyRepository(session)
-        self.state = StateRepository(session)
-        self.events = EventRepository(session)
+    def __init__(self, db: Session) -> None:
+        self.ontology_repo = OntologyRepository(db)
+        self.state_repo = StateRepository(db)
+        self.event_repo = EventRepository(db)
 
-    def build(self, *, tenant_id: str, entity_id: str) -> AIContextResponse:
-        obj = self.ontology.get_object(entity_id)
-        state = self.state.get(entity_id)
-        events = self.events.recent_for_entity(entity_id, limit=30)
+    def build(self, *, tenant_id: str, entity_id: str) -> dict:
+        obj = self.ontology_repo.get_by_id(entity_id)
+        state = self.state_repo.get(entity_id)
+        events = self.event_repo.list_recent_for_entity(entity_id, limit=30)
 
-        related: List[OntologyObjectRead] = []
+        entity_dict = None
         if obj is not None:
-            outgoing = self.ontology.relationships_for(obj.object_id, direction="outgoing")
-            seen: set[str] = set()
-            for rel in outgoing:
-                if rel.to_object_id in seen:
-                    continue
-                seen.add(rel.to_object_id)
-                target = self.ontology.get_object(rel.to_object_id)
-                if target is not None and target.tenant_id == tenant_id:
-                    related.append(OntologyObjectRead.model_validate(target))
+            entity_dict = {
+                "id": obj.id,
+                "tenant_id": obj.tenant_id,
+                "object_type": obj.object_type,
+                "name": obj.name,
+                "status": obj.status,
+                "properties": json.loads(obj.properties_json or "{}"),
+                "relationships": json.loads(obj.relationships_json or "{}"),
+            }
 
-        entity_read = OntologyObjectRead.model_validate(obj) if obj else None
-        state_read = EntityStateRead.model_validate(state) if state else None
-        event_reads = [DomainEventRead.model_validate(e) for e in events]
+        state_dict = None
+        if state is not None:
+            state_dict = {
+                "canonical_entity_id": state.canonical_entity_id,
+                "current_status": state.current_status,
+                "risk_score": state.risk_score,
+                "freshness_status": state.freshness_status,
+                "blockers": json.loads(state.blockers_json or "[]"),
+                "alerts": json.loads(state.alerts_json or "[]"),
+                "state": json.loads(state.state_json or "{}"),
+            }
 
-        packet = AIContextResponse(
-            entity=entity_read,
-            state=state_read,
-            recent_events=event_reads,
-            related_entities=related,
-            generated_at=utc_now(),
-            token_estimate=0,
-        )
-        # Rough token estimate: 1 token ~= 4 chars of JSON
-        blob = json.dumps(packet.model_dump(mode="json"), default=str)
-        packet.token_estimate = max(1, len(blob) // 4)
+        events_list = [
+            {
+                "id": e.id,
+                "event_type": e.event_type,
+                "severity": e.severity,
+                "canonical_entity_id": e.canonical_entity_id,
+                "payload": json.loads(e.payload_json or "{}"),
+                "created_at": e.created_at.isoformat() if e.created_at else None,
+            }
+            for e in events
+        ]
+
+        packet = {
+            "tenant_id": tenant_id,
+            "generated_at": utc_now().isoformat(),
+            "entity": entity_dict,
+            "state": state_dict,
+            "recent_events": events_list,
+            "token_estimate": 0,
+        }
+        packet["token_estimate"] = max(1, len(json.dumps(packet, default=str)) // 4)
         return packet

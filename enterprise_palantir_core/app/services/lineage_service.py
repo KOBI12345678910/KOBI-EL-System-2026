@@ -1,39 +1,33 @@
-from __future__ import annotations
-
-from typing import Any, Dict, List, Optional
-
 from sqlalchemy.orm import Session
 
-from app.core.ids import lineage_id
-from app.models.events import LineageRecord
-from app.repositories.event_repo import LineageRepository
+from app.core.ids import new_id
+from app.repositories.audit_repo import AuditRepository
 
 
 class LineageService:
-    def __init__(self, session: Session):
-        self.repo = LineageRepository(session)
+    """
+    Thin wrapper over the AuditRepository that records every lineage step
+    as an audit log entry. Every transform, every hydration, every write —
+    everything flows through here so the platform has full provenance.
+    """
+
+    def __init__(self, db: Session) -> None:
+        self.audit_repo = AuditRepository(db)
 
     def record(
         self,
         *,
         tenant_id: str,
-        source_system: str,
-        source_record_id: Optional[str],
-        canonical_entity_id: Optional[str],
-        step_name: str,
-        pipeline_name: str = "default",
-        metadata: Optional[Dict[str, Any]] = None,
-    ) -> LineageRecord:
-        return self.repo.append(
-            lineage_id=lineage_id(),
+        actor_id: str,
+        action_name: str,
+        target_entity_id: str | None,
+        details: dict,
+    ):
+        return self.audit_repo.log(
+            log_id=new_id("lin"),
             tenant_id=tenant_id,
-            source_system=source_system,
-            source_record_id=source_record_id,
-            canonical_entity_id=canonical_entity_id,
-            pipeline_name=pipeline_name,
-            step_name=step_name,
-            metadata=metadata,
+            actor_id=actor_id,
+            action_name=action_name,
+            target_entity_id=target_entity_id,
+            details=details,
         )
-
-    def for_entity(self, canonical_entity_id: str) -> List[LineageRecord]:
-        return self.repo.for_entity(canonical_entity_id)
