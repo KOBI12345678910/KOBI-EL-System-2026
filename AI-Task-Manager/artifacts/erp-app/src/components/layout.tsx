@@ -486,6 +486,25 @@ export const NAV_ITEMS: NavItem[] = [
     { href: "/ai-builder", label: "בונה AI", icon: Brain, section: "מנהלת מערכת", subSection: "כלים" },
     { href: "/audit-log", label: "יומן ביקורת", icon: SearchCode, section: "מנהלת מערכת", subSection: "כלים" },
 
+    // ─── Palantir Foundry Platform ───
+    { href: "/palantir/ontology", label: "Ontology Manager", icon: Database, section: "פלטפורמה", subSection: "Palantir Foundry" },
+    { href: "/palantir/objects", label: "Object Explorer", icon: Search, section: "פלטפורמה", subSection: "Palantir Foundry" },
+    { href: "/palantir/link-analysis", label: "Link Analysis — ניתוח קשרים", icon: Share2, section: "פלטפורמה", subSection: "Palantir Foundry" },
+    { href: "/palantir/dossier", label: "Dossier — תיקי חקירה", icon: FileText, section: "פלטפורמה", subSection: "Palantir Foundry" },
+    { href: "/palantir/timeline", label: "Timeline Analysis", icon: Clock, section: "פלטפורמה", subSection: "Palantir Foundry" },
+    { href: "/palantir/map", label: "Map / Geospatial", icon: MapIcon, section: "פלטפורמה", subSection: "Palantir Foundry" },
+    { href: "/palantir/aip", label: "AIP Agent Studio", icon: Bot, section: "פלטפורמה", subSection: "Palantir Foundry" },
+    { href: "/palantir/pipeline", label: "Pipeline Builder", icon: Zap, section: "פלטפורמה", subSection: "Palantir Foundry" },
+    { href: "/palantir/workspace", label: "Code Workspace", icon: Blocks, section: "פלטפורמה", subSection: "Palantir Foundry" },
+    { href: "/palantir/actions", label: "Actions Studio", icon: Wrench, section: "פלטפורמה", subSection: "Palantir Foundry" },
+
+    // ─── Advanced Tech Stack ───
+    { href: "/advanced/digital-twin", label: "Digital Twin — תאום מפעל", icon: Factory, section: "פלטפורמה", subSection: "Advanced Tech" },
+    { href: "/advanced/nl-query", label: "NL Query — שאילתות טבעיות", icon: MessageSquare, section: "פלטפורמה", subSection: "Advanced Tech" },
+    { href: "/advanced/graph-analytics", label: "Graph Analytics", icon: Share2, section: "פלטפורמה", subSection: "Advanced Tech" },
+    { href: "/advanced/forecasting", label: "Predictive Forecasting", icon: TrendingUp, section: "פלטפורמה", subSection: "Advanced Tech" },
+    { href: "/advanced/anomaly-detection", label: "Anomaly Detection — AI", icon: AlertTriangle, section: "פלטפורמה", subSection: "Advanced Tech" },
+
     // ─── מערכת הרשאות Enterprise ───
     { href: "/system/users", label: "ניהול משתמשים", icon: Users, section: "מנהלת מערכת", subSection: "הרשאות Enterprise" },
     { href: "/system/roles", label: "ניהול תפקידים", icon: Shield, section: "מנהלת מערכת", subSection: "הרשאות Enterprise" },

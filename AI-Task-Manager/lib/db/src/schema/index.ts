@@ -215,3 +215,6 @@ export * from "./permission-system";
 
 // Advanced Technology Stack (Vector Search, Digital Twin, Graph, ML, IoT, Blockchain)
 export * from "./advanced-tech";
+
+// Palantir-Style Foundry Platform (Ontology, Dossiers, Pipelines, AIP, Code Workspace)
+export * from "./palantir-foundry";

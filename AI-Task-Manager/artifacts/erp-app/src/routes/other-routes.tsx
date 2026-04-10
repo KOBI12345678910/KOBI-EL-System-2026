@@ -495,6 +495,25 @@ const CustomerPortalLoginPage = lazyPage(() => import("@/pages/portal/customer-p
 const EmployeePortalPage = lazyPage(() => import("@/pages/portal/employee-portal"));
 const PortalLoginPage = lazyPage(() => import("@/pages/portal/portal-login"));
 
+// Advanced Tech Stack Pages
+const DigitalTwinFactoryPage = lazyPage(() => import("@/pages/advanced/digital-twin-factory"));
+const NLQueryAssistantPage = lazyPage(() => import("@/pages/advanced/nl-query-assistant"));
+const GraphAnalyticsAdvancedPage = lazyPage(() => import("@/pages/advanced/graph-analytics"));
+const PredictiveForecastingPage = lazyPage(() => import("@/pages/advanced/predictive-forecasting"));
+const AnomalyDetectionCenterPage = lazyPage(() => import("@/pages/advanced/anomaly-detection"));
+
+// Palantir Foundry Pages
+const OntologyManagerPage = lazyPage(() => import("@/pages/palantir/ontology-manager"));
+const ObjectExplorerPage = lazyPage(() => import("@/pages/palantir/object-explorer"));
+const LinkAnalysisGraphPage = lazyPage(() => import("@/pages/palantir/link-analysis-graph"));
+const DossierPage = lazyPage(() => import("@/pages/palantir/dossier-page"));
+const TimelineAnalysisPage = lazyPage(() => import("@/pages/palantir/timeline-analysis"));
+const MapGeospatialPage = lazyPage(() => import("@/pages/palantir/map-geospatial"));
+const AIPAgentStudioPage = lazyPage(() => import("@/pages/palantir/aip-agent-studio"));
+const PipelineBuilderPage = lazyPage(() => import("@/pages/palantir/pipeline-builder"));
+const CodeWorkspacePage = lazyPage(() => import("@/pages/palantir/code-workspace"));
+const ActionsStudioPage = lazyPage(() => import("@/pages/palantir/actions-studio"));
+
 export const OtherRoutes = (
 
     <>
@@ -1036,6 +1055,25 @@ export const OtherRoutes = (
       <Route path="/portal/customer-login" component={CustomerPortalLoginPage} />
       <Route path="/portal/employee" component={EmployeePortalPage} />
       <Route path="/portal/login" component={PortalLoginPage} />
+
+      {/* Advanced Tech Stack */}
+      <Route path="/advanced/digital-twin" component={DigitalTwinFactoryPage} />
+      <Route path="/advanced/nl-query" component={NLQueryAssistantPage} />
+      <Route path="/advanced/graph-analytics" component={GraphAnalyticsAdvancedPage} />
+      <Route path="/advanced/forecasting" component={PredictiveForecastingPage} />
+      <Route path="/advanced/anomaly-detection" component={AnomalyDetectionCenterPage} />
+
+      {/* Palantir Foundry Platform */}
+      <Route path="/palantir/ontology" component={OntologyManagerPage} />
+      <Route path="/palantir/objects" component={ObjectExplorerPage} />
+      <Route path="/palantir/link-analysis" component={LinkAnalysisGraphPage} />
+      <Route path="/palantir/dossier/:id?" component={DossierPage} />
+      <Route path="/palantir/timeline" component={TimelineAnalysisPage} />
+      <Route path="/palantir/map" component={MapGeospatialPage} />
+      <Route path="/palantir/aip" component={AIPAgentStudioPage} />
+      <Route path="/palantir/pipeline" component={PipelineBuilderPage} />
+      <Route path="/palantir/workspace" component={CodeWorkspacePage} />
+      <Route path="/palantir/actions" component={ActionsStudioPage} />
 
     </>
 );
