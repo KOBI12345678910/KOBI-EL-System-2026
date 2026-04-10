@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from app.api.command_center import router as command_center_router
 from app.api.engines import router as engines_router
 from app.api.ingest import router as ingest_router
+from app.api.intelligence import router as intelligence_router
 from app.api.live import router as live_router
 from app.api.ontology import router as ontology_router
 from app.api.platform import router as platform_router
@@ -80,6 +81,7 @@ def create_app() -> FastAPI:
     app.include_router(command_center_router)
     app.include_router(engines_router)
     app.include_router(platform_router)
+    app.include_router(intelligence_router)
     app.include_router(ws_router)
 
     @app.get("/")
@@ -108,6 +110,14 @@ def create_app() -> FastAPI:
                 "scheduler": True,
                 "notification_service": True,
                 "simulation_engine": True,
+                "dashboard_exporter": True,
+                "anomaly_detection": True,
+                "forecast_engine": True,
+                "vector_search": True,
+                "replay_engine": True,
+                "data_quality_engine": True,
+                "metrics_exporter": True,
+                "cli_tool": True,
                 "kafka_ready": True,
                 "redis_ready": True,
             },
