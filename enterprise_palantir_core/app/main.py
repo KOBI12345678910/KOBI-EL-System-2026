@@ -11,6 +11,7 @@ from app.api.intelligence import router as intelligence_router
 from app.api.live import router as live_router
 from app.api.ontology import router as ontology_router
 from app.api.platform import router as platform_router
+from app.api.security import router as security_router
 from app.api.ws import router as ws_router
 from app.config import settings
 from app.db import Base, engine
@@ -93,6 +94,7 @@ def create_app() -> FastAPI:
     app.include_router(intelligence_router)
     app.include_router(analytics_router)
     app.include_router(advanced_router)
+    app.include_router(security_router)
     app.include_router(ws_router)
 
     @app.get("/")
@@ -141,6 +143,12 @@ def create_app() -> FastAPI:
                 "webhook_receiver": True,
                 "batch_ingest": True,
                 "job_queue": True,
+                "api_key_vault": True,
+                "rate_limiter": True,
+                "request_tracer": True,
+                "encryption_vault": True,
+                "backup_engine": True,
+                "template_engine": True,
                 "kafka_ready": True,
                 "redis_ready": True,
             },
