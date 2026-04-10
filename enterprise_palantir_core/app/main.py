@@ -13,6 +13,7 @@ from app.api.live import router as live_router
 from app.api.ontology import router as ontology_router
 from app.api.platform import router as platform_router
 from app.api.security import router as security_router
+from app.api.spatial import router as spatial_router
 from app.api.ws import router as ws_router
 from app.config import settings
 from app.db import Base, engine
@@ -97,6 +98,7 @@ def create_app() -> FastAPI:
     app.include_router(advanced_router)
     app.include_router(security_router)
     app.include_router(governance_router)
+    app.include_router(spatial_router)
     app.include_router(ws_router)
 
     @app.get("/")
@@ -155,6 +157,10 @@ def create_app() -> FastAPI:
                 "user_directory": True,
                 "query_dsl": True,
                 "data_catalog": True,
+                "geospatial_engine": True,
+                "timeline_playback": True,
+                "dependency_analyzer": True,
+                "scenario_planner": True,
                 "kafka_ready": True,
                 "redis_ready": True,
             },
