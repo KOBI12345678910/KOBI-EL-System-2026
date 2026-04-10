@@ -2,6 +2,7 @@ import os
 
 from fastapi import FastAPI
 
+from app.api.advanced import router as advanced_router
 from app.api.analytics import router as analytics_router
 from app.api.command_center import router as command_center_router
 from app.api.engines import router as engines_router
@@ -62,17 +63,24 @@ def create_app() -> FastAPI:
     @app.on_event("startup")
     async def _start_scheduler() -> None:
         try:
+            from app.engines.health_check import HealthCheckEngine
+            from app.engines.job_queue import get_job_queue
             from app.engines.scheduler import get_scheduler
+            HealthCheckEngine.start()
             await get_scheduler().start()
             print("[startup] scheduler loop started")
+            await get_job_queue().start()
+            print("[startup] job queue workers started")
         except Exception as exc:
-            print(f"[startup] scheduler loop failed: {exc}")
+            print(f"[startup] scheduler/queue loop failed: {exc}")
 
     @app.on_event("shutdown")
     async def _stop_scheduler() -> None:
         try:
+            from app.engines.job_queue import get_job_queue
             from app.engines.scheduler import get_scheduler
             await get_scheduler().stop()
+            await get_job_queue().stop()
         except Exception:
             pass
 
@@ -84,6 +92,7 @@ def create_app() -> FastAPI:
     app.include_router(platform_router)
     app.include_router(intelligence_router)
     app.include_router(analytics_router)
+    app.include_router(advanced_router)
     app.include_router(ws_router)
 
     @app.get("/")
@@ -126,6 +135,12 @@ def create_app() -> FastAPI:
                 "sla_manager": True,
                 "export_engine": True,
                 "deep_health": True,
+                "graphql_layer": True,
+                "document_store": True,
+                "full_text_index": True,
+                "webhook_receiver": True,
+                "batch_ingest": True,
+                "job_queue": True,
                 "kafka_ready": True,
                 "redis_ready": True,
             },
