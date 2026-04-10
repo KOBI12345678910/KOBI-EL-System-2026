@@ -221,3 +221,6 @@ export * from "./palantir-foundry";
 
 // Real-Time Operational Intelligence Platform — unified event bus, entity states, causal graph
 export * from "./realtime-platform";
+
+// Data Fabric — connectors, datasets, pipelines, lineage, identity resolution, canonical model, quality
+export * from "./data-fabric";

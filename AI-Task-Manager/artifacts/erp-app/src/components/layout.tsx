@@ -494,6 +494,13 @@ export const NAV_ITEMS: NavItem[] = [
     { href: "/command-center/executions", label: "יומן ביצוע אוטונומי", icon: Zap, section: "פלטפורמה", subSection: "Command Center" },
     { href: "/command-center/profit", label: "אינטליגנציית רווח", icon: DollarSign, section: "פלטפורמה", subSection: "Command Center" },
 
+    // ─── Data Fabric — Enterprise Data Foundation ───
+    { href: "/data-fabric", label: "Data Fabric — סקירה", icon: Database, section: "פלטפורמה", subSection: "Data Fabric" },
+    { href: "/data-fabric/lineage", label: "Data Lineage", icon: Network, section: "פלטפורמה", subSection: "Data Fabric" },
+    { href: "/data-fabric/identity", label: "Identity Resolution", icon: Share2, section: "פלטפורמה", subSection: "Data Fabric" },
+    { href: "/data-fabric/quality", label: "Data Quality + Freshness", icon: ShieldAlert, section: "פלטפורמה", subSection: "Data Fabric" },
+    { href: "/data-fabric/products", label: "Data Products Catalog", icon: Package, section: "פלטפורמה", subSection: "Data Fabric" },
+
     // ─── Palantir Foundry Platform ───
     { href: "/palantir/ontology", label: "Ontology Manager", icon: Database, section: "פלטפורמה", subSection: "Palantir Foundry" },
     { href: "/palantir/objects", label: "Object Explorer", icon: Search, section: "פלטפורמה", subSection: "Palantir Foundry" },

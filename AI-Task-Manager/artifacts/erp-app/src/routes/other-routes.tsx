@@ -522,6 +522,13 @@ const DecisionQueuePage = lazyPage(() => import("@/pages/command-center/decision
 const ExecutionLogPage = lazyPage(() => import("@/pages/command-center/execution-log"));
 const ProfitIntelligencePage = lazyPage(() => import("@/pages/command-center/profit-intelligence"));
 
+// Data Fabric — Enterprise Data Foundation
+const DataFabricOverviewPage = lazyPage(() => import("@/pages/data-fabric/data-fabric-overview"));
+const LineageGraphPage = lazyPage(() => import("@/pages/data-fabric/lineage-graph"));
+const IdentityResolutionPage = lazyPage(() => import("@/pages/data-fabric/identity-resolution"));
+const DataQualityDashboardPage = lazyPage(() => import("@/pages/data-fabric/data-quality-dashboard"));
+const DataProductsFabricPage = lazyPage(() => import("@/pages/data-fabric/data-products"));
+
 export const OtherRoutes = (
 
     <>
@@ -1090,6 +1097,13 @@ export const OtherRoutes = (
       <Route path="/command-center/decisions" component={DecisionQueuePage} />
       <Route path="/command-center/executions" component={ExecutionLogPage} />
       <Route path="/command-center/profit" component={ProfitIntelligencePage} />
+
+      {/* Data Fabric — Enterprise Data Foundation */}
+      <Route path="/data-fabric" component={DataFabricOverviewPage} />
+      <Route path="/data-fabric/lineage" component={LineageGraphPage} />
+      <Route path="/data-fabric/identity" component={IdentityResolutionPage} />
+      <Route path="/data-fabric/quality" component={DataQualityDashboardPage} />
+      <Route path="/data-fabric/products" component={DataProductsFabricPage} />
 
     </>
 );
