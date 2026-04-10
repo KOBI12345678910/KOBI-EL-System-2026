@@ -212,3 +212,6 @@ export * from "./crm-agent-control-ext";
 
 // Enterprise Permission System (RBAC + Data Scopes + Approval + Audit)
 export * from "./permission-system";
+
+// Advanced Technology Stack (Vector Search, Digital Twin, Graph, ML, IoT, Blockchain)
+export * from "./advanced-tech";
