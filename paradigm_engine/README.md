@@ -15,7 +15,7 @@ The engine reasons, debates, self-attacks, dreams, and improves on its own. Powe
 cd paradigm_engine
 npm install
 export ANTHROPIC_API_KEY=sk-ant-xxx   # optional — smoke test runs without it
-npm test                              # 131 assertions, < 1s, no API calls
+npm test                              # 215 assertions, < 1s, no API calls
 npm start                             # runs the full cycle loop
 ```
 
@@ -25,90 +25,98 @@ npm start                             # runs the full cycle loop
 
 ```
 paradigm_engine/
-├── paradigm-engine.js    ← single-file engine (~3,860 lines, 10 modules + 4 cognitive layers)
-├── smoke-test.js         ← 131-assertion test harness (stubs Anthropic SDK)
+├── paradigm-engine.js    ← main entry point (thin wrapper that re-exports all 4 parts)
+├── paradigm-part1.js     ← CONFIG · Brain · Memory · ERPModule · CRMModule · utilities (~1,270 lines)
+├── paradigm-part2.js     ← BOMModule · HRModule · FinanceModule · OpsModule (~1,540 lines)
+├── paradigm-part3.js     ← PricingModule · MarketingModule · QualityModule · NotificationModule · AnalyticsModule (~800 lines)
+├── paradigm-part4.js     ← SwarmCouncil · AdversarialEngine · DreamEngine · MetaLearner · GoalManager · ParadigmEngine (~660 lines)
+├── smoke-test.js         ← 215-assertion test harness (stubs Anthropic SDK)
 ├── package.json
+├── README.md
 └── paradigm-data/        ← auto-created; all state persisted here
 ```
 
-All 4 parts of the engine are merged into one file:
+Each part is a standalone Node module:
 
-| Part | Contents |
-|------|----------|
-| **1/4** | CONFIG · Brain · Memory · ERPModule · CRMModule |
-| **2/4** | BOMModule · HRModule · FinanceModule |
-| **3/4** | OpsModule · PricingModule · QualityModule · NotificationModule · AnalyticsModule |
-| **4/4** | SwarmCouncil (7 agents) · AdversarialEngine · DreamEngine · MetaLearner · GoalManager · ParadigmEngine |
+| Part | Contents | Exports |
+|------|----------|---------|
+| **1/4** | Config, Brain, Memory, ERP, CRM + utilities | `CONFIG`, `Brain`, `Memory`, `ERPModule`, `CRMModule`, `MASTER_SYSTEM_PROMPT`, `cli`, utilities |
+| **2/4** | BOM, HR, Finance, Ops | `BOMModule`, `HRModule`, `FinanceModule`, `OpsModule` |
+| **3/4** | Pricing, Marketing, Quality, Notifications, Analytics | `PricingModule`, `MarketingModule`, `QualityModule`, `NotificationModule`, `AnalyticsModule` |
+| **4/4** | Swarm, Adversarial, Dream, Meta, Goals, orchestrator | `AGENT_ROLES`, `SwarmCouncil`, `AdversarialEngine`, `DreamEngine`, `MetaLearner`, `GoalManager`, `ParadigmEngine` |
 
 ---
 
-## The 10 business modules
+## The 11 business modules
 
-| Module | Responsibilities |
-|--------|------------------|
-| **ERP** | Projects with 17-state lifecycle, inventory w/ reservations, suppliers, purchase orders (VAT-aware), work orders |
-| **CRM** | 8-stage pipeline, 6-dimensional AI lead scoring, interactions, deals, source analytics |
-| **BOM** | 5 default templates (iron/alu/glass railings, electric gate, pergola), integer-agorot cost math, 35% target margin, overhead automation |
-| **HR** | Employees, attendance, vacation/sick days, recruitment, performance reviews, Israeli-compliant payroll (ביטוח לאומי + מס הכנסה + פנסיה) |
-| **Finance** | Invoices with `YYYY-NNNNN` numbering, payments, expenses, VAT reports, P&L, AR aging, bank accounts |
-| **Ops** | Field measurements (עוזי), installations, 3 vehicles, incident reporting, AI-assisted daily planning |
-| **Pricing** | Price book, tiered volume discounts, BOM integration, AI-generated quotes with win probability |
-| **Quality** | Inspections, defect tracking, 10-year warranties, complaints, 4 live KPIs |
-| **Notifications** | 8 Hebrew templates, multi-channel queue (WhatsApp/SMS/Email), retry logic |
-| **Analytics** | Snapshots, AI executive reports, trend analysis |
+| Module | Part | Responsibilities |
+|--------|------|------------------|
+| **ERP** | 1 | Projects with 17-state lifecycle, inventory w/ reservations, suppliers, purchase orders (VAT-aware), work orders |
+| **CRM** | 1 | 8-stage pipeline, 6-dimensional AI lead scoring, interactions, deals, source analytics |
+| **BOM** | 2 | **11 default templates** (iron/alu/glass railings, sliding/entry gates, iron/decorative fences, alu pergola, iron door, alu window, bars) with real Hebrew materials + hebrew suppliers, labor rates, wastage, 35% target margin, AI optimization |
+| **HR** | 2 | Employees, attendance, vacation/sick/personal leaves, recruitment (positions + candidates + interviews), performance reviews (6 dimensions), warnings (verbal/written/final), Israeli payroll compliance |
+| **Finance** | 2 | Transactions, invoices with `YYYY-NNNNN` numbering, receipts, expenses, checks (received/issued), bank accounts, P&L, VAT reports, YTD summaries, AR aging |
+| **Ops** | 2 | Field measurements (עוזי), installations with time-logs, 15 service areas, vehicles w/ insurance/service/test tracking, incident reporting with severity, weekly scheduling (skips Shabbat), AI-assisted daily planning |
+| **Pricing** | 3 | Quotes with AI reasoning, 4-tier volume discounts, repeat customer + referral + cash bonuses, competitor intel, win/loss history, win probability |
+| **Marketing** | 3 | 7 ad channels (Google/Facebook/Instagram/TikTok/SEO/WhatsApp/Email), campaigns with CPL/ROAS tracking, AI-generated SEO content |
+| **Quality** | 3 | Inspections at 5 stages, defects with root cause + corrective/preventive actions, 10-year warranties, claims, complaints, 5 live KPIs |
+| **Notifications** | 3 | 9 Hebrew templates, multi-channel queue (WhatsApp/SMS/Email/Push) with daily limits + retry logic |
+| **Analytics** | 3 | Cross-module snapshots, AI executive reports, trend analysis |
 
 ---
 
 ## The 4-layer cognitive stack
 
-### 1. Swarm Council — 7 C-level agents
-CEO · COO · CFO · CMO · CTO · HR Director · Risk Manager — each with a distinct perspective and priorities. For critical situations, a 3-round debate runs:
-1. Independent opening statements
-2. Cross-examination with other agents' positions
-3. Synthesis by a meta-arbiter → final decision
+### 1. Swarm Council — 7 C-level agents (Part 4)
+CEO · COO · CFO · CMO · CTO · HR Director · Risk Manager — each with a distinct system prompt, perspective, and priorities. For critical situations, a 3-round debate runs:
+1. Independent opening statements (each agent speaks from their role)
+2. Cross-examination with other agents' positions (agree/disagree/compromise)
+3. Synthesis by a meta-arbiter → consensus, dissent, final decision
 
-### 2. Adversarial Engine — Red Team
+### 2. Adversarial Engine — Red Team (Part 4)
 Every decision is attacked for:
-- **6 cognitive biases** (confirmation, anchoring, overconfidence, sunk cost, availability, Dunning-Kruger)
-- **Black swans** with probability/impact estimates
+- **7 cognitive biases** (confirmation, anchoring, overconfidence, sunk cost, availability, Dunning-Kruger, groupthink)
+- **Black swans** with probability/impact estimates (regulation, competition, war, inflation, etc.)
 - **Second- and third-order effects**
 - **Goodhart's Law**, unintended consequences, moral hazard
 - **Reversibility & kill criteria**
+- **Counter-party reactions** (customers, suppliers, employees, competitors)
 
 If the Red Team's verdict is `reject`, the decision is killed.
 
-### 3. Dream Engine — Creative synthesis
+### 3. Dream Engine — Creative synthesis (Part 4)
 Every 50 cycles, enters "dream mode":
-- Cross-domain analogies (nature, physics, music, military, medicine)
+- Cross-domain analogies (nature, physics, music, military, medicine, biology)
 - Unknown unknowns
 - Hidden patterns
 - Emergent strategy
+- "Insight of the night"
 
-### 4. Meta Learner — Learning how to learn
+### 4. Meta Learner — Learning how to learn (Part 4)
 Every 25 cycles:
-- Tunes learning rate and exploration ratio
-- Derives new rules from experience
+- Tunes learning rate (0.05–0.5) and exploration ratio (0.1–0.5)
+- Derives new rules from experience (stored only if confidence > 0.7)
 - Detects overfitting risk
 - Identifies blind spots
+- Proposes next experiment
 
 ---
 
 ## The cycle loop
 
-Every 60 seconds:
+Every 60 seconds the orchestrator runs 11 stages:
 
 1. **Perceive** — snapshot all modules (L0→L1 consciousness)
-2. **Analyze** — one rotating module deep-dives with AI (L2)
+2. **Analyze** — one rotating module deep-dives with AI (L2) — ERP/CRM/BOM/HR/Finance/Ops/Pricing/Marketing/Quality
 3. **Score leads** — every 3 cycles
 4. **Process notifications**
 5. **Predict** — every 5 cycles (L3)
-6. **Decide via Swarm** — if critical (L4)
+6. **Decide via Swarm** — if `status === "critical"` or `score < 50` (L4)
 7. **Adversarial test** — every 15 cycles
 8. **Dream** — every 50 cycles
 9. **Meta-learn** — every 25 cycles
 10. **Executive report** — every 10 cycles
-11. **Update goals** — always
-12. **Finalize** — L5 meta-consciousness
+11. **Update goals** + L5 meta-consciousness
 
 ---
 
@@ -116,10 +124,10 @@ Every 60 seconds:
 
 - **All money is integers** — ₪1 = 100 agorot. Never floats.
 - **18% VAT** (מע"מ) on all invoices, POs, expenses, quotes
-- **Israeli payroll** — 12% ביטוח לאומי employer + 10% מס הכנסה + 12% ביטוח לאומי employee + 3.1% בריאות + 6% פנסיה
-- **Minimum wage** — ₪5,572/month (557,200 agorot)
-- **Standard month** — 186 hours, 125% overtime (first 2h), 150% beyond
-- **Payment terms** — Net 30, 2% late penalty
+- **Israeli payroll** — ~11.11% מעסיק (ביטוח לאומי + בריאות) + 6.25% פנסיה + 8.33% פיצויים
+- **Minimum wage** — ₪5,572/month
+- **Standard month** — 186 hours, 125% overtime (first 2h), 150% Shabbat
+- **Payment terms** — שוטף + 30 by default, 60 also supported
 - **Invoice numbering** — `YYYY-NNNNN` (e.g., `2026-00001`)
 
 ---
@@ -129,7 +137,7 @@ Every 60 seconds:
 | ID | Metric | Target | Horizon |
 |----|--------|--------|---------|
 | G1 | leads/day | 8 | monthly |
-| G2 | monthly revenue | ₪150,000 | monthly |
+| G2 | monthly revenue | ₪150,000 (15M agorot) | monthly |
 | G3 | gross margin | 35% | quarterly |
 | G4 | customer satisfaction | 95% | quarterly |
 | G5 | on-time delivery | 90% | monthly |
@@ -149,7 +157,7 @@ Without `ANTHROPIC_API_KEY`, the engine still:
 - Persists state to `paradigm-data/`
 - Returns `null` from `brain.think()` without crashing
 
-The smoke test runs fully in stub mode — **no API calls, 131 assertions, < 1 second**.
+The smoke test runs fully in stub mode — **no API calls, 215 assertions across 18 groups, < 1 second**.
 
 ---
 
