@@ -7,6 +7,7 @@ from app.api.engines import router as engines_router
 from app.api.ingest import router as ingest_router
 from app.api.live import router as live_router
 from app.api.ontology import router as ontology_router
+from app.api.platform import router as platform_router
 from app.api.ws import router as ws_router
 from app.config import settings
 from app.db import Base, engine
@@ -28,8 +29,7 @@ def create_app() -> FastAPI:
         seed_summary = seed_if_needed(force=force)
         print(f"[startup] seed: {seed_summary}")
 
-        # Register catalog policies on the global policy engine
-        # used by the ActionEngine in app/api/engines.py.
+        # Register catalog policies on the global policy engine.
         from app.api.engines import _get_policy_engine
         policy_engine = _get_policy_engine()
         registered = register_policies_on_engine(policy_engine)
@@ -37,11 +37,49 @@ def create_app() -> FastAPI:
     except Exception as exc:
         print(f"[startup] seed/policy registration failed (non-fatal): {exc}")
 
+    # Initialize the connector registry (seeds the default Techno-Kol Uzi
+    # connectors on first access).
+    try:
+        from app.engines.connector_registry import get_connector_registry
+        reg = get_connector_registry()
+        print(f"[startup] connector registry: {len(reg.all())} connectors registered")
+    except Exception as exc:
+        print(f"[startup] connector registry init failed: {exc}")
+
+    # Register the default scheduler jobs. The scheduler itself is not
+    # started here — it's started in the FastAPI @app.on_event("startup")
+    # handler below, because asyncio loop only exists once the app is up.
+    try:
+        from app.engines.scheduler import get_scheduler, register_default_jobs
+        scheduler = get_scheduler()
+        register_default_jobs(scheduler)
+        print(f"[startup] scheduler: {len(scheduler.all())} jobs registered")
+    except Exception as exc:
+        print(f"[startup] scheduler init failed: {exc}")
+
+    @app.on_event("startup")
+    async def _start_scheduler() -> None:
+        try:
+            from app.engines.scheduler import get_scheduler
+            await get_scheduler().start()
+            print("[startup] scheduler loop started")
+        except Exception as exc:
+            print(f"[startup] scheduler loop failed: {exc}")
+
+    @app.on_event("shutdown")
+    async def _stop_scheduler() -> None:
+        try:
+            from app.engines.scheduler import get_scheduler
+            await get_scheduler().stop()
+        except Exception:
+            pass
+
     app.include_router(ingest_router)
     app.include_router(ontology_router)
     app.include_router(live_router)
     app.include_router(command_center_router)
     app.include_router(engines_router)
+    app.include_router(platform_router)
     app.include_router(ws_router)
 
     @app.get("/")
@@ -66,6 +104,10 @@ def create_app() -> FastAPI:
                 "ai_orchestrator": True,
                 "claude_adapter": True,
                 "cdc_framework": True,
+                "connector_registry": True,
+                "scheduler": True,
+                "notification_service": True,
+                "simulation_engine": True,
                 "kafka_ready": True,
                 "redis_ready": True,
             },
