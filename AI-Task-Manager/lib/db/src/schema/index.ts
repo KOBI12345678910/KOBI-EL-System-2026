@@ -224,3 +224,6 @@ export * from "./realtime-platform";
 
 // Data Fabric — connectors, datasets, pipelines, lineage, identity resolution, canonical model, quality
 export * from "./data-fabric";
+
+// Data Platform Core — raw ingestion, curated entities, event store, quarantine, schema registry, hydration
+export * from "./data-platform-core";

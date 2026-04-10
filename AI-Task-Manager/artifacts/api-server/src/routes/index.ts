@@ -202,11 +202,13 @@ import apiHubRouter from "./api-hub";
 import integrationHubRouter from "./integration-hub";
 import realtimePlatformRouter from "./realtime-platform";
 import dataFabricRouter from "./data-fabric";
+import dataPlatformCoreRouter from "./data-platform-core";
 
 const router: IRouter = Router();
 
 router.use("/realtime", realtimePlatformRouter);
 router.use("/fabric", dataFabricRouter);
+router.use("/platform", dataPlatformCoreRouter);
 router.use(healthRouter);
 router.use(dashboardStatsRouter);
 router.use(dedicatedEntityRoutes);

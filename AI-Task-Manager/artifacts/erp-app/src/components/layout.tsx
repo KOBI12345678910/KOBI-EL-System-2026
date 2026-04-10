@@ -501,6 +501,11 @@ export const NAV_ITEMS: NavItem[] = [
     { href: "/data-fabric/quality", label: "Data Quality + Freshness", icon: ShieldAlert, section: "פלטפורמה", subSection: "Data Fabric" },
     { href: "/data-fabric/products", label: "Data Products Catalog", icon: Package, section: "פלטפורמה", subSection: "Data Fabric" },
 
+    // ─── Data Platform Core — Production Ingestion Orchestrator ───
+    { href: "/data-platform/observatory", label: "Platform Observatory", icon: Activity, section: "פלטפורמה", subSection: "Data Platform Core" },
+    { href: "/data-platform/canonical", label: "Canonical Explorer", icon: Database, section: "פלטפורמה", subSection: "Data Platform Core" },
+    { href: "/data-platform/quarantine", label: "Quarantine Browser", icon: ShieldAlert, section: "פלטפורמה", subSection: "Data Platform Core" },
+
     // ─── Palantir Foundry Platform ───
     { href: "/palantir/ontology", label: "Ontology Manager", icon: Database, section: "פלטפורמה", subSection: "Palantir Foundry" },
     { href: "/palantir/objects", label: "Object Explorer", icon: Search, section: "פלטפורמה", subSection: "Palantir Foundry" },

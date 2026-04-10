@@ -529,6 +529,11 @@ const IdentityResolutionPage = lazyPage(() => import("@/pages/data-fabric/identi
 const DataQualityDashboardPage = lazyPage(() => import("@/pages/data-fabric/data-quality-dashboard"));
 const DataProductsFabricPage = lazyPage(() => import("@/pages/data-fabric/data-products"));
 
+// Data Platform Core — Production orchestrator
+const PlatformObservatoryPage = lazyPage(() => import("@/pages/data-platform/platform-observatory"));
+const QuarantineBrowserPage = lazyPage(() => import("@/pages/data-platform/quarantine-browser"));
+const CanonicalExplorerPage = lazyPage(() => import("@/pages/data-platform/canonical-explorer"));
+
 export const OtherRoutes = (
 
     <>
@@ -1104,6 +1109,12 @@ export const OtherRoutes = (
       <Route path="/data-fabric/identity" component={IdentityResolutionPage} />
       <Route path="/data-fabric/quality" component={DataQualityDashboardPage} />
       <Route path="/data-fabric/products" component={DataProductsFabricPage} />
+
+      {/* Data Platform Core — Production Ingestion Orchestrator */}
+      <Route path="/data-platform" component={PlatformObservatoryPage} />
+      <Route path="/data-platform/observatory" component={PlatformObservatoryPage} />
+      <Route path="/data-platform/quarantine" component={QuarantineBrowserPage} />
+      <Route path="/data-platform/canonical" component={CanonicalExplorerPage} />
 
     </>
 );
