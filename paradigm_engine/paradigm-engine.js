@@ -6,13 +6,14 @@
 // Structure:
 //   paradigm-part1.js  ← CONFIG · Brain · Memory · ERPModule · CRMModule · utilities
 //   paradigm-part2.js  ← BOMModule · HRModule · FinanceModule · OpsModule
-//   paradigm-part3.js  ← PricingModule · MarketingModule · QualityModule · NotificationModule · AnalyticsModule
-//   paradigm-part4.js  ← SwarmCouncil · AdversarialEngine · DreamEngine · MetaLearner · GoalManager · ParadigmEngine
+//   paradigm-part3.js  ← PricingModule · QualityModule · NotificationModule · AnalyticsModule
+//                        Swarm · Adversarial · Dream · MetaLearner · Goals
+//   paradigm-part4.js  ← ParadigmEngine (orchestrator)
 //
 // Usage:
 //   node paradigm-engine.js                                          # run the full autonomous loop
 //   node -e "require('./paradigm-engine.js').ParadigmEngine"         # programmatic access
-//   npm test                                                         # 131-assertion smoke test in stub mode
+//   npm test                                                         # smoke test in stub mode
 // ════════════════════════════════════════════════════════════════════════════════
 
 const part1 = require("./paradigm-part1");
@@ -36,18 +37,18 @@ module.exports = {
   FinanceModule: part2.FinanceModule,
   OpsModule: part2.OpsModule,
   PricingModule: part3.PricingModule,
-  MarketingModule: part3.MarketingModule,
   QualityModule: part3.QualityModule,
   NotificationModule: part3.NotificationModule,
   AnalyticsModule: part3.AnalyticsModule,
 
-  // ── Cognitive layer (Part 4) ──
-  AGENT_ROLES: part4.AGENT_ROLES,
-  SwarmCouncil: part4.SwarmCouncil,
-  AdversarialEngine: part4.AdversarialEngine,
-  DreamEngine: part4.DreamEngine,
-  MetaLearner: part4.MetaLearner,
-  GoalManager: part4.GoalManager,
+  // ── Cognitive layer (Part 3) ──
+  Swarm: part3.Swarm,
+  Adversarial: part3.Adversarial,
+  Dream: part3.Dream,
+  MetaLearner: part3.MetaLearner,
+  Goals: part3.Goals,
+
+  // ── Orchestrator (Part 4) ──
   ParadigmEngine: part4.ParadigmEngine,
 
   // ── Utilities (Part 1) ──

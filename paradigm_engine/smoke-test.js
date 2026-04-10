@@ -52,16 +52,14 @@ group("1. Module exports — public API", () => {
   check("FinanceModule (part 2)", typeof P.FinanceModule === "function");
   check("OpsModule (part 2)", typeof P.OpsModule === "function");
   check("PricingModule (part 3)", typeof P.PricingModule === "function");
-  check("MarketingModule (part 3)", typeof P.MarketingModule === "function");
   check("QualityModule (part 3)", typeof P.QualityModule === "function");
   check("NotificationModule (part 3)", typeof P.NotificationModule === "function");
   check("AnalyticsModule (part 3)", typeof P.AnalyticsModule === "function");
-  check("AGENT_ROLES (part 4)", typeof P.AGENT_ROLES === "object" && Object.keys(P.AGENT_ROLES).length === 7);
-  check("SwarmCouncil (part 4)", typeof P.SwarmCouncil === "function");
-  check("AdversarialEngine (part 4)", typeof P.AdversarialEngine === "function");
-  check("DreamEngine (part 4)", typeof P.DreamEngine === "function");
-  check("MetaLearner (part 4)", typeof P.MetaLearner === "function");
-  check("GoalManager (part 4)", typeof P.GoalManager === "function");
+  check("Swarm (part 3)", typeof P.Swarm === "function");
+  check("Adversarial (part 3)", typeof P.Adversarial === "function");
+  check("Dream (part 3)", typeof P.Dream === "function");
+  check("MetaLearner (part 3)", typeof P.MetaLearner === "function");
+  check("Goals (part 3)", typeof P.Goals === "function");
   check("ParadigmEngine (part 4)", typeof P.ParadigmEngine === "function");
 });
 
@@ -229,8 +227,8 @@ group("9. FinanceModule — invoices + transactions + P&L", () => {
   check("addExpense", exp && exp.id.startsWith("EXP-"));
   check("expense transaction recorded", fin.data.transactions.some(t => t.type === "expense"));
   check("cashflow.out > 0", fin.data.cashflow.out > 0);
-  const check1 = fin.addCheck({ type: "received", number: "12345", amount: P.agorot(10000), payer: "לקוח" });
-  check("addCheck", check1 && check1.id);
+  const c1 = fin.addCheck({ type: "received", number: "12345", amount: P.agorot(10000), payer: "לקוח" });
+  check("addCheck", c1 && c1.id);
   const pnl = fin.getMonthlyPnL();
   check("getMonthlyPnL returns object", pnl && typeof pnl.income === "number");
   const ytd = fin.getYTDSummary();
@@ -267,133 +265,146 @@ group("10. OpsModule — measurements + installations + vehicles", () => {
   check("getScheduleForWeek skips Saturday", week.every(d => new Date(d.date).getDay() !== 6));
 });
 
-group("11. PricingModule — quotes + discounts + win tracking", () => {
+group("11. PricingModule — quote generation + discounts + tracking", () => {
   const brain = new P.Brain();
   const memory = new P.Memory();
-  const pr = new P.PricingModule(brain, memory);
-  check("discount policy maxDiscount = 12", pr.data.discountPolicy.maxDiscountPercent === 12);
-  check("volume discount tiers = 4", pr.data.discountPolicy.volumeDiscounts.length === 4);
-  check("competitorIntel has 4 competitors", Object.keys(pr.data.competitorIntel).length === 4);
-  check("initial winHistory = 0/0/0", pr.data.winHistory.total === 0);
-  check("winRate N/A when empty", pr.getWinRate() === "N/A");
+  const bom = new P.BOMModule(brain, memory);
+  const pricing = new P.PricingModule(brain, memory, bom);
+  check("has 6 discount policies", pricing.data.discountPolicies.length === 6);
+  check("has 5 dynamic rules", pricing.data.dynamicRules.length === 5);
+  check("has 4 competitor prices", pricing.data.competitorPrices.length === 4);
+  check("conversionTracking initialized", pricing.data.conversionTracking.quoted === 0);
+  check("getConversionRate returns '0' initially", pricing.getConversionRate() === "0");
 });
 
-group("12. MarketingModule — campaigns + channels", () => {
-  const brain = new P.Brain();
-  const memory = new P.Memory();
-  const mk = new P.MarketingModule(brain, memory);
-  check("7 channels configured", Object.keys(mk.data.channels).length === 7);
-  check("google_ads enabled", mk.data.channels.google_ads.enabled === true);
-  check("tiktok disabled by default", mk.data.channels.tiktok.enabled === false);
-  const c = mk.createCampaign({ name: "Spring Sale", channel: "google_ads", budget: P.agorot(5000) });
-  check("createCampaign", c && c.id.startsWith("CMP-"));
-  const spent = mk.recordAdSpend(c.id, P.agorot(100), { impressions: 1000, clicks: 50, leads: 5 });
-  check("recordAdSpend", spent && spent.spent === P.agorot(100));
-  check("results.clicks updated", spent.results.clicks === 50);
-  check("cpl calculated", spent.results.cpl > 0);
-});
-
-group("13. QualityModule — inspections + defects + warranties", () => {
+group("12. QualityModule — inspections + defects + warranties + feedback + NPS", () => {
   const brain = new P.Brain();
   const memory = new P.Memory();
   const q = new P.QualityModule(brain, memory);
-  check("has 10 standards", Object.keys(q.data.standards).length === 10);
-  const insp = q.createInspection({ projectId: "PRJ-test", stage: "pre_delivery", inspector: "Test" });
+  check("has 4 standards", q.data.standards.length === 4);
+  check("has 5 checklists", Object.keys(q.data.checklists).length === 5);
+  check("measurement checklist has 5 items", q.data.checklists.measurement.length === 5);
+  const insp = q.createInspection({ projectId: "PRJ-test", type: "final", inspector: "עוזי" });
   check("createInspection", insp && insp.id.startsWith("QC-"));
-  const completed = q.completeInspection(insp.id, { result: "pass" });
+  check("inspection has checklist populated", insp.checklist.length > 0);
+  const completed = q.completeInspection(insp.id, { overallScore: 5, checklist: insp.checklist.map(c => ({ id: c.id, checked: true })) });
   check("completeInspection", completed && completed.status === "completed");
   const def = q.reportDefect({ projectId: "PRJ-test", type: "cosmetic", severity: "minor", description: "scratch" });
   check("reportDefect", def && def.id.startsWith("DEF-"));
-  const resolved = q.resolveDefect(def.id, { notes: "fixed", actualCost: P.agorot(50) });
-  check("resolveDefect", resolved && resolved.status === "resolved");
-  const w = q.createWarranty({ customerName: "Test", projectType: "railing_iron" });
-  check("createWarranty", w && w.id.startsWith("WAR-"));
-  check("warranty 10 years default", w.durationYears === 10);
-  const claim = q.fileWarrantyClaim(w.id, { description: "rust" });
-  check("fileWarrantyClaim", claim && claim.id.startsWith("CLM-"));
-  const cmp = q.recordComplaint({ customerName: "Test", category: "quality", description: "delay" });
-  check("recordComplaint", cmp && cmp.id.startsWith("CMP-"));
-  const kpis = q.calculateKPIs();
-  check("calculateKPIs", typeof kpis === "object" && typeof kpis.defectRate === "number");
+  const fixed = q.fixDefect(def.id, { resolution: "touched up", fixCost: P.agorot(50) });
+  check("fixDefect", fixed && fixed.status === "fixed");
+  const w = q.addWarranty({ customerName: "Test", productType: "railing_iron" });
+  check("addWarranty", w && w.id.startsWith("WAR-"));
+  check("structural warranty 10 years", w.structuralWarranty.years === 10);
+  check("finish warranty 2 years", w.finishWarranty.years === 2);
+  const claim = q.addWarrantyClaim(w.id, { description: "rust", type: "repair" });
+  check("addWarrantyClaim", claim && claim.id);
+  const fb1 = q.addFeedback({ customerName: "Test", overallScore: 5, recommendation: 10, comment: "מעולה" });
+  check("addFeedback", fb1 && fb1.id);
+  const fb2 = q.addFeedback({ customerName: "Test2", overallScore: 4, recommendation: 9 });
+  const fb3 = q.addFeedback({ customerName: "Test3", overallScore: 3, recommendation: 6 });
+  const nps = q.getNPS();
+  check("getNPS calculates promoters - detractors", typeof nps === "number");
+  const dr = q.getDefectRate();
+  check("getDefectRate returns string percent", typeof dr === "string");
 });
 
-group("14. NotificationModule — templates + queue", () => {
-  const brain = new P.Brain();
+group("13. NotificationModule — notify + unread + summary", () => {
   const memory = new P.Memory();
-  const n = new P.NotificationModule(brain, memory);
-  check("has 9 templates", Object.keys(n.data.templates).length === 9);
-  check("4 channels", Object.keys(n.data.channels).length === 4);
-  const rendered = n.render("quote_sent", { name: "דוד", number: "2026-Q0001", total: "12,345", validUntil: "2026-05-01" });
-  check("render substitutes vars", rendered && rendered.includes("דוד") && rendered.includes("12,345"));
-  const q = n.enqueue({ channel: "whatsapp", to: "050-1234567", toName: "Test", template: "lead_new", vars: { name: "Test" } });
-  check("enqueue", q && q.id.startsWith("NOT-"));
-  check("queue has message", n.data.queue.length === 1);
-  n.resetDailyCounters();
-  check("resetDailyCounters", n.data.channels.whatsapp.sent === 0);
+  const n = new P.NotificationModule(memory); // Note: only takes memory
+  check("has default channels", typeof n.data.channels === "object");
+  check("has 3-level escalation policy", n.data.escalationPolicy.length === 3);
+  const notice = n.notify({ level: "warning", title: "Test", message: "Test message", target: "קובי" });
+  check("notify returns notification", notice && notice.id);
+  check("notification unread by default", notice.read === false);
+  const critical = n.notify({ level: "critical", title: "URGENT", message: "crisis" });
+  check("critical notification created", critical.level === "critical");
+  check("getUnread has 2", n.getUnread().length === 2);
+  check("getCritical has 1", n.getCritical().length === 1);
+  n.markRead(notice.id);
+  check("markRead works", n.getUnread().length === 1);
+  n.markActioned(critical.id);
+  check("markActioned works", n.getCritical().length === 0);
+  const summary = n.getSummary();
+  check("getSummary returns object", typeof summary === "object" && typeof summary.total === "number");
 });
 
-group("15. AnalyticsModule — snapshots across all modules", () => {
+group("14. AnalyticsModule — takeSnapshot across all modules", () => {
   const brain = new P.Brain();
   const memory = new P.Memory();
-  const mods = {
+  const bom = new P.BOMModule(brain, memory);
+  const modules = {
     erp: new P.ERPModule(brain, memory),
     crm: new P.CRMModule(brain, memory),
-    bom: new P.BOMModule(brain, memory),
+    bom: bom,
     hr: new P.HRModule(brain, memory),
     finance: new P.FinanceModule(brain, memory),
     ops: new P.OpsModule(brain, memory),
-    pricing: new P.PricingModule(brain, memory),
-    marketing: new P.MarketingModule(brain, memory),
+    pricing: new P.PricingModule(brain, memory, bom),
     quality: new P.QualityModule(brain, memory),
+    notifications: new P.NotificationModule(memory),
+    brain: brain,
   };
-  const an = new P.AnalyticsModule(brain, memory, mods);
+  const an = new P.AnalyticsModule(brain, memory, modules);
   const snap = an.takeSnapshot();
-  check("takeSnapshot", snap && snap.id.startsWith("SNAP-"));
-  check("snap has erp section", !!snap.erp);
-  check("snap has crm section", !!snap.crm);
-  check("snap has bom section", !!snap.bom);
-  check("snap has hr section", !!snap.hr);
-  check("snap has finance section", !!snap.finance);
-  check("snap has ops section", !!snap.ops);
-  check("snap has pricing section", !!snap.pricing);
-  check("snap has marketing section", !!snap.marketing);
-  check("snap has quality section", !!snap.quality);
+  check("takeSnapshot returns object", snap && typeof snap.t === "string");
+  check("snap.erp populated", !!snap.erp);
+  check("snap.crm populated", !!snap.crm);
+  check("snap.hr populated", !!snap.hr);
+  check("snap.finance populated", !!snap.finance);
+  check("snap.ops populated", !!snap.ops);
+  check("snap.pricing populated", !!snap.pricing);
+  check("snap.quality populated", !!snap.quality);
+  check("snap.brain populated", !!snap.brain);
+  check("snap.notifications populated", !!snap.notifications);
   check("snapshot persisted", an.data.snapshots.length === 1);
 });
 
-group("16. Cognitive layer — Swarm + Adversarial + Dream + Meta", () => {
+group("15. Swarm — 7-agent debate layer", () => {
   const brain = new P.Brain();
-  const memory = new P.Memory();
-  const swarm = new P.SwarmCouncil(brain, memory);
-  const adv = new P.AdversarialEngine(brain, memory);
-  const dream = new P.DreamEngine(brain, memory);
-  const meta = new P.MetaLearner(brain, memory);
-  check("SwarmCouncil instantiable", swarm && typeof swarm.debate === "function");
-  check("AdversarialEngine instantiable", adv && typeof adv.attack === "function");
-  check("DreamEngine instantiable", dream && typeof dream.dream === "function");
-  check("MetaLearner instantiable", meta && typeof meta.reflect === "function");
-  check("MetaLearner default LR = 0.15", meta.data.learningRate === 0.15);
-  check("AGENT_ROLES has CEO", !!P.AGENT_ROLES.ceo);
-  check("AGENT_ROLES has COO", !!P.AGENT_ROLES.coo);
-  check("AGENT_ROLES has CFO", !!P.AGENT_ROLES.cfo);
-  check("AGENT_ROLES has CMO", !!P.AGENT_ROLES.cmo);
-  check("AGENT_ROLES has CTO", !!P.AGENT_ROLES.cto);
-  check("AGENT_ROLES has CHRO", !!P.AGENT_ROLES.chro);
-  check("AGENT_ROLES has CRO", !!P.AGENT_ROLES.cro);
+  const swarm = new P.Swarm(brain);
+  check("has 7 agents", swarm.agents.length === 7);
+  const roles = swarm.agents.map(a => a.role);
+  check("has CEO — קובי", roles.some(r => r.includes("CEO")));
+  check("has COO — דימה", roles.some(r => r.includes("COO")));
+  check("has CFO", roles.some(r => r.includes("CFO")));
+  check("has CMO", roles.some(r => r.includes("CMO")));
+  check("has CTO", roles.some(r => r.includes("CTO")));
+  check("has HR — קורין", roles.some(r => r.includes("HR")));
+  check("has Risk Manager", roles.some(r => r.includes("Risk")));
+  check("debate method exists", typeof swarm.debate === "function");
+  check("debateHistory initialized", Array.isArray(swarm.debateHistory));
 });
 
-group("17. Goals", () => {
-  const memory = new P.Memory();
-  const goals = new P.GoalManager(memory);
+group("16. Adversarial + Dream + MetaLearner", () => {
+  const brain = new P.Brain();
+  const adv = new P.Adversarial(brain);
+  const dream = new P.Dream(brain);
+  const meta = new P.MetaLearner(brain);
+  check("Adversarial instantiable", adv && typeof adv.attack === "function");
+  check("Adversarial has stressTest", typeof adv.stressTest === "function");
+  check("Adversarial attacks array", Array.isArray(adv.attacks));
+  check("Dream instantiable", dream && typeof dream.dream === "function");
+  check("Dream dreams array", Array.isArray(dream.dreams));
+  check("MetaLearner instantiable", meta && typeof meta.evaluate === "function");
+  check("MetaLearner has strategies array", Array.isArray(meta.data.strategies));
+  check("MetaLearner has learningCurve array", Array.isArray(meta.data.learningCurve));
+});
+
+group("17. Goals — 10 business objectives", () => {
+  const brain = new P.Brain();
+  const goals = new P.Goals(brain);
   check("has 10 default goals", goals.goals.length === 10);
-  check("G1 = leads_per_day", goals.goals[0].metric === "leads_per_day");
-  check("G2 = monthly_revenue_agorot", goals.goals[1].metric === "monthly_revenue_agorot");
-  check("G10 = defect_rate_percent", goals.goals[9].metric === "defect_rate_percent");
-  const updated = goals.update("G1", 5);
-  check("update goal", updated && updated.current === 5);
-  check("progress calculated", updated.progress > 0);
-  const status = goals.getStatus();
-  check("getStatus returns array of 10", Array.isArray(status) && status.length === 10);
+  check("g1 = 100 לידים ביום", goals.goals[0].id === "g1" && goals.goals[0].target === 100);
+  check("g7 = revenue target in agorot", goals.goals[6].id === "g7" && goals.goals[6].target === 500000000);
+  check("g10 = אפס תאונות עבודה", goals.goals[9].id === "g10" && goals.goals[9].target === 0);
+  check("each goal has owner", goals.goals.every(g => !!g.owner));
+  check("each goal has category", goals.goals.every(g => !!g.category));
+  check("each goal has deadline", goals.goals.every(g => !!g.deadline));
+  check("each goal has history array", goals.goals.every(g => Array.isArray(g.history)));
+  goals.update("g1", 25);
+  check("update adds to history", goals.goals[0].history.length === 1);
+  check("update sets current", goals.goals[0].current === 25);
 });
 
 group("18. ParadigmEngine — main orchestrator", () => {
@@ -407,21 +418,23 @@ group("18. ParadigmEngine — main orchestrator", () => {
   check("engine has Finance", engine.finance instanceof P.FinanceModule);
   check("engine has Ops", engine.ops instanceof P.OpsModule);
   check("engine has Pricing", engine.pricing instanceof P.PricingModule);
-  check("engine has Marketing", engine.marketing instanceof P.MarketingModule);
   check("engine has Quality", engine.quality instanceof P.QualityModule);
-  check("engine has Notifications", engine.notify instanceof P.NotificationModule);
+  check("engine has Notifications", engine.notifications instanceof P.NotificationModule);
   check("engine has Analytics", engine.analytics instanceof P.AnalyticsModule);
-  check("engine has Swarm", engine.swarm instanceof P.SwarmCouncil);
-  check("engine has Adversarial", engine.adversarial instanceof P.AdversarialEngine);
-  check("engine has Dream", engine.dream instanceof P.DreamEngine);
-  check("engine has Meta", engine.meta instanceof P.MetaLearner);
-  check("engine has Goals", engine.goals instanceof P.GoalManager);
+  check("engine has Swarm", engine.swarm instanceof P.Swarm);
+  check("engine has Adversarial", engine.adversarial instanceof P.Adversarial);
+  check("engine has Dream", engine.dream instanceof P.Dream);
+  check("engine has MetaLearner", engine.metaLearner instanceof P.MetaLearner);
+  check("engine has Goals", engine.goals instanceof P.Goals);
   check("engine.cycle = 0", engine.cycle === 0);
   check("engine.running = false", engine.running === false);
   const status = engine.getStatus();
   check("getStatus returns object", status && typeof status === "object");
   check("getStatus.cycle = 0", status.cycle === 0);
-  check("getStatus.modules has all 9 business modules", Object.keys(status.modules).length === 9);
+  check("getStatus.modules populated", status.modules && typeof status.modules === "object");
+  check("getStatus.goals has 10", status.goals.length === 10);
+  check("getAllBusinessModules returns 10", Object.keys(engine.getAllBusinessModules()).length === 10);
+  check("saveAllModules is function", typeof engine.saveAllModules === "function");
 });
 
 console.log(`\n\x1b[36m═══════════════════════════════════════════\x1b[0m`);
