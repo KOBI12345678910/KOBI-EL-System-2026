@@ -83,5 +83,5 @@ def entity_timeline(entity_id: str, db: Session = Depends(get_db)) -> dict:
 
 
 @router.get("/ai-context/{entity_id}")
-def ai_context(entity_id: str, tenant_id: str, db: Session = Depends(get_db)) -> dict:
-    return AIContextService(db).build(tenant_id=tenant_id, entity_id=entity_id)
+def ai_context(entity_id: str, db: Session = Depends(get_db)) -> dict:
+    return AIContextService(db).build_entity_context(entity_id)
