@@ -3,6 +3,7 @@ import os
 from fastapi import FastAPI
 
 from app.api.advanced import router as advanced_router
+from app.api.ai import router as ai_router
 from app.api.analytics import router as analytics_router
 from app.api.command_center import router as command_center_router
 from app.api.engines import router as engines_router
@@ -99,6 +100,7 @@ def create_app() -> FastAPI:
     app.include_router(security_router)
     app.include_router(governance_router)
     app.include_router(spatial_router)
+    app.include_router(ai_router)
     app.include_router(ws_router)
 
     @app.get("/")
@@ -161,6 +163,15 @@ def create_app() -> FastAPI:
                 "timeline_playback": True,
                 "dependency_analyzer": True,
                 "scenario_planner": True,
+                "causal_inference": True,
+                "kg_embeddings": True,
+                "change_point_detection": True,
+                "counterfactual_explainer": True,
+                "multi_agent_reasoning": True,
+                "bayesian_beliefs": True,
+                "rl_bandit": True,
+                "autonomous_ai_operator": True,
+                "graph_summarizer": True,
                 "kafka_ready": True,
                 "redis_ready": True,
             },
