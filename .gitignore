@@ -12,6 +12,11 @@ node_modules/
 # IDE
 .vscode/
 
+# Claude Code local state (settings, launch config, session data)
+.claude/
+*/.claude/
+**/.claude/
+
 # OS files
 .DS_Store
 Thumbs.db
