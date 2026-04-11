@@ -464,6 +464,315 @@ group("18. ParadigmEngine — main orchestrator", () => {
   check("pricing.bom === engine.bom", engine.pricing.bom === engine.bom);
 });
 
+group("19. Mega expansion — Part 5 (Growth + Intel + Integrations + Intl-RE)", () => {
+  const brain = new P.Brain();
+  const memory = new P.Memory();
+
+  const growth = new P.GrowthEngine(brain, memory);
+  check("GrowthEngine has 8 channels", Object.keys(growth.data.channels).length === 8);
+  check("GrowthEngine has audiences", Object.keys(growth.data.audiences).length === 4);
+  check("GrowthEngine has keywords", growth.data.keywords.length >= 9);
+  const camp = growth.createCampaign({ name: "Test Campaign", channel: "google_ads", budget: P.agorot(5000) });
+  check("createCampaign", camp && camp.id.startsWith("CMP-"));
+  const spent = growth.recordAdSpend(camp.id, P.agorot(100), { impressions: 1000, clicks: 50, leads: 5, revenue: P.agorot(20000) });
+  check("recordAdSpend updates results", spent.results.clicks === 50 && spent.results.leads === 5);
+  check("recordAdSpend computes CPL", spent.results.cpl > 0);
+  check("recordAdSpend computes ROAS", parseFloat(spent.results.roas) > 0);
+
+  const intel = new P.CompetitiveIntel(brain, memory);
+  check("CompetitiveIntel has 5 competitors", intel.data.competitors.length === 5);
+  const leader = intel.getMarketLeader();
+  check("getMarketLeader returns competitor", leader && leader.name);
+  const cheapest = intel.getCheapestCompetitor();
+  check("getCheapestCompetitor returns competitor", cheapest && cheapest.priceIndex !== undefined);
+  const change = intel.trackPriceChange("c1", "מעקה ברזל", P.agorot(750), P.agorot(900));
+  check("trackPriceChange records change", change && change.id);
+
+  const integrations = new P.IntegrationsHub(memory);
+  check("IntegrationsHub has 12 connectors", Object.keys(integrations.data.connectors).length === 12);
+  check("getConnectedCount = 0 initially", integrations.getConnectedCount() === 0);
+  integrations.configureConnector("whatsapp_business", { apiKey: "stub", phoneId: "test" });
+  check("configureConnector enables", integrations.data.connectors.whatsapp_business.enabled === true);
+  check("getConnectedCount = 1 after config", integrations.getConnectedCount() === 1);
+  const wh = integrations.registerWebhook({ source: "test", event: "lead_created", url: "https://test" });
+  check("registerWebhook", wh && wh.id);
+
+  const re = new P.InternationalRealEstate(brain, memory);
+  check("InternationalRE has 4 default properties", re.data.properties.length === 4);
+  check("realestate has 3 markets (IL/EN/FR)", Object.keys(re.data.markets).length === 3);
+  const portfolioValue = re.getPortfolioValue();
+  check("getPortfolioValue > 0", portfolioValue > 0);
+  const lead = re.addInternationalLead({ name: "John Smith", email: "john@test.com", country: "US", language: "en", budget: 500000 });
+  check("addInternationalLead", lead && lead.id.startsWith("INTL-LEAD-"));
+  const showing = re.scheduleShowing({ propertyId: re.data.properties[0].id, customerName: "John", scheduledAt: "2026-04-15T14:00:00Z" });
+  check("scheduleShowing", showing && showing.id.startsWith("SHOW-"));
+});
+
+group("20. Mega expansion — Part 6 (SupplyChain + Temporal + DocAI + Dashboard)", () => {
+  const brain = new P.Brain();
+  const memory = new P.Memory();
+  const erp = new P.ERPModule(brain, memory);
+
+  const sc = new P.SupplyChainAI(brain, memory, erp);
+  check("SupplyChainAI instantiable", sc && typeof sc.scoreSupplier === "function");
+  check("SupplyChainAI has stockOptimization config", sc.data.stockOptimization.target.optimalDays === 14);
+  // Add a supplier and item
+  const supplier = erp.addSupplier({ name: "Test Sup", leadTimeDays: 7, rating: 4 });
+  const score = sc.scoreSupplier(supplier.id);
+  check("scoreSupplier returns multi-dim score", score && score.overall > 0 && score.tier);
+  const item = erp.addInventoryItem({ name: "Iron Bar", qty: 5, minQty: 10, supplier: supplier.name });
+  const reorder = sc.computeReorderPoint(item.id);
+  check("computeReorderPoint", reorder && reorder.shouldReorderNow === true);
+
+  const temporal = new P.TemporalIntelligence(brain, memory);
+  check("TemporalIntelligence instantiable", temporal && typeof temporal.recordMetric === "function");
+  // Record metrics for forecasting
+  for (let i = 0; i < 20; i++) temporal.recordMetric("daily_leads", 10 + Math.sin(i) * 3 + i * 0.1);
+  const forecast = temporal.forecast("daily_leads", 7);
+  check("forecast returns predictions", forecast && forecast.predictions.length === 7);
+  check("forecast has direction", ["rising", "falling", "stable"].includes(forecast.direction));
+  // Anomaly detection
+  for (let i = 0; i < 30; i++) temporal.recordMetric("test_metric", 100);
+  const beforeAnomaly = temporal.data.anomalies.length;
+  temporal.recordMetric("test_metric", 500); // huge spike
+  check("detectAnomaly catches spike", temporal.data.anomalies.length > beforeAnomaly);
+  const seasonal = temporal.getSeasonalAverage("daily_leads", "weekly");
+  check("getSeasonalAverage returns object", typeof seasonal === "object");
+
+  const docAI = new P.DocumentAI(brain, memory);
+  check("DocumentAI has 5 templates", Object.keys(docAI.data.templates).length === 5);
+  check("DocumentAI stats initialized", docAI.data.stats.total === 0);
+
+  // DashboardServer (don't actually start)
+  const fakeEngine = { cycle: 0, running: false, healthScore: 100, startTime: null, brain, memory, erp, crm: new P.CRMModule(brain, memory), bom: new P.BOMModule(brain, memory), hr: new P.HRModule(brain, memory), finance: new P.FinanceModule(brain, memory), ops: new P.OpsModule(brain, memory), pricing: new P.PricingModule(brain, memory, new P.BOMModule(brain, memory)), quality: new P.QualityModule(brain, memory), notifications: new P.NotificationModule(memory), goals: new P.Goals(brain), swarm: new P.Swarm(brain), dream: new P.Dream(brain) };
+  const dash = new P.DashboardServer(fakeEngine, 9999);
+  check("DashboardServer instantiable", dash && typeof dash.start === "function");
+  const html = dash.renderDashboardHTML();
+  check("renderDashboardHTML returns HTML", html.includes("PARADIGM"));
+  const snap = dash.buildSnapshot();
+  check("buildSnapshot has all sections", snap.engine && snap.brain && snap.memory && snap.modules && snap.goals);
+});
+
+group("21. Mega expansion — Part 7 (Automation + Scheduler + SLA + CrossSell + Warranty)", () => {
+  const brain = new P.Brain();
+  const memory = new P.Memory();
+  const erp = new P.ERPModule(brain, memory);
+  const crm = new P.CRMModule(brain, memory);
+  const bom = new P.BOMModule(brain, memory);
+  const finance = new P.FinanceModule(brain, memory);
+  const pricing = new P.PricingModule(brain, memory, bom);
+  const ops = new P.OpsModule(brain, memory);
+  const integrations = new P.IntegrationsHub(memory);
+  const notifications = new P.NotificationModule(memory);
+  const quality = new P.QualityModule(brain, memory);
+
+  const automation = new P.AutomationEngine(brain, memory, { erp, crm, bom, finance, pricing, ops, integrations, notifications, quality });
+  check("AutomationEngine has 4 rules", Object.keys(automation.data.rules).length === 4);
+  check("autoQuote rule enabled", automation.data.rules.autoQuote.enabled === true);
+  check("autoPurchase has thresholds", automation.data.rules.autoPurchase.maxAmount > 0);
+
+  const scheduler = new P.SmartScheduler(brain, memory, ops);
+  check("SmartScheduler has 15 city coords", Object.keys(scheduler.data.cityCoords).length === 15);
+  const dist = scheduler.distance("תל אביב", "חולון");
+  check("distance returns km", dist > 0 && dist < 30);
+  const opt = scheduler.optimizeDay("2026-04-15", "תל אביב");
+  check("optimizeDay returns plan", opt && Array.isArray(opt.route));
+
+  const sla = new P.SLAMonitor(memory);
+  check("SLAMonitor has 6 SLAs", sla.data.slas.length === 6);
+  const event = sla.recordEvent("sla1", 60); // under 120min target
+  check("SLA recordEvent compliant", event && event.compliant === true);
+  const breach = sla.recordEvent("sla1", 200);
+  check("SLA recordEvent breach", breach && breach.compliant === false);
+  check("getOverallCompliance is number", typeof sla.getOverallCompliance() === "number");
+
+  const crossSell = new P.CrossSellEngine(brain, memory, { erp });
+  check("CrossSellEngine has 11 affinities", Object.keys(crossSell.data.affinityMap).length === 11);
+  const sugg = crossSell.suggest("cust1", "railing_iron");
+  check("suggest returns related products", sugg && sugg.suggestions.length > 0);
+
+  const wp = new P.WarrantyProactive(memory, { quality, integrations });
+  check("WarrantyProactive instantiable", wp && typeof wp.runAnnualCheckups === "function");
+});
+
+group("22. Mega expansion — Part 8 (Fleet + Photo + Knowledge + Maintenance + Wellness)", () => {
+  const brain = new P.Brain();
+  const memory = new P.Memory();
+  const hr = new P.HRModule(brain, memory);
+
+  const fleet = new P.FleetGPS(memory);
+  check("FleetGPS has 1 default geofence", fleet.data.geofences.length === 1);
+  const v = fleet.registerVehicle({ plateNumber: "12-345-67", type: "van", driver: "עוזי" });
+  check("registerVehicle", v && v.id.startsWith("VEH-"));
+  const pos = fleet.recordPosition(v.id, 32.0853, 34.7818, 50, 90);
+  check("recordPosition updates location", pos.currentLocation.lat === 32.0853);
+  // Speed alert test
+  fleet.recordPosition(v.id, 32.0900, 34.7900, 120, 90); // over max
+  check("speed alert triggered", fleet.data.alerts.length > 0);
+
+  const photoAI = new P.PhotoAI(brain, memory);
+  check("PhotoAI instantiable", photoAI && typeof photoAI.analyzePhoto === "function");
+  check("PhotoAI stats initialized", photoAI.data.stats.photos === 0);
+
+  const kb = new P.KnowledgeBaseAI(brain, memory);
+  check("KnowledgeBaseAI seeded with defaults", kb.data.articles.length >= 6);
+  check("KB has welding article", kb.data.articles.some(a => a.category === "welding"));
+  const search = kb.search("ת\"י");
+  check("KB search returns results", search.length > 0);
+  const newArticle = kb.addArticle({ title: "Test", category: "welding", content: "test content", keywords: ["test"] });
+  check("addArticle", newArticle && newArticle.id.startsWith("KB-"));
+
+  const pm = new P.PredictiveMaintenance(brain, memory);
+  check("PredictiveMaintenance has 6 default equipment", pm.data.equipment.length === 6);
+  const updated = pm.recordOperation("eq1", 5);
+  check("recordOperation updates hours", updated && updated.hoursOperated === 5);
+  const service = pm.scheduleService("eq1");
+  check("scheduleService", service && service.id);
+
+  const wellness = new P.EmployeeWellness(brain, memory, hr);
+  hr.addEmployee({ name: "Test Worker 22", role: "welder", department: "ייצור", baseSalary: P.agorot(8500) });
+  const scores = wellness.scanAllEmployees();
+  check("scanAllEmployees returns scores", Array.isArray(scores) && scores.length >= 1);
+  check("wellness score in 0-100", scores[0].score >= 0 && scores[0].score <= 100);
+  wellness.recordCheckIn(hr.data.employees[0].id, 5, "great day");
+  const morale = wellness.getTeamMorale();
+  check("getTeamMorale calculated", typeof morale === "number");
+});
+
+group("23. Mega expansion — Part 9 (Profitability + Cash + Currency + WhatIf + Negotiation + Compliance)", () => {
+  const brain = new P.Brain();
+  const memory = new P.Memory();
+  const erp = new P.ERPModule(brain, memory);
+  const hr = new P.HRModule(brain, memory);
+  const finance = new P.FinanceModule(brain, memory);
+
+  const profit = new P.ProfitabilityEngine(brain, memory, { erp, hr, finance });
+  check("ProfitabilityEngine has benchmarks", Object.keys(profit.data.benchmarks).length >= 5);
+  const proj = erp.createProject({ name: "Test Profit Project", customerName: "Test", type: "railing_iron" });
+  proj.costs.estimatedMaterials = P.agorot(3000);
+  proj.costs.estimatedLabor = P.agorot(2000);
+  proj.costs.estimatedOverhead = P.agorot(500);
+  proj.costs.afterDiscount = P.agorot(8000);
+  const report = profit.computeProjectProfit(proj.id);
+  check("computeProjectProfit", report && typeof report.marginPercent === "number");
+  check("profit > 0 (revenue > cost)", report.profit > 0);
+
+  const cash = new P.CashCollectionPredictor(brain, memory, finance);
+  cash.updateCustomerProfile("Test Customer", 25);
+  check("customer profile created", cash.data.customerProfiles["Test Customer"]);
+  check("avgDaysToPayment computed", cash.data.customerProfiles["Test Customer"].avgDaysToPayment === 25);
+  const fc = cash.predictCashflow(90);
+  check("predictCashflow returns forecast", fc && typeof fc.totalExpected === "number");
+
+  const currency = new P.MultiCurrency(memory);
+  check("MultiCurrency has 5 currencies", Object.keys(currency.data.rates).length === 5);
+  const usd = currency.convert(P.agorot(100000), "ILS", "USD");
+  check("convert ILS→USD", usd > 0 && usd < P.agorot(100000));
+  const formatted = currency.formatPrice(P.agorot(150000), "USD");
+  check("formatPrice formats with $", formatted.startsWith("$"));
+  const multi = currency.getMultiCurrencyPrice(P.agorot(100000));
+  check("getMultiCurrencyPrice has 5 currencies", Object.keys(multi).length === 5);
+
+  const whatif = new P.WhatIfSimulator(brain, memory);
+  check("WhatIfSimulator instantiable", whatif && typeof whatif.simulate === "function");
+
+  const neg = new P.SupplierNegotiationAI(brain, memory, erp);
+  check("SupplierNegotiationAI instantiable", neg && typeof neg.analyzeSupplier === "function");
+
+  const compliance = new P.ComplianceModule(memory);
+  check("ComplianceModule has 10 default requirements", compliance.data.requirements.length === 10);
+  check("requires include רישיון עסק", compliance.data.requirements.some(r => r.name.includes("רישיון")));
+  check("requires include ת\"י 1142", compliance.data.requirements.some(r => r.name.includes("1142")));
+  const upcoming = compliance.checkExpirations();
+  check("checkExpirations returns array", Array.isArray(upcoming));
+  const score = compliance.getComplianceScore();
+  check("getComplianceScore in 0-100", score >= 0 && score <= 100);
+});
+
+group("24. Mega expansion — Part 10 (DocGen + LegalAI + Voice + Conv + Social + Referrals + Portal)", () => {
+  const brain = new P.Brain();
+  const memory = new P.Memory();
+  const erp = new P.ERPModule(brain, memory);
+  const finance = new P.FinanceModule(brain, memory);
+  const ops = new P.OpsModule(brain, memory);
+  const quality = new P.QualityModule(brain, memory);
+  const integrations = new P.IntegrationsHub(memory);
+
+  const docGen = new P.DocumentGenerator(memory);
+  check("DocumentGenerator has 6 templates", Object.keys(docGen.data.templates).length === 6);
+  const quoteHTML = docGen.renderQuoteHTML({ number: "Q-001", customerName: "Test", items: [{ description: "Railing", qty: 10, unitPrice: P.agorot(620) }], subtotal: P.agorot(6200), vat: P.agorot(1116), total: P.agorot(7316) });
+  check("renderQuoteHTML produces HTML", quoteHTML.includes("הצעת מחיר") && quoteHTML.includes("Test"));
+  const invHTML = docGen.renderInvoiceHTML({ number: "INV-001", customerName: "Test", items: [], subtotal: 0, vat: 0, total: 0 });
+  check("renderInvoiceHTML produces HTML", invHTML.includes("חשבונית"));
+  const warHTML = docGen.renderWarrantyHTML({ customerName: "Test", productType: "railing_iron", startDate: "2026-01-01", endDate: "2036-01-01", durationYears: 10 });
+  check("renderWarrantyHTML produces HTML", warHTML.includes("תעודת אחריות"));
+
+  const legal = new P.LegalDocAI(brain, memory);
+  check("LegalDocAI has 8 templates", legal.data.templates.length === 8);
+  check("templates include nda", legal.data.templates.includes("nda"));
+
+  const voice = new P.VoiceAI(brain, memory);
+  check("VoiceAI has 3 language greetings", Object.keys(voice.data.greetings).length === 3);
+  check("greetings include he/en/fr", voice.data.greetings.he && voice.data.greetings.en && voice.data.greetings.fr);
+
+  const convMem = new P.ConversationMemory(brain, memory);
+  convMem.recordInteraction("test_customer_1", { type: "call", summary: "first call", sentiment: "positive", topics: ["pricing"] });
+  check("recordInteraction creates customer", convMem.data.customers["test_customer_1"]);
+  check("totalInteractions = 1", convMem.data.customers["test_customer_1"].totalInteractions === 1);
+  convMem.recordInteraction("test_customer_1", { type: "whatsapp", summary: "follow up", sentiment: "positive", topics: ["pricing", "delivery"] });
+  check("topic frequency tracked", convMem.data.customers["test_customer_1"].topics.pricing === 2);
+  const trend = convMem.getSentimentTrend("test_customer_1");
+  check("getSentimentTrend returns string", typeof trend === "string");
+
+  const social = new P.SocialMediaAutopilot(brain, memory, { ops, integrations });
+  check("SocialMediaAutopilot has 3 platforms", social.data.platforms.length === 3);
+  check("platforms include facebook/instagram/linkedin", social.data.platforms.includes("facebook") && social.data.platforms.includes("instagram") && social.data.platforms.includes("linkedin"));
+
+  const refs = new P.ReferralProgram(memory);
+  check("ReferralProgram has 4 reward tiers", Object.keys(refs.data.rewards).length === 4);
+  const ref = refs.registerReferral({ referrerName: "Alice", referredName: "Bob", referredPhone: "0501111111", referredProjectType: "railing_iron" });
+  check("registerReferral", ref && ref.id.startsWith("REF-"));
+  const converted = refs.markConverted(ref.id, P.agorot(15000));
+  check("markConverted earns reward", converted && converted.rewardEarned !== null);
+  const board = refs.getReferrerLeaderboard(5);
+  check("getReferrerLeaderboard returns array", Array.isArray(board));
+
+  const portal = new P.CustomerPortal(memory, { erp, finance, ops, quality });
+  const dashboard = portal.getCustomerDashboard("Nobody");
+  check("getCustomerDashboard returns structure", dashboard && dashboard.summary);
+  const html = portal.renderPortalHTML("Nobody");
+  check("renderPortalHTML produces HTML", html.includes("פורטל לקוח"));
+});
+
+group("25. ParadigmEngine wires all 48 modules", () => {
+  const engine = new P.ParadigmEngine();
+  const allExpected = [
+    "brain", "memory",
+    // Business core (8)
+    "erp", "crm", "bom", "hr", "finance", "ops", "pricing", "quality",
+    // Support (2)
+    "notifications", "analytics",
+    // Cognitive (5)
+    "swarm", "adversarial", "dream", "metaLearner", "goals",
+    // Part 5 (4)
+    "growth", "competitive", "integrations", "intlRealEstate",
+    // Part 6 (4)
+    "supplyChain", "temporal", "documentAI", "dashboard",
+    // Part 7 (5)
+    "automation", "smartScheduler", "slaMonitor", "crossSell", "warrantyProactive",
+    // Part 8 (5)
+    "fleet", "photoAI", "knowledgeBase", "predictiveMaintenance", "wellness",
+    // Part 9 (6)
+    "profitability", "cashPredictor", "multiCurrency", "whatIf", "supplierNegotiation", "compliance",
+    // Part 10 (7)
+    "docGenerator", "legalDocAI", "voiceAI", "conversationMemory", "socialAutopilot", "referrals", "customerPortal",
+  ];
+  for (const key of allExpected) {
+    check(`engine.${key}`, !!engine[key]);
+  }
+  check(`engine has ${allExpected.length} expected modules`, allExpected.every(k => !!engine[k]));
+});
+
 console.log(`\n\x1b[36m═══════════════════════════════════════════\x1b[0m`);
 console.log(`\x1b[${failed === 0 ? '32' : '31'}m  Passed: ${passed}  Failed: ${failed}\x1b[0m`);
 console.log(`\x1b[36m═══════════════════════════════════════════\x1b[0m\n`);

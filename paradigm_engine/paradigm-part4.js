@@ -6,6 +6,12 @@
 const { CONFIG, Brain, Memory, ERPModule, CRMModule, uid, now, today, save, load, shekel, log } = require("./paradigm-part1");
 const { BOMModule, HRModule, FinanceModule, OpsModule } = require("./paradigm-part2");
 const { PricingModule, QualityModule, NotificationModule, AnalyticsModule, Swarm, Adversarial, Dream, MetaLearner, Goals } = require("./paradigm-part3");
+const { GrowthEngine, CompetitiveIntel, IntegrationsHub, InternationalRealEstate } = require("./paradigm-part5");
+const { SupplyChainAI, TemporalIntelligence, DocumentAI, DashboardServer } = require("./paradigm-part6");
+const { AutomationEngine, SmartScheduler, SLAMonitor, CrossSellEngine, WarrantyProactive } = require("./paradigm-part7");
+const { FleetGPS, PhotoAI, KnowledgeBaseAI, PredictiveMaintenance, EmployeeWellness } = require("./paradigm-part8");
+const { ProfitabilityEngine, CashCollectionPredictor, MultiCurrency, WhatIfSimulator, SupplierNegotiationAI, ComplianceModule } = require("./paradigm-part9");
+const { DocumentGenerator, LegalDocAI, VoiceAI, ConversationMemory, SocialMediaAutopilot, ReferralProgram, CustomerPortal } = require("./paradigm-part10");
 const path = require("path");
 
 // ═══════════════════════════════════════
@@ -40,6 +46,51 @@ class ParadigmEngine {
     this.dream = new Dream(this.brain);
     this.metaLearner = new MetaLearner(this.brain);
     this.goals = new Goals(this.brain);
+
+    // Mega Expansion Modules (Parts 5+6)
+    this.growth = new GrowthEngine(this.brain, this.memory);
+    this.competitive = new CompetitiveIntel(this.brain, this.memory);
+    this.integrations = new IntegrationsHub(this.memory);
+    this.intlRealEstate = new InternationalRealEstate(this.brain, this.memory);
+    this.supplyChain = new SupplyChainAI(this.brain, this.memory, this.erp);
+    this.temporal = new TemporalIntelligence(this.brain, this.memory);
+    this.documentAI = new DocumentAI(this.brain, this.memory);
+    this.dashboard = new DashboardServer(this, parseInt(process.env.PARADIGM_DASHBOARD_PORT || "7400", 10));
+
+    // Automation Workflows (Part 7)
+    this.automation = new AutomationEngine(this.brain, this.memory, {
+      erp: this.erp, crm: this.crm, bom: this.bom, finance: this.finance,
+      pricing: this.pricing, ops: this.ops, integrations: this.integrations,
+      notifications: this.notifications, quality: this.quality,
+    });
+    this.smartScheduler = new SmartScheduler(this.brain, this.memory, this.ops);
+    this.slaMonitor = new SLAMonitor(this.memory);
+    this.crossSell = new CrossSellEngine(this.brain, this.memory, { erp: this.erp });
+    this.warrantyProactive = new WarrantyProactive(this.memory, { quality: this.quality, integrations: this.integrations });
+
+    // Field Intelligence (Part 8)
+    this.fleet = new FleetGPS(this.memory);
+    this.photoAI = new PhotoAI(this.brain, this.memory);
+    this.knowledgeBase = new KnowledgeBaseAI(this.brain, this.memory);
+    this.predictiveMaintenance = new PredictiveMaintenance(this.brain, this.memory);
+    this.wellness = new EmployeeWellness(this.brain, this.memory, this.hr);
+
+    // Financial Strategic Intelligence (Part 9)
+    this.profitability = new ProfitabilityEngine(this.brain, this.memory, { erp: this.erp, hr: this.hr, finance: this.finance });
+    this.cashPredictor = new CashCollectionPredictor(this.brain, this.memory, this.finance);
+    this.multiCurrency = new MultiCurrency(this.memory);
+    this.whatIf = new WhatIfSimulator(this.brain, this.memory);
+    this.supplierNegotiation = new SupplierNegotiationAI(this.brain, this.memory, this.erp);
+    this.compliance = new ComplianceModule(this.memory);
+
+    // Communication & Content (Part 10)
+    this.docGenerator = new DocumentGenerator(this.memory);
+    this.legalDocAI = new LegalDocAI(this.brain, this.memory);
+    this.voiceAI = new VoiceAI(this.brain, this.memory);
+    this.conversationMemory = new ConversationMemory(this.brain, this.memory);
+    this.socialAutopilot = new SocialMediaAutopilot(this.brain, this.memory, { ops: this.ops, integrations: this.integrations });
+    this.referrals = new ReferralProgram(this.memory);
+    this.customerPortal = new CustomerPortal(this.memory, { erp: this.erp, finance: this.finance, ops: this.ops, quality: this.quality });
 
     // Engine State
     this.cycle = 0;
