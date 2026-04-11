@@ -1,0 +1,30 @@
+{
+  "name": "techno-kol-client",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.0",
+    "@blueprintjs/core": "^5.10.2",
+    "@blueprintjs/icons": "^5.10.2",
+    "@blueprintjs/table": "^5.1.2",
+    "ag-grid-react": "^31.1.1",
+    "ag-grid-community": "^31.1.1",
+    "recharts": "^2.12.2",
+    "zustand": "^4.5.0",
+    "date-fns": "^3.3.1",
+    "axios": "^1.6.7"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.56",
+    "@types/react-dom": "^18.2.19",
+    "@vitejs/plugin-react": "^4.2.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.1.2"
+  }
+}
