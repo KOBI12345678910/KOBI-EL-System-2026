@@ -1,495 +1,1150 @@
 // ════════════════════════════════════════════════════════════════════════════════
-// PARADIGM ENGINE v4.0 — PART 7
-// AUTOMATION WORKFLOWS — Auto-Quote · Smart Scheduler · Payment Chaser ·
-// SLA Monitor · Cross-Sell · Warranty Proactive · Auto-Purchase · Review Collector
+// PARADIGM ENGINE v4.0 — PART 7/8
+// SOCIAL MEDIA + COMPETITOR SPY + CASH PREDICTOR + EMPLOYEE WELLNESS
+// + ENERGY TRACKER + LEGAL DOCS + MULTI-CURRENCY + SEASONAL DEMAND
 // ════════════════════════════════════════════════════════════════════════════════
 
-const { CONFIG, uid, now, today, save, load, agorot, shekel, addVat, vatOf, clamp, daysAgo, log } = require("./paradigm-part1");
+const { CONFIG, Brain, Memory, uid, now, today, save, load, shekel, agorot, daysAgo, log } = require("./paradigm-part1");
 const path = require("path");
-const fs = require("fs");
-
-["automation", "schedules", "sla"].forEach(d => {
-  const p = path.join(CONFIG.DIR, d);
-  if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
-});
 
 // ═══════════════════════════════════════
-// AUTOMATION ENGINE — Workflow Orchestration
-// Auto-Quote · Auto-Purchase · Payment Chaser · Review Collector
+// SOCIAL MEDIA AUTOPILOT
 // ═══════════════════════════════════════
 
-class AutomationEngine {
-  constructor(brain, memory, modules) {
+class SocialMediaModule {
+  constructor(brain, memory) {
     this.brain = brain;
     this.memory = memory;
-    this.modules = modules; // { erp, crm, bom, finance, pricing, integrations, notifications }
-    this.file = path.join(CONFIG.DIR, "automation", "state.json");
+    this.file = path.join(CONFIG.DIR, "ads", "social.json");
     this.data = load(this.file, {
-      workflows: [],
-      executions: [],
-      rules: {
-        autoQuote:      { enabled: true, maxAmount: agorot(50000), responseTimeMinutes: 5 },
-        autoPurchase:   { enabled: true, maxAmount: agorot(20000), requiresApprovalAbove: agorot(50000) },
-        paymentChaser:  { enabled: true, day1: "sms", day7: "whatsapp", day14: "email_formal", day30: "legal_notice" },
-        reviewCollector:{ enabled: true, delayDays: 7, channels: ["whatsapp", "email"] },
+      posts: [],
+      scheduled: [],
+      platforms: {
+        facebook: { connected: false, pageId: null, pageName: "טכנו כל עוזי", followers: 0 },
+        instagram: { connected: false, accountId: null, handle: "@technokoluzi", followers: 0 },
+        googleBusiness: { connected: false, locationId: null, reviews: 0, avgRating: 0 },
+        linkedin: { connected: false, companyId: null, followers: 0 },
+        tiktok: { connected: false, handle: null, followers: 0 },
       },
-      stats: { quotes: 0, purchases: 0, chases: 0, reviews: 0 },
-    });
-  }
-  save() { save(this.file, this.data); }
-
-  // ── AUTO-QUOTE: Lead → BOM → Quote → WhatsApp in under 5 minutes ──
-  async autoQuoteFromLead(leadId) {
-    if (!this.data.rules.autoQuote.enabled) return null;
-    const lead = this.modules.crm?.data?.leads?.find(l => l.id === leadId);
-    if (!lead || !lead.projectType) {
-      log("AUTOMATE", `❌ AutoQuote: ליד לא נמצא או חסר projectType`, "WARN");
-      return null;
-    }
-
-    const meters = lead.estimatedMeters || 5;
-    const quote = await this.modules.pricing?.generateQuote({
-      leadId: lead.id,
-      customerName: lead.name,
-      customerPhone: lead.phone,
-      customerEmail: lead.email,
-      customerAddress: lead.city || lead.address,
-      projectType: lead.projectType,
-      meters,
-    });
-
-    if (!quote) return null;
-
-    // Block if above threshold (requires manual review)
-    if (quote.total > this.data.rules.autoQuote.maxAmount) {
-      log("AUTOMATE", `⚠️  AutoQuote: ${quote.id} מעל הסף — נדרש אישור ידני`, "WARN");
-      this.modules.notifications?.notify({
-        level: "warning",
-        title: "הצעת מחיר אוטומטית מעל הסף",
-        message: `${quote.id} — ₪${shekel(quote.total)} ל-${lead.name}. נדרש אישור.`,
-        target: "קובי", actionRequired: true,
-      });
-      return { quote, status: "pending_approval" };
-    }
-
-    // Send via WhatsApp
-    const message = `שלום ${lead.name}, הצעת מחיר עבור ${lead.projectType}: ₪${shekel(quote.total)} (כולל מע"מ). תקפה ל-14 ימים. לאישור: השב כן.`;
-    await this.modules.integrations?.sendWhatsApp(lead.phone, message);
-
-    this.data.stats.quotes++;
-    this.recordExecution("auto_quote", { leadId, quoteId: quote.id, amount: quote.total });
-    log("AUTOMATE", `⚡ AutoQuote: ${quote.id} → ${lead.name} (${lead.phone})`, "SUCCESS");
-    return { quote, status: "sent" };
-  }
-
-  // ── AUTO-PURCHASE: Inventory below min → PO to cheapest supplier ──
-  async autoPurchaseLowStock() {
-    if (!this.data.rules.autoPurchase.enabled) return [];
-    const lowStock = this.modules.erp?.getLowStockItems?.() || [];
-    const orders = [];
-
-    for (const item of lowStock) {
-      if (!item.supplier) continue;
-      const supplier = this.modules.erp.data.suppliers.find(s => s.name === item.supplier || s.id === item.supplier);
-      if (!supplier) continue;
-
-      const reorderQty = item.reorderQty || (item.maxQty - item.qty) || 50;
-      const estimatedCost = reorderQty * (item.avgCost || item.costPerUnit || 0);
-
-      // Skip if above auto-approval threshold
-      if (estimatedCost > this.data.rules.autoPurchase.maxAmount) {
-        log("AUTOMATE", `⚠️  AutoPurchase: ${item.name} מעל הסף — נדרש אישור`, "WARN");
-        this.modules.notifications?.notify({
-          level: "warning",
-          title: "הזמנת רכש אוטומטית מעל הסף",
-          message: `${item.name} × ${reorderQty} = ₪${shekel(estimatedCost)}`,
-          target: "דימה", actionRequired: true,
-        });
-        continue;
-      }
-
-      const po = this.modules.erp.createPO({
-        supplierId: supplier.id,
-        supplierName: supplier.name,
-        items: [{ inventoryItemId: item.id, name: item.name, qty: reorderQty, unit: item.unit, unitPrice: item.avgCost || item.costPerUnit }],
-        urgency: item.qty <= 0 ? "urgent" : "normal",
-        notes: `נוצר אוטומטית — מלאי ${item.qty}/${item.minQty}`,
-      });
-
-      this.modules.erp.approvePO(po.id, "auto_purchase_engine");
-      this.modules.erp.sendPO(po.id);
-      orders.push(po);
-      this.data.stats.purchases++;
-      this.recordExecution("auto_purchase", { itemId: item.id, poId: po.id, qty: reorderQty });
-      log("AUTOMATE", `🛒 AutoPurchase: ${item.name} × ${reorderQty} מ-${supplier.name}`, "SUCCESS");
-    }
-
-    return orders;
-  }
-
-  // ── PAYMENT CHASER: Multi-stage dunning ──
-  async runPaymentChaser() {
-    if (!this.data.rules.paymentChaser.enabled) return [];
-    const overdue = this.modules.finance?.getOverdueInvoices?.() || [];
-    const actions = [];
-
-    for (const inv of overdue) {
-      const days = daysAgo(inv.dueDate + "T00:00:00Z");
-      let action = null;
-
-      if (days >= 30) action = { type: "legal_notice", channel: "email_formal", message: `התראה משפטית: חשבונית ${inv.number} באיחור של ${days} ימים. ₪${shekel(inv.total)}.` };
-      else if (days >= 14) action = { type: "formal_email", channel: "email", message: `שלום ${inv.customerName}, חשבונית ${inv.number} באיחור של ${days} ימים. אנא הסדר תשלום.` };
-      else if (days >= 7) action = { type: "whatsapp_reminder", channel: "whatsapp", message: `שלום ${inv.customerName}, תזכורת ידידותית: חשבונית ${inv.number} (₪${shekel(inv.total)}) באיחור.` };
-      else if (days >= 1) action = { type: "sms_reminder", channel: "sms", message: `תזכורת: חשבונית ${inv.number} ע"ס ₪${shekel(inv.total)} ממתינה לתשלום.` };
-
-      if (!action) continue;
-
-      // Send via correct channel
-      if (action.channel === "whatsapp") await this.modules.integrations?.sendWhatsApp(inv.customer?.phone || "", action.message);
-      else if (action.channel === "sms") await this.modules.integrations?.sendSMS(inv.customer?.phone || "", action.message);
-      else if (action.channel.startsWith("email")) await this.modules.integrations?.sendEmail(inv.customer?.email || "", `חשבונית ${inv.number}`, action.message);
-
-      this.data.stats.chases++;
-      this.recordExecution("payment_chase", { invoiceId: inv.id, days, action: action.type });
-      actions.push({ invoice: inv.number, days, ...action });
-
-      if (days >= 30) {
-        this.modules.notifications?.notify({
-          level: "critical",
-          title: "חוב באיחור 30+ יום",
-          message: `${inv.customerName} — ₪${shekel(inv.total)} (${days} ימים)`,
-          target: "קובי", actionRequired: true,
-        });
-      }
-    }
-
-    return actions;
-  }
-
-  // ── REVIEW COLLECTOR: After completed installation → ask for Google review ──
-  async collectReviews() {
-    if (!this.data.rules.reviewCollector.enabled) return [];
-    const installations = this.modules.ops?.data?.installations?.filter(i => i.status === "completed") || [];
-    const reviewsToAsk = [];
-    const delayMs = this.data.rules.reviewCollector.delayDays * 86400000;
-
-    for (const inst of installations) {
-      if (inst.reviewRequested) continue;
-      if (!inst.completedAt) continue;
-      if (Date.now() - new Date(inst.completedAt).getTime() < delayMs) continue;
-
-      const reviewLink = "https://g.page/r/techno-kol-uzi/review"; // placeholder
-      const message = `שלום ${inst.customerName}, חלפו ${this.data.rules.reviewCollector.delayDays} ימים מההתקנה. נשמח אם תוכל להשאיר ביקורת ב-Google: ${reviewLink}. תודה!`;
-
-      await this.modules.integrations?.sendWhatsApp(inst.phone || "", message);
-      inst.reviewRequested = true;
-      inst.reviewRequestedAt = now();
-      this.data.stats.reviews++;
-      reviewsToAsk.push({ customer: inst.customerName, channel: "whatsapp" });
-      this.recordExecution("review_request", { installationId: inst.id });
-    }
-
-    if (this.modules.ops) this.modules.ops.save();
-    return reviewsToAsk;
-  }
-
-  recordExecution(type, payload) {
-    this.data.executions.push({ id: uid(), type, payload, t: now() });
-    this.data.executions = this.data.executions.slice(-500);
-    this.save();
-  }
-
-  async runAll() {
-    const results = {};
-    try { results.purchases = await this.autoPurchaseLowStock(); } catch (e) { results.purchases = { error: e.message }; }
-    try { results.chases = await this.runPaymentChaser(); } catch (e) { results.chases = { error: e.message }; }
-    try { results.reviews = await this.collectReviews(); } catch (e) { results.reviews = { error: e.message }; }
-    return results;
-  }
-}
-
-// ═══════════════════════════════════════
-// SMART SCHEDULER — Geographic optimization for Uzi's measurement runs
-// ═══════════════════════════════════════
-
-class SmartScheduler {
-  constructor(brain, memory, ops) {
-    this.brain = brain;
-    this.memory = memory;
-    this.ops = ops;
-    this.file = path.join(CONFIG.DIR, "schedules", "smart.json");
-    this.data = load(this.file, {
-      cityCoords: {
-        "תל אביב":     { lat: 32.0853, lng: 34.7818 },
-        "רמת גן":      { lat: 32.0700, lng: 34.8235 },
-        "גבעתיים":     { lat: 32.0717, lng: 34.8108 },
-        "בני ברק":     { lat: 32.0838, lng: 34.8338 },
-        "חולון":       { lat: 32.0117, lng: 34.7722 },
-        "בת ים":       { lat: 32.0167, lng: 34.7500 },
-        "הרצליה":      { lat: 32.1660, lng: 34.8430 },
-        "רעננה":       { lat: 32.1853, lng: 34.8707 },
-        "כפר סבא":     { lat: 32.1750, lng: 34.9070 },
-        "פתח תקווה":  { lat: 32.0840, lng: 34.8878 },
-        "ראשון לציון": { lat: 31.9730, lng: 34.8044 },
-        "נתניה":       { lat: 32.3329, lng: 34.8597 },
-        "חיפה":        { lat: 32.7940, lng: 34.9896 },
-        "ירושלים":     { lat: 31.7683, lng: 35.2137 },
-        "באר שבע":     { lat: 31.2520, lng: 34.7915 },
+      contentCalendar: [],
+      hashtags: {
+        primary: ["#מעקות", "#מעקות_ברזל", "#מעקות_אלומיניום", "#שערים", "#גדרות", "#פרגולות", "#טכנו_כל_עוזי", "#עבודות_מתכת"],
+        secondary: ["#שיפוצים", "#עיצוב_הבית", "#בית_פרטי", "#מרפסת", "#גינה", "#תל_אביב", "#ישראל", "#80_שנה"],
+        trending: [],
       },
-      optimizedRuns: [],
-    });
-  }
-  save() { save(this.file, this.data); }
-
-  // Haversine distance in km
-  distance(city1, city2) {
-    const c1 = this.data.cityCoords[city1];
-    const c2 = this.data.cityCoords[city2];
-    if (!c1 || !c2) return 30; // default 30km if unknown
-    const R = 6371;
-    const dLat = (c2.lat - c1.lat) * Math.PI / 180;
-    const dLng = (c2.lng - c1.lng) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) ** 2 + Math.cos(c1.lat * Math.PI / 180) * Math.cos(c2.lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
-    return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
-  }
-
-  optimizeDay(date = today(), startCity = "תל אביב") {
-    const measurements = this.ops?.data?.measurements?.filter(m => m.date === date && m.status === "scheduled") || [];
-    if (measurements.length === 0) return { date, route: [], totalKm: 0 };
-
-    // Greedy nearest-neighbor route
-    const route = [];
-    let current = startCity;
-    let totalKm = 0;
-    const remaining = [...measurements];
-
-    while (remaining.length > 0) {
-      remaining.sort((a, b) => this.distance(current, a.city) - this.distance(current, b.city));
-      const next = remaining.shift();
-      const km = this.distance(current, next.city);
-      totalKm += km;
-      route.push({
-        order: route.length + 1,
-        time: next.time,
-        customer: next.customerName,
-        city: next.city,
-        address: next.address,
-        kmFromPrev: km,
-        measurementId: next.id,
-      });
-      current = next.city;
-    }
-
-    // Return trip
-    totalKm += this.distance(current, startCity);
-
-    const optimized = {
-      date, startCity, route, totalKm,
-      estimatedDriveMinutes: Math.round(totalKm * 1.5), // ~40 km/h average urban
-      estimatedFuelLiters: Math.round(totalKm * 0.08 * 10) / 10, // ~8L/100km
-      estimatedFuelCost: Math.round(totalKm * 0.08 * 720), // ~₪7.20/L in agorot
-      generatedAt: now(),
-    };
-
-    this.data.optimizedRuns.push(optimized);
-    this.data.optimizedRuns = this.data.optimizedRuns.slice(-100);
-    this.save();
-    log("SCHEDULER", `🗺️  ${date}: ${route.length} מדידות · ${totalKm}ק"מ · ${optimized.estimatedDriveMinutes} דק' נסיעה · ₪${shekel(optimized.estimatedFuelCost)} דלק`);
-    return optimized;
-  }
-
-  getEfficiencyScore(date = today()) {
-    const run = this.data.optimizedRuns.find(r => r.date === date);
-    if (!run) return null;
-    const naive = run.route.length * 25; // assume 25km/visit if naive
-    const efficiency = naive > 0 ? Math.max(0, 1 - (run.totalKm / naive)) : 0;
-    return { date, totalKm: run.totalKm, naiveKm: naive, efficiency: Math.round(efficiency * 100) };
-  }
-}
-
-// ═══════════════════════════════════════
-// SLA MONITOR — Track service-level commitments
-// ═══════════════════════════════════════
-
-class SLAMonitor {
-  constructor(memory) {
-    this.memory = memory;
-    this.file = path.join(CONFIG.DIR, "sla", "state.json");
-    this.data = load(this.file, {
-      slas: [
-        { id: "sla1", name: "Lead Response Time", metric: "minutes_to_first_contact", target: 120, unit: "minutes", priority: "critical" },
-        { id: "sla2", name: "Quote Delivery", metric: "hours_to_quote", target: 24, unit: "hours", priority: "high" },
-        { id: "sla3", name: "Project Delivery", metric: "days_to_delivery", target: 14, unit: "days", priority: "high" },
-        { id: "sla4", name: "Warranty Fix Time", metric: "days_to_warranty_fix", target: 7, unit: "days", priority: "high" },
-        { id: "sla5", name: "Customer Complaint Response", metric: "hours_to_complaint_response", target: 4, unit: "hours", priority: "critical" },
-        { id: "sla6", name: "Invoice Sent After Delivery", metric: "days_invoice_after_delivery", target: 1, unit: "days", priority: "medium" },
-      ],
-      breaches: [],
-      compliance: {},
-    });
-  }
-  save() { save(this.file, this.data); }
-
-  recordEvent(slaId, actualValue, context = {}) {
-    const sla = this.data.slas.find(s => s.id === slaId);
-    if (!sla) return null;
-
-    const compliant = actualValue <= sla.target;
-    const event = {
-      id: uid(), slaId, slaName: sla.name,
-      target: sla.target, actual: actualValue, unit: sla.unit,
-      compliant, breachAmount: compliant ? 0 : actualValue - sla.target,
-      context, t: now(),
-    };
-
-    if (!compliant) {
-      this.data.breaches.push(event);
-      this.data.breaches = this.data.breaches.slice(-200);
-      log("SLA", `❌ ${sla.name}: ${actualValue}${sla.unit} (target ${sla.target}${sla.unit})`, "WARN");
-      this.memory.add("alerts", { type: "sla_breach", sla: sla.name, actual: actualValue, target: sla.target });
-    }
-
-    if (!this.data.compliance[slaId]) this.data.compliance[slaId] = { total: 0, compliant: 0, rate: 1 };
-    this.data.compliance[slaId].total++;
-    if (compliant) this.data.compliance[slaId].compliant++;
-    this.data.compliance[slaId].rate = this.data.compliance[slaId].compliant / this.data.compliance[slaId].total;
-
-    this.save();
-    return event;
-  }
-
-  getBreachRate(slaId) {
-    const c = this.data.compliance[slaId];
-    return c ? Math.round((1 - c.rate) * 100) : 0;
-  }
-
-  getOverallCompliance() {
-    const all = Object.values(this.data.compliance);
-    if (all.length === 0) return 100;
-    return Math.round(all.reduce((s, c) => s + c.rate, 0) / all.length * 100);
-  }
-}
-
-// ═══════════════════════════════════════
-// CROSS-SELL ENGINE — Suggest related products
-// ═══════════════════════════════════════
-
-class CrossSellEngine {
-  constructor(brain, memory, modules) {
-    this.brain = brain;
-    this.memory = memory;
-    this.modules = modules;
-    this.file = path.join(CONFIG.DIR, "automation", "crosssell.json");
-    this.data = load(this.file, {
-      affinityMap: {
-        railing_iron:        ["fence_iron", "gate_entry", "bars"],
-        railing_aluminum:    ["fence_iron", "gate_entry", "pergola_aluminum"],
-        railing_glass:       ["pergola_aluminum", "window_aluminum", "door_iron"],
-        gate_electric_sliding: ["fence_iron", "fence_decorative", "bars"],
-        gate_entry:          ["fence_iron", "door_iron", "bars"],
-        fence_iron:          ["gate_entry", "gate_electric_sliding", "railing_iron"],
-        fence_decorative:    ["gate_entry", "pergola_aluminum"],
-        pergola_aluminum:    ["railing_glass", "fence_decorative"],
-        door_iron:           ["window_aluminum", "bars"],
-        window_aluminum:     ["door_iron", "bars"],
-        bars:                ["fence_iron", "door_iron"],
+      analytics: { totalPosts: 0, totalReach: 0, totalEngagement: 0, avgEngagementRate: 0 },
+      config: {
+        autoPost: false,
+        postsPerWeek: { facebook: 4, instagram: 5, googleBusiness: 2 },
+        bestTimes: {
+          facebook: ["10:00", "13:00", "19:00"],
+          instagram: ["08:00", "12:00", "18:00", "21:00"],
+        },
+        contentMix: { projects: 40, tips: 20, behindScenes: 15, testimonials: 15, promotions: 10 },
       },
-      suggestions: [],
     });
   }
   save() { save(this.file, this.data); }
 
-  suggest(customerId, currentProductType) {
-    const related = this.data.affinityMap[currentProductType] || [];
-    const suggestions = related.map(type => ({
-      productType: type,
-      reason: `לקוחות שקנו ${currentProductType} לעיתים קרובות מוסיפים גם ${type}`,
-      estimatedValue: agorot(8000), // baseline placeholder
-    }));
+  async generatePost(projectData, type = "project_showcase") {
+    log("SOCIAL", `📱 מייצר פוסט: ${type}...`);
 
-    const record = {
-      id: uid(), customerId, currentProductType,
-      suggestions, t: now(),
-    };
-    this.data.suggestions.push(record);
-    this.data.suggestions = this.data.suggestions.slice(-300);
-    this.save();
-    return record;
+    const result = await this.brain.thinkJSON(`
+אתה מנהל סושיאל AI של טכנו כל עוזי — 80 שנות מצוינות בעבודות מתכת.
+
+═══ סוג פוסט: ${type} ═══
+${type === "project_showcase" ? `פרויקט שהושלם: ${JSON.stringify(projectData)}` : ""}
+${type === "tip" ? "טיפ מקצועי לקהל" : ""}
+${type === "behind_scenes" ? "מאחורי הקלעים במפעל" : ""}
+${type === "testimonial" ? `ביקורת לקוח: ${JSON.stringify(projectData)}` : ""}
+${type === "promotion" ? `מבצע: ${JSON.stringify(projectData)}` : ""}
+${type === "recruitment" ? `גיוס: ${JSON.stringify(projectData)}` : ""}
+
+═══ קו העריכה ═══
+- טון: מקצועי אבל חם ואנושי
+- הדגש תמיד: 80 שנה, 3 דורות, איכות, אחריות 10 שנים
+- תמונות: Before/After, תהליך עבודה, צוות
+- CTA: "רוצים גם? מדידה חינם! 📏 WhatsApp: 050-XXX"
+- Emoji: כן, אבל לא מוגזם
+- אורך: Facebook 3-5 שורות, Instagram 2-3 + hashtags
+
+═══ כללים פסיכולוגיים ═══
+1. Social Proof: "עוד לקוח מרוצה", "פרויקט #3,247"
+2. Storytelling: ספר סיפור, לא רק תמונה
+3. FOMO: "רק 3 תורים פנויים החודש"
+4. Visual First: התמונה הכי חשובה
+5. Engagement: שאל שאלה, בקש תגובה
+
+תחזיר JSON:
+{
+  "facebook": {
+    "text": "טקסט הפוסט (3-5 שורות + CTA)",
+    "imageDescription": "תיאור התמונה הרצויה",
+    "cta": "Call to action",
+    "bestTime": "שעה מומלצת",
+    "boostRecommendation": {"budget": 0, "audience": "...", "duration": 0}
+  },
+  "instagram": {
+    "caption": "טקסט (2-3 שורות + hashtags)",
+    "hashtags": ["#..."],
+    "imageDescription": "...",
+    "reelIdea": "רעיון ל-Reel אם רלוונטי",
+    "bestTime": "..."
+  },
+  "googleBusiness": {
+    "update": "טקסט עדכון (2 שורות)",
+    "category": "offer/update/event"
+  },
+  "contentType": "${type}",
+  "targetAudience": "...",
+  "estimatedReach": 0,
+  "estimatedEngagement": 0,
+  "a_b_variant": {
+    "alternativeText": "גרסה B לבדיקה",
+    "hypothesis": "מה בודקים"
   }
+}`);
 
-  async analyzeCustomerForCrossSell(customerName) {
-    // Look up all projects for this customer
-    const projects = this.modules.erp?.data?.projects?.filter(p => p.customer?.name === customerName) || [];
-    if (projects.length === 0) return null;
-
-    const types = [...new Set(projects.map(p => p.type))];
-    const allRelated = new Set();
-    for (const t of types) {
-      (this.data.affinityMap[t] || []).forEach(r => {
-        if (!types.includes(r)) allRelated.add(r);
-      });
-    }
-
-    return {
-      customer: customerName,
-      currentProducts: types,
-      suggestedProducts: [...allRelated],
-      potentialRevenue: allRelated.size * agorot(10000),
-    };
-  }
-}
-
-// ═══════════════════════════════════════
-// WARRANTY PROACTIVE — Annual checkup outreach
-// ═══════════════════════════════════════
-
-class WarrantyProactive {
-  constructor(memory, modules) {
-    this.memory = memory;
-    this.modules = modules;
-    this.file = path.join(CONFIG.DIR, "automation", "warranty-proactive.json");
-    this.data = load(this.file, {
-      checkups: [],
-      stats: { sent: 0, responses: 0, issuesFound: 0, upsells: 0 },
-    });
-  }
-  save() { save(this.file, this.data); }
-
-  async runAnnualCheckups() {
-    const warranties = this.modules.quality?.data?.warranties?.filter(w => w.status === "active") || [];
-    const checkupsToRun = [];
-
-    for (const w of warranties) {
-      const startDate = new Date(w.structuralWarranty?.start || w.createdAt);
-      const monthsSinceStart = (Date.now() - startDate.getTime()) / (30 * 86400000);
-      const yearsSinceStart = Math.floor(monthsSinceStart / 12);
-
-      // Check at month 11, 23, 35, etc. (annual)
-      const monthInYear = Math.floor(monthsSinceStart) % 12;
-      if (monthInYear !== 11) continue;
-
-      const lastCheckup = this.data.checkups.find(c => c.warrantyId === w.id && c.year === yearsSinceStart + 1);
-      if (lastCheckup) continue;
-
-      const message = `שלום ${w.customerName}, חלפה שנה מההתקנה של ${w.productType}. נשמח לבדוק שהכל בסדר! האם נוח לנו לבוא לבדיקה שנתית חינמית?`;
-      await this.modules.integrations?.sendWhatsApp(w.customerPhone || "", message);
-
-      const checkup = {
-        id: uid(),
-        warrantyId: w.id,
-        customerName: w.customerName,
-        year: yearsSinceStart + 1,
-        contactedAt: now(),
-        status: "contacted",
+    if (result) {
+      const post = {
+        id: `POST-${uid()}`,
+        type,
+        content: result,
+        projectData,
+        status: "draft",
+        platforms: [],
+        metrics: { reach: 0, likes: 0, comments: 0, shares: 0, clicks: 0, leads: 0 },
+        createdAt: now(), publishedAt: null,
       };
-      this.data.checkups.push(checkup);
-      this.data.stats.sent++;
-      checkupsToRun.push(checkup);
-      log("WAR-PROACTIVE", `🛡️  בדיקה שנתית: ${w.customerName} (שנה ${checkup.year})`);
+      this.data.posts.push(post);
+      this.data.analytics.totalPosts++;
+      this.save();
+      log("SOCIAL", `✅ פוסט נוצר: ${post.id}`, "SUCCESS");
     }
 
+    return result;
+  }
+
+  async generateContentCalendar(weeks = 4) {
+    log("SOCIAL", `📅 מייצר לוח תוכן ל-${weeks} שבועות...`);
+
+    const result = await this.brain.thinkJSON(`
+צור לוח תוכן לסושיאל של טכנו כל עוזי ל-${weeks} שבועות.
+
+תמהיל תוכן: ${JSON.stringify(this.data.config.contentMix)}
+פוסטים בשבוע: Facebook ${this.data.config.postsPerWeek.facebook}, Instagram ${this.data.config.postsPerWeek.instagram}
+שעות מומלצות: ${JSON.stringify(this.data.config.bestTimes)}
+
+═══ סוגי תוכן ═══
+1. Projects (40%): פרויקטים שהושלמו — Before/After, תהליך
+2. Tips (20%): טיפים מקצועיים — "איך לבחור מעקה?", "מתי לצבוע?"
+3. Behind Scenes (15%): מאחורי הקלעים — ריתוך, צביעה, צוות
+4. Testimonials (15%): ביקורות לקוחות
+5. Promotions (10%): מבצעים, הנחות, אירועים
+
+═══ אירועים רלוונטיים ═══
+- חגים ישראליים (פסח, סוכות = שיפוצים)
+- עונות (אביב = פיק שיפוצים)
+- ימים מיוחדים (יום העצמאות, ט"ו בשבט)
+
+תחזיר JSON:
+{
+  "calendar": [{
+    "week": 1,
+    "posts": [{
+      "day": "ראשון/שני/...",
+      "date": "YYYY-MM-DD",
+      "platform": "facebook/instagram/both",
+      "type": "project/tip/behind_scenes/testimonial/promotion",
+      "title": "כותרת קצרה",
+      "description": "מה הפוסט",
+      "time": "HH:MM",
+      "priority": "high/medium/low",
+      "contentIdeas": "רעיון מפורט"
+    }]
+  }],
+  "themes": ["נושא חודשי 1"],
+  "specialDates": [{"date": "...", "event": "...", "postIdea": "..."}],
+  "kpiTargets": {"weeklyReach": 0, "weeklyEngagement": 0, "monthlyLeads": 0}
+}`);
+
+    if (result) {
+      this.data.contentCalendar = result.calendar || [];
+      this.save();
+      log("SOCIAL", `✅ לוח תוכן: ${(result.calendar || []).reduce((s, w) => s + (w.posts || []).length, 0)} פוסטים מתוכננים`, "SUCCESS");
+    }
+
+    return result;
+  }
+
+  async analyzePerformance() {
+    return await this.brain.thinkJSON(`
+נתח ביצועי סושיאל:
+פלטפורמות: ${JSON.stringify(this.data.platforms)}
+סה"כ פוסטים: ${this.data.analytics.totalPosts}
+Reach: ${this.data.analytics.totalReach}
+Engagement: ${this.data.analytics.totalEngagement}
+
+פוסטים אחרונים: ${JSON.stringify(this.data.posts.slice(-10).map(p => ({
+  type: p.type, status: p.status, metrics: p.metrics, date: p.publishedAt || p.createdAt,
+})))}
+
+תחזיר JSON:
+{
+  "status": "healthy/warning/critical",
+  "score": 0-100,
+  "engagementRate": 0,
+  "bestPerformingType": "...",
+  "worstPerformingType": "...",
+  "bestDay": "...",
+  "bestTime": "...",
+  "followerGrowth": 0,
+  "contentRecommendations": [{"type": "...", "reason": "...", "frequency": "..."}],
+  "competitorBenchmark": "...",
+  "viralPotential": [{"idea": "...", "expectedReach": 0}],
+  "automatedActions": [{"action": "...", "reason": "...", "priority": "..."}],
+  "kpis": {"avgReach": 0, "avgEngagement": 0, "leadsFromSocial": 0, "costPerLead": 0}
+}`);
+  }
+}
+
+// ═══════════════════════════════════════
+// COMPETITOR SPY MODULE
+// ═══════════════════════════════════════
+
+class CompetitorSpyModule {
+  constructor(brain, memory) {
+    this.brain = brain;
+    this.memory = memory;
+    this.file = path.join(CONFIG.DIR, "analytics", "competitors.json");
+    this.data = load(this.file, {
+      competitors: [
+        {
+          id: uid(), name: "מעקות ישראל", website: "maakotyisrael.co.il",
+          products: ["מעקות ברזל", "מעקות אלומיניום", "שערים"],
+          estimatedRevenue: 0, estimatedEmployees: 15, estimatedAdBudget: 0,
+          strengths: ["מחירים תחרותיים", "שיווק אגרסיבי"],
+          weaknesses: ["איכות בינונית", "אין אחריות ארוכה", "חברה חדשה"],
+          pricing: { railingIron: 65000, railingAluminum: 80000 },
+          onlinePresence: { website: true, facebook: true, instagram: true, google_ads: true },
+          lastChecked: null, threatLevel: "high", trend: "growing",
+          intelligence: [],
+        },
+        {
+          id: uid(), name: "א.ב מסגרות", website: null,
+          products: ["מעקות ברזל", "שערים", "גדרות"],
+          estimatedRevenue: 0, estimatedEmployees: 8,
+          strengths: ["מחירים נמוכים", "עבודה מהירה"],
+          weaknesses: ["איכות נמוכה", "אין אתר", "אין אחריות", "עסק קטן"],
+          pricing: { railingIron: 55000 },
+          onlinePresence: { website: false, facebook: true, instagram: false, google_ads: false },
+          lastChecked: null, threatLevel: "medium", trend: "stable",
+          intelligence: [],
+        },
+        {
+          id: uid(), name: "פרגולות VIP", website: "pergolot-vip.co.il",
+          products: ["פרגולות אלומיניום", "מעקות אלומיניום", "הצללות"],
+          estimatedRevenue: 0, estimatedEmployees: 12,
+          strengths: ["מותג חזק", "מיקוד בפרגולות", "שיווק טוב"],
+          weaknesses: ["מחירים גבוהים", "לא עושים ברזל", "זמני אספקה ארוכים"],
+          pricing: { pergolaAluminum: 120000 },
+          onlinePresence: { website: true, facebook: true, instagram: true, google_ads: true },
+          lastChecked: null, threatLevel: "medium", trend: "growing",
+          intelligence: [],
+        },
+        {
+          id: uid(), name: "אלומיניום פלוס", website: "aluminiumplus.co.il",
+          products: ["חלונות אלומיניום", "דלתות אלומיניום", "מעקות אלומיניום"],
+          estimatedRevenue: 0, estimatedEmployees: 20,
+          strengths: ["מומחיות אלומיניום", "מפעל גדול", "ותק"],
+          weaknesses: ["לא עושים ברזל", "שירות לקוחות בינוני", "יקרים"],
+          pricing: { railingAluminum: 85000, windowAluminum: 60000 },
+          onlinePresence: { website: true, facebook: true, instagram: false, google_ads: true },
+          lastChecked: null, threatLevel: "medium", trend: "stable",
+          intelligence: [],
+        },
+        // נדל"ן
+        {
+          id: uid(), name: "Israel Sotheby's", website: "sothebysrealty.co.il",
+          products: ["נדל\"ן יוקרה תל אביב"],
+          estimatedRevenue: 0, estimatedEmployees: 50, estimatedAdBudget: 1200000,
+          strengths: ["מותג עולמי", "רשת בינלאומית", "תקציב שיווק ענק"],
+          weaknesses: ["יקרים מאוד", "לא אישי", "בירוקרטיה"],
+          pricing: {},
+          onlinePresence: { website: true, facebook: true, instagram: true, google_ads: true, youtube: true },
+          lastChecked: null, threatLevel: "high", trend: "stable",
+          intelligence: [],
+        },
+      ],
+      reports: [],
+      priceComparisons: [],
+      marketShare: {},
+      alerts: [],
+    });
+  }
+  save() { save(this.file, this.data); }
+
+  async gatherIntelligence(competitorId) {
+    const comp = this.data.competitors.find(c => c.id === competitorId);
+    if (!comp) return null;
+
+    log("SPY", `🔍 מרגל אחרי: ${comp.name}...`);
+
+    const result = await this.brain.thinkJSON(`
+אתה יחידת מודיעין תחרותי של טכנו כל עוזי.
+אסוף מידע על: ${comp.name}
+
+═══ מה ידוע ═══
+${JSON.stringify(comp)}
+
+═══ מה לבדוק (סימולציה — בפרודקשן: web scraping + API) ═══
+1. **אתר**: האם השתנה? מוצרים חדשים? מחירים?
+2. **Google Ads**: האם מפרסמים? מילות מפתח? מודעות?
+3. **Facebook/Instagram**: פעילות? תגובות? ביקורות?
+4. **Google Reviews**: ציון? ביקורות חדשות? תלונות?
+5. **מחירים**: האם השתנו? מבצעים? הנחות?
+6. **מוצרים חדשים**: הוסיפו שירותים? הסירו?
+7. **עובדים**: מגייסים? פיטורים? מנהלים חדשים?
+8. **שותפויות**: שותפים חדשים? ספקים?
+
+תחזיר JSON:
+{
+  "competitor": "${comp.name}",
+  "checkedAt": "${now()}",
+  "findings": [{
+    "category": "pricing/products/marketing/reputation/staff/strategy",
+    "finding": "...",
+    "significance": "high/medium/low",
+    "actionRequired": true,
+    "suggestedResponse": "..."
+  }],
+  "pricingUpdate": {"product": "...", "oldPrice": 0, "newPrice": 0, "change": "..."},
+  "threatLevelChange": "increased/stable/decreased",
+  "newThreatLevel": "critical/high/medium/low",
+  "opportunities": ["הזדמנות שנוצרה מהמתחרה"],
+  "counterStrategies": [{
+    "strategy": "...",
+    "implementation": "...",
+    "cost": 0,
+    "expectedImpact": "...",
+    "timeline": "..."
+  }],
+  "marketTrend": "...",
+  "customerSentiment": {"positive": 0, "negative": 0, "topComplaint": "..."}
+}`);
+
+    if (result) {
+      comp.lastChecked = now();
+      comp.intelligence.push({ ...result, t: now() });
+      comp.intelligence = comp.intelligence.slice(-20);
+
+      if (result.threatLevelChange === "increased") {
+        comp.threatLevel = result.newThreatLevel || comp.threatLevel;
+        log("SPY", `🚨 ${comp.name}: רמת איום עלתה ל-${comp.threatLevel}!`, "WARN");
+        this.memory.add("alerts", { type: "competitor_threat_increased", competitor: comp.name, level: comp.threatLevel });
+      }
+
+      for (const finding of (result.findings || []).filter(f => f.significance === "high")) {
+        log("SPY", `  ⚠️ ${finding.category}: ${finding.finding}`, "WARN");
+      }
+
+      this.save();
+    }
+
+    return result;
+  }
+
+  async compareMarket() {
+    log("SPY", "📊 השוואת שוק מלאה...");
+
+    return await this.brain.thinkJSON(`
+השווה את טכנו כל עוזי מול כל המתחרים:
+
+═══ אנחנו ═══
+שם: טכנו כל עוזי
+ותק: 80 שנה
+עובדים: 30
+מוצרים: ${CONFIG.BUSINESS.techno.products.join(", ")}
+USPs: 80 שנה, 3 דורות, אחריות 10 שנים, מדידה חינם
+מחירים: מעקה ברזל ~₪200-350/מ', אלומיניום ~₪300-500/מ'
+
+═══ מתחרים ═══
+${JSON.stringify(this.data.competitors.map(c => ({
+  name: c.name, products: c.products, employees: c.estimatedEmployees,
+  strengths: c.strengths, weaknesses: c.weaknesses,
+  pricing: c.pricing, threat: c.threatLevel, trend: c.trend,
+})))}
+
+תחזיר JSON:
+{
+  "marketOverview": "סיכום שוק 3-4 שורות",
+  "ourPosition": "leader/challenger/follower/niche",
+  "marketShare": {"estimated": 0, "trend": "growing/stable/shrinking"},
+  "competitiveAdvantages": [{"advantage": "...", "sustainability": "high/medium/low", "threat": "..."}],
+  "competitiveDisadvantages": [{"disadvantage": "...", "impact": "...", "fix": "..."}],
+  "pricePositioning": {"position": "premium/mid/budget", "justification": "..."},
+  "differentiationScore": 0-100,
+  "emergingThreats": [{"threat": "...", "timeline": "...", "preparation": "..."}],
+  "opportunities": [{"opportunity": "...", "reason": "...", "action": "...", "expectedRevenue": 0}],
+  "strategicRecommendations": [{
+    "recommendation": "...",
+    "rationale": "...",
+    "investment": 0,
+    "expectedROI": 0,
+    "timeline": "...",
+    "priority": "critical/high/medium/low"
+  }],
+  "moatAnalysis": {
+    "currentMoat": "...",
+    "moatStrength": 0-100,
+    "howToStrengthen": ["..."]
+  }
+}`);
+  }
+
+  async analyze() {
+    return await this.brain.thinkJSON(`
+נתח מודיעין תחרותי:
+מתחרים במעקב: ${this.data.competitors.length}
+${JSON.stringify(this.data.competitors.map(c => ({
+  name: c.name, threat: c.threatLevel, trend: c.trend,
+  lastChecked: c.lastChecked ? daysAgo(c.lastChecked) + " ימים" : "אף פעם",
+  intelligenceCount: c.intelligence.length,
+})))}
+
+תחזיר JSON:
+{
+  "status": "healthy/warning/critical",
+  "score": 0-100,
+  "mostDangerous": {"name": "...", "reason": "...", "action": "..."},
+  "recentChanges": [{"competitor": "...", "change": "...", "impact": "..."}],
+  "marketTrend": "...",
+  "recommendations": ["..."],
+  "automatedActions": [{"action": "...", "competitor": "...", "priority": "..."}]
+}`);
+  }
+}
+
+// ═══════════════════════════════════════
+// CASH COLLECTION PREDICTOR
+// ═══════════════════════════════════════
+
+class CashPredictorModule {
+  constructor(brain, memory) {
+    this.brain = brain;
+    this.memory = memory;
+    this.file = path.join(CONFIG.DIR, "finance", "cash-predictor.json");
+    this.data = load(this.file, {
+      predictions: [],
+      customerProfiles: [],
+      accuracy: { predicted: 0, actual: 0, hits: 0, misses: 0 },
+    });
+  }
+  save() { save(this.file, this.data); }
+
+  async predictCollections(invoices, customerHistory) {
+    log("CASH", "🔮 מנבא תזרים מזומנים...");
+
+    const result = await this.brain.thinkJSON(`
+אתה מנוע חיזוי תזרים מזומנים של טכנו כל עוזי.
+נבא מתי כל לקוח ישלם.
+
+═══ חשבוניות פתוחות ═══
+${JSON.stringify(invoices.map(i => ({
+  number: i.number, customer: i.customerName, amount: shekel(i.total),
+  dueDate: i.dueDate, daysSinceSent: i.sentAt ? daysAgo(i.sentAt) : "N/A",
+  daysOverdue: i.dueDate && new Date(i.dueDate) < new Date() ? daysAgo(i.dueDate) : 0,
+  reminders: (i.reminders || []).length,
+})))}
+
+═══ היסטוריית לקוחות ═══
+${JSON.stringify(customerHistory)}
+
+═══ כללים ישראליים ═══
+1. "שוטף + 30" = בדרך כלל 35-40 יום בפועל
+2. לקוחות פרטיים משלמים מהר יותר מעסקיים
+3. סכומים גדולים = תשלום איטי יותר
+4. אחרי תזכורת = 70% משלמים תוך שבוע
+5. חגים = עיכוב 1-2 שבועות
+6. חודש ינואר = תקופה קשה (אחרי חגים)
+
+לכל חשבונית:
+1. מתי צפוי לשלם?
+2. מה הסיכוי שישלם בזמן?
+3. מה הסיכוי שלא ישלם בכלל?
+4. מה הפעולה הנדרשת?
+
+תחזיר JSON:
+{
+  "predictions": [{
+    "invoiceNumber": "...",
+    "customer": "...",
+    "amount": 0,
+    "dueDate": "...",
+    "predictedPaymentDate": "...",
+    "onTimeProbability": 0.0-1.0,
+    "latePaymentProbability": 0.0-1.0,
+    "defaultProbability": 0.0-1.0,
+    "predictedDaysLate": 0,
+    "riskLevel": "low/medium/high/critical",
+    "recommendedAction": "wait/reminder_sms/reminder_call/formal_letter/legal",
+    "recommendedActionDate": "...",
+    "collectionStrategy": "..."
+  }],
+  "cashflowForecast": {
+    "next7days": 0,
+    "next14days": 0,
+    "next30days": 0,
+    "next60days": 0,
+    "next90days": 0,
+    "confidence": 0.0-1.0
+  },
+  "atRiskAmount": 0,
+  "totalExpectedCollections": 0,
+  "criticalActions": [{"invoice": "...", "action": "...", "deadline": "...", "reason": "..."}],
+  "customerSegmentation": {
+    "reliable": [{"customer": "...", "avgPaymentDays": 0}],
+    "slowPayers": [{"customer": "...", "avgPaymentDays": 0, "action": "..."}],
+    "riskCustomers": [{"customer": "...", "reason": "...", "exposure": 0, "action": "..."}]
+  }
+}`);
+
+    if (result) {
+      this.data.predictions.push({ ...result, t: now() });
+      this.data.predictions = this.data.predictions.slice(-50);
+      this.save();
+      log("CASH", `✅ חיזוי: 7 ימים ₪${shekel(result.cashflowForecast?.next7days || 0)} | 30 ימים ₪${shekel(result.cashflowForecast?.next30days || 0)} | At Risk ₪${shekel(result.atRiskAmount || 0)}`, "SUCCESS");
+    }
+
+    return result;
+  }
+}
+
+// ═══════════════════════════════════════
+// EMPLOYEE WELLNESS MODULE
+// ═══════════════════════════════════════
+
+class WellnessModule {
+  constructor(brain, memory) {
+    this.brain = brain;
+    this.memory = memory;
+    this.file = path.join(CONFIG.DIR, "hr", "wellness.json");
+    this.data = load(this.file, {
+      assessments: [],
+      wellnessScores: [],
+      burnoutIndicators: [],
+      interventions: [],
+      config: {
+        overtimeAlertHours: 10, // שעות נוספות בשבוע
+        absenceAlertDays: 3, // חיסורים בחודש
+        lateAlertCount: 4, // איחורים בחודש
+        vacationGap: 90, // ימים ללא חופש = סימן שחיקה
+        checkFrequency: 7, // ימים בין בדיקות
+      },
+    });
+  }
+  save() { save(this.file, this.data); }
+
+  async assessEmployee(employee, attendanceData, performanceData) {
+    log("WELLNESS", `❤️ מעריך רווחת: ${employee.name}...`);
+
+    const result = await this.brain.thinkJSON(`
+אתה מערכת רווחת עובדים אוטונומית.
+הערך את מצבו של העובד וזהה סימני שחיקה.
+
+═══ עובד ═══
+שם: ${employee.name}
+תפקיד: ${employee.role}
+מחלקה: ${employee.department}
+ותק: ${daysAgo(employee.startDate)} ימים (${(daysAgo(employee.startDate) / 365).toFixed(1)} שנים)
+שכר: ₪${shekel(employee.salary?.base || 0)}
+
+═══ נוכחות (30 ימים אחרונים) ═══
+${JSON.stringify(attendanceData)}
+
+═══ ביצועים ═══
+${JSON.stringify(performanceData)}
+
+═══ סימני שחיקה לבדוק ═══
+1. **שעות נוספות** — מעל ${this.data.config.overtimeAlertHours} שעות/שבוע
+2. **חיסורים** — מעל ${this.data.config.absenceAlertDays}/חודש (עלייה פתאומית)
+3. **איחורים** — מעל ${this.data.config.lateAlertCount}/חודש (שינוי מדפוס)
+4. **חופשה** — לא לקח חופש ${this.data.config.vacationGap}+ ימים
+5. **ביצועים** — ירידה באיכות/מהירות
+6. **תלונות** — תלונות לקוחות על העובד
+7. **יחסים** — קונפליקטים עם צוות
+8. **בטיחות** — אירועי בטיחות שקשורים לעובד
+9. **שינויים פתאומיים** — שינוי התנהגות חריג
+
+═══ הקשר ישראלי ═══
+- עובדי מפעל מתכת: עבודה פיזית קשה, חום, רעש
+- תקופת קיץ = חום קיצוני = עומס פיזי
+- מילואים = לחץ אישי + חוסר בכוח אדם
+- חגים = לחץ הזמנות + משמרות
+
+תחזיר JSON:
+{
+  "wellnessScore": 0-100,
+  "burnoutRisk": "none/low/medium/high/critical",
+  "burnoutIndicators": [{
+    "indicator": "...",
+    "severity": "mild/moderate/severe",
+    "trend": "improving/stable/worsening",
+    "evidence": "..."
+  }],
+  "stressors": ["מקור לחץ 1"],
+  "positiveFactors": ["גורם חיובי 1"],
+  "recommendations": [{
+    "action": "...",
+    "type": "immediate/short_term/long_term",
+    "owner": "manager/hr/employee",
+    "priority": "high/medium/low",
+    "expectedImpact": "..."
+  }],
+  "conversation": {
+    "shouldHaveConversation": true,
+    "with": "דימה/קורין/קובי",
+    "topic": "...",
+    "approach": "...",
+    "doNotSay": ["..."]
+  },
+  "retentionRisk": 0.0-1.0,
+  "retentionActions": ["פעולה 1"],
+  "workloadAssessment": "underloaded/balanced/overloaded/critical",
+  "physicalHealth": {
+    "concerns": ["..."],
+    "recommendations": ["..."]
+  }
+}`);
+
+    if (result) {
+      this.data.assessments.push({ employeeId: employee.id, name: employee.name, ...result, t: now() });
+      this.data.wellnessScores.push({ employeeId: employee.id, score: result.wellnessScore, t: now() });
+
+      if (result.burnoutRisk === "high" || result.burnoutRisk === "critical") {
+        this.data.burnoutIndicators.push({ employeeId: employee.id, name: employee.name, risk: result.burnoutRisk, indicators: result.burnoutIndicators, t: now() });
+        log("WELLNESS", `🚨 ${employee.name}: סיכון שחיקה ${result.burnoutRisk}!`, "ERROR");
+        this.memory.add("alerts", { type: "burnout_risk", employee: employee.name, risk: result.burnoutRisk });
+      }
+
+      if (result.retentionRisk > 0.6) {
+        log("WELLNESS", `⚠️ ${employee.name}: סיכון עזיבה ${(result.retentionRisk * 100).toFixed(0)}%`, "WARN");
+        this.memory.add("alerts", { type: "retention_risk", employee: employee.name, risk: result.retentionRisk });
+      }
+
+      this.save();
+    }
+
+    return result;
+  }
+
+  getAverageWellness() {
+    if (this.data.wellnessScores.length === 0) return 0;
+    const recent = this.data.wellnessScores.slice(-30);
+    return Math.round(recent.reduce((s, w) => s + w.score, 0) / recent.length);
+  }
+
+  async analyze() {
+    return await this.brain.thinkJSON(`
+נתח רווחת עובדים:
+ציון ממוצע: ${this.getAverageWellness()}/100
+הערכות: ${this.data.assessments.length}
+סיכוני שחיקה: ${this.data.burnoutIndicators.length}
+התערבויות: ${this.data.interventions.length}
+
+הערכות אחרונות: ${JSON.stringify(this.data.assessments.slice(-10).map(a => ({
+  name: a.name, wellness: a.wellnessScore, burnout: a.burnoutRisk, retention: a.retentionRisk,
+})))}
+
+תחזיר JSON:
+{
+  "status": "healthy/warning/critical",
+  "score": 0-100,
+  "avgWellness": 0,
+  "trend": "improving/stable/declining",
+  "atRiskEmployees": [{"name": "...", "risk": "...", "action": "..."}],
+  "organizationalHealth": "...",
+  "recommendations": ["..."],
+  "kpis": {"avgWellness": 0, "burnoutRate": 0, "turnoverPrediction": 0, "engagementScore": 0}
+}`);
+  }
+}
+
+// ═══════════════════════════════════════
+// ENERGY & UTILITY TRACKER
+// ═══════════════════════════════════════
+
+class EnergyModule {
+  constructor(brain, memory) {
+    this.brain = brain;
+    this.memory = memory;
+    this.file = path.join(CONFIG.DIR, "ops", "energy.json");
+    this.data = load(this.file, {
+      readings: [],
+      bills: [],
+      equipment: [
+        { name: "רתכת MIG 350A", power: 12, hoursPerDay: 6, category: "welding" },
+        { name: "רתכת TIG 250A", power: 8, hoursPerDay: 3, category: "welding" },
+        { name: "משחזת גדולה 230מ\"מ", power: 2.4, hoursPerDay: 4, count: 5, category: "grinding" },
+        { name: "משחזת קטנה 125מ\"מ", power: 1.2, hoursPerDay: 3, count: 8, category: "grinding" },
+        { name: "מברגת אימפקט", power: 0.8, hoursPerDay: 2, count: 6, category: "tools" },
+        { name: "מקדחה עמודית", power: 1.5, hoursPerDay: 2, category: "drilling" },
+        { name: "מסור פס", power: 3, hoursPerDay: 1, category: "cutting" },
+        { name: "מכונת כיפוף", power: 4, hoursPerDay: 1.5, category: "bending" },
+        { name: "מדחס אוויר", power: 7.5, hoursPerDay: 8, category: "compressor" },
+        { name: "תאורת מפעל", power: 5, hoursPerDay: 10, category: "lighting" },
+        { name: "מיזוג אוויר", power: 15, hoursPerDay: 8, category: "hvac" },
+        { name: "מחשבים + משרד", power: 2, hoursPerDay: 10, category: "office" },
+      ],
+      config: {
+        electricityRate: 65, // אגורות/קוט"ש (IEC תעריף עסקי)
+        peakRate: 85, // תעריף שיא
+        offPeakRate: 45, // תעריף שפל
+        peakHours: { start: "17:00", end: "22:00" },
+        monthlyBudget: 1500000, // ₪15,000
+      },
+      stats: { totalKwh: 0, totalCost: 0 },
+    });
+  }
+  save() { save(this.file, this.data); }
+
+  calculateDailyConsumption() {
+    let total = 0;
+    for (const eq of this.data.equipment) {
+      const count = eq.count || 1;
+      total += eq.power * eq.hoursPerDay * count;
+    }
+    return Math.round(total * 10) / 10; // kWh
+  }
+
+  calculateMonthlyCost() {
+    const dailyKwh = this.calculateDailyConsumption();
+    const monthlyKwh = dailyKwh * 22; // 22 ימי עבודה
+    const avgRate = this.data.config.electricityRate;
+    return Math.round(monthlyKwh * avgRate);
+  }
+
+  addBill(data) {
+    const bill = {
+      id: uid(),
+      period: data.period || today().substring(0, 7),
+      kwh: data.kwh || 0,
+      amount: data.amount || 0,
+      peakKwh: data.peakKwh || 0,
+      offPeakKwh: data.offPeakKwh || 0,
+      powerFactor: data.powerFactor || 0.95,
+      date: data.date || today(),
+      t: now(),
+    };
+    this.data.bills.push(bill);
+    this.data.stats.totalKwh += bill.kwh;
+    this.data.stats.totalCost += bill.amount;
     this.save();
-    return checkupsToRun;
+    log("ENERGY", `⚡ חשבון חשמל: ${bill.period} — ${bill.kwh} kWh — ₪${shekel(bill.amount)}`);
+    return bill;
+  }
+
+  async optimize() {
+    const dailyKwh = this.calculateDailyConsumption();
+    const monthlyCost = this.calculateMonthlyCost();
+
+    return await this.brain.thinkJSON(`
+אפטם צריכת חשמל של מפעל מתכת:
+
+═══ ציוד ═══
+${JSON.stringify(this.data.equipment)}
+
+═══ צריכה ═══
+יומי: ${dailyKwh} kWh
+חודשי (אומדן): ${Math.round(dailyKwh * 22)} kWh
+עלות חודשית (אומדן): ₪${shekel(monthlyCost)}
+תקציב: ₪${shekel(this.data.config.monthlyBudget)}
+
+═══ חשבונות אחרונים ═══
+${JSON.stringify(this.data.bills.slice(-6))}
+
+═══ תעריפים ═══
+רגיל: ${this.data.config.electricityRate} אג'/kWh
+שיא (${this.data.config.peakHours.start}-${this.data.config.peakHours.end}): ${this.data.config.peakRate} אג'/kWh
+שפל: ${this.data.config.offPeakRate} אג'/kWh
+
+תחזיר JSON:
+{
+  "currentConsumption": {"daily": 0, "monthly": 0, "cost": 0},
+  "topConsumers": [{"equipment": "...", "percent": 0, "kwhMonth": 0, "cost": 0}],
+  "savings": [{
+    "suggestion": "...",
+    "method": "timing/equipment/behavior/solar/LED/inverter",
+    "monthlySaving": 0,
+    "investment": 0,
+    "paybackMonths": 0,
+    "co2Reduction": 0,
+    "difficulty": "easy/medium/hard"
+  }],
+  "peakShifting": {
+    "currentPeakUsage": 0,
+    "shiftableLoad": 0,
+    "potentialSaving": 0,
+    "recommendation": "..."
+  },
+  "solarPotential": {
+    "roofArea": "...",
+    "estimatedCapacity": 0,
+    "annualGeneration": 0,
+    "annualSaving": 0,
+    "investment": 0,
+    "paybackYears": 0,
+    "recommendation": "..."
+  },
+  "totalPotentialSaving": 0,
+  "percentSaving": 0,
+  "priority": [{"action": "...", "saving": 0, "effort": "low/medium/high"}]
+}`);
+  }
+}
+
+// ═══════════════════════════════════════
+// LEGAL DOCUMENT AI
+// ═══════════════════════════════════════
+
+class LegalModule {
+  constructor(brain, memory) {
+    this.brain = brain;
+    this.memory = memory;
+    this.file = path.join(CONFIG.DIR, "compliance", "legal.json");
+    this.data = load(this.file, {
+      documents: [],
+      templates: [
+        "employment_contract", "termination_letter", "warning_letter",
+        "service_agreement", "subcontractor_agreement", "nda",
+        "warranty_certificate", "demand_letter", "consent_form",
+        "safety_declaration", "vehicle_use_agreement", "privacy_policy",
+      ],
+      compliance: {
+        businessLicense: { status: "valid", expiryDate: null, lastRenewal: null },
+        insurance: { liability: null, property: null, workers: null, vehicles: null },
+        safetyTraining: { lastDate: null, nextDate: null, certified: [] },
+        taxRegistration: { vat: true, incomeTax: true, nationalInsurance: true },
+      },
+      alerts: [],
+    });
+  }
+  save() { save(this.file, this.data); }
+
+  async generateLegalDocument(type, data) {
+    log("LEGAL", `📜 מייצר מסמך משפטי: ${type}...`);
+
+    const result = await this.brain.thinkJSON(`
+אתה מערכת מסמכים משפטיים של טכנו כל עוזי בע"מ.
+ייצר מסמך ${type} בהתאם לחוק הישראלי.
+
+═══ סוג מסמך: ${type} ═══
+═══ נתונים: ${JSON.stringify(data)} ═══
+
+═══ פרטי העסק ═══
+שם: טכנו כל עוזי בע"מ
+ח.פ.: 51-XXXXXXX
+כתובת: ריבל 37, תל אביב
+בעלים: קובי אלקיים
+
+═══ הנחיות משפטיות ═══
+1. חוק חוזים ישראלי
+2. חוק הגנת הצרכן
+3. חוק זכויות עובדים (אם רלוונטי)
+4. תקנות בטיחות בעבודה (אם רלוונטי)
+5. חוק הגנת הפרטיות
+6. שפה ברורה ופשוטה — עברית
+
+═══ לפי סוג ═══
+${type === "employment_contract" ? `
+חוק עבודה ישראלי:
+- תקופת ניסיון: עד 6 חודשים
+- הודעה מוקדמת: לפי ותק
+- שעות עבודה: 42 שעות/שבוע
+- שעות נוספות: 125% ראשונות, 150% הבאות
+- חופשה שנתית: לפי ותק
+- דמי מחלה: 18 ימים/שנה
+- פנסיה: 6.25% מעסיק + 6% עובד
+- פיצויים: 8.33%
+- ביטוח לאומי: 3.45%+7.66% מעסיק
+` : ""}
+${type === "service_agreement" ? `
+- תיאור השירות בפירוט
+- מחיר + מע"מ
+- תנאי תשלום
+- לוח זמנים
+- אחריות
+- ביטול
+- סמכות שיפוט: בית משפט תל אביב
+` : ""}
+${type === "demand_letter" ? `
+- מכתב התראה לפני הליך משפטי
+- סכום החוב + ריבית + הוצאות
+- ציון מועד אחרון לתשלום
+- אזהרה מהליכים משפטיים
+- בנימה מקצועית אך תקיפה
+` : ""}
+
+תחזיר JSON:
+{
+  "document": {
+    "title": "...",
+    "type": "${type}",
+    "content": "תוכן המסמך המלא בעברית — פסקאות מלאות עם סעיפים ממוספרים",
+    "date": "${today()}",
+    "parties": [{"name": "...", "role": "..."}],
+    "keyTerms": ["..."],
+    "signatures": [{"name": "...", "title": "..."}]
+  },
+  "legalNotes": ["הערה משפטית 1"],
+  "disclaimer": "מסמך זה נוצר ע\"י AI ואינו מהווה ייעוץ משפטי. מומלץ לבדוק עם עורך דין.",
+  "relatedDocuments": ["מסמך קשור 1"],
+  "expiryDate": "...",
+  "reviewRequired": true
+}`);
+
+    if (result) {
+      const doc = { id: `LEGAL-${uid()}`, type, ...result.document, data, legalNotes: result.legalNotes, createdAt: now() };
+      this.data.documents.push(doc);
+      this.save();
+      log("LEGAL", `✅ ${type}: ${doc.title}`, "SUCCESS");
+    }
+
+    return result;
+  }
+
+  async checkCompliance() {
+    return await this.brain.thinkJSON(`
+בדוק עמידה ברגולציה:
+${JSON.stringify(this.data.compliance)}
+מסמכים: ${this.data.documents.length}
+התראות: ${this.data.alerts.length}
+
+תחזיר JSON:
+{
+  "status": "compliant/partial/non_compliant",
+  "score": 0-100,
+  "issues": [{"area": "...", "issue": "...", "severity": "critical/high/medium", "deadline": "...", "action": "..."}],
+  "upcomingDeadlines": [{"what": "...", "date": "...", "action": "..."}],
+  "missingDocuments": ["מסמך שחסר"],
+  "recommendations": ["..."]
+}`);
+  }
+}
+
+// ═══════════════════════════════════════
+// MULTI-CURRENCY MODULE
+// ═══════════════════════════════════════
+
+class MultiCurrencyModule {
+  constructor(brain, memory) {
+    this.brain = brain;
+    this.memory = memory;
+    this.file = path.join(CONFIG.DIR, "finance", "currency.json");
+    this.data = load(this.file, {
+      rates: { USD: 365, EUR: 398, GBP: 462, CHF: 412, CAD: 270 }, // אגורות ל-1 יחידה
+      rateHistory: [],
+      transactions: [],
+      exposure: { USD: 0, EUR: 0, GBP: 0 },
+      hedging: [],
+      config: { autoUpdate: true, hedgingEnabled: false, markupPercent: 2 },
+    });
+  }
+  save() { save(this.file, this.data); }
+
+  convert(amount, from, to = "ILS") {
+    if (from === to) return amount;
+    if (from === "ILS" && this.data.rates[to]) return Math.round(amount / this.data.rates[to] * 100);
+    if (to === "ILS" && this.data.rates[from]) return Math.round(amount * this.data.rates[from] / 100);
+    return null;
+  }
+
+  createForeignQuote(data) {
+    const ilsAmount = data.amountILS || 0;
+    const currency = data.currency || "USD";
+    const rate = this.data.rates[currency] || 365;
+    const markup = this.data.config.markupPercent;
+    const adjustedRate = Math.round(rate * (1 - markup / 100));
+    const foreignAmount = Math.round(ilsAmount / adjustedRate * 100);
+
+    const quote = {
+      id: uid(), amountILS: ilsAmount,
+      currency, rate, adjustedRate, markup,
+      foreignAmount,
+      displayAmount: `${(foreignAmount / 100).toFixed(0)} ${currency}`,
+      ilsEquivalent: `₪${shekel(ilsAmount)}`,
+      validHours: 24,
+      createdAt: now(),
+    };
+    this.data.transactions.push(quote);
+    this.save();
+    log("CURRENCY", `💱 ${quote.displayAmount} (₪${shekel(ilsAmount)}) — rate: ${rate/100} + ${markup}% markup`);
+    return quote;
+  }
+
+  async analyzeExposure() {
+    return await this.brain.thinkJSON(`
+נתח חשיפה מטבעית:
+שערים: ${JSON.stringify(this.data.rates)}
+חשיפה: ${JSON.stringify(this.data.exposure)}
+עסקאות: ${this.data.transactions.length}
+
+תחזיר JSON:
+{
+  "totalExposure": 0,
+  "riskLevel": "low/medium/high",
+  "currencyForecast": [{"currency": "USD", "direction": "up/stable/down", "confidence": 0.0-1.0}],
+  "hedgingRecommendation": "...",
+  "pricingRecommendation": "...",
+  "markupOptimization": {"current": 0, "suggested": 0, "reason": "..."}
+}`);
+  }
+}
+
+// ═══════════════════════════════════════
+// SEASONAL DEMAND PREDICTOR
+// ═══════════════════════════════════════
+
+class SeasonalModule {
+  constructor(brain, memory) {
+    this.brain = brain;
+    this.memory = memory;
+    this.file = path.join(CONFIG.DIR, "analytics", "seasonal.json");
+    this.data = load(this.file, {
+      historicalData: [],
+      predictions: [],
+      seasons: {
+        peak: { months: [3, 4, 5, 8, 9, 10], multiplier: 1.3, description: "אביב + סתיו = שיא שיפוצים" },
+        normal: { months: [2, 6, 7, 11], multiplier: 1.0, description: "רגיל" },
+        low: { months: [0, 1], multiplier: 0.6, description: "חורף = שפל" },
+      },
+      events: [
+        { name: "פסח", month: 3, week: 3, impact: 1.28, type: "holiday", leadTimeDays: 14, description: "שיא שיפוצים לפני פסח" },
+        { name: "אחרי חופש גדול", month: 8, week: 2, impact: 1.35, type: "seasonal", leadTimeDays: 7, description: "חזרה מחופש = תוכניות שיפוצים" },
+        { name: "סוכות", month: 9, week: 2, impact: 1.15, type: "holiday", leadTimeDays: 21, description: "סוכות = פרגולות" },
+        { name: "ראש השנה", month: 8, week: 4, impact: 1.10, type: "holiday", leadTimeDays: 14, description: "שנה חדשה = תוכניות חדשות" },
+        { name: "חנוכה/חג המולד", month: 11, week: 3, impact: 0.85, type: "holiday", leadTimeDays: 0, description: "חופשות = פחות עבודה" },
+        { name: "בחירות", month: null, week: null, impact: 0.85, type: "event", leadTimeDays: 14, description: "חוסר ודאות = דחיית החלטות" },
+        { name: "גל חום", month: 7, week: 2, impact: 0.75, type: "weather", leadTimeDays: 3, description: "חום = פחות עבודה + פחות חיפושים" },
+        { name: "גשם ראשון", month: 10, week: 3, impact: 1.20, type: "weather", leadTimeDays: 3, description: "גשם = חלודה = חיפושי מעקות" },
+        { name: "שישי בוקר", month: null, week: null, impact: 1.15, type: "weekly", leadTimeDays: 0, description: "Peak decision making" },
+        { name: "מבצע בנקאי", month: null, week: null, impact: 1.22, type: "market", leadTimeDays: 7, description: "מבצע משכנתאות = רכישות + שיפוצים" },
+      ],
+    });
+  }
+  save() { save(this.file, this.data); }
+
+  getCurrentSeasonMultiplier() {
+    const month = new Date().getMonth();
+    if (this.data.seasons.peak.months.includes(month)) return this.data.seasons.peak.multiplier;
+    if (this.data.seasons.low.months.includes(month)) return this.data.seasons.low.multiplier;
+    return this.data.seasons.normal.multiplier;
+  }
+
+  getUpcomingEvents(daysAhead = 30) {
+    const now_ = new Date();
+    const upcoming = [];
+    for (const event of this.data.events) {
+      if (event.month === null) continue;
+      const eventDate = new Date(now_.getFullYear(), event.month, (event.week || 1) * 7);
+      const daysUntil = Math.ceil((eventDate - now_) / 86400000);
+      if (daysUntil >= -7 && daysUntil <= daysAhead) {
+        upcoming.push({ ...event, daysUntil, preparationDeadline: daysUntil - event.leadTimeDays });
+      }
+    }
+    return upcoming.sort((a, b) => a.daysUntil - b.daysUntil);
+  }
+
+  async predict(horizonDays = 90) {
+    log("SEASONAL", `🌤️ חיזוי ביקוש ל-${horizonDays} ימים...`);
+    const upcoming = this.getUpcomingEvents(horizonDays);
+    const currentMultiplier = this.getCurrentSeasonMultiplier();
+
+    const result = await this.brain.thinkJSON(`
+אתה מנוע חיזוי ביקוש עונתי של טכנו כל עוזי + קובי אלקיים נדל"ן.
+
+═══ מצב נוכחי ═══
+חודש: ${new Date().getMonth() + 1}
+עונה: ${currentMultiplier > 1.1 ? "שיא" : currentMultiplier < 0.8 ? "שפל" : "רגיל"}
+מכפיל עונתי: ${currentMultiplier}
+
+═══ אירועים קרובים ═══
+${JSON.stringify(upcoming)}
+
+═══ נתונים היסטוריים (סימולציה) ═══
+הנח: 20 לידים/יום בממוצע, ₪15,000 ממוצע עסקה, 15% שיעור המרה
+
+═══ גורמים ═══
+1. עונתיות: מרץ-מאי ואוגוסט-אוקטובר = שיא
+2. חגים: לפני פסח/ראש השנה = spike
+3. מזג אוויר: גשם = חיפושי חלודה/מעקות
+4. כלכלה: ריבית, מדד דירות
+5. שוק נדל"ן: עליית מחירים = שיפוצים
+
+חזה לכל שבוע:
+1. ביקוש צפוי (לידים/יום)
+2. הכנסה צפויה
+3. כוח אדם נדרש
+4. מלאי נדרש
+5. תקציב פרסום מומלץ
+
+תחזיר JSON:
+{
+  "currentSeason": "peak/normal/low",
+  "seasonMultiplier": 0,
+  "weeklyForecast": [{
+    "week": 1,
+    "startDate": "...",
+    "expectedLeads": 0,
+    "expectedRevenue": 0,
+    "demandLevel": "very_high/high/normal/low/very_low",
+    "events": ["..."],
+    "staffingNeed": 0,
+    "inventoryAlert": ["חומר שצריך להזמין"],
+    "adBudgetMultiplier": 0,
+    "confidence": 0.0-1.0
+  }],
+  "peakPeriods": [{"start": "...", "end": "...", "reason": "...", "preparation": ["..."]}],
+  "lowPeriods": [{"start": "...", "end": "...", "reason": "...", "opportunity": "..."}],
+  "staffingPlan": {
+    "currentHeadcount": 30,
+    "peakNeed": 0,
+    "lowNeed": 0,
+    "recommendation": "...",
+    "tempStaffNeeded": 0,
+    "tempStaffWhen": "..."
+  },
+  "inventoryPlan": {
+    "preOrderMaterials": [{"material": "...", "quantity": "...", "orderBy": "...", "reason": "..."}],
+    "totalPreOrderCost": 0
+  },
+  "budgetPlan": {
+    "monthlyAdBudgets": [{"month": "...", "budget": 0, "multiplier": 0, "reason": "..."}],
+    "totalAnnualBudget": 0
+  },
+  "revenueForcast": {
+    "next30days": 0,
+    "next90days": 0,
+    "annual": 0,
+    "confidence": 0.0-1.0
+  },
+  "actionItems": [{
+    "action": "...",
+    "deadline": "...",
+    "reason": "...",
+    "priority": "critical/high/medium/low",
+    "owner": "..."
+  }]
+}`);
+
+    if (result) {
+      this.data.predictions.push({ horizonDays, ...result, t: now() });
+      this.data.predictions = this.data.predictions.slice(-20);
+      this.save();
+      log("SEASONAL", `✅ חיזוי: 30d ₪${shekel(result.revenueForcast?.next30days || 0)} | 90d ₪${shekel(result.revenueForcast?.next90days || 0)} | Annual ₪${shekel(result.revenueForcast?.annual || 0)}`, "SUCCESS");
+    }
+
+    return result;
   }
 }
 
@@ -498,9 +1153,7 @@ class WarrantyProactive {
 // ═══════════════════════════════════════
 
 module.exports = {
-  AutomationEngine,
-  SmartScheduler,
-  SLAMonitor,
-  CrossSellEngine,
-  WarrantyProactive,
+  SocialMediaModule, CompetitorSpyModule, CashPredictorModule,
+  WellnessModule, EnergyModule, LegalModule,
+  MultiCurrencyModule, SeasonalModule,
 };
