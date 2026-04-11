@@ -26,6 +26,15 @@ import pipelineRouter from './routes/pipeline';
 import intelligenceRouter from './routes/intelligence';
 import supplyChainRouter from './routes/supplyChain';
 
+// ── v2.0 Foundry Layer ──
+import brainRouter from './routes/brain';
+import ontologyRouter from './routes/ontology';
+import { aipRouter } from './routes/aip';
+import signaturesRouter from './routes/signatures';
+import { brainEngine } from './ai/brainEngine';
+import { apolloEngine } from './apollo/apolloEngine';
+import { initEventBus, eventBus } from './realtime/eventBus';
+
 dotenv.config();
 
 const app = express();
@@ -88,6 +97,12 @@ app.use('/api/pipeline', pipelineRouter);
 app.use('/api/intelligence', intelligenceRouter);
 app.use('/api/supply-chain', supplyChainRouter);
 
+// ── v2.0 Foundry Routes ──
+app.use('/api/brain', brainRouter);
+app.use('/api/ontology', ontologyRouter);
+app.use('/api/aip', aipRouter);
+app.use('/api/signatures', signaturesRouter);
+
 // ─── HEALTH CHECK ─────────────────────────────
 app.get('/api/health', async (req, res) => {
   try {
@@ -103,9 +118,17 @@ initWebSocket(server);
 startAlertEngine();
 startAutonomousEngine();
 
+// ─── v2.0 BRAIN + EVENT BUS + APOLLO ─────────────────
+initEventBus();
+brainEngine.boot().catch(err => console.error('[BRAIN] Boot error:', err));
+setInterval(() => apolloEngine.healthCheck().catch(() => {}), 60000);
+
+export { eventBus };
+
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`TECHNO-KOL OPS running on port ${PORT}`);
+  console.log(`TECHNO-KOL OPS v2.0 — Foundry Edition running on port ${PORT}`);
+  console.log(`[FOUNDRY] Brain Engine + Event Bus + Apollo + AIP + Ontology — ALL ONLINE`);
 });
 
 export default app;

@@ -4,17 +4,29 @@ import { useStore } from '../store/useStore';
 
 const NAV = [
   { path: '/', label: 'דשבורד', icon: '⬛', section: 'מרכז פיקוד' },
+  { path: '/situation', label: 'תמונת מצב', icon: '🎯', section: 'מרכז פיקוד' },
+  { path: '/data-flow', label: 'זרימת נתונים', icon: '🌊', section: 'מרכז פיקוד' },
+  { path: '/project-analysis', label: 'ניתוח פרויקטים AI', icon: '🎯', section: 'מרכז פיקוד' },
   { path: '/supply-chain', label: 'שרשרת אספקה', icon: '🔗', section: 'מרכז פיקוד' },
   { path: '/intelligence', label: 'Intelligence AI', icon: '🧠', section: 'מרכז פיקוד' },
   { path: '/pipeline', label: 'פרוייקטים', icon: '📋', section: 'מרכז פיקוד' },
   { path: '/map', label: 'מפה חיה', icon: '🗺️', section: 'מרכז פיקוד' },
+  { path: '/documents', label: 'מסמכים וחתימות', icon: '✍️', section: 'מרכז פיקוד' },
+  { path: '/document-management', label: 'DMS — ניהול מסמכים', icon: '📁', section: 'מרכז פיקוד' },
+  { path: '/mobile', label: 'Mobile Preview', icon: '📱', section: 'מרכז פיקוד' },
   { path: '/work-orders', label: 'הזמנות עבודה', icon: '📋', section: 'ייצור' },
   { path: '/production', label: 'ריצפת ייצור', icon: '🏭', section: 'ייצור' },
+  { path: '/procurement', label: 'רכש היפר-אינטליגנטי', icon: '🧬', section: 'חומרים' },
+  { path: '/purchasing', label: 'רכש · חומרי גלם · מוצרים', icon: '🛒', section: 'חומרים' },
   { path: '/materials', label: 'מחסן', icon: '📦', section: 'חומרים' },
   { path: '/employees', label: 'עובדים', icon: '👥', section: 'כוח אדם' },
+  { path: '/hr-autonomy', label: 'HR אוטונומי', icon: '🤖', section: 'כוח אדם' },
+  { path: '/hours', label: 'שעות וחופשות', icon: '⏱️', section: 'כוח אדם' },
   { path: '/clients', label: 'לקוחות', icon: '🤝', section: 'פיננסים' },
   { path: '/finance', label: 'כספים', icon: '💰', section: 'פיננסים' },
+  { path: '/financial-autonomy', label: 'פיננסים אוטונומיים (FAE)', icon: '🧮', section: 'פיננסים' },
   { path: '/alerts', label: 'התראות', icon: '🔔', section: 'מערכת' },
+  { path: '/alerts-intel', label: 'התראות חכמות (IAS v2)', icon: '🧠', section: 'מערכת' },
 ];
 
 export function Sidebar() {

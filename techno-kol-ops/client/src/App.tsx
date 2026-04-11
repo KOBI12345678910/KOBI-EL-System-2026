@@ -2,8 +2,10 @@ import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useStore } from './store/useStore';
 import { useWebSocket } from './hooks/useWebSocket';
+import { useAutonomousPipeline } from './hooks/useAutonomousPipeline';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
+import { RealtimeToast } from './components/RealtimeToast';
 import { Dashboard } from './pages/Dashboard';
 import { WorkOrders } from './pages/WorkOrders';
 import { ProductionFloor } from './pages/ProductionFloor';
@@ -17,9 +19,39 @@ import { LiveMap } from './pages/LiveMap';
 import { MobileApp } from './pages/MobileApp';
 import { Intelligence } from './pages/Intelligence';
 import { SupplyChain } from './pages/SupplyChain';
+import { Documents } from './pages/Documents';
+import { SignaturePage } from './pages/SignaturePage';
+import { ProjectAnalysis } from './pages/ProjectAnalysis';
+import { Purchasing } from './pages/Purchasing';
+import { SituationDashboard } from './pages/SituationDashboard';
+import { DataFlowMonitor } from './pages/DataFlowMonitor';
+import { HoursAttendance } from './pages/HoursAttendance';
+// v2.3 — Intelligent Alerts + HR Autonomy + Document Management + Procurement Hyperintelligence
+import { IntelligentAlerts } from './pages/IntelligentAlerts';
+import { HRAutonomy } from './pages/HRAutonomy';
+import { DocumentManagement } from './pages/DocumentManagement';
+import { ProcurementHyperintelligencePage } from './pages/ProcurementHyperintelligence';
+// v3.0 — Financial Autonomy Engine
+import { FinancialAutonomy } from './pages/FinancialAutonomy';
 
 function Layout() {
   useWebSocket();
+  // Autonomous decision pipeline — processes every incoming quote/deal
+  useAutonomousPipeline({
+    autoProcess: true,
+    onDecision: (d) => {
+      console.log('[AI Pipeline] Decision made:', d.projectName, d.alertLevel, d.alertMessage);
+      if (d.alertLevel === 'critical') {
+        useStore.getState().addAlert({
+          id: d.id,
+          type: 'critical',
+          message: `🎯 ${d.projectName}: ${d.alertMessage}`,
+          is_resolved: false,
+          created_at: d.timestamp,
+        } as any);
+      }
+    },
+  });
   const { sidebarOpen } = useStore();
 
   return (
@@ -47,8 +79,25 @@ function Layout() {
           <Route path="/finance" element={<Finance />} />
           <Route path="/alerts" element={<AlertCenter />} />
           <Route path="/mobile" element={<MobileApp />} />
+          {/* v2.0 Foundry routes */}
+          <Route path="/documents" element={<Documents />} />
+          {/* v2.1 AI Decision Engine routes */}
+          <Route path="/project-analysis" element={<ProjectAnalysis />} />
+          <Route path="/purchasing" element={<Purchasing />} />
+          {/* v2.2 Situation + DataFlow + Hours routes */}
+          <Route path="/situation" element={<SituationDashboard />} />
+          <Route path="/data-flow" element={<DataFlowMonitor />} />
+          <Route path="/hours" element={<HoursAttendance />} />
+          {/* v2.3 Intelligent Alerts + HR Autonomy + Document Management + Procurement Hyperintelligence */}
+          <Route path="/alerts-intel" element={<IntelligentAlerts />} />
+          <Route path="/hr-autonomy" element={<HRAutonomy />} />
+          <Route path="/document-management" element={<DocumentManagement />} />
+          <Route path="/procurement" element={<ProcurementHyperintelligencePage />} />
+          {/* v3.0 Financial Autonomy Engine */}
+          <Route path="/financial-autonomy" element={<FinancialAutonomy />} />
         </Routes>
       </div>
+      <RealtimeToast />
     </div>
   );
 }
@@ -116,5 +165,15 @@ function Login() {
 
 export default function App() {
   const { token } = useStore();
+
+  // Public route — חתימה (ללא לוגין)
+  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/sign/')) {
+    return (
+      <Routes>
+        <Route path="/sign/:token" element={<SignaturePage />} />
+      </Routes>
+    );
+  }
+
   return token ? <Layout /> : <Login />;
 }

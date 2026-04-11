@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useStore } from '../store/useStore';
 import { WS_URL } from '../utils/format';
+import { broadcastNewQuote } from './useAutonomousPipeline';
 
 export function useWebSocket() {
   const { token, setWsConnected, setSnapshot, addAlert } = useStore();
@@ -30,6 +31,14 @@ export function useWebSocket() {
             break;
           case 'ORDER_UPDATED':
             // handled by individual pages via refetch
+            break;
+          case 'QUOTE_CREATED':
+            // autonomous pipeline: feed new quote into decision engine
+            broadcastNewQuote({ type: 'quote.created', payload });
+            break;
+          case 'DEAL_CREATED':
+            // autonomous pipeline: feed new deal into decision engine
+            broadcastNewQuote({ type: 'deal.created', payload });
             break;
         }
       } catch {}
