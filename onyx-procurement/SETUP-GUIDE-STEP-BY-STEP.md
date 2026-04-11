@@ -77,8 +77,10 @@
 ```
 SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co
 SUPABASE_ANON_KEY=eyJ...YOUR_KEY_HERE
-PORT=3000
+PORT=3100
 ```
+
+⚠️ **חשוב:** הפורט חייב להיות 3100 — זה הפורט שהדשבורד מצפה לו.
 
 (בינתיים בלי WhatsApp — נוסיף אחר כך)
 
@@ -92,7 +94,7 @@ PORT=3000
 - צריך לראות:
 ```
 🚀 ONYX PROCUREMENT API SERVER
-Port: 3000
+Port: 3100
 Supabase: ✅ Connected
 ```
 
@@ -144,8 +146,10 @@ Supabase: ✅ Connected
 | "Error: Could not find relation" | תריץ שוב את 001-supabase-schema.sql |
 | "Error: SUPABASE_URL not defined" | תבדוק ש-.env נכון ושאין רווחים |
 | "Cannot find module 'express'" | תריץ `npm install` שוב |
-| "Port already in use" | תשנה PORT ב-.env ל-3001 |
+| "Port already in use" | תשנה PORT ב-.env ל-3101 (גם בדשבורד) |
 | הדף ריק | תוסיף /api/status לכתובת |
+| הדשבורד לא מתחבר לשרת | הדשבורד מקונפג ל-`http://localhost:3100`. חייב שהשרת ירוץ על 3100. אם אתה ב-Replit — צריך לעדכן את `const API` ב-`onyx-dashboard.jsx` ל-URL של ה-Replit |
+| שליחת WhatsApp "נכשלה" אבל PO מסומן "sent" | באג ידוע F-02 — עד לתיקון, בדוק ב-audit log אם באמת נשלח |
 
 ---
 
