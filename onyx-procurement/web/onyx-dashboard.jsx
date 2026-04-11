@@ -524,7 +524,7 @@ function SubDecideTab({ onRefresh, showToast }) {
   const [form, setForm] = useState({ work_type: "מעקות_ברזל", project_value: "", area_sqm: "", project_name: "", client_name: "" });
   const [result, setResult] = useState(null);
 
-  const workTypes = ["מעקות_ברזל", "מעקות_אלומיניום", "שערים", "גדרות", "פרגולות", "התקנה"];
+  const workTypes = ["מעקות_ברזל", "מעקות_אלומיניום", "שערים", "גדרות", "פרגולות", "התקנה", "צביעה"];
 
   const decide = async () => {
     if (!form.project_value || !form.area_sqm) return showToast("סכום ושטח חובה", "error");
