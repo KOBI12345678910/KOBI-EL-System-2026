@@ -11,18 +11,20 @@
     "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.22.0",
     "@blueprintjs/core": "^5.10.2",
     "@blueprintjs/icons": "^5.10.2",
     "@blueprintjs/table": "^5.1.2",
-    "ag-grid-react": "^31.1.1",
     "ag-grid-community": "^31.1.1",
-    "recharts": "^2.12.2",
-    "zustand": "^4.5.0",
+    "ag-grid-react": "^31.1.1",
+    "axios": "^1.6.7",
     "date-fns": "^3.3.1",
-    "axios": "^1.6.7"
+    "leaflet": "^1.9.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-leaflet": "^5.0.0",
+    "react-router-dom": "^6.22.0",
+    "recharts": "^2.12.2",
+    "zustand": "^4.5.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.56",

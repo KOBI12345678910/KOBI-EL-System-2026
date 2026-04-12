@@ -299,9 +299,9 @@ function mountSibling(urlPath, relativeDir, labelHe, labelEn) {
   });
 }
 
-mountSibling('/ops',      'techno-kol-ops/client', 'תפעול · Techno-Kol OPS', 'Techno-Kol Operations');
-mountSibling('/payroll',  'payroll-autonomous',    'שכר · Payroll',          'Payroll Autonomous');
-mountSibling('/ai',       'onyx-ai',               'בינה מלאכותית · AI',    'Onyx AI');
+mountSibling('/ops',      'techno-kol-ops/client/dist', 'תפעול · Techno-Kol OPS', 'Techno-Kol Operations');
+mountSibling('/payroll',  'payroll-autonomous/dist',    'שכר · Payroll',          'Payroll Autonomous');
+mountSibling('/ai',       'onyx-ai',                    'בינה מלאכותית · AI',    'Onyx AI');
 
 // ═══ WEBHOOK HMAC VERIFICATION ═══
 function verifyWhatsAppHmac(req, res, next) {

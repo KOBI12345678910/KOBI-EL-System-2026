@@ -266,15 +266,16 @@
     /* ============================================================
        Vanilla JS service health poller
        ============================================================ */
+    var isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     var SERVICES = [
       { id: 'onyx',     name: 'Onyx Procurement', hebName: 'רכש',        url: '/api/health' },
       { id: 'vat',      name: 'VAT Reporting',    hebName: 'מע"מ',       url: '/api/vat/health' },
       { id: 'bank',     name: 'Bank Recon',       hebName: 'התאמת בנק',  url: '/api/bank/health' },
       { id: 'tax',      name: 'Annual Tax',       hebName: 'מס שנתי',    url: '/api/tax/health' },
-      { id: 'payroll',  name: 'Payroll',          hebName: 'שכר',         url: 'http://localhost:5173/health' },
-      { id: 'ops',      name: 'Techno-Kol OPS',   hebName: 'תפעול',       url: 'http://localhost:4000/health' },
-      { id: 'ai',       name: 'Onyx AI',          hebName: 'בינה',        url: 'http://localhost:3200/health' },
-      { id: 'db',       name: 'Database',         hebName: 'מסד נתונים',  url: '/api/health/db' }
+      { id: 'payroll',  name: 'Payroll',          hebName: 'שכר',         url: '/api/payroll/health' },
+      { id: 'ops',      name: 'Techno-Kol OPS',   hebName: 'תפעול',       url: isLocal ? 'http://localhost:3200/healthz' : '/api/status' },
+      { id: 'ai',       name: 'Onyx AI',          hebName: 'בינה',        url: isLocal ? 'http://localhost:3300/healthz' : '/api/status' },
+      { id: 'db',       name: 'Database',         hebName: 'מסד נתונים',  url: '/readyz' }
     ];
 
     var POLL_MS = 15000;
