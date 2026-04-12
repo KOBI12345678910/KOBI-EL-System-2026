@@ -83,12 +83,22 @@ jobs:
     needs: build-push
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     environment: production
-    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check deployment secrets
+        id: check-secrets
+        run: |
+          if [ -z "${{ secrets.DEPLOY_HOST }}" ]; then
+            echo "DEPLOY_HOST secret is not set - skipping SSH deployment"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Deploy via SSH
+        if: steps.check-secrets.outputs.skip == 'false'
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.DEPLOY_HOST }}
