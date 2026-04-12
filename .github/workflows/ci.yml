@@ -1,0 +1,152 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: ${{ matrix.project }} (node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20]
+        project:
+          - onyx-procurement
+          - onyx-ai
+          - techno-kol-ops
+          - payroll-autonomous
+
+    defaults:
+      run:
+        working-directory: ${{ matrix.project }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Cache node_modules for ${{ matrix.project }}
+        id: cache-node-modules
+        uses: actions/cache@v4
+        with:
+          path: ${{ matrix.project }}/node_modules
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-${{ matrix.project }}-${{ hashFiles(format('{0}/package-lock.json', matrix.project), format('{0}/package.json', matrix.project)) }}
+          restore-keys: |
+            ${{ runner.os }}-node${{ matrix.node-version }}-${{ matrix.project }}-
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          if [ -f package-lock.json ]; then
+            echo "Using npm ci (lockfile found)"
+            npm ci
+          else
+            echo "No lockfile found, using npm install"
+            npm install
+          fi
+
+      - name: Lint (optional, non-blocking)
+        id: lint
+        continue-on-error: true
+        shell: bash
+        run: |
+          if node -e "const p=require('./package.json'); process.exit(p.scripts && p.scripts.lint ? 0 : 1)"; then
+            echo "Running npm run lint"
+            npm run lint
+          else
+            echo "No lint script defined for ${{ matrix.project }} — skipping"
+          fi
+
+      - name: Test (required if script exists)
+        id: test
+        shell: bash
+        run: |
+          if node -e "const p=require('./package.json'); process.exit(p.scripts && p.scripts.test ? 0 : 1)"; then
+            echo "Running npm test"
+            npm test
+          else
+            echo "No test script defined for ${{ matrix.project }} — skipping"
+          fi
+
+      - name: Build (required if script exists)
+        id: build
+        shell: bash
+        run: |
+          if node -e "const p=require('./package.json'); process.exit(p.scripts && p.scripts.build ? 0 : 1)"; then
+            echo "Running npm run build"
+            npm run build
+          else
+            echo "No build script defined for ${{ matrix.project }} — skipping"
+          fi
+
+      - name: Upload dist artifact (onyx-ai)
+        if: matrix.project == 'onyx-ai'
+        uses: actions/upload-artifact@v4
+        with:
+          name: onyx-ai-dist-${{ github.sha }}
+          path: onyx-ai/dist
+          if-no-files-found: warn
+          retention-days: 7
+
+  build-techno-kol-ops-client:
+    name: techno-kol-ops client build & artifact
+    runs-on: ubuntu-latest
+    needs: build-test
+    if: always()
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Cache node_modules (techno-kol-ops/client)
+        uses: actions/cache@v4
+        with:
+          path: techno-kol-ops/client/node_modules
+          key: ${{ runner.os }}-node20-techno-kol-ops-client-${{ hashFiles('techno-kol-ops/client/package-lock.json', 'techno-kol-ops/client/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node20-techno-kol-ops-client-
+
+      - name: Install client deps
+        working-directory: techno-kol-ops/client
+        shell: bash
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Build client
+        working-directory: techno-kol-ops/client
+        shell: bash
+        run: |
+          if node -e "const p=require('./package.json'); process.exit(p.scripts && p.scripts.build ? 0 : 1)"; then
+            npm run build
+          else
+            echo "No build script for techno-kol-ops/client — skipping"
+          fi
+
+      - name: Upload dist artifact (techno-kol-ops client)
+        uses: actions/upload-artifact@v4
+        with:
+          name: techno-kol-ops-client-dist-${{ github.sha }}
+          path: techno-kol-ops/client/dist
+          if-no-files-found: warn
+          retention-days: 7

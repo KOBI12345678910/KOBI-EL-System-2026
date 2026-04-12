@@ -8,11 +8,13 @@ function makePasswordHash(password: string, salt: string): string {
   return `${salt}:${hash}`;
 }
 
+// Agent-Y-QA13 FIX (C3): passwords MUST come from environment variables.
+// NEVER hardcode real passwords in source. Generate with: openssl rand -base64 24
 const DEFAULT_USERS = [
   {
     username: "admin",
-    password: "admin123",
-    salt: "fallback_salt_admin_2026",
+    password: process.env.ADMIN_SEED_PASSWORD || (() => { throw new Error("ADMIN_SEED_PASSWORD env var is required for admin seeding"); })(),
+    salt: crypto.randomBytes(16).toString("hex"),
     email: "admin@technokol.co.il",
     fullName: "מנהל מערכת",
     fullNameHe: "מנהל מערכת",
@@ -23,8 +25,8 @@ const DEFAULT_USERS = [
   },
   {
     username: "kobiellkayam",
-    password: "KOBIE@307994798",
-    salt: "fallback_salt_kobiellkayam_2026",
+    password: process.env.CEO_SEED_PASSWORD || (() => { throw new Error("CEO_SEED_PASSWORD env var is required for CEO seeding"); })(),
+    salt: crypto.randomBytes(16).toString("hex"),
     email: "kobiellkayam@gmail.com",
     fullName: "קובי אלקיים",
     fullNameHe: "קובי אלקיים",

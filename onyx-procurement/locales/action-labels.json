@@ -1,0 +1,677 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "generated_at": "2026-04-11",
+    "description": "Bilingual (HE/EN) button labels and action verbs for Onyx Procurement UI",
+    "label_count": 124,
+    "notes": "Context disambiguates UI location; verbs are imperatives in Hebrew"
+  },
+
+  "actions": {
+    "crud": {
+      "CREATE": {
+        "he": "צור",
+        "en": "Create",
+        "ctx": "Generic new-item button"
+      },
+      "CREATE_NEW": {
+        "he": "צור חדש",
+        "en": "Create New",
+        "ctx": "Emphasized new-item button"
+      },
+      "ADD": {
+        "he": "הוסף",
+        "en": "Add",
+        "ctx": "Add to list/collection"
+      },
+      "ADD_ROW": {
+        "he": "הוסף שורה",
+        "en": "Add Row",
+        "ctx": "Table row addition"
+      },
+      "ADD_ITEM": {
+        "he": "הוסף פריט",
+        "en": "Add Item",
+        "ctx": "List item addition"
+      },
+      "EDIT": {
+        "he": "ערוך",
+        "en": "Edit",
+        "ctx": "Start editing"
+      },
+      "UPDATE": {
+        "he": "עדכן",
+        "en": "Update",
+        "ctx": "Save changes to existing record"
+      },
+      "SAVE": {
+        "he": "שמור",
+        "en": "Save",
+        "ctx": "Generic save"
+      },
+      "SAVE_AND_CLOSE": {
+        "he": "שמור וסגור",
+        "en": "Save and Close",
+        "ctx": "Save then close modal/page"
+      },
+      "SAVE_DRAFT": {
+        "he": "שמור כטיוטה",
+        "en": "Save Draft",
+        "ctx": "Save without submitting"
+      },
+      "SAVE_AS": {
+        "he": "שמור בשם",
+        "en": "Save As",
+        "ctx": "Duplicate with new name"
+      },
+      "DELETE": {
+        "he": "מחק",
+        "en": "Delete",
+        "ctx": "Delete record — often destructive"
+      },
+      "REMOVE": {
+        "he": "הסר",
+        "en": "Remove",
+        "ctx": "Remove from list (not delete)"
+      },
+      "DUPLICATE": {
+        "he": "שכפל",
+        "en": "Duplicate",
+        "ctx": "Clone record"
+      },
+      "RESTORE": {
+        "he": "שחזר",
+        "en": "Restore",
+        "ctx": "Restore deleted record"
+      },
+      "ARCHIVE": {
+        "he": "העבר לארכיון",
+        "en": "Archive",
+        "ctx": "Soft-hide record"
+      },
+      "UNARCHIVE": {
+        "he": "הוצא מארכיון",
+        "en": "Unarchive",
+        "ctx": "Restore from archive"
+      }
+    },
+
+    "navigation": {
+      "BACK": {
+        "he": "חזור",
+        "en": "Back",
+        "ctx": "Go to previous screen"
+      },
+      "NEXT": {
+        "he": "הבא",
+        "en": "Next",
+        "ctx": "Wizard step forward"
+      },
+      "PREVIOUS": {
+        "he": "הקודם",
+        "en": "Previous",
+        "ctx": "Wizard step backward"
+      },
+      "CONTINUE": {
+        "he": "המשך",
+        "en": "Continue",
+        "ctx": "Proceed in flow"
+      },
+      "SKIP": {
+        "he": "דלג",
+        "en": "Skip",
+        "ctx": "Skip optional step"
+      },
+      "FINISH": {
+        "he": "סיים",
+        "en": "Finish",
+        "ctx": "Complete wizard"
+      },
+      "CLOSE": {
+        "he": "סגור",
+        "en": "Close",
+        "ctx": "Close modal/dialog"
+      },
+      "CANCEL": {
+        "he": "ביטול",
+        "en": "Cancel",
+        "ctx": "Cancel operation — discard changes"
+      },
+      "DISMISS": {
+        "he": "סגור",
+        "en": "Dismiss",
+        "ctx": "Dismiss notification"
+      },
+      "GO_HOME": {
+        "he": "לעמוד הבית",
+        "en": "Go to Home",
+        "ctx": "Return to dashboard"
+      }
+    },
+
+    "data": {
+      "SEARCH": {
+        "he": "חפש",
+        "en": "Search",
+        "ctx": "Execute search"
+      },
+      "ADVANCED_SEARCH": {
+        "he": "חיפוש מתקדם",
+        "en": "Advanced Search",
+        "ctx": "Open advanced search panel"
+      },
+      "FILTER": {
+        "he": "סנן",
+        "en": "Filter",
+        "ctx": "Apply filters"
+      },
+      "CLEAR_FILTERS": {
+        "he": "נקה סינון",
+        "en": "Clear Filters",
+        "ctx": "Reset all filters"
+      },
+      "SORT": {
+        "he": "מיין",
+        "en": "Sort",
+        "ctx": "Sort list"
+      },
+      "REFRESH": {
+        "he": "רענן",
+        "en": "Refresh",
+        "ctx": "Reload data"
+      },
+      "RELOAD": {
+        "he": "טען מחדש",
+        "en": "Reload",
+        "ctx": "Fully reload page"
+      },
+      "IMPORT": {
+        "he": "ייבא",
+        "en": "Import",
+        "ctx": "Bulk import data"
+      },
+      "EXPORT": {
+        "he": "ייצא",
+        "en": "Export",
+        "ctx": "Export data to file"
+      },
+      "EXPORT_CSV": {
+        "he": "ייצא ל-CSV",
+        "en": "Export to CSV",
+        "ctx": "CSV export"
+      },
+      "EXPORT_EXCEL": {
+        "he": "ייצא ל-Excel",
+        "en": "Export to Excel",
+        "ctx": "XLSX export"
+      },
+      "EXPORT_PDF": {
+        "he": "ייצא ל-PDF",
+        "en": "Export to PDF",
+        "ctx": "PDF export"
+      },
+      "DOWNLOAD": {
+        "he": "הורד",
+        "en": "Download",
+        "ctx": "Download file"
+      },
+      "UPLOAD": {
+        "he": "העלה",
+        "en": "Upload",
+        "ctx": "Upload file"
+      },
+      "PRINT": {
+        "he": "הדפס",
+        "en": "Print",
+        "ctx": "Print document"
+      },
+      "SELECT_ALL": {
+        "he": "בחר הכל",
+        "en": "Select All",
+        "ctx": "Multi-select — select every row"
+      },
+      "CLEAR_SELECTION": {
+        "he": "נקה בחירה",
+        "en": "Clear Selection",
+        "ctx": "Unselect all rows"
+      },
+      "COPY": {
+        "he": "העתק",
+        "en": "Copy",
+        "ctx": "Copy to clipboard"
+      },
+      "PASTE": {
+        "he": "הדבק",
+        "en": "Paste",
+        "ctx": "Paste from clipboard"
+      },
+      "UNDO": {
+        "he": "בטל",
+        "en": "Undo",
+        "ctx": "Undo last action"
+      },
+      "REDO": {
+        "he": "בצע מחדש",
+        "en": "Redo",
+        "ctx": "Redo undone action"
+      }
+    },
+
+    "approval": {
+      "APPROVE": {
+        "he": "אשר",
+        "en": "Approve",
+        "ctx": "Approve request/document"
+      },
+      "APPROVE_AND_SEND": {
+        "he": "אשר ושלח",
+        "en": "Approve and Send",
+        "ctx": "Approve and dispatch"
+      },
+      "REJECT": {
+        "he": "דחה",
+        "en": "Reject",
+        "ctx": "Reject request"
+      },
+      "RETURN_FOR_REVISION": {
+        "he": "החזר לתיקון",
+        "en": "Return for Revision",
+        "ctx": "Send back with comments"
+      },
+      "REQUEST_APPROVAL": {
+        "he": "בקש אישור",
+        "en": "Request Approval",
+        "ctx": "Submit for approver"
+      },
+      "DELEGATE": {
+        "he": "האצל",
+        "en": "Delegate",
+        "ctx": "Delegate approval"
+      },
+      "ESCALATE": {
+        "he": "העלה דרגה",
+        "en": "Escalate",
+        "ctx": "Raise to higher approver"
+      },
+      "SUBMIT": {
+        "he": "שלח",
+        "en": "Submit",
+        "ctx": "Generic submit"
+      },
+      "SUBMIT_FOR_REVIEW": {
+        "he": "שלח לבדיקה",
+        "en": "Submit for Review",
+        "ctx": "Send to reviewer"
+      },
+      "RESUBMIT": {
+        "he": "שלח מחדש",
+        "en": "Resubmit",
+        "ctx": "Send again after revision"
+      },
+      "WITHDRAW": {
+        "he": "בטל בקשה",
+        "en": "Withdraw",
+        "ctx": "Cancel submitted request"
+      }
+    },
+
+    "financial": {
+      "PAY": {
+        "he": "שלם",
+        "en": "Pay",
+        "ctx": "Execute payment"
+      },
+      "PAY_NOW": {
+        "he": "שלם עכשיו",
+        "en": "Pay Now",
+        "ctx": "Immediate payment"
+      },
+      "SCHEDULE_PAYMENT": {
+        "he": "תזמן תשלום",
+        "en": "Schedule Payment",
+        "ctx": "Future-dated payment"
+      },
+      "CANCEL_PAYMENT": {
+        "he": "בטל תשלום",
+        "en": "Cancel Payment",
+        "ctx": "Stop pending payment"
+      },
+      "REFUND": {
+        "he": "בצע החזר",
+        "en": "Refund",
+        "ctx": "Issue refund"
+      },
+      "VOID": {
+        "he": "בטל מסמך",
+        "en": "Void",
+        "ctx": "Mark document as void"
+      },
+      "REVERSE": {
+        "he": "בטל רישום",
+        "en": "Reverse",
+        "ctx": "Reverse accounting entry"
+      },
+      "RECONCILE": {
+        "he": "התאם",
+        "en": "Reconcile",
+        "ctx": "Mark as reconciled"
+      },
+      "UNRECONCILE": {
+        "he": "בטל התאמה",
+        "en": "Unreconcile",
+        "ctx": "Undo reconciliation"
+      },
+      "MATCH": {
+        "he": "התאם",
+        "en": "Match",
+        "ctx": "Match transactions (e.g., invoice to payment)"
+      },
+      "UNMATCH": {
+        "he": "בטל התאמה",
+        "en": "Unmatch",
+        "ctx": "Undo matching"
+      },
+      "POST": {
+        "he": "רשום ליומן",
+        "en": "Post to Ledger",
+        "ctx": "Post journal entry"
+      },
+      "UNPOST": {
+        "he": "בטל רישום",
+        "en": "Unpost",
+        "ctx": "Reverse posted entry"
+      },
+      "CLOSE_PERIOD": {
+        "he": "סגור תקופה",
+        "en": "Close Period",
+        "ctx": "Close accounting period"
+      },
+      "REOPEN_PERIOD": {
+        "he": "פתח מחדש תקופה",
+        "en": "Reopen Period",
+        "ctx": "Unlock previously closed period"
+      }
+    },
+
+    "payroll_actions": {
+      "RUN_PAYROLL": {
+        "he": "הרץ שכר",
+        "en": "Run Payroll",
+        "ctx": "Execute monthly payroll"
+      },
+      "CALCULATE_WAGES": {
+        "he": "חשב שכר",
+        "en": "Calculate Wages",
+        "ctx": "Run calc engine"
+      },
+      "GENERATE_PAYSLIPS": {
+        "he": "הפק תלושים",
+        "en": "Generate Payslips",
+        "ctx": "Create payslip PDFs"
+      },
+      "SEND_PAYSLIPS": {
+        "he": "שלח תלושים",
+        "en": "Send Payslips",
+        "ctx": "Email payslips to employees"
+      },
+      "LOCK_PAYROLL": {
+        "he": "נעל שכר",
+        "en": "Lock Payroll",
+        "ctx": "Finalize payroll run"
+      },
+      "UNLOCK_PAYROLL": {
+        "he": "שחרר נעילה",
+        "en": "Unlock Payroll",
+        "ctx": "Reopen locked payroll (rare)"
+      },
+      "GENERATE_102": {
+        "he": "הפק טופס 102",
+        "en": "Generate Form 102",
+        "ctx": "Create monthly wage/tax report"
+      },
+      "GENERATE_106": {
+        "he": "הפק טופס 106",
+        "en": "Generate Form 106",
+        "ctx": "Create annual wage statement"
+      },
+      "GENERATE_126": {
+        "he": "הפק טופס 126",
+        "en": "Generate Form 126",
+        "ctx": "Create annual reconciliation"
+      }
+    },
+
+    "procurement_actions": {
+      "CREATE_PO": {
+        "he": "צור הזמנה",
+        "en": "Create PO",
+        "ctx": "New purchase order"
+      },
+      "SEND_PO": {
+        "he": "שלח הזמנה לספק",
+        "en": "Send PO to Supplier",
+        "ctx": "Dispatch PO"
+      },
+      "CLOSE_PO": {
+        "he": "סגור הזמנה",
+        "en": "Close PO",
+        "ctx": "Mark PO closed"
+      },
+      "CANCEL_PO": {
+        "he": "בטל הזמנה",
+        "en": "Cancel PO",
+        "ctx": "Cancel purchase order"
+      },
+      "RECEIVE_GOODS": {
+        "he": "קבל טובין",
+        "en": "Receive Goods",
+        "ctx": "Create GRN"
+      },
+      "INSPECT_QUALITY": {
+        "he": "בדוק איכות",
+        "en": "Inspect Quality",
+        "ctx": "QC check"
+      },
+      "RETURN_TO_SUPPLIER": {
+        "he": "החזר לספק",
+        "en": "Return to Supplier",
+        "ctx": "Send back goods"
+      },
+      "MATCH_INVOICE": {
+        "he": "התאם חשבונית",
+        "en": "Match Invoice",
+        "ctx": "3-way match"
+      },
+      "CREATE_RFQ": {
+        "he": "צור בקשה להצעת מחיר",
+        "en": "Create RFQ",
+        "ctx": "New RFQ"
+      },
+      "COMPARE_BIDS": {
+        "he": "השווה הצעות",
+        "en": "Compare Bids",
+        "ctx": "Side-by-side bid comparison"
+      },
+      "AWARD_CONTRACT": {
+        "he": "הענק חוזה",
+        "en": "Award Contract",
+        "ctx": "Select winning bid"
+      }
+    },
+
+    "vat_actions": {
+      "GENERATE_VAT_REPORT": {
+        "he": "הפק דוח מע\"מ",
+        "en": "Generate VAT Report",
+        "ctx": "Create periodic VAT return"
+      },
+      "GENERATE_PCN_836": {
+        "he": "הפק PCN 836",
+        "en": "Generate PCN 836",
+        "ctx": "Create structured VAT file"
+      },
+      "UPLOAD_INVOICE": {
+        "he": "העלה חשבונית",
+        "en": "Upload Invoice",
+        "ctx": "Upload invoice image/PDF"
+      },
+      "REQUEST_ALLOCATION_NUMBER": {
+        "he": "בקש מספר הקצאה",
+        "en": "Request Allocation Number",
+        "ctx": "Get allocation from Tax Authority"
+      },
+      "ISSUE_CREDIT_INVOICE": {
+        "he": "הפק חשבונית זיכוי",
+        "en": "Issue Credit Invoice",
+        "ctx": "Create credit note"
+      },
+      "ISSUE_DEBIT_INVOICE": {
+        "he": "הפק חשבונית חיוב",
+        "en": "Issue Debit Invoice",
+        "ctx": "Create debit note"
+      }
+    },
+
+    "bank_actions": {
+      "UPLOAD_STATEMENT": {
+        "he": "העלה דף חשבון",
+        "en": "Upload Bank Statement",
+        "ctx": "Upload statement file"
+      },
+      "START_RECONCILIATION": {
+        "he": "התחל התאמת בנק",
+        "en": "Start Reconciliation",
+        "ctx": "Begin reconciliation process"
+      },
+      "AUTO_MATCH": {
+        "he": "התאמה אוטומטית",
+        "en": "Auto Match",
+        "ctx": "Run auto-matching engine"
+      },
+      "CREATE_PAYMENT_BATCH": {
+        "he": "צור אצוות תשלומים",
+        "en": "Create Payment Batch",
+        "ctx": "New payment run"
+      },
+      "UPLOAD_MASAV_FILE": {
+        "he": "העלה קובץ מס\"ב",
+        "en": "Upload MASAV File",
+        "ctx": "Send batch to clearing"
+      }
+    },
+
+    "auth_actions": {
+      "SIGN_IN": {
+        "he": "התחבר",
+        "en": "Sign In",
+        "ctx": "Login button"
+      },
+      "SIGN_OUT": {
+        "he": "התנתק",
+        "en": "Sign Out",
+        "ctx": "Logout button"
+      },
+      "FORGOT_PASSWORD": {
+        "he": "שכחתי סיסמה",
+        "en": "Forgot Password",
+        "ctx": "Password reset link"
+      },
+      "RESET_PASSWORD": {
+        "he": "אפס סיסמה",
+        "en": "Reset Password",
+        "ctx": "Submit new password"
+      },
+      "CHANGE_PASSWORD": {
+        "he": "שנה סיסמה",
+        "en": "Change Password",
+        "ctx": "Change while logged in"
+      },
+      "ENABLE_2FA": {
+        "he": "הפעל אימות דו-שלבי",
+        "en": "Enable 2FA",
+        "ctx": "Setup 2FA"
+      },
+      "DISABLE_2FA": {
+        "he": "כבה אימות דו-שלבי",
+        "en": "Disable 2FA",
+        "ctx": "Turn off 2FA"
+      }
+    },
+
+    "confirmation": {
+      "CONFIRM": {
+        "he": "אשר",
+        "en": "Confirm",
+        "ctx": "Generic confirm"
+      },
+      "YES": {
+        "he": "כן",
+        "en": "Yes",
+        "ctx": "Positive response"
+      },
+      "NO": {
+        "he": "לא",
+        "en": "No",
+        "ctx": "Negative response"
+      },
+      "OK": {
+        "he": "אישור",
+        "en": "OK",
+        "ctx": "Generic acknowledgment"
+      },
+      "AGREE": {
+        "he": "אני מסכים",
+        "en": "I Agree",
+        "ctx": "T&C acceptance"
+      },
+      "DECLINE": {
+        "he": "לא מסכים",
+        "en": "Decline",
+        "ctx": "Refuse T&C"
+      }
+    },
+
+    "communication": {
+      "SEND_EMAIL": {
+        "he": "שלח דוא\"ל",
+        "en": "Send Email",
+        "ctx": "Dispatch email"
+      },
+      "SEND_SMS": {
+        "he": "שלח SMS",
+        "en": "Send SMS",
+        "ctx": "Send text message"
+      },
+      "SEND_WHATSAPP": {
+        "he": "שלח WhatsApp",
+        "en": "Send WhatsApp",
+        "ctx": "Send WhatsApp message"
+      },
+      "NOTIFY": {
+        "he": "שלח התראה",
+        "en": "Notify",
+        "ctx": "Send notification"
+      },
+      "REMIND": {
+        "he": "שלח תזכורת",
+        "en": "Send Reminder",
+        "ctx": "Send reminder"
+      },
+      "ADD_COMMENT": {
+        "he": "הוסף הערה",
+        "en": "Add Comment",
+        "ctx": "Add comment to record"
+      },
+      "MENTION": {
+        "he": "תייג",
+        "en": "Mention",
+        "ctx": "@mention user"
+      },
+      "SHARE": {
+        "he": "שתף",
+        "en": "Share",
+        "ctx": "Share with other users"
+      }
+    }
+  }
+}

@@ -1,0 +1,1323 @@
+{
+  "$schema": "./terminology.schema.json",
+  "meta": {
+    "version": "1.0.0",
+    "generated_at": "2026-04-11",
+    "generated_by": "Agent 82",
+    "description": "Central bilingual (HE/EN) terminology catalog for Onyx Procurement — 6 domains, 200+ terms",
+    "domains": ["payroll", "vat", "bank", "annual_tax", "procurement", "compliance"],
+    "notes": "Each term carries Hebrew (he), English (en), context (ctx), and a stable key. Use ctx to disambiguate homonyms (e.g. 'advance' vs 'advance tax').",
+    "directionality": "he = RTL, en = LTR",
+    "term_count": 312
+  },
+
+  "payroll": {
+    "he": "שכר",
+    "en": "Payroll",
+    "ctx": "Top-level domain: employee compensation, deductions, reporting",
+
+    "wage_slip": {
+      "he": "תלוש שכר",
+      "en": "Wage Slip",
+      "ctx": "Monthly statement issued to employee per §24 Wage Protection Law"
+    },
+    "wage_slip_period": {
+      "he": "תקופת התלוש",
+      "en": "Pay Period",
+      "ctx": "Month/period covered by the slip"
+    },
+    "payslip_draft": {
+      "he": "טיוטת תלוש",
+      "en": "Draft Payslip",
+      "ctx": "Preliminary payslip before manager approval"
+    },
+    "payslip_final": {
+      "he": "תלוש סופי",
+      "en": "Final Payslip",
+      "ctx": "Locked, signed, non-editable payslip after approval"
+    },
+
+    "gross_pay": {
+      "he": "שכר ברוטו",
+      "en": "Gross Pay",
+      "ctx": "Total earnings before deductions — sum of base + benefits + overtime + bonuses"
+    },
+    "net_pay": {
+      "he": "שכר נטו",
+      "en": "Net Pay",
+      "ctx": "Take-home pay after all deductions"
+    },
+    "base_salary": {
+      "he": "שכר בסיס",
+      "en": "Base Salary",
+      "ctx": "Contractual monthly salary before bonuses and overtime"
+    },
+    "hourly_rate": {
+      "he": "תעריף שעתי",
+      "en": "Hourly Rate",
+      "ctx": "For hourly employees — rate per regular working hour"
+    },
+    "daily_wage": {
+      "he": "שכר יומי",
+      "en": "Daily Wage",
+      "ctx": "For daily laborers"
+    },
+    "monthly_pay": {
+      "he": "משכורת חודשית",
+      "en": "Monthly Salary",
+      "ctx": "Payment cycle — used for salaried employees"
+    },
+    "minimum_wage": {
+      "he": "שכר מינימום",
+      "en": "Minimum Wage",
+      "ctx": "Statutory floor — updated periodically by Finance Ministry"
+    },
+    "average_wage": {
+      "he": "שכר ממוצע",
+      "en": "Average Wage",
+      "ctx": "Used for Bituach Leumi ceiling calculations"
+    },
+    "ytd_gross": {
+      "he": "ברוטו מצטבר מתחילת השנה",
+      "en": "Year-to-Date Gross",
+      "ctx": "Cumulative gross from Jan 1 — used for progressive tax calculations (YTD)"
+    },
+    "ytd_net": {
+      "he": "נטו מצטבר",
+      "en": "Year-to-Date Net",
+      "ctx": "Cumulative net from Jan 1 (YTD)"
+    },
+    "ytd_tax": {
+      "he": "מס מצטבר",
+      "en": "Year-to-Date Tax",
+      "ctx": "Cumulative income tax withheld from Jan 1"
+    },
+
+    "overtime_125": {
+      "he": "שעות נוספות 125%",
+      "en": "Overtime 125%",
+      "ctx": "First two overtime hours per day — Hours of Work Law §16(1)"
+    },
+    "overtime_150": {
+      "he": "שעות נוספות 150%",
+      "en": "Overtime 150%",
+      "ctx": "Third hour onwards per day — Hours of Work Law §16(2)"
+    },
+    "overtime_175": {
+      "he": "שעות נוספות 175%",
+      "en": "Overtime 175%",
+      "ctx": "First two hours on rest day"
+    },
+    "overtime_200": {
+      "he": "שעות נוספות 200%",
+      "en": "Overtime 200%",
+      "ctx": "Third hour onwards on rest day"
+    },
+    "night_shift": {
+      "he": "משמרת לילה",
+      "en": "Night Shift",
+      "ctx": "Hours between 22:00–06:00 — maximum 7 hours per shift by law"
+    },
+    "rest_day_premium": {
+      "he": "תוספת יום מנוחה",
+      "en": "Rest Day Premium",
+      "ctx": "Additional 50% for work on Saturday/official rest day"
+    },
+    "holiday_premium": {
+      "he": "תוספת חג",
+      "en": "Holiday Premium",
+      "ctx": "Extra pay for working on official holidays"
+    },
+
+    "deductions": {
+      "he": "ניכויים",
+      "en": "Deductions",
+      "ctx": "All amounts withheld from gross — tax, BL, pension, etc."
+    },
+    "mandatory_deductions": {
+      "he": "ניכויי חובה",
+      "en": "Mandatory Deductions",
+      "ctx": "Legally required: income tax, BL, health insurance"
+    },
+    "voluntary_deductions": {
+      "he": "ניכויי רשות",
+      "en": "Voluntary Deductions",
+      "ctx": "Employee-authorized: loans, unions, donations"
+    },
+    "income_tax": {
+      "he": "מס הכנסה",
+      "en": "Income Tax",
+      "ctx": "Progressive tax withheld by employer — Income Tax Ordinance"
+    },
+    "tax_bracket": {
+      "he": "מדרגת מס",
+      "en": "Tax Bracket",
+      "ctx": "Israel 2026 progressive brackets: 10/14/20/31/35/47/50%"
+    },
+    "tax_credit_points": {
+      "he": "נקודות זיכוי",
+      "en": "Tax Credit Points",
+      "ctx": "Monthly tax credit per point (approx. 242 NIS/month in 2026)"
+    },
+    "bituach_leumi": {
+      "he": "ביטוח לאומי",
+      "en": "National Insurance (Bituach Leumi)",
+      "ctx": "Israeli social security — both employee and employer contributions"
+    },
+    "bituach_leumi_employee": {
+      "he": "ביטוח לאומי עובד",
+      "en": "Employee NI Contribution",
+      "ctx": "Employee share — 0.4% below 60% avg wage, 7% above"
+    },
+    "bituach_leumi_employer": {
+      "he": "ביטוח לאומי מעסיק",
+      "en": "Employer NI Contribution",
+      "ctx": "Employer share — 3.55% below 60% avg wage, 7.6% above"
+    },
+    "health_tax": {
+      "he": "ביטוח בריאות",
+      "en": "Health Insurance Tax",
+      "ctx": "3.1% below 60% avg wage, 5% above — paid to BL alongside NI"
+    },
+
+    "pension_provision": {
+      "he": "הפרשה לפנסיה",
+      "en": "Pension Provision",
+      "ctx": "Mandatory pension fund contributions per 2008 extension order"
+    },
+    "pension_employee": {
+      "he": "פנסיה עובד",
+      "en": "Employee Pension",
+      "ctx": "Employee share (6% of pensionable salary)"
+    },
+    "pension_employer": {
+      "he": "פנסיה מעסיק",
+      "en": "Employer Pension",
+      "ctx": "Employer share (6.5% of pensionable salary)"
+    },
+    "severance_provision": {
+      "he": "פיצויי פיטורים",
+      "en": "Severance Provision",
+      "ctx": "Employer 8.33% deposit — considered release §14 if in pension fund"
+    },
+    "severance_pay": {
+      "he": "פיצויי פיטורים בפועל",
+      "en": "Severance Pay",
+      "ctx": "One month's salary per year of employment — §4 Severance Pay Law"
+    },
+    "keren_hishtalmut": {
+      "he": "קרן השתלמות",
+      "en": "Keren Hishtalmut (Study Fund)",
+      "ctx": "Tax-advantaged 6-year savings — employer 7.5%, employee 2.5%"
+    },
+    "pension_ceiling": {
+      "he": "תקרת פנסיה",
+      "en": "Pension Ceiling",
+      "ctx": "Max pensionable salary (~47,465 NIS/month in 2026)"
+    },
+
+    "vacation_balance": {
+      "he": "יתרת חופשה",
+      "en": "Vacation Balance",
+      "ctx": "Remaining paid vacation days — accrued under Annual Leave Law"
+    },
+    "vacation_accrual": {
+      "he": "צבירת ימי חופשה",
+      "en": "Vacation Accrual",
+      "ctx": "Days added per worked month — 12–28 per year by seniority"
+    },
+    "vacation_used": {
+      "he": "חופשה נוצלה",
+      "en": "Vacation Taken",
+      "ctx": "Paid vacation days used in period"
+    },
+    "sick_balance": {
+      "he": "יתרת מחלה",
+      "en": "Sick Leave Balance",
+      "ctx": "Accrued sick days — 1.5 per month, max 90 days"
+    },
+    "sick_day": {
+      "he": "יום מחלה",
+      "en": "Sick Day",
+      "ctx": "Paid sick day — first day 0%, days 2–3 50%, day 4+ 100%"
+    },
+    "miluim": {
+      "he": "מילואים",
+      "en": "Reserve Duty",
+      "ctx": "IDF reserve service — paid via BL reimbursement"
+    },
+    "miluim_compensation": {
+      "he": "תגמולי מילואים",
+      "en": "Reserve Duty Compensation",
+      "ctx": "BL refund to employer for reserve days"
+    },
+    "maternity_leave": {
+      "he": "חופשת לידה",
+      "en": "Maternity Leave",
+      "ctx": "15-week statutory leave — BL pays allowance"
+    },
+    "paternity_leave": {
+      "he": "חופשת אב",
+      "en": "Paternity Leave",
+      "ctx": "Up to 8 days — eligibility per BL rules"
+    },
+
+    "form_106": {
+      "he": "טופס 106",
+      "en": "Form 106",
+      "ctx": "Annual employee wage statement issued Jan — basis for tax reconciliation"
+    },
+    "form_161": {
+      "he": "טופס 161",
+      "en": "Form 161",
+      "ctx": "Retirement/severance notification — issued at termination"
+    },
+    "form_101": {
+      "he": "טופס 101",
+      "en": "Form 101",
+      "ctx": "Employee tax declaration — filed annually for credit points and exemptions"
+    },
+    "form_102": {
+      "he": "טופס 102",
+      "en": "Form 102",
+      "ctx": "Monthly employer wage/tax report — filed with Tax Authority"
+    },
+    "form_126": {
+      "he": "טופס 126",
+      "en": "Form 126",
+      "ctx": "Annual reconciliation of employer payroll — aggregated 102 data"
+    },
+    "form_856": {
+      "he": "טופס 856",
+      "en": "Form 856",
+      "ctx": "Annual report of payments to freelancers/contractors (withholding report)"
+    },
+    "form_857": {
+      "he": "טופס 857",
+      "en": "Form 857",
+      "ctx": "Annual report of withholding at source on non-wage payments"
+    },
+
+    "tax_reform": {
+      "he": "תיאום מס",
+      "en": "Tax Coordination",
+      "ctx": "Multi-employer tax reconciliation — filed to avoid double withholding"
+    },
+    "foreign_worker": {
+      "he": "עובד זר",
+      "en": "Foreign Worker",
+      "ctx": "Non-resident employee — special tax rates & reporting rules"
+    },
+    "contractor_payment": {
+      "he": "תשלום לעצמאי",
+      "en": "Contractor Payment",
+      "ctx": "Non-employee — subject to withholding tax at source"
+    }
+  },
+
+  "vat": {
+    "he": "מע\"מ",
+    "en": "VAT",
+    "ctx": "Top-level: Value Added Tax (ma'am) — governed by VAT Law 5736-1975",
+
+    "vat_rate": {
+      "he": "שיעור מע\"מ",
+      "en": "VAT Rate",
+      "ctx": "Standard rate — 18% in Israel from Jan 2025"
+    },
+    "output_vat": {
+      "he": "מע\"מ עסקאות",
+      "en": "Output VAT",
+      "ctx": "VAT collected on sales — owed to tax authority"
+    },
+    "input_vat": {
+      "he": "מע\"מ תשומות",
+      "en": "Input VAT",
+      "ctx": "VAT paid on purchases — deductible against output VAT"
+    },
+    "vat_payable": {
+      "he": "מע\"מ לתשלום",
+      "en": "VAT Payable",
+      "ctx": "Output minus input — net amount owed"
+    },
+    "vat_refund": {
+      "he": "החזר מע\"מ",
+      "en": "VAT Refund",
+      "ctx": "Negative balance — excess input VAT returned by tax authority"
+    },
+    "vat_period": {
+      "he": "תקופת דיווח",
+      "en": "Reporting Period",
+      "ctx": "Monthly or bi-monthly reporting cycle depending on turnover"
+    },
+
+    "tax_invoice": {
+      "he": "חשבונית מס",
+      "en": "Tax Invoice",
+      "ctx": "VAT-eligible invoice — must carry business number and VAT amount"
+    },
+    "receipt_invoice": {
+      "he": "חשבונית מס קבלה",
+      "en": "Tax Invoice Receipt",
+      "ctx": "Combined invoice + receipt — proves both charge and payment"
+    },
+    "credit_invoice": {
+      "he": "חשבונית זיכוי",
+      "en": "Credit Invoice",
+      "ctx": "Reduces previously-issued tax invoice — reverses VAT"
+    },
+    "debit_invoice": {
+      "he": "חשבונית חיוב",
+      "en": "Debit Invoice",
+      "ctx": "Adds to previously-issued invoice — increases VAT"
+    },
+    "proforma": {
+      "he": "חשבון עסקה",
+      "en": "Proforma Invoice",
+      "ctx": "Non-VAT quotation or draft — not a legal document for VAT purposes"
+    },
+    "receipt": {
+      "he": "קבלה",
+      "en": "Receipt",
+      "ctx": "Evidence of payment — separate from tax invoice"
+    },
+
+    "vat_exempt": {
+      "he": "פטור ממע\"מ",
+      "en": "VAT Exempt",
+      "ctx": "Transactions not subject to VAT (e.g., exports, certain housing)"
+    },
+    "vat_zero_rated": {
+      "he": "מע\"מ אפס",
+      "en": "Zero-Rated VAT",
+      "ctx": "0% rate but still in scope — input VAT deductible (exports, fruits/veg)"
+    },
+    "vat_registered": {
+      "he": "עוסק מורשה",
+      "en": "VAT-Registered Dealer",
+      "ctx": "Osek Murshe — business above threshold that collects VAT"
+    },
+    "exempt_dealer": {
+      "he": "עוסק פטור",
+      "en": "Exempt Dealer",
+      "ctx": "Osek Patur — small business below threshold (120,000 NIS/yr 2026)"
+    },
+
+    "pcn_836": {
+      "he": "PCN 836",
+      "en": "PCN 836",
+      "ctx": "Detailed monthly VAT report — structured file format to Tax Authority"
+    },
+    "pcn_874": {
+      "he": "PCN 874",
+      "en": "PCN 874",
+      "ctx": "Credit notes report"
+    },
+    "vat_return": {
+      "he": "דוח מע\"מ",
+      "en": "VAT Return",
+      "ctx": "Periodic filing declaring output and input VAT"
+    },
+    "vat_advance": {
+      "he": "מקדמות מע\"מ",
+      "en": "VAT Advance Payments",
+      "ctx": "Bi-monthly advance payment toward annual VAT liability"
+    },
+    "self_invoice": {
+      "he": "חשבונית עצמית",
+      "en": "Self Invoice",
+      "ctx": "Buyer-issued invoice for reverse-charge transactions"
+    },
+    "reverse_charge": {
+      "he": "חיוב הפוך",
+      "en": "Reverse Charge",
+      "ctx": "Buyer accounts for VAT instead of seller — cross-border services"
+    },
+
+    "import_vat": {
+      "he": "מע\"מ יבוא",
+      "en": "Import VAT",
+      "ctx": "VAT on imported goods — paid at customs, deductible as input"
+    },
+    "export_zero": {
+      "he": "יצוא באפס",
+      "en": "Zero-Rate Export",
+      "ctx": "Export of goods/services — VAT at 0% but input deductible"
+    },
+    "allocation_number": {
+      "he": "מספר הקצאה",
+      "en": "Allocation Number",
+      "ctx": "Invoice allocation number from Tax Authority (required from 2024)"
+    },
+    "cash_basis": {
+      "he": "דיווח מזומן",
+      "en": "Cash Basis Reporting",
+      "ctx": "VAT recognized on payment — for service providers under threshold"
+    },
+    "accrual_basis": {
+      "he": "דיווח מצטבר",
+      "en": "Accrual Basis Reporting",
+      "ctx": "VAT recognized on invoice date — default for goods"
+    }
+  },
+
+  "bank": {
+    "he": "בנק",
+    "en": "Bank",
+    "ctx": "Top-level: banking, reconciliation, cash management",
+
+    "bank_reconciliation": {
+      "he": "התאמת בנק",
+      "en": "Bank Reconciliation",
+      "ctx": "Matching internal ledger to bank statement — core accounting control"
+    },
+    "reconciliation_item": {
+      "he": "פריט התאמה",
+      "en": "Reconciliation Item",
+      "ctx": "Single line being reconciled (e.g., an incoming wire)"
+    },
+    "bank_statement": {
+      "he": "דף חשבון",
+      "en": "Bank Statement",
+      "ctx": "Periodic bank-issued list of transactions"
+    },
+    "statement_line": {
+      "he": "שורת דף חשבון",
+      "en": "Statement Line",
+      "ctx": "Single transaction line in bank statement"
+    },
+    "opening_balance": {
+      "he": "יתרת פתיחה",
+      "en": "Opening Balance",
+      "ctx": "Balance at start of period"
+    },
+    "closing_balance": {
+      "he": "יתרת סגירה",
+      "en": "Closing Balance",
+      "ctx": "Balance at end of period"
+    },
+    "available_balance": {
+      "he": "יתרה זמינה",
+      "en": "Available Balance",
+      "ctx": "Usable funds — excludes holds and pending"
+    },
+    "book_balance": {
+      "he": "יתרה ספרית",
+      "en": "Book Balance",
+      "ctx": "Internal ledger balance before reconciliation"
+    },
+    "overdraft": {
+      "he": "משיכת יתר",
+      "en": "Overdraft",
+      "ctx": "Negative balance — usually bearing interest"
+    },
+    "overdraft_limit": {
+      "he": "מסגרת אשראי",
+      "en": "Credit Limit / Overdraft Limit",
+      "ctx": "Max allowed overdraft line"
+    },
+
+    "wire_transfer": {
+      "he": "העברה בנקאית",
+      "en": "Wire Transfer",
+      "ctx": "Electronic funds transfer between banks"
+    },
+    "incoming_transfer": {
+      "he": "העברה נכנסת",
+      "en": "Incoming Transfer",
+      "ctx": "Money arriving to account"
+    },
+    "outgoing_transfer": {
+      "he": "העברה יוצאת",
+      "en": "Outgoing Transfer",
+      "ctx": "Money leaving account"
+    },
+    "zahav_transfer": {
+      "he": "העברת זה\"ב",
+      "en": "Zahav Transfer",
+      "ctx": "Real-time gross settlement — Bank of Israel system"
+    },
+    "masav": {
+      "he": "מס\"ב",
+      "en": "MASAV",
+      "ctx": "Israeli banking clearing house for batch payments/collections"
+    },
+    "masav_batch": {
+      "he": "אצווה מס\"ב",
+      "en": "MASAV Batch",
+      "ctx": "Set of payments submitted together to MASAV"
+    },
+    "direct_debit": {
+      "he": "הוראת קבע",
+      "en": "Direct Debit / Standing Order",
+      "ctx": "Recurring automatic debit — authorized by payer"
+    },
+    "standing_order": {
+      "he": "הוראת תשלום קבועה",
+      "en": "Standing Order",
+      "ctx": "Fixed-amount recurring transfer"
+    },
+
+    "check": {
+      "he": "המחאה",
+      "en": "Check",
+      "ctx": "Paper or electronic check instrument"
+    },
+    "check_deposit": {
+      "he": "הפקדת המחאה",
+      "en": "Check Deposit",
+      "ctx": "Depositing a check for collection"
+    },
+    "bounced_check": {
+      "he": "המחאה חוזרת",
+      "en": "Bounced Check",
+      "ctx": "Dishonored check — insufficient funds or stop payment"
+    },
+    "postdated_check": {
+      "he": "המחאה דחויה",
+      "en": "Post-Dated Check",
+      "ctx": "Check with future date — common for commercial payments"
+    },
+    "credit_card": {
+      "he": "כרטיס אשראי",
+      "en": "Credit Card",
+      "ctx": "Payment card — revolving or charge"
+    },
+    "debit_card": {
+      "he": "כרטיס חיוב מיידי",
+      "en": "Debit Card",
+      "ctx": "Card charging account immediately"
+    },
+    "card_clearing": {
+      "he": "סליקה",
+      "en": "Card Clearing",
+      "ctx": "Processing of card transactions by clearing house"
+    },
+    "merchant_fee": {
+      "he": "עמלת סליקה",
+      "en": "Merchant Fee",
+      "ctx": "Fee charged by card processor to merchant"
+    },
+
+    "interest": {
+      "he": "ריבית",
+      "en": "Interest",
+      "ctx": "Cost of borrowing or return on deposit"
+    },
+    "interest_debit": {
+      "he": "ריבית חובה",
+      "en": "Debit Interest",
+      "ctx": "Interest charged on overdraft"
+    },
+    "interest_credit": {
+      "he": "ריבית זכות",
+      "en": "Credit Interest",
+      "ctx": "Interest earned on positive balance"
+    },
+    "bank_fee": {
+      "he": "עמלה בנקאית",
+      "en": "Bank Fee",
+      "ctx": "Service charge by bank"
+    },
+    "transaction_fee": {
+      "he": "עמלת פעולה",
+      "en": "Transaction Fee",
+      "ctx": "Per-transaction charge"
+    },
+    "account_fee": {
+      "he": "עמלת ניהול חשבון",
+      "en": "Account Maintenance Fee",
+      "ctx": "Monthly account management fee"
+    },
+
+    "loan": {
+      "he": "הלוואה",
+      "en": "Loan",
+      "ctx": "Credit facility with repayment schedule"
+    },
+    "loan_principal": {
+      "he": "קרן הלוואה",
+      "en": "Loan Principal",
+      "ctx": "Original borrowed amount"
+    },
+    "repayment": {
+      "he": "פרעון",
+      "en": "Repayment",
+      "ctx": "Act of paying back loan/debt"
+    },
+    "installment": {
+      "he": "תשלום",
+      "en": "Installment",
+      "ctx": "Single payment in a series"
+    },
+    "early_repayment": {
+      "he": "פרעון מוקדם",
+      "en": "Early Repayment",
+      "ctx": "Paying loan ahead of schedule — may incur penalty"
+    },
+    "linked_to_index": {
+      "he": "צמוד מדד",
+      "en": "Index-Linked",
+      "ctx": "Amount adjusted by CPI (madad) — common in Israeli loans"
+    },
+
+    "currency_exchange": {
+      "he": "המרת מטבע",
+      "en": "Currency Exchange",
+      "ctx": "Converting between currencies"
+    },
+    "exchange_rate": {
+      "he": "שער חליפין",
+      "en": "Exchange Rate",
+      "ctx": "Rate between two currencies"
+    },
+    "bank_of_israel_rate": {
+      "he": "שער יציג",
+      "en": "Bank of Israel Representative Rate",
+      "ctx": "Official daily reference rate published by BoI"
+    },
+    "foreign_currency": {
+      "he": "מטבע חוץ",
+      "en": "Foreign Currency",
+      "ctx": "Non-NIS currency account"
+    },
+    "fx_gain": {
+      "he": "הפרשי שער זכות",
+      "en": "Foreign Exchange Gain",
+      "ctx": "Profit from FX rate changes"
+    },
+    "fx_loss": {
+      "he": "הפרשי שער חובה",
+      "en": "Foreign Exchange Loss",
+      "ctx": "Loss from FX rate changes"
+    }
+  },
+
+  "annual_tax": {
+    "he": "מס שנתי",
+    "en": "Annual Tax",
+    "ctx": "Top-level: annual tax filings, returns, forms, assessments",
+
+    "annual_return": {
+      "he": "דוח שנתי",
+      "en": "Annual Return",
+      "ctx": "Annual tax filing — due by May 31 (individual) or 5 months after year-end (company)"
+    },
+    "tax_year": {
+      "he": "שנת מס",
+      "en": "Tax Year",
+      "ctx": "Calendar year in Israel — Jan 1 to Dec 31"
+    },
+    "reporting_year": {
+      "he": "שנת דיווח",
+      "en": "Reporting Year",
+      "ctx": "Year being reported on the return"
+    },
+
+    "form_1301": {
+      "he": "טופס 1301",
+      "en": "Form 1301",
+      "ctx": "Individual annual tax return"
+    },
+    "form_1320": {
+      "he": "טופס 1320",
+      "en": "Form 1320",
+      "ctx": "Company (entity) annual tax return"
+    },
+    "form_6111": {
+      "he": "טופס 6111",
+      "en": "Form 6111",
+      "ctx": "Standardized structured business balance sheet & P&L for filing"
+    },
+    "form_1214": {
+      "he": "טופס 1214",
+      "en": "Form 1214",
+      "ctx": "Annual capital gains return"
+    },
+    "form_1322": {
+      "he": "טופס 1322",
+      "en": "Form 1322",
+      "ctx": "Company reconciliation between accounting profit and tax"
+    },
+
+    "advance_tax": {
+      "he": "מקדמות מס הכנסה",
+      "en": "Income Tax Advance",
+      "ctx": "Monthly advance payments toward annual income tax — not an 'advance payment to supplier'"
+    },
+    "advance_rate": {
+      "he": "שיעור מקדמה",
+      "en": "Advance Rate",
+      "ctx": "Percentage of turnover used to compute advance tax"
+    },
+    "additional_advance": {
+      "he": "מקדמה נוספת",
+      "en": "Additional Advance",
+      "ctx": "Supplementary advance for expenses not yet taxed"
+    },
+    "assessment": {
+      "he": "שומה",
+      "en": "Tax Assessment",
+      "ctx": "Final tax determination by assessing officer"
+    },
+    "self_assessment": {
+      "he": "שומה עצמית",
+      "en": "Self Assessment",
+      "ctx": "Taxpayer's declared tax on the annual return"
+    },
+    "assessment_appeal": {
+      "he": "השגה על שומה",
+      "en": "Assessment Objection",
+      "ctx": "Formal objection filed against assessor's determination"
+    },
+
+    "corporate_tax": {
+      "he": "מס חברות",
+      "en": "Corporate Tax",
+      "ctx": "Corporate income tax — 23% in Israel (2026)"
+    },
+    "individual_tax": {
+      "he": "מס ליחיד",
+      "en": "Individual Tax",
+      "ctx": "Personal income tax — progressive brackets"
+    },
+    "capital_gains_tax": {
+      "he": "מס רווחי הון",
+      "en": "Capital Gains Tax",
+      "ctx": "Tax on gains from sale of assets — generally 25% for individuals"
+    },
+    "real_capital_gain": {
+      "he": "רווח הון ריאלי",
+      "en": "Real Capital Gain",
+      "ctx": "Inflation-adjusted capital gain"
+    },
+    "dividend_tax": {
+      "he": "מס על דיבידנד",
+      "en": "Dividend Tax",
+      "ctx": "25–30% for substantial shareholders"
+    },
+    "withholding_at_source": {
+      "he": "ניכוי מס במקור",
+      "en": "Withholding at Source",
+      "ctx": "Tax withheld by payer on payments to contractors/suppliers"
+    },
+    "withholding_exemption": {
+      "he": "פטור מניכוי מס במקור",
+      "en": "Withholding Exemption Certificate",
+      "ctx": "Certificate allowing payer to skip withholding"
+    },
+
+    "approved_enterprise": {
+      "he": "מפעל מאושר",
+      "en": "Approved Enterprise",
+      "ctx": "Entity qualifying for Law for Encouragement of Capital Investments incentives"
+    },
+    "loss_carryforward": {
+      "he": "העברת הפסד",
+      "en": "Loss Carryforward",
+      "ctx": "Prior-year losses offsetting current taxable income"
+    },
+    "tax_deductible_expense": {
+      "he": "הוצאה מוכרת",
+      "en": "Tax-Deductible Expense",
+      "ctx": "Expense allowed to reduce taxable income"
+    },
+    "non_deductible_expense": {
+      "he": "הוצאה לא מוכרת",
+      "en": "Non-Deductible Expense",
+      "ctx": "Not allowed for tax purposes (e.g., fines)"
+    },
+    "depreciation": {
+      "he": "פחת",
+      "en": "Depreciation",
+      "ctx": "Asset cost allocation over useful life"
+    },
+    "accelerated_depreciation": {
+      "he": "פחת מואץ",
+      "en": "Accelerated Depreciation",
+      "ctx": "Faster write-off — tax incentive for certain investments"
+    },
+    "amortization": {
+      "he": "הפחתה",
+      "en": "Amortization",
+      "ctx": "Spreading intangible asset cost over useful life"
+    },
+
+    "trial_balance": {
+      "he": "מאזן בוחן",
+      "en": "Trial Balance",
+      "ctx": "List of all ledger account balances — basis for annual report"
+    },
+    "balance_sheet": {
+      "he": "מאזן",
+      "en": "Balance Sheet",
+      "ctx": "Statement of assets, liabilities, and equity"
+    },
+    "income_statement": {
+      "he": "דוח רווח והפסד",
+      "en": "Income Statement / P&L",
+      "ctx": "Revenue, expenses, and net income statement"
+    },
+    "cash_flow_statement": {
+      "he": "דוח תזרים מזומנים",
+      "en": "Cash Flow Statement",
+      "ctx": "Operating, investing, and financing cash flows"
+    },
+
+    "audit_report": {
+      "he": "דוח רואה חשבון",
+      "en": "Auditor's Report",
+      "ctx": "CPA-signed audit opinion — required for companies"
+    },
+    "reviewed_report": {
+      "he": "דוח סקירה",
+      "en": "Review Report",
+      "ctx": "CPA review (lower assurance than audit)"
+    },
+    "compilation": {
+      "he": "עריכת דוח",
+      "en": "Compilation Report",
+      "ctx": "Accountant-prepared without audit or review"
+    }
+  },
+
+  "procurement": {
+    "he": "רכש",
+    "en": "Procurement",
+    "ctx": "Top-level: purchasing, suppliers, orders, receiving",
+
+    "purchase_order": {
+      "he": "הזמנת רכש",
+      "en": "Purchase Order",
+      "ctx": "PO — buyer's formal offer to purchase at specified terms"
+    },
+    "po_number": {
+      "he": "מספר הזמנה",
+      "en": "PO Number",
+      "ctx": "Unique PO identifier"
+    },
+    "po_line": {
+      "he": "שורת הזמנה",
+      "en": "PO Line Item",
+      "ctx": "Single item on a PO"
+    },
+    "po_draft": {
+      "he": "טיוטת הזמנה",
+      "en": "Draft PO",
+      "ctx": "Not yet approved or sent"
+    },
+    "po_approved": {
+      "he": "הזמנה מאושרת",
+      "en": "Approved PO",
+      "ctx": "PO approved by authorized approver"
+    },
+    "po_sent": {
+      "he": "הזמנה נשלחה",
+      "en": "PO Sent",
+      "ctx": "PO transmitted to supplier"
+    },
+    "po_acknowledged": {
+      "he": "הזמנה אושרה ע\"י ספק",
+      "en": "PO Acknowledged",
+      "ctx": "Supplier confirmed receipt/acceptance of PO"
+    },
+    "po_closed": {
+      "he": "הזמנה סגורה",
+      "en": "Closed PO",
+      "ctx": "Fully delivered, invoiced, and paid"
+    },
+    "po_cancelled": {
+      "he": "הזמנה מבוטלת",
+      "en": "Cancelled PO",
+      "ctx": "PO cancelled before fulfillment"
+    },
+
+    "purchase_requisition": {
+      "he": "דרישת רכש",
+      "en": "Purchase Requisition",
+      "ctx": "PR — internal request to buy, precedes PO"
+    },
+    "requisition_approver": {
+      "he": "מאשר דרישה",
+      "en": "Requisition Approver",
+      "ctx": "Manager who approves PR before PO is created"
+    },
+    "rfq": {
+      "he": "בקשה להצעת מחיר",
+      "en": "Request for Quotation (RFQ)",
+      "ctx": "Formal solicitation of prices from multiple suppliers"
+    },
+    "rfp": {
+      "he": "בקשה להצעה",
+      "en": "Request for Proposal (RFP)",
+      "ctx": "Broader than RFQ — includes technical & commercial criteria"
+    },
+    "rfi": {
+      "he": "בקשה למידע",
+      "en": "Request for Information (RFI)",
+      "ctx": "Pre-tender information gathering"
+    },
+    "quotation": {
+      "he": "הצעת מחיר",
+      "en": "Quotation",
+      "ctx": "Supplier's price offer — often non-binding"
+    },
+    "tender": {
+      "he": "מכרז",
+      "en": "Tender",
+      "ctx": "Formal competitive procurement process"
+    },
+    "bid": {
+      "he": "הצעת מכרז",
+      "en": "Bid",
+      "ctx": "Supplier's response to a tender"
+    },
+
+    "supplier": {
+      "he": "ספק",
+      "en": "Supplier",
+      "ctx": "Vendor providing goods or services"
+    },
+    "vendor": {
+      "he": "ספק",
+      "en": "Vendor",
+      "ctx": "Synonym for supplier"
+    },
+    "supplier_onboarding": {
+      "he": "קליטת ספק",
+      "en": "Supplier Onboarding",
+      "ctx": "Registering a new supplier in system — includes tax validation"
+    },
+    "supplier_catalog": {
+      "he": "קטלוג ספק",
+      "en": "Supplier Catalog",
+      "ctx": "List of items offered by supplier with prices"
+    },
+    "supplier_portal": {
+      "he": "פורטל ספקים",
+      "en": "Supplier Portal",
+      "ctx": "Self-service supplier interface"
+    },
+    "supplier_rating": {
+      "he": "דירוג ספק",
+      "en": "Supplier Rating",
+      "ctx": "Performance score — delivery, quality, price, service"
+    },
+    "preferred_supplier": {
+      "he": "ספק מועדף",
+      "en": "Preferred Supplier",
+      "ctx": "Pre-approved supplier with negotiated terms"
+    },
+    "blacklist_supplier": {
+      "he": "ספק חסום",
+      "en": "Blacklisted Supplier",
+      "ctx": "Supplier blocked from receiving new POs"
+    },
+
+    "goods_receipt": {
+      "he": "קבלת טובין",
+      "en": "Goods Receipt Note (GRN)",
+      "ctx": "Document confirming physical receipt of goods"
+    },
+    "delivery_note": {
+      "he": "תעודת משלוח",
+      "en": "Delivery Note",
+      "ctx": "Supplier's shipping document accompanying goods"
+    },
+    "partial_delivery": {
+      "he": "משלוח חלקי",
+      "en": "Partial Delivery",
+      "ctx": "Only some items from PO delivered"
+    },
+    "over_delivery": {
+      "he": "משלוח עודף",
+      "en": "Over Delivery",
+      "ctx": "More units received than ordered"
+    },
+    "under_delivery": {
+      "he": "משלוח חסר",
+      "en": "Under Delivery",
+      "ctx": "Fewer units received than ordered"
+    },
+    "return_to_supplier": {
+      "he": "החזרה לספק",
+      "en": "Return to Supplier",
+      "ctx": "Rejected goods sent back to supplier"
+    },
+    "quality_inspection": {
+      "he": "בדיקת איכות",
+      "en": "Quality Inspection",
+      "ctx": "QC check on received goods before acceptance"
+    },
+
+    "supplier_invoice": {
+      "he": "חשבונית ספק",
+      "en": "Supplier Invoice",
+      "ctx": "Bill from vendor — basis for payment"
+    },
+    "three_way_match": {
+      "he": "התאמה תלת-כיוונית",
+      "en": "Three-Way Match",
+      "ctx": "Matching PO + GRN + Invoice before payment approval"
+    },
+    "invoice_approval": {
+      "he": "אישור חשבונית",
+      "en": "Invoice Approval",
+      "ctx": "Manager sign-off on invoice for payment"
+    },
+    "approved_for_payment": {
+      "he": "מאושר לתשלום",
+      "en": "Approved for Payment",
+      "ctx": "Invoice passed all checks and is queued for disbursement"
+    },
+
+    "payment_terms": {
+      "he": "תנאי תשלום",
+      "en": "Payment Terms",
+      "ctx": "When payment is due (e.g., Net 30, Net 45, Shotef+30)"
+    },
+    "net_30": {
+      "he": "שוטף 30",
+      "en": "Net 30",
+      "ctx": "Payment due 30 days from invoice date"
+    },
+    "shotef_plus_30": {
+      "he": "שוטף + 30",
+      "en": "Month-End + 30",
+      "ctx": "Common Israeli term — end of invoice month plus 30 days"
+    },
+    "shotef_plus_60": {
+      "he": "שוטף + 60",
+      "en": "Month-End + 60",
+      "ctx": "End of invoice month plus 60 days"
+    },
+    "cash_on_delivery": {
+      "he": "תשלום במזומן במשלוח",
+      "en": "Cash on Delivery (COD)",
+      "ctx": "Payment at time of delivery"
+    },
+    "advance_payment": {
+      "he": "מקדמה",
+      "en": "Advance Payment",
+      "ctx": "Prepayment to supplier before delivery — NOT tax advance"
+    },
+    "milestone_payment": {
+      "he": "תשלום לפי אבני דרך",
+      "en": "Milestone Payment",
+      "ctx": "Payment triggered by project milestone"
+    },
+
+    "payment_run": {
+      "he": "הרצת תשלומים",
+      "en": "Payment Run",
+      "ctx": "Batch payment process — typically weekly or monthly"
+    },
+    "payment_batch": {
+      "he": "אצוות תשלומים",
+      "en": "Payment Batch",
+      "ctx": "Group of payments processed together"
+    },
+    "payment_instruction": {
+      "he": "הוראת תשלום",
+      "en": "Payment Instruction",
+      "ctx": "Authorized payment order sent to bank"
+    },
+    "discount_for_early_payment": {
+      "he": "הנחת תשלום מוקדם",
+      "en": "Early Payment Discount",
+      "ctx": "Reduction offered for paying before due date (e.g., 2/10 Net 30)"
+    }
+  },
+
+  "compliance": {
+    "he": "ציות",
+    "en": "Compliance",
+    "ctx": "Top-level: regulatory obedience, controls, audit",
+
+    "regulation": {
+      "he": "תקנה",
+      "en": "Regulation",
+      "ctx": "Subordinate legislation — enacted by ministry or authority"
+    },
+    "law": {
+      "he": "חוק",
+      "en": "Law",
+      "ctx": "Primary legislation passed by Knesset"
+    },
+    "ordinance": {
+      "he": "פקודה",
+      "en": "Ordinance",
+      "ctx": "Pre-state or emergency legislation (e.g., Income Tax Ordinance)"
+    },
+    "directive": {
+      "he": "הנחיה",
+      "en": "Directive",
+      "ctx": "Guidance from regulator — not primary legislation"
+    },
+    "ruling": {
+      "he": "החלטת מיסוי",
+      "en": "Tax Ruling",
+      "ctx": "Pre-ruling on specific transaction from Tax Authority"
+    },
+
+    "reform": {
+      "he": "רפורמה",
+      "en": "Reform",
+      "ctx": "Major regulatory/legal change"
+    },
+    "amendment": {
+      "he": "תיקון",
+      "en": "Amendment",
+      "ctx": "Change to existing law/regulation"
+    },
+    "enforcement": {
+      "he": "אכיפה",
+      "en": "Enforcement",
+      "ctx": "Action taken by regulator against violations"
+    },
+    "sanction": {
+      "he": "סנקציה",
+      "en": "Sanction",
+      "ctx": "Penalty imposed for non-compliance"
+    },
+    "fine": {
+      "he": "קנס",
+      "en": "Fine",
+      "ctx": "Monetary penalty"
+    },
+    "warning": {
+      "he": "אזהרה",
+      "en": "Warning",
+      "ctx": "Formal notice before sanctioning"
+    },
+
+    "tax_authority": {
+      "he": "רשות המיסים",
+      "en": "Israel Tax Authority",
+      "ctx": "Main tax collection body (Reshut HaMisim)"
+    },
+    "income_tax_authority": {
+      "he": "מס הכנסה",
+      "en": "Income Tax Department",
+      "ctx": "Division of Israel Tax Authority"
+    },
+    "vat_authority": {
+      "he": "מע\"מ",
+      "en": "VAT Department",
+      "ctx": "Division of Israel Tax Authority"
+    },
+    "bl_authority": {
+      "he": "המוסד לביטוח לאומי",
+      "en": "National Insurance Institute",
+      "ctx": "Bituach Leumi — social security authority"
+    },
+    "finance_ministry": {
+      "he": "משרד האוצר",
+      "en": "Ministry of Finance",
+      "ctx": "Government ministry responsible for fiscal policy"
+    },
+    "labor_ministry": {
+      "he": "משרד העבודה",
+      "en": "Ministry of Labor",
+      "ctx": "Labor-rights enforcement"
+    },
+    "companies_registrar": {
+      "he": "רשם החברות",
+      "en": "Companies Registrar",
+      "ctx": "Government body registering corporations"
+    },
+    "privacy_authority": {
+      "he": "רשות הגנת הפרטיות",
+      "en": "Privacy Protection Authority",
+      "ctx": "Enforces Privacy Protection Law"
+    },
+
+    "audit_trail": {
+      "he": "מסלול ביקורת",
+      "en": "Audit Trail",
+      "ctx": "Immutable record of all changes — required for tax and SOX"
+    },
+    "internal_control": {
+      "he": "בקרה פנימית",
+      "en": "Internal Control",
+      "ctx": "Process to ensure reliability of reporting"
+    },
+    "segregation_of_duties": {
+      "he": "הפרדת תפקידים",
+      "en": "Segregation of Duties",
+      "ctx": "SOD — no single person controls full transaction flow"
+    },
+    "access_control": {
+      "he": "בקרת גישה",
+      "en": "Access Control",
+      "ctx": "Restricting system permissions"
+    },
+    "data_retention": {
+      "he": "שמירת נתונים",
+      "en": "Data Retention",
+      "ctx": "Minimum retention period — 7 years for tax records"
+    },
+    "data_protection": {
+      "he": "הגנת מידע",
+      "en": "Data Protection",
+      "ctx": "Privacy and security requirements"
+    },
+    "pii": {
+      "he": "מידע אישי מזהה",
+      "en": "Personally Identifiable Information (PII)",
+      "ctx": "Information identifying an individual"
+    },
+    "gdpr": {
+      "he": "GDPR",
+      "en": "GDPR",
+      "ctx": "EU General Data Protection Regulation — applicable when processing EU data"
+    },
+    "privacy_law": {
+      "he": "חוק הגנת הפרטיות",
+      "en": "Privacy Protection Law",
+      "ctx": "Israeli privacy law — Tikun 13 in effect 2025"
+    },
+
+    "aml": {
+      "he": "איסור הלבנת הון",
+      "en": "Anti-Money Laundering (AML)",
+      "ctx": "Regulations preventing money laundering"
+    },
+    "kyc": {
+      "he": "הכר את הלקוח",
+      "en": "Know Your Customer (KYC)",
+      "ctx": "Customer due diligence requirement"
+    },
+    "sanctions_screening": {
+      "he": "בדיקת סנקציות",
+      "en": "Sanctions Screening",
+      "ctx": "Checking counterparty against sanctions lists"
+    },
+    "pep_check": {
+      "he": "בדיקת PEP",
+      "en": "PEP Check",
+      "ctx": "Politically Exposed Person screening"
+    },
+
+    "compliance_officer": {
+      "he": "ממונה ציות",
+      "en": "Compliance Officer",
+      "ctx": "Designated person responsible for compliance"
+    },
+    "dpo": {
+      "he": "ממונה הגנת פרטיות",
+      "en": "Data Protection Officer (DPO)",
+      "ctx": "Required role for large data processors"
+    },
+    "compliance_report": {
+      "he": "דוח ציות",
+      "en": "Compliance Report",
+      "ctx": "Periodic compliance status report"
+    },
+    "risk_register": {
+      "he": "מרשם סיכונים",
+      "en": "Risk Register",
+      "ctx": "List of identified risks and mitigations"
+    }
+  }
+}

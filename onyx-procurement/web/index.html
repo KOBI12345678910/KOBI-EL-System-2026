@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Techno-Kol Uzi ERP 2026 | טכנו-קול עוזי מערכת ניהול</title>
+  <style>
+    /* ============================================================
+       PALANTIR DARK THEME  —  HEBREW RTL  —  INLINE ONLY
+       Techno-Kol Uzi ERP 2026 · Mega Index Landing Page
+       ============================================================ */
+    :root {
+      --bg-0: #05070a;
+      --bg-1: #0a0e14;
+      --bg-2: #111720;
+      --bg-3: #1a2230;
+      --border: #1f2a3a;
+      --border-hi: #2a3a52;
+      --text-0: #e6ecf5;
+      --text-1: #a8b4c8;
+      --text-2: #6b7a90;
+      --accent: #3a8dde;
+      --accent-hi: #5aa8ff;
+      --accent-glow: rgba(58, 141, 222, 0.25);
+      --ok: #2bd48b;
+      --warn: #f2b84d;
+      --err: #ef5350;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+      --radius: 10px;
+      --font: 'Segoe UI', 'Heebo', 'Assistant', 'Arial Hebrew', system-ui, -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      background: var(--bg-0);
+      color: var(--text-0);
+      font-family: var(--font);
+      font-size: 15px;
+      line-height: 1.5;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-image:
+        radial-gradient(ellipse at top left, rgba(58, 141, 222, 0.08), transparent 50%),
+        radial-gradient(ellipse at bottom right, rgba(43, 212, 139, 0.05), transparent 50%);
+      background-attachment: fixed;
+    }
+
+    /* ---------- HEADER ---------- */
+    .header {
+      background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow);
+    }
+    .header-left h1 {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      color: var(--text-0);
+    }
+    .header-left h1 .brand-accent { color: var(--accent); }
+    .header-left .subtitle {
+      font-size: 13px;
+      color: var(--text-2);
+      margin-top: 4px;
+      letter-spacing: 0.3px;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 13px;
+      color: var(--text-1);
+    }
+    .datetime {
+      font-family: 'Consolas', 'Menlo', monospace;
+      color: var(--text-2);
+      font-size: 12px;
+    }
+
+    /* ---------- HERO ---------- */
+    .hero {
+      padding: 48px 40px 24px;
+      text-align: center;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .hero h2 {
+      font-size: 34px;
+      font-weight: 300;
+      color: var(--text-0);
+      margin-bottom: 10px;
+      letter-spacing: 0.5px;
+    }
+    .hero h2 strong { font-weight: 600; color: var(--accent-hi); }
+    .hero p {
+      font-size: 15px;
+      color: var(--text-1);
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    /* ---------- GRID ---------- */
+    .grid-wrap {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px 40px 60px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    /* ---------- TILE / CARD ---------- */
+    .tile {
+      background: linear-gradient(180deg, var(--bg-2) 0%, var(--bg-1) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+    .tile::before {
+      content: "";
+      position: absolute;
+      top: 0; right: 0; left: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), transparent);
+      opacity: 0.6;
+    }
+    .tile:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-hi);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--accent-glow);
+    }
+    .tile-head {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .tile-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--accent-hi);
+    }
+    .tile-icon svg { width: 26px; height: 26px; }
+    .tile-title-block { flex: 1; }
+    .tile-title-he {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-0);
+    }
+    .tile-title-en {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-2);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-top: 3px;
+    }
+    .tile-desc {
+      font-size: 13px;
+      color: var(--text-1);
+      line-height: 1.55;
+      flex: 1;
+      min-height: 40px;
+    }
+    .tile-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--accent);
+      color: #fff;
+      text-decoration: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      transition: background 0.15s ease, transform 0.15s ease;
+      border: 1px solid transparent;
+    }
+    .tile-btn:hover {
+      background: var(--accent-hi);
+      transform: translateX(-2px);
+    }
+    .tile-btn .arrow { font-size: 15px; }
+    .tile-badge {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      background: var(--bg-3);
+      color: var(--text-2);
+      border: 1px solid var(--border);
+    }
+    .tile-badge.dev { color: var(--warn); border-color: rgba(242, 184, 77, 0.3); }
+    .tile-badge.ai { color: var(--accent-hi); border-color: rgba(90, 168, 255, 0.3); }
+    .tile-badge.sys { color: var(--ok); border-color: rgba(43, 212, 139, 0.3); }
+
+    /* ---------- FOOTER ---------- */
+    .footer {
+      background: var(--bg-1);
+      border-top: 1px solid var(--border);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-2);
+      font-family: 'Consolas', 'Menlo', monospace;
+    }
+    .footer-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--text-2);
+      box-shadow: 0 0 0 2px rgba(107, 122, 144, 0.2);
+      animation: pulse 2s infinite;
+    }
+    .status-dot.ok   { background: var(--ok);   box-shadow: 0 0 0 3px rgba(43, 212, 139, 0.25); }
+    .status-dot.warn { background: var(--warn); box-shadow: 0 0 0 3px rgba(242, 184, 77, 0.25); }
+    .status-dot.err  { background: var(--err);  box-shadow: 0 0 0 3px rgba(239, 83, 80, 0.25); }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0.55; }
+    }
+
+    /* ---------- RESPONSIVE ---------- */
+    @media (max-width: 760px) {
+      .header { flex-direction: column; gap: 10px; padding: 20px; text-align: center; }
+      .hero { padding: 32px 20px 16px; }
+      .hero h2 { font-size: 26px; }
+      .grid-wrap { padding: 24px 20px 40px; }
+      .footer { flex-direction: column; gap: 10px; padding: 16px 20px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============= HEADER ============= -->
+  <header class="header">
+    <div class="header-left">
+      <h1><span class="brand-accent">Techno-Kol Uzi</span> ERP 2026 · טכנו-קול עוזי מערכת ניהול</h1>
+      <div class="subtitle">Palantir-grade Enterprise Resource Planning · מערכת לניהול ארגוני ברמת פלנטיר</div>
+    </div>
+    <div class="header-right">
+      <span class="datetime" id="datetime">—</span>
+    </div>
+  </header>
+
+  <!-- ============= HERO ============= -->
+  <section class="hero">
+    <h2>ברוכים הבאים ל<strong>מרכז הבקרה</strong></h2>
+    <p>כל דשבורדים, שירותים וכלי הניהול במקום אחד. בחרו מודול להתחיל.</p>
+  </section>
+
+  <!-- ============= GRID ============= -->
+  <div class="grid-wrap">
+    <div class="grid">
+
+      <!-- 1 · PROCUREMENT -->
+      <a href="onyx-dashboard.html" class="tile" style="text-decoration:none;color:inherit">
+        <div class="tile-head">
+          <div class="tile-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 3h2l2 12h11l2-9H7"/>
+              <circle cx="10" cy="20" r="1.5"/>
+              <circle cx="18" cy="20" r="1.5"/>
+            </svg>
+          </div>
+          <div class="tile-title-block">
+            <div class="tile-title-he">רכש</div>
+            <div class="tile-title-en">Procurement · Onyx</div>
+          </div>
+        </div>
+        <div class="tile-desc">ניהול הזמנות רכש, ספקים, אישורים ומחירונים. המודול המרכזי של המערכת.</div>
+        <span class="tile-btn"><span>פתח דשבורד</span><span class="arrow">←</span></span>
+      </a>
+
+      <!-- 2 · VAT -->
+      <a href="vat-dashboard.html" class="tile" style="text-decoration:none;color:inherit">
+        <div class="tile-head">
+          <div class="tile-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="16" rx="2"/>
+              <path d="M8 10h8M8 14h5"/>
+              <path d="M16 16l4-4"/>
+            </svg>
+          </div>
+          <div class="tile-title-block">
+            <div class="tile-title-he">מע"מ</div>
+            <div class="tile-title-en">VAT Reporting</div>
+          </div>
+        </div>
+        <div class="tile-desc">דיווח מע"מ חודשי ודו-חודשי, מס תשומות, מס עסקאות וטופס 874.</div>
+        <span class="tile-btn"><span>פתח דשבורד</span><span class="arrow">←</span></span>
+      </a>
+
+      <!-- 3 · BANK -->
+      <a href="bank-dashboard.html" class="tile" style="text-decoration:none;color:inherit">
+        <div class="tile-head">
+          <div class="tile-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 10h18L12 3 3 10z"/>
+              <path d="M5 10v9M10 10v9M14 10v9M19 10v9"/>
+              <path d="M3 20h18"/>
+            </svg>
+          </div>
+          <div class="tile-title-block">
+            <div class="tile-title-he">התאמת בנק</div>
+            <div class="tile-title-en">Bank Reconciliation</div>
+          </div>
+        </div>
+        <div class="tile-desc">ייבוא אוטומטי של דפי בנק, התאמות, דו"ח תזרים מזומנים ודף יומן.</div>
+        <span class="tile-btn"><span>פתח דשבורד</span><span class="arrow">←</span></span>
+      </a>
+
+      <!-- 4 · ANNUAL TAX -->
+      <a href="annual-tax-dashboard.html" class="tile" style="text-decoration:none;color:inherit">
+        <div class="tile-head">
+          <div class="tile-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+              <path d="M14 2v6h6"/>
+              <path d="M9 14l2 2 4-4"/>
+            </svg>
+          </div>
+          <div class="tile-title-block">
+            <div class="tile-title-he">מס שנתי</div>
+            <div class="tile-title-en">Annual Tax</div>
+          </div>
+        </div>
+        <div class="tile-desc">דוח שנתי, מקדמות מס הכנסה, טופס 1301, רווח והפסד ומאזן בוחן.</div>
+        <span class="tile-btn"><span>פתח דשבורד</span><span class="arrow">←</span></span>
+      </a>
+
+      <!-- 5 · PAYROLL -->
+      <a href="/payroll" class="tile" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">
+        <span class="tile-badge dev">DEV</span>
+        <div class="tile-head">
+          <div class="tile-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/>
+              <path d="M20 3v4M18 5h4"/>
+            </svg>
+          </div>
+          <div class="tile-title-block">
+            <div class="tile-title-he">שכר</div>
+            <div class="tile-title-en">Payroll Autonomous</div>
+          </div>
+        </div>
+        <div class="tile-desc">חישוב שכר אוטונומי, טופס 101, תלוש שכר, ביטוח לאומי ומס הכנסה. (שרת פיתוח פורט 5173)</div>
+        <span class="tile-btn"><span>פתח שכר</span><span class="arrow">←</span></span>
+      </a>
+
+      <!-- 6 · OPERATIONS -->
+      <a href="/ops" class="tile" style="text-decoration:none;color:inherit">
+        <div class="tile-head">
+          <div class="tile-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+          </div>
+          <div class="tile-title-block">
+            <div class="tile-title-he">תפעול</div>
+            <div class="tile-title-en">Techno-Kol OPS</div>
+          </div>
+        </div>
+        <div class="tile-desc">פלטפורמת מפעל בזמן אמת בסגנון Palantir Foundry — פרויקטים, משאבים, אונטולוגיה.</div>
+        <span class="tile-btn"><span>פתח תפעול</span><span class="arrow">←</span></span>
+      </a>
+
+      <!-- 7 · ONYX AI -->
+      <a href="/ai" class="tile" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">
+        <span class="tile-badge ai">AI</span>
+        <div class="tile-head">
+          <div class="tile-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2a6 6 0 0 0-6 6c0 2 1 3.5 2 5 1 1.5 1 3 1 4h6c0-1 0-2.5 1-4 1-1.5 2-3 2-5a6 6 0 0 0-6-6z"/>
+              <path d="M9 21h6M10 18h4"/>
+            </svg>
+          </div>
+          <div class="tile-title-block">
+            <div class="tile-title-he">בינה מלאכותית</div>
+            <div class="tile-title-en">Onyx AI</div>
+          </div>
+        </div>
+        <div class="tile-desc">סוכני AI, RAG, עוזר חכם, חיפוש סמנטי וניתוח מסמכים. (פורט 3200)</div>
+        <span class="tile-btn"><span>פתח AI</span><span class="arrow">←</span></span>
+      </a>
+
+      <!-- 8 · SYSTEM STATUS -->
+      <a href="status.html" class="tile" style="text-decoration:none;color:inherit">
+        <span class="tile-badge sys">LIVE</span>
+        <div class="tile-head">
+          <div class="tile-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+          </div>
+          <div class="tile-title-block">
+            <div class="tile-title-he">סטטוס</div>
+            <div class="tile-title-en">System Status</div>
+          </div>
+        </div>
+        <div class="tile-desc">ניטור חי של כל השירותים — /api/health, זמני תגובה ו-uptime לכל מודול.</div>
+        <span class="tile-btn"><span>פתח סטטוס</span><span class="arrow">←</span></span>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- ============= FOOTER ============= -->
+  <footer class="footer">
+    <div>
+      <strong>Techno-Kol Uzi ERP</strong> · v2026.4.0 · build <span id="build-date">2026-04-11</span>
+    </div>
+    <div class="footer-status">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text">בודק סטטוס מערכת…</span>
+    </div>
+  </footer>
+
+  <script>
+    /* ============================================================
+       INLINE JS · clock + health-check
+       ============================================================ */
+    (function () {
+      // live clock
+      function tick() {
+        var d = new Date();
+        var pad = function (n) { return n < 10 ? '0' + n : n; };
+        var s = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())
+              + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+        var el = document.getElementById('datetime');
+        if (el) el.textContent = s;
+      }
+      tick();
+      setInterval(tick, 1000);
+
+      // system health check
+      function checkHealth() {
+        var dot  = document.getElementById('status-dot');
+        var text = document.getElementById('status-text');
+        fetch('/api/health', { cache: 'no-store' })
+          .then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json().catch(function () { return {}; });
+          })
+          .then(function (data) {
+            dot.className  = 'status-dot ok';
+            text.textContent = 'מערכת תקינה · ' + (data.status || 'OK');
+          })
+          .catch(function () {
+            dot.className  = 'status-dot err';
+            text.textContent = 'שרת לא זמין';
+          });
+      }
+      checkHealth();
+      setInterval(checkHealth, 30000);
+    })();
+  </script>
+
+</body>
+</html>

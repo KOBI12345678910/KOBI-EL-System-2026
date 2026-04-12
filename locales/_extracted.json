@@ -1,0 +1,1733 @@
+{
+  "generatedAt": "2026-04-11T11:57:06.970Z",
+  "projects": [
+    {
+      "project": "payroll-autonomous",
+      "findings": [
+        {
+          "file": "payroll-autonomous\\public\\sw.js",
+          "line": 251,
+          "kind": "jsx",
+          "text": "לא מחובר"
+        },
+        {
+          "file": "payroll-autonomous\\public\\sw.js",
+          "line": 251,
+          "kind": "jsx",
+          "text": "אין חיבור לאינטרנט"
+        },
+        {
+          "file": "payroll-autonomous\\public\\sw.js",
+          "line": 251,
+          "kind": "jsx",
+          "text": "המערכת תחזור לפעילות אוטומטית כשהחיבור יחזור."
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 122,
+          "kind": "jsx",
+          "text": "עובדים פעילים"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 123,
+          "kind": "jsx",
+          "text": "תלושים החודש"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 124,
+          "kind": "jsx",
+          "text": "ברוטו חודשי"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 125,
+          "kind": "jsx",
+          "text": "נטו חודשי"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 136,
+          "kind": "jsx",
+          "text": "תקופה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 136,
+          "kind": "jsx",
+          "text": "עובד"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 136,
+          "kind": "jsx",
+          "text": "ת.ז"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 136,
+          "kind": "jsx",
+          "text": "ברוטו"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 136,
+          "kind": "jsx",
+          "text": "ניכויים"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 136,
+          "kind": "jsx",
+          "text": "נטו"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 136,
+          "kind": "jsx",
+          "text": "סטטוס"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 136,
+          "kind": "jsx",
+          "text": "פעולות"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 149,
+          "kind": "jsx",
+          "text": "צפה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 150,
+          "kind": "jsx",
+          "text": "אשר"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 151,
+          "kind": "jsx",
+          "text": "הנפק PDF"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 152,
+          "kind": "jsx",
+          "text": "PDF"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 203,
+          "kind": "jsx",
+          "text": "חישוב תלוש חדש"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 206,
+          "kind": "jsx",
+          "text": "עובד"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 208,
+          "kind": "jsx",
+          "text": "בחר עובד…"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 214,
+          "kind": "jsx",
+          "text": "שנה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 215,
+          "kind": "jsx",
+          "text": "חודש"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 216,
+          "kind": "jsx",
+          "text": "תאריך תשלום"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 218,
+          "kind": "jsx",
+          "text": "שעות"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 220,
+          "kind": "jsx",
+          "text": "רגילות"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 221,
+          "kind": "jsx",
+          "text": "נוספות 125%"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 222,
+          "kind": "jsx",
+          "text": "נוספות 150%"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 223,
+          "kind": "jsx",
+          "text": "נוספות 175%"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 224,
+          "kind": "jsx",
+          "text": "חופשה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 225,
+          "kind": "jsx",
+          "text": "מחלה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 227,
+          "kind": "jsx",
+          "text": "תוספות"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 229,
+          "kind": "jsx",
+          "text": "בונוסים"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 230,
+          "kind": "jsx",
+          "text": "עמלות"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 231,
+          "kind": "jsx",
+          "text": "ארוחה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 232,
+          "kind": "jsx",
+          "text": "נסיעות"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 235,
+          "kind": "jsx",
+          "text": "חשב תצוגה מקדימה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 236,
+          "kind": "jsx",
+          "text": "שמור תלוש"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 240,
+          "kind": "jsx",
+          "text": "תצוגה מקדימה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 257,
+          "kind": "jsx",
+          "text": "שכר יסוד"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 258,
+          "kind": "jsx",
+          "text": "שעות נוספות"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 259,
+          "kind": "jsx",
+          "text": "דמי חופשה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 260,
+          "kind": "jsx",
+          "text": "דמי מחלה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 261,
+          "kind": "jsx",
+          "text": "בונוסים"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 262,
+          "kind": "jsx",
+          "text": "ברוטו"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 263,
+          "kind": "jsx",
+          "text": "ניכויים"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 264,
+          "kind": "jsx",
+          "text": "מס הכנסה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 265,
+          "kind": "jsx",
+          "text": "ביטוח לאומי"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 266,
+          "kind": "jsx",
+          "text": "מס בריאות"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 267,
+          "kind": "jsx",
+          "text": "פנסיה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 268,
+          "kind": "jsx",
+          "text": "קרן השתלמות"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 269,
+          "kind": "jsx",
+          "text": "סה\"כ ניכויים"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 271,
+          "kind": "jsx",
+          "text": "נטו"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 276,
+          "kind": "jsx",
+          "text": "הפרשות מעסיק (אינפורמטיבי):"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 314,
+          "kind": "jsx",
+          "text": "מעסיק"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 316,
+          "kind": "jsx",
+          "text": "בחר…"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 320,
+          "kind": "jsx",
+          "text": "מס' עובד"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 321,
+          "kind": "jsx",
+          "text": "ת.ז"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 322,
+          "kind": "jsx",
+          "text": "שם פרטי"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 323,
+          "kind": "jsx",
+          "text": "שם משפחה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 324,
+          "kind": "jsx",
+          "text": "תאריך התחלה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 325,
+          "kind": "jsx",
+          "text": "סוג העסקה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 327,
+          "kind": "jsx",
+          "text": "חודשי"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 327,
+          "kind": "jsx",
+          "text": "שעתי"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 328,
+          "kind": "jsx",
+          "text": "יומי"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 328,
+          "kind": "jsx",
+          "text": "עצמאי"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 331,
+          "kind": "jsx",
+          "text": "שכר בסיס (₪)"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 332,
+          "kind": "jsx",
+          "text": "אחוז משרה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 333,
+          "kind": "jsx",
+          "text": "נקודות זיכוי"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 334,
+          "kind": "jsx",
+          "text": "תפקיד"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 335,
+          "kind": "jsx",
+          "text": "מחלקה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 337,
+          "kind": "jsx",
+          "text": "שמור"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 341,
+          "kind": "jsx",
+          "text": "מס' עובד"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 341,
+          "kind": "jsx",
+          "text": "שם"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 341,
+          "kind": "jsx",
+          "text": "ת.ז"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 341,
+          "kind": "jsx",
+          "text": "סוג"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 341,
+          "kind": "jsx",
+          "text": "שכר"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 341,
+          "kind": "jsx",
+          "text": "משרה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 341,
+          "kind": "jsx",
+          "text": "תפקיד"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 387,
+          "kind": "jsx",
+          "text": "שם מעסיק"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 388,
+          "kind": "jsx",
+          "text": "ח.פ / ע.מ"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 389,
+          "kind": "jsx",
+          "text": "תיק ניכויים"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 390,
+          "kind": "jsx",
+          "text": "מס' ביטוח לאומי"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 391,
+          "kind": "jsx",
+          "text": "כתובת"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 392,
+          "kind": "jsx",
+          "text": "עיר"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 394,
+          "kind": "jsx",
+          "text": "שמור"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 398,
+          "kind": "jsx",
+          "text": "שם"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 398,
+          "kind": "jsx",
+          "text": "ח.פ"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 398,
+          "kind": "jsx",
+          "text": "תיק ניכויים"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 398,
+          "kind": "jsx",
+          "text": "ביטוח לאומי"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 398,
+          "kind": "jsx",
+          "text": "כתובת"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 455,
+          "kind": "jsx",
+          "text": "Payroll Autonomous — שכר אוטונומי"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 447,
+          "kind": "dialog:alert",
+          "text": "${slip.employee_name} ${slip.period_label}\\n\\nברוטו: ${fmtMoney(slip.gross_pay)}\\nנטו: ${fmtMoney(slip.net_pay)}"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 98,
+          "kind": "prop:label",
+          "text": "דשבורד"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 99,
+          "kind": "prop:label",
+          "text": "תלושי שכר"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 100,
+          "kind": "prop:label",
+          "text": "חישוב תלוש חדש"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 101,
+          "kind": "prop:label",
+          "text": "עובדים"
+        },
+        {
+          "file": "payroll-autonomous\\src\\App.jsx",
+          "line": 102,
+          "kind": "prop:label",
+          "text": "מעסיקים"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\AuditTrail.jsx",
+          "line": 58,
+          "kind": "prop:title",
+          "text": "יומן ביקורת מערכתי"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\AuditTrail.jsx",
+          "line": 59,
+          "kind": "prop:subtitle",
+          "text": "Audit Trail — תיעוד מלא של כל הפעולות במערכת"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\AuditTrail.test.jsx",
+          "line": 113,
+          "kind": "prop:message",
+          "text": "נוצר"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 241,
+          "kind": "jsx",
+          "text": "מגמת הכנסות — 12 חודשים אחרונים"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 304,
+          "kind": "jsx",
+          "text": "הכנסות חודשיות"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 344,
+          "kind": "jsx",
+          "text": "הכנסות מול הוצאות"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 345,
+          "kind": "jsx",
+          "text": "Grouped bar chart comparing revenue and expenses per period."
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 411,
+          "kind": "jsx",
+          "text": "הכנסות"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 412,
+          "kind": "jsx",
+          "text": "הוצאות"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 446,
+          "kind": "jsx",
+          "text": "10 לקוחות מובילים"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 548,
+          "kind": "jsx",
+          "text": "תזרים מזומנים"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 549,
+          "kind": "jsx",
+          "text": "Cash flow waterfall chart showing start, inflows, outflows, and end balance."
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 614,
+          "kind": "jsx",
+          "text": "יתרה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 615,
+          "kind": "jsx",
+          "text": "כניסות"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 616,
+          "kind": "jsx",
+          "text": "יציאות"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 671,
+          "kind": "jsx",
+          "text": "עלויות עובדים — התפלגות"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 672,
+          "kind": "jsx",
+          "text": "Donut chart of employee cost distribution by category."
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 693,
+          "kind": "jsx",
+          "text": "סה\"כ"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 769,
+          "kind": "jsx",
+          "text": "גיול חובות"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 833,
+          "kind": "jsx",
+          "text": "נוכחי"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 834,
+          "kind": "jsx",
+          "text": "30 יום"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 835,
+          "kind": "jsx",
+          "text": "60 יום"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 836,
+          "kind": "jsx",
+          "text": "90+ יום"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 850,
+          "kind": "jsx",
+          "text": "No data available"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 921,
+          "kind": "jsx",
+          "text": "דשבורד BI — בינה עסקית"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 935,
+          "kind": "jsx",
+          "text": "חודש"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 940,
+          "kind": "jsx",
+          "text": "רבעון"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 945,
+          "kind": "jsx",
+          "text": "מתחילת השנה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 949,
+          "kind": "jsx",
+          "text": "מ־"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 956,
+          "kind": "jsx",
+          "text": "עד"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 969,
+          "kind": "jsx",
+          "text": "ייצוא PDF"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 784,
+          "kind": "prop:label",
+          "text": "נוכחי"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 785,
+          "kind": "prop:label",
+          "text": "30 יום"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 786,
+          "kind": "prop:label",
+          "text": "60 יום"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.jsx",
+          "line": 787,
+          "kind": "prop:label",
+          "text": "90+ יום"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 235,
+          "kind": "throw",
+          "text": "BIDashboard static render produced no output"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 33,
+          "kind": "prop:label",
+          "text": "מאי"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 34,
+          "kind": "prop:label",
+          "text": "יוני"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 35,
+          "kind": "prop:label",
+          "text": "יולי"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 36,
+          "kind": "prop:label",
+          "text": "אוגוסט"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 37,
+          "kind": "prop:label",
+          "text": "ספטמבר"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 38,
+          "kind": "prop:label",
+          "text": "אוקטובר"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 39,
+          "kind": "prop:label",
+          "text": "נובמבר"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 40,
+          "kind": "prop:label",
+          "text": "דצמבר"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 41,
+          "kind": "prop:label",
+          "text": "ינואר"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 42,
+          "kind": "prop:label",
+          "text": "פברואר"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 43,
+          "kind": "prop:label",
+          "text": "מרץ"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 44,
+          "kind": "prop:label",
+          "text": "אפריל"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 65,
+          "kind": "prop:label",
+          "text": "פתיחה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 66,
+          "kind": "prop:label",
+          "text": "הכנסות"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 67,
+          "kind": "prop:label",
+          "text": "משכורות"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 68,
+          "kind": "prop:label",
+          "text": "ספקים"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 69,
+          "kind": "prop:label",
+          "text": "מיסים"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 70,
+          "kind": "prop:label",
+          "text": "השקעות"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 71,
+          "kind": "prop:label",
+          "text": "סגירה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 74,
+          "kind": "prop:label",
+          "text": "שכר יסוד"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 75,
+          "kind": "prop:label",
+          "text": "סוציאליות"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 76,
+          "kind": "prop:label",
+          "text": "פנסיה וקרן השתלמות"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 77,
+          "kind": "prop:label",
+          "text": "בונוסים"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 78,
+          "kind": "prop:label",
+          "text": "הטבות ורווחה"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 79,
+          "kind": "prop:label",
+          "text": "ביטוח לאומי מעסיק"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 82,
+          "kind": "prop:label",
+          "text": "ינואר"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 83,
+          "kind": "prop:label",
+          "text": "פברואר"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 84,
+          "kind": "prop:label",
+          "text": "מרץ"
+        },
+        {
+          "file": "payroll-autonomous\\src\\components\\BIDashboard.test.jsx",
+          "line": 85,
+          "kind": "prop:label",
+          "text": "אפריל"
+        },
+        {
+          "file": "payroll-autonomous\\tests\\e2e\\navigation.spec.js",
+          "line": 13,
+          "kind": "prop:label",
+          "text": "דשבורד"
+        },
+        {
+          "file": "payroll-autonomous\\tests\\e2e\\navigation.spec.js",
+          "line": 14,
+          "kind": "prop:label",
+          "text": "תלושי שכר"
+        },
+        {
+          "file": "payroll-autonomous\\tests\\e2e\\navigation.spec.js",
+          "line": 15,
+          "kind": "prop:label",
+          "text": "חישוב תלוש חדש"
+        },
+        {
+          "file": "payroll-autonomous\\tests\\e2e\\navigation.spec.js",
+          "line": 16,
+          "kind": "prop:label",
+          "text": "עובדים"
+        },
+        {
+          "file": "payroll-autonomous\\tests\\e2e\\navigation.spec.js",
+          "line": 17,
+          "kind": "prop:label",
+          "text": "מעסיקים"
+        }
+      ]
+    },
+    {
+      "project": "onyx-ai",
+      "findings": [
+        {
+          "file": "onyx-ai\\src\\health.ts",
+          "line": 35,
+          "kind": "jsx",
+          "text": "Array"
+        },
+        {
+          "file": "onyx-ai\\src\\index.ts",
+          "line": 178,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\index.ts",
+          "line": 235,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\index.ts",
+          "line": 239,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\index.ts",
+          "line": 248,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\index.ts",
+          "line": 1344,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\index.ts",
+          "line": 1345,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\index.ts",
+          "line": 668,
+          "kind": "prop:message",
+          "text": "System is in emergency shutdown mode. All actions are blocked."
+        },
+        {
+          "file": "onyx-ai\\src\\integrations.ts",
+          "line": 52,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\integrations.ts",
+          "line": 2084,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\data-flow-engine.ts",
+          "line": 159,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\data-flow-engine.ts",
+          "line": 196,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\data-flow-engine.ts",
+          "line": 397,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\data-flow-engine.ts",
+          "line": 875,
+          "kind": "console:log",
+          "text": "[DecisionEngine] 📥 קיבל ${packet.category}: ${packet.payload.name ?? packet.id}"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\data-flow-engine.ts",
+          "line": 902,
+          "kind": "console:log",
+          "text": "[CRM] 👥 קיבל ${packet.category}: ${packet.payload.name ?? packet.payload.from ?? packet.id}"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\data-flow-engine.ts",
+          "line": 964,
+          "kind": "console:log",
+          "text": "[Inventory] 📦 קיבל ${packet.category}"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\data-flow-engine.ts",
+          "line": 977,
+          "kind": "console:log",
+          "text": "[SEO] 🎯 קיבל ${packet.category}"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\data-flow-engine.ts",
+          "line": 1005,
+          "kind": "console:log",
+          "text": "[Quality] ✅ קיבל ${packet.category}"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\data-flow-engine.ts",
+          "line": 1019,
+          "kind": "console:log",
+          "text": "[Agents] 🤖 קיבל ${packet.category}: ${packet.payload.title ?? packet.id}"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\data-flow-engine.ts",
+          "line": 1023,
+          "kind": "console:log",
+          "text": "\\n✅ נרשמו ${this.router.getConsumerStats().length} צרכנים מובנים\\n"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\data-flow-engine.ts",
+          "line": 1053,
+          "kind": "console:log",
+          "text": "📊 דוח זרימת נתונים — ONYX Data Flow"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\data-flow-engine.ts",
+          "line": 1055,
+          "kind": "console:log",
+          "text": "נתונים שנכנסו: ${stats.totalPacketsIngested}"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\data-flow-engine.ts",
+          "line": 1056,
+          "kind": "console:log",
+          "text": "נתונים שנותבו: ${stats.totalPacketsRouted}"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\data-flow-engine.ts",
+          "line": 1057,
+          "kind": "console:log",
+          "text": "משלוחים מוצלחים: ${stats.totalDeliveries}"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\data-flow-engine.ts",
+          "line": 1058,
+          "kind": "console:log",
+          "text": "משלוחים שנכשלו: ${stats.totalFailedDeliveries}"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\data-flow-engine.ts",
+          "line": 1059,
+          "kind": "console:log",
+          "text": "נתונים שנשמטו (backpressure): ${stats.totalDropped}"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\data-flow-engine.ts",
+          "line": 1060,
+          "kind": "console:log",
+          "text": "זמן ניתוב ממוצע: ${stats.avgRoutingTimeMs.toFixed(1)}ms"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\data-flow-engine.ts",
+          "line": 1061,
+          "kind": "console:log",
+          "text": "קצב: ${stats.packetsPerMinute} נתונים/דקה"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\data-flow-engine.ts",
+          "line": 1063,
+          "kind": "console:log",
+          "text": "\\nלפי קטגוריה:"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\data-flow-engine.ts",
+          "line": 1068,
+          "kind": "console:log",
+          "text": "\\nצרכנים:"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\data-flow-engine.ts",
+          "line": 1125,
+          "kind": "console:log",
+          "text": "📱 → קובי: ${packet.category} דחוף!"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\data-flow-engine.ts",
+          "line": 1160,
+          "kind": "prop:message",
+          "text": "קבלן דוד לא הגיע לאתר — איחור של 3 שעות"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\dms.ts",
+          "line": 1032,
+          "kind": "throw",
+          "text": "מסמך ${documentId} לא נמצא"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\dms.ts",
+          "line": 1226,
+          "kind": "console:log",
+          "text": "\\n📂 מבנה תיקיות ONYX DMS:"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\dms.ts",
+          "line": 1232,
+          "kind": "console:log",
+          "text": "└── /ארכיון\\n"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\financial-autonomy-engine.ts",
+          "line": 523,
+          "kind": "throw",
+          "text": "פקודת יומן לא מאוזנת: חייב ₪${totalDebit.toFixed(2)} ≠ זכות ₪${totalCredit.toFixed(2)}"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\financial-autonomy-engine.ts",
+          "line": 529,
+          "kind": "throw",
+          "text": "חשבון ${line.accountCode} לא קיים"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\financial-autonomy-engine.ts",
+          "line": 1053,
+          "kind": "prop:title",
+          "text": "הוצאה חריגה: ${acc.name}"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\financial-autonomy-engine.ts",
+          "line": 1068,
+          "kind": "prop:title",
+          "text": "⚠️ סיכון תזרים: ${forecast.summary.daysUntilNegative} ימים"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\financial-autonomy-engine.ts",
+          "line": 1081,
+          "kind": "prop:title",
+          "text": "חובות באיחור: ₪${totalOverdue.toLocaleString()}"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\financial-autonomy-engine.ts",
+          "line": 1100,
+          "kind": "prop:title",
+          "text": "ריכוזיות לקוח: ${client} = ${percent.toFixed(0)}% מההכנסות"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\financial-autonomy-engine.ts",
+          "line": 1115,
+          "kind": "prop:title",
+          "text": "שחיקת מרווח גולמי: ${grossMargin.toFixed(1)}%"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\hr-autonomy-engine.ts",
+          "line": 1084,
+          "kind": "console:log",
+          "text": "\\n✅ ${employee.personal.fullName} גויס/ה ל-${opening.title} (${opening.department})"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\hr-autonomy-engine.ts",
+          "line": 1085,
+          "kind": "console:log",
+          "text": "תחילת עבודה: ${params.startDate}"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\hr-autonomy-engine.ts",
+          "line": 1086,
+          "kind": "console:log",
+          "text": "Onboarding: ${onboarding.items.length} משימות\\n"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\hr-autonomy-engine.ts",
+          "line": 1122,
+          "kind": "console:log",
+          "text": "יום אחרון: ${params.lastDay}"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\hr-autonomy-engine.ts",
+          "line": 1123,
+          "kind": "console:log",
+          "text": "Offboarding: ${offboarding.items.length} משימות\\n"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\hr-autonomy-engine.ts",
+          "line": 1195,
+          "kind": "console:log",
+          "text": "\\n⚖️ דוח ציות — ${issues.length} בעיות:\\n"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\hr-autonomy-engine.ts",
+          "line": 1230,
+          "kind": "prop:title",
+          "text": "רתך מוסמך"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\intelligent-alert-system.ts",
+          "line": 955,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\intelligent-alert-system.ts",
+          "line": 1293,
+          "kind": "console:log",
+          "text": "╔══════════════════════════════════════════════════════════════════╗\n║   🚨 ONYX IAS — Intelligent Alert System                       ║\n╠══════════════════════════════════════════════════════════════════╣\n║\n║   סיגנלים שנקלטו: ${String(stats.totalSignals).padEnd(8)} התראות שנוצרו: ${stats.totalAlerts}\n║   דוכאו: ${String(stats.totalSuppressed).padEnd(15)} תואמו: ${stats.totalCorrelated}\n║   אסקלציות: ${String(stats.totalEscalated).padEnd(12)} נפתרו: ${stats.totalResolved}\n║\n║   ── התראות פעילות: ${stats.activeAlerts} ──\n║   🚨 P1: ${stats.bySeverity.P1}  🔴 P2: ${stats.bySeverity.P2}  🟡 P3: ${stats.bySeverity.P3}  🔵 P4: ${stats.bySeverity.P4}  ℹ️ P5: ${stats.bySeverity.P5}\n║\n║   ⚡ SLA הופר: ${stats.slaBreached}\n║   ⏱️ זמן ממוצע ל-ACK: ${fmtMs(stats.avgTimeToAckMs)}\n║   ⏱️ זמן ממוצע לפתרון: ${fmtMs(stats.avgTimeToResolveMs)}\n║\n║   📏 כללים: ${stats.rules} | 🔇 דיכויים: ${stats.activeSuppressions} | 🔧 תחזוקה: ${stats.activeMaintenanceWindows}\n║\n${active.length > 0 ?"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\intelligent-alert-system.ts",
+          "line": 1450,
+          "kind": "console:log",
+          "text": "✅ נטענו ${ias.ruleEngine.getRules().length} כללי התראה מובנים"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\procurement-engine.ts",
+          "line": 436,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\procurement-engine.ts",
+          "line": 732,
+          "kind": "throw",
+          "text": "אין הצעות מחיר — לא ניתן לקבל החלטה"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\procurement-engine.ts",
+          "line": 1054,
+          "kind": "throw",
+          "text": "RFQ ${rfqId} לא נמצא"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\procurement-engine.ts",
+          "line": 1058,
+          "kind": "throw",
+          "text": "נדרשות לפחות ${rfq.settings.minQuotesBeforeDecision} הצעות — יש רק ${quotes.length}"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\procurement-engine.ts",
+          "line": 528,
+          "kind": "console:error",
+          "text": "[RFQ] שליחה נכשלה ל-${supplier.name}:"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\procurement-engine.ts",
+          "line": 562,
+          "kind": "console:log",
+          "text": "\\n📤 RFQ #${rfqId} נשלח ל-${deliveredCount}/${params.suppliers.length} ספקים"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\procurement-engine.ts",
+          "line": 591,
+          "kind": "console:log",
+          "text": "📬 נשלחו ${sent} תזכורות ל-RFQ #${rfqId}"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\procurement-engine.ts",
+          "line": 671,
+          "kind": "console:log",
+          "text": "📥 הצעת מחיר התקבלה: ${params.supplierName} — ₪${totalPrice.toLocaleString()} (${params.deliveryDays} ימי אספקה)"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\procurement-engine.ts",
+          "line": 1078,
+          "kind": "console:log",
+          "text": "📊 דוח חיסכון רכש"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\procurement-engine.ts",
+          "line": 1083,
+          "kind": "console:log",
+          "text": "חיסכון ממוצע: ${report.avgSavingsPercent}%"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\procurement-engine.ts",
+          "line": 1084,
+          "kind": "console:log",
+          "text": "\\nספקים זוכים:"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\procurement-engine.ts",
+          "line": 1086,
+          "kind": "console:log",
+          "text": "${name}: ${data.wins} זכיות | ₪${data.totalSpent.toLocaleString()}"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\procurement-hyperintelligence.ts",
+          "line": 363,
+          "kind": "prop:label",
+          "text": "ספק מועדף"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\procurement-hyperintelligence.ts",
+          "line": 364,
+          "kind": "prop:label",
+          "text": "ספק מאושר"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\procurement-hyperintelligence.ts",
+          "line": 365,
+          "kind": "prop:label",
+          "text": "במעקב"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\procurement-hyperintelligence.ts",
+          "line": 366,
+          "kind": "prop:label",
+          "text": "לא לרכוש"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\situation-engine.ts",
+          "line": 635,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\situation-engine.ts",
+          "line": 638,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\situation-engine.ts",
+          "line": 979,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\situation-engine.ts",
+          "line": 881,
+          "kind": "console:log",
+          "text": "✅ נטענו ${this.rules.length} כללי התראה מובנים"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\situation-engine.ts",
+          "line": 955,
+          "kind": "console:log",
+          "text": "🔄 תמונת מצב מתרעננת כל ${intervalMs / 1000} שניות"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\situation-engine.ts",
+          "line": 986,
+          "kind": "console:log",
+          "text": "אין תמונת מצב זמינה — הרץ computeSnapshot()"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\subcontractor-decision-engine.ts",
+          "line": 253,
+          "kind": "throw",
+          "text": "קבלן ${contractorId} לא נמצא"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\subcontractor-decision-engine.ts",
+          "line": 376,
+          "kind": "throw",
+          "text": "אין קבלנים זמינים לעבודת ${project.workType}"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\subcontractor-decision-engine.ts",
+          "line": 383,
+          "kind": "throw",
+          "text": "אין מחירון ל-${project.workType} עבור ${contractor.name}"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\subcontractor-decision-engine.ts",
+          "line": 752,
+          "kind": "console:log",
+          "text": "📊 דוח חיסכון כולל"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\subcontractor-decision-engine.ts",
+          "line": 756,
+          "kind": "console:log",
+          "text": "חיסכון ממוצע: ${report.avgSavingsPercent}%"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\subcontractor-decision-engine.ts",
+          "line": 757,
+          "kind": "console:log",
+          "text": "\\nלפי סוג עבודה:"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\subcontractor-decision-engine.ts",
+          "line": 759,
+          "kind": "console:log",
+          "text": "${type}: ${data.count} פרויקטים | חיסכון: ₪${data.savings.toLocaleString()}"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\subcontractor-decision-engine.ts",
+          "line": 761,
+          "kind": "console:log",
+          "text": "\\nלפי קבלן:"
+        },
+        {
+          "file": "onyx-ai\\src\\modules\\subcontractor-decision-engine.ts",
+          "line": 763,
+          "kind": "console:log",
+          "text": "${name}: ${data.count} פרויקטים | סכום: ₪${data.totalCost.toLocaleString()}"
+        },
+        {
+          "file": "onyx-ai\\src\\onyx-integrations.ts",
+          "line": 295,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\onyx-integrations.ts",
+          "line": 296,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\onyx-integrations.ts",
+          "line": 2003,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\onyx-integrations.ts",
+          "line": 2381,
+          "kind": "prop:message",
+          "text": "שלום מ-ONYX AI 🤖"
+        },
+        {
+          "file": "onyx-ai\\src\\onyx-platform.ts",
+          "line": 178,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\onyx-platform.ts",
+          "line": 235,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\onyx-platform.ts",
+          "line": 239,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\onyx-platform.ts",
+          "line": 248,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\onyx-platform.ts",
+          "line": 1344,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\onyx-platform.ts",
+          "line": 1345,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "onyx-ai\\src\\onyx-platform.ts",
+          "line": 668,
+          "kind": "prop:message",
+          "text": "System is in emergency shutdown mode. All actions are blocked."
+        }
+      ]
+    },
+    {
+      "project": "AI-Task-Manager",
+      "findings": [
+        {
+          "file": "AI-Task-Manager\\lib\\db\\src\\circuit-breaker.ts",
+          "line": 75,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "AI-Task-Manager\\lib\\db\\src\\create-kimi-tables.ts",
+          "line": 47,
+          "kind": "console:log",
+          "text": "All Kimi tables created successfully"
+        },
+        {
+          "file": "AI-Task-Manager\\lib\\db\\src\\create-production-tables.ts",
+          "line": 26,
+          "kind": "console:log",
+          "text": "All tables created successfully"
+        },
+        {
+          "file": "AI-Task-Manager\\lib\\db\\src\\retry.ts",
+          "line": 44,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "AI-Task-Manager\\lib\\integrations-anthropic-ai\\src\\batch\\utils.ts",
+          "line": 51,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "AI-Task-Manager\\lib\\integrations-anthropic-ai\\src\\batch\\utils.ts",
+          "line": 93,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "AI-Task-Manager\\lib\\integrations-anthropic-ai\\src\\batch\\utils.ts",
+          "line": 133,
+          "kind": "prop:message",
+          "text": "Processing failed"
+        },
+        {
+          "file": "AI-Task-Manager\\lib\\integrations-gemini-ai\\src\\batch\\utils.ts",
+          "line": 50,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "AI-Task-Manager\\lib\\integrations-gemini-ai\\src\\batch\\utils.ts",
+          "line": 92,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "AI-Task-Manager\\lib\\integrations-gemini-ai\\src\\batch\\utils.ts",
+          "line": 132,
+          "kind": "prop:message",
+          "text": "Processing failed"
+        },
+        {
+          "file": "AI-Task-Manager\\lib\\integrations-gemini-ai\\src\\image\\client.ts",
+          "line": 40,
+          "kind": "throw",
+          "text": "No image data in response"
+        },
+        {
+          "file": "AI-Task-Manager\\lib\\integrations-openai-ai-react\\src\\audio\\useVoiceStream.ts",
+          "line": 75,
+          "kind": "throw",
+          "text": "Received malformed SSE JSON payload"
+        },
+        {
+          "file": "AI-Task-Manager\\lib\\integrations-openai-ai-react\\src\\audio\\useVoiceStream.ts",
+          "line": 79,
+          "kind": "throw",
+          "text": "Received unexpected SSE event shape"
+        },
+        {
+          "file": "AI-Task-Manager\\lib\\integrations-openai-ai-server\\src\\batch\\utils.ts",
+          "line": 50,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "AI-Task-Manager\\lib\\integrations-openai-ai-server\\src\\batch\\utils.ts",
+          "line": 92,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "AI-Task-Manager\\lib\\integrations-openai-ai-server\\src\\batch\\utils.ts",
+          "line": 132,
+          "kind": "prop:message",
+          "text": "Processing failed"
+        },
+        {
+          "file": "AI-Task-Manager\\lib\\object-storage-web\\src\\ObjectUploader.tsx",
+          "line": 20,
+          "kind": "jsx",
+          "text": "Promise"
+        },
+        {
+          "file": "AI-Task-Manager\\lib\\object-storage-web\\src\\use-upload.ts",
+          "line": 49,
+          "kind": "jsx",
+          "text": "Uploading..."
+        },
+        {
+          "file": "AI-Task-Manager\\lib\\object-storage-web\\src\\use-upload.ts",
+          "line": 97,
+          "kind": "throw",
+          "text": "Failed to upload file to storage"
+        },
+        {
+          "file": "AI-Task-Manager\\lib\\object-storage-web\\src\\use-upload.ts",
+          "line": 152,
+          "kind": "throw",
+          "text": "Failed to get upload URL"
+        }
+      ]
+    },
+    {
+      "project": "GPS-Connect",
+      "findings": [
+        {
+          "file": "GPS-Connect\\lib\\api-client-react\\src\\custom-fetch.ts",
+          "line": 9,
+          "kind": "jsx",
+          "text": "Promise"
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "files": 33,
+    "strings": 284
+  }
+}

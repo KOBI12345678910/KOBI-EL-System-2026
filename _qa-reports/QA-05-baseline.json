@@ -1,0 +1,319 @@
+{
+  "$schema": "qa-05-baseline/v1",
+  "generatedAt": "2026-04-11",
+  "generatedBy": "QA-05 Regression Agent",
+  "baselineCommit": "ff6df91",
+  "purpose": "Snapshot of legacy-module observable behavior, captured from HEAD on 2026-04-11. Use this file as the source-of-truth when investigating a qa-05-*.test.js failure. If a value here drifts, either (a) the code has a bug, or (b) the baseline is obsolete and needs updating IN THE SAME COMMIT as the code change, with a note in QA-05-regression.md.",
+  "repoRoot": "C:/Users/kobi/OneDrive/kobi/המערכת 2026  KOBI EL",
+  "project": "onyx-procurement",
+
+  "modules": {
+    "payroll_wage_slip_calculator": {
+      "file": "onyx-procurement/src/payroll/wage-slip-calculator.js",
+      "wave": "1.5 / B-08",
+      "lastRelevantCommit": "24c8694",
+      "constants_2026": {
+        "bracket_count": 7,
+        "bracket_first_upTo": 84120,
+        "bracket_first_rate": 0.10,
+        "bracket_last_rate": 0.50,
+        "bracket_last_upTo": "Infinity",
+        "tax_credit_point_monthly": 248,
+        "tax_credit_point_annual": 2976,
+        "bituach_leumi_threshold_monthly": 7522,
+        "bituach_leumi_max_base_monthly": 49030,
+        "bituach_leumi_employee_low_rate": 0.004,
+        "bituach_leumi_employee_high_rate": 0.07,
+        "bituach_leumi_employer_low_rate": 0.0355,
+        "bituach_leumi_employer_high_rate": 0.076,
+        "health_tax_employee_low_rate": 0.031,
+        "health_tax_employee_high_rate": 0.05,
+        "pension_employee_rate": 0.06,
+        "pension_employer_rate": 0.065,
+        "pension_severance_rate": 0.0833,
+        "pension_max_pensionable": 28750,
+        "study_fund_max_base_monthly": 15712,
+        "study_fund_employee_rate": 0.025,
+        "study_fund_employer_rate": 0.075,
+        "standard_hours_per_month": 182,
+        "rounding_decimals": 2
+      },
+      "income_tax_monthly_2_25_points": {
+        "5000":  "baseline_zero_or_low_after_credits",
+        "10000": 561.60,
+        "20000": 2981.50,
+        "50000": 13781.10
+      },
+      "income_tax_annual_2_25_points": {
+        "0":      0,
+        "100000": 3939.20,
+        "200000": 23378.00,
+        "500000": 125606.80
+      },
+      "bituach_leumi_and_health_monthly": {
+        "5000": {
+          "bituach_leumi_employee": 20.00,
+          "bituach_leumi_employer": 177.50,
+          "health_tax_employee":     155.00,
+          "health_tax_employer":     0
+        },
+        "10000": {
+          "bituach_leumi_employee": 203.55,
+          "bituach_leumi_employer": 455.36,
+          "health_tax_employee":     357.08,
+          "health_tax_employer":     0
+        },
+        "60000_capped_at_49030": {
+          "bituach_leumi_employee": 2935.65,
+          "bituach_leumi_employer": 3421.64,
+          "health_tax_employee":     2308.58,
+          "health_tax_employer":     0
+        }
+      },
+      "pension_contributions": {
+        "10000":              { "employee": 600,    "employer": 650,    "severance": 833 },
+        "30000_capped_28750": { "employee": 1725,   "employer": 1868.75, "severance": 2394.88 }
+      },
+      "study_fund": {
+        "10000_eligible":           { "employee": 250,     "employer": 750 },
+        "10000_ineligible":         { "employee": 0,       "employer": 0 },
+        "20000_capped_15712":       { "employee": 392.80,  "employer": 1178.40 }
+      }
+    },
+
+    "vat_pcn836_encoder": {
+      "file": "onyx-procurement/src/vat/pcn836.js",
+      "wave": "1.5 / B-09",
+      "lastRelevantCommit": "24c8694",
+      "formatters": {
+        "fmtAmount_1000_width10":      "0000100000",
+        "fmtAmount_12345_67_width8":   "01234567",
+        "fmtAmount_zero_width5":       "00000",
+        "fmtAmount_negative_100_w10":  "0000010000 (known quirk: slice(-width) drops sign)",
+        "fmtInt_42_width5":            "00042",
+        "fmtInt_undefined_w3":         "000",
+        "fmtText_abc_width7":          "abc    ",
+        "fmtText_longer_width4":       "long",
+        "fmtDate_2026_04_11":          "20260411",
+        "fmtDate_empty":               "00000000",
+        "fmtPeriod_2026_04_11":        "202604",
+        "fmtPeriod_empty":             "000000"
+      },
+      "file_build": {
+        "minimal_fixture_record_count": 5,
+        "inputCount": 1,
+        "outputCount": 1,
+        "encoding": "windows-1255",
+        "filename_pattern": "PCN836_{vatNumber}_{YYYYMM}.TXT",
+        "first_record_type": "A",
+        "second_record_type": "B",
+        "last_record_type": "Z",
+        "content_terminator": "\\r\\n",
+        "record_widths": {
+          "A": 92,
+          "B": 113,
+          "C": 76,
+          "D": 76,
+          "Z": 60
+        },
+        "validator_known_noise": [
+          "validatePcn836File reports line-width mismatch errors on a real built file because A=92, B=113, C/D=76, Z=60. This is expected noise; structural (A/B/Z present) checks still pass."
+        ]
+      },
+      "throw_contracts": [
+        "throws 'companyProfile is required' when companyProfile missing",
+        "throws 'period is required' when period missing",
+        "throws 'companyProfile.vat_file_number is required' when vat_file_number missing"
+      ]
+    },
+
+    "bank_matcher": {
+      "file": "onyx-procurement/src/bank/matcher.js",
+      "wave": "1.5 / B-11",
+      "lastRelevantCommit": "24c8694",
+      "confidence_bands": {
+        "exact":     ">= 0.85",
+        "partial":   ">= 0.6 and < 0.85",
+        "suggested": ">= 0.3 and < 0.6",
+        "rejected":  "< 0.3"
+      },
+      "sample_scores": {
+        "amount_exact_sameday_sameref_samename": {
+          "confidence": 1,
+          "criteria": {
+            "amount":    "exact",
+            "date":      "same_day",
+            "name":      "substring_match",
+            "reference": "exact"
+          }
+        },
+        "amount_0.5pct_sameday": {
+          "confidence": 0.6,
+          "criteria":   { "amount": "close", "date": "same_day" }
+        },
+        "amount_20pct_mismatch": {
+          "confidence": 0,
+          "criteria":   { "rejected": "amount_mismatch", "diff": 200 }
+        }
+      },
+      "findBestMatch_threshold": 0.3,
+      "autoReconcileBatch_contract": "skips bankTx.reconciled=true rows; negative amounts route to candidatePools.purchaseOrders, positives to customerInvoices"
+    },
+
+    "vat_routes": {
+      "file": "onyx-procurement/src/vat/vat-routes.js",
+      "wave": "1.5 / B-09",
+      "lastRelevantCommit": "24c8694",
+      "endpoints": {
+        "GET /api/vat/profile": {
+          "happy_status": 200,
+          "envelope":     { "profile": "row | null" },
+          "empty_status": 200,
+          "empty_body":   { "profile": null }
+        },
+        "PUT /api/vat/profile": {
+          "happy_status": 200,
+          "envelope":     { "profile": "row" }
+        },
+        "GET /api/vat/periods": {
+          "happy_status": 200,
+          "envelope":     { "periods": "row[]" },
+          "sort":         "period_start desc",
+          "default_limit": 24
+        },
+        "POST /api/vat/periods": {
+          "missing_period_start_status": 400,
+          "missing_period_end_status":   400,
+          "error_envelope":              { "error": "period_start and period_end required" },
+          "happy_status": 201,
+          "happy_envelope": { "period": "row" },
+          "auto_label":     "first 7 chars of period_start (YYYY-MM)",
+          "default_status": "open"
+        },
+        "GET /api/vat/periods/:id": {
+          "happy_status": 200,
+          "envelope":     { "period": "row", "computed": "totals", "counts": { "outputs": "n", "inputs": "n" } },
+          "missing_status": 404,
+          "computed_formula": "net_vat_payable = vat_on_sales - vat_on_purchases - vat_on_assets; is_refund = net_vat_payable < 0"
+        },
+        "POST /api/vat/periods/:id/close": {
+          "happy_status": 200,
+          "not_open_status": 409,
+          "missing_status":  404
+        },
+        "POST /api/vat/periods/:id/submit": {
+          "no_profile_status":       412,
+          "already_submitted_status": 409,
+          "missing_status":           404
+        }
+      }
+    },
+
+    "tax_form_builders": {
+      "file": "onyx-procurement/src/tax/form-builders.js",
+      "wave": "1.5 / B-10",
+      "lastRelevantCommit": "24c8694",
+      "form_1320_top_keys": [
+        "formType",
+        "formVersion",
+        "preparedAt",
+        "companyIdentification",
+        "revenue",
+        "costOfGoodsSold",
+        "operatingExpenses",
+        "profit",
+        "assets",
+        "metadata"
+      ],
+      "form_1320_metadata_schemaVersion": "onyx-wave1.5",
+      "form_1320_throw_contracts": [
+        "throws 'fiscalYear is required'",
+        "throws 'company tax profile is required' when profile missing"
+      ],
+      "form_1320_voided_handling": {
+        "revenue": "voided invoices excluded from net_amount sum",
+        "cogs":    "voided + asset inputs excluded",
+        "revenueByProject": "groupSum IGNORES voided filter — known quirk, includes voided rows"
+      },
+      "form_1301_throw_contracts": [
+        "throws 'taxpayer.tax_id (ת.ז) required' when missing"
+      ],
+      "form_1301_totals": "taxableIncome = max(0, totalIncome - totalDeductions)",
+      "form_6111_shape":  ["formType", "formVersion", "preparedAt", "companyId", "fiscalYear", "lines", "totals", "disclaimer"],
+      "form_30a_shape":   ["formType", "formVersion", "preparedAt", "companyId", "fiscalYear", "production", "rawMaterials", "finishedGoods", "labor"]
+    },
+
+    "server_router_inventory": {
+      "file": "onyx-procurement/server.js",
+      "line_count": 1278,
+      "api_route_count": 34,
+      "legacy_surface_summary": {
+        "suppliers":          "GET|POST|PATCH /api/suppliers[/:id|/:id/products|/search/:category] — 6 endpoints",
+        "purchase_requests":  "GET|POST /api/purchase-requests — 2 endpoints",
+        "rfq":                "POST /api/rfq/send, GET /api/rfq/:id, GET /api/rfqs, POST /api/rfq/:id/decide — 4 endpoints",
+        "quotes":             "POST /api/quotes — 1 endpoint",
+        "purchase_orders":    "GET|POST /api/purchase-orders[/:id|/:id/approve|/:id/send] — 4 endpoints",
+        "subcontractors":     "GET|POST|PUT /api/subcontractors[/:id/pricing], POST /api/subcontractors/decide — 4 endpoints",
+        "analytics":          "GET /api/analytics/savings|spend-by-supplier|spend-by-category — 3 endpoints",
+        "audit":              "GET /api/audit — 1 endpoint",
+        "status_health":      "GET /api/status, /api/health, /healthz, /livez, /readyz, /metrics — 6 endpoints",
+        "whatsapp_webhook":   "GET|POST /webhook/whatsapp — 2 endpoints",
+        "module_routes":      "payroll-routes.js + vat-routes.js + bank-routes.js + annual-tax-routes.js register additional /api/payroll/*, /api/vat/*, /api/bank/*, /api/tax/* endpoints"
+      }
+    }
+  },
+
+  "test_fleet_status_at_baseline": {
+    "legacy_test_files_passing_individually": [
+      "test/wage-slip-calculator.test.js (111 tests)",
+      "test/pcn836.test.js",
+      "test/bank-matcher.test.js",
+      "test/bank-parsers.test.js",
+      "test/form-builders.test.js",
+      "test/payroll-routes.test.js",
+      "test/vat-routes.test.js",
+      "test/bank-routes.test.js",
+      "test/annual-tax-routes.test.js (12 tests)",
+      "test/pdf-generator.test.js",
+      "test/e2e/qa-04-annual-tax.test.js (4 tests)",
+      "test/stress/qa-16-break.test.js (28 tests)"
+    ],
+    "new_regression_files_added_by_qa05": [
+      "test/regression/qa-05-payroll-calculator.test.js (20 tests)",
+      "test/regression/qa-05-pcn836-encoder.test.js (21 tests)",
+      "test/regression/qa-05-bank-matcher.test.js (11 tests)",
+      "test/regression/qa-05-tax-forms.test.js (14 tests)",
+      "test/regression/qa-05-vat-routes.test.js (8 tests)"
+    ],
+    "known_runner_issue": "test/run-all.js spawns `node --test` with ALL 29 discovered files at once; on this machine the aggregate run hangs/exceeds timeout. Running the files individually or in smaller groups passes. This is a runner/parallelism issue, not a regression in legacy code."
+  },
+
+  "legacy_quirks_baselined_not_fixed": [
+    {
+      "id": "QA-05-QUIRK-01",
+      "area": "pcn836.fmtAmount",
+      "description": "Negative values lose their '-' sign because of final .slice(-width) when padded length exceeds width. Reproduced: fmtAmount(-100, 10) returns '0000010000' (positive).",
+      "severity": "low",
+      "why_not_fixed_now": "Existing test/pcn836.test.js lines 112-113 explicitly document this; any fix is a behavior change that needs review. Baselined as regression anchor."
+    },
+    {
+      "id": "QA-05-QUIRK-02",
+      "area": "pcn836.validatePcn836File",
+      "description": "Validator enforces equal line widths across records, but the encoder emits A=92, B=113, C/D=76, Z=60. Every real built file therefore reports width-mismatch warnings that the callers must filter out.",
+      "severity": "low",
+      "why_not_fixed_now": "Existing test/pcn836.test.js lines 409-431 explicitly filter these warnings. The real spec is fixed-width PER record type, not across record types."
+    },
+    {
+      "id": "QA-05-QUIRK-03",
+      "area": "form-builders.groupSum",
+      "description": "buildForm1320.revenue.revenueByProject uses groupSum() which does NOT filter voided invoices, unlike sum() used in revenue.salesRevenue.",
+      "severity": "medium",
+      "why_not_fixed_now": "May be intentional — project revenue may want gross figures pre-void. Locked as baseline; flagged for product owner."
+    }
+  ],
+
+  "integrity_check": {
+    "how_to_verify_this_baseline": "cd onyx-procurement && node --test test/regression/qa-05-payroll-calculator.test.js test/regression/qa-05-pcn836-encoder.test.js test/regression/qa-05-bank-matcher.test.js test/regression/qa-05-tax-forms.test.js test/regression/qa-05-vat-routes.test.js",
+    "expected": "74 tests pass, 0 fail"
+  }
+}

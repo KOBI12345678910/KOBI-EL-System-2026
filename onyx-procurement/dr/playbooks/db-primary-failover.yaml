@@ -1,0 +1,99 @@
+# ONYX Procurement — DR Playbook
+# Agent-X95 — PostgreSQL primary to replica promotion
+#
+# Rule of the system: לא מוחקים, רק משדרגים ומגדלים.
+# (We do not delete — we only upgrade and grow.)
+#
+# Scope: Promote the standby replica to primary when the live
+# Supabase-hosted Postgres is unreachable or corrupted.
+# Every destructive step is guarded by `destructive: true` and will be
+# skipped unless the runner is invoked in failover mode with
+# `{confirmFailover: true}`.
+
+id: db-primary-failover
+name_he: "מעבר ראשי של PostgreSQL לרפליקה"
+name_en: "PostgreSQL primary failover to replica"
+description_he: "מקדם את הרפליקה למצב ראשי ומסיט תעבורה לאחר כשל בשרת הראשי"
+description_en: "Promotes replica to primary and redirects traffic after primary failure"
+rto_minutes: 30
+rpo_minutes: 5
+
+steps:
+  - id: preflight-replica-health
+    description_he: "בדיקת בריאות הרפליקה לפני קידום"
+    description_en: "Preflight check: replica health and lag"
+    type: verify
+    verifier: replica-healthy
+    timeout_seconds: 30
+    compensating:
+      description_he: "אין צורך בפעולה מפצה — בדיקה בלבד"
+      description_en: "No compensation needed — read-only check"
+      type: wait
+      seconds: 0
+
+  - id: capture-lag
+    description_he: "תיעוד פער השכפול (RPO בפועל)"
+    description_en: "Capture replication lag for actual RPO"
+    type: http
+    url: "http://localhost:3100/api/health/db-lag"
+    method: GET
+    expectedStatus: 200
+    expectedBodyRegex: "lag_seconds"
+    timeout_seconds: 15
+
+  - id: fence-primary
+    description_he: "גידור הראשי הישן — מניעת כתיבה"
+    description_en: "Fence the old primary — block writes"
+    type: manual
+    timeout_seconds: 300
+    destructive: true
+    compensating:
+      description_he: "שחרור גידור הראשי הישן"
+      description_en: "Remove fence from old primary"
+      type: manual
+
+  - id: promote-replica
+    description_he: "קידום הרפליקה למצב ראשי"
+    description_en: "Promote replica to primary"
+    type: command
+    command: "echo 'pg_promote() via psql — placeholder, wire to real standby'"
+    timeout_seconds: 120
+    destructive: true
+    compensating:
+      description_he: "החזרת הרפליקה למצב standby"
+      description_en: "Demote replica back to standby"
+      type: command
+      command: "echo 'pg_basebackup recovery — placeholder'"
+
+  - id: reconfigure-app
+    description_he: "עדכון כתובת מסד הנתונים באפליקציה"
+    description_en: "Update application DATABASE_URL to new primary"
+    type: manual
+    timeout_seconds: 600
+    destructive: true
+    compensating:
+      description_he: "החזרת כתובת מסד הנתונים הקודמת"
+      description_en: "Restore previous DATABASE_URL"
+      type: manual
+
+  - id: smoke-test-reads
+    description_he: "בדיקת עשן — קריאות מהמסד החדש"
+    description_en: "Smoke test reads from the new primary"
+    type: http
+    url: "http://localhost:3100/api/health/ready"
+    method: GET
+    expectedStatus: 200
+    timeout_seconds: 30
+
+  - id: smoke-test-writes
+    description_he: "בדיקת עשן — כתיבה למסד החדש"
+    description_en: "Smoke test writes to the new primary"
+    type: verify
+    verifier: can-write-audit-log
+    timeout_seconds: 30
+
+  - id: notify-stakeholders
+    description_he: "עדכון בעלי עניין על השלמת המעבר"
+    description_en: "Notify stakeholders that failover completed"
+    type: manual
+    timeout_seconds: 120

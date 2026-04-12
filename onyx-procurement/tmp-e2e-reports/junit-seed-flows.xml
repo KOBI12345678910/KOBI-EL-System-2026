@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="techno-kol-e2e" tests="10" failures="0" time="0.025">
+  <testcase name="flow 2 — dashboard load / טעינת לוח מחוונים" time="0.010">
+  </testcase>
+  <testcase name="flow 1 — login / התחברות" time="0.013">
+  </testcase>
+  <testcase name="flow 4 — create invoice / יצירת חשבונית" time="0.003">
+  </testcase>
+  <testcase name="flow 5 — upload PDF / העלאת PDF" time="0.002">
+  </testcase>
+  <testcase name="flow 3 — create supplier / יצירת ספק" time="0.008">
+  </testcase>
+  <testcase name="flow 6 — payroll preview / תצוגה מקדימה של שכר" time="0.002">
+  </testcase>
+  <testcase name="flow 7 — VAT report / דוח מע״מ" time="0.002">
+  </testcase>
+  <testcase name="flow 8 — create PO / יצירת הזמנת רכש" time="0.004">
+  </testcase>
+  <testcase name="flow 9 — approve PO / אישור הזמנת רכש" time="0.003">
+  </testcase>
+  <testcase name="flow 10 — logout / התנתקות" time="0.001">
+  </testcase>
+</testsuite>

@@ -377,7 +377,7 @@ export const brainEngine = {
     brainState.systemHealth = {
       score: Math.round(avgScore),
       status: avgScore > 80 ? 'healthy' : avgScore > 50 ? 'warning' : 'critical',
-      modules
+      modules: modules as any
     };
 
     return brainState.systemHealth;

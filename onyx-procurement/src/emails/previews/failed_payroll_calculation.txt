@@ -1,0 +1,24 @@
+כשל בחישוב שכר
+
+תקופה: 2026-03
+סך עובדים: 40
+עובדים שנכשלו: 2
+קוד שגיאה: PAY-E-042
+הודעה: Missing rate for employee 10023
+
+נדרשת התערבות ידנית.
+
+English:
+Payroll calculation failed for 2026-03.
+Failed: 2/40 · Error: PAY-E-042
+Message: Missing rate for employee 10023
+
+--
+אוניקס פרוקיורמנט / Onyx Procurement
+Email: support@onyx.local · Phone: +972-3-000-0000
+Web: https://onyx.local
+רחוב המלאכה 1, תל אביב · 1 HaMelacha St, Tel Aviv, Israel
+
+הודעה אוטומטית — אין להשיב ישירות.
+Automated notification — please do not reply.
+Unsubscribe: https://onyx.local/unsubscribe

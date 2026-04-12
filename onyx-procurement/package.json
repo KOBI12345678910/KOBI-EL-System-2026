@@ -1,16 +1,47 @@
 {
   "name": "onyx-procurement",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "ONYX Procurement System — Autonomous AI-powered procurement for Techno Kol Uzi",
   "main": "server.js",
   "scripts": {
+    "prestart": "node scripts/validate-env.js",
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "test": "node --test tests/",
+    "migrate": "node scripts/migrate.js",
+    "migrate:status": "node scripts/migrate.js --status",
+    "migrate:rollback": "node scripts/migrate.js --down 1",
+    "migrate:create": "node scripts/migrate-create.js",
+    "seed": "node scripts/seed-data.js",
+    "seed:legacy": "node scripts/seed.js",
+    "docs:schema": "node scripts/docs/gen-schema-docs.js",
+    "lint": "eslint . --ext .js",
+    "audit:sec": "npm audit --audit-level=high",
+    "smoke": "node scripts/smoke-test.js",
+    "smoke:all": "node scripts/smoke-all.js",
+    "validate:env": "node scripts/validate-env.js",
+    "validate:env:strict": "node scripts/validate-env.js --strict",
+    "validate:env:fix": "node scripts/validate-env.js --fix",
+    "validate:env:all": "node scripts/validate-env-all.js"
   },
   "dependencies": {
-    "express": "^4.21.0",
     "@supabase/supabase-js": "^2.45.0",
+    "bwip-js": "^4.5.1",
+    "cors": "^2.8.5",
+    "csv-parse": "^5.5.6",
     "dotenv": "^16.4.5",
-    "cors": "^2.8.5"
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.4.1",
+    "helmet": "^8.0.0",
+    "iconv-lite": "^0.7.2",
+    "pdfkit": "^0.15.1",
+    "pino": "^9.5.0",
+    "pino-pretty": "^11.3.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.15.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }

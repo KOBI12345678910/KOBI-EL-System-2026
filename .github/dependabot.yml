@@ -1,0 +1,141 @@
+version: 2
+
+updates:
+  # GitHub Actions themselves
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(actions)"
+      include: "scope"
+    groups:
+      actions-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # onyx-procurement (Node/Express)
+  - package-ecosystem: "npm"
+    directory: "/onyx-procurement"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "Asia/Jerusalem"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "onyx-procurement"
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+      include: "scope"
+    groups:
+      onyx-procurement-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # onyx-ai (TypeScript)
+  - package-ecosystem: "npm"
+    directory: "/onyx-ai"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "Asia/Jerusalem"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "onyx-ai"
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+      include: "scope"
+    groups:
+      onyx-ai-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # techno-kol-ops (Node + TypeScript server)
+  - package-ecosystem: "npm"
+    directory: "/techno-kol-ops"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "Asia/Jerusalem"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "techno-kol-ops"
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+      include: "scope"
+    groups:
+      techno-kol-ops-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # techno-kol-ops client (React frontend)
+  - package-ecosystem: "npm"
+    directory: "/techno-kol-ops/client"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "Asia/Jerusalem"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "techno-kol-ops-client"
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+      include: "scope"
+    groups:
+      techno-kol-ops-client-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # payroll-autonomous (React/Vite)
+  - package-ecosystem: "npm"
+    directory: "/payroll-autonomous"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "Asia/Jerusalem"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "payroll-autonomous"
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+      include: "scope"
+    groups:
+      payroll-autonomous-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"

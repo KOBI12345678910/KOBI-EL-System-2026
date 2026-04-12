@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ONYX · VAT Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      background: #0c0f1a;
+      color: #e2e8f0;
+      font-family: 'Rubik', system-ui, -apple-system, sans-serif;
+      direction: rtl;
+      -webkit-font-smoothing: antialiased;
+    }
+    #root { min-height: 100vh; }
+    .bootstrap-msg {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      color: #64748b;
+      font-size: 14px;
+    }
+  </style>
+  <!-- ONYX API URL override — edit if backend runs elsewhere -->
+  <script>
+    // window.ONYX_API_URL = "http://localhost:3100";
+    // localStorage.setItem('onyx_api_key', 'YOUR_KEY_HERE');
+  </script>
+  <!-- Import map so bare imports ("react") resolve to esm.sh CDN -->
+  <script type="importmap">
+  {
+    "imports": {
+      "react": "https://esm.sh/react@18.3.1",
+      "react-dom": "https://esm.sh/react-dom@18.3.1",
+      "react-dom/client": "https://esm.sh/react-dom@18.3.1/client"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="root">
+    <div class="bootstrap-msg">טוען... (Loading VAT Dashboard)</div>
+  </div>
+
+  <!-- Bootstrap: transpile the JSX entry on the fly via esm.sh's ?transpile flag -->
+  <script type="module">
+    import React from "react";
+    import { createRoot } from "react-dom/client";
+    // esm.sh can transpile local JSX when we fetch it via its build endpoint.
+    // For a build-less dev path we use a tiny hand-written React.createElement wrapper
+    // that imports the default export from vat-dashboard.jsx via esm.sh's on-the-fly transform.
+    // The ?bundle/jsx flags work for any URL esm.sh can reach; for local files we inline a fetch.
+
+    async function loadComponent() {
+      try {
+        // Try esm.sh transform of a remote-style URL if hosted; for local dev we use a simple
+        // Babel-standalone fallback so this HTML is truly build-less.
+        if (!window.Babel) {
+          await new Promise((resolve, reject) => {
+            const s = document.createElement("script");
+            s.src = "https://unpkg.com/@babel/standalone@7.25.6/babel.min.js";
+            s.onload = resolve;
+            s.onerror = reject;
+            document.head.appendChild(s);
+          });
+        }
+
+        const res = await fetch("./vat-dashboard.jsx");
+        if (!res.ok) throw new Error("Failed to fetch vat-dashboard.jsx: " + res.status);
+        let src = await res.text();
+
+        // Rewrite the bare "react" import to the esm.sh CDN URL so Babel output resolves in-browser.
+        src = src.replace(
+          /from\s+["']react["']/g,
+          'from "https://esm.sh/react@18.3.1"'
+        );
+
+        // Strip import.meta.env checks — not available in plain <script type="module">
+        src = src.replace(/import\.meta\?\.env\?\.VITE_API_URL/g, "undefined");
+        src = src.replace(/import\.meta\?\.env\?\.VITE_API_KEY/g, "undefined");
+
+        const out = Babel.transform(src, {
+          presets: ["react"],
+          filename: "vat-dashboard.jsx",
+        }).code;
+
+        // Turn the transpiled CJS-ish output into a data-URL ES module
+        const blob = new Blob([out], { type: "text/javascript" });
+        const url = URL.createObjectURL(blob);
+        const mod = await import(/* @vite-ignore */ url);
+        return mod.default;
+      } catch (e) {
+        console.error("[vat-dashboard] bootstrap error:", e);
+        document.getElementById("root").innerHTML =
+          '<div class="bootstrap-msg">שגיאת טעינה (Load error): ' + e.message + "</div>";
+        return null;
+      }
+    }
+
+    const VatDashboard = await loadComponent();
+    if (VatDashboard) {
+      const root = createRoot(document.getElementById("root"));
+      root.render(React.createElement(VatDashboard));
+    }
+  </script>
+</body>
+</html>

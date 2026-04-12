@@ -113,6 +113,46 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
+// ─── KUBERNETES-STYLE PROBES (Agent 41) ──────────────
+// /healthz → always 200 + metadata
+// /livez   → always 200 (alive signal)
+// /readyz  → 200 if DB responds within 2s, else 503
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const pkgAg41 = require('../package.json');
+const SERVICE_NAME_AG41 = pkgAg41.name as string;
+const SERVICE_VERSION_AG41 = pkgAg41.version as string;
+
+app.get('/healthz', (_req, res) => {
+  res.status(200).json({
+    ok: true,
+    service: SERVICE_NAME_AG41,
+    version: SERVICE_VERSION_AG41,
+    uptime: process.uptime(),
+  });
+});
+
+app.get('/livez', (_req, res) => {
+  res.status(200).json({ alive: true });
+});
+
+app.get('/readyz', async (_req, res) => {
+  const DB_TIMEOUT_MS = 2000;
+  let timer: NodeJS.Timeout | undefined;
+  try {
+    const dbPing = pool.query('SELECT 1');
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error('db_timeout_2s')), DB_TIMEOUT_MS);
+    });
+    await Promise.race([dbPing, timeout]);
+    if (timer) clearTimeout(timer);
+    return res.status(200).json({ ready: true, service: SERVICE_NAME_AG41 });
+  } catch (err: any) {
+    if (timer) clearTimeout(timer);
+    const reason = (err && err.message) ? err.message : 'db_unreachable';
+    return res.status(503).json({ ready: false, reason });
+  }
+});
+
 // ─── WEBSOCKET + ALERT ENGINE + AUTONOMOUS ENGINE ─────────────────
 initWebSocket(server);
 startAlertEngine();

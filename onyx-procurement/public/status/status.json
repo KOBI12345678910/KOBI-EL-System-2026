@@ -1,0 +1,178 @@
+{
+  "brand": "Techno-Kol Uzi",
+  "title": "Techno-Kol Uzi — System Status",
+  "titleHe": "טכנו-קול עוזי — מצב מערכת",
+  "generatedAt": "2026-04-11T12:07:50.158Z",
+  "overall": {
+    "level": "operational",
+    "label": "All systems operational",
+    "labelHe": "כל המערכות תקינות",
+    "at": 1775909270158
+  },
+  "components": [
+    {
+      "id": "core-api",
+      "name": "Core API",
+      "nameHe": "שרת ליבה (שכר / רכש / הנה״ח)",
+      "status": "operational",
+      "statusLabel": "Operational",
+      "statusLabelHe": "תקין",
+      "uptime90d": 100,
+      "lastMessage": null,
+      "lastMessageHe": null,
+      "lastChangedAt": "2026-04-11T12:07:50.155Z"
+    },
+    {
+      "id": "web-app",
+      "name": "Web application",
+      "nameHe": "אפליקציית ווב",
+      "status": "operational",
+      "statusLabel": "Operational",
+      "statusLabelHe": "תקין",
+      "uptime90d": 100,
+      "lastMessage": null,
+      "lastMessageHe": null,
+      "lastChangedAt": "2026-04-11T12:07:50.155Z"
+    },
+    {
+      "id": "database",
+      "name": "Database",
+      "nameHe": "מסד נתונים",
+      "status": "operational",
+      "statusLabel": "Operational",
+      "statusLabelHe": "תקין",
+      "uptime90d": 100,
+      "lastMessage": null,
+      "lastMessageHe": null,
+      "lastChangedAt": "2026-04-11T12:07:50.155Z"
+    },
+    {
+      "id": "background-jobs",
+      "name": "Background jobs",
+      "nameHe": "משימות רקע",
+      "status": "operational",
+      "statusLabel": "Operational",
+      "statusLabelHe": "תקין",
+      "uptime90d": 100,
+      "lastMessage": null,
+      "lastMessageHe": null,
+      "lastChangedAt": "2026-04-11T12:07:50.155Z"
+    },
+    {
+      "id": "email",
+      "name": "Email delivery",
+      "nameHe": "שליחת דוא״ל",
+      "status": "operational",
+      "statusLabel": "Operational",
+      "statusLabelHe": "תקין",
+      "uptime90d": 100,
+      "lastMessage": null,
+      "lastMessageHe": null,
+      "lastChangedAt": "2026-04-11T12:07:50.155Z"
+    },
+    {
+      "id": "sms",
+      "name": "SMS delivery",
+      "nameHe": "שליחת SMS",
+      "status": "operational",
+      "statusLabel": "Operational",
+      "statusLabelHe": "תקין",
+      "uptime90d": 100,
+      "lastMessage": null,
+      "lastMessageHe": null,
+      "lastChangedAt": "2026-04-11T12:07:50.155Z"
+    },
+    {
+      "id": "tax-export",
+      "name": "Tax authority export",
+      "nameHe": "שידור רשות המיסים",
+      "status": "operational",
+      "statusLabel": "Operational",
+      "statusLabelHe": "תקין",
+      "uptime90d": 100,
+      "lastMessage": null,
+      "lastMessageHe": null,
+      "lastChangedAt": "2026-04-11T12:07:50.155Z"
+    },
+    {
+      "id": "bank",
+      "name": "Bank integration",
+      "nameHe": "חיבור בנקים",
+      "status": "operational",
+      "statusLabel": "Operational",
+      "statusLabelHe": "תקין",
+      "uptime90d": 100,
+      "lastMessage": "Bank integration stabilized.",
+      "lastMessageHe": "החיבור לבנקים יציב.",
+      "lastChangedAt": "2026-04-11T12:07:50.155Z"
+    },
+    {
+      "id": "storage",
+      "name": "File storage",
+      "nameHe": "אחסון קבצים",
+      "status": "operational",
+      "statusLabel": "Operational",
+      "statusLabelHe": "תקין",
+      "uptime90d": 100,
+      "lastMessage": null,
+      "lastMessageHe": null,
+      "lastChangedAt": "2026-04-11T12:07:50.155Z"
+    },
+    {
+      "id": "search",
+      "name": "Search",
+      "nameHe": "חיפוש",
+      "status": "operational",
+      "statusLabel": "Operational",
+      "statusLabelHe": "תקין",
+      "uptime90d": 100,
+      "lastMessage": null,
+      "lastMessageHe": null,
+      "lastChangedAt": "2026-04-11T12:07:50.155Z"
+    }
+  ],
+  "activeIncidents": [],
+  "recentIncidents": [
+    {
+      "id": "inc-c898f61aff9a",
+      "title": "Bank integration timeouts",
+      "titleHe": "השהיות בחיבור לבנקים",
+      "componentIds": [
+        "bank"
+      ],
+      "impact": "degraded",
+      "impactLabel": "Degraded performance",
+      "impactLabelHe": "ביצועים מופחתים",
+      "status": "resolved",
+      "startedAt": "2026-04-11T12:07:50.155Z",
+      "resolvedAt": "2026-04-11T12:07:50.155Z",
+      "updates": [
+        {
+          "at": "2026-04-11T12:07:50.155Z",
+          "status": "investigating",
+          "message": "Investigating elevated timeouts on bank webhook callbacks.",
+          "messageHe": "בבדיקה — עליה בזמני תגובה בקריאות בנקאיות."
+        },
+        {
+          "at": "2026-04-11T12:07:50.155Z",
+          "status": "monitoring",
+          "message": "Mitigation deployed, monitoring.",
+          "messageHe": "פתרון פרוס, בניטור."
+        },
+        {
+          "at": "2026-04-11T12:07:50.155Z",
+          "status": "resolved",
+          "message": "Bank integration stabilized.",
+          "messageHe": "החיבור לבנקים יציב."
+        }
+      ]
+    }
+  ],
+  "statusLevels": [
+    "operational",
+    "maintenance",
+    "degraded",
+    "partial_outage",
+    "major_outage"
+  ]
+}

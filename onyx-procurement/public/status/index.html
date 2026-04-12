@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="refresh" content="60">
+<title>טכנו-קול עוזי — מצב מערכת</title>
+<link rel="alternate" type="application/rss+xml" title="RSS" href="./feed.xml">
+<style>
+:root {
+  --bg: #0b0f14;
+  --bg-elev: #121820;
+  --bg-hi: #1a2230;
+  --fg: #e5e9f0;
+  --fg-dim: #8a94a6;
+  --border: #1f2937;
+  --accent: #2dd4bf;
+  --shadow: 0 1px 0 rgba(255,255,255,0.03), 0 8px 24px rgba(0,0,0,0.5);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--fg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans Hebrew", "David", sans-serif; }
+body { min-height: 100vh; }
+.container { max-width: 900px; margin: 0 auto; padding: 32px 20px 64px; }
+header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 24px; }
+header .brand { font-weight: 600; font-size: 14px; color: var(--fg-dim); letter-spacing: 0.08em; text-transform: uppercase; }
+header .lang-toggle { background: var(--bg-elev); color: var(--fg); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; text-decoration: none; }
+header .lang-toggle:hover { background: var(--bg-hi); }
+h1 { font-size: 28px; margin: 0 0 6px 0; font-weight: 600; letter-spacing: -0.01em; }
+.subtitle { color: var(--fg-dim); font-size: 14px; margin: 0 0 24px 0; }
+.overall {
+  background: #14532d;
+  color: #a6f4c5;
+  padding: 20px 24px;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex; align-items: center; gap: 14px;
+  box-shadow: var(--shadow);
+  margin-bottom: 32px;
+  border: 1px solid #10b981;
+}
+.overall .dot { width: 14px; height: 14px; border-radius: 50%; background: #10b981; box-shadow: 0 0 0 4px rgba(255,255,255,0.06); }
+section { margin-bottom: 36px; }
+section h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg-dim); margin: 0 0 12px 0; font-weight: 600; }
+.empty { color: var(--fg-dim); font-size: 13px; font-style: italic; margin: 8px 0; }
+ul.components { list-style: none; padding: 0; margin: 0; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.component { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+.component:last-child { border-bottom: none; }
+.component .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.component-main { flex: 1; min-width: 0; }
+.component-name { font-weight: 500; font-size: 15px; }
+.component-msg { font-size: 12px; color: var(--fg-dim); margin-top: 2px; }
+.component-meta { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.pill { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+.uptime { font-variant-numeric: tabular-nums; font-size: 12px; color: var(--fg-dim); min-width: 60px; text-align: left; }
+.incident { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin-bottom: 12px; }
+.incident.active { border-color: #ef4444; box-shadow: 0 0 0 1px rgba(239,68,68,0.2); }
+.incident-title { font-weight: 600; font-size: 15px; margin: 0 0 6px 0; }
+.incident-meta { font-size: 12px; color: var(--fg-dim); margin-bottom: 10px; }
+.incident-update { border-right: 2px solid var(--border); padding-right: 12px; margin-bottom: 8px; font-size: 13px; }
+.incident-update time { display: block; font-size: 11px; color: var(--fg-dim); margin-bottom: 2px; }
+form.subscribe { display: flex; gap: 8px; background: var(--bg-elev); border: 1px solid var(--border); padding: 14px; border-radius: 10px; }
+form.subscribe input { flex: 1; background: var(--bg); color: var(--fg); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; font-size: 14px; }
+form.subscribe button { background: var(--accent); color: #0b0f14; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; }
+form.subscribe button:hover { filter: brightness(1.1); }
+.rss-link { display: inline-block; margin-top: 8px; color: var(--fg-dim); font-size: 12px; text-decoration: none; }
+.rss-link:hover { color: var(--accent); }
+footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--fg-dim); font-size: 12px; text-align: center; }
+footer .updated { display: block; margin-bottom: 4px; }
+@media (max-width: 600px) {
+  h1 { font-size: 22px; }
+  .overall { font-size: 16px; padding: 16px 18px; }
+  .component { padding: 12px 14px; gap: 10px; }
+  .uptime { min-width: 48px; }
+  form.subscribe { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="brand">Techno-Kol Uzi</div>
+    <a class="lang-toggle" href="./?lang=en">EN</a>
+  </header>
+  <h1>טכנו-קול עוזי — מצב מערכת</h1>
+  <p class="subtitle">דף מצב המערכת</p>
+
+  <div class="overall" role="status" aria-live="polite">
+    <span class="dot"></span>
+    <span>כל המערכות תקינות</span>
+  </div>
+
+  <section>
+    <h2>תקלות פעילות</h2>
+    <p class="empty">אין תקלות פעילות כעת</p>
+  </section>
+
+  <section>
+    <h2>רכיבי מערכת</h2>
+    <ul class="components">
+      <li class="component" data-status="operational">
+        <span class="dot" style="background:#10b981"></span>
+        <div class="component-main">
+          <div class="component-name">שרת ליבה (שכר / רכש / הנה״ח)</div>
+          
+        </div>
+        <div class="component-meta">
+          <span class="pill" style="background:#14532d;color:#a6f4c5">תקין</span>
+          <span class="uptime" title="זמינות 90 ימים">100.00%</span>
+        </div>
+      </li>
+      <li class="component" data-status="operational">
+        <span class="dot" style="background:#10b981"></span>
+        <div class="component-main">
+          <div class="component-name">אפליקציית ווב</div>
+          
+        </div>
+        <div class="component-meta">
+          <span class="pill" style="background:#14532d;color:#a6f4c5">תקין</span>
+          <span class="uptime" title="זמינות 90 ימים">100.00%</span>
+        </div>
+      </li>
+      <li class="component" data-status="operational">
+        <span class="dot" style="background:#10b981"></span>
+        <div class="component-main">
+          <div class="component-name">מסד נתונים</div>
+          
+        </div>
+        <div class="component-meta">
+          <span class="pill" style="background:#14532d;color:#a6f4c5">תקין</span>
+          <span class="uptime" title="זמינות 90 ימים">100.00%</span>
+        </div>
+      </li>
+      <li class="component" data-status="operational">
+        <span class="dot" style="background:#10b981"></span>
+        <div class="component-main">
+          <div class="component-name">משימות רקע</div>
+          
+        </div>
+        <div class="component-meta">
+          <span class="pill" style="background:#14532d;color:#a6f4c5">תקין</span>
+          <span class="uptime" title="זמינות 90 ימים">100.00%</span>
+        </div>
+      </li>
+      <li class="component" data-status="operational">
+        <span class="dot" style="background:#10b981"></span>
+        <div class="component-main">
+          <div class="component-name">שליחת דוא״ל</div>
+          
+        </div>
+        <div class="component-meta">
+          <span class="pill" style="background:#14532d;color:#a6f4c5">תקין</span>
+          <span class="uptime" title="זמינות 90 ימים">100.00%</span>
+        </div>
+      </li>
+      <li class="component" data-status="operational">
+        <span class="dot" style="background:#10b981"></span>
+        <div class="component-main">
+          <div class="component-name">שליחת SMS</div>
+          
+        </div>
+        <div class="component-meta">
+          <span class="pill" style="background:#14532d;color:#a6f4c5">תקין</span>
+          <span class="uptime" title="זמינות 90 ימים">100.00%</span>
+        </div>
+      </li>
+      <li class="component" data-status="operational">
+        <span class="dot" style="background:#10b981"></span>
+        <div class="component-main">
+          <div class="component-name">שידור רשות המיסים</div>
+          
+        </div>
+        <div class="component-meta">
+          <span class="pill" style="background:#14532d;color:#a6f4c5">תקין</span>
+          <span class="uptime" title="זמינות 90 ימים">100.00%</span>
+        </div>
+      </li>
+      <li class="component" data-status="operational">
+        <span class="dot" style="background:#10b981"></span>
+        <div class="component-main">
+          <div class="component-name">חיבור בנקים</div>
+          <div class="component-msg">החיבור לבנקים יציב.</div>
+        </div>
+        <div class="component-meta">
+          <span class="pill" style="background:#14532d;color:#a6f4c5">תקין</span>
+          <span class="uptime" title="זמינות 90 ימים">100.00%</span>
+        </div>
+      </li>
+      <li class="component" data-status="operational">
+        <span class="dot" style="background:#10b981"></span>
+        <div class="component-main">
+          <div class="component-name">אחסון קבצים</div>
+          
+        </div>
+        <div class="component-meta">
+          <span class="pill" style="background:#14532d;color:#a6f4c5">תקין</span>
+          <span class="uptime" title="זמינות 90 ימים">100.00%</span>
+        </div>
+      </li>
+      <li class="component" data-status="operational">
+        <span class="dot" style="background:#10b981"></span>
+        <div class="component-main">
+          <div class="component-name">חיפוש</div>
+          
+        </div>
+        <div class="component-meta">
+          <span class="pill" style="background:#14532d;color:#a6f4c5">תקין</span>
+          <span class="uptime" title="זמינות 90 ימים">100.00%</span>
+        </div>
+      </li></ul>
+  </section>
+
+  <section>
+    <h2>היסטוריית תקלות (90 ימים אחרונים)</h2>
+    
+      <article class="incident">
+        <h3 class="incident-title">השהיות בחיבור לבנקים</h3>
+        <div class="incident-meta">
+          <span class="pill" style="background:#4a3a0a;color:#fde68a">ביצועים מופחתים</span>
+          <span>&nbsp;&middot;&nbsp;2026-04-11T12:07:50.155Z</span>
+          <span>&nbsp;&middot;&nbsp;2026-04-11T12:07:50.155Z</span>
+        </div>
+        
+        <div class="incident-update">
+          <time datetime="2026-04-11T12:07:50.155Z">2026-04-11T12:07:50.155Z — investigating</time>
+          בבדיקה — עליה בזמני תגובה בקריאות בנקאיות.
+        </div>
+        <div class="incident-update">
+          <time datetime="2026-04-11T12:07:50.155Z">2026-04-11T12:07:50.155Z — monitoring</time>
+          פתרון פרוס, בניטור.
+        </div>
+        <div class="incident-update">
+          <time datetime="2026-04-11T12:07:50.155Z">2026-04-11T12:07:50.155Z — resolved</time>
+          החיבור לבנקים יציב.
+        </div>
+      </article>
+  </section>
+
+  <section>
+    <h2>הירשמו לעדכונים</h2>
+    <form class="subscribe" method="post" action="./subscribe">
+      <input name="target" type="text" placeholder="דוא״ל או webhook" required>
+      <button type="submit">הרשמה</button>
+    </form>
+    <a class="rss-link" href="./feed.xml">RSS</a>
+  </section>
+
+  <footer>
+    <span class="updated">עודכן לאחרונה: <time datetime="2026-04-11T12:07:50.157Z">2026-04-11T12:07:50.157Z</time></span>
+    <span>רענון אוטומטי כל 60 שניות</span>
+    <br>
+    <span>© 2026 Techno-Kol Uzi</span>
+  </footer>
+</div>
+</body>
+</html>

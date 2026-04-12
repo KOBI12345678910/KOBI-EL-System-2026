@@ -1,0 +1,4 @@
+invoice_no,date,customer,vat id,subtotal,vat,total,notes
+5001,2026-02-14,Alpha Ltd,514000009,2000,360,2360,ERP export
+5002,2026-02-18,Beta Trade,514000009,100,18,118,partial
+5003,2026-02-20,Gamma Tech,514000009,750,135,885,

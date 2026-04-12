@@ -1,0 +1,74 @@
+
+════════════════════════════════════════════════════════════════════
+ QA-06 — Smoke Test Agent  (static, non-executing)
+ Root: C:\Users\kobi\OneDrive\kobi\המערכת 2026  KOBI EL
+ Time: 2026-04-11T11:35:15.347Z
+════════════════════════════════════════════════════════════════════
+
+── techno-kol-ops  (techno-kol-ops)
+  [PASS] 1. package.json present + main/start/dev — no main | start=node dist/index.js | dev=tsx watch src/index.ts
+  [FAIL] 2. entry file exists — dist/index.js
+  [FAIL] 3. entry file has no obvious syntax error — entry missing
+  [FAIL] 4. all local require/import targets exist — no entry source
+  [PASS] 5. health endpoint /healthz|/livez|/readyz|/health — found in src/index.ts
+  [PASS] 6. route wiring (app.use / router.*) — found in src/index.ts
+  [PASS] 7. supabase / db connection present — found in src/db/connection.ts
+  [PASS] 8. no console.log with secrets — clean
+  [PASS] 9. .env.example / .env / documented — .env.example
+  ──► 6 PASS / 3 FAIL   verdict: NO-GO
+
+── nexus_engine  (nexus_engine)
+  [PASS] 1. package.json present + main/start/dev — main=nexus-engine.js | start=node nexus-engine.js | no dev
+  [PASS] 2. entry file exists — nexus-engine.js
+  [PASS] 3. entry file has no obvious syntax error — node --check OK
+  [PASS] 4. all local require/import targets exist — 0 resolved
+  [PASS] 5. health endpoint /healthz|/livez|/readyz|/health — found in bridge/python-platform-bridge.js
+  [FAIL] 6. route wiring (app.use / router.*) — not found
+  [FAIL] 7. supabase / db connection present — not found
+  [PASS] 8. no console.log with secrets — clean
+  [FAIL] 9. .env.example / .env / documented — none found
+  ──► 6 PASS / 3 FAIL   verdict: NO-GO
+
+── paradigm_engine  (paradigm_engine)
+  [PASS] 1. package.json present + main/start/dev — main=paradigm-engine.js | start=node paradigm-engine.js | no dev
+  [PASS] 2. entry file exists — paradigm-engine.js
+  [PASS] 3. entry file has no obvious syntax error — node --check OK
+  [PASS] 4. all local require/import targets exist — 11 resolved
+  [FAIL] 5. health endpoint /healthz|/livez|/readyz|/health — not found
+  [FAIL] 6. route wiring (app.use / router.*) — not found
+  [FAIL] 7. supabase / db connection present — not found
+  [PASS] 8. no console.log with secrets — clean
+  [FAIL] 9. .env.example / .env / documented — none found
+  ──► 5 PASS / 4 FAIL   verdict: NO-GO
+
+── onyx-procurement  (onyx-procurement)
+  [PASS] 1. package.json present + main/start/dev — main=server.js | start=node server.js | dev=node --watch server.js
+  [PASS] 2. entry file exists — server.js
+  [PASS] 3. entry file has no obvious syntax error — node --check OK
+  [PASS] 4. all local require/import targets exist — 8 resolved
+  [PASS] 5. health endpoint /healthz|/livez|/readyz|/health — found in entry
+  [PASS] 6. route wiring (app.use / router.*) — found in entry
+  [PASS] 7. supabase / db connection present — found in entry
+  [FAIL] 8. no console.log with secrets — 1+ hits — first: test/load/api-load.js
+  [PASS] 9. .env.example / .env / documented — .env.example
+  ──► 8 PASS / 1 FAIL   verdict: GO-WITH-WARNINGS
+
+── payroll-autonomous  (payroll-autonomous)  [Vite client]
+  [PASS] V1. vite.config.(js|ts) — vite.config.js
+  [PASS] V2. src/App exists + valid local imports — 0 local imports ok, bare pkgs present
+  [PASS] V3. index.html present — ok
+  [PASS] V4. package.json has dev/build/preview — dev=y build=y preview=y
+  ──► 4 PASS / 0 FAIL   verdict: GO
+
+════════════════════════════════════════════════════════════════════
+ SUMMARY
+════════════════════════════════════════════════════════════════════
+ techno-kol-ops               6 PASS   3 FAIL   NO-GO
+ nexus_engine                 6 PASS   3 FAIL   NO-GO
+ paradigm_engine              5 PASS   4 FAIL   NO-GO
+ onyx-procurement             8 PASS   1 FAIL   GO-WITH-WARNINGS
+ payroll-autonomous           4 PASS   0 FAIL   GO
+
+ OVERALL: NO-GO — at least one project blocked
+════════════════════════════════════════════════════════════════════
+

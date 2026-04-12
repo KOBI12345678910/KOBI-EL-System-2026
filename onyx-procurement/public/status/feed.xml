@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>טכנו-קול עוזי — מצב מערכת</title>
+    <link>https://status.techno-kol.example/</link>
+    <description>עדכוני מצב מערכת</description>
+    <language>he</language>
+    <lastBuildDate>Sat, 11 Apr 2026 12:07:50 GMT</lastBuildDate>
+    <item>
+      <title>[ביצועים מופחתים] השהיות בחיבור לבנקים</title>
+      <link>https://status.techno-kol.example/#inc-c898f61aff9a</link>
+      <guid isPermaLink="false">inc-c898f61aff9a</guid>
+      <pubDate>Sat, 11 Apr 2026 12:07:50 GMT</pubDate>
+      <description>החיבור לבנקים יציב.</description>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,77 @@
+#!/usr/bin/env sh
+# .husky/commit-msg — enforces Conventional Commits:
+#   type(scope)!: subject
+#
+# Installation: copy this file to `.husky/commit-msg` (no extension) and
+# make it executable with `chmod +x .husky/commit-msg`.
+#
+# Format enforced:
+#   type      required: feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert
+#   scope     optional, wrapped in parentheses, non-empty when present
+#   !         optional breaking-change marker
+#   subject   required, non-empty
+#
+# Special-cases allowed without format check:
+#   - Merge commits  ("Merge ...")
+#   - Revert commits ("Revert ...")
+#   - Fixup/squash   ("fixup! ...", "squash! ...")
+#   - Release commits created by release tooling
+
+. "$(dirname -- "$0")/_/husky.sh" 2>/dev/null || true
+
+set -e
+
+commit_msg_file="$1"
+if [ -z "$commit_msg_file" ] || [ ! -f "$commit_msg_file" ]; then
+  echo "[husky/commit-msg] No commit message file passed - skipping."
+  exit 0
+fi
+
+# Read the first non-comment, non-empty line as the subject.
+subject_line="$(grep -v '^[[:space:]]*#' "$commit_msg_file" | sed '/^[[:space:]]*$/d' | head -n 1 || true)"
+
+if [ -z "$subject_line" ]; then
+  echo "[husky/commit-msg] ERROR: empty commit message." >&2
+  exit 1
+fi
+
+# Allow special commits untouched.
+case "$subject_line" in
+  "Merge "*|"Revert "*|"fixup! "*|"squash! "*|"Release "*|"chore(release)"*)
+    echo "[husky/commit-msg] Allowed special commit format - skipping check."
+    exit 0
+    ;;
+esac
+
+# Conventional Commits regex (POSIX ERE).
+pattern='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([^)]+\))?!?: .+$'
+
+if printf '%s' "$subject_line" | grep -Eq "$pattern"; then
+  subject_body="$(printf '%s' "$subject_line" | sed -E 's/^[^:]+: //')"
+  if [ -z "$(printf '%s' "$subject_body" | tr -d '[:space:]')" ]; then
+    echo "[husky/commit-msg] ERROR: commit subject is empty after 'type(scope): '." >&2
+    exit 1
+  fi
+  exit 0
+fi
+
+cat >&2 <<'MSG'
+[husky/commit-msg] ERROR: commit message does not follow Conventional Commits.
+
+Expected format:
+  type(scope)!: subject
+
+  type     one of: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+  scope    optional, non-empty, e.g. (onyx-ai)
+  !        optional breaking-change marker
+  subject  required short description
+
+Examples:
+  feat(onyx-ai): add governor budget ceiling
+  fix(payroll-autonomous): correct pension rounding
+  chore(deps): bump express to 4.21.2
+  refactor(techno-kol-ops)!: rename events table
+
+See https://www.conventionalcommits.org/ for details.
+MSG
+exit 1

@@ -1,33 +1,331 @@
 /**
  * ONYX API SERVER
  * Express.js + Supabase + WhatsApp Business API
- * 
+ *
  * Setup:
  * 1. npm init -y
- * 2. npm install express @supabase/supabase-js dotenv cors
- * 3. Create .env file with credentials
+ * 2. npm install express @supabase/supabase-js dotenv cors helmet express-rate-limit
+ * 3. Create .env file with credentials (see .env.example)
  * 4. node server.js
+ *
+ * Security:
+ * - API key auth via X-API-Key header (AUTH_MODE=api_key)
+ * - HMAC-SHA256 verification on WhatsApp webhook (WHATSAPP_APP_SECRET)
+ * - Helmet + CORS origin allowlist + per-IP rate limiting
+ * - Env validation on boot (fails fast if missing SUPABASE_URL / SUPABASE_ANON_KEY)
  */
 
 const express = require('express');
 const { createClient } = require('@supabase/supabase-js');
 const cors = require('cors');
 const https = require('https');
+const crypto = require('crypto');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
+// ═══ ERROR TRACKER (ops/error-tracker) — init early, wired last ═══
+let errorTracker = null;
+try {
+  errorTracker = require('./src/ops/error-tracker');
+  errorTracker.init({
+    dsn: process.env.SENTRY_DSN || null,
+    release: process.env.RELEASE || ('onyx@' + (require('./package.json').version || 'dev')),
+    environment: process.env.NODE_ENV || 'development',
+    maxBufferBytes: 5_000_000,
+  });
+} catch (e) {
+  console.warn('⚠️  ops/error-tracker init skipped:', e && e.message);
+  errorTracker = null;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ENV VALIDATION — fail fast with clear error if misconfigured
+// ═══════════════════════════════════════════════════════════════
+const REQUIRED_ENV = ['SUPABASE_URL', 'SUPABASE_ANON_KEY'];
+const missingEnv = REQUIRED_ENV.filter(k => !process.env[k]);
+if (missingEnv.length) {
+  console.error('');
+  console.error('❌ ONYX boot failed — missing required environment variables:');
+  missingEnv.forEach(k => console.error(`   - ${k}`));
+  console.error('');
+  console.error('   Copy .env.example → .env and fill in real values.');
+  console.error('');
+  process.exit(1);
+}
+
 const app = express();
-app.use(cors());
-app.use(express.json());
+
+// ═══ OPS METRICS — Prometheus /metrics (zero-dep, prom-client compatible) ═══
+try {
+  const { metricsMiddleware, metricsHandler } = require('./src/ops/metrics');
+  app.use(metricsMiddleware);
+  app.get('/metrics', metricsHandler);
+  console.log('✓ ops/metrics wired — GET /metrics exposing Prometheus text format');
+} catch (e) {
+  console.warn('⚠️  ops/metrics wiring skipped:', e && e.message);
+}
+
+// ═══ SECURITY MIDDLEWARE ═══
+app.use(helmet({
+  contentSecurityPolicy: false, // disabled — RTL dashboard injects inline styles
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}));
+
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '*')
+  .split(',')
+  .map(o => o.trim())
+  .filter(Boolean);
+app.use(cors({
+  origin: ALLOWED_ORIGINS.includes('*') ? true : ALLOWED_ORIGINS,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
+}));
+
+// Capture raw body on JSON parse — required for webhook HMAC verification
+app.use(express.json({
+  limit: '2mb',
+  verify: (req, _res, buf) => { req.rawBody = buf; },
+}));
+
+// Rate limiting — two pools: API (per-IP) + webhook (higher, separate)
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: parseInt(process.env.RATE_LIMIT_API_MAX) || 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests — rate limit exceeded (15 min window)' },
+});
+app.use('/api/', apiLimiter);
+
+const webhookLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: parseInt(process.env.RATE_LIMIT_WEBHOOK_MAX) || 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/webhook/', webhookLimiter);
+
+// ─── Tiered per-minute rate limiting (in-memory, per IP+API-key) ───
+// Layered ON TOP of apiLimiter/webhookLimiter above — does not replace them.
+// See src/middleware/README.md for wiring guide and the full tier matrix.
+//   • readLimiter       100 req/min  (mounted globally below as the default)
+//   • writeLimiter       20 req/min  — attach per-route to POST/PUT/PATCH/DELETE
+//   • expensiveLimiter    5 req/min  — attach per-route to /export, /pcn836,
+//                                      /pdf/bulk, /reports/generate, /backup
+// Exempt paths: /healthz /livez /readyz /metrics
+const {
+  readLimiter,
+  writeLimiter,       // eslint-disable-line no-unused-vars
+  expensiveLimiter,   // eslint-disable-line no-unused-vars
+} = require('./src/middleware/rate-limits');
+app.use(readLimiter);
+// TODO(per-route): add `writeLimiter` to mutation endpoints
+//                  (e.g. app.post('/api/purchase-orders', writeLimiter, handler))
+// TODO(per-route): add `expensiveLimiter` to exports, PCN-836, bulk PDF,
+//                  report generation, and backup snapshot endpoints.
 
 // ═══ SUPABASE CLIENT ═══
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
+  process.env.SUPABASE_ANON_KEY,
+  { auth: { persistSession: false, autoRefreshToken: false } }
 );
+
+// ═══ DB QUERY ANALYZER — Agent 57 ═══
+// Mounts GET /api/admin/query-stats + POST /api/admin/query-stats/reset.
+// The primary `supabase` client above is intentionally NOT wrapped —
+// callers that want per-query timing can opt in via:
+//   const { wrapSupabase, measure } = require('./src/db/query-analyzer');
+// and either wrap the client or call measure({table, op}, promise) directly.
+try {
+  const queryAnalyzer = require('./src/db/query-analyzer');
+  queryAnalyzer.registerAdminRoutes(app);
+  console.log('✓ db/query-analyzer wired — GET /api/admin/query-stats');
+} catch (e) {
+  console.warn('⚠️  db/query-analyzer wiring skipped:', e && e.message);
+}
+
+// ═══ TAX CONFIG ═══
+// Israel VAT rate — 17% (2026). Override via .env if reform changes rate mid-year.
+const VAT_RATE = parseFloat(process.env.VAT_RATE) || 0.17;
 
 // ═══ WHATSAPP CONFIG ═══
 const WA_TOKEN = process.env.WHATSAPP_TOKEN;
 const WA_PHONE_ID = process.env.WHATSAPP_PHONE_ID;
+const WA_APP_SECRET = process.env.WHATSAPP_APP_SECRET;
+
+// ═══ API KEY AUTH ═══
+const API_KEYS = (process.env.API_KEYS || '')
+  .split(',')
+  .map(k => k.trim())
+  .filter(Boolean);
+const AUTH_MODE = process.env.AUTH_MODE || (API_KEYS.length ? 'api_key' : 'disabled');
+
+function requireAuth(req, res, next) {
+  if (AUTH_MODE === 'disabled') {
+    req.actor = 'anonymous';
+    return next();
+  }
+  const apiKey = req.headers['x-api-key'] || (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+  if (!apiKey || !API_KEYS.includes(apiKey)) {
+    return res.status(401).json({ error: 'Unauthorized — missing or invalid X-API-Key header' });
+  }
+  req.actor = `api_key:${apiKey.slice(0, 6)}…`;
+  next();
+}
+
+// Apply to all /api/ routes EXCEPT public health/status endpoints.
+// Agent-Y-QA03 FIX (BUG-02): /admin/ai-bridge/health is added to the
+// public allow-list so ops dashboards can poll the cross-service link
+// without having to hold an API key.
+const PUBLIC_API_PATHS = new Set([
+  '/status',
+  '/health',
+  '/admin/ai-bridge/health',
+]);
+app.use('/api/', (req, res, next) => {
+  if (PUBLIC_API_PATHS.has(req.path)) { req.actor = 'public'; return next(); }
+  return requireAuth(req, res, next);
+});
+
+// ═══════════════════════════════════════════════════════════════
+// Agent-Y-QA03 FIX (BUG-02): wire the ai-bridge into the running
+// process. Previously `src/ai-bridge.js` existed but was never
+// required, so the whole cross-service link to onyx-ai was dead
+// code. We now lazy-load the default client and expose a single
+// admin health endpoint plus helpers on `app.locals.onyxAi` so
+// downstream routes (RFQ decide, PO approve, payment release)
+// can import the bridge and call `evaluatePolicy` / `recordEvent`.
+// The module is fail-open: if ONYX_AI_API_KEY is missing we log a
+// one-time warning and expose a null client so nothing crashes.
+// ═══════════════════════════════════════════════════════════════
+let _aiBridgeModule = null;
+try {
+  _aiBridgeModule = require('./src/ai-bridge');
+  app.locals.onyxAi = {
+    module: _aiBridgeModule,
+    getClient: _aiBridgeModule.getDefaultClient,
+  };
+  const _bootClient = _aiBridgeModule.getDefaultClient();
+  console.log(
+    _bootClient
+      ? '✓ ai-bridge wired — onyx-ai client ready at ' + (process.env.ONYX_AI_URL || 'http://localhost:3200')
+      : '⚠️  ai-bridge wired but disabled — set ONYX_AI_API_KEY to enable'
+  );
+} catch (e) {
+  console.warn('⚠️  ai-bridge wiring failed:', e && e.message);
+  app.locals.onyxAi = { module: null, getClient: () => null };
+}
+
+// Admin: cross-service health of the onyx-ai link. Public within /api/
+// so ops dashboards can poll without API keys; returns 503 when the
+// bridge reports unhealthy so alerting systems can latch it.
+app.get('/api/admin/ai-bridge/health', async (_req, res) => {
+  try {
+    const client = app.locals.onyxAi && app.locals.onyxAi.getClient
+      ? app.locals.onyxAi.getClient()
+      : null;
+    if (!client) {
+      return res.status(200).json({
+        configured: false,
+        healthy: false,
+        reason: 'ONYX_AI_API_KEY not set — bridge disabled (fail-open)',
+      });
+    }
+    const healthy = await client.healthCheck();
+    return res.status(healthy ? 200 : 503).json({
+      configured: true,
+      healthy,
+      baseUrl: process.env.ONYX_AI_URL || 'http://localhost:3200',
+      checked_at: new Date().toISOString(),
+    });
+  } catch (err) {
+    return res.status(500).json({
+      configured: true,
+      healthy: false,
+      error: err && err.message,
+    });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// STATIC DASHBOARD ASSETS — served as-is (no API auth required)
+// Fixes the "half the pages return 404" bug: the Express server
+// previously served only /api/* endpoints, so every dashboard tile
+// in web/index.html was returning 404 when accessed via the server.
+// ═══════════════════════════════════════════════════════════════
+const WEB_DIR = path.join(__dirname, 'web');
+app.use(express.static(WEB_DIR, {
+  index: 'index.html',
+  extensions: ['html'],
+  fallthrough: true,
+  maxAge: '5m',
+}));
+
+// Root → index.html (explicit fallback if express.static's index lookup is bypassed)
+app.get('/', (_req, res) => {
+  res.sendFile(path.join(WEB_DIR, 'index.html'));
+});
+
+// Sibling dashboards mounted as sub-apps so the control-center tiles
+// don't 404 when they reference peer modules. Missing siblings fall
+// through to a friendly 503-style placeholder, not a hard 404.
+function mountSibling(urlPath, relativeDir, labelHe, labelEn) {
+  const absDir = path.join(__dirname, '..', relativeDir);
+  if (fs.existsSync(absDir)) {
+    app.use(urlPath, express.static(absDir, { index: 'index.html', extensions: ['html'] }));
+    console.log(`✓ static ${urlPath} -> ${absDir}`);
+  } else {
+    console.warn(`⚠️  ${urlPath} sibling not found at ${absDir}`);
+  }
+  // Graceful fallback: if the module is missing OR the deep link is unknown,
+  // emit a bilingual placeholder instead of the default 404 from express.
+  app.get(urlPath, (_req, res) => {
+    if (fs.existsSync(path.join(absDir, 'index.html'))) {
+      return res.sendFile(path.join(absDir, 'index.html'));
+    }
+    res.status(503).type('html').send(
+      `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>${labelHe}</title>
+      <style>body{background:#0b0d10;color:#e6edf3;font-family:system-ui;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center}.box{max-width:520px;padding:40px;border:1px solid #1e293b;border-radius:16px}.hb{font-size:22px;margin-bottom:8px}.en{color:#94a3b8;font-size:14px;margin-bottom:20px}a{color:#4a9eff;text-decoration:none}</style>
+      </head><body><div class="box">
+      <div class="hb">${labelHe}</div><div class="en">${labelEn}</div>
+      <div>המודול לא זמין כרגע. ודא שהשירות פועל או עבור ל<a href="/">מרכז הבקרה</a>.</div>
+      </div></body></html>`
+    );
+  });
+}
+
+mountSibling('/ops',      'techno-kol-ops/client', 'תפעול · Techno-Kol OPS', 'Techno-Kol Operations');
+mountSibling('/payroll',  'payroll-autonomous',    'שכר · Payroll',          'Payroll Autonomous');
+mountSibling('/ai',       'onyx-ai',               'בינה מלאכותית · AI',    'Onyx AI');
+
+// ═══ WEBHOOK HMAC VERIFICATION ═══
+function verifyWhatsAppHmac(req, res, next) {
+  // Agent-Y-QA03 FIX (BUG-11): refuse unsigned webhooks in ALL environments.
+  // Developers must set WHATSAPP_APP_SECRET=dev-local-only to use the endpoint.
+  if (!WA_APP_SECRET) {
+    return res.status(500).json({ error: 'Webhook HMAC not configured — refusing to accept unsigned webhooks. Set WHATSAPP_APP_SECRET in .env' });
+  }
+  const signature = req.headers['x-hub-signature-256'] || '';
+  const expected = 'sha256=' + crypto
+    .createHmac('sha256', WA_APP_SECRET)
+    .update(req.rawBody || Buffer.from(''))
+    .digest('hex');
+  try {
+    const sigBuf = Buffer.from(signature);
+    const expBuf = Buffer.from(expected);
+    if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) {
+      return res.status(401).json({ error: 'Invalid webhook signature' });
+    }
+  } catch {
+    return res.status(401).json({ error: 'Malformed webhook signature' });
+  }
+  next();
+}
 
 // ═══════════════════════════════════════════════════════════════
 // HELPER: WhatsApp sender
@@ -104,6 +402,18 @@ async function audit(entityType, entityId, action, actor, detail, prev, next) {
   });
 }
 
+// ═══ NOTIFICATIONS (Agent-76) — Unified Notification Service ═══
+try {
+  const { NotificationService } = require('./src/notifications/notification-service');
+  const notificationRoutes      = require('./src/notifications/notification-routes');
+  const notificationService     = new NotificationService({ supabase });
+  app.use(notificationRoutes.router(notificationService));
+  app.locals.notificationService = notificationService;
+  console.log('✓ notifications wired — /api/notifications/*');
+} catch (e) {
+  console.warn('⚠️  notifications wiring skipped:', e && e.message);
+}
+
 // ═══════════════════════════════════════════════════════════════
 // API: STATUS
 // ═══════════════════════════════════════════════════════════════
@@ -145,9 +455,17 @@ app.get('/api/suppliers/:id', async (req, res) => {
   res.json({ supplier, products, priceHistory });
 });
 
+// Agent-Y-QA12 FIX (BUG-QA12-004): allowlist fields to prevent mass-assignment
+function pickFields(obj, keys) {
+  const out = {};
+  for (const k of keys) { if (k in obj) out[k] = obj[k]; }
+  return out;
+}
+const SUPPLIER_FIELDS = ['name', 'email', 'phone', 'address', 'tax_id', 'payment_terms', 'bank_code', 'bank_branch', 'bank_account', 'contact_name', 'contact_phone', 'contact_email', 'notes', 'active', 'category', 'work_types'];
+
 // Create supplier
 app.post('/api/suppliers', async (req, res) => {
-  const { data, error } = await supabase.from('suppliers').insert(req.body).select().single();
+  const { data, error } = await supabase.from('suppliers').insert(pickFields(req.body, SUPPLIER_FIELDS)).select().single();
   if (error) return res.status(400).json({ error: error.message });
   await audit('supplier', data.id, 'created', req.body.created_by || 'api', `ספק חדש: ${data.name}`);
   res.status(201).json({ supplier: data });
@@ -156,7 +474,7 @@ app.post('/api/suppliers', async (req, res) => {
 // Update supplier
 app.patch('/api/suppliers/:id', async (req, res) => {
   const { data: prev } = await supabase.from('suppliers').select('*').eq('id', req.params.id).single();
-  const { data, error } = await supabase.from('suppliers').update(req.body).eq('id', req.params.id).select().single();
+  const { data, error } = await supabase.from('suppliers').update(pickFields(req.body, SUPPLIER_FIELDS)).eq('id', req.params.id).select().single();
   if (error) return res.status(400).json({ error: error.message });
   await audit('supplier', data.id, 'updated', req.body.updated_by || 'api', JSON.stringify(req.body), prev, data);
   res.json({ supplier: data });
@@ -164,8 +482,11 @@ app.patch('/api/suppliers/:id', async (req, res) => {
 
 // Add product to supplier
 app.post('/api/suppliers/:id/products', async (req, res) => {
-  const { data, error } = await supabase.from('supplier_products').insert({ ...req.body, supplier_id: req.params.id }).select().single();
+  const PRODUCT_FIELDS = ['name', 'sku', 'unit', 'unit_price', 'vat_rate', 'category', 'description', 'min_order_qty', 'lead_time_days', 'active'];
+  const { data, error } = await supabase.from('supplier_products').insert({ ...pickFields(req.body, PRODUCT_FIELDS), supplier_id: req.params.id }).select().single();
   if (error) return res.status(400).json({ error: error.message });
+  await audit('supplier_product', data.id, 'created', req.actor || 'api',
+    `מוצר חדש לספק ${req.params.id}: ${data.name} (₪${data.unit_price || '?'}/${data.unit || '?'})`, null, data);
   res.status(201).json({ product: data });
 });
 
@@ -371,16 +692,32 @@ app.post('/api/quotes', async (req, res) => {
     return { ...item, total_price: Math.round(item.quantity * item.unit_price * discountMult) };
   });
 
-  const subtotal = lineItems.reduce((s, i) => s + i.total_price, 0);
+  // If line items already include VAT, net out before computing header
+  const grossSubtotal = lineItems.reduce((s, i) => s + (i.total_price || 0), 0);
   const deliveryFee = quoteData.free_delivery ? 0 : (quoteData.delivery_fee || 0);
-  const totalPrice = subtotal + deliveryFee;
-  const vatAmount = quoteData.vat_included ? 0 : Math.round(totalPrice * 0.18);
-  const totalWithVat = totalPrice + vatAmount;
+  // Robust VAT handling:
+  //   vat_included=true  →  prices include VAT, extract net
+  //   vat_included=false →  prices are net, add VAT on total (items+delivery)
+  let subtotal, vatAmount, totalPrice, totalWithVat;
+  if (quoteData.vat_included) {
+    subtotal = Math.round(grossSubtotal / (1 + VAT_RATE));
+    const deliveryNet = Math.round(deliveryFee / (1 + VAT_RATE));
+    vatAmount = (grossSubtotal - subtotal) + (deliveryFee - deliveryNet);
+    totalPrice = subtotal + deliveryNet;  // pre-VAT base for display
+    totalWithVat = grossSubtotal + deliveryFee;
+  } else {
+    subtotal = grossSubtotal;
+    totalPrice = subtotal + deliveryFee;
+    vatAmount = Math.round(totalPrice * VAT_RATE);
+    totalWithVat = totalPrice + vatAmount;
+  }
 
-  // Insert quote
+  // Insert quote — store both net subtotal AND gross total for audit trail
   const { data: quote, error } = await supabase.from('supplier_quotes').insert({
     ...quoteData,
+    subtotal,
     total_price: totalPrice,
+    vat_rate: VAT_RATE,
     vat_amount: vatAmount,
     total_with_vat: totalWithVat,
     delivery_fee: deliveryFee,
@@ -424,14 +761,32 @@ app.post('/api/quotes', async (req, res) => {
 
 app.post('/api/rfq/:id/decide', async (req, res) => {
   const rfqId = req.params.id;
-  const { price_weight, delivery_weight, rating_weight, reliability_weight } = req.body;
+  const { price_weight, delivery_weight, rating_weight, reliability_weight, force } = req.body;
 
-  // Weights
-  const weights = {
-    price: price_weight || 0.50,
-    delivery: delivery_weight || 0.15,
-    rating: rating_weight || 0.20,
-    reliability: reliability_weight || 0.15,
+  // Guard: RFQ must exist and not already be decided
+  const { data: rfqRow } = await supabase.from('rfqs').select('id, status').eq('id', rfqId).single();
+  if (!rfqRow) return res.status(404).json({ error: 'RFQ not found' });
+  if (rfqRow.status === 'decided' && !force) {
+    return res.status(409).json({ error: 'RFQ already decided — pass {force:true} to re-decide' });
+  }
+
+  // Weights — clamp 0..1, normalize to sum=1 (otherwise scores are meaningless)
+  const clamp = v => Math.max(0, Math.min(1, parseFloat(v) || 0));
+  let weights = {
+    price: clamp(price_weight ?? 0.50),
+    delivery: clamp(delivery_weight ?? 0.15),
+    rating: clamp(rating_weight ?? 0.20),
+    reliability: clamp(reliability_weight ?? 0.15),
+  };
+  const weightSum = weights.price + weights.delivery + weights.rating + weights.reliability;
+  if (weightSum === 0) {
+    return res.status(400).json({ error: 'All scoring weights are zero — cannot compute decision' });
+  }
+  weights = {
+    price: weights.price / weightSum,
+    delivery: weights.delivery / weightSum,
+    rating: weights.rating / weightSum,
+    reliability: weights.reliability / weightSum,
   };
 
   // Get all quotes for this RFQ
@@ -520,22 +875,25 @@ app.post('/api/rfq/:id/decide', async (req, res) => {
     `📊 משקלות: מחיר ${weights.price * 100}% | אספקה ${weights.delivery * 100}% | דירוג ${weights.rating * 100}% | אמינות ${weights.reliability * 100}%`,
   ];
 
-  // Create Purchase Order
+  // Create Purchase Order — subtotal MUST be net of VAT and net of delivery
+  // (winnerQuote.total_price is already pre-VAT in the updated quote logic)
+  const poSubtotal = winnerQuote.subtotal ?? Math.max(0, (winnerQuote.total_price || 0) - (winnerQuote.delivery_fee || 0));
   const { data: po } = await supabase.from('purchase_orders').insert({
     rfq_id: rfqId,
     supplier_id: winner.supplier_id,
     supplier_name: winner.supplier_name,
-    subtotal: winner.total_price - (winner.delivery_fee || 0),
-    delivery_fee: winner.delivery_fee || 0,
-    vat_amount: winnerQuote.vat_amount,
-    total: winner.total_with_vat,
+    subtotal: poSubtotal,
+    delivery_fee: winnerQuote.delivery_fee || 0,
+    vat_rate: winnerQuote.vat_rate || VAT_RATE,
+    vat_amount: winnerQuote.vat_amount || 0,
+    total: winnerQuote.total_with_vat || winner.total_with_vat,
     payment_terms: winner.payment_terms,
     expected_delivery: new Date(Date.now() + winner.delivery_days * 86400000).toISOString().split('T')[0],
     source: 'rfq',
     status: 'draft',
     original_price: maxPrice,
     negotiated_savings: savingsAmount,
-    requested_by: req.body.decided_by || 'system',
+    requested_by: req.actor || req.body.decided_by || 'system',
   }).select().single();
 
   // Copy line items to PO
@@ -658,23 +1016,41 @@ app.post('/api/purchase-orders/:id/send', async (req, res) => {
   ].join('\n');
 
   const address = supplier.whatsapp || supplier.phone;
-  let sendResult = { success: false };
+  let sendResult = { success: false, error: 'WhatsApp not configured or address missing' };
 
   if (WA_TOKEN && address) {
-    sendResult = await sendWhatsApp(address, message);
+    try {
+      sendResult = await sendWhatsApp(address, message);
+    } catch (err) {
+      sendResult = { success: false, error: err.message };
+    }
   }
 
-  await supabase.from('purchase_orders').update({
-    status: 'sent',
-    sent_at: new Date().toISOString(),
-  }).eq('id', po.id);
+  // Only mark PO as 'sent' if transmission actually succeeded
+  if (sendResult.success) {
+    await supabase.from('purchase_orders').update({
+      status: 'sent',
+      sent_at: new Date().toISOString(),
+      whatsapp_message_id: sendResult.messageId || null,
+      last_send_error: null,
+    }).eq('id', po.id);
+    await audit('purchase_order', po.id, 'sent', req.actor || req.body.sent_by || 'api',
+      `PO sent to ${po.supplier_name} via WhatsApp (msgId=${sendResult.messageId || 'n/a'})`);
+  } else {
+    await supabase.from('purchase_orders').update({
+      status: 'send_failed',
+      last_send_error: sendResult.error || `HTTP ${sendResult.status || 'unknown'}`,
+      send_attempt_at: new Date().toISOString(),
+    }).eq('id', po.id);
+    await audit('purchase_order', po.id, 'send_failed', req.actor || req.body.sent_by || 'api',
+      `PO send failed: ${sendResult.error || sendResult.status}`);
+  }
 
-  await audit('purchase_order', po.id, 'sent', req.body.sent_by || 'api', `PO sent to ${po.supplier_name} via WhatsApp`);
-
-  res.json({
+  res.status(sendResult.success ? 200 : 502).json({
     sent: sendResult.success,
     messageId: sendResult.messageId,
-    message: sendResult.success ? `📤 הזמנה נשלחה ל-${po.supplier_name}` : '❌ שליחה נכשלה',
+    error: sendResult.error,
+    message: sendResult.success ? `📤 הזמנה נשלחה ל-${po.supplier_name}` : `❌ שליחה נכשלה: ${sendResult.error || sendResult.status}`,
   });
 });
 
@@ -695,16 +1071,26 @@ app.post('/api/subcontractors', async (req, res) => {
   if (pricing?.length) {
     await supabase.from('subcontractor_pricing').insert(pricing.map(p => ({ ...p, subcontractor_id: data.id })));
   }
+  await audit('subcontractor', data.id, 'created', req.actor || 'api',
+    `קבלן משנה חדש: ${data.name} (${pricing?.length || 0} תעריפים)`, null, data);
   res.status(201).json({ subcontractor: data });
 });
 
-// Set pricing
+// Set pricing — CRITICAL AUDIT: fraud vector if unlogged
 app.put('/api/subcontractors/:id/pricing', async (req, res) => {
   const { work_type, percentage_rate, price_per_sqm, minimum_price } = req.body;
+  const { data: prev } = await supabase.from('subcontractor_pricing')
+    .select('*')
+    .eq('subcontractor_id', req.params.id)
+    .eq('work_type', work_type)
+    .maybeSingle();
   const { data, error } = await supabase.from('subcontractor_pricing').upsert({
     subcontractor_id: req.params.id, work_type, percentage_rate, price_per_sqm, minimum_price,
   }, { onConflict: 'subcontractor_id,work_type' }).select().single();
   if (error) return res.status(400).json({ error: error.message });
+  await audit('subcontractor_pricing', data.id, prev ? 'updated' : 'created', req.actor || 'api',
+    `תמחור ${work_type}: ${percentage_rate}% / ₪${price_per_sqm}/מ"ר / min ₪${minimum_price || 0}`,
+    prev, data);
   res.json({ pricing: data });
 });
 
@@ -778,7 +1164,7 @@ app.post('/api/subcontractors/decide', async (req, res) => {
   ];
 
   // Save decision
-  await supabase.from('subcontractor_decisions').insert({
+  const { data: subDecision } = await supabase.from('subcontractor_decisions').insert({
     project_name, client_name, work_type, project_value, area_sqm,
     selected_subcontractor_id: winner.subcontractor_id,
     selected_subcontractor_name: winner.name,
@@ -787,15 +1173,57 @@ app.post('/api/subcontractors/decide', async (req, res) => {
     alternative_cost: alternativeCost,
     savings_amount: savingsAmount, savings_percent: savingsPercent,
     reasoning,
-  });
+  }).select().single();
+
+  await audit('subcontractor_decision', subDecision?.id || winner.subcontractor_id, 'decided', req.actor || 'AI',
+    `בחר ${winner.name} ל-${work_type} בפרויקט ${project_name || 'ללא שם'} — ₪${winner.best_cost.toLocaleString()} (${winner.best_method})`,
+    null, { winner, savings: savingsAmount });
 
   res.json({
+    decision_id: subDecision?.id,
     winner, candidates, reasoning,
     savings: { amount: savingsAmount, percent: savingsPercent },
     gross_profit: { amount: grossProfit, margin: grossMargin },
     message: `🏆 ${winner.name} — ₪${winner.best_cost.toLocaleString()} (חיסכון ${savingsPercent}%)`,
   });
 });
+
+
+// ═══════════════════════════════════════════════════════════════
+// API: VAT / ANNUAL TAX / BANK RECONCILIATION / PAYROLL MODULES (Wave 1.5)
+// ═══════════════════════════════════════════════════════════════
+// B-08: Payroll / wage slip (employers, employees, wage_slips, PDFs)
+// B-09: VAT (PCN836, vat_periods, tax_invoices)
+// B-10: Annual tax (projects, customer_invoices, payments, forms 1301/1320/6111)
+// B-11: Bank reconciliation (accounts, statements, auto-match)
+
+try {
+  const { registerVatRoutes } = require('./src/vat/vat-routes');
+  registerVatRoutes(app, { supabase, audit, requireAuth, VAT_RATE });
+} catch (err) {
+  console.error('⚠️  VAT module failed to load:', err.message);
+}
+
+try {
+  const { registerAnnualTaxRoutes } = require('./src/tax/annual-tax-routes');
+  registerAnnualTaxRoutes(app, { supabase, audit });
+} catch (err) {
+  console.error('⚠️  Annual tax module failed to load:', err.message);
+}
+
+try {
+  const { registerBankRoutes } = require('./src/bank/bank-routes');
+  registerBankRoutes(app, { supabase, audit });
+} catch (err) {
+  console.error('⚠️  Bank reconciliation module failed to load:', err.message);
+}
+
+try {
+  const { registerPayrollRoutes } = require('./src/payroll/payroll-routes');
+  registerPayrollRoutes(app, { supabase, audit });
+} catch (err) {
+  console.error('⚠️  Payroll module failed to load:', err.message);
+}
 
 
 // ═══════════════════════════════════════════════════════════════
@@ -873,7 +1301,7 @@ app.get('/webhook/whatsapp', (req, res) => {
   }
 });
 
-app.post('/webhook/whatsapp', async (req, res) => {
+app.post('/webhook/whatsapp', verifyWhatsAppHmac, async (req, res) => {
   const body = req.body;
   const entry = body?.entry?.[0];
   const changes = entry?.changes?.[0];
@@ -905,19 +1333,93 @@ app.post('/webhook/whatsapp', async (req, res) => {
 // START SERVER
 // ═══════════════════════════════════════════════════════════════
 
+// Global error handler — never leak stack traces
+app.use((err, req, res, _next) => {
+  console.error(`[ERR] ${req.method} ${req.path}:`, err);
+  const isProd = process.env.NODE_ENV === 'production';
+  res.status(err.status || 500).json({
+    error: isProd ? 'Internal server error' : err.message,
+    ...(isProd ? {} : { stack: err.stack?.split('\n').slice(0, 5) }),
+  });
+});
+
+// Health check (public, no auth)
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// KUBERNETES-STYLE PROBES (public, no auth) — Agent 41
+// /healthz  → always 200 (liveness lite + metadata)
+// /livez    → always 200 (pure liveness)
+// /readyz   → 200 if Supabase responds within 2s, else 503
+// ═══════════════════════════════════════════════════════════════
+const SERVICE_NAME_AG41 = require('./package.json').name;
+const SERVICE_VERSION_AG41 = require('./package.json').version;
+
+app.get('/healthz', (_req, res) => {
+  res.status(200).json({
+    ok: true,
+    service: SERVICE_NAME_AG41,
+    version: SERVICE_VERSION_AG41,
+    uptime: process.uptime(),
+  });
+});
+
+app.get('/livez', (_req, res) => {
+  res.status(200).json({ alive: true });
+});
+
+app.get('/readyz', async (_req, res) => {
+  const DB_TIMEOUT_MS = 2000;
+  let timer;
+  try {
+    const dbPing = supabase.from('suppliers').select('id', { count: 'exact', head: true }).limit(1);
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error('db_timeout_2s')), DB_TIMEOUT_MS);
+    });
+    const result = await Promise.race([dbPing, timeout]);
+    clearTimeout(timer);
+    if (result && result.error) {
+      return res.status(503).json({ ready: false, reason: `db_error:${result.error.message || 'unknown'}` });
+    }
+    return res.status(200).json({ ready: true, service: SERVICE_NAME_AG41 });
+  } catch (err) {
+    clearTimeout(timer);
+    const reason = (err && err.message) ? err.message : 'db_unreachable';
+    return res.status(503).json({ ready: false, reason });
+  }
+});
+
+// ═══ ERROR TRACKER middleware — MUST be attached LAST, after all routes ═══
+try {
+  if (errorTracker && typeof errorTracker.errorHandler === 'function') {
+    app.use(errorTracker.errorHandler());
+  }
+} catch (e) {
+  console.warn('⚠️  ops/error-tracker handler not attached:', e && e.message);
+}
+
 const PORT = process.env.PORT || 3100;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
 ║   🚀 ONYX PROCUREMENT API SERVER                            ║
 ║                                                              ║
-║   Port: ${PORT}                                                ║
-║   Supabase: ${process.env.SUPABASE_URL ? '✅ Connected' : '❌ Not configured'}                          ║
-║   WhatsApp: ${WA_TOKEN ? '✅ Configured' : '❌ Not configured'}                          ║
+║   Port:       ${String(PORT).padEnd(46)}║
+║   Supabase:   ${(process.env.SUPABASE_URL ? '✅ Connected' : '❌ Not configured').padEnd(46)}║
+║   WhatsApp:   ${(WA_TOKEN ? '✅ Configured' : '❌ Not configured').padEnd(46)}║
+║   HMAC:       ${(WA_APP_SECRET ? '✅ Webhook signed' : '⚠️  Unsigned (dev only)').padEnd(46)}║
+║   Auth Mode:  ${AUTH_MODE.padEnd(46)}║
+║   API Keys:   ${String(API_KEYS.length).padEnd(46)}║
+║   VAT Rate:   ${String((VAT_RATE * 100).toFixed(1) + '%').padEnd(46)}║
+║   Rate Limit: ${String((parseInt(process.env.RATE_LIMIT_API_MAX) || 300) + ' req/15min').padEnd(46)}║
+║   NODE_ENV:   ${String(process.env.NODE_ENV || 'development').padEnd(46)}║
 ║                                                              ║
-║   Endpoints:                                                 ║
-║   GET  /api/status                                           ║
+║   Endpoints (all /api/ require X-API-Key except /status):    ║
+║   GET  /api/status                   ← public                ║
+║   GET  /api/health                   ← public                ║
 ║   GET  /api/suppliers                                        ║
 ║   POST /api/suppliers                                        ║
 ║   POST /api/purchase-requests                                ║
@@ -931,4 +1433,23 @@ app.listen(PORT, () => {
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
   `);
+});
+
+// Graceful shutdown
+function shutdown(signal) {
+  console.log(`\n${signal} received — shutting down gracefully...`);
+  server.close(() => {
+    console.log('✓ HTTP server closed');
+    process.exit(0);
+  });
+  setTimeout(() => {
+    console.error('⚠️  Forced shutdown after 10s timeout');
+    process.exit(1);
+  }, 10000).unref();
+}
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
+
+process.on('unhandledRejection', (reason) => {
+  console.error('❌ Unhandled promise rejection:', reason);
 });

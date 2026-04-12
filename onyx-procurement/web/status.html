@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System Status | סטטוס מערכת — Techno-Kol Uzi ERP 2026</title>
+  <style>
+    :root {
+      --bg-0: #05070a;
+      --bg-1: #0a0e14;
+      --bg-2: #111720;
+      --bg-3: #1a2230;
+      --border: #1f2a3a;
+      --border-hi: #2a3a52;
+      --text-0: #e6ecf5;
+      --text-1: #a8b4c8;
+      --text-2: #6b7a90;
+      --accent: #3a8dde;
+      --accent-hi: #5aa8ff;
+      --ok: #2bd48b;
+      --warn: #f2b84d;
+      --err: #ef5350;
+      --font: 'Segoe UI', 'Heebo', 'Assistant', 'Arial Hebrew', system-ui, sans-serif;
+      --mono: 'Consolas', 'Menlo', 'Monaco', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-0);
+      color: var(--text-0);
+      font-family: var(--font);
+      min-height: 100vh;
+      padding: 24px;
+      background-image:
+        radial-gradient(ellipse at top, rgba(58, 141, 222, 0.06), transparent 60%);
+      background-attachment: fixed;
+    }
+    .container { max-width: 960px; margin: 0 auto; }
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 18px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text-0);
+    }
+    h1 span.sub {
+      font-size: 13px;
+      color: var(--text-2);
+      font-weight: 400;
+      margin-inline-start: 8px;
+    }
+    .back-link {
+      color: var(--accent-hi);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg-2);
+      transition: background 0.15s;
+    }
+    .back-link:hover { background: var(--bg-3); }
+
+    .summary {
+      background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 22px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .summary-left strong { font-size: 16px; color: var(--text-0); }
+    .summary-left div { font-size: 12px; color: var(--text-2); margin-top: 3px; font-family: var(--mono); }
+    .summary-metrics { display: flex; gap: 24px; }
+    .metric {
+      text-align: center;
+    }
+    .metric .val {
+      font-size: 22px;
+      font-weight: 600;
+      font-family: var(--mono);
+    }
+    .metric.ok  .val { color: var(--ok); }
+    .metric.err .val { color: var(--err); }
+    .metric.tot .val { color: var(--accent-hi); }
+    .metric .lbl {
+      font-size: 10px;
+      color: var(--text-2);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    th {
+      background: var(--bg-2);
+      color: var(--text-2);
+      text-align: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-1);
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(58, 141, 222, 0.04); }
+
+    .service-name {
+      color: var(--text-0);
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .service-name small {
+      display: block;
+      font-size: 11px;
+      color: var(--text-2);
+      font-weight: 400;
+      margin-top: 2px;
+    }
+    .url {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-2);
+    }
+    .latency {
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      border: 1px solid transparent;
+      font-family: var(--font);
+    }
+    .badge .d {
+      width: 7px; height: 7px; border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .badge.up {
+      background: rgba(43, 212, 139, 0.08);
+      color: var(--ok);
+      border-color: rgba(43, 212, 139, 0.3);
+    }
+    .badge.up .d { background: var(--ok); box-shadow: 0 0 0 2px rgba(43, 212, 139, 0.2); }
+    .badge.down {
+      background: rgba(239, 83, 80, 0.08);
+      color: var(--err);
+      border-color: rgba(239, 83, 80, 0.3);
+    }
+    .badge.down .d { background: var(--err); box-shadow: 0 0 0 2px rgba(239, 83, 80, 0.2); }
+    .badge.checking {
+      background: rgba(242, 184, 77, 0.08);
+      color: var(--warn);
+      border-color: rgba(242, 184, 77, 0.3);
+    }
+    .badge.checking .d { background: var(--warn); box-shadow: 0 0 0 2px rgba(242, 184, 77, 0.2); }
+
+    footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 11px;
+      color: var(--text-2);
+      font-family: var(--mono);
+    }
+    footer .refresh {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--accent-hi);
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-top: 10px;
+      font-family: var(--font);
+    }
+    footer .refresh:hover { background: var(--bg-2); }
+
+    @media (max-width: 640px) {
+      .summary { flex-direction: column; align-items: flex-start; }
+      .summary-metrics { gap: 16px; }
+      table { font-size: 12px; }
+      th, td { padding: 10px 8px; }
+      .url { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <h1>
+        System Status
+        <span class="sub">· סטטוס מערכת</span>
+      </h1>
+      <a href="index.html" class="back-link">חזרה לבית ←</a>
+    </header>
+
+    <div class="summary">
+      <div class="summary-left">
+        <strong id="overall-text">בודק שירותים…</strong>
+        <div>עדכון אחרון: <span id="last-check">—</span></div>
+      </div>
+      <div class="summary-metrics">
+        <div class="metric tot"><div class="val" id="m-total">0</div><div class="lbl">Total</div></div>
+        <div class="metric ok"><div class="val" id="m-up">0</div><div class="lbl">Up</div></div>
+        <div class="metric err"><div class="val" id="m-down">0</div><div class="lbl">Down</div></div>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>שירות / Service</th>
+          <th>Endpoint</th>
+          <th>Latency</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="service-tbody">
+      </tbody>
+    </table>
+
+    <footer>
+      <div>Techno-Kol Uzi ERP 2026 · Poll every 15s · <span id="build-date">2026-04-11</span></div>
+      <button class="refresh" onclick="runAllChecks()">בדוק כעת</button>
+    </footer>
+
+  </div>
+
+  <script>
+    /* ============================================================
+       Vanilla JS service health poller
+       ============================================================ */
+    var SERVICES = [
+      { id: 'onyx',     name: 'Onyx Procurement', hebName: 'רכש',        url: '/api/health' },
+      { id: 'vat',      name: 'VAT Reporting',    hebName: 'מע"מ',       url: '/api/vat/health' },
+      { id: 'bank',     name: 'Bank Recon',       hebName: 'התאמת בנק',  url: '/api/bank/health' },
+      { id: 'tax',      name: 'Annual Tax',       hebName: 'מס שנתי',    url: '/api/tax/health' },
+      { id: 'payroll',  name: 'Payroll',          hebName: 'שכר',         url: 'http://localhost:5173/health' },
+      { id: 'ops',      name: 'Techno-Kol OPS',   hebName: 'תפעול',       url: 'http://localhost:4000/health' },
+      { id: 'ai',       name: 'Onyx AI',          hebName: 'בינה',        url: 'http://localhost:3200/health' },
+      { id: 'db',       name: 'Database',         hebName: 'מסד נתונים',  url: '/api/health/db' }
+    ];
+
+    var POLL_MS = 15000;
+    var TIMEOUT_MS = 5000;
+
+    function $(id) { return document.getElementById(id); }
+
+    function escapeHtml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function renderTable() {
+      var tbody = $('service-tbody');
+      tbody.innerHTML = '';
+      for (var i = 0; i < SERVICES.length; i++) {
+        var s = SERVICES[i];
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td class="service-name">' + escapeHtml(s.hebName) +
+            '<small>' + escapeHtml(s.name) + '</small></td>' +
+          '<td class="url">' + escapeHtml(s.url) + '</td>' +
+          '<td class="latency" id="lat-' + s.id + '">—</td>' +
+          '<td><span class="badge checking" id="badge-' + s.id + '">' +
+            '<span class="d"></span><span>בודק</span></span></td>';
+        tbody.appendChild(tr);
+      }
+    }
+
+    function setBadge(id, state, label) {
+      var el = $('badge-' + id);
+      if (!el) return;
+      el.className = 'badge ' + state;
+      el.innerHTML = '<span class="d"></span><span>' + escapeHtml(label) + '</span>';
+    }
+
+    function checkService(svc) {
+      var start = performance.now();
+      var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var to = setTimeout(function () { if (ctrl) ctrl.abort(); }, TIMEOUT_MS);
+
+      return fetch(svc.url, {
+        method: 'GET',
+        cache: 'no-store',
+        signal: ctrl ? ctrl.signal : undefined,
+        mode: 'cors'
+      }).then(function (r) {
+        clearTimeout(to);
+        var ms = Math.round(performance.now() - start);
+        var latEl = $('lat-' + svc.id);
+        if (latEl) latEl.textContent = ms + ' ms';
+        if (r.ok) {
+          setBadge(svc.id, 'up', 'UP');
+          return true;
+        }
+        setBadge(svc.id, 'down', 'DOWN ' + r.status);
+        return false;
+      }).catch(function () {
+        clearTimeout(to);
+        var latEl = $('lat-' + svc.id);
+        if (latEl) latEl.textContent = 'timeout';
+        setBadge(svc.id, 'down', 'DOWN');
+        return false;
+      });
+    }
+
+    function runAllChecks() {
+      $('m-total').textContent = SERVICES.length;
+      for (var i = 0; i < SERVICES.length; i++) {
+        setBadge(SERVICES[i].id, 'checking', 'בודק');
+        var latEl = $('lat-' + SERVICES[i].id);
+        if (latEl) latEl.textContent = '—';
+      }
+      var promises = SERVICES.map(function (s) { return checkService(s); });
+      Promise.all(promises).then(function (results) {
+        var up = 0, down = 0;
+        for (var j = 0; j < results.length; j++) {
+          if (results[j]) up++; else down++;
+        }
+        $('m-up').textContent   = up;
+        $('m-down').textContent = down;
+
+        var txt = $('overall-text');
+        if (down === 0)            { txt.textContent = 'כל השירותים פעילים'; txt.style.color = '#2bd48b'; }
+        else if (up === 0)         { txt.textContent = 'כל השירותים לא זמינים'; txt.style.color = '#ef5350'; }
+        else                       { txt.textContent = down + ' שירותים במצב ירידה'; txt.style.color = '#f2b84d'; }
+
+        var d = new Date();
+        var pad = function (n) { return n < 10 ? '0' + n : n; };
+        $('last-check').textContent =
+          pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+      });
+    }
+
+    renderTable();
+    runAllChecks();
+    setInterval(runAllChecks, POLL_MS);
+  </script>
+</body>
+</html>

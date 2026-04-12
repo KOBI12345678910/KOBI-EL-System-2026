@@ -64,14 +64,14 @@ export const signatureService = {
           RETURNING *
         `, [
           doc.id, r.type, r.name, r.phone || null,
-          r.email || null, r.employeeId || null, r.clientId || null,
+          r.email ?? null, r.employeeId ?? null, r.clientId ?? null,
           r.signingOrder || 1, r.isRequired !== false
         ]);
         recipients.push(recRows[0]);
       }
 
       // לוג יצירה
-      await this.auditLog(client, doc.id, 'created', 'user', params.createdBy, 'המסמך נוצר');
+      await this.auditLog(client, doc.id, 'created', 'user', params.createdBy ?? null, 'המסמך נוצר');
 
       await client.query('COMMIT');
 

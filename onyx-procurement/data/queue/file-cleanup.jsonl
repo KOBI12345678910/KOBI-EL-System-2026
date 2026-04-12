@@ -1,0 +1,3 @@
+{"op":"add","job":{"id":"mnu9vi6t-9edc16dd98ff","type":"purge","payload":{"path":"/tmp/foo"},"priority":1,"status":"pending","createdAt":1775908175573,"runAt":1775908175573,"visibleUntil":null,"attempts":0,"maxAttempts":3,"lastError":null,"completedAt":null}}
+{"op":"claim","id":"mnu9vi6t-9edc16dd98ff","at":1775908175694,"visibleUntil":1775908235694}
+{"op":"ack","id":"mnu9vi6t-9edc16dd98ff","at":1775908175695}

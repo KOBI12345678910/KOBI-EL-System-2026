@@ -1,0 +1,81 @@
+Method,Endpoint,Module,Admin,Manager,Accountant,Employee,Viewer,Guest,CurrentBehavior,BugID,Severity,Notes
+GET,/api/status,core,ALLOW,ALLOW,ALLOW,ALLOW,ALLOW,ALLOW,OK,,,Public by design
+GET,/api/health,core,ALLOW,ALLOW,ALLOW,ALLOW,ALLOW,ALLOW,OK,,,Public by design
+GET,/healthz,core,ALLOW,ALLOW,ALLOW,ALLOW,ALLOW,ALLOW,OK,,,Public by design
+GET,/livez,core,ALLOW,ALLOW,ALLOW,ALLOW,ALLOW,ALLOW,OK,,,Public by design
+GET,/readyz,core,ALLOW,ALLOW,ALLOW,ALLOW,ALLOW,ALLOW,OK,,,Public by design
+GET,/metrics,ops,ALLOW,DENY,DENY,DENY,DENY,DENY,OPEN,BUG-QA12-009,MED,Prometheus endpoint currently unauthenticated
+GET,/api/suppliers,procurement,ALLOW,ALLOW,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,Auth enforced but no role gate
+GET,/api/suppliers/:id,procurement,ALLOW,ALLOW,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+POST,/api/suppliers,procurement,ALLOW,ALLOW,DENY,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Viewer can POST
+PATCH,/api/suppliers/:id,procurement,ALLOW,ALLOW,DENY,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Viewer can PATCH
+POST,/api/suppliers/:id/products,procurement,ALLOW,ALLOW,DENY,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Viewer can POST
+GET,/api/suppliers/search/:category,procurement,ALLOW,ALLOW,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+POST,/api/purchase-requests,procurement,ALLOW,ALLOW,DENY,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Viewer can POST
+GET,/api/purchase-requests,procurement,ALLOW,ALLOW,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+POST,/api/rfq/send,procurement,ALLOW,ALLOW,DENY,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Viewer can POST
+GET,/api/rfq/:id,procurement,ALLOW,ALLOW,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+GET,/api/rfqs,procurement,ALLOW,ALLOW,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+POST,/api/quotes,procurement,ALLOW,ALLOW,DENY,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Viewer can POST
+POST,/api/rfq/:id/decide,procurement,ALLOW,ALLOW,DENY,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Viewer can POST
+GET,/api/purchase-orders,procurement,ALLOW,ALLOW,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+GET,/api/purchase-orders/:id,procurement,ALLOW,ALLOW,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+POST,/api/purchase-orders/:id/approve,procurement,ALLOW,ALLOW,DENY,DENY,DENY,DENY,BUG,BUG-QA12-006,MED,SoD - accountant can approve POs
+POST,/api/purchase-orders/:id/send,procurement,ALLOW,ALLOW,DENY,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Viewer/emp/acct can POST
+GET,/api/subcontractors,procurement,ALLOW,ALLOW,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+POST,/api/subcontractors,procurement,ALLOW,ALLOW,DENY,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Viewer can POST
+PUT,/api/subcontractors/:id/pricing,procurement,ALLOW,ALLOW,DENY,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Viewer can PUT
+POST,/api/subcontractors/decide,procurement,ALLOW,ALLOW,DENY,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Viewer can POST
+GET,/api/analytics/savings,analytics,ALLOW,ALLOW,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+GET,/api/analytics/spend-by-supplier,analytics,ALLOW,ALLOW,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+GET,/api/analytics/spend-by-category,analytics,ALLOW,ALLOW,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+GET,/api/audit,audit,ALLOW,DENY,ALLOW,DENY,DENY,DENY,BUG,BUG-QA12-010,MED,Audit log readable by any authenticated caller
+GET,/api/payroll/employers,payroll,ALLOW,ALLOW,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+POST,/api/payroll/employers,payroll,ALLOW,DENY,DENY,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Non-admin roles can POST
+GET,/api/payroll/employees,payroll,ALLOW,ALLOW,ALLOW,DENY,ALLOW,DENY,BUG,BUG-QA12-001,HIGH,Employee can list all employees
+POST,/api/payroll/employees,payroll,ALLOW,ALLOW,DENY,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Viewer/emp can POST
+PATCH,/api/payroll/employees/:id,payroll,ALLOW,ALLOW,DENY,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Viewer/emp can PATCH
+GET,/api/payroll/wage-slips,payroll,ALLOW,ALLOW,ALLOW,SELF,ALLOW,DENY,BUG,BUG-QA12-001,HIGH,Employee sees all wage slips
+POST,/api/payroll/wage-slips/compute,payroll,ALLOW,ALLOW,ALLOW,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Viewer/emp can POST
+POST,/api/payroll/wage-slips,payroll,ALLOW,ALLOW,ALLOW,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Viewer/emp can POST
+GET,/api/payroll/wage-slips/:id,payroll,ALLOW,ALLOW,ALLOW,SELF,ALLOW,DENY,BUG,BUG-QA12-002,CRITICAL,IDOR - employee reads others
+POST,/api/payroll/wage-slips/:id/approve,payroll,ALLOW,ALLOW,DENY,DENY,DENY,DENY,BUG,BUG-QA12-007,HIGH,Employee can self-approve
+POST,/api/payroll/wage-slips/:id/issue,payroll,ALLOW,ALLOW,ALLOW,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Viewer/emp can POST
+GET,/api/payroll/wage-slips/:id/pdf,payroll,ALLOW,ALLOW,ALLOW,SELF,ALLOW,DENY,BUG,BUG-QA12-002,CRITICAL,IDOR via PDF route
+POST,/api/payroll/wage-slips/:id/void,payroll,ALLOW,ALLOW,DENY,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Viewer/emp/acct can void
+GET,/api/payroll/employees/:id/balances,payroll,ALLOW,ALLOW,ALLOW,SELF,ALLOW,DENY,BUG,BUG-QA12-003,CRITICAL,IDOR on balances
+POST,/api/payroll/employees/:id/balances,payroll,ALLOW,ALLOW,DENY,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Any authenticated can POST
+GET,/api/vat/profile,vat,ALLOW,DENY,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+PUT,/api/vat/profile,vat,ALLOW,DENY,ALLOW,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Any authenticated can PUT
+GET,/api/vat/periods,vat,ALLOW,DENY,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+POST,/api/vat/periods,vat,ALLOW,DENY,ALLOW,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Any authenticated can POST
+GET,/api/vat/periods/:id,vat,ALLOW,DENY,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+POST,/api/vat/periods/:id/close,vat,ALLOW,DENY,ALLOW,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Any authenticated can close period
+POST,/api/vat/periods/:id/submit,vat,ALLOW,DENY,ALLOW,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Any authenticated can submit to tax authority
+GET,/api/vat/periods/:id/pcn836,vat,ALLOW,DENY,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+GET,/api/vat/invoices,vat,ALLOW,DENY,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+POST,/api/vat/invoices,vat,ALLOW,DENY,ALLOW,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Any authenticated can POST
+GET,/api/projects,annual-tax,ALLOW,ALLOW,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+POST,/api/projects,annual-tax,ALLOW,ALLOW,DENY,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Any authenticated can POST
+PATCH,/api/projects/:id,annual-tax,ALLOW,ALLOW,DENY,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Any authenticated can PATCH
+GET,/api/customers,annual-tax,ALLOW,ALLOW,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+POST,/api/customers,annual-tax,ALLOW,ALLOW,ALLOW,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Any authenticated can POST
+GET,/api/customer-invoices,annual-tax,ALLOW,ALLOW,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+POST,/api/customer-invoices,annual-tax,ALLOW,ALLOW,ALLOW,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Any authenticated can POST
+GET,/api/customer-payments,annual-tax,ALLOW,ALLOW,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+POST,/api/customer-payments,annual-tax,ALLOW,ALLOW,ALLOW,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Any authenticated can POST
+GET,/api/fiscal-years,annual-tax,ALLOW,DENY,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+POST,/api/fiscal-years/:year/compute,annual-tax,ALLOW,DENY,ALLOW,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Any authenticated can compute
+POST,/api/annual-tax/:year/forms/:type/generate,annual-tax,ALLOW,DENY,ALLOW,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Any authenticated can generate
+GET,/api/annual-tax/:year/forms,annual-tax,ALLOW,DENY,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+GET,/api/bank/accounts,bank,ALLOW,DENY,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+POST,/api/bank/accounts,bank,ALLOW,DENY,ALLOW,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Any authenticated can POST
+PATCH,/api/bank/accounts/:id,bank,ALLOW,DENY,ALLOW,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Any authenticated can PATCH
+POST,/api/bank/accounts/:id/import,bank,ALLOW,DENY,ALLOW,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Any authenticated can import
+GET,/api/bank/transactions,bank,ALLOW,DENY,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+POST,/api/bank/accounts/:id/auto-reconcile,bank,ALLOW,DENY,ALLOW,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Any authenticated can reconcile
+POST,/api/bank/matches,bank,ALLOW,DENY,ALLOW,DENY,DENY,DENY,BUG,BUG-QA12-005,HIGH,Any authenticated can create match
+GET,/api/bank/discrepancies,bank,ALLOW,DENY,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+GET,/api/bank/summary,bank,ALLOW,DENY,ALLOW,DENY,ALLOW,DENY,OK-auth-only,,,
+GET,/webhook/whatsapp,webhook,PUBLIC,PUBLIC,PUBLIC,PUBLIC,PUBLIC,PUBLIC,OK,,,Meta verification handshake
+POST,/webhook/whatsapp,webhook,HMAC,HMAC,HMAC,HMAC,HMAC,HMAC,OK,,,HMAC-verified via WHATSAPP_APP_SECRET

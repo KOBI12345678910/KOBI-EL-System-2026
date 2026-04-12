@@ -1,13 +1,37 @@
 import { useState, useEffect, useCallback } from "react";
 
-const API = "http://localhost:3100";
+// Dynamic API base — uses env var, then current host, falls back to localhost:3100
+// B-02: was hardcoded "http://localhost:3100" which broke prod deployments
+const API = (() => {
+  if (typeof window === 'undefined') return 'http://localhost:3100';
+  if (import.meta?.env?.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  if (window.ONYX_API_URL) return window.ONYX_API_URL;
+  // Same-origin: use current protocol+host
+  const { protocol, host, hostname } = window.location;
+  if (hostname === 'localhost' || hostname === '127.0.0.1') return 'http://localhost:3100';
+  return `${protocol}//${host}`;
+})();
+
+const API_KEY = (() => {
+  if (typeof window === 'undefined') return '';
+  if (import.meta?.env?.VITE_API_KEY) return import.meta.env.VITE_API_KEY;
+  return localStorage.getItem('onyx_api_key') || '';
+})();
 
 // ═══ API Helper ═══
 async function api(path, method = "GET", body = null) {
   try {
-    const opts = { method, headers: { "Content-Type": "application/json" } };
+    const headers = { "Content-Type": "application/json" };
+    if (API_KEY) headers["X-API-Key"] = API_KEY;
+    const opts = { method, headers };
     if (body) opts.body = JSON.stringify(body);
     const res = await fetch(`${API}${path}`, opts);
+    if (res.status === 401) {
+      return { error: 'לא מאומת — חסר X-API-Key. עדכן ב-localStorage או ב-.env' };
+    }
+    if (res.status === 429) {
+      return { error: 'יותר מדי בקשות — חרגת ממגבלת הקצב. נסה שוב בעוד דקה.' };
+    }
     return await res.json();
   } catch (e) {
     return { error: e.message };

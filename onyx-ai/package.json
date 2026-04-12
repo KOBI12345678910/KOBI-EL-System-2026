@@ -1,20 +1,25 @@
 {
   "name": "onyx-ai",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "ONYX AI — Institutional-grade autonomous agent platform (Event Sourcing, Governor, Knowledge Graph, DAG Orchestrator)",
   "main": "dist/index.js",
   "type": "commonjs",
   "scripts": {
+    "prebuild": "rimraf dist",
     "build": "tsc",
+    "prestart": "npm run build",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
     "watch": "tsc --watch",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "test": "echo \"tests coming soon\" && exit 0",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "express": "^4.21.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "helmet": "^8.0.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
@@ -25,6 +30,6 @@
     "rimraf": "^6.0.1"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   }
 }

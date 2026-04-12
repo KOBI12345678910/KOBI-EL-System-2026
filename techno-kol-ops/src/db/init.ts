@@ -12,7 +12,7 @@ export async function initDatabase(): Promise<void> {
   console.log('[db:init] Checking database schema...');
 
   try {
-    const existsResult = await query<{ exists: boolean }>(
+    const existsResult = await query(
       `SELECT EXISTS (
          SELECT 1
          FROM information_schema.tables

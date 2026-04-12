@@ -86,7 +86,6 @@ router.post('/documents/employee-contract', authenticate, async (req: AuthReques
       type: 'contract_employee',
       title: `חוזה עבודה — ${employeeName}`,
       content,
-      employeeId: employeeId || null,
       recipients: [
         {
           type: 'employee',

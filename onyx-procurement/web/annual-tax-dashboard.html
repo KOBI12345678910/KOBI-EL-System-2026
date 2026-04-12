@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Annual Tax Dashboard — טכנו כל עוזי 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    html, body, #root { height: 100%; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0c0f1a;
+      color: #e2e8f0;
+      font-family: 'Rubik', -apple-system, BlinkMacSystemFont, sans-serif;
+      direction: rtl;
+      -webkit-font-smoothing: antialiased;
+    }
+    #loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      color: #64748b;
+      font-size: 14px;
+    }
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid #1e293b;
+      border-top-color: #38bdf8;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <div id="loading">
+      <div class="spinner"></div>
+      <span>טוען דשבורד מס שנתי...</span>
+    </div>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "react": "https://esm.sh/react@18.3.1",
+      "react-dom/client": "https://esm.sh/react-dom@18.3.1/client"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import React from 'react';
+    import { createRoot } from 'react-dom/client';
+
+    // Optional: set API base via window before mounting
+    // window.ONYX_API_URL = 'http://localhost:3100';
+
+    import('./annual-tax-dashboard.jsx')
+      .then(mod => {
+        const AnnualTaxDashboard = mod.default;
+        const root = createRoot(document.getElementById('root'));
+        root.render(React.createElement(AnnualTaxDashboard));
+      })
+      .catch(err => {
+        document.getElementById('root').innerHTML =
+          '<div style="padding:40px;text-align:center;color:#f87171">' +
+          '<h2>שגיאה בטעינת הדשבורד</h2>' +
+          '<pre style="margin-top:16px;color:#64748b;font-size:12px;direction:ltr;text-align:left;background:#111;padding:12px;border-radius:8px">' +
+          (err && err.stack ? err.stack : String(err)) +
+          '</pre>' +
+          '<p style="margin-top:16px;color:#94a3b8">טען דרך Vite או bundler שמקמפל JSX</p>' +
+          '</div>';
+      });
+  </script>
+</body>
+</html>

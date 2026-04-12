@@ -1,0 +1,54 @@
+# ─── Node / npm ───────────────────────────────────────────────────────
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ─── Build artifacts ──────────────────────────────────────────────────
+dist
+build
+coverage
+*.tsbuildinfo
+
+# ─── Env / secrets ────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ─── Editor / OS ──────────────────────────────────────────────────────
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# ─── Git / CI ─────────────────────────────────────────────────────────
+.git
+.gitignore
+.github
+.gitlab-ci.yml
+
+# ─── Tests / docs (kept out of runtime image) ─────────────────────────
+test
+tests
+__tests__
+*.test.ts
+*.spec.ts
+*.md
+
+# ─── Client (separate Vite frontend; not part of API image) ───────────
+client
+
+# ─── Runtime data / logs ──────────────────────────────────────────────
+logs
+*.log
+
+# ─── Docker itself ────────────────────────────────────────────────────
+Dockerfile*
+.dockerignore
+docker-compose*.yml

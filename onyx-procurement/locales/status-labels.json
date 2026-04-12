@@ -1,0 +1,515 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "generated_at": "2026-04-11",
+    "description": "Bilingual (HE/EN) status labels for Onyx Procurement entities",
+    "label_count": 78,
+    "color_hint": "Suggested UI color for each status — used by badges/chips"
+  },
+
+  "statuses": {
+    "document": {
+      "DRAFT": {
+        "he": "טיוטה",
+        "en": "Draft",
+        "color": "gray",
+        "ctx": "Document not yet submitted"
+      },
+      "PENDING": {
+        "he": "ממתין",
+        "en": "Pending",
+        "color": "yellow",
+        "ctx": "Awaiting action"
+      },
+      "IN_REVIEW": {
+        "he": "בבדיקה",
+        "en": "In Review",
+        "color": "blue",
+        "ctx": "Under reviewer's attention"
+      },
+      "PENDING_APPROVAL": {
+        "he": "ממתין לאישור",
+        "en": "Pending Approval",
+        "color": "yellow",
+        "ctx": "Awaiting approver signoff"
+      },
+      "APPROVED": {
+        "he": "מאושר",
+        "en": "Approved",
+        "color": "green",
+        "ctx": "Approval granted"
+      },
+      "REJECTED": {
+        "he": "נדחה",
+        "en": "Rejected",
+        "color": "red",
+        "ctx": "Approval denied"
+      },
+      "RETURNED": {
+        "he": "הוחזר לתיקון",
+        "en": "Returned for Revision",
+        "color": "orange",
+        "ctx": "Sent back to author"
+      },
+      "CANCELLED": {
+        "he": "מבוטל",
+        "en": "Cancelled",
+        "color": "gray",
+        "ctx": "Actively cancelled"
+      },
+      "VOIDED": {
+        "he": "בוטל",
+        "en": "Voided",
+        "color": "red",
+        "ctx": "Marked as void (not legally valid)"
+      },
+      "EXPIRED": {
+        "he": "פג תוקף",
+        "en": "Expired",
+        "color": "red",
+        "ctx": "Passed validity date"
+      },
+      "ARCHIVED": {
+        "he": "בארכיון",
+        "en": "Archived",
+        "color": "gray",
+        "ctx": "Moved to archive"
+      },
+      "LOCKED": {
+        "he": "נעול",
+        "en": "Locked",
+        "color": "purple",
+        "ctx": "Not editable"
+      },
+      "FINALIZED": {
+        "he": "סופי",
+        "en": "Finalized",
+        "color": "green",
+        "ctx": "No further changes allowed"
+      }
+    },
+
+    "payment": {
+      "UNPAID": {
+        "he": "לא שולם",
+        "en": "Unpaid",
+        "color": "red",
+        "ctx": "No payment received"
+      },
+      "PARTIALLY_PAID": {
+        "he": "שולם חלקית",
+        "en": "Partially Paid",
+        "color": "orange",
+        "ctx": "Payment less than total"
+      },
+      "PAID": {
+        "he": "שולם",
+        "en": "Paid",
+        "color": "green",
+        "ctx": "Fully paid"
+      },
+      "OVERPAID": {
+        "he": "שולם ביתר",
+        "en": "Overpaid",
+        "color": "orange",
+        "ctx": "Payment exceeds total"
+      },
+      "OVERDUE": {
+        "he": "פגור",
+        "en": "Overdue",
+        "color": "red",
+        "ctx": "Past due date"
+      },
+      "PAYMENT_SCHEDULED": {
+        "he": "תשלום מתוזמן",
+        "en": "Payment Scheduled",
+        "color": "blue",
+        "ctx": "Future-dated payment"
+      },
+      "PAYMENT_PROCESSING": {
+        "he": "תשלום בטיפול",
+        "en": "Payment Processing",
+        "color": "blue",
+        "ctx": "Payment in progress"
+      },
+      "PAYMENT_FAILED": {
+        "he": "תשלום נכשל",
+        "en": "Payment Failed",
+        "color": "red",
+        "ctx": "Payment did not go through"
+      },
+      "REFUNDED": {
+        "he": "הוחזר",
+        "en": "Refunded",
+        "color": "purple",
+        "ctx": "Money returned"
+      }
+    },
+
+    "purchase_order": {
+      "PO_DRAFT": {
+        "he": "הזמנה בטיוטה",
+        "en": "PO Draft",
+        "color": "gray",
+        "ctx": "Unsubmitted PO"
+      },
+      "PO_SUBMITTED": {
+        "he": "הזמנה נשלחה לאישור",
+        "en": "PO Submitted",
+        "color": "yellow",
+        "ctx": "Awaiting approver"
+      },
+      "PO_APPROVED": {
+        "he": "הזמנה אושרה",
+        "en": "PO Approved",
+        "color": "green",
+        "ctx": "Approved for supplier"
+      },
+      "PO_SENT": {
+        "he": "הזמנה נשלחה לספק",
+        "en": "PO Sent",
+        "color": "blue",
+        "ctx": "Dispatched to supplier"
+      },
+      "PO_ACKNOWLEDGED": {
+        "he": "הזמנה אושרה ע\"י הספק",
+        "en": "PO Acknowledged",
+        "color": "blue",
+        "ctx": "Supplier confirmed receipt"
+      },
+      "PO_PARTIAL_DELIVERY": {
+        "he": "משלוח חלקי",
+        "en": "Partial Delivery",
+        "color": "orange",
+        "ctx": "Some items received"
+      },
+      "PO_DELIVERED": {
+        "he": "נמסר",
+        "en": "Delivered",
+        "color": "green",
+        "ctx": "All items received"
+      },
+      "PO_INVOICED": {
+        "he": "התקבלה חשבונית",
+        "en": "Invoiced",
+        "color": "blue",
+        "ctx": "Supplier invoice received"
+      },
+      "PO_CLOSED": {
+        "he": "הזמנה סגורה",
+        "en": "PO Closed",
+        "color": "green",
+        "ctx": "Fully completed"
+      },
+      "PO_CANCELLED": {
+        "he": "הזמנה בוטלה",
+        "en": "PO Cancelled",
+        "color": "red",
+        "ctx": "PO cancelled"
+      }
+    },
+
+    "invoice": {
+      "INV_DRAFT": {
+        "he": "חשבונית בטיוטה",
+        "en": "Invoice Draft",
+        "color": "gray",
+        "ctx": "Unissued invoice"
+      },
+      "INV_ISSUED": {
+        "he": "חשבונית הונפקה",
+        "en": "Invoice Issued",
+        "color": "blue",
+        "ctx": "Sent to customer"
+      },
+      "INV_RECEIVED": {
+        "he": "חשבונית התקבלה",
+        "en": "Invoice Received",
+        "color": "blue",
+        "ctx": "Received from supplier"
+      },
+      "INV_MATCHED": {
+        "he": "חשבונית תואמה",
+        "en": "Invoice Matched",
+        "color": "blue",
+        "ctx": "3-way match complete"
+      },
+      "INV_APPROVED_FOR_PAYMENT": {
+        "he": "מאושר לתשלום",
+        "en": "Approved for Payment",
+        "color": "green",
+        "ctx": "Ready for payment run"
+      },
+      "INV_ON_HOLD": {
+        "he": "מעוכב",
+        "en": "On Hold",
+        "color": "orange",
+        "ctx": "Payment held due to issue"
+      },
+      "INV_DISPUTED": {
+        "he": "במחלוקת",
+        "en": "Disputed",
+        "color": "red",
+        "ctx": "Invoice contested"
+      }
+    },
+
+    "payroll": {
+      "PAYROLL_OPEN": {
+        "he": "תקופה פתוחה",
+        "en": "Period Open",
+        "color": "blue",
+        "ctx": "Payroll period editable"
+      },
+      "PAYROLL_CALCULATING": {
+        "he": "בחישוב",
+        "en": "Calculating",
+        "color": "blue",
+        "ctx": "Calc engine running"
+      },
+      "PAYROLL_CALCULATED": {
+        "he": "חושב",
+        "en": "Calculated",
+        "color": "blue",
+        "ctx": "Calculation complete, not yet approved"
+      },
+      "PAYROLL_PENDING_APPROVAL": {
+        "he": "ממתין לאישור מנהל",
+        "en": "Pending Manager Approval",
+        "color": "yellow",
+        "ctx": "Awaiting manager sign-off"
+      },
+      "PAYROLL_APPROVED": {
+        "he": "שכר מאושר",
+        "en": "Payroll Approved",
+        "color": "green",
+        "ctx": "Ready for disbursement"
+      },
+      "PAYROLL_PAID": {
+        "he": "שכר שולם",
+        "en": "Payroll Paid",
+        "color": "green",
+        "ctx": "Salaries disbursed"
+      },
+      "PAYROLL_CLOSED": {
+        "he": "תקופה סגורה",
+        "en": "Period Closed",
+        "color": "purple",
+        "ctx": "Locked — no more edits"
+      }
+    },
+
+    "reconciliation": {
+      "RECON_PENDING": {
+        "he": "התאמה ממתינה",
+        "en": "Reconciliation Pending",
+        "color": "yellow",
+        "ctx": "Not yet started"
+      },
+      "RECON_IN_PROGRESS": {
+        "he": "בהתאמה",
+        "en": "Reconciliation In Progress",
+        "color": "blue",
+        "ctx": "Reconciliation ongoing"
+      },
+      "RECON_MATCHED": {
+        "he": "תואם",
+        "en": "Matched",
+        "color": "green",
+        "ctx": "Successfully reconciled"
+      },
+      "RECON_UNMATCHED": {
+        "he": "לא תואם",
+        "en": "Unmatched",
+        "color": "orange",
+        "ctx": "No match found"
+      },
+      "RECON_RESOLVED": {
+        "he": "נפתר",
+        "en": "Resolved",
+        "color": "green",
+        "ctx": "Discrepancy resolved"
+      },
+      "RECON_DISCREPANCY": {
+        "he": "פער",
+        "en": "Discrepancy",
+        "color": "red",
+        "ctx": "Open reconciliation issue"
+      }
+    },
+
+    "tax_filing": {
+      "FILING_NOT_STARTED": {
+        "he": "לא החלה הגשה",
+        "en": "Not Started",
+        "color": "gray",
+        "ctx": "Report not yet prepared"
+      },
+      "FILING_PREPARING": {
+        "he": "בהכנה",
+        "en": "Preparing",
+        "color": "blue",
+        "ctx": "Report under preparation"
+      },
+      "FILING_READY": {
+        "he": "מוכן להגשה",
+        "en": "Ready to File",
+        "color": "blue",
+        "ctx": "Ready for submission"
+      },
+      "FILING_SUBMITTED": {
+        "he": "הוגש",
+        "en": "Submitted",
+        "color": "blue",
+        "ctx": "Filed with authority"
+      },
+      "FILING_ACCEPTED": {
+        "he": "התקבל",
+        "en": "Accepted",
+        "color": "green",
+        "ctx": "Authority accepted filing"
+      },
+      "FILING_REJECTED": {
+        "he": "נדחה",
+        "en": "Rejected",
+        "color": "red",
+        "ctx": "Authority rejected filing"
+      },
+      "FILING_AMENDED": {
+        "he": "מתוקן",
+        "en": "Amended",
+        "color": "orange",
+        "ctx": "Amended filing submitted"
+      }
+    },
+
+    "employee": {
+      "EMPLOYEE_ACTIVE": {
+        "he": "עובד פעיל",
+        "en": "Active Employee",
+        "color": "green",
+        "ctx": "Currently employed"
+      },
+      "EMPLOYEE_ON_LEAVE": {
+        "he": "בחופשה",
+        "en": "On Leave",
+        "color": "yellow",
+        "ctx": "Vacation/sick/maternity"
+      },
+      "EMPLOYEE_SUSPENDED": {
+        "he": "מושעה",
+        "en": "Suspended",
+        "color": "red",
+        "ctx": "Temporarily suspended"
+      },
+      "EMPLOYEE_TERMINATED": {
+        "he": "סיים עבודתו",
+        "en": "Terminated",
+        "color": "gray",
+        "ctx": "Employment ended"
+      },
+      "EMPLOYEE_PENDING_ONBOARDING": {
+        "he": "בהליכי קליטה",
+        "en": "Pending Onboarding",
+        "color": "yellow",
+        "ctx": "Not yet fully onboarded"
+      }
+    },
+
+    "supplier": {
+      "SUPPLIER_ACTIVE": {
+        "he": "ספק פעיל",
+        "en": "Active Supplier",
+        "color": "green",
+        "ctx": "Approved and active"
+      },
+      "SUPPLIER_PENDING": {
+        "he": "ספק ממתין לאישור",
+        "en": "Pending Approval",
+        "color": "yellow",
+        "ctx": "Awaiting initial onboarding"
+      },
+      "SUPPLIER_INACTIVE": {
+        "he": "ספק לא פעיל",
+        "en": "Inactive Supplier",
+        "color": "gray",
+        "ctx": "Soft-deactivated"
+      },
+      "SUPPLIER_BLACKLISTED": {
+        "he": "ספק ברשימה שחורה",
+        "en": "Blacklisted",
+        "color": "red",
+        "ctx": "Cannot place new orders"
+      }
+    },
+
+    "generic": {
+      "SUCCESS": {
+        "he": "הצליח",
+        "en": "Success",
+        "color": "green",
+        "ctx": "Positive outcome"
+      },
+      "FAILED": {
+        "he": "נכשל",
+        "en": "Failed",
+        "color": "red",
+        "ctx": "Negative outcome"
+      },
+      "ERROR": {
+        "he": "שגיאה",
+        "en": "Error",
+        "color": "red",
+        "ctx": "Error state"
+      },
+      "WARNING": {
+        "he": "אזהרה",
+        "en": "Warning",
+        "color": "orange",
+        "ctx": "Warning state"
+      },
+      "INFO": {
+        "he": "מידע",
+        "en": "Info",
+        "color": "blue",
+        "ctx": "Informational"
+      },
+      "LOADING": {
+        "he": "טוען",
+        "en": "Loading",
+        "color": "blue",
+        "ctx": "Loading data"
+      },
+      "SYNCING": {
+        "he": "מסנכרן",
+        "en": "Syncing",
+        "color": "blue",
+        "ctx": "Sync in progress"
+      },
+      "SYNCED": {
+        "he": "מסונכרן",
+        "en": "Synced",
+        "color": "green",
+        "ctx": "Sync complete"
+      },
+      "OUT_OF_SYNC": {
+        "he": "לא מסונכרן",
+        "en": "Out of Sync",
+        "color": "orange",
+        "ctx": "Sync needed"
+      },
+      "ONLINE": {
+        "he": "מחובר",
+        "en": "Online",
+        "color": "green",
+        "ctx": "Connected"
+      },
+      "OFFLINE": {
+        "he": "לא מחובר",
+        "en": "Offline",
+        "color": "gray",
+        "ctx": "Disconnected"
+      }
+    }
+  }
+}

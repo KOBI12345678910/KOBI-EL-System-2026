@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Priority>
+  <ORDER>
+    <ORDNAME>PO-2026-001</ORDNAME>
+    <CUSTNAME>Epsilon Industries</CUSTNAME>
+    <CURDATE>2026-01-05</CURDATE>
+    <TOTPRICE>5000</TOTPRICE>
+  </ORDER>
+  <ORDER>
+    <ORDNAME>PO-2026-002</ORDNAME>
+    <CUSTNAME>Zeta Trading</CUSTNAME>
+    <CURDATE>2026-01-08</CURDATE>
+    <TOTPRICE>12500</TOTPRICE>
+  </ORDER>
+</Priority>

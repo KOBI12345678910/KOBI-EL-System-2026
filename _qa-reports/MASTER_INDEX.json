@@ -1,0 +1,3239 @@
+{
+  "schema": "grand-consolidator/v1",
+  "agent": "Y-200",
+  "generated": "2026-04-11 13:03:49",
+  "rule": "לא מוחקים רק משדרגים ומגדלים",
+  "celebration": "כל 200 הסוכנים הושלמו · All 200 agents completed",
+  "totals": {
+    "reports": 264,
+    "tests": 64840,
+    "sizeKb": 4219.73,
+    "green": 150,
+    "yellow": 0,
+    "red": 30,
+    "unknown": 84,
+    "errors": 0
+  },
+  "groups": [
+    {
+      "key": "SWARM1",
+      "label_he": "נחיל 1 — בסיס (גלים 1–10 / AG-1..AG-50)",
+      "label_en": "Swarm 1 — Foundation (Waves 1-10 / AG-1..AG-50)",
+      "count": 0,
+      "tests": 0
+    },
+    {
+      "key": "SWARM2",
+      "label_he": "נחיל 2 — הרחבה (AG-51..AG-100)",
+      "label_en": "Swarm 2 — Expansion (AG-51..AG-100)",
+      "count": 13,
+      "tests": 532
+    },
+    {
+      "key": "SWARM3",
+      "label_he": "נחיל 3 — מודולי AI (AG-X01..AG-X100)",
+      "label_en": "Swarm 3 — AI Modules (AG-X01..AG-X100)",
+      "count": 67,
+      "tests": 2640
+    },
+    {
+      "key": "QA_FRAMEWORK",
+      "label_he": "מסגרת QA — 20 סוכנים (QA-01..QA-20)",
+      "label_en": "QA Framework — 20 Agents (QA-01..QA-20)",
+      "count": 26,
+      "tests": 4165
+    },
+    {
+      "key": "WAVE_Y_01_14",
+      "label_he": "גל Y — חטיבה ראשונה (Y-001..Y-014)",
+      "label_en": "Wave Y — Division 1 (Y-001..Y-014)",
+      "count": 14,
+      "tests": 4449
+    },
+    {
+      "key": "WAVE_Y_15_50",
+      "label_he": "גל Y — חטיבת מכירות/תפעול (Y-015..Y-050)",
+      "label_en": "Wave Y — Sales/Ops Division (Y-015..Y-050)",
+      "count": 32,
+      "tests": 1227
+    },
+    {
+      "key": "WAVE_Y_51_100",
+      "label_he": "גל Y — חטיבת לקוחות/HR (Y-051..Y-100)",
+      "label_en": "Wave Y — Customer/HR Division (Y-051..Y-100)",
+      "count": 44,
+      "tests": 48662
+    },
+    {
+      "key": "WAVE_Y_101_150",
+      "label_he": "גל Y — חטיבת מסמכים/תקשורת (Y-101..Y-150)",
+      "label_en": "Wave Y — Docs/Comms Division (Y-101..Y-150)",
+      "count": 18,
+      "tests": 578
+    },
+    {
+      "key": "WAVE_Y_151_200",
+      "label_he": "גל Y — חטיבת הסיום (Y-151..Y-200)",
+      "label_en": "Wave Y — Final Division (Y-151..Y-200)",
+      "count": 50,
+      "tests": 2587
+    },
+    {
+      "key": "OTHER",
+      "label_he": "אחר / לא מסווג",
+      "label_en": "Other / Unclassified",
+      "count": 0,
+      "tests": 0
+    }
+  ],
+  "reports": [
+    {
+      "agentId": "AG-100",
+      "title": "AG-100 — Anomaly Detection Engine for Financial Transactions",
+      "testsCount": 34,
+      "statusClaim": "GREEN",
+      "sizeKb": 8.05,
+      "lastModified": "2026-04-11T11:57:38.832Z",
+      "fileName": "AG-100-anomaly-detector.md",
+      "swarm": "SWARM2",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-58",
+      "title": "AG-58 — DB Connection-Pool Audit",
+      "testsCount": 48,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 13.4,
+      "lastModified": "2026-04-11T11:45:24.595Z",
+      "fileName": "AG-58-connection-audit.md",
+      "swarm": "SWARM2",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-81",
+      "title": "AG-81 — i18n Audit + Hebrew Translation Coverage",
+      "testsCount": 0,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 17.65,
+      "lastModified": "2026-04-11T11:55:44.122Z",
+      "fileName": "AG-81-i18n.md",
+      "swarm": "SWARM2",
+      "flags": {
+        "NO_TESTS": true,
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-89",
+      "title": "AG-89 — PDF Invoice Parser (Israeli Tax Invoices)",
+      "testsCount": 46,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 9.12,
+      "lastModified": "2026-04-11T11:57:58.548Z",
+      "fileName": "AG-89-pdf-invoice-parser.md",
+      "swarm": "SWARM2",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-90",
+      "title": "AG-90 — Smart Bank Transaction Categorizer",
+      "testsCount": 30,
+      "statusClaim": "RED",
+      "sizeKb": 8.82,
+      "lastModified": "2026-04-11T11:57:37.391Z",
+      "fileName": "AG-90-smart-categorizer.md",
+      "swarm": "SWARM2",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-92",
+      "title": "AG-92 — IBAN Validator (Israeli-aware)",
+      "testsCount": 47,
+      "statusClaim": "GREEN",
+      "sizeKb": 9.77,
+      "lastModified": "2026-04-11T11:55:22.038Z",
+      "fileName": "AG-92-iban-validator.md",
+      "swarm": "SWARM2",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-93",
+      "title": "AG-93 — Israeli Phone Validator & Carrier Detector",
+      "testsCount": 72,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 12.05,
+      "lastModified": "2026-04-11T11:55:32.829Z",
+      "fileName": "AG-93-phone-validator.md",
+      "swarm": "SWARM2",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-94",
+      "title": "AG-94 — Israeli Company ID Validator",
+      "testsCount": 35,
+      "statusClaim": "RED",
+      "sizeKb": 10.18,
+      "lastModified": "2026-04-11T11:55:35.054Z",
+      "fileName": "AG-94-company-id-validator.md",
+      "swarm": "SWARM2",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-95",
+      "title": "AG-95 — Israeli Tax File Validator (תיק ניכויים)",
+      "testsCount": 102,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 11.77,
+      "lastModified": "2026-04-11T11:58:22.345Z",
+      "fileName": "AG-95-tax-file-validator.md",
+      "swarm": "SWARM2",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-96",
+      "title": "AG-96 — TOTP / 2FA Module",
+      "testsCount": 64,
+      "statusClaim": "GREEN",
+      "sizeKb": 11.13,
+      "lastModified": "2026-04-11T11:55:58.382Z",
+      "fileName": "AG-96-totp-2fa.md",
+      "swarm": "SWARM2",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-97",
+      "title": "AG-97 — RBAC Module (Role-Based Access Control)",
+      "testsCount": 54,
+      "statusClaim": "GREEN",
+      "sizeKb": 17.01,
+      "lastModified": "2026-04-11T11:58:09.686Z",
+      "fileName": "AG-97-rbac.md",
+      "swarm": "SWARM2",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-98",
+      "title": "AG-98 — Audit Trail UI Component",
+      "testsCount": 0,
+      "statusClaim": "RED",
+      "sizeKb": 11.47,
+      "lastModified": "2026-04-11T11:56:01.682Z",
+      "fileName": "AG-98-audit-trail-ui.md",
+      "swarm": "SWARM2",
+      "flags": {
+        "NO_TESTS": true,
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-99",
+      "title": "AG-99 — BI Dashboard (pure-SVG charts)",
+      "testsCount": 0,
+      "statusClaim": "RED",
+      "sizeKb": 13.46,
+      "lastModified": "2026-04-11T11:58:17.383Z",
+      "fileName": "AG-99-bi-dashboard.md",
+      "swarm": "SWARM2",
+      "flags": {
+        "NO_TESTS": true,
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-X02",
+      "title": "AG-X02 — Duplicate Bill / Invoice Detector",
+      "testsCount": 43,
+      "statusClaim": "GREEN",
+      "sizeKb": 6.58,
+      "lastModified": "2026-04-11T11:57:20.780Z",
+      "fileName": "AG-X02-duplicate-detector.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X05",
+      "title": "AG-X05 — Vendor Performance Scoring",
+      "testsCount": 100,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 12.69,
+      "lastModified": "2026-04-11T11:59:25.303Z",
+      "fileName": "AG-X05-vendor-scoring.md",
+      "swarm": "SWARM3",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-X07",
+      "title": "AG-X07 — Dynamic Price Optimizer (Metal Fabrication)",
+      "testsCount": 24,
+      "statusClaim": "GREEN",
+      "sizeKb": 7.56,
+      "lastModified": "2026-04-11T11:59:02.493Z",
+      "fileName": "AG-X07-price-optimizer.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X08",
+      "title": "AG-X08 — Inventory Optimizer (EOQ / ROP / ABC / XYZ)",
+      "testsCount": 80,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 10.06,
+      "lastModified": "2026-04-11T11:58:50.916Z",
+      "fileName": "AG-X08-inventory-optimizer.md",
+      "swarm": "SWARM3",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-X09",
+      "title": "AG-X09 — Delivery Route Optimizer",
+      "testsCount": 24,
+      "statusClaim": "GREEN",
+      "sizeKb": 15.12,
+      "lastModified": "2026-04-11T12:01:33.024Z",
+      "fileName": "AG-X09-route-optimizer.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X100",
+      "title": "AG-X100 — Grand Aggregator / אגרגטור אב",
+      "testsCount": 34,
+      "statusClaim": "GREEN",
+      "sizeKb": 23.85,
+      "lastModified": "2026-04-11T12:29:59.785Z",
+      "fileName": "AG-X100-grand-aggregator.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X11",
+      "title": "AG-X11 — Demand Forecaster (Multi-Model Ensemble)",
+      "testsCount": 65,
+      "statusClaim": "GREEN",
+      "sizeKb": 13.98,
+      "lastModified": "2026-04-11T12:02:36.824Z",
+      "fileName": "AG-X11-demand-forecaster.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X12",
+      "title": "AG-X12 — HR Analytics Dashboard Backend",
+      "testsCount": 30,
+      "statusClaim": "GREEN",
+      "sizeKb": 8.24,
+      "lastModified": "2026-04-11T12:00:03.826Z",
+      "fileName": "AG-X12-hr-analytics.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X13",
+      "title": "AG-X13 — Real-time Operations Dashboard (SSE)",
+      "testsCount": 26,
+      "statusClaim": "GREEN",
+      "sizeKb": 15.54,
+      "lastModified": "2026-04-11T12:00:18.761Z",
+      "fileName": "AG-X13-realtime-dashboard.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X14",
+      "title": "AG-X14 — Full-Text Search Engine (Hebrew + English, Zero-Dep Inverted Index)",
+      "testsCount": 47,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 13.33,
+      "lastModified": "2026-04-11T12:00:44.609Z",
+      "fileName": "AG-X14-search-engine.md",
+      "swarm": "SWARM3",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-X15",
+      "title": "AG-X15 — Declarative Workflow Engine",
+      "testsCount": 30,
+      "statusClaim": "GREEN",
+      "sizeKb": 9.59,
+      "lastModified": "2026-04-11T12:01:21.714Z",
+      "fileName": "AG-X15-workflow-engine.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X16",
+      "title": "AG-X16 — In-App Notification Center + Preference Manager",
+      "testsCount": 21,
+      "statusClaim": "GREEN",
+      "sizeKb": 12.18,
+      "lastModified": "2026-04-11T12:03:15.126Z",
+      "fileName": "AG-X16-notification-center.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X17",
+      "title": "AG-X17 — AI Summarizer (Pluggable Backend)",
+      "testsCount": 48,
+      "statusClaim": "GREEN",
+      "sizeKb": 11.72,
+      "lastModified": "2026-04-11T12:04:21.171Z",
+      "fileName": "AG-X17-ai-summarizer.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X19",
+      "title": "AG-X19 — PWA Offline Support",
+      "testsCount": 408,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 11,
+      "lastModified": "2026-04-11T12:00:26.932Z",
+      "fileName": "AG-X19-pwa-offline.md",
+      "swarm": "SWARM3",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-X20",
+      "title": "AG-X20 — Mobile-Responsive Layout Primitives",
+      "testsCount": 22,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 8.45,
+      "lastModified": "2026-04-11T12:00:52.578Z",
+      "fileName": "AG-X20-mobile-responsive.md",
+      "swarm": "SWARM3",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-X21",
+      "title": "AG-X21 — Customer Support Ticketing System — QA Report",
+      "testsCount": 54,
+      "statusClaim": "GREEN",
+      "sizeKb": 12.12,
+      "lastModified": "2026-04-11T12:04:19.723Z",
+      "fileName": "AG-X21-ticketing.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X22",
+      "title": "AG-X22 — Internal Knowledge Base / Help Center",
+      "testsCount": 23,
+      "statusClaim": "RED",
+      "sizeKb": 10.56,
+      "lastModified": "2026-04-11T12:05:32.542Z",
+      "fileName": "AG-X22-knowledge-base.md",
+      "swarm": "SWARM3",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-X23",
+      "title": "AG-X23 — Contract Management + E-Signature Flow",
+      "testsCount": 24,
+      "statusClaim": "GREEN",
+      "sizeKb": 17.87,
+      "lastModified": "2026-04-11T12:06:55.815Z",
+      "fileName": "AG-X23-contract-management.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X24",
+      "title": "AG-X24 — Project Management Module (PM Engine + Gantt)",
+      "testsCount": 28,
+      "statusClaim": "RED",
+      "sizeKb": 11.33,
+      "lastModified": "2026-04-11T12:04:24.377Z",
+      "fileName": "AG-X24-project-management.md",
+      "swarm": "SWARM3",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-X25",
+      "title": "AG-X25 — Time Tracking & Kiosk Clock-In",
+      "testsCount": 32,
+      "statusClaim": "GREEN",
+      "sizeKb": 12.9,
+      "lastModified": "2026-04-11T12:05:25.190Z",
+      "fileName": "AG-X25-time-tracking.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X26",
+      "title": "Agent X-26 — Employee Expense Reports",
+      "testsCount": 2,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 13.55,
+      "lastModified": "2026-04-11T12:09:24.009Z",
+      "fileName": "AG-X26-expense-reports.md",
+      "swarm": "SWARM3",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-X27",
+      "title": "AG-X27 — Budget Planning & Variance Analysis",
+      "testsCount": 28,
+      "statusClaim": "GREEN",
+      "sizeKb": 12.93,
+      "lastModified": "2026-04-11T12:03:35.193Z",
+      "fileName": "AG-X27-budget-planner.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X28",
+      "title": "AG-X28 — RFQ Workflow (Procurement)",
+      "testsCount": 26,
+      "statusClaim": "GREEN",
+      "sizeKb": 12.56,
+      "lastModified": "2026-04-11T12:06:00.962Z",
+      "fileName": "AG-X28-rfq-workflow.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X29",
+      "title": "AG-X29 — Self-Service Supplier Portal",
+      "testsCount": 37,
+      "statusClaim": "GREEN",
+      "sizeKb": 10.74,
+      "lastModified": "2026-04-11T12:05:13.279Z",
+      "fileName": "AG-X29-supplier-portal.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X30",
+      "title": "AG-X30 — Self-Service Customer Portal",
+      "testsCount": 61,
+      "statusClaim": "GREEN",
+      "sizeKb": 12.87,
+      "lastModified": "2026-04-11T12:07:38.994Z",
+      "fileName": "AG-X30-customer-portal.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X32",
+      "title": "AG-X32 — Returns & RMA Engine",
+      "testsCount": 33,
+      "statusClaim": "GREEN",
+      "sizeKb": 13.91,
+      "lastModified": "2026-04-11T12:04:51.131Z",
+      "fileName": "AG-X32-rma.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X33",
+      "title": "AG-X33 — Warranty Tracker",
+      "testsCount": 30,
+      "statusClaim": "GREEN",
+      "sizeKb": 8.43,
+      "lastModified": "2026-04-11T12:03:02.682Z",
+      "fileName": "AG-X33-warranty.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X34",
+      "title": "AG-X34 — Fixed Asset Management & Depreciation Engine",
+      "testsCount": 32,
+      "statusClaim": "GREEN",
+      "sizeKb": 8.95,
+      "lastModified": "2026-04-11T12:03:56.798Z",
+      "fileName": "AG-X34-asset-management.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X35",
+      "title": "AG-X35 — CRM Sales Pipeline (Deals / Kanban / Forecast)",
+      "testsCount": 32,
+      "statusClaim": "GREEN",
+      "sizeKb": 10.57,
+      "lastModified": "2026-04-11T12:06:31.275Z",
+      "fileName": "AG-X35-crm-pipeline.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X36",
+      "title": "AG-X36 — Multi-Currency FX Engine (Bank of Israel)",
+      "testsCount": 28,
+      "statusClaim": "GREEN",
+      "sizeKb": 10.5,
+      "lastModified": "2026-04-11T12:05:36.535Z",
+      "fileName": "AG-X36-fx-engine.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X37",
+      "title": "AG-X37 — Automatic Bank Reconciliation Engine",
+      "testsCount": 30,
+      "statusClaim": "GREEN",
+      "sizeKb": 10.79,
+      "lastModified": "2026-04-11T12:05:51.211Z",
+      "fileName": "AG-X37-bank-reconciliation.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X38",
+      "title": "AG-X38 — PO Approval Matrix / מטריצת אישור הזמנות רכש",
+      "testsCount": 33,
+      "statusClaim": "GREEN",
+      "sizeKb": 11.29,
+      "lastModified": "2026-04-11T12:06:58.793Z",
+      "fileName": "AG-X38-po-approval-matrix.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X39",
+      "title": "AG-X39 — Manual Journal Entry Builder (GL)",
+      "testsCount": 34,
+      "statusClaim": "GREEN",
+      "sizeKb": 14.99,
+      "lastModified": "2026-04-11T12:06:10.416Z",
+      "fileName": "AG-X39-journal-entry.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X41",
+      "title": "AG-X41 — Inter-Company Transaction Engine (Techno-Kol group)",
+      "testsCount": 26,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 17.16,
+      "lastModified": "2026-04-11T12:08:27.844Z",
+      "fileName": "AG-X41-intercompany.md",
+      "swarm": "SWARM3",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-X43",
+      "title": "AG-X43 — Cost Center Allocation Engine",
+      "testsCount": 18,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 13.98,
+      "lastModified": "2026-04-11T12:08:49.877Z",
+      "fileName": "AG-X43-cost-allocation.md",
+      "swarm": "SWARM3",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-X44",
+      "title": "AG-X44 — Petty Cash / Imprest Fund Management",
+      "testsCount": 20,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 14.08,
+      "lastModified": "2026-04-11T12:08:12.429Z",
+      "fileName": "AG-X44-petty-cash.md",
+      "swarm": "SWARM3",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-X46",
+      "title": "AG-X46 — Deposit Slip Generator",
+      "testsCount": 26,
+      "statusClaim": "GREEN",
+      "sizeKb": 9.4,
+      "lastModified": "2026-04-11T12:08:11.201Z",
+      "fileName": "AG-X46-deposit-slip.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X47",
+      "title": "AG-X47 — Israeli Withholding-Tax Form 857 (אישור ניכוי במקור) Processing Engine",
+      "testsCount": 35,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 14.67,
+      "lastModified": "2026-04-11T12:08:07.907Z",
+      "fileName": "AG-X47-form-857.md",
+      "swarm": "SWARM3",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-X48",
+      "title": "AG-X48 — Collections & Dunning Workflow (AR Aging + Automation)",
+      "testsCount": 45,
+      "statusClaim": "RED",
+      "sizeKb": 12,
+      "lastModified": "2026-04-11T12:07:35.306Z",
+      "fileName": "AG-X48-collections.md",
+      "swarm": "SWARM3",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-X49",
+      "title": "AG-X49 — Payment Run Engine / מנוע רצף תשלומים",
+      "testsCount": 29,
+      "statusClaim": "GREEN",
+      "sizeKb": 9.98,
+      "lastModified": "2026-04-11T12:08:55.554Z",
+      "fileName": "AG-X49-payment-run.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X50",
+      "title": "AG-X50 — Masav Bank File Exporter (מס\"ב)",
+      "testsCount": 40,
+      "statusClaim": "GREEN",
+      "sizeKb": 11.63,
+      "lastModified": "2026-04-11T12:08:08.200Z",
+      "fileName": "AG-X50-masav-exporter.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X51",
+      "title": "AG-X51 — Structured Logger (Techno-Kol / ONYX ops)",
+      "testsCount": 28,
+      "statusClaim": "GREEN",
+      "sizeKb": 12.79,
+      "lastModified": "2026-04-11T12:08:33.686Z",
+      "fileName": "AG-X51-structured-logger.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X53",
+      "title": "AG-X53 — Distributed Tracer (OpenTelemetry-compatible)",
+      "testsCount": 28,
+      "statusClaim": "GREEN",
+      "sizeKb": 9,
+      "lastModified": "2026-04-11T12:08:15.871Z",
+      "fileName": "AG-X53-tracer.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X54",
+      "title": "AG-X54 — Log Aggregation & Search Backend (Loki-lite, Self-Hosted)",
+      "testsCount": 44,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 19.47,
+      "lastModified": "2026-04-11T12:10:43.042Z",
+      "fileName": "AG-X54-log-store.md",
+      "swarm": "SWARM3",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-X56",
+      "title": "AG-X56 — Health Checks / Liveness / Readiness / Startup",
+      "testsCount": 42,
+      "statusClaim": "GREEN",
+      "sizeKb": 13.73,
+      "lastModified": "2026-04-11T12:08:33.995Z",
+      "fileName": "AG-X56-health-checks.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X59",
+      "title": "AG-X59 — Application Performance Monitoring (APM)",
+      "testsCount": 41,
+      "statusClaim": "GREEN",
+      "sizeKb": 9.99,
+      "lastModified": "2026-04-11T12:09:40.755Z",
+      "fileName": "AG-X59-apm.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X60",
+      "title": "AG-X60 — SLO / SLI Tracker with Error Budgets",
+      "testsCount": 33,
+      "statusClaim": "GREEN",
+      "sizeKb": 13.23,
+      "lastModified": "2026-04-11T12:11:25.135Z",
+      "fileName": "AG-X60-slo-tracker.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X61",
+      "title": "AG-X61 — Incident Management (Swarm 3D)",
+      "testsCount": 37,
+      "statusClaim": "GREEN",
+      "sizeKb": 11.02,
+      "lastModified": "2026-04-11T12:10:44.357Z",
+      "fileName": "AG-X61-incident-mgmt.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X63",
+      "title": "AG-X63 — Dependency Health Monitor",
+      "testsCount": 24,
+      "statusClaim": "GREEN",
+      "sizeKb": 10.38,
+      "lastModified": "2026-04-11T12:10:14.335Z",
+      "fileName": "AG-X63-dep-health.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X65",
+      "title": "AG-X65 — Synthetic Monitor (Canary Transactions)",
+      "testsCount": 22,
+      "statusClaim": "GREEN",
+      "sizeKb": 17.43,
+      "lastModified": "2026-04-11T12:11:10.520Z",
+      "fileName": "AG-X65-synthetic-monitor.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X82",
+      "title": "AG-X82 — GraphQL Schema + Executor (zero-dep)",
+      "testsCount": 42,
+      "statusClaim": "GREEN",
+      "sizeKb": 19.55,
+      "lastModified": "2026-04-11T12:24:26.162Z",
+      "fileName": "AG-X82-graphql-schema.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X83",
+      "title": "AG-X83 — onyx-cli (Admin CLI for Operators)",
+      "testsCount": 0,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 20.28,
+      "lastModified": "2026-04-11T12:23:03.143Z",
+      "fileName": "AG-X83-onyx-cli.md",
+      "swarm": "SWARM3",
+      "flags": {
+        "NO_TESTS": true,
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-X84",
+      "title": "AG-X84 — PostgreSQL Migration Framework",
+      "testsCount": 3,
+      "statusClaim": "GREEN",
+      "sizeKb": 17.24,
+      "lastModified": "2026-04-11T12:22:41.985Z",
+      "fileName": "AG-X84-migrator.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X85",
+      "title": "AG-X85 — Israeli Seed Data Generator",
+      "testsCount": 56,
+      "statusClaim": "GREEN",
+      "sizeKb": 29.44,
+      "lastModified": "2026-04-11T12:25:20.500Z",
+      "fileName": "AG-X85-israeli-seed.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X86",
+      "title": "AG-X86 — E2E Test Harness (Playwright-compatible, zero-dep)",
+      "testsCount": 11,
+      "statusClaim": "GREEN",
+      "sizeKb": 20.54,
+      "lastModified": "2026-04-11T12:28:21.214Z",
+      "fileName": "AG-X86-e2e-harness.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X87",
+      "title": "AG-X87 — Load Harness (zero-dep k6/vegeta-style)",
+      "testsCount": 40,
+      "statusClaim": "RED",
+      "sizeKb": 20.91,
+      "lastModified": "2026-04-11T12:25:42.124Z",
+      "fileName": "AG-X87-load-harness.md",
+      "swarm": "SWARM3",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-X88",
+      "title": "AG-X88 — Node.js Performance Profiler",
+      "testsCount": 23,
+      "statusClaim": "GREEN",
+      "sizeKb": 17.11,
+      "lastModified": "2026-04-11T12:21:04.589Z",
+      "fileName": "AG-X88-profiler.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X89",
+      "title": "AG-X89 — Memory Leak Detector / גלאי דליפות זיכרון",
+      "testsCount": 25,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 16.13,
+      "lastModified": "2026-04-11T12:22:35.337Z",
+      "fileName": "AG-X89-leak-detector.md",
+      "swarm": "SWARM3",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-X90",
+      "title": "AG-X90 — Code Coverage Collector",
+      "testsCount": 19,
+      "statusClaim": "GREEN",
+      "sizeKb": 13.77,
+      "lastModified": "2026-04-11T12:22:13.073Z",
+      "fileName": "AG-X90-coverage.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X91",
+      "title": "AG-X91 — Dependency Audit + SBOM Generator",
+      "testsCount": 51,
+      "statusClaim": "GREEN",
+      "sizeKb": 18.67,
+      "lastModified": "2026-04-11T12:23:16.928Z",
+      "fileName": "AG-X91-dep-audit.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X92",
+      "title": "AG-X92 — License Compliance Scanner",
+      "testsCount": 54,
+      "statusClaim": "GREEN",
+      "sizeKb": 18.26,
+      "lastModified": "2026-04-11T12:23:36.609Z",
+      "fileName": "AG-X92-license-scanner.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X93",
+      "title": "AG-X93 — Deploy Manifest Generator",
+      "testsCount": 25,
+      "statusClaim": "GREEN",
+      "sizeKb": 17.89,
+      "lastModified": "2026-04-11T12:23:06.980Z",
+      "fileName": "AG-X93-deploy-manifests.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X94",
+      "title": "AG-X94 — Backup & Restore Tool (`BackupTool`)",
+      "testsCount": 25,
+      "statusClaim": "GREEN",
+      "sizeKb": 17.78,
+      "lastModified": "2026-04-11T12:25:35.133Z",
+      "fileName": "AG-X94-backup-tool.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X96",
+      "title": "AG-X96 — Master Health Dashboard (Observability Aggregator)",
+      "testsCount": 33,
+      "statusClaim": "RED",
+      "sizeKb": 15.53,
+      "lastModified": "2026-04-11T12:25:56.000Z",
+      "fileName": "AG-X96-master-dashboard.md",
+      "swarm": "SWARM3",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-X97",
+      "title": "AG-X97 — Unified Config Manager",
+      "testsCount": 55,
+      "statusClaim": "GREEN",
+      "sizeKb": 17.79,
+      "lastModified": "2026-04-11T12:26:35.367Z",
+      "fileName": "AG-X97-config-manager.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-X98",
+      "title": "AG-X98 — Feature Flag System",
+      "testsCount": 24,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 13.43,
+      "lastModified": "2026-04-11T12:23:29.820Z",
+      "fileName": "AG-X98-feature-flags.md",
+      "swarm": "SWARM3",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-X99",
+      "title": "AG-X99 — A/B Testing Framework (onyx-procurement)",
+      "testsCount": 47,
+      "statusClaim": "GREEN",
+      "sizeKb": 15.2,
+      "lastModified": "2026-04-11T12:26:35.291Z",
+      "fileName": "AG-X99-ab-testing.md",
+      "swarm": "SWARM3",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y001",
+      "title": "AG-Y001 — Form 1301 (Israeli Annual Personal Income Tax Return) — QA Report",
+      "testsCount": 10,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 14.11,
+      "lastModified": "2026-04-11T12:27:44.311Z",
+      "fileName": "AG-Y001-form-1301.md",
+      "swarm": "WAVE_Y_01_14",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y002",
+      "title": "AG-Y002 — Form 6111 (דוח מתואם לצורכי מס)",
+      "testsCount": 55,
+      "statusClaim": "GREEN",
+      "sizeKb": 20.13,
+      "lastModified": "2026-04-11T12:34:09.462Z",
+      "fileName": "AG-Y002-form-6111.md",
+      "swarm": "WAVE_Y_01_14",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y003",
+      "title": "AG-Y003 — Form 102 (טופס 102) Monthly Withholding Report",
+      "testsCount": 35,
+      "statusClaim": "RED",
+      "sizeKb": 14.97,
+      "lastModified": "2026-04-11T12:26:11.182Z",
+      "fileName": "AG-Y003-form-102.md",
+      "swarm": "WAVE_Y_01_14",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-Y004",
+      "title": "AG-Y004 — Israeli Annual Payroll Summary Form 126 (טופס 126) Engine",
+      "testsCount": 2026,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 23.92,
+      "lastModified": "2026-04-11T12:29:03.596Z",
+      "fileName": "AG-Y004-form-126.md",
+      "swarm": "WAVE_Y_01_14",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y005",
+      "title": "AG-Y005 — Form 30A / 30B (Self-Employed Quarterly Advance)",
+      "testsCount": 53,
+      "statusClaim": "GREEN",
+      "sizeKb": 8.56,
+      "lastModified": "2026-04-11T12:24:12.348Z",
+      "fileName": "AG-Y005-form-30a.md",
+      "swarm": "WAVE_Y_01_14",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y006",
+      "title": "AG-Y006 — Israeli Capital Gains Tax Engine (מס רווח הון)",
+      "testsCount": 42,
+      "statusClaim": "GREEN",
+      "sizeKb": 18.16,
+      "lastModified": "2026-04-11T12:29:13.514Z",
+      "fileName": "AG-Y006-capital-gains.md",
+      "swarm": "WAVE_Y_01_14",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y007",
+      "title": "AG-Y007 — Betterment Tax Engine (מס שבח מקרקעין)",
+      "testsCount": 34,
+      "statusClaim": "GREEN",
+      "sizeKb": 15.63,
+      "lastModified": "2026-04-11T12:27:16.629Z",
+      "fileName": "AG-Y007-betterment-tax.md",
+      "swarm": "WAVE_Y_01_14",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y008",
+      "title": "AG-Y008 — Israeli Property Purchase Tax (מס רכישה)",
+      "testsCount": 48,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 18.82,
+      "lastModified": "2026-04-11T12:28:19.207Z",
+      "fileName": "AG-Y008-purchase-tax.md",
+      "swarm": "WAVE_Y_01_14",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y009",
+      "title": "AG-Y009 — Dividend Withholding Tax (מס דיבידנד במקור)",
+      "testsCount": 40,
+      "statusClaim": "RED",
+      "sizeKb": 19.61,
+      "lastModified": "2026-04-11T12:28:50.187Z",
+      "fileName": "AG-Y009-dividend-withholding.md",
+      "swarm": "WAVE_Y_01_14",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-Y010",
+      "title": "AG-Y010 — Israeli Transfer Pricing Documentation Tool (Section 85A)",
+      "testsCount": 11,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 22.79,
+      "lastModified": "2026-04-11T12:30:56.208Z",
+      "fileName": "AG-Y010-transfer-pricing.md",
+      "swarm": "WAVE_Y_01_14",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y011",
+      "title": "AG-Y011 — Israeli VAT Refund Claim Generator — בקשת החזר מע\"מ",
+      "testsCount": 2,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 23.7,
+      "lastModified": "2026-04-11T12:28:53.651Z",
+      "fileName": "AG-Y011-vat-refund.md",
+      "swarm": "WAVE_Y_01_14",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y012",
+      "title": "AG-Y012 — Israeli National Insurance (ביטוח לאומי) Form 102 BL Exporter",
+      "testsCount": 46,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 13.92,
+      "lastModified": "2026-04-11T12:27:49.943Z",
+      "fileName": "AG-Y012-form-102-bl.md",
+      "swarm": "WAVE_Y_01_14",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y013",
+      "title": "AG-Y013 — Health Insurance Calculator (דמי ביטוח בריאות)",
+      "testsCount": 2025,
+      "statusClaim": "RED",
+      "sizeKb": 15.57,
+      "lastModified": "2026-04-11T12:28:40.075Z",
+      "fileName": "AG-Y013-health-insurance.md",
+      "swarm": "WAVE_Y_01_14",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-Y014",
+      "title": "AG-Y014 — Section 14 Pension Arrangement Tracker (הסדר סעיף 14)",
+      "testsCount": 22,
+      "statusClaim": "GREEN",
+      "sizeKb": 15.04,
+      "lastModified": "2026-04-11T12:29:03.101Z",
+      "fileName": "AG-Y014-section-14.md",
+      "swarm": "WAVE_Y_01_14",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y015",
+      "title": "AG-Y015 — Israeli Severance Pay Fund Tracker (מעקב קרן פיצויים)",
+      "testsCount": 25,
+      "statusClaim": "RED",
+      "sizeKb": 13.02,
+      "lastModified": "2026-04-11T12:27:23.807Z",
+      "fileName": "AG-Y015-severance-tracker.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-Y016",
+      "title": "AG-Y016 — Sales Quote Builder / בונה הצעות מחיר",
+      "testsCount": 44,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 18.7,
+      "lastModified": "2026-04-11T12:29:25.972Z",
+      "fileName": "AG-Y016-quote-builder.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y017",
+      "title": "AG-Y017 — Sales Commission Engine (Tiered / Accelerator / Split / Clawback)",
+      "testsCount": 31,
+      "statusClaim": "GREEN",
+      "sizeKb": 13.88,
+      "lastModified": "2026-04-11T12:29:22.748Z",
+      "fileName": "AG-Y017-commission.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y018",
+      "title": "AG-Y018 — Bundle / Kit Pricing Engine",
+      "testsCount": 21,
+      "statusClaim": "GREEN",
+      "sizeKb": 14.95,
+      "lastModified": "2026-04-11T12:27:40.885Z",
+      "fileName": "AG-Y018-bundle-pricing.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y019",
+      "title": "AG-Y019 — Discount Rules Engine (`DiscountEngine`)",
+      "testsCount": 0,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 13.05,
+      "lastModified": "2026-04-11T12:27:28.207Z",
+      "fileName": "AG-Y019-discount-rules.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {
+        "NO_TESTS": true,
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y020",
+      "title": "AG-Y020 — Upsell / Cross-sell Suggester (Association-Rule Mining)",
+      "testsCount": 29,
+      "statusClaim": "GREEN",
+      "sizeKb": 11.79,
+      "lastModified": "2026-04-11T12:29:35.988Z",
+      "fileName": "AG-Y020-upsell.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y021",
+      "title": "AG-Y021 — Sales Target Tracker (Quotas / Attainment / Pacing)",
+      "testsCount": 32,
+      "statusClaim": "GREEN",
+      "sizeKb": 20.57,
+      "lastModified": "2026-04-11T12:30:22.435Z",
+      "fileName": "AG-Y021-target-tracker.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y022",
+      "title": "AG-Y022 — Sales Leaderboard (engine + UI)",
+      "testsCount": 61,
+      "statusClaim": "GREEN",
+      "sizeKb": 23.13,
+      "lastModified": "2026-04-11T12:34:38.266Z",
+      "fileName": "AG-Y022-leaderboard.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y023",
+      "title": "AG-Y023 — Lead Scoring Engine (BANT + Behavioral)",
+      "testsCount": 33,
+      "statusClaim": "GREEN",
+      "sizeKb": 11.71,
+      "lastModified": "2026-04-11T12:30:42.492Z",
+      "fileName": "AG-Y023-lead-scoring.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y024",
+      "title": "AG-Y024 — Opportunity Stage Manager",
+      "testsCount": 42,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 14.29,
+      "lastModified": "2026-04-11T12:30:25.959Z",
+      "fileName": "AG-Y024-opportunity-stages.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y025",
+      "title": "AG-Y025 — Win / Loss Analyzer — QA Report",
+      "testsCount": 16,
+      "statusClaim": "GREEN",
+      "sizeKb": 10.22,
+      "lastModified": "2026-04-11T12:29:34.602Z",
+      "fileName": "AG-Y025-win-loss.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y026",
+      "title": "AG-Y026 — Competitor Intelligence Tracker",
+      "testsCount": 15,
+      "statusClaim": "GREEN",
+      "sizeKb": 18.24,
+      "lastModified": "2026-04-11T12:29:18.388Z",
+      "fileName": "AG-Y026-competitor-tracker.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y027",
+      "title": "AG-Y027 — Sales Playbook Engine | מנוע תסריטי מכירות",
+      "testsCount": 26,
+      "statusClaim": "GREEN",
+      "sizeKb": 15.97,
+      "lastModified": "2026-04-11T12:29:51.679Z",
+      "fileName": "AG-Y027-playbook-engine.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y028",
+      "title": "AG-Y028 — Sales Territory Manager (מנהל טריטוריות מכירה)",
+      "testsCount": 26,
+      "statusClaim": "GREEN",
+      "sizeKb": 16.03,
+      "lastModified": "2026-04-11T12:32:03.510Z",
+      "fileName": "AG-Y028-territory-manager.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y029",
+      "title": "AG-Y029 — Account Assignment Engine / מנוע שיוך לקוחות",
+      "testsCount": 7,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 19.13,
+      "lastModified": "2026-04-11T12:30:45.348Z",
+      "fileName": "AG-Y029-account-assignment.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y030",
+      "title": "AG-Y030 — Sales-Side Forecasting (SalesForecast)",
+      "testsCount": 0,
+      "statusClaim": "GREEN",
+      "sizeKb": 18.7,
+      "lastModified": "2026-04-11T12:33:17.058Z",
+      "fileName": "AG-Y030-sales-forecast.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {
+        "NO_TESTS": true
+      }
+    },
+    {
+      "agentId": "AG-Y032",
+      "title": "AG-Y032 — Manufacturing Routing & Work Center Manager",
+      "testsCount": 23,
+      "statusClaim": "GREEN",
+      "sizeKb": 14.07,
+      "lastModified": "2026-04-11T12:29:13.686Z",
+      "fileName": "AG-Y032-routing-manager.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y034",
+      "title": "AG-Y034 — Medium-Term Capacity Planning (תכנון כושר ייצור)",
+      "testsCount": 31,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 14.32,
+      "lastModified": "2026-04-11T12:34:08.873Z",
+      "fileName": "AG-Y034-capacity-planning.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y035",
+      "title": "AG-Y035 — OEE Tracker (Overall Equipment Effectiveness)",
+      "testsCount": 80,
+      "statusClaim": "GREEN",
+      "sizeKb": 17.23,
+      "lastModified": "2026-04-11T12:32:26.242Z",
+      "fileName": "AG-Y035-oee-tracker.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y036",
+      "title": "AG-Y036 — QC Checklist Engine (בקרת איכות)",
+      "testsCount": 0,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 14.91,
+      "lastModified": "2026-04-11T12:33:08.990Z",
+      "fileName": "AG-Y036-qc-checklist.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {
+        "NO_TESTS": true,
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y037",
+      "title": "AG-Y037 — NCR Tracker (Non-Conformance Report)",
+      "testsCount": 27,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 14.29,
+      "lastModified": "2026-04-11T12:32:06.110Z",
+      "fileName": "AG-Y037-ncr-tracker.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y038",
+      "title": "AG-Y038 — CAPA Workflow (Corrective & Preventive Action, 8D)",
+      "testsCount": 60,
+      "statusClaim": "GREEN",
+      "sizeKb": 17.82,
+      "lastModified": "2026-04-11T12:35:20.363Z",
+      "fileName": "AG-Y038-capa-workflow.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y039",
+      "title": "AG-Y039 — First Article Inspection (AS9102)",
+      "testsCount": 1,
+      "statusClaim": "GREEN",
+      "sizeKb": 17.39,
+      "lastModified": "2026-04-11T12:32:25.448Z",
+      "fileName": "AG-Y039-fai.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y040",
+      "title": "AG-Y040 — Tool / Die / Fixture / Gauge Tracker",
+      "testsCount": 38,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 21.65,
+      "lastModified": "2026-04-11T12:33:19.955Z",
+      "fileName": "AG-Y040-tool-tracker.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y041",
+      "title": "AG-Y041 — Metal Scrap Tracker (עוקב גרוטאות מתכת)",
+      "testsCount": 33,
+      "statusClaim": "RED",
+      "sizeKb": 14.27,
+      "lastModified": "2026-04-11T12:33:11.064Z",
+      "fileName": "AG-Y041-scrap-tracker.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-Y043",
+      "title": "AG-Y043 — Welder Certification Tracker",
+      "testsCount": 2,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 12.64,
+      "lastModified": "2026-04-11T12:33:48.725Z",
+      "fileName": "AG-Y043-welder-certs.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y044",
+      "title": "AG-Y044 — Material Certificate (Mill Cert) Tracker",
+      "testsCount": 304,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 14.55,
+      "lastModified": "2026-04-11T12:33:31.718Z",
+      "fileName": "AG-Y044-material-cert.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y046",
+      "title": "AG-Y046 — Property Manager (מנהל נכסי נדל\"ן)",
+      "testsCount": 30,
+      "statusClaim": "GREEN",
+      "sizeKb": 22.13,
+      "lastModified": "2026-04-11T12:34:50.158Z",
+      "fileName": "AG-Y046-property-manager.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y047",
+      "title": "AG-Y047 — Lease Tracker (חוזי שכירות)",
+      "testsCount": 24,
+      "statusClaim": "GREEN",
+      "sizeKb": 17.66,
+      "lastModified": "2026-04-11T12:33:48.669Z",
+      "fileName": "AG-Y047-lease-tracker.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y048",
+      "title": "AG-Y048 — Rent Collection System (גביית שכר דירה)",
+      "testsCount": 41,
+      "statusClaim": "GREEN",
+      "sizeKb": 20.85,
+      "lastModified": "2026-04-11T12:35:53.573Z",
+      "fileName": "AG-Y048-rent-collection.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y049",
+      "title": "AG-Y049 — Property Maintenance Requests (`MaintenanceRequests`)",
+      "testsCount": 80,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 18.96,
+      "lastModified": "2026-04-11T12:34:45.903Z",
+      "fileName": "AG-Y049-maintenance.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y050",
+      "title": "AG-Y050 — Self-Service Tenant Portal (Real-Estate)",
+      "testsCount": 45,
+      "statusClaim": "GREEN",
+      "sizeKb": 20.72,
+      "lastModified": "2026-04-11T12:39:49.242Z",
+      "fileName": "AG-Y050-tenant-portal.md",
+      "swarm": "WAVE_Y_15_50",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y051",
+      "title": "AG-Y051 — Rental-Property Vacancy Tracker",
+      "testsCount": 41,
+      "statusClaim": "GREEN",
+      "sizeKb": 17.62,
+      "lastModified": "2026-04-11T12:37:14.826Z",
+      "fileName": "AG-Y051-vacancy-tracker.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y052",
+      "title": "AG-Y052 — Israeli Property Valuation Engine (מנוע הערכת שווי נדל\"ן)",
+      "testsCount": 86,
+      "statusClaim": "GREEN",
+      "sizeKb": 25.96,
+      "lastModified": "2026-04-11T12:39:01.820Z",
+      "fileName": "AG-Y052-valuation.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y053",
+      "title": "AG-Y053 — Israeli Mortgage Calculator (מחשבון משכנתא)",
+      "testsCount": 75,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 13.75,
+      "lastModified": "2026-04-11T12:35:45.639Z",
+      "fileName": "AG-Y053-mortgage-calc.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y054",
+      "title": "AG-Y054 — Arnona Tracker (ארנונה — מעקב תשלומי ארנונה עירונית)",
+      "testsCount": 83,
+      "statusClaim": "GREEN",
+      "sizeKb": 30.63,
+      "lastModified": "2026-04-11T12:40:35.061Z",
+      "fileName": "AG-Y054-arnona-tracker.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y055",
+      "title": "AG-Y055 — Building Permit Tracker (היתרי בנייה)",
+      "testsCount": 38,
+      "statusClaim": "GREEN",
+      "sizeKb": 17.27,
+      "lastModified": "2026-04-11T12:36:13.323Z",
+      "fileName": "AG-Y055-building-permit.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y056",
+      "title": "AG-Y056 — Construction Progress Billing (חיוב התקדמות)",
+      "testsCount": 30,
+      "statusClaim": "GREEN",
+      "sizeKb": 18.03,
+      "lastModified": "2026-04-11T12:37:05.707Z",
+      "fileName": "AG-Y056-progress-billing.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y057",
+      "title": "AG-Y057 — Real Estate Broker Fee Tracker (חוק המתווכים)",
+      "testsCount": 38,
+      "statusClaim": "GREEN",
+      "sizeKb": 13.16,
+      "lastModified": "2026-04-11T12:36:42.654Z",
+      "fileName": "AG-Y057-broker-fees.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y059",
+      "title": "AG-Y059 — Real Estate Portfolio Dashboard (דשבורד תיק נדל\"ן)",
+      "testsCount": 57,
+      "statusClaim": "GREEN",
+      "sizeKb": 21.86,
+      "lastModified": "2026-04-11T12:39:17.811Z",
+      "fileName": "AG-Y059-portfolio-dashboard.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y060",
+      "title": "AG-Y060 — Real-Estate ROI Calculator",
+      "testsCount": 44,
+      "statusClaim": "GREEN",
+      "sizeKb": 23.24,
+      "lastModified": "2026-04-11T12:37:37.935Z",
+      "fileName": "AG-Y060-roi-calculator.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y063",
+      "title": "AG-Y063 — Employee Onboarding Workflow Engine",
+      "testsCount": 36,
+      "statusClaim": "GREEN",
+      "sizeKb": 15.94,
+      "lastModified": "2026-04-11T12:37:08.135Z",
+      "fileName": "AG-Y063-onboarding.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y066",
+      "title": "AG-Y066 — OKR / KPI Tracker",
+      "testsCount": 35,
+      "statusClaim": "GREEN",
+      "sizeKb": 10.01,
+      "lastModified": "2026-04-11T12:36:06.338Z",
+      "fileName": "AG-Y066-okr-tracker.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y067",
+      "title": "AG-Y067 — 360° Feedback Collection & Aggregation",
+      "testsCount": 20,
+      "statusClaim": "RED",
+      "sizeKb": 16.61,
+      "lastModified": "2026-04-11T12:38:38.009Z",
+      "fileName": "AG-Y067-360-feedback.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-Y068",
+      "title": "AG-Y068 — Training Catalog & Learning Management System (LMS)",
+      "testsCount": 27,
+      "statusClaim": "RED",
+      "sizeKb": 12.54,
+      "lastModified": "2026-04-11T12:36:49.740Z",
+      "fileName": "AG-Y068-training-catalog.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-Y069",
+      "title": "AG-Y069 — Professional Certification Tracker",
+      "testsCount": 45001,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 12.72,
+      "lastModified": "2026-04-11T12:38:33.921Z",
+      "fileName": "AG-Y069-cert-tracker.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y070",
+      "title": "AG-Y070 — Skills Matrix / Competency Tracker",
+      "testsCount": 27,
+      "statusClaim": "GREEN",
+      "sizeKb": 20.85,
+      "lastModified": "2026-04-11T12:39:13.882Z",
+      "fileName": "AG-Y070-skills-matrix.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y071",
+      "title": "AG-Y071 — Compensation Planner (CompPlanner)",
+      "testsCount": 30,
+      "statusClaim": "GREEN",
+      "sizeKb": 14.99,
+      "lastModified": "2026-04-11T12:38:27.349Z",
+      "fileName": "AG-Y071-comp-planner.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y072",
+      "title": "AG-Y072 — Bonus Calculator (`BonusCalculator`)",
+      "testsCount": 2025,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 13.15,
+      "lastModified": "2026-04-11T12:38:26.935Z",
+      "fileName": "AG-Y072-bonus-calc.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y073",
+      "title": "AG-Y073 — Stock-Options & Israeli Section 102 Vesting Tracker",
+      "testsCount": 32,
+      "statusClaim": "RED",
+      "sizeKb": 16.38,
+      "lastModified": "2026-04-11T12:38:46.478Z",
+      "fileName": "AG-Y073-options-vesting.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-Y074",
+      "title": "AG-Y074 — Employee Handbook Manager",
+      "testsCount": 30,
+      "statusClaim": "GREEN",
+      "sizeKb": 10.73,
+      "lastModified": "2026-04-11T12:40:08.495Z",
+      "fileName": "AG-Y074-handbook.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y075",
+      "title": "AG-Y075 — Employee Grievance & Complaint System",
+      "testsCount": 44,
+      "statusClaim": "GREEN",
+      "sizeKb": 20.51,
+      "lastModified": "2026-04-11T12:40:54.419Z",
+      "fileName": "AG-Y075-grievance.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y076",
+      "title": "AG-Y076 — Fixed Asset Register & Depreciation Engine",
+      "testsCount": 31,
+      "statusClaim": "RED",
+      "sizeKb": 16.61,
+      "lastModified": "2026-04-11T12:41:02.938Z",
+      "fileName": "AG-Y076-fixed-assets.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-Y077",
+      "title": "AG-Y077 — Capital Projects Tracker (CIP + Capex Approvals)",
+      "testsCount": 45,
+      "statusClaim": "RED",
+      "sizeKb": 14.09,
+      "lastModified": "2026-04-11T12:41:17.126Z",
+      "fileName": "AG-Y077-capital-projects.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-Y078",
+      "title": "AG-Y078 — Working Capital Dashboard (לוח בקרה להון חוזר)",
+      "testsCount": 63,
+      "statusClaim": "RED",
+      "sizeKb": 18.54,
+      "lastModified": "2026-04-11T12:41:45.019Z",
+      "fileName": "AG-Y078-working-capital.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-Y079",
+      "title": "AG-Y079 — Cash Flow Forecast (תזרים מזומנים — שיטה ישירה ועקיפה)",
+      "testsCount": 28,
+      "statusClaim": "GREEN",
+      "sizeKb": 32.23,
+      "lastModified": "2026-04-11T12:43:56.731Z",
+      "fileName": "AG-Y079-cashflow-forecast.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y080",
+      "title": "AG-Y080 — Treasury Management (ניהול גזברות)",
+      "testsCount": 25,
+      "statusClaim": "GREEN",
+      "sizeKb": 11.14,
+      "lastModified": "2026-04-11T12:41:20.130Z",
+      "fileName": "AG-Y080-treasury.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y081",
+      "title": "AG-Y081 — Bank Signatory & Authorization Workflow",
+      "testsCount": 41,
+      "statusClaim": "GREEN",
+      "sizeKb": 21.78,
+      "lastModified": "2026-04-11T12:43:10.219Z",
+      "fileName": "AG-Y081-signatory-workflow.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y082",
+      "title": "AG-Y082 — Check Register / פנקס שיקים",
+      "testsCount": 28,
+      "statusClaim": "GREEN",
+      "sizeKb": 17.6,
+      "lastModified": "2026-04-11T12:42:41.828Z",
+      "fileName": "AG-Y082-check-register.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y083",
+      "title": "AG-Y083 — Wire Transfer Approval Workflow + Beneficiary Database",
+      "testsCount": 45,
+      "statusClaim": "GREEN",
+      "sizeKb": 29.7,
+      "lastModified": "2026-04-11T12:45:28.545Z",
+      "fileName": "AG-Y083-wire-transfer.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y084",
+      "title": "AG-Y084 — FX Hedging Tracker (READ-ONLY)",
+      "testsCount": 22,
+      "statusClaim": "GREEN",
+      "sizeKb": 20.21,
+      "lastModified": "2026-04-11T12:43:57.587Z",
+      "fileName": "AG-Y084-fx-hedging.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y085",
+      "title": "AG-Y085 — Intercompany Loans Tracker (`ICLoans`)",
+      "testsCount": 30,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 17.34,
+      "lastModified": "2026-04-11T12:43:43.937Z",
+      "fileName": "AG-Y085-ic-loans.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y086",
+      "title": "AG-Y086 — Customer Credit Limit Manager (`CreditLimitManager`)",
+      "testsCount": 30,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 17.35,
+      "lastModified": "2026-04-11T12:41:57.512Z",
+      "fileName": "AG-Y086-credit-limits.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y087",
+      "title": "AG-Y087 — AR / AP Aging Engine (דו\"ח יישון חייבים וזכאים)",
+      "testsCount": 50,
+      "statusClaim": "GREEN",
+      "sizeKb": 17.7,
+      "lastModified": "2026-04-11T12:44:35.649Z",
+      "fileName": "AG-Y087-aging.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y088",
+      "title": "AG-Y088 — Debt Collection Workflow (גבייה משפטית)",
+      "testsCount": 68,
+      "statusClaim": "GREEN",
+      "sizeKb": 25.03,
+      "lastModified": "2026-04-11T12:44:52.771Z",
+      "fileName": "AG-Y088-debt-collection.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y089",
+      "title": "AG-Y089 — Bad Debt Provisioning (IFRS 9 ECL + Israeli Tax)",
+      "testsCount": 2,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 26.19,
+      "lastModified": "2026-04-11T12:44:28.057Z",
+      "fileName": "AG-Y089-bad-debt-provision.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y090",
+      "title": "AG-Y090 — Deferred Revenue Tracker (`DeferredRevenue`)",
+      "testsCount": 37,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 20.29,
+      "lastModified": "2026-04-11T12:45:13.068Z",
+      "fileName": "AG-Y090-deferred-revenue.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y091",
+      "title": "AG-Y091 — Customer Segmentation Engine (RFM + Lifecycle + Clustering + CLV)",
+      "testsCount": 53,
+      "statusClaim": "GREEN",
+      "sizeKb": 18.74,
+      "lastModified": "2026-04-11T12:43:50.141Z",
+      "fileName": "AG-Y091-segmentation.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y092",
+      "title": "AG-Y092 — NPS (Net Promoter Score) Survey System",
+      "testsCount": 29,
+      "statusClaim": "GREEN",
+      "sizeKb": 17.65,
+      "lastModified": "2026-04-11T12:43:43.112Z",
+      "fileName": "AG-Y092-nps.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y093",
+      "title": "AG-Y093 — CSAT Tracker (Transactional Surveys)",
+      "testsCount": 4,
+      "statusClaim": "RED",
+      "sizeKb": 12.02,
+      "lastModified": "2026-04-11T12:43:10.466Z",
+      "fileName": "AG-Y093-csat.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-Y094",
+      "title": "AG-Y094 — Customer Referral Program Manager",
+      "testsCount": 45,
+      "statusClaim": "GREEN",
+      "sizeKb": 16.42,
+      "lastModified": "2026-04-11T12:46:07.358Z",
+      "fileName": "AG-Y094-referral.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y095",
+      "title": "AG-Y095 — Customer Loyalty Points (Earn / Burn / Tiers / IFRS 15)",
+      "testsCount": 34,
+      "statusClaim": "RED",
+      "sizeKb": 16.04,
+      "lastModified": "2026-04-11T12:44:45.659Z",
+      "fileName": "AG-Y095-loyalty-points.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-Y096",
+      "title": "AG-Y096 — Unified Customer Communication Log",
+      "testsCount": 40,
+      "statusClaim": "RED",
+      "sizeKb": 17.91,
+      "lastModified": "2026-04-11T12:44:40.578Z",
+      "fileName": "AG-Y096-comm-log.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-Y098",
+      "title": "AG-Y098 — Customer Onboarding Workflow Engine",
+      "testsCount": 47,
+      "statusClaim": "GREEN",
+      "sizeKb": 18.3,
+      "lastModified": "2026-04-11T12:46:09.281Z",
+      "fileName": "AG-Y098-onboarding.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y099",
+      "title": "AG-Y099 — Customer Health Score Engine",
+      "testsCount": 36,
+      "statusClaim": "RED",
+      "sizeKb": 11.88,
+      "lastModified": "2026-04-11T12:43:30.132Z",
+      "fileName": "AG-Y099-health-score.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-Y100",
+      "title": "AG-Y100 — Churn Prevention (`ChurnPrevention`)",
+      "testsCount": 30,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 15.56,
+      "lastModified": "2026-04-11T12:45:16.688Z",
+      "fileName": "AG-Y100-churn-prevention.md",
+      "swarm": "WAVE_Y_51_100",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y101",
+      "title": "AG-Y101 — Voice of Customer (VOC) — QA Report",
+      "testsCount": 17,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 14.31,
+      "lastModified": "2026-04-11T12:44:13.864Z",
+      "fileName": "AG-Y101-voc.md",
+      "swarm": "WAVE_Y_101_150",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y102",
+      "title": "AG-Y102 — Customer Journey Mapper",
+      "testsCount": 33,
+      "statusClaim": "GREEN",
+      "sizeKb": 14.35,
+      "lastModified": "2026-04-11T12:44:00.865Z",
+      "fileName": "AG-Y102-journey-mapper.md",
+      "swarm": "WAVE_Y_101_150",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y103",
+      "title": "AG-Y103 — Customer Success Plan Builder",
+      "testsCount": 35,
+      "statusClaim": "GREEN",
+      "sizeKb": 18.34,
+      "lastModified": "2026-04-11T12:45:13.309Z",
+      "fileName": "AG-Y103-success-plan.md",
+      "swarm": "WAVE_Y_101_150",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y108",
+      "title": "AG-Y108 — Document Templates Manager",
+      "testsCount": 73,
+      "statusClaim": "GREEN",
+      "sizeKb": 14.47,
+      "lastModified": "2026-04-11T12:47:52.759Z",
+      "fileName": "AG-Y108-templates.md",
+      "swarm": "WAVE_Y_101_150",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y109",
+      "title": "AG-Y109 — Generic Approval Workflow Engine — QA Report",
+      "testsCount": 33,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 15.38,
+      "lastModified": "2026-04-11T12:46:01.874Z",
+      "fileName": "AG-Y109-approval-engine.md",
+      "swarm": "WAVE_Y_101_150",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y111",
+      "title": "AG-Y111 — OCR Pipeline Orchestration",
+      "testsCount": 39,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 16.41,
+      "lastModified": "2026-04-11T12:46:05.238Z",
+      "fileName": "AG-Y111-ocr-pipeline.md",
+      "swarm": "WAVE_Y_101_150",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y113",
+      "title": "AG-Y113 — Metadata & Tag Manager",
+      "testsCount": 25,
+      "statusClaim": "GREEN",
+      "sizeKb": 16.68,
+      "lastModified": "2026-04-11T12:47:02.908Z",
+      "fileName": "AG-Y113-metadata-manager.md",
+      "swarm": "WAVE_Y_101_150",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y114",
+      "title": "AG-Y114 — Document Retention Policy Engine",
+      "testsCount": 40,
+      "statusClaim": "GREEN",
+      "sizeKb": 19.12,
+      "lastModified": "2026-04-11T12:47:38.703Z",
+      "fileName": "AG-Y114-retention-policy.md",
+      "swarm": "WAVE_Y_101_150",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y124",
+      "title": "AG-Y124 — Voice Call Log (`CallLog`)",
+      "testsCount": 35,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 30.36,
+      "lastModified": "2026-04-11T12:51:42.675Z",
+      "fileName": "AG-Y124-call-log.md",
+      "swarm": "WAVE_Y_101_150",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y125",
+      "title": "AG-Y125 — Call Recording + Transcription Orchestration / תמלול והקלטת שיחות",
+      "testsCount": 55,
+      "statusClaim": "GREEN",
+      "sizeKb": 16.03,
+      "lastModified": "2026-04-11T12:50:45.409Z",
+      "fileName": "AG-Y125-call-recording.md",
+      "swarm": "WAVE_Y_101_150",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y126",
+      "title": "AG-Y126 — Internal Team Chat (Slack-lite)",
+      "testsCount": 36,
+      "statusClaim": "RED",
+      "sizeKb": 16,
+      "lastModified": "2026-04-11T12:50:20.714Z",
+      "fileName": "AG-Y126-internal-chat.md",
+      "swarm": "WAVE_Y_101_150",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-Y130",
+      "title": "AG-Y130 — Life Events Reminder System (Birthdays, Anniversaries & Milestones)",
+      "testsCount": 39,
+      "statusClaim": "RED",
+      "sizeKb": 15.25,
+      "lastModified": "2026-04-11T12:53:06.935Z",
+      "fileName": "AG-Y130-life-events.md",
+      "swarm": "WAVE_Y_101_150",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-Y135",
+      "title": "AG-Y135 — Digital Bulletin Board / לוח הודעות דיגיטלי",
+      "testsCount": 34,
+      "statusClaim": "GREEN",
+      "sizeKb": 14.37,
+      "lastModified": "2026-04-11T12:48:20.844Z",
+      "fileName": "AG-Y135-bulletin-board.md",
+      "swarm": "WAVE_Y_101_150",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y146",
+      "title": "AG-Y146 — AML Hit-Screener",
+      "testsCount": 18,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 18.61,
+      "lastModified": "2026-04-11T12:57:53.859Z",
+      "fileName": "AG-Y146-aml-screener.md",
+      "swarm": "WAVE_Y_101_150",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y147",
+      "title": "AG-Y147 — PEP Screener / סינון אנשי ציבור (איסור הלבנת הון)",
+      "testsCount": 19,
+      "statusClaim": "GREEN",
+      "sizeKb": 18.17,
+      "lastModified": "2026-04-11T12:58:45.690Z",
+      "fileName": "AG-Y147-pep-screener.md",
+      "swarm": "WAVE_Y_101_150",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y148",
+      "title": "AG-Y148 — Sanctions List Screener / מסנן רשימות סנקציות",
+      "testsCount": 16,
+      "statusClaim": "GREEN",
+      "sizeKb": 19.78,
+      "lastModified": "2026-04-11T12:56:46.424Z",
+      "fileName": "AG-Y148-sanctions-screener.md",
+      "swarm": "WAVE_Y_101_150",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y149",
+      "title": "AG-Y149 — Audit Log Retention Engine",
+      "testsCount": 16,
+      "statusClaim": "GREEN",
+      "sizeKb": 7.88,
+      "lastModified": "2026-04-11T12:54:11.194Z",
+      "fileName": "AG-Y149-audit-retention.md",
+      "swarm": "WAVE_Y_101_150",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y150",
+      "title": "AG-Y150 — Legal Hold Enforcer / אכיפת עיכוב משפטי",
+      "testsCount": 15,
+      "statusClaim": "GREEN",
+      "sizeKb": 14.66,
+      "lastModified": "2026-04-11T12:55:50.147Z",
+      "fileName": "AG-Y150-legal-hold.md",
+      "swarm": "WAVE_Y_101_150",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y151",
+      "title": "AG-Y151 — Natural Language Query Engine (Hebrew + English)",
+      "testsCount": 33,
+      "statusClaim": "GREEN",
+      "sizeKb": 15.6,
+      "lastModified": "2026-04-11T12:59:05.918Z",
+      "fileName": "AG-Y151-nlq-engine.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y152",
+      "title": "AG-Y152 — Auto-Insights Generator (bilingual, zero-dependency)",
+      "testsCount": 23,
+      "statusClaim": "GREEN",
+      "sizeKb": 10.72,
+      "lastModified": "2026-04-11T12:56:45.080Z",
+      "fileName": "AG-Y152-auto-insights.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y153",
+      "title": "AG-Y153 — Anomaly Alert Engine (Statistical, Zero-Dependency) / מנוע אזעקות חריגות",
+      "testsCount": 21,
+      "statusClaim": "GREEN",
+      "sizeKb": 13.45,
+      "lastModified": "2026-04-11T12:56:42.321Z",
+      "fileName": "AG-Y153-anomaly-engine.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y154",
+      "title": "AG-Y154 — Trend Detection Engine (OLS + Mann-Kendall + Theil-Sen + CUSUM)",
+      "testsCount": 21,
+      "statusClaim": "GREEN",
+      "sizeKb": 12.64,
+      "lastModified": "2026-04-11T12:58:08.730Z",
+      "fileName": "AG-Y154-trend-detector.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y155",
+      "title": "AG-Y155 — Seasonality Decomposition (STL-lite)",
+      "testsCount": 28,
+      "statusClaim": "GREEN",
+      "sizeKb": 10.53,
+      "lastModified": "2026-04-11T12:55:23.908Z",
+      "fileName": "AG-Y155-seasonality.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y156",
+      "title": "AG-Y156 — Clustering Engine / מנוע אשכולות",
+      "testsCount": 25,
+      "statusClaim": "GREEN",
+      "sizeKb": 12.23,
+      "lastModified": "2026-04-11T12:56:19.375Z",
+      "fileName": "AG-Y156-clustering.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y157",
+      "title": "AG-Y157 — Classification Toolkit / ערכת סיווג",
+      "testsCount": 20,
+      "statusClaim": "GREEN",
+      "sizeKb": 11.83,
+      "lastModified": "2026-04-11T12:57:12.389Z",
+      "fileName": "AG-Y157-classification.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y158",
+      "title": "AG-Y158 — Recommendation Engine for Techno-Kol Uzi mega-ERP",
+      "testsCount": 19,
+      "statusClaim": "GREEN",
+      "sizeKb": 10.73,
+      "lastModified": "2026-04-11T12:57:03.998Z",
+      "fileName": "AG-Y158-recommender.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y159",
+      "title": "AG-Y159 — Feature Importance Analyzer",
+      "testsCount": 23,
+      "statusClaim": "GREEN",
+      "sizeKb": 10.55,
+      "lastModified": "2026-04-11T12:57:25.321Z",
+      "fileName": "AG-Y159-feature-importance.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y160",
+      "title": "AG-Y160 — Correlation Matrix Tool / כלי מטריצת מתאם",
+      "testsCount": 27,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 13.59,
+      "lastModified": "2026-04-11T12:57:10.908Z",
+      "fileName": "AG-Y160-correlation.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y161",
+      "title": "AG-Y161 — Outlier Explainer (Bilingual Plain-Language WHY Engine)",
+      "testsCount": 22,
+      "statusClaim": "GREEN",
+      "sizeKb": 12.58,
+      "lastModified": "2026-04-11T12:56:24.258Z",
+      "fileName": "AG-Y161-outlier-explainer.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y162",
+      "title": "AG-Y162 — Forecast Comparator / סוכן השוואת תחזיות",
+      "testsCount": 19,
+      "statusClaim": "GREEN",
+      "sizeKb": 10.81,
+      "lastModified": "2026-04-11T12:57:21.374Z",
+      "fileName": "AG-Y162-forecast-comparator.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y163",
+      "title": "AG-Y163 — Data Quality Scorer / מדרג איכות נתונים",
+      "testsCount": 25,
+      "statusClaim": "GREEN",
+      "sizeKb": 16.71,
+      "lastModified": "2026-04-11T13:00:00.099Z",
+      "fileName": "AG-Y163-data-quality.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y164",
+      "title": "AG-Y164 — Model Drift Detector (PSI / KS / Chi-square)",
+      "testsCount": 21,
+      "statusClaim": "GREEN",
+      "sizeKb": 12.17,
+      "lastModified": "2026-04-11T13:00:56.832Z",
+      "fileName": "AG-Y164-drift-detector.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y165",
+      "title": "AG-Y165 — Hebrew NLP Toolkit (`onyx-ai/src/nlp/hebrew.ts`)",
+      "testsCount": 37,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 10.5,
+      "lastModified": "2026-04-11T12:58:47.977Z",
+      "fileName": "AG-Y165-hebrew-nlp.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y166",
+      "title": "AG-Y166 — CI/CD Pipeline Configuration Generator",
+      "testsCount": 22,
+      "statusClaim": "GREEN",
+      "sizeKb": 16.17,
+      "lastModified": "2026-04-11T12:56:24.267Z",
+      "fileName": "AG-Y166-ci-generator.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y167",
+      "title": "AG-Y167 — Deployment Rollout Strategy Engine",
+      "testsCount": 24,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 11.06,
+      "lastModified": "2026-04-11T12:56:22.805Z",
+      "fileName": "AG-Y167-rollout-strategies.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y168",
+      "title": "AG-Y168 — Feature Flag Distribution Engine / מנוע הפצת דגלי תכונה",
+      "testsCount": 1234,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 21.13,
+      "lastModified": "2026-04-11T12:57:31.962Z",
+      "fileName": "AG-Y168-flag-distributor.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y169",
+      "title": "AG-Y169 — A/B Test Router / נתב ניסויי A/B",
+      "testsCount": 24,
+      "statusClaim": "GREEN",
+      "sizeKb": 14.03,
+      "lastModified": "2026-04-11T12:58:04.571Z",
+      "fileName": "AG-Y169-ab-router.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y170",
+      "title": "AG-Y170 — Traffic Shadowing Middleware (`traffic-shadow`)",
+      "testsCount": 35,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 17.25,
+      "lastModified": "2026-04-11T12:57:56.659Z",
+      "fileName": "AG-Y170-traffic-shadow.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y171",
+      "title": "AG-Y171 — Service Mesh Configuration Generator",
+      "testsCount": 22,
+      "statusClaim": "GREEN",
+      "sizeKb": 11.45,
+      "lastModified": "2026-04-11T12:57:41.675Z",
+      "fileName": "AG-Y171-service-mesh.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y172",
+      "title": "AG-Y172 — Secret Rotation Scheduler with Dual-Key Support",
+      "testsCount": 32,
+      "statusClaim": "GREEN",
+      "sizeKb": 16.29,
+      "lastModified": "2026-04-11T12:59:16.925Z",
+      "fileName": "AG-Y172-secret-rotator.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y173",
+      "title": "AG-Y173 — VaultClient (HashiCorp Vault / OpenBao) / לקוח Vault ל-HashiCorp / OpenBao",
+      "testsCount": 22,
+      "statusClaim": "GREEN",
+      "sizeKb": 22.68,
+      "lastModified": "2026-04-11T13:02:12.020Z",
+      "fileName": "AG-Y173-vault-client.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y174",
+      "title": "AG-Y174 — Infrastructure-as-Code Generator / מחולל תשתית כקוד",
+      "testsCount": 34,
+      "statusClaim": "GREEN",
+      "sizeKb": 11.52,
+      "lastModified": "2026-04-11T12:58:14.228Z",
+      "fileName": "AG-Y174-iac-generator.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y175",
+      "title": "AG-Y175 — Health Orchestrator QA Report",
+      "testsCount": 28,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 13.99,
+      "lastModified": "2026-04-11T12:58:21.075Z",
+      "fileName": "AG-Y175-health-orchestrator.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y176",
+      "title": "AG-Y176 — Auto-Scaling Policy Engine (מנוע מדיניות קנה-מידה אוטומטי)",
+      "testsCount": 23,
+      "statusClaim": "RED",
+      "sizeKb": 12.15,
+      "lastModified": "2026-04-11T12:59:19.622Z",
+      "fileName": "AG-Y176-autoscaler.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-Y177",
+      "title": "AG-Y177 — Chaos Engine (`ChaosEngine`)",
+      "testsCount": 101,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 12.83,
+      "lastModified": "2026-04-11T12:59:56.355Z",
+      "fileName": "AG-Y177-chaos-engine.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y178",
+      "title": "AG-Y178 — Blue/Green Deployment Orchestrator / מתאם פריסות כחול-ירוק",
+      "testsCount": 28,
+      "statusClaim": "GREEN",
+      "sizeKb": 14.11,
+      "lastModified": "2026-04-11T12:59:32.242Z",
+      "fileName": "AG-Y178-blue-green.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y179",
+      "title": "AG-Y179 — Rollback Automation Engine / מנוע אוטומציית החזרות",
+      "testsCount": 21,
+      "statusClaim": "GREEN",
+      "sizeKb": 17.54,
+      "lastModified": "2026-04-11T12:58:59.221Z",
+      "fileName": "AG-Y179-rollback-engine.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y180",
+      "title": "AG-Y180 — Incident Response Runbook Engine",
+      "testsCount": 20,
+      "statusClaim": "RED",
+      "sizeKb": 12.42,
+      "lastModified": "2026-04-11T12:58:53.649Z",
+      "fileName": "AG-Y180-incident-runbook.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-Y181",
+      "title": "AG-Y181 — Executive Dashboard Aggregator — QA Report",
+      "testsCount": 20,
+      "statusClaim": "GREEN",
+      "sizeKb": 19.19,
+      "lastModified": "2026-04-11T12:59:52.286Z",
+      "fileName": "AG-Y181-executive-dashboard.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y182",
+      "title": "AG-Y182 — P&L Drill-Down Engine / מנוע פירוט דוח רווח והפסד",
+      "testsCount": 31,
+      "statusClaim": "GREEN",
+      "sizeKb": 12.1,
+      "lastModified": "2026-04-11T13:00:33.752Z",
+      "fileName": "AG-Y182-pnl-drilldown.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y183",
+      "title": "AG-Y183 — Balance Sheet Explorer / מאתר המאזן",
+      "testsCount": 21,
+      "statusClaim": "GREEN",
+      "sizeKb": 11.34,
+      "lastModified": "2026-04-11T12:59:20.429Z",
+      "fileName": "AG-Y183-balance-sheet.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y184",
+      "title": "AG-Y184 — Cash Flow Waterfall Visualizer (תזרים מזומנים מדורג)",
+      "testsCount": 26,
+      "statusClaim": "GREEN",
+      "sizeKb": 19.18,
+      "lastModified": "2026-04-11T13:00:00.784Z",
+      "fileName": "AG-Y184-cashflow-waterfall.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y185",
+      "title": "AG-Y185 — Variance Analyzer (Classic Managerial Accounting Decomposition)",
+      "testsCount": 30,
+      "statusClaim": "GREEN",
+      "sizeKb": 16.25,
+      "lastModified": "2026-04-11T13:01:41.536Z",
+      "fileName": "AG-Y185-variance-analyzer.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y186",
+      "title": "AG-Y186 — KPI Scorecard Engine (Balanced Scorecard)",
+      "testsCount": 0,
+      "statusClaim": "RED",
+      "sizeKb": 12.61,
+      "lastModified": "2026-04-11T13:00:13.981Z",
+      "fileName": "AG-Y186-kpi-scorecard.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {
+        "NO_TESTS": true,
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-Y187",
+      "title": "AG-Y187 — Board Deck Generator / מחולל מצגת דירקטוריון",
+      "testsCount": 17,
+      "statusClaim": "GREEN",
+      "sizeKb": 12.44,
+      "lastModified": "2026-04-11T13:00:03.268Z",
+      "fileName": "AG-Y187-board-deck.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y188",
+      "title": "AG-Y188 — Benchmark Comparator / משווה ביצועים תעשייתי",
+      "testsCount": 22,
+      "statusClaim": "GREEN",
+      "sizeKb": 9.16,
+      "lastModified": "2026-04-11T12:59:53.720Z",
+      "fileName": "AG-Y188-benchmark.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y189",
+      "title": "AG-Y189 — Budget vs Actual Engine / מנוע תקציב מול ביצוע",
+      "testsCount": 24,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 10.4,
+      "lastModified": "2026-04-11T13:00:43.960Z",
+      "fileName": "AG-Y189-budget-actual.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y190",
+      "title": "AG-Y190 — Customer Cohort Analysis (`CohortAnalysis`)",
+      "testsCount": 100,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 14.13,
+      "lastModified": "2026-04-11T13:00:31.020Z",
+      "fileName": "AG-Y190-cohort-analysis.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y191",
+      "title": "AG-Y191 — Funnel Analyzer (lead -> MQL -> SQL -> opportunity -> won)",
+      "testsCount": 30,
+      "statusClaim": "GREEN",
+      "sizeKb": 13.22,
+      "lastModified": "2026-04-11T12:59:31.250Z",
+      "fileName": "AG-Y191-funnel.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y192",
+      "title": "AG-Y192 — Marketing Attribution Model / מודל ייחוס שיווקי",
+      "testsCount": 29,
+      "statusClaim": "GREEN",
+      "sizeKb": 18.58,
+      "lastModified": "2026-04-11T13:00:19.437Z",
+      "fileName": "AG-Y192-attribution.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y193",
+      "title": "AG-Y193 — Customer Lifetime Value Calculator / מחשבון ערך חיי לקוח",
+      "testsCount": 24,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 11.54,
+      "lastModified": "2026-04-11T12:59:39.984Z",
+      "fileName": "AG-Y193-ltv-calculator.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y194",
+      "title": "AG-Y194 — CAC Dashboard / לוח מחוונים לעלות רכישת לקוח",
+      "testsCount": 27,
+      "statusClaim": "RED",
+      "sizeKb": 15.85,
+      "lastModified": "2026-04-11T13:01:04.169Z",
+      "fileName": "AG-Y194-cac-dashboard.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {
+        "RED": true
+      }
+    },
+    {
+      "agentId": "AG-Y195",
+      "title": "AG-Y195 — Revenue Waterfall Engine / מנוע מפל הכנסות",
+      "testsCount": 30,
+      "statusClaim": "GREEN",
+      "sizeKb": 15.97,
+      "lastModified": "2026-04-11T13:02:50.622Z",
+      "fileName": "AG-Y195-revenue-waterfall.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y196",
+      "title": "AG-Y196 — Master Wiring Aggregator",
+      "testsCount": 25,
+      "statusClaim": "GREEN",
+      "sizeKb": 15.56,
+      "lastModified": "2026-04-11T13:00:27.546Z",
+      "fileName": "AG-Y196-master-aggregator.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y197",
+      "title": "AG-Y197 — Cross-Module Event Bus",
+      "testsCount": 20,
+      "statusClaim": "GREEN",
+      "sizeKb": 12.92,
+      "lastModified": "2026-04-11T13:00:09.639Z",
+      "fileName": "AG-Y197-event-bus.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y198",
+      "title": "AG-Y198 — Global Search Federator / פדרטור חיפוש גלובלי",
+      "testsCount": 25,
+      "statusClaim": "GREEN",
+      "sizeKb": 11.23,
+      "lastModified": "2026-04-11T12:59:59.743Z",
+      "fileName": "AG-Y198-global-search.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "AG-Y199",
+      "title": "AG-Y199 — Multi-Tenant Config Merger — QA Report",
+      "testsCount": 34,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 16.65,
+      "lastModified": "2026-04-11T13:01:19.032Z",
+      "fileName": "AG-Y199-tenant-config.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "AG-Y200",
+      "title": "AG-Y200 — Grand Consolidator / מאחד-על",
+      "testsCount": 18,
+      "statusClaim": "GREEN",
+      "sizeKb": 11.16,
+      "lastModified": "2026-04-11T13:03:43.510Z",
+      "fileName": "AG-Y200-grand-consolidator.md",
+      "swarm": "WAVE_Y_151_200",
+      "flags": {}
+    },
+    {
+      "agentId": "QA-01",
+      "title": "QA-01 — Terminal Runtime Report",
+      "testsCount": 0,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 30.18,
+      "lastModified": "2026-04-11T11:39:23.358Z",
+      "fileName": "QA-01-terminal-runtime.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_TESTS": true,
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-03",
+      "title": "QA-03 — Integration Test Report",
+      "testsCount": 401,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 31.85,
+      "lastModified": "2026-04-11T12:00:13.029Z",
+      "fileName": "QA-03-integration.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-04",
+      "title": "QA-04 — System End-to-End Test Report",
+      "testsCount": 409,
+      "statusClaim": "GREEN",
+      "sizeKb": 23.01,
+      "lastModified": "2026-04-11T11:48:04.670Z",
+      "fileName": "QA-04-system-e2e.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {}
+    },
+    {
+      "agentId": "QA-05",
+      "title": "QA-05 — Regression Report",
+      "testsCount": 1320,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 14.23,
+      "lastModified": "2026-04-11T11:47:57.926Z",
+      "fileName": "QA-05-regression.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-06",
+      "title": "QA-06 — Smoke Test Agent Report",
+      "testsCount": 6,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 15.08,
+      "lastModified": "2026-04-11T11:36:41.779Z",
+      "fileName": "QA-06-smoke.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-10",
+      "title": "QA-10 — UI Checklist (כללי לכל UI חדש)",
+      "testsCount": 0,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 15.6,
+      "lastModified": "2026-04-11T11:46:51.750Z",
+      "fileName": "QA-10-ui-checklist.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_TESTS": true,
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-10",
+      "title": "QA-10 — UI Audit (טכנו-קול עוזי ERP 2026)",
+      "testsCount": 0,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 45.33,
+      "lastModified": "2026-04-11T11:42:15.876Z",
+      "fileName": "QA-10-ui.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_TESTS": true,
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-11",
+      "title": "QA-11 — Top 10 UX Priorities (ROI-Sorted)",
+      "testsCount": 1,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 11.35,
+      "lastModified": "2026-04-11T11:42:45.973Z",
+      "fileName": "QA-11-ux-priorities.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-11",
+      "title": "QA-11 — UX / Usability Audit",
+      "testsCount": 1,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 32.88,
+      "lastModified": "2026-04-11T11:41:08.161Z",
+      "fileName": "QA-11-ux.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-12",
+      "title": "QA-12 — Role & Permission Audit",
+      "testsCount": 401,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 25.99,
+      "lastModified": "2026-04-11T11:39:23.290Z",
+      "fileName": "QA-12-rbac.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-13",
+      "title": "QA-13 — Secrets Scan",
+      "testsCount": 0,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 10.31,
+      "lastModified": "2026-04-11T11:43:02.212Z",
+      "fileName": "QA-13-secrets-scan.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_TESTS": true,
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-13",
+      "title": "QA-13 — Security Audit (ERP Techno-Kol Uzi)",
+      "testsCount": 0,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 26.07,
+      "lastModified": "2026-04-11T11:41:41.037Z",
+      "fileName": "QA-13-security.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_TESTS": true,
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-14",
+      "title": "QA-14 — Performance Quick Wins (Top 10)",
+      "testsCount": 0,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 12.26,
+      "lastModified": "2026-04-11T11:51:27.488Z",
+      "fileName": "QA-14-perf-quick-wins.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_TESTS": true,
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-14",
+      "title": "QA-14 — Performance Audit (Static)",
+      "testsCount": 1,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 40.81,
+      "lastModified": "2026-04-11T11:50:05.590Z",
+      "fileName": "QA-14-performance.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-17",
+      "title": "QA-17 — Compatibility Audit",
+      "testsCount": 13,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 27.7,
+      "lastModified": "2026-04-11T11:41:25.944Z",
+      "fileName": "QA-17-compatibility.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-17",
+      "title": "QA-17 — Polyfills Needed",
+      "testsCount": 14,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 9.86,
+      "lastModified": "2026-04-11T11:42:32.303Z",
+      "fileName": "QA-17-polyfills-needed.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-18",
+      "title": "QA-18 — Business gaps that block the working day",
+      "testsCount": 125,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 16.63,
+      "lastModified": "2026-04-11T11:45:24.571Z",
+      "fileName": "QA-18-business-gaps.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-18",
+      "title": "QA-18 — UAT scripts",
+      "testsCount": 10,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 16.36,
+      "lastModified": "2026-04-11T11:47:30.222Z",
+      "fileName": "QA-18-uat-scripts.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-18",
+      "title": "QA-18 — UAT for Techno-Kol Uzi ERP",
+      "testsCount": 125,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 23,
+      "lastModified": "2026-04-11T11:43:22.897Z",
+      "fileName": "QA-18-uat.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-19",
+      "title": "QA-19 — Blockers Only (Sorted by Fix Priority)",
+      "testsCount": 18,
+      "statusClaim": "GREEN",
+      "sizeKb": 26.22,
+      "lastModified": "2026-04-11T11:50:38.937Z",
+      "fileName": "QA-19-blockers.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {}
+    },
+    {
+      "agentId": "QA-19",
+      "title": "QA-19 — Release Readiness Report",
+      "testsCount": 18,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 36.71,
+      "lastModified": "2026-04-11T11:48:42.078Z",
+      "fileName": "QA-19-release-readiness.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-19",
+      "title": "QA-19 — Release Sign-Off Form",
+      "testsCount": 100,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 13.81,
+      "lastModified": "2026-04-11T11:51:45.675Z",
+      "fileName": "QA-19-sign-off.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-20",
+      "title": "QA-20 — Incident Response Playbook",
+      "testsCount": 400,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 19.54,
+      "lastModified": "2026-04-11T11:43:12.803Z",
+      "fileName": "QA-20-incident-response.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-20",
+      "title": "QA-20 — Post-Release Monitoring Plan",
+      "testsCount": 401,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 28.18,
+      "lastModified": "2026-04-11T11:39:45.908Z",
+      "fileName": "QA-20-monitoring-plan.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-20",
+      "title": "QA-20 — Post-Release Checklist",
+      "testsCount": 401,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 12.79,
+      "lastModified": "2026-04-11T11:41:06.790Z",
+      "fileName": "QA-20-post-release-checklist.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_STATUS": true
+      }
+    },
+    {
+      "agentId": "QA-20",
+      "title": "QA-20 — Service Level Objectives (SLO) Targets",
+      "testsCount": 0,
+      "statusClaim": "UNKNOWN",
+      "sizeKb": 16.94,
+      "lastModified": "2026-04-11T11:44:33.124Z",
+      "fileName": "QA-20-slo-targets.md",
+      "swarm": "QA_FRAMEWORK",
+      "flags": {
+        "NO_TESTS": true,
+        "NO_STATUS": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "generatedAt": "2026-04-11T11:54:44.641Z",
+  "summary": {
+    "totalGaps": 7,
+    "critical": 2,
+    "high": 4,
+    "med": 1
+  },
+  "gaps": [
+    {
+      "id": "BUG-QA12-001",
+      "severity": "HIGH",
+      "description": "Employee role can list every wage slip of every employee (missing per-actor filter).",
+      "detail": {
+        "route": "GET /api/payroll/wage-slips",
+        "role": "employee",
+        "expected": "filter by req.actor.employee_id"
+      },
+      "recordedAt": "2026-04-11T11:54:44.569Z"
+    },
+    {
+      "id": "BUG-QA12-005",
+      "severity": "HIGH",
+      "description": "Viewer role can POST /api/suppliers. No write-guard on any mutation route.",
+      "detail": {
+        "route": "POST /api/suppliers",
+        "role": "viewer",
+        "expected": "403"
+      },
+      "recordedAt": "2026-04-11T11:54:44.588Z"
+    },
+    {
+      "id": "BUG-QA12-006",
+      "severity": "MED",
+      "description": "Separation-of-Duties: accountant role can approve POs. Should be manager-only.",
+      "detail": {
+        "route": "POST /api/purchase-orders/:id/approve",
+        "role": "accountant",
+        "expected": "403"
+      },
+      "recordedAt": "2026-04-11T11:54:44.601Z"
+    },
+    {
+      "id": "BUG-QA12-007",
+      "severity": "HIGH",
+      "description": "Employee can hit /wage-slips/:id/approve — a manager/accountant-only action.",
+      "detail": {
+        "route": "POST /api/payroll/wage-slips/:id/approve",
+        "role": "employee",
+        "expected": "403"
+      },
+      "recordedAt": "2026-04-11T11:54:44.608Z"
+    },
+    {
+      "id": "BUG-QA12-002",
+      "severity": "CRITICAL",
+      "description": "IDOR: employee can GET /api/payroll/wage-slips/:id for slips they do not own.",
+      "detail": {
+        "route": "GET /api/payroll/wage-slips/:id",
+        "role": "employee",
+        "expected": "403 when req.actor.employee_id != slip.employee_id"
+      },
+      "recordedAt": "2026-04-11T11:54:44.615Z"
+    },
+    {
+      "id": "BUG-QA12-003",
+      "severity": "CRITICAL",
+      "description": "IDOR: employee can read any /api/payroll/employees/:id/balances.",
+      "detail": {
+        "route": "GET /api/payroll/employees/:id/balances",
+        "role": "employee",
+        "expected": "403"
+      },
+      "recordedAt": "2026-04-11T11:54:44.620Z"
+    },
+    {
+      "id": "BUG-QA12-004",
+      "severity": "HIGH",
+      "description": "Mass-assignment: server blindly spreads req.body into insert(). A user-supplied role/is_admin field would land in the DB if such a column existed.",
+      "detail": {
+        "route": "POST /api/suppliers",
+        "payload": {
+          "role": "admin"
+        },
+        "expected": "strip/allowlist body fields"
+      },
+      "recordedAt": "2026-04-11T11:54:44.627Z"
+    }
+  ]
+}

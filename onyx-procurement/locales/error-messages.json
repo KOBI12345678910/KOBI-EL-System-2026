@@ -1,0 +1,1058 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "generated_at": "2026-04-11",
+    "description": "Bilingual (HE/EN) error messages catalog for Onyx Procurement",
+    "message_count": 168,
+    "format": "Each error carries code, HE, EN, severity, and context"
+  },
+
+  "errors": {
+    "generic": {
+      "UNKNOWN_ERROR": {
+        "he": "אירעה שגיאה לא צפויה. אנא נסה שוב.",
+        "en": "An unexpected error occurred. Please try again.",
+        "severity": "error",
+        "ctx": "Generic fallback when no specific error is thrown"
+      },
+      "NETWORK_ERROR": {
+        "he": "תקלת רשת. בדוק את החיבור לאינטרנט ונסה שוב.",
+        "en": "Network error. Check your internet connection and try again.",
+        "severity": "error",
+        "ctx": "fetch/ajax failed"
+      },
+      "TIMEOUT_ERROR": {
+        "he": "הפעולה חרגה מהזמן המותר. נסה שוב מאוחר יותר.",
+        "en": "Request timed out. Please try again later.",
+        "severity": "error",
+        "ctx": "Long-running request exceeded timeout"
+      },
+      "SERVER_ERROR": {
+        "he": "תקלה בשרת. אנא פנה לתמיכה.",
+        "en": "Server error. Please contact support.",
+        "severity": "error",
+        "ctx": "HTTP 5xx response"
+      },
+      "SERVICE_UNAVAILABLE": {
+        "he": "השירות אינו זמין כרגע. נסה שוב בעוד מספר דקות.",
+        "en": "Service temporarily unavailable. Try again in a few minutes.",
+        "severity": "error",
+        "ctx": "HTTP 503"
+      },
+      "RATE_LIMIT_EXCEEDED": {
+        "he": "חרגת ממספר הבקשות המותר. המתן מספר שניות ונסה שוב.",
+        "en": "Rate limit exceeded. Please wait a moment and try again.",
+        "severity": "warning",
+        "ctx": "HTTP 429"
+      },
+      "MAINTENANCE_MODE": {
+        "he": "המערכת בתחזוקה. חזור בעוד מספר דקות.",
+        "en": "System under maintenance. Please come back in a few minutes.",
+        "severity": "info",
+        "ctx": "Planned maintenance window"
+      },
+      "RESOURCE_NOT_FOUND": {
+        "he": "המשאב המבוקש לא נמצא.",
+        "en": "Requested resource not found.",
+        "severity": "error",
+        "ctx": "HTTP 404"
+      },
+      "FORBIDDEN": {
+        "he": "אין לך הרשאה לבצע פעולה זו.",
+        "en": "You are not authorized to perform this action.",
+        "severity": "error",
+        "ctx": "HTTP 403"
+      },
+      "CONFLICT": {
+        "he": "המסמך עודכן במקביל על ידי משתמש אחר. רענן ונסה שוב.",
+        "en": "Record was modified by another user. Refresh and try again.",
+        "severity": "warning",
+        "ctx": "HTTP 409 — optimistic concurrency"
+      }
+    },
+
+    "auth": {
+      "INVALID_CREDENTIALS": {
+        "he": "שם משתמש או סיסמה שגויים.",
+        "en": "Invalid username or password.",
+        "severity": "error",
+        "ctx": "Login failure"
+      },
+      "SESSION_EXPIRED": {
+        "he": "פג תוקף ההתחברות. אנא התחבר מחדש.",
+        "en": "Your session has expired. Please log in again.",
+        "severity": "warning",
+        "ctx": "JWT/session token expired"
+      },
+      "ACCOUNT_LOCKED": {
+        "he": "החשבון ננעל בשל ניסיונות כושלים רבים. פנה למנהל.",
+        "en": "Account locked due to too many failed attempts. Contact administrator.",
+        "severity": "error",
+        "ctx": "After 5 failed login attempts"
+      },
+      "ACCOUNT_DISABLED": {
+        "he": "חשבון זה הושבת.",
+        "en": "This account has been disabled.",
+        "severity": "error",
+        "ctx": "Admin disabled account"
+      },
+      "ACCOUNT_EXPIRED": {
+        "he": "תוקף החשבון פג.",
+        "en": "Account has expired.",
+        "severity": "error",
+        "ctx": "Temporary account expired"
+      },
+      "TWO_FACTOR_REQUIRED": {
+        "he": "נדרש אימות דו-שלבי.",
+        "en": "Two-factor authentication required.",
+        "severity": "info",
+        "ctx": "2FA challenge"
+      },
+      "TWO_FACTOR_INVALID": {
+        "he": "קוד אימות שגוי.",
+        "en": "Invalid verification code.",
+        "severity": "error",
+        "ctx": "2FA code wrong"
+      },
+      "PASSWORD_EXPIRED": {
+        "he": "יש להחליף סיסמה. הסיסמה הנוכחית פגה.",
+        "en": "Password expired. Please set a new password.",
+        "severity": "warning",
+        "ctx": "Password rotation policy"
+      },
+      "PASSWORD_REUSED": {
+        "he": "אין להשתמש בסיסמה קודמת. בחר סיסמה חדשה.",
+        "en": "Cannot reuse a previous password. Choose a new one.",
+        "severity": "error",
+        "ctx": "Password history check"
+      },
+      "WEAK_PASSWORD": {
+        "he": "הסיסמה חלשה מדי. נדרשים לפחות 12 תווים, אותיות גדולות, ספרות וסימנים.",
+        "en": "Password is too weak. Minimum 12 characters with uppercase, digits, and symbols required.",
+        "severity": "error",
+        "ctx": "Password complexity validation"
+      },
+      "UNAUTHORIZED_IP": {
+        "he": "גישה מאסורה מכתובת IP זו.",
+        "en": "Access denied from this IP address.",
+        "severity": "error",
+        "ctx": "IP whitelist check"
+      },
+      "CONCURRENT_SESSION": {
+        "he": "חשבונך פעיל במכשיר אחר.",
+        "en": "Your account is active on another device.",
+        "severity": "warning",
+        "ctx": "Single-session policy"
+      }
+    },
+
+    "validation": {
+      "REQUIRED_FIELD": {
+        "he": "שדה חובה.",
+        "en": "This field is required.",
+        "severity": "error",
+        "ctx": "Missing required input"
+      },
+      "INVALID_EMAIL": {
+        "he": "כתובת דוא\"ל לא תקינה.",
+        "en": "Invalid email address.",
+        "severity": "error",
+        "ctx": "Email format check"
+      },
+      "INVALID_PHONE": {
+        "he": "מספר טלפון לא תקין.",
+        "en": "Invalid phone number.",
+        "severity": "error",
+        "ctx": "Phone format check"
+      },
+      "INVALID_ID_NUMBER": {
+        "he": "תעודת זהות לא תקינה.",
+        "en": "Invalid Israeli ID number.",
+        "severity": "error",
+        "ctx": "Israeli ID checksum failed"
+      },
+      "INVALID_BUSINESS_NUMBER": {
+        "he": "מספר ח.פ./ע.מ. לא תקין.",
+        "en": "Invalid Israeli business number.",
+        "severity": "error",
+        "ctx": "Business ID validation failed"
+      },
+      "INVALID_IBAN": {
+        "he": "IBAN לא תקין.",
+        "en": "Invalid IBAN.",
+        "severity": "error",
+        "ctx": "IBAN format/checksum"
+      },
+      "INVALID_DATE": {
+        "he": "תאריך לא תקין.",
+        "en": "Invalid date.",
+        "severity": "error",
+        "ctx": "Bad date format"
+      },
+      "INVALID_DATE_RANGE": {
+        "he": "טווח תאריכים לא תקין. תאריך התחלה חייב להיות לפני תאריך סיום.",
+        "en": "Invalid date range. Start date must be before end date.",
+        "severity": "error",
+        "ctx": "Date range check"
+      },
+      "FUTURE_DATE_NOT_ALLOWED": {
+        "he": "לא ניתן לבחור תאריך עתידי.",
+        "en": "Future dates are not allowed.",
+        "severity": "error",
+        "ctx": "Historical-only field"
+      },
+      "PAST_DATE_NOT_ALLOWED": {
+        "he": "לא ניתן לבחור תאריך בעבר.",
+        "en": "Past dates are not allowed.",
+        "severity": "error",
+        "ctx": "Forward-looking field"
+      },
+      "INVALID_AMOUNT": {
+        "he": "סכום לא תקין.",
+        "en": "Invalid amount.",
+        "severity": "error",
+        "ctx": "Numeric money field"
+      },
+      "NEGATIVE_NOT_ALLOWED": {
+        "he": "לא ניתן להזין ערך שלילי.",
+        "en": "Negative values are not allowed.",
+        "severity": "error",
+        "ctx": "Non-negative constraint"
+      },
+      "ZERO_NOT_ALLOWED": {
+        "he": "הערך חייב להיות גדול מאפס.",
+        "en": "Value must be greater than zero.",
+        "severity": "error",
+        "ctx": "Positive-only field"
+      },
+      "MAX_LENGTH_EXCEEDED": {
+        "he": "חרגת מאורך השדה המרבי.",
+        "en": "Maximum field length exceeded.",
+        "severity": "error",
+        "ctx": "Text length validation"
+      },
+      "MIN_LENGTH_NOT_REACHED": {
+        "he": "לא הגעת לאורך המינימלי של השדה.",
+        "en": "Minimum field length not reached.",
+        "severity": "error",
+        "ctx": "Short text input"
+      },
+      "INVALID_FORMAT": {
+        "he": "פורמט לא תקין.",
+        "en": "Invalid format.",
+        "severity": "error",
+        "ctx": "Regex mismatch"
+      },
+      "DUPLICATE_VALUE": {
+        "he": "ערך זה כבר קיים במערכת.",
+        "en": "This value already exists in the system.",
+        "severity": "error",
+        "ctx": "Unique constraint"
+      },
+      "INVALID_CURRENCY": {
+        "he": "מטבע לא תקין.",
+        "en": "Invalid currency code.",
+        "severity": "error",
+        "ctx": "ISO currency check"
+      },
+      "UNSUPPORTED_FILE_TYPE": {
+        "he": "סוג קובץ לא נתמך.",
+        "en": "Unsupported file type.",
+        "severity": "error",
+        "ctx": "File upload MIME check"
+      },
+      "FILE_TOO_LARGE": {
+        "he": "הקובץ גדול מדי.",
+        "en": "File is too large.",
+        "severity": "error",
+        "ctx": "Max upload size"
+      }
+    },
+
+    "payroll": {
+      "PAYROLL_PERIOD_CLOSED": {
+        "he": "תקופת השכר נסגרה ולא ניתן לערוך אותה.",
+        "en": "Payroll period is closed and cannot be edited.",
+        "severity": "error",
+        "ctx": "Attempt to modify locked payroll period"
+      },
+      "EMPLOYEE_NOT_FOUND": {
+        "he": "העובד לא נמצא.",
+        "en": "Employee not found.",
+        "severity": "error",
+        "ctx": "Employee ID does not exist"
+      },
+      "EMPLOYEE_INACTIVE": {
+        "he": "העובד אינו פעיל במערכת.",
+        "en": "Employee is not active.",
+        "severity": "error",
+        "ctx": "Attempting payroll for terminated employee"
+      },
+      "MISSING_FORM_101": {
+        "he": "לא קיים טופס 101 לעובד זה לשנת המס הנוכחית.",
+        "en": "No Form 101 on file for this employee for current tax year.",
+        "severity": "warning",
+        "ctx": "Payroll run without annual tax declaration"
+      },
+      "TAX_CALCULATION_FAILED": {
+        "he": "חישוב המס נכשל. בדוק את טבלת המדרגות.",
+        "en": "Tax calculation failed. Check bracket configuration.",
+        "severity": "error",
+        "ctx": "Error in tax engine"
+      },
+      "BL_CALCULATION_FAILED": {
+        "he": "חישוב ביטוח לאומי נכשל.",
+        "en": "National Insurance calculation failed.",
+        "severity": "error",
+        "ctx": "BL engine error"
+      },
+      "PENSION_FUND_REQUIRED": {
+        "he": "לא הוגדרה קרן פנסיה לעובד.",
+        "en": "Pension fund not configured for employee.",
+        "severity": "error",
+        "ctx": "Missing pension assignment"
+      },
+      "OVERTIME_EXCEEDS_LEGAL_MAX": {
+        "he": "שעות נוספות חורגות מהמקסימום החוקי השבועי.",
+        "en": "Overtime exceeds legal weekly maximum.",
+        "severity": "warning",
+        "ctx": "Hours of Work Law limit"
+      },
+      "VACATION_BALANCE_INSUFFICIENT": {
+        "he": "יתרת ימי חופשה לא מספיקה.",
+        "en": "Insufficient vacation balance.",
+        "severity": "warning",
+        "ctx": "Requested vacation > balance"
+      },
+      "SICK_BALANCE_INSUFFICIENT": {
+        "he": "יתרת ימי מחלה לא מספיקה.",
+        "en": "Insufficient sick leave balance.",
+        "severity": "warning",
+        "ctx": "Sick days exceed balance"
+      },
+      "WAGE_BELOW_MINIMUM": {
+        "he": "השכר נמוך משכר המינימום החוקי.",
+        "en": "Wage is below legal minimum wage.",
+        "severity": "error",
+        "ctx": "Minimum Wage Law violation"
+      },
+      "DUPLICATE_PAYSLIP": {
+        "he": "כבר קיים תלוש שכר לעובד זה בתקופה זו.",
+        "en": "Payslip already exists for this employee in this period.",
+        "severity": "error",
+        "ctx": "Unique payslip per period"
+      },
+      "TAX_COORDINATION_REQUIRED": {
+        "he": "נדרש תיאום מס — לעובד יש עבודה נוספת.",
+        "en": "Tax coordination required — employee has additional employment.",
+        "severity": "warning",
+        "ctx": "Secondary employer without coord"
+      },
+      "FOREIGN_WORKER_MISSING_PERMIT": {
+        "he": "היתר עבודה לעובד זר חסר או פג תוקף.",
+        "en": "Foreign worker permit missing or expired.",
+        "severity": "error",
+        "ctx": "Work permit validation"
+      }
+    },
+
+    "vat": {
+      "INVOICE_NUMBER_REQUIRED": {
+        "he": "מספר חשבונית חובה.",
+        "en": "Invoice number is required.",
+        "severity": "error",
+        "ctx": "Missing invoice number"
+      },
+      "DUPLICATE_INVOICE_NUMBER": {
+        "he": "מספר חשבונית כבר קיים.",
+        "en": "Invoice number already exists.",
+        "severity": "error",
+        "ctx": "Unique invoice number"
+      },
+      "INVALID_VAT_RATE": {
+        "he": "שיעור מע\"מ לא תקין.",
+        "en": "Invalid VAT rate.",
+        "severity": "error",
+        "ctx": "VAT rate out of range"
+      },
+      "VAT_CALCULATION_MISMATCH": {
+        "he": "סכום המע\"מ המחושב אינו תואם את הסכום שהוזן.",
+        "en": "Calculated VAT does not match entered amount.",
+        "severity": "warning",
+        "ctx": "Math check on invoice"
+      },
+      "PCN_GENERATION_FAILED": {
+        "he": "יצירת קובץ PCN 836 נכשלה.",
+        "en": "PCN 836 file generation failed.",
+        "severity": "error",
+        "ctx": "Structured report error"
+      },
+      "VAT_PERIOD_ALREADY_FILED": {
+        "he": "דוח מע\"מ לתקופה זו כבר הוגש.",
+        "en": "VAT return for this period already filed.",
+        "severity": "error",
+        "ctx": "Duplicate filing prevention"
+      },
+      "VAT_PERIOD_NOT_CLOSED": {
+        "he": "תקופת המע\"מ טרם נסגרה — לא ניתן לדווח.",
+        "en": "VAT period is not closed yet — cannot file report.",
+        "severity": "error",
+        "ctx": "Must close before filing"
+      },
+      "ALLOCATION_NUMBER_INVALID": {
+        "he": "מספר הקצאה לא תקין או פג תוקף.",
+        "en": "Allocation number is invalid or expired.",
+        "severity": "error",
+        "ctx": "Tax Authority allocation check"
+      },
+      "ALLOCATION_NUMBER_REQUIRED": {
+        "he": "מספר הקצאה חובה לחשבונית בסכום זה.",
+        "en": "Allocation number required for invoice above threshold.",
+        "severity": "error",
+        "ctx": "Above reporting threshold (2024+)"
+      },
+      "ZERO_RATED_REQUIRES_PROOF": {
+        "he": "חשבונית אפס מחייבת מסמך יצוא.",
+        "en": "Zero-rated invoice requires export documentation.",
+        "severity": "warning",
+        "ctx": "Export evidence missing"
+      },
+      "EXEMPT_DEALER_CANT_CHARGE_VAT": {
+        "he": "עוסק פטור אינו רשאי לגבות מע\"מ.",
+        "en": "Exempt dealer cannot charge VAT.",
+        "severity": "error",
+        "ctx": "Exempt dealer validation"
+      },
+      "INVOICE_FROM_INACTIVE_SUPPLIER": {
+        "he": "לא ניתן לקבל חשבונית מספק לא פעיל.",
+        "en": "Cannot accept invoice from inactive supplier.",
+        "severity": "error",
+        "ctx": "Supplier status check"
+      }
+    },
+
+    "bank": {
+      "STATEMENT_UPLOAD_FAILED": {
+        "he": "העלאת דף החשבון נכשלה.",
+        "en": "Bank statement upload failed.",
+        "severity": "error",
+        "ctx": "File upload issue"
+      },
+      "STATEMENT_FORMAT_UNRECOGNIZED": {
+        "he": "לא ניתן לזהות את פורמט דף החשבון.",
+        "en": "Unrecognized bank statement format.",
+        "severity": "error",
+        "ctx": "Parser couldn't read file"
+      },
+      "DUPLICATE_STATEMENT_PERIOD": {
+        "he": "דף חשבון לתקופה זו כבר הועלה.",
+        "en": "Statement for this period already uploaded.",
+        "severity": "warning",
+        "ctx": "Duplicate period detection"
+      },
+      "RECONCILIATION_OUT_OF_BALANCE": {
+        "he": "ההתאמה אינה מאוזנת. הפרש: {amount}.",
+        "en": "Reconciliation is out of balance. Difference: {amount}.",
+        "severity": "warning",
+        "ctx": "Balance mismatch"
+      },
+      "OPENING_BALANCE_MISMATCH": {
+        "he": "יתרת הפתיחה אינה תואמת את יתרת הסגירה של התקופה הקודמת.",
+        "en": "Opening balance does not match prior period closing balance.",
+        "severity": "error",
+        "ctx": "Period-to-period continuity"
+      },
+      "NEGATIVE_BALANCE_WARNING": {
+        "he": "החשבון במשיכת יתר.",
+        "en": "Account is overdrawn.",
+        "severity": "warning",
+        "ctx": "Overdraft alert"
+      },
+      "OVERDRAFT_LIMIT_EXCEEDED": {
+        "he": "חריגה ממסגרת האשראי.",
+        "en": "Overdraft limit exceeded.",
+        "severity": "error",
+        "ctx": "Exceeds credit line"
+      },
+      "BOUNCED_CHECK": {
+        "he": "המחאה חזרה.",
+        "en": "Check bounced.",
+        "severity": "error",
+        "ctx": "NSF or stop payment"
+      },
+      "MASAV_FILE_INVALID": {
+        "he": "קובץ מס\"ב לא תקין.",
+        "en": "MASAV file is invalid.",
+        "severity": "error",
+        "ctx": "Clearing file format error"
+      },
+      "TRANSFER_LIMIT_EXCEEDED": {
+        "he": "חרגת ממגבלת ההעברות היומית.",
+        "en": "Daily transfer limit exceeded.",
+        "severity": "error",
+        "ctx": "Daily limit reached"
+      },
+      "INVALID_BANK_ACCOUNT": {
+        "he": "מספר חשבון בנק לא תקין.",
+        "en": "Invalid bank account number.",
+        "severity": "error",
+        "ctx": "Bank/branch/account validation"
+      }
+    },
+
+    "annual_tax": {
+      "MISSING_ANNUAL_REPORT": {
+        "he": "לא קיים דוח שנתי לשנת המס {year}.",
+        "en": "No annual report exists for tax year {year}.",
+        "severity": "error",
+        "ctx": "Report not yet created"
+      },
+      "FORM_6111_VALIDATION_FAILED": {
+        "he": "טופס 6111 כשל באימות. ראה פרטים למטה.",
+        "en": "Form 6111 validation failed. See details below.",
+        "severity": "error",
+        "ctx": "Structured form validation"
+      },
+      "ASSESSMENT_YEAR_CLOSED": {
+        "he": "שנת המס סגורה. לא ניתן לערוך.",
+        "en": "Tax year is closed. Cannot edit.",
+        "severity": "error",
+        "ctx": "Closed tax year lock"
+      },
+      "ADVANCE_PAYMENT_OVERDUE": {
+        "he": "מקדמת מס איחרה בתשלום.",
+        "en": "Tax advance payment is overdue.",
+        "severity": "warning",
+        "ctx": "Missed advance tax deadline"
+      },
+      "TRIAL_BALANCE_NOT_BALANCED": {
+        "he": "מאזן הבוחן אינו מאוזן.",
+        "en": "Trial balance does not balance.",
+        "severity": "error",
+        "ctx": "Debits != credits"
+      },
+      "LOSS_CARRYFORWARD_EXCEEDED": {
+        "he": "הפסד מועבר עולה על רווח לפני מס.",
+        "en": "Loss carryforward exceeds profit before tax.",
+        "severity": "warning",
+        "ctx": "Offset capped at profit"
+      },
+      "DEPRECIATION_RATE_INVALID": {
+        "he": "שיעור פחת חורג מהמותר בתקנות.",
+        "en": "Depreciation rate exceeds regulatory limit.",
+        "severity": "error",
+        "ctx": "Depreciation regulations"
+      },
+      "AUDIT_SIGNATURE_MISSING": {
+        "he": "חסרה חתימת רואה חשבון מבקר.",
+        "en": "Auditor signature missing.",
+        "severity": "error",
+        "ctx": "CPA signoff required"
+      }
+    },
+
+    "procurement": {
+      "PO_NOT_APPROVED": {
+        "he": "הזמנת הרכש לא אושרה.",
+        "en": "Purchase order is not approved.",
+        "severity": "error",
+        "ctx": "PO still in draft"
+      },
+      "PO_BUDGET_EXCEEDED": {
+        "he": "ההזמנה חורגת מהתקציב הזמין.",
+        "en": "Purchase order exceeds available budget.",
+        "severity": "error",
+        "ctx": "Budget control"
+      },
+      "PO_ALREADY_CLOSED": {
+        "he": "הזמנה זו כבר נסגרה.",
+        "en": "This PO is already closed.",
+        "severity": "error",
+        "ctx": "Cannot modify closed PO"
+      },
+      "SUPPLIER_NOT_APPROVED": {
+        "he": "הספק לא מאושר להזמנות חדשות.",
+        "en": "Supplier is not approved for new orders.",
+        "severity": "error",
+        "ctx": "Supplier status blocks PO"
+      },
+      "SUPPLIER_BLACKLISTED": {
+        "he": "הספק נמצא ברשימה השחורה.",
+        "en": "Supplier is blacklisted.",
+        "severity": "error",
+        "ctx": "Hard block"
+      },
+      "SUPPLIER_CERT_EXPIRED": {
+        "he": "אישור ניכוי מס במקור של הספק פג תוקף.",
+        "en": "Supplier withholding tax certificate has expired.",
+        "severity": "warning",
+        "ctx": "Will withhold at default rate"
+      },
+      "GRN_QUANTITY_MISMATCH": {
+        "he": "כמות בתעודת הקבלה אינה תואמת את ההזמנה.",
+        "en": "Quantity in GRN does not match PO.",
+        "severity": "warning",
+        "ctx": "Partial/over delivery"
+      },
+      "INVOICE_QUANTITY_MISMATCH": {
+        "he": "כמות בחשבונית אינה תואמת את תעודת הקבלה.",
+        "en": "Invoice quantity does not match GRN.",
+        "severity": "warning",
+        "ctx": "3-way match fails"
+      },
+      "INVOICE_PRICE_MISMATCH": {
+        "he": "מחיר בחשבונית אינו תואם את ההזמנה.",
+        "en": "Invoice price does not match PO.",
+        "severity": "warning",
+        "ctx": "Price tolerance exceeded"
+      },
+      "DUPLICATE_INVOICE": {
+        "he": "חשבונית כפולה מאותו ספק.",
+        "en": "Duplicate invoice from same supplier.",
+        "severity": "error",
+        "ctx": "Same number/date/amount"
+      },
+      "APPROVAL_LEVEL_INSUFFICIENT": {
+        "he": "רמת האישור שלך אינה מספיקה לסכום זה.",
+        "en": "Your approval level is insufficient for this amount.",
+        "severity": "error",
+        "ctx": "DOA (delegation of authority) check"
+      },
+      "PAYMENT_TERMS_VIOLATION": {
+        "he": "תנאי התשלום חורגים ממדיניות החברה.",
+        "en": "Payment terms violate company policy.",
+        "severity": "warning",
+        "ctx": "Non-standard terms"
+      }
+    },
+
+    "compliance": {
+      "AUDIT_LOG_UNAVAILABLE": {
+        "he": "לוג הביקורת אינו זמין.",
+        "en": "Audit log is unavailable.",
+        "severity": "error",
+        "ctx": "Audit trail error"
+      },
+      "COMPLIANCE_CHECK_FAILED": {
+        "he": "בדיקת ציות נכשלה.",
+        "en": "Compliance check failed.",
+        "severity": "error",
+        "ctx": "Generic compliance rule"
+      },
+      "KYC_INCOMPLETE": {
+        "he": "תיק הכר את הלקוח לא הושלם.",
+        "en": "KYC file is not complete.",
+        "severity": "warning",
+        "ctx": "Missing KYC documents"
+      },
+      "SANCTIONS_MATCH": {
+        "he": "נמצאה התאמה ברשימות סנקציות — נדרש אישור מיוחד.",
+        "en": "Sanctions list match — special approval required.",
+        "severity": "error",
+        "ctx": "Sanctions screening hit"
+      },
+      "PII_EXPOSURE_RISK": {
+        "he": "סיכון לחשיפת מידע אישי. הפעולה נחסמה.",
+        "en": "PII exposure risk — action blocked.",
+        "severity": "error",
+        "ctx": "Data protection rule"
+      },
+      "DATA_RETENTION_VIOLATION": {
+        "he": "פעולה מנוגדת למדיניות שמירת נתונים.",
+        "en": "Action violates data retention policy.",
+        "severity": "error",
+        "ctx": "Retention rule"
+      },
+      "SEGREGATION_OF_DUTIES_VIOLATION": {
+        "he": "הפרת הפרדת תפקידים — אינך יכול לאשר פעולה שיצרת.",
+        "en": "Segregation of duties violation — you cannot approve an action you created.",
+        "severity": "error",
+        "ctx": "SOD control"
+      },
+      "CONSENT_MISSING": {
+        "he": "חסרה הסכמת המשתמש לעיבוד מידע.",
+        "en": "Missing user consent for data processing.",
+        "severity": "error",
+        "ctx": "Privacy law consent"
+      },
+      "REGULATION_DEADLINE_PASSED": {
+        "he": "חלף המועד החוקי לדיווח.",
+        "en": "Regulatory reporting deadline has passed.",
+        "severity": "error",
+        "ctx": "Late filing"
+      }
+    },
+
+    "data": {
+      "DATABASE_CONNECTION_FAILED": {
+        "he": "החיבור למסד הנתונים נכשל.",
+        "en": "Database connection failed.",
+        "severity": "error",
+        "ctx": "DB unavailable"
+      },
+      "DATABASE_QUERY_FAILED": {
+        "he": "שאילתת מסד נתונים נכשלה.",
+        "en": "Database query failed.",
+        "severity": "error",
+        "ctx": "Generic query error"
+      },
+      "DATA_INTEGRITY_ERROR": {
+        "he": "שגיאת שלמות נתונים.",
+        "en": "Data integrity error.",
+        "severity": "error",
+        "ctx": "Constraint violation"
+      },
+      "FOREIGN_KEY_VIOLATION": {
+        "he": "הפעולה תפגע ברשומות מקושרות.",
+        "en": "Action would break linked records.",
+        "severity": "error",
+        "ctx": "FK constraint"
+      },
+      "RECORD_LOCKED": {
+        "he": "הרשומה נעולה על ידי משתמש אחר.",
+        "en": "Record is locked by another user.",
+        "severity": "warning",
+        "ctx": "Pessimistic lock"
+      },
+      "IMPORT_FAILED": {
+        "he": "ייבוא נתונים נכשל.",
+        "en": "Data import failed.",
+        "severity": "error",
+        "ctx": "Bulk import error"
+      },
+      "EXPORT_FAILED": {
+        "he": "ייצוא נתונים נכשל.",
+        "en": "Data export failed.",
+        "severity": "error",
+        "ctx": "Export generation error"
+      },
+      "BACKUP_FAILED": {
+        "he": "גיבוי נכשל.",
+        "en": "Backup failed.",
+        "severity": "error",
+        "ctx": "Scheduled backup error"
+      },
+      "RESTORE_FAILED": {
+        "he": "שחזור נכשל.",
+        "en": "Restore failed.",
+        "severity": "error",
+        "ctx": "Restore operation error"
+      }
+    },
+
+    "integration": {
+      "API_CALL_FAILED": {
+        "he": "קריאה ל-API חיצוני נכשלה.",
+        "en": "External API call failed.",
+        "severity": "error",
+        "ctx": "3rd party integration error"
+      },
+      "WEBHOOK_DELIVERY_FAILED": {
+        "he": "משלוח Webhook נכשל.",
+        "en": "Webhook delivery failed.",
+        "severity": "error",
+        "ctx": "Outbound webhook"
+      },
+      "SAP_SYNC_FAILED": {
+        "he": "סנכרון עם SAP נכשל.",
+        "en": "SAP synchronization failed.",
+        "severity": "error",
+        "ctx": "ERP integration"
+      },
+      "PRIORITY_SYNC_FAILED": {
+        "he": "סנכרון עם Priority נכשל.",
+        "en": "Priority sync failed.",
+        "severity": "error",
+        "ctx": "Priority ERP integration"
+      },
+      "HASHAVSHEVET_SYNC_FAILED": {
+        "he": "סנכרון עם חשבשבת נכשל.",
+        "en": "Hashavshevet sync failed.",
+        "severity": "error",
+        "ctx": "Hashavshevet accounting integration"
+      },
+      "EMAIL_DELIVERY_FAILED": {
+        "he": "משלוח דוא\"ל נכשל.",
+        "en": "Email delivery failed.",
+        "severity": "error",
+        "ctx": "SMTP error"
+      },
+      "SMS_DELIVERY_FAILED": {
+        "he": "משלוח SMS נכשל.",
+        "en": "SMS delivery failed.",
+        "severity": "error",
+        "ctx": "SMS gateway error"
+      },
+      "WHATSAPP_DELIVERY_FAILED": {
+        "he": "משלוח הודעת WhatsApp נכשל.",
+        "en": "WhatsApp delivery failed.",
+        "severity": "error",
+        "ctx": "WhatsApp Business API error"
+      },
+      "OCR_EXTRACTION_FAILED": {
+        "he": "חילוץ טקסט מהמסמך נכשל.",
+        "en": "OCR text extraction failed.",
+        "severity": "error",
+        "ctx": "Document processing"
+      }
+    },
+
+    "ai": {
+      "AI_SERVICE_UNAVAILABLE": {
+        "he": "שירות AI אינו זמין כרגע.",
+        "en": "AI service is currently unavailable.",
+        "severity": "warning",
+        "ctx": "LLM API down"
+      },
+      "AI_QUOTA_EXCEEDED": {
+        "he": "חרגת ממכסת ה-AI החודשית.",
+        "en": "Monthly AI quota exceeded.",
+        "severity": "warning",
+        "ctx": "Cost limit reached"
+      },
+      "AI_RESPONSE_INVALID": {
+        "he": "תגובת ה-AI אינה תקינה.",
+        "en": "AI response is invalid.",
+        "severity": "error",
+        "ctx": "Malformed AI output"
+      },
+      "AI_SAFETY_BLOCK": {
+        "he": "הבקשה נחסמה על ידי מסנן הבטיחות.",
+        "en": "Request was blocked by safety filter.",
+        "severity": "warning",
+        "ctx": "Content moderation"
+      }
+    },
+
+    "file": {
+      "FILE_NOT_FOUND": {
+        "he": "הקובץ לא נמצא.",
+        "en": "File not found.",
+        "severity": "error",
+        "ctx": "Missing file"
+      },
+      "FILE_CORRUPTED": {
+        "he": "הקובץ פגום.",
+        "en": "File is corrupted.",
+        "severity": "error",
+        "ctx": "Bad file contents"
+      },
+      "VIRUS_DETECTED": {
+        "he": "זוהה וירוס בקובץ. הקובץ נחסם.",
+        "en": "Virus detected in file — blocked.",
+        "severity": "error",
+        "ctx": "AV scan result"
+      },
+      "STORAGE_QUOTA_EXCEEDED": {
+        "he": "חרגת ממכסת האחסון.",
+        "en": "Storage quota exceeded.",
+        "severity": "error",
+        "ctx": "Disk/cloud storage full"
+      },
+      "PDF_GENERATION_FAILED": {
+        "he": "יצירת PDF נכשלה.",
+        "en": "PDF generation failed.",
+        "severity": "error",
+        "ctx": "Printer/renderer error"
+      }
+    },
+
+    "workflow": {
+      "WORKFLOW_NOT_CONFIGURED": {
+        "he": "תזרים העבודה לא הוגדר.",
+        "en": "Workflow is not configured.",
+        "severity": "error",
+        "ctx": "Missing workflow setup"
+      },
+      "WORKFLOW_STEP_NOT_READY": {
+        "he": "השלב הקודם טרם הושלם.",
+        "en": "Previous step is not yet complete.",
+        "severity": "warning",
+        "ctx": "Out-of-order step"
+      },
+      "APPROVER_NOT_ASSIGNED": {
+        "he": "לא הוקצה מאשר לתזרים.",
+        "en": "No approver assigned to workflow.",
+        "severity": "error",
+        "ctx": "Missing approver in chain"
+      },
+      "CIRCULAR_APPROVAL": {
+        "he": "זוהתה תלות מעגלית בשרשרת האישורים.",
+        "en": "Circular dependency detected in approval chain.",
+        "severity": "error",
+        "ctx": "Config loop"
+      },
+      "SELF_APPROVAL_BLOCKED": {
+        "he": "אינך יכול לאשר בקשה שיצרת.",
+        "en": "You cannot approve a request you created.",
+        "severity": "error",
+        "ctx": "SOD — self-approval"
+      },
+      "DELEGATE_NOT_AVAILABLE": {
+        "he": "הנציג אינו זמין כרגע.",
+        "en": "Delegate is not available.",
+        "severity": "warning",
+        "ctx": "Out-of-office delegate"
+      }
+    },
+
+    "budget": {
+      "BUDGET_NOT_DEFINED": {
+        "he": "לא הוגדר תקציב לקטגוריה זו.",
+        "en": "No budget defined for this category.",
+        "severity": "warning",
+        "ctx": "Missing budget line"
+      },
+      "BUDGET_EXHAUSTED": {
+        "he": "התקציב מוצה.",
+        "en": "Budget is exhausted.",
+        "severity": "error",
+        "ctx": "0 budget remaining"
+      },
+      "BUDGET_WARNING_THRESHOLD": {
+        "he": "התקציב קרוב למיצוי ({percent}% נוצל).",
+        "en": "Budget nearing depletion ({percent}% used).",
+        "severity": "warning",
+        "ctx": "80%+ threshold warning"
+      },
+      "COMMITMENT_EXCEEDS_BUDGET": {
+        "he": "ההתחייבות חורגת מהתקציב ב-{amount}.",
+        "en": "Commitment exceeds budget by {amount}.",
+        "severity": "error",
+        "ctx": "Budget overrun"
+      },
+      "FISCAL_YEAR_NOT_OPEN": {
+        "he": "שנת כספים זו אינה פתוחה לפעולות.",
+        "en": "Fiscal year is not open for transactions.",
+        "severity": "error",
+        "ctx": "Year not initialized"
+      }
+    },
+
+    "hr": {
+      "TIMESHEET_NOT_SUBMITTED": {
+        "he": "דוח שעות טרם הוגש לתקופה זו.",
+        "en": "Timesheet not yet submitted for this period.",
+        "severity": "warning",
+        "ctx": "Missing timesheet"
+      },
+      "TIMESHEET_OVERLAPPING_HOURS": {
+        "he": "דוח שעות מכיל שעות חופפות.",
+        "en": "Timesheet contains overlapping hours.",
+        "severity": "error",
+        "ctx": "Time conflict in entries"
+      },
+      "HOURS_EXCEED_DAILY_MAX": {
+        "he": "סך השעות ביום חורגות מהמקסימום החוקי (12).",
+        "en": "Daily hours exceed legal maximum (12).",
+        "severity": "error",
+        "ctx": "Labor law violation"
+      },
+      "LEAVE_OVERLAPS_HOLIDAY": {
+        "he": "חופשה מוגשת חופפת לחג.",
+        "en": "Leave request overlaps with a public holiday.",
+        "severity": "warning",
+        "ctx": "Holiday overlap"
+      },
+      "WORK_PERMIT_EXPIRED": {
+        "he": "היתר עבודה פג תוקף.",
+        "en": "Work permit has expired.",
+        "severity": "error",
+        "ctx": "Expired permit"
+      },
+      "PROBATION_PERIOD_ACTIVE": {
+        "he": "העובד בתקופת ניסיון.",
+        "en": "Employee is in probation period.",
+        "severity": "info",
+        "ctx": "Probation notice"
+      }
+    },
+
+    "inventory": {
+      "ITEM_NOT_IN_CATALOG": {
+        "he": "הפריט לא נמצא בקטלוג.",
+        "en": "Item not found in catalog.",
+        "severity": "error",
+        "ctx": "Missing catalog item"
+      },
+      "INSUFFICIENT_STOCK": {
+        "he": "אין מלאי מספיק.",
+        "en": "Insufficient stock.",
+        "severity": "error",
+        "ctx": "Stock shortage"
+      },
+      "NEGATIVE_STOCK_DETECTED": {
+        "he": "זוהתה יתרת מלאי שלילית.",
+        "en": "Negative stock balance detected.",
+        "severity": "error",
+        "ctx": "Stock integrity"
+      },
+      "WAREHOUSE_LOCKED": {
+        "he": "המחסן נעול — ספירת מלאי בתהליך.",
+        "en": "Warehouse is locked — stocktaking in progress.",
+        "severity": "warning",
+        "ctx": "Locked during inventory count"
+      },
+      "EXPIRED_ITEM": {
+        "he": "הפריט פג תוקף.",
+        "en": "Item has expired.",
+        "severity": "warning",
+        "ctx": "Perishable/expiry check"
+      }
+    },
+
+    "contract": {
+      "CONTRACT_EXPIRED": {
+        "he": "החוזה פג תוקף.",
+        "en": "Contract has expired.",
+        "severity": "error",
+        "ctx": "Expired contract"
+      },
+      "CONTRACT_NOT_SIGNED": {
+        "he": "החוזה טרם נחתם.",
+        "en": "Contract has not been signed yet.",
+        "severity": "warning",
+        "ctx": "Missing signature"
+      },
+      "AUTO_RENEWAL_BLOCKED": {
+        "he": "חידוש אוטומטי חסום.",
+        "en": "Auto-renewal is blocked.",
+        "severity": "warning",
+        "ctx": "Manual review required"
+      },
+      "CONTRACT_TERMS_CONFLICT": {
+        "he": "תנאי החוזה סותרים זה את זה.",
+        "en": "Contract terms conflict with each other.",
+        "severity": "error",
+        "ctx": "Inconsistent clauses"
+      }
+    },
+
+    "reporting": {
+      "REPORT_GENERATION_TIMEOUT": {
+        "he": "הפקת הדוח חרגה מהזמן המותר.",
+        "en": "Report generation timed out.",
+        "severity": "error",
+        "ctx": "Long-running report"
+      },
+      "REPORT_EMPTY": {
+        "he": "לא נמצאו נתונים להצגה בדוח.",
+        "en": "No data found for this report.",
+        "severity": "info",
+        "ctx": "Empty dataset"
+      },
+      "REPORT_PARAMS_INVALID": {
+        "he": "פרמטרי הדוח לא תקינים.",
+        "en": "Report parameters are invalid.",
+        "severity": "error",
+        "ctx": "Bad report input"
+      },
+      "REPORT_VERSION_MISMATCH": {
+        "he": "תבנית הדוח ישנה. יש לעדכן.",
+        "en": "Report template is outdated. Please update.",
+        "severity": "warning",
+        "ctx": "Template version"
+      }
+    }
+  }
+}

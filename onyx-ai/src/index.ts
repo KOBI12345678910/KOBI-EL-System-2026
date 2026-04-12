@@ -2270,7 +2270,11 @@ class APIServer {
     private agents: Map<string, AgentRuntime>,
   ) {}
 
-  start(port: number = 3100): void {
+  start(port: number = 3200): void {
+    // Agent-Y-QA03-BUG-05 FIX: default port changed from 3100 → 3200 to eliminate
+    // the port collision with onyx-procurement. The ai-bridge client in procurement
+    // (onyx-procurement/src/ai-bridge.js) also defaults to http://localhost:3200,
+    // so both halves now agree on the peer port.
     this.server = http.createServer(async (req, res) => {
       res.setHeader('Content-Type', 'application/json');
       res.setHeader('Access-Control-Allow-Origin', '*');
@@ -2306,6 +2310,224 @@ class APIServer {
     body: Record<string, unknown>,
     params: URLSearchParams,
   ): Promise<{ status: number; body: Record<string, unknown> }> {
+    // ═══════════════════════════════════════════════════════════
+    // KUBERNETES-STYLE PROBES (Agent 41) — always evaluated first
+    // /healthz → 200 + {ok, service, version, uptime}
+    // /livez   → 200 + {alive:true}
+    // /readyz  → 200 if Supabase responds within 2s, else 503
+    // ═══════════════════════════════════════════════════════════
+    if (method === 'GET' && path === '/healthz') {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const pkgAg41 = require('../package.json');
+      return {
+        status: 200,
+        body: {
+          ok: true,
+          service: pkgAg41.name,
+          version: pkgAg41.version,
+          uptime: process.uptime(),
+        },
+      };
+    }
+
+    if (method === 'GET' && path === '/livez') {
+      return { status: 200, body: { alive: true } };
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // Agent-Y-QA03 FIX (BUG-01): ai-bridge compatibility endpoints.
+    // Procurement's src/ai-bridge.js calls these four paths. They
+    // previously did not exist, so every call 404'd and the bridge
+    // became dead code. These shims wire the bridge to the real
+    // services it was always supposed to reach.
+    // ═══════════════════════════════════════════════════════════
+
+    // GET /health — alias of /healthz for legacy ai-bridge probes.
+    if (method === 'GET' && path === '/health') {
+      return {
+        status: 200,
+        body: {
+          ok: true,
+          service: 'onyx-ai',
+          alias_of: '/healthz',
+          uptime: process.uptime(),
+        },
+      };
+    }
+
+    // POST /evaluate — policy evaluator used by procurement for
+    // cross-cutting approval checks (create_po / approve_po /
+    // release_payment). Returns { allow, reason, cost, decision_id }.
+    // The Governor.isKilled check gives us the hard kill-switch;
+    // the amount-based heuristic is a minimum-viable policy that
+    // callers can override by wiring in a real rule engine later.
+    if (method === 'POST' && path === '/evaluate') {
+      const req = body as {
+        action?: string;
+        amount?: number;
+        currency?: string;
+        vendor_id?: string;
+        po_id?: string;
+        metadata?: Record<string, unknown>;
+      };
+      const action = typeof req.action === 'string' ? req.action : 'unknown';
+      const amount = typeof req.amount === 'number' ? req.amount : 0;
+      const currency = typeof req.currency === 'string' ? req.currency : 'ILS';
+      // Global kill-switch blocks everything.
+      if (this.governor.isKilled) {
+        const decisionId = `eval-${Date.now().toString(36)}`;
+        const denyEvent = this.eventStore.append({
+          type: 'ai.policy.deny',
+          actor: 'ai-bridge',
+          subject: req.po_id || 'unknown',
+          payload: { action, amount, currency, reason: 'governor_killed' },
+        });
+        return {
+          status: 200,
+          body: {
+            allow: false,
+            reason: 'onyx-ai governor is in killed state',
+            reason_he: 'שומר הסף של onyx-ai במצב השבתה',
+            cost: 0,
+            decision_id: decisionId,
+            event_id: (denyEvent && (denyEvent as any).value && (denyEvent as any).value.id) || null,
+          },
+        };
+      }
+      // Minimum-viable policy: allow anything ≤ 1,000,000 ILS-equivalent,
+      // flag for human review above that. Real engine plugs in later.
+      const THRESHOLD_REVIEW = 1_000_000;
+      const allow = amount <= THRESHOLD_REVIEW;
+      const decisionId = `eval-${Date.now().toString(36)}`;
+      const ev = this.eventStore.append({
+        type: allow ? 'ai.policy.allow' : 'ai.policy.review',
+        actor: 'ai-bridge',
+        subject: req.po_id || req.vendor_id || 'unknown',
+        payload: { action, amount, currency, threshold: THRESHOLD_REVIEW },
+      });
+      return {
+        status: 200,
+        body: {
+          allow,
+          reason: allow
+            ? `amount ${amount} ${currency} within policy threshold`
+            : `amount ${amount} ${currency} exceeds auto-approve threshold (${THRESHOLD_REVIEW} ILS) — human review required`,
+          reason_he: allow
+            ? `הסכום ${amount} ${currency} בתחום המדיניות`
+            : `הסכום ${amount} ${currency} חורג מסף האישור האוטומטי — נדרש אישור אנושי`,
+          cost: 0,
+          decision_id: decisionId,
+          event_id: (ev && (ev as any).value && (ev as any).value.id) || null,
+          threshold: THRESHOLD_REVIEW,
+          action,
+        },
+      };
+    }
+
+    // POST /events — audit-event ingest. Writes into the same EventStore
+    // that /api/audit reads from, so the bridge's fire-and-forget events
+    // become visible in the main audit report.
+    if (method === 'POST' && path === '/events') {
+      const req = body as {
+        type?: string;
+        actor?: string;
+        timestamp?: string;
+        subject?: string;
+        payload?: Record<string, unknown>;
+      };
+      if (!req || typeof req.type !== 'string') {
+        return { status: 400, body: { error: 'event.type is required' } };
+      }
+      const appended = this.eventStore.append({
+        type: req.type,
+        actor: req.actor || 'ai-bridge',
+        subject: req.subject || 'unknown',
+        payload: req.payload || {},
+      });
+      const appendedValue = (appended && (appended as any).value) || appended;
+      return {
+        status: 201,
+        body: {
+          accepted: true,
+          id: (appendedValue && (appendedValue as any).id) || null,
+          received_at: new Date().toISOString(),
+        },
+      };
+    }
+
+    // GET /budget — exposes the Governor's daily budget counters.
+    // procurement's ai-bridge.getBudgetStatus() expects
+    // { daily_spent, daily_limit, remaining }.
+    if (method === 'GET' && path === '/budget') {
+      const report = this.governor.getComplianceReport() as Record<string, unknown>;
+      const dailySpent = Number((report as any).daily_spent || (report as any).spent || 0);
+      const dailyLimit = Number((report as any).daily_limit || (report as any).limit || 0);
+      const remaining = Math.max(0, dailyLimit - dailySpent);
+      return {
+        status: 200,
+        body: {
+          daily_spent: dailySpent,
+          daily_limit: dailyLimit,
+          remaining,
+          currency: 'ILS',
+          report_snapshot: report,
+        },
+      };
+    }
+
+    if (method === 'GET' && path === '/readyz') {
+      const DB_TIMEOUT_MS = 2000;
+      const supabaseUrl = process.env.SUPABASE_URL;
+      const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
+      // If supabase not configured, fall back to EventStore integrity as the readiness signal.
+      if (!supabaseUrl || !supabaseKey) {
+        const integ = this.eventStore.verifyIntegrity();
+        if (integ.ok && integ.value) {
+          return { status: 200, body: { ready: true, source: 'eventstore' } };
+        }
+        return { status: 503, body: { ready: false, reason: 'supabase_not_configured_and_eventstore_unhealthy' } };
+      }
+      // Try Supabase REST health ping within 2s
+      try {
+        const ping: Promise<number> = new Promise((resolve, reject) => {
+          try {
+            const u = new URL('/rest/v1/', supabaseUrl);
+            const reqPing = https.request(
+              {
+                hostname: u.hostname,
+                port: u.port || 443,
+                path: u.pathname,
+                method: 'GET',
+                headers: {
+                  apikey: supabaseKey,
+                  Authorization: `Bearer ${supabaseKey}`,
+                },
+              },
+              (r) => {
+                r.on('data', () => {});
+                r.on('end', () => resolve(r.statusCode ?? 0));
+              },
+            );
+            reqPing.on('error', reject);
+            reqPing.end();
+          } catch (e) {
+            reject(e);
+          }
+        });
+        const timeout = new Promise<number>((_, reject) =>
+          setTimeout(() => reject(new Error('db_timeout_2s')), DB_TIMEOUT_MS),
+        );
+        const code = await Promise.race([ping, timeout]);
+        if (code >= 200 && code < 500) {
+          return { status: 200, body: { ready: true, db_status: code } };
+        }
+        return { status: 503, body: { ready: false, reason: `db_bad_status:${code}` } };
+      } catch (err: any) {
+        const reason = (err && err.message) ? err.message : 'db_unreachable';
+        return { status: 503, body: { ready: false, reason } };
+      }
+    }
+
     // System status
     if (method === 'GET' && path === '/api/status') {
       return {
@@ -2677,5 +2899,85 @@ export type {
  * onyx.defineWorkflow('daily_report', [ ... ]);
  *
  * // 5. Start
- * onyx.start({ apiPort: 3100 });
+ * onyx.start({ apiPort: 3200 });
  */
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SECTION 10: BOOTSTRAP (B-19 fix — Wave 1.5)
+// ═══════════════════════════════════════════════════════════════════════════
+// Auto-boot only when executed directly as main module (not when imported).
+// This prevents broken `tsc && node dist/index.js` on prior versions.
+
+if (require.main === module) {
+  const PORT = parseInt(process.env.PORT || '3200', 10);
+  const EVENT_STORE_PATH = process.env.ONYX_EVENT_STORE_PATH || './data/events.jsonl';
+
+  console.log('');
+  console.log('╔══════════════════════════════════════════════════════════════╗');
+  console.log('║   🚀 ONYX AI — Institutional Autonomous Platform v2.0        ║');
+  console.log('╚══════════════════════════════════════════════════════════════╝');
+  console.log('');
+
+  try {
+    // Dynamic import to avoid circular references at module scope
+    const { OnyxPlatform } = require('./onyx-platform');
+    const onyx = new OnyxPlatform({
+      persistPath: EVENT_STORE_PATH,
+      governorConfig: {
+        globalBudget: parseFloat(process.env.ONYX_GLOBAL_BUDGET || '1000'),
+        killSwitchEnabled: true,
+      },
+    });
+
+    // Default baseline governance — daily budget cap
+    onyx.addPolicy({
+      name: 'Daily Budget',
+      description: 'Global spending cap per 24h window',
+      type: 'budget',
+      scope: 'global',
+      rule: {
+        type: 'budget',
+        maxCostPerTask: 50,
+        maxCostPerDay: parseFloat(process.env.ONYX_DAILY_BUDGET || '500'),
+        currency: 'USD',
+        currentSpent: 0,
+      },
+      active: true,
+      priority: 100,
+      createdBy: 'bootstrap',
+    });
+
+    onyx.start({ apiPort: PORT });
+
+    console.log(`✓ ONYX AI listening on port ${PORT}`);
+    console.log(`✓ Event store: ${EVENT_STORE_PATH}`);
+    console.log(`✓ Governance: active`);
+    console.log('');
+
+    // Graceful shutdown
+    const shutdown = (signal: string) => {
+      console.log(`\n${signal} received — shutting down ONYX AI...`);
+      try {
+        onyx.shutdown();
+        console.log('✓ ONYX AI shutdown complete');
+        process.exit(0);
+      } catch (err) {
+        console.error('❌ Shutdown error:', err);
+        process.exit(1);
+      }
+    };
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on('SIGINT', () => shutdown('SIGINT'));
+    process.on('unhandledRejection', (reason) => {
+      console.error('❌ Unhandled rejection:', reason);
+    });
+    process.on('uncaughtException', (err) => {
+      console.error('❌ Uncaught exception:', err);
+      shutdown('uncaughtException');
+    });
+  } catch (err) {
+    console.error('❌ ONYX AI bootstrap failed:', err);
+    process.exit(1);
+  }
+}

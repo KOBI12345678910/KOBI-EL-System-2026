@@ -1,0 +1,24 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'onyx-procurement'
+    static_configs:
+      - targets: ['onyx-procurement:3100']
+    metrics_path: /metrics
+
+  - job_name: 'techno-kol-ops'
+    static_configs:
+      - targets: ['techno-kol-ops:3200']
+    metrics_path: /metrics
+
+  - job_name: 'onyx-ai'
+    static_configs:
+      - targets: ['onyx-ai:3300']
+    metrics_path: /metrics
+
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx:80']
+    metrics_path: /healthz

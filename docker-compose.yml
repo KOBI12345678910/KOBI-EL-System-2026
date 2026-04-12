@@ -1,0 +1,279 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# ERP 2026 — KOBI EL | Full-stack local orchestration
+# Agent 48 — "לא מוחקים, רק משדרגים"
+# ═══════════════════════════════════════════════════════════════════════════
+# Brings up the entire ERP platform locally:
+#   - postgres (16)   — primary DB, persistent volume
+#   - redis (7)       — cache + queue
+#   - onyx-procurement (Node 20) :3100
+#   - techno-kol-ops  (Node 20) :3200
+#   - onyx-ai         (Node 20) :3300
+#   - payroll-autonomous (Vite build + nginx) :5173
+#   - nginx           — reverse proxy :80 (optional, profile: proxy)
+#
+# Usage:
+#   cp .env.example .env
+#   docker compose up -d --build
+#   docker compose logs -f
+#   docker compose --profile proxy up -d         # include reverse proxy
+# ═══════════════════════════════════════════════════════════════════════════
+
+name: erp-2026-kobi-el
+
+services:
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # POSTGRES 16 — primary relational store (replaces Supabase for local demo)
+  # ─────────────────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: erp-postgres
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-erp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-erp_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-erp_main}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=C --lc-ctype=C"
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/01-init-db.sql:ro
+      - ./techno-kol-ops/src/db/schema.sql:/docker-entrypoint-initdb.d/02-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-erp} -d ${POSTGRES_DB:-erp_main}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - erp-net
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # REDIS 7 — cache + queue backend
+  # ─────────────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: erp-redis
+    restart: unless-stopped
+    env_file: .env
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      ${REDIS_PASSWORD:+--requirepass $REDIS_PASSWORD}
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - erp-net
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # ONYX PROCUREMENT — Node 20 + Express API  (:3100)
+  # ─────────────────────────────────────────────────────────────────────────
+  onyx-procurement:
+    build:
+      context: ./onyx-procurement
+      dockerfile: ../docker/onyx-procurement.Dockerfile
+      target: runtime
+    image: erp/onyx-procurement:local
+    container_name: erp-onyx-procurement
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3100
+      DATABASE_URL: postgres://${POSTGRES_USER:-erp}:${POSTGRES_PASSWORD:-erp_dev_password}@postgres:5432/${POSTGRES_DB:-erp_main}
+      REDIS_URL: redis://redis:6379
+      # Local-dev fallbacks so boot doesn't fail when Supabase isn't configured
+      SUPABASE_URL: ${SUPABASE_URL:-http://postgres:5432}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-local-dev-anon-key}
+    ports:
+      - "3100:3100"
+    volumes:
+      - onyx_procurement_data:/app/data
+      - onyx_procurement_logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3100/healthz', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    networks:
+      - erp-net
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # TECHNO-KOL OPS — Node 20 + TypeScript (tsc build)  (:3200)
+  # ─────────────────────────────────────────────────────────────────────────
+  techno-kol-ops:
+    build:
+      context: ./techno-kol-ops
+      dockerfile: ../docker/techno-kol-ops.Dockerfile
+      target: runtime
+    image: erp/techno-kol-ops:local
+    container_name: erp-techno-kol-ops
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3200
+      DATABASE_URL: postgres://${POSTGRES_USER:-erp}:${POSTGRES_PASSWORD:-erp_dev_password}@postgres:5432/${POSTGRES_DB:-erp_main}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret-change-me}
+    ports:
+      - "3200:3200"
+    volumes:
+      - techno_kol_logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3200/healthz', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    networks:
+      - erp-net
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # ONYX AI — Node 20 + TypeScript autonomous agent platform  (:3300)
+  # ─────────────────────────────────────────────────────────────────────────
+  onyx-ai:
+    build:
+      context: ./onyx-ai
+      dockerfile: ../docker/onyx-ai.Dockerfile
+      target: runtime
+    image: erp/onyx-ai:local
+    container_name: erp-onyx-ai
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3300
+      DATABASE_URL: postgres://${POSTGRES_USER:-erp}:${POSTGRES_PASSWORD:-erp_dev_password}@postgres:5432/${POSTGRES_DB:-erp_main}
+      REDIS_URL: redis://redis:6379
+      ONYX_PROCUREMENT_URL: http://onyx-procurement:3100
+      TECHNO_KOL_OPS_URL: http://techno-kol-ops:3200
+    ports:
+      - "3300:3300"
+    volumes:
+      - onyx_ai_data:/app/data
+      - onyx_ai_logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3300/healthz', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    networks:
+      - erp-net
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # PAYROLL AUTONOMOUS — Vite build served via nginx  (:5173)
+  # ─────────────────────────────────────────────────────────────────────────
+  payroll-autonomous:
+    build:
+      context: ./payroll-autonomous
+      dockerfile: ../docker/payroll-autonomous.Dockerfile
+      target: runtime
+    image: erp/payroll-autonomous:local
+    container_name: erp-payroll-autonomous
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NGINX_HOST: ${PAYROLL_HOST:-localhost}
+    ports:
+      - "5173:80"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - erp-net
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # NGINX — optional reverse proxy for unified :80 entry point
+  #   Enable with: docker compose --profile proxy up -d
+  # ─────────────────────────────────────────────────────────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: erp-nginx
+    restart: unless-stopped
+    profiles:
+      - proxy
+    ports:
+      - "${PROXY_PORT:-80}:80"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      onyx-procurement:
+        condition: service_started
+      techno-kol-ops:
+        condition: service_started
+      onyx-ai:
+        condition: service_started
+      payroll-autonomous:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - erp-net
+
+# ───────────────────────────────────────────────────────────────────────────
+# NETWORKS
+# ───────────────────────────────────────────────────────────────────────────
+networks:
+  erp-net:
+    name: erp-net
+    driver: bridge
+
+# ───────────────────────────────────────────────────────────────────────────
+# VOLUMES — persistent state
+# ───────────────────────────────────────────────────────────────────────────
+volumes:
+  postgres_data:
+    name: erp_postgres_data
+  redis_data:
+    name: erp_redis_data
+  onyx_procurement_data:
+    name: erp_onyx_procurement_data
+  onyx_procurement_logs:
+    name: erp_onyx_procurement_logs
+  techno_kol_logs:
+    name: erp_techno_kol_logs
+  onyx_ai_data:
+    name: erp_onyx_ai_data
+  onyx_ai_logs:
+    name: erp_onyx_ai_logs
+  nginx_logs:
+    name: erp_nginx_logs

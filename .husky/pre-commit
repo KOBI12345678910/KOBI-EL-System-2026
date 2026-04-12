@@ -1,0 +1,61 @@
+#!/usr/bin/env sh
+# .husky/pre-commit — runs `npm test --if-present` in the current project.
+#
+# Installation: copy this file to `.husky/pre-commit` (no extension) and
+# make it executable with `chmod +x .husky/pre-commit`. Husky will pick it
+# up automatically after `npx husky install`.
+#
+# Resolves the project root as the nearest ancestor directory containing a
+# package.json, starting from the git repo root. In this monorepo with
+# multiple package.json files, the hook runs tests only for projects whose
+# files are in the current commit's staged changes.
+
+. "$(dirname -- "$0")/_/husky.sh" 2>/dev/null || true
+
+set -e
+
+repo_root="$(git rev-parse --show-toplevel)"
+
+# Collect list of staged files (added/copied/modified/renamed)
+staged_files="$(git diff --cached --name-only --diff-filter=ACMR || true)"
+
+if [ -z "$staged_files" ]; then
+  echo "[husky/pre-commit] No staged files - skipping tests."
+  exit 0
+fi
+
+# Find unique package.json roots that contain any staged file.
+projects=""
+while IFS= read -r file; do
+  [ -z "$file" ] && continue
+  dir="$repo_root/$(dirname "$file")"
+  while [ "$dir" != "$repo_root" ] && [ "$dir" != "/" ]; do
+    if [ -f "$dir/package.json" ]; then
+      case " $projects " in
+        *" $dir "*) ;;
+        *) projects="$projects $dir" ;;
+      esac
+      break
+    fi
+    dir="$(dirname "$dir")"
+  done
+done <<EOF
+$staged_files
+EOF
+
+# Fallback: if none matched (e.g. staged file is at repo root), use the root.
+if [ -z "$(echo "$projects" | tr -d ' ')" ] && [ -f "$repo_root/package.json" ]; then
+  projects="$repo_root"
+fi
+
+if [ -z "$(echo "$projects" | tr -d ' ')" ]; then
+  echo "[husky/pre-commit] No package.json found in staged paths - skipping tests."
+  exit 0
+fi
+
+for project in $projects; do
+  echo "[husky/pre-commit] Running 'npm test --if-present' in $project"
+  (cd "$project" && npm test --if-present)
+done
+
+echo "[husky/pre-commit] OK"

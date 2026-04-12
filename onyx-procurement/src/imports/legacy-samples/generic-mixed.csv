@@ -1,0 +1,4 @@
+invoice_number,document_date,customer_name,tax_id,amount_gross,description
+7001,2026-03-15,Zeta Ltd,123456782,1200,monthly service
+7002,2026-03-20,Eta Trading,123456782,3450,consulting
+7003,2026-03-25,Theta Corp,123456782,875,parts

@@ -56,7 +56,7 @@ async function runSeed(): Promise<void> {
   const counts: Record<string, number> = {};
   for (const table of COUNT_TABLES) {
     try {
-      const result = await query<CountRow>(
+      const result = await query(
         `SELECT '${table}' AS table_name, COUNT(*)::text AS count FROM ${table}`
       );
       const row = result.rows[0];

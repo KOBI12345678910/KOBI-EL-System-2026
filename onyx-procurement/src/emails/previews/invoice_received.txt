@@ -1,0 +1,23 @@
+חשבונית חדשה נקלטה
+
+ספק: ספק דוגמה בע"מ
+מספר חשבונית: INV-9001
+סכום: ₪4,500.00
+תאריך קליטה: 2026-04-11
+תאריך פירעון: 2026-05-15
+
+החשבונית ממתינה לאישור במערכת אוניקס.
+
+English:
+Invoice INV-9001 from ספק דוגמה בע"מ (amount ₪4,500.00) has been received.
+Due date: 2026-05-15
+
+--
+אוניקס פרוקיורמנט / Onyx Procurement
+Email: support@onyx.local · Phone: +972-3-000-0000
+Web: https://onyx.local
+רחוב המלאכה 1, תל אביב · 1 HaMelacha St, Tel Aviv, Israel
+
+הודעה אוטומטית — אין להשיב ישירות.
+Automated notification — please do not reply.
+Unsubscribe: https://onyx.local/unsubscribe
