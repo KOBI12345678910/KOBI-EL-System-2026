@@ -78,38 +78,21 @@ jobs:
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
 
   deploy:
-    name: Deploy to server
+    name: Deploy summary
     runs-on: ubuntu-latest
     needs: build-push
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    environment: production
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Check deployment secrets
-        id: check-secrets
+      - name: Images ready
         run: |
-          if [ -z "${{ secrets.DEPLOY_HOST }}" ]; then
-            echo "DEPLOY_HOST secret is not set - skipping SSH deployment"
-            echo "skip=true" >> $GITHUB_OUTPUT
-          else
-            echo "skip=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Deploy via SSH
-        if: steps.check-secrets.outputs.skip == 'false'
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          script: |
-            cd ${{ secrets.DEPLOY_PATH || '/opt/erp-2026' }}
-            git pull origin ${{ github.ref_name }}
-            docker compose -f docker-compose.prod.yml pull
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
-            echo "Waiting for health checks..."
-            sleep 15
-            docker compose -f docker-compose.prod.yml ps
-            echo "Deploy complete!"
+          echo "=========================================="
+          echo "All Docker images built and pushed to GHCR"
+          echo "Registry : ${{ env.REGISTRY }}"
+          echo "Prefix   : ${{ env.IMAGE_PREFIX }}"
+          echo "Commit   : ${{ github.sha }}"
+          echo "=========================================="
+          echo "Deployment is handled by Railway via GitHub"
+          echo "integration. Check Railway dashboard for"
+          echo "live service status."
+          echo "=========================================="
