@@ -897,6 +897,7 @@ class PerformanceEngine {
     const review: PerformanceReview = {
       id: `rev_${Date.now().toString(36)}`,
       ...params,
+      reviewDate: new Date().toISOString().slice(0, 10),
       scores: { ...params.scores, overall },
       goals: params.goals.map(g => ({ ...g, status: 'pending' as const })),
       status: 'submitted',

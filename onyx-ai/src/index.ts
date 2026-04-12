@@ -232,7 +232,7 @@ class CircuitBreaker {
 /** Bounded concurrent execution pool */
 class WorkerPool {
   private running = 0;
-  private queue: Array<{ task: () => Promise<any>; resolve: Function; reject: Function }> = [];
+  private queue: Array<{ task: () => Promise<any>; resolve: (value: any) => void; reject: (reason?: any) => void }> = [];
 
   constructor(private maxConcurrency: number) {}
 
@@ -319,13 +319,14 @@ class EventStore {
   /** Append an event — the ONLY way to change state in the entire system */
   append(params: {
     type: string;
-    aggregateId: string;
-    aggregateType: string;
+    aggregateId?: string;
+    aggregateType?: string;
     payload: Record<string, unknown>;
     correlationId?: string;
     causationId?: string | null;
     actor?: string;
     source?: string;
+    subject?: string;
   }): DomainEvent {
     const sequence = ++this.sequenceCounter;
     const event: DomainEvent = {
@@ -333,8 +334,8 @@ class EventStore {
       type: params.type,
       timestamp: Date.now(),
       sequenceNumber: sequence,
-      aggregateId: params.aggregateId,
-      aggregateType: params.aggregateType,
+      aggregateId: params.aggregateId ?? params.subject ?? 'unknown',
+      aggregateType: params.aggregateType ?? 'event',
       payload: Object.freeze({ ...params.payload }),
       metadata: Object.freeze({
         correlationId: params.correlationId ?? uid('cor'),

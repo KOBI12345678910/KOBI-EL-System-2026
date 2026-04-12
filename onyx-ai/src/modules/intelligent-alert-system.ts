@@ -882,7 +882,7 @@ class LifecycleManager {
       }
 
       // SLA resolution breach
-      if (alert.state !== 'resolved') {
+      if ((alert.state as string) !== 'resolved') {
         const sla = this.slaDefaults[alert.severity];
         if (now - alert.lifecycle.triggeredAt > sla.resolutionMs && !alert.lifecycle.slaBreached) {
           alert.lifecycle.slaBreached = true;

@@ -2186,7 +2186,7 @@ export class WebhookReceiver {
 
     // Generic webhook (no verification, use with caution)
     router.post('/generic/:source', async (req: Request, res: Response) => {
-      await this.dispatch(req.params.source, req.body, req);
+      await this.dispatch(String(req.params.source), req.body, req);
       res.status(200).send('ok');
     });
 

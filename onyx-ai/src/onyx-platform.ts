@@ -232,7 +232,7 @@ class CircuitBreaker {
 /** Bounded concurrent execution pool */
 class WorkerPool {
   private running = 0;
-  private queue: Array<{ task: () => Promise<any>; resolve: Function; reject: Function }> = [];
+  private queue: Array<{ task: () => Promise<any>; resolve: (value: any) => void; reject: (reason?: any) => void }> = [];
 
   constructor(private maxConcurrency: number) {}
 

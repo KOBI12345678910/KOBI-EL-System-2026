@@ -1,3 +1,7 @@
+import * as crypto from 'node:crypto';
+import * as http from 'node:http';
+import * as https from 'node:https';
+
 // ═══════════════════════════════════════════════════════════════════════════
 // ═══════════════════════════════════════════════════════════════════════════
 //
@@ -158,8 +162,8 @@ class HttpClient {
             resolve({
               status: res.statusCode ?? 0,
               headers: Object.fromEntries(
-                Object.entries(res.headers).map(([k, v]) => [k, Array.isArray(v) ? v.join(', ') : v ?? ''])
-              ),
+                Object.entries(res.headers).map(([k, v]) => [k, Array.isArray(v) ? v.join(', ') : (v ?? '')])
+              ) as Record<string, string>,
               body: parsed,
               rawBody: data,
               durationMs: Date.now() - startTime,
@@ -752,7 +756,7 @@ function createEmailTools(vault: CredentialVault): ToolConfig[] {
         const messageIds = body?.messages ?? [];
 
         // Fetch message details
-        const messages = [];
+        const messages: any[] = [];
         for (const msg of messageIds.slice(0, maxResults)) {
           const detail = await gmailClient.get(
             `/users/me/messages/${msg.id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`,
@@ -1860,10 +1864,10 @@ function createCRMTools(vault: CredentialVault): ToolConfig[] {
         const client = new HttpClient('https://api.hubapi.com/crm/v3');
         const properties: Record<string, unknown> = {
           email: input.email,
-          ...(input.firstName && { firstname: input.firstName }),
-          ...(input.lastName && { lastname: input.lastName }),
-          ...(input.phone && { phone: input.phone }),
-          ...(input.company && { company: input.company }),
+          ...(input.firstName ? { firstname: input.firstName } : {}),
+          ...(input.lastName ? { lastname: input.lastName } : {}),
+          ...(input.phone ? { phone: input.phone } : {}),
+          ...(input.company ? { company: input.company } : {}),
           ...((input.properties as Record<string, unknown>) ?? {}),
         };
 
@@ -2067,8 +2071,8 @@ class WebhookReceiver {
 
       try {
         const body = rawBody ? JSON.parse(rawBody) : {};
-        const headers = Object.fromEntries(
-          Object.entries(req.headers).map(([k, v]) => [k, Array.isArray(v) ? v.join(', ') : v ?? ''])
+        const headers: Record<string, string> = Object.fromEntries(
+          Object.entries(req.headers).map(([k, v]) => [k, Array.isArray(v) ? v.join(', ') : (v ?? '')])
         );
         const result = await handler.handler(body, headers);
         res.writeHead(200, { 'Content-Type': 'application/json' });
