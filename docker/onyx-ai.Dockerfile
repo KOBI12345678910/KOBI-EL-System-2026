@@ -36,6 +36,9 @@ RUN npx rimraf dist && npx tsc
 # Trim to production deps for final image
 RUN npm prune --omit=dev
 
+# Ensure data directory exists for runtime COPY
+RUN mkdir -p /app/data
+
 # ───────────────────────── STAGE 3: runtime ───────────────────────────────
 FROM node:20-alpine AS runtime
 WORKDIR /app
