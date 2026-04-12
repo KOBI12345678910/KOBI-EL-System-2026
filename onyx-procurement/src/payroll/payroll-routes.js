@@ -76,6 +76,10 @@ function registerPayrollRoutes(app, { supabase, audit }) {
     });
 
   function getCallerIdentity(req) {
+    // In development with auth disabled, treat all callers as admin
+    if (process.env.NODE_ENV === 'development' && process.env.AUTH_MODE === 'disabled') {
+      return { isAdmin: true, employeeId: null };
+    }
     const apiKey =
       req.headers['x-api-key'] ||
       (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
