@@ -39,7 +39,7 @@
     "pino-pretty": "^11.3.0"
   },
   "devDependencies": {
-    "eslint": "^9.15.0"
+    "eslint": "^10.2.0"
   },
   "engines": {
     "node": ">=20.0.0"
