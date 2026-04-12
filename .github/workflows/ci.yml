@@ -94,7 +94,7 @@ jobs:
 
       - name: Upload dist artifact (onyx-ai)
         if: matrix.project == 'onyx-ai'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: onyx-ai-dist-${{ github.sha }}
           path: onyx-ai/dist
@@ -144,7 +144,7 @@ jobs:
           fi
 
       - name: Upload dist artifact (techno-kol-ops client)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: techno-kol-ops-client-dist-${{ github.sha }}
           path: techno-kol-ops/client/dist
