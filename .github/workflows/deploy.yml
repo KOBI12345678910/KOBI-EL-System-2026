@@ -82,7 +82,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-push
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-
+    environment: production
     steps:
       - name: Images ready
         run: |
@@ -96,3 +96,4 @@ jobs:
           echo "integration. Check Railway dashboard for"
           echo "live service status."
           echo "=========================================="
+
