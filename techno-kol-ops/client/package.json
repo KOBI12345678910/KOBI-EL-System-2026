@@ -13,7 +13,7 @@
   "dependencies": {
     "@blueprintjs/core": "^5.10.2",
     "@blueprintjs/icons": "^5.10.2",
-    "@blueprintjs/table": "^5.1.2",
+    "@blueprintjs/table": "^6.0.24",
     "ag-grid-community": "^31.1.1",
     "ag-grid-react": "^31.1.1",
     "axios": "^1.6.7",
