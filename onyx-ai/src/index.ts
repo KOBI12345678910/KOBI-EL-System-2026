@@ -2380,7 +2380,8 @@ class APIServer {
         const denyEvent = this.eventStore.append({
           type: 'ai.policy.deny',
           actor: 'ai-bridge',
-          subject: req.po_id || 'unknown',
+          aggregateId: req.po_id || 'unknown',
+                      aggregateType: 'policy',
           payload: { action, amount, currency, reason: 'governor_killed' },
         });
         return {
@@ -2391,7 +2392,7 @@ class APIServer {
             reason_he: 'שומר הסף של onyx-ai במצב השבתה',
             cost: 0,
             decision_id: decisionId,
-            event_id: (denyEvent && (denyEvent as any).value && (denyEvent as any).value.id) || null,
+            event_id: denyEvent ? denyEvent.id : null,
           },
         };
       }
@@ -2403,7 +2404,8 @@ class APIServer {
       const ev = this.eventStore.append({
         type: allow ? 'ai.policy.allow' : 'ai.policy.review',
         actor: 'ai-bridge',
-        subject: req.po_id || req.vendor_id || 'unknown',
+        aggregateId: req.po_id || req.vendor_id || 'unknown',
+                    aggregateType: 'policy',
         payload: { action, amount, currency, threshold: THRESHOLD_REVIEW },
       });
       return {
@@ -2418,7 +2420,7 @@ class APIServer {
             : `הסכום ${amount} ${currency} חורג מסף האישור האוטומטי — נדרש אישור אנושי`,
           cost: 0,
           decision_id: decisionId,
-          event_id: (ev && (ev as any).value && (ev as any).value.id) || null,
+          event_id: ev ? ev.id : null,
           threshold: THRESHOLD_REVIEW,
           action,
         },
@@ -2442,15 +2444,16 @@ class APIServer {
       const appended = this.eventStore.append({
         type: req.type,
         actor: req.actor || 'ai-bridge',
-        subject: req.subject || 'unknown',
+        aggregateId: req.subject || 'unknown',
+                    aggregateType: 'audit',
         payload: req.payload || {},
       });
-      const appendedValue = (appended && (appended as any).value) || appended;
+      const appendedValue = appended;
       return {
         status: 201,
         body: {
           accepted: true,
-          id: (appendedValue && (appendedValue as any).id) || null,
+          id: appendedValue ? appendedValue.id : null,
           received_at: new Date().toISOString(),
         },
       };
@@ -2925,10 +2928,6 @@ if (require.main === module) {
     const { OnyxPlatform } = require('./onyx-platform');
     const onyx = new OnyxPlatform({
       persistPath: EVENT_STORE_PATH,
-      governorConfig: {
-        globalBudget: parseFloat(process.env.ONYX_GLOBAL_BUDGET || '1000'),
-        killSwitchEnabled: true,
-      },
     });
 
     // Default baseline governance — daily budget cap
