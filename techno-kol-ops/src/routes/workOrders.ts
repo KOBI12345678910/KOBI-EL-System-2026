@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { AuthRequest, authenticate } from '../middleware/auth';
 import { query } from '../db/connection';
 import { broadcast, broadcastToAll } from '../realtime/websocket';
+import { eventBus } from '../realtime/eventBus';
 
 const router = Router();
 router.use(authenticate);
@@ -114,19 +115,40 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     }
 
     broadcastToAll('ORDER_CREATED', rows[0]);
+
+    // Domain event: work order created
+    eventBus.emit('workorder:created', {
+      entity_type: 'WorkOrder', entity_id: id, action: 'created',
+      actor: req.user?.id || 'system',
+      timestamp: new Date().toISOString(),
+      client_id, product, price, priority,
+    });
+
     res.status(201).json(rows[0]);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
 
+// BUG-SEC-004: Column allowlist to prevent SQL injection via key interpolation
+const WORK_ORDER_ALLOWED_COLUMNS = new Set([
+  'client_id', 'product', 'description', 'material_primary', 'category',
+  'quantity', 'unit', 'price', 'cost_estimate', 'advance_paid',
+  'delivery_date', 'priority', 'notes', 'status', 'progress',
+  'assigned_to', 'start_date', 'end_date', 'location',
+]);
+
 // PUT update order
 router.put('/:id', async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const fields = req.body;
-    const keys = Object.keys(fields).filter(k => k !== 'id');
-    const values = keys.map(k => fields[k]);
+    const safePairs = Object.entries(fields).filter(([k]) => WORK_ORDER_ALLOWED_COLUMNS.has(k));
+    if (safePairs.length === 0) {
+      return res.status(400).json({ error: 'No valid fields to update' });
+    }
+    const keys = safePairs.map(([k]) => k);
+    const values = safePairs.map(([, v]) => v);
     const setClause = keys.map((k, i) => `${k} = $${i + 2}`).join(', ');
 
     const { rows } = await query(
@@ -164,6 +186,17 @@ router.put('/:id/progress', async (req: AuthRequest, res: Response) => {
 
     broadcast(`order:${id}`, 'PROGRESS_UPDATED', { id, progress, status: rows[0].status });
     broadcastToAll('ORDER_UPDATED', { id, progress });
+
+    // Domain event: work order completed (when progress reaches 100%)
+    if (progress === 100) {
+      eventBus.emit('workorder:completed', {
+        entity_type: 'WorkOrder', entity_id: id, action: 'completed',
+        actor: req.user?.id || 'system',
+        timestamp: new Date().toISOString(),
+        progress, status: rows[0].status,
+      });
+    }
+
     res.json(rows[0]);
   } catch (err) {
     res.status(500).json({ error: 'Failed to update progress' });
@@ -184,6 +217,15 @@ router.post('/:id/employees', async (req: AuthRequest, res: Response) => {
     `, [id, employee_id, role_on_order]);
 
     broadcast(`order:${id}`, 'EMPLOYEE_ASSIGNED', rows[0]);
+
+    // Domain event: work order assigned
+    eventBus.emit('workorder:assigned', {
+      entity_type: 'WorkOrder', entity_id: id, action: 'assigned',
+      actor: req.user?.id || 'system',
+      timestamp: new Date().toISOString(),
+      employee_id, role_on_order,
+    });
+
     res.json(rows[0]);
   } catch (err) {
     res.status(500).json({ error: 'Failed to assign employee' });

@@ -1,5 +1,4 @@
 import express from 'express';
-import cors from 'cors';
 import { createServer } from 'http';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
@@ -35,15 +34,42 @@ import { brainEngine } from './ai/brainEngine';
 import { apolloEngine } from './apollo/apolloEngine';
 import { initEventBus, eventBus } from './realtime/eventBus';
 
+// ── v2.1 Cross-Service Bridges (BUG-07 fix) ──
+import { getDefaultProcurementClient } from './bridges/procurement-bridge';
+import { getDefaultAiClient } from './bridges/ai-bridge';
+
 dotenv.config();
+
+// ── BUG-SEC-008: Validate JWT_SECRET on startup ──
+// Production: fail-closed. Development: auto-generate dev secret + warn.
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'undefined') {
+  if (process.env.NODE_ENV === 'production') {
+    console.error('FATAL: JWT_SECRET is not set in production.');
+    console.error('  Set a real secret:  openssl rand -hex 32');
+    process.exit(1);
+  }
+  // Dev fallback: ephemeral in-memory secret, logged as warning
+  const crypto = require('crypto');
+  process.env.JWT_SECRET = crypto.randomBytes(32).toString('hex');
+  console.warn('⚠️  JWT_SECRET not set — using ephemeral dev secret. Set a real one in .env for stable sessions.');
+}
+
+// ── Security Middleware (BUG-SEC-003 fix) ──
+const {
+  helmetMw, corsMw, apiRateLimit, loginRateLimit
+} = require('./middleware/security.js');
 
 const app = express();
 const server = createServer(app);
 
-app.use(cors({ origin: '*' }));
+// BUG-SEC-003: Replace wide-open CORS with env-based allowlist, add helmet & rate limiting
+app.use(helmetMw);
+app.use(corsMw);
 app.use(express.json());
+app.use('/api/', apiRateLimit);
 
 // ─── AUTH ─────────────────────────────────────
+app.use('/api/auth/login', loginRateLimit);
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -60,7 +86,7 @@ app.post('/api/auth/login', async (req, res) => {
     const token = jwt.sign(
       { id: rows[0].id, username: rows[0].username, role: rows[0].role },
       process.env.JWT_SECRET!,
-      { expiresIn: '24h' }
+      { algorithm: 'HS256', expiresIn: '24h' }
     );
 
     res.json({ token, user: { id: rows[0].id, username: rows[0].username, role: rows[0].role } });
@@ -68,6 +94,29 @@ app.post('/api/auth/login', async (req, res) => {
     res.status(500).json({ error: 'Login failed' });
   }
 });
+
+// ── BUG-SEC-006: Global auth on all /api/ routes (except auth & health) ──
+import { authenticate } from './middleware/auth';
+app.use('/api/ontology', authenticate);
+app.use('/api/work-orders', authenticate);
+app.use('/api/employees', authenticate);
+app.use('/api/materials', authenticate);
+app.use('/api/clients', authenticate);
+app.use('/api/suppliers', authenticate);
+app.use('/api/alerts', authenticate);
+app.use('/api/attendance', authenticate);
+app.use('/api/financials', authenticate);
+app.use('/api/gps', authenticate);
+app.use('/api/tasks', authenticate);
+app.use('/api/messages', authenticate);
+app.use('/api/leads', authenticate);
+app.use('/api/reports', authenticate);
+app.use('/api/pipeline', authenticate);
+app.use('/api/intelligence', authenticate);
+app.use('/api/supply-chain', authenticate);
+app.use('/api/brain', authenticate);
+app.use('/api/aip', authenticate);
+app.use('/api/signatures', authenticate);
 
 // ─── ONTOLOGY SNAPSHOT ───────────────────────
 app.get('/api/ontology/snapshot', async (req, res) => {
@@ -153,6 +202,59 @@ app.get('/readyz', async (_req, res) => {
   }
 });
 
+// ─── CROSS-SERVICE BRIDGE ENDPOINTS (BUG-07 fix) ─────────────────
+// Expose bridge health so monitoring / QA can confirm wiring exists
+app.get('/api/bridges/health', async (_req, res) => {
+  const procClient = getDefaultProcurementClient();
+  const aiClient = getDefaultAiClient();
+  const [procOk, aiOk] = await Promise.all([
+    procClient.healthCheck().catch(() => false),
+    aiClient.healthCheck().catch(() => false),
+  ]);
+  const allOk = procOk && aiOk;
+  res.status(allOk ? 200 : 207).json({
+    status: allOk ? 'all_connected' : 'partial',
+    bridges: {
+      procurement: { healthy: procOk, url: process.env.ONYX_PROCUREMENT_URL || 'http://localhost:3100' },
+      ai:          { healthy: aiOk,   url: process.env.ONYX_AI_URL || 'http://localhost:3300' },
+    },
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Proxy: fetch purchase orders from procurement for project context
+app.get('/api/bridges/procurement/purchase-orders', async (req, res) => {
+  try {
+    const client = getDefaultProcurementClient();
+    const data = await client.getPurchaseOrders({
+      status: req.query.status as string,
+      project_id: req.query.project_id as string,
+      limit: req.query.limit ? Number(req.query.limit) : undefined,
+    });
+    if (!data) return res.status(502).json({ error: 'procurement_unreachable' });
+    res.json({ orders: data });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'bridge_error' });
+  }
+});
+
+// Proxy: fetch AI insights for operational entities
+app.get('/api/bridges/ai/insights', async (req, res) => {
+  try {
+    const client = getDefaultAiClient();
+    const data = await client.getInsights({
+      entity_type: req.query.entity_type as string,
+      entity_id: req.query.entity_id as string,
+      category: req.query.category as string,
+      limit: req.query.limit ? Number(req.query.limit) : undefined,
+    });
+    if (!data) return res.status(502).json({ error: 'ai_unreachable' });
+    res.json({ insights: data });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'bridge_error' });
+  }
+});
+
 // ─── WEBSOCKET + ALERT ENGINE + AUTONOMOUS ENGINE ─────────────────
 initWebSocket(server);
 startAlertEngine();
@@ -165,7 +267,7 @@ setInterval(() => apolloEngine.healthCheck().catch(() => {}), 60000);
 
 export { eventBus };
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3200;
 server.listen(PORT, () => {
   console.log(`TECHNO-KOL OPS v2.0 — Foundry Edition running on port ${PORT}`);
   console.log(`[FOUNDRY] Brain Engine + Event Bus + Apollo + AIP + Ontology — ALL ONLINE`);

@@ -22,9 +22,9 @@
  *      row; the routes only read top-level fields so this is safe.
  *   2. The pdf-generator module is stubbed BEFORE loading payroll-routes
  *      exactly like payroll-routes.test.js does, so no pdfkit IO runs.
- *   3. PCN836's validatePcn836File is monkey-patched exactly like
- *      vat-routes.test.js does, to work around the known width-mismatch
- *      bug in the validator.
+ *   3. PCN836's validatePcn836File now correctly dispatches per record
+ *      type (A=92, B=113, C/D=76, Z=60) — QA-04-VAT-01 RESOLVED.
+ *      No monkey-patch needed.
  *   4. Every route is mounted on a real express() app, and supertest-like
  *      requests go through the native http module on an ephemeral port.
  *
@@ -66,18 +66,11 @@ if (!require.cache[pdfGenPath]) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// 2. Monkey-patch PCN836 width validator
+// 2. PCN836 width validator — QA-04-VAT-01 RESOLVED
+//    The validator now dispatches per record type (A=92, B=113,
+//    C/D=76, Z=60) matching the encoder and the PCN836 spec.
+//    No monkey-patch needed.
 // ─────────────────────────────────────────────────────────────
-
-const pcn836Mod = require('../../src/vat/pcn836.js');
-if (!pcn836Mod.__qa04_patched) {
-  const original = pcn836Mod.validatePcn836File;
-  pcn836Mod.validatePcn836File = function qa04PatchedValidate(file) {
-    const errors = original(file);
-    return errors.filter((e) => !/^line \d+: width /.test(e));
-  };
-  pcn836Mod.__qa04_patched = true;
-}
 
 // ─────────────────────────────────────────────────────────────
 // 3. Rich in-memory Supabase mock

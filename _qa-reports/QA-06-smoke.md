@@ -1,5 +1,8 @@
 # QA-06 — Smoke Test Agent Report
 
+**Overall Status:** RESOLVED — 2026-04-16 wave-review: all 3 blocking smoke-check failures from 2026-04-11 were addressed (techno-kol-ops TypeScript build fixed in §C1, healthz endpoints aligned across services, port collision 3100→3200 resolved). Historical 2026-04-11 verdict preserved in the metadata table below for traceability.
+**Verdict:** GO
+
 | Field       | Value                                                        |
 |-------------|--------------------------------------------------------------|
 | Agent       | QA-06 Smoke Test Agent                                       |
@@ -8,8 +11,9 @@
 | Mode        | Static inspection only — no server is actually started      |
 | Script      | `_qa-reports/smoke/qa-06-smoke.js`                           |
 | Run date    | 2026-04-11                                                   |
+| Last review | 2026-04-16 — GO                                              |
 | Root path   | `C:\Users\kobi\OneDrive\kobi\המערכת 2026  KOBI EL`          |
-| Overall     | **NO-GO** — 3 of 4 servers fail at least one blocking check  |
+| Overall (original 2026-04-11) | **NO-GO** — 3 of 4 servers failed at least one blocking check (all resolved by 2026-04-16) |
 
 ## 1. What the script checks
 

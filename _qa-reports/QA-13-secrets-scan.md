@@ -2,6 +2,8 @@
 
 **Agent:** QA-13 Security
 **Date:** 2026-04-11
+**Overall Status:** RESOLVED — all 4 committed-secrets findings rotated to placeholders on 2026-04-11 (see individual `**Status:**` lines per finding below). The remaining `Status:` note at §10 refers to whitelisted test literals, not production secrets.
+**Verdict:** GREEN — no real secrets remain in the source tree.
 **Scope:** full repo tree under `C:\Users\kobi\OneDrive\kobi\המערכת 2026  KOBI EL\` (node_modules excluded)
 **Method:** grep on `password=`, `api[_-]?key=`, `secret=`, `BEGIN PRIVATE KEY`, `xox[baprs]-`, `sk-ant-`, `ghp_`, `ghs_`, `.env*` file contents, hex-blobs ≥ 32 chars.
 

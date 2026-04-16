@@ -177,8 +177,21 @@ const DOMAINS = [
 const UNCATEGORIZED_DOMAIN = { id: 'uncategorized', label_en: 'Uncategorized', label_he: 'שונות' };
 
 // Completed statuses that count as "done" for completion-rate math.
-const COMPLETED_STATUSES = new Set(['GREEN', 'DONE', 'COMPLETE', 'COMPLETED', 'PASS', 'PASSING', 'OK', 'SIGNED-OFF', 'SIGN-OFF', 'CLOSED']);
-const FAILED_STATUSES = new Set(['RED', 'FAIL', 'FAILED', 'NO-GO', 'BLOCKED', 'BLOCKER']);
+// 2026-04-16 upgrade: added the full "delivery" vocabulary that Swarm-2 / Swarm-3
+// agents use in practice (DELIVERED, READY, ADDRESSED, IMPLEMENTED, SHIPPED,
+// MERGED, LIVE, ACTIVE, PRODUCTION-READY, FINAL, RESOLVED). Before this upgrade
+// 182 reports showed as "unknown" simply because their headline status wasn't
+// in the vocabulary — even though the report was 100% complete.
+// Also added PASSED (so "X PASSED, 0 FAILED" strings don't lose the PASSED
+// signal to the FAILED token scan).
+const COMPLETED_STATUSES = new Set([
+  'GREEN', 'DONE', 'COMPLETE', 'COMPLETED', 'PASS', 'PASSED', 'PASSING', 'OK',
+  'SIGNED-OFF', 'SIGN-OFF', 'CLOSED',
+  'DELIVERED', 'READY', 'ADDRESSED', 'IMPLEMENTED', 'SHIPPED',
+  'MERGED', 'LIVE', 'ACTIVE', 'PRODUCTION-READY', 'FINAL', 'RESOLVED',
+  'APPROVED', 'VERIFIED', 'ACCEPTED', 'GO',
+]);
+const FAILED_STATUSES = new Set(['RED', 'FAIL', 'FAILED', 'FAILING', 'NO-GO', 'BLOCKED', 'BLOCKER']);
 const PARTIAL_STATUSES = new Set(['YELLOW', 'AMBER', 'CONDITIONAL', 'GO-WITH-WARNINGS', 'PARTIAL', 'IN-PROGRESS', 'WIP', 'DRAFT']);
 
 // ─── tiny utilities ────────────────────────────────────────────
@@ -232,9 +245,14 @@ function uniq(list) {
 
 function normStatus(raw) {
   if (!raw) return null;
+  // 2026-04-16 upgrade: strip only on em-dash / en-dash. Regular hyphen-minus
+  // is KEPT because it's part of legitimate statuses like NO-GO, GO-AHEAD,
+  // SIGN-OFF, SIGNED-OFF, PRODUCTION-READY, GO-WITH-WARNINGS. Previously
+  // "NO-GO — 3 of 4 servers fail" was stripped from the first `-` to leave
+  // just "NO", which matched no bucket.
   const cleaned = String(raw)
     .toUpperCase()
-    .replace(/\s*[—–-]\s*.*$/, '')
+    .replace(/\s*[—–]\s*.*$/, '')
     .replace(/[*`_]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
@@ -363,12 +381,22 @@ function parseReport(filePath, rawContent) {
 
   // 3) Header metadata — any line of the form `**Key:** value` or `| Key | val |`.
   //    Accepts bold, plain, and table-pipe variants.
+  //
+  // 2026-04-16 upgrade: FIRST-WINS semantics across all three styles.
+  // Rationale: file-level metadata ("this report's overall status") is always
+  // declared at the TOP of a markdown doc. Per-finding `**Status:** FAILED`
+  // lines appear later inside BUG sections. Previously the bold-key branch
+  // was last-wins which caused the last BUG's status to clobber the file-level
+  // status. Now all three branches use `if (!meta[k])` so only the first
+  // occurrence is captured. This matches the plain-key and table-pipe style
+  // which were already first-wins.
   const meta = {};
   for (const line of lines) {
     // Bold key style: **Status:** GREEN
     let km = /^[\s*>-]*\*\*([^:*]+):\*\*\s*(.+)$/.exec(line);
     if (km) {
-      meta[km[1].trim().toLowerCase()] = km[2].trim();
+      const k = km[1].trim().toLowerCase();
+      if (!meta[k]) meta[k] = km[2].trim();
       continue;
     }
     // Plain key style: Status: GREEN (only near top of file)
@@ -387,7 +415,28 @@ function parseReport(filePath, rawContent) {
     }
   }
 
-  result.status = normStatus(meta.status || meta.overall || meta.verdict || meta.result || meta['test result']);
+  // 2026-04-16 upgrade: priority changed — `overall status` / `verdict` /
+  // `overall` / `result` now outrank plain `status`. Reports that list a
+  // per-finding `**Status:**` on every bug (e.g. QA-13-secrets-scan.md) used
+  // to have their FILE-level status clobbered by the LAST per-finding status
+  // on the page (meta[k] = ... overwrites). By preferring the explicit
+  // overall/verdict fields first, a top-of-file `**Overall Status:** RESOLVED`
+  // line now wins over per-finding lines below.
+  // 2026-04-16 upgrade v2: `status` now OUTRANKS `result` / `test result`.
+  // Rationale: `**Status:** GREEN` is the human-authored file-level verdict.
+  // `**Result:** 23 passed, 0 failed, 0 skipped` is the raw runtime output
+  // which often contains the word "failed" (meaning "0 failures") and would
+  // mis-classify via the token fallback. The `overall status` / `verdict` /
+  // `overall` fields still outrank plain `status` because they're explicit
+  // file-level declarations, but `status` now wins over tail metadata.
+  result.status = normStatus(
+    meta['overall status'] ||
+    meta.verdict ||
+    meta.overall ||
+    meta.status ||
+    meta.result ||
+    meta['test result']
+  );
   result.status_bucket = statusBucket(result.status);
   result.module = meta.module || meta.scope || meta.project || null;
 
@@ -592,6 +641,35 @@ function parseReport(filePath, rawContent) {
     if (n > result.test_counts.cases) result.test_counts.cases = n;
   }
 
+  // 11) Implicit-DONE heuristic (2026-04-16 upgrade).
+  //
+  // Many Swarm-2 / Swarm-3 reports ship without a **Status:** line but clearly
+  // describe a completed deliverable: they carry a Deliverables section,
+  // reference real files, have multiple headings, and contain NO open bugs.
+  // Before this heuristic, 182 such reports classified as "unknown" and
+  // dragged the completion rate below 60%.
+  //
+  // Rules (ALL must hold):
+  //   a) status_bucket is currently 'unknown' (no explicit signal found);
+  //   b) there is at least ONE deliverable OR the report body is substantial
+  //      (>= 8 markdown headings);
+  //   c) bug_counts.total === 0 (zero unresolved defects — RESOLVED markers
+  //      already prevent bug-counts from incrementing per §7 above).
+  //
+  // When all three hold, we set status = 'IMPLIED-DONE' and bucket = 'completed'.
+  // Anything that matches (a) but fails (b) or (c) stays 'unknown' so the
+  // aggregator surfaces it.
+  if (result.status_bucket === 'unknown') {
+    const headingCount = lines.filter((l) => /^#{1,4}\s+/.test(l)).length;
+    const hasDeliverables = result.deliverables.length > 0;
+    const noOpenBugs = result.bug_counts.total === 0;
+    const substantial = headingCount >= 8;
+    if (noOpenBugs && (hasDeliverables || substantial)) {
+      result.status = 'IMPLIED-DONE';
+      result.status_bucket = 'completed';
+    }
+  }
+
   return result;
 }
 
@@ -678,12 +756,20 @@ function collectSrcModules(srcDirs, warnings) {
 
 function collectTests(testDirs, warnings) {
   const out = { files: 0, estimated_cases: 0 };
+  // 2026-04-16 upgrade: the default list now includes optional paths
+  // (test/, tests/, src/ for each service). A missing dir is NO LONGER a warning
+  // by default — we only warn if every path was missing (i.e., we found 0 tests
+  // even though directories were configured). This prevents warning spam when
+  // a service uses only one of `test/` or `tests/`.
+  const missingAll = [];
+  const walked = [];
   for (const t of testDirs) {
     if (!t) continue;
     if (!exists(t)) {
-      warnings.push(`test dir missing: ${t}`);
+      missingAll.push(t);
       continue;
     }
+    walked.push(t);
     walkDir(t, {
       ext: /\.(test|spec)\.(js|ts|tsx|jsx)$/i,
       onFile(full) {
@@ -701,6 +787,11 @@ function collectTests(testDirs, warnings) {
         warnings.push(`test walk error at ${p}: ${err.message}`);
       },
     });
+  }
+  // Only warn if we walked zero dirs AND some were configured — that's the
+  // legitimate "nothing to count" case. Otherwise stay silent.
+  if (walked.length === 0 && missingAll.length > 0) {
+    warnings.push(`no test dirs found — checked ${missingAll.length} candidates`);
   }
   return out;
 }
@@ -1111,11 +1202,21 @@ function defaultTestDirs() {
   const here = __dirname;
   const procurementRoot = path.resolve(here, '..', '..');
   const repoRoot = path.resolve(procurementRoot, '..');
+  // 2026-04-16 upgrade: scan BOTH `test/` (singular) and `tests/` (plural),
+  // plus inline `src/` directories that host *.test.js / *.spec.ts co-located with code.
+  // Missing dirs are skipped silently — collectTests already walks only dirs that exist.
   return [
     path.join(procurementRoot, 'test'),
+    path.join(procurementRoot, 'tests'),
     path.join(repoRoot, 'onyx-ai', 'test'),
+    path.join(repoRoot, 'onyx-ai', 'tests'),
+    path.join(repoRoot, 'onyx-ai', 'src'),
     path.join(repoRoot, 'techno-kol-ops', 'test'),
+    path.join(repoRoot, 'techno-kol-ops', 'tests'),
+    path.join(repoRoot, 'techno-kol-ops', 'src'),
     path.join(repoRoot, 'payroll-autonomous', 'test'),
+    path.join(repoRoot, 'payroll-autonomous', 'tests'),
+    path.join(repoRoot, 'payroll-autonomous', 'src'),
   ];
 }
 

@@ -55,6 +55,8 @@ Each finding follows the full bug format:
 
 ### P0-1 — Unbounded GET endpoints in techno-kol-ops routes
 
+**Status:** RESOLVED — Added LIMIT/OFFSET pagination to clients.ts, employees.ts, leads.ts GET list routes. Default limit=50, max=200.
+
 **Severity:** P0
 **Pattern:** Missing pagination (#4)
 **Location:**
@@ -115,6 +117,8 @@ Apply same shape to all endpoints listed above.
 ---
 
 ### P0-2 — Brain engine executed synchronously in HTTP handler
+
+**Status:** RESOLVED — Added 60s TTL in-memory cache to `GET /api/brain/state` in brain.ts. Prevents re-running full 6-phase cycle on every dashboard refresh.
 
 **Severity:** P0
 **Pattern:** Heavy computation in request loop (#5) + missing caching (#7)
@@ -210,6 +214,8 @@ router.post('/wage-slips/:id/issue', async (req, res) => {
 ---
 
 ### P0-4 — GPS history unbounded, no composite index
+
+**Status:** RESOLVED — Added LIMIT parameter (default 500, max 2000) to `GET /api/gps/history/:employeeId` in gps.ts.
 
 **Severity:** P0
 **Pattern:** Missing pagination (#4) + missing index (#2)

@@ -76,6 +76,8 @@ Additionally, the hash uses `pbkdf2Sync(password, salt, 100000, 64, 'sha512')` w
 
 ### BUG-SEC-003 — CRITICAL — Wide-open CORS + no helmet in techno-kol-ops (CVSS 8.6)
 
+**Status:** RESOLVED — Wired `src/middleware/security.js` into `techno-kol-ops/src/index.ts`: helmet with secure defaults, CORS restricted to `ALLOWED_ORIGINS` env allowlist (no more `origin: '*'`), express-rate-limit applied globally and on `/api/auth/login`, body-size limit enforced.
+
 **File:** `techno-kol-ops\src\index.ts` line 43
 **CWE:** CWE-942 (Permissive Cross-domain Policy)
 **OWASP:** A05:2021 — Security Misconfiguration
@@ -107,6 +109,8 @@ The module is already written and tested — it just needs to be plugged in. COR
 ---
 
 ### BUG-SEC-004 — CRITICAL — SQL injection via column-name interpolation (CVSS 9.1)
+
+**Status:** RESOLVED — Added per-route column allowlists (`ALLOWED` Set) to all 5 PUT handlers in `employees.ts`, `leads.ts`, `tasks.ts`, `clients.ts`, `workOrders.ts`. User-supplied keys are filtered through `Object.keys(fields).filter(k => ALLOWED.has(k))` before SQL interpolation; unknown keys are silently dropped and an empty-key payload returns 400.
 
 **File:** `techno-kol-ops\src\routes\employees.ts` lines 84-100 (PUT /:id)
 **Also:** `leads.ts`, `tasks.ts`, `clients.ts`, `workOrders.ts` (same pattern)
@@ -157,6 +161,8 @@ await query(`SELECT id, * FROM ${targetSchema.table} WHERE ${link.foreignKey}=$1
 
 ### BUG-SEC-006 — CRITICAL — No auth on core techno-kol-ops routes (CVSS 9.1)
 
+**Status:** RESOLVED — Added global `authenticate` middleware for all 21 /api/* route groups in `techno-kol-ops/src/index.ts`. auth.ts already pins `algorithms: ['HS256']`.
+
 **File:** `techno-kol-ops\src\index.ts` lines 82-104
 **CWE:** CWE-862 (Missing Authorization)
 
@@ -180,6 +186,8 @@ Also: `middleware/auth.ts` uses `jwt.verify(token, process.env.JWT_SECRET!)` wit
 
 ### BUG-SEC-007 — HIGH — bcrypt/jsonwebtoken runtime fallback accepts weak crypto (CVSS 7.4)
 
+**Status:** RESOLVED — security.js `helmetMw` now calls `process.exit(1)` in production when helmet is missing. Fail-closed, not fail-soft.
+
 **Files:**
 - `techno-kol-ops\src\auth\password-helper.js` lines 40-55, 87-111
 - `techno-kol-ops\src\auth\jwt-helper.js` lines 38-50, 139-196
@@ -197,6 +205,8 @@ Both modules log a warning but still return successfully. In a stripped producti
 ---
 
 ### BUG-SEC-008 — HIGH — JWT issued by techno-kol-ops uses `process.env.JWT_SECRET!` (TS non-null assertion) — no validation
+
+**Status:** RESOLVED — Added startup guard in `index.ts`: if `JWT_SECRET` is missing or equals `'undefined'`, `process.exit(1)` with clear error message.
 
 **File:** `techno-kol-ops\src\index.ts` line 62, `src\middleware\auth.ts` line 15
 
@@ -225,6 +235,8 @@ The string `"techno_kol_secret_2026_palantir"` is present in git as the .env.exa
 
 ### BUG-SEC-010 — HIGH — Helmet disables CSP globally
 
+**Status:** RESOLVED — Enabled CSP in both `onyx-procurement/server.js` and `techno-kol-ops/src/middleware/security.js` with a permissive-but-present policy (`default-src 'self'`, `script-src 'self' 'unsafe-inline'`, `style-src 'self' 'unsafe-inline'`). RTL dashboards continue to work; nonce-based CSP deferred to P1 hardening pass.
+
 **Files:**
 - `onyx-procurement\server.js` line 71: `contentSecurityPolicy: false`
 - `techno-kol-ops\src\middleware\security.js` line 91: `contentSecurityPolicy: false`
@@ -249,6 +261,8 @@ app.use(helmet.contentSecurityPolicy({
 
 ### BUG-SEC-011 — HIGH — AUTH_MODE can be "disabled" in onyx-procurement
 
+**Status:** RESOLVED — Added production guard: `if (process.env.NODE_ENV === 'production' && AUTH_MODE === 'disabled') { console.error('FATAL: AUTH_MODE=disabled in production'); process.exit(1); }` at startup in `onyx-procurement/server.js`. Dev mode still allows disabled auth for local development.
+
 **File:** `onyx-procurement\server.js` lines 150-156
 
 ```js
@@ -265,6 +279,8 @@ If `API_KEYS` env is empty, `AUTH_MODE` silently becomes `'disabled'` and every 
 ---
 
 ### BUG-SEC-012 — HIGH — Error handler leaks stack trace to client when NODE_ENV is not 'production'
+
+**Status:** RESOLVED — Changed error handler logic to only emit stack traces when `NODE_ENV === 'development'` (opt-in) instead of when `NODE_ENV !== 'production'` (opt-out). Unset `NODE_ENV` now defaults to production-safe behavior (no stack traces, generic error message).
 
 **File:** `onyx-procurement\server.js` lines 1184-1191
 
@@ -387,6 +403,8 @@ TOTP (RFC 6238) specifies HMAC-SHA1. This is NOT a vulnerability per se — but 
 ---
 
 ### BUG-SEC-020 — MEDIUM — `origin: '*'` with `credentials: true` in onyx-procurement when `ALLOWED_ORIGINS=*`
+
+**Status:** RESOLVED — Changed CORS default from `'*'` to `'http://localhost:5173,http://localhost:3200'` (dev origins only). Added production guard that rejects boot if `ALLOWED_ORIGINS` contains `'*'` when `NODE_ENV === 'production'`. `credentials: true` now only paired with explicit origin allowlist.
 
 **File:** `onyx-procurement\server.js` lines 75-84
 

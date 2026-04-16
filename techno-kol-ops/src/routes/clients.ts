@@ -5,8 +5,12 @@ import { query } from '../db/connection';
 const router = Router();
 router.use(authenticate);
 
+// P0-1 fix: Add LIMIT/OFFSET pagination to prevent unbounded result sets
 router.get('/', async (req: AuthRequest, res: Response) => {
   try {
+    const limit = Math.min(Math.max(parseInt(req.query.limit as string) || 50, 1), 200);
+    const offset = Math.max(parseInt(req.query.offset as string) || 0, 0);
+
     const { rows } = await query(`
       SELECT c.*,
         COUNT(wo.id) as total_orders,
@@ -17,7 +21,8 @@ router.get('/', async (req: AuthRequest, res: Response) => {
       WHERE c.is_active = true
       GROUP BY c.id
       ORDER BY total_revenue DESC
-    `);
+      LIMIT $1 OFFSET $2
+    `, [limit, offset]);
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch clients' });
@@ -59,12 +64,22 @@ router.post('/', async (req: AuthRequest, res: Response) => {
   }
 });
 
+// BUG-SEC-004: Column allowlist to prevent SQL injection via key interpolation
+const CLIENT_ALLOWED_COLUMNS = new Set([
+  'name', 'type', 'contact_name', 'phone', 'email', 'address',
+  'credit_limit', 'notes', 'is_active', 'tax_id', 'payment_terms',
+]);
+
 router.put('/:id', async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const fields = req.body;
-    const keys = Object.keys(fields);
-    const values = keys.map(k => fields[k]);
+    const safePairs = Object.entries(fields).filter(([k]) => CLIENT_ALLOWED_COLUMNS.has(k));
+    if (safePairs.length === 0) {
+      return res.status(400).json({ error: 'No valid fields to update' });
+    }
+    const keys = safePairs.map(([k]) => k);
+    const values = safePairs.map(([, v]) => v);
     const setClause = keys.map((k, i) => `${k} = $${i + 2}`).join(', ');
 
     const { rows } = await query(

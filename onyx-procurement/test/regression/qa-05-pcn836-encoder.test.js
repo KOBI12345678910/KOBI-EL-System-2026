@@ -224,8 +224,8 @@ test('QA-05 pcn836.validate: empty file returns structural errors', () => {
 });
 
 test('QA-05 pcn836.validate: real built file passes A/B/Z structural checks', () => {
-  // Matches the existing test in test/pcn836.test.js line 409: width errors
-  // are expected noise from the known record-width mismatch.
+  // QA-04-VAT-01 RESOLVED: validator now dispatches per record type,
+  // so no width errors are expected on correctly built files.
   const file = buildPcn836File({
     companyProfile: COMPANY,
     period: PERIOD,

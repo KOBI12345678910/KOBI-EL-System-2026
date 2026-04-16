@@ -144,7 +144,46 @@ export function initEventBus() {
     broadcastToAll('QUOTE_GENERATED', data);
   });
 
-  console.log('[EVENT BUS] Initialized — listening to all system events');
+  // ════════════════════════════════════════════
+  // DOMAIN EVENTS — execution.workorder.* / execution.project.*
+  // Structured events for cross-service choreography
+  // ════════════════════════════════════════════
+
+  eventBus.on('workorder:created', async (data: any) => {
+    await logEvent('execution.workorder.created', data);
+    console.log(
+      `[DOMAIN-EVENT] execution.workorder.created | ` +
+      `id=${data.entity_id} product=${data.product || 'N/A'} actor=${data.actor}`
+    );
+  });
+
+  eventBus.on('workorder:assigned', async (data: any) => {
+    await logEvent('execution.workorder.assigned', data);
+    console.log(
+      `[DOMAIN-EVENT] execution.workorder.assigned | ` +
+      `id=${data.entity_id} employee=${data.employee_id} role=${data.role_on_order || 'N/A'}`
+    );
+  });
+
+  eventBus.on('workorder:completed', async (data: any) => {
+    await logEvent('execution.workorder.completed', data);
+    broadcastToAll('WORKORDER_COMPLETED', data);
+    console.log(
+      `[DOMAIN-EVENT] execution.workorder.completed | ` +
+      `id=${data.entity_id} --> Invoice creation should be triggered`
+    );
+  });
+
+  eventBus.on('project:created', async (data: any) => {
+    await logEvent('execution.project.created', data);
+    broadcastToAll('PROJECT_CREATED', data);
+    console.log(
+      `[DOMAIN-EVENT] execution.project.created | ` +
+      `id=${data.entity_id} name=${data.name || 'N/A'} client=${data.client_id || 'N/A'}`
+    );
+  });
+
+  console.log('[EVENT BUS] Initialized — listening to all system events + domain events');
 }
 
 async function logEvent(type: string, data: any) {

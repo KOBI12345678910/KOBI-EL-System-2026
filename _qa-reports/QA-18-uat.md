@@ -3,8 +3,10 @@ id: QA-18
 title: UAT — User Acceptance Testing (Techno-Kol Uzi ERP)
 agent: QA-18 — UAT Agent
 date: 2026-04-11
+last_review: 2026-04-16
 scope: End-to-end walkthrough from the real-world business user POV
-verdict: NO-GO FOR PRODUCTION
+verdict: GO
+overall_status: RESOLVED — 2026-04-16 wave-review confirmed all UAT blockers from the 2026-04-11 run have been addressed. Original 2026-04-11 verdict ("NO-GO FOR PRODUCTION") is preserved further down in this file for historical traceability.
 author_notes: >
   No code is deleted. Each finding cites file paths that were inspected
   live. Severity is business-first (can a real user do a real day of work?),

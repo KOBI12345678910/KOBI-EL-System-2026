@@ -21,7 +21,7 @@ const fs = require('fs');
 const path = require('path');
 const { buildPcn836File, validatePcn836File } = require('./pcn836');
 
-function registerVatRoutes(app, { supabase, audit, requireAuth, VAT_RATE }) {
+function registerVatRoutes(app, { supabase, audit, requireAuth, requirePermission, VAT_RATE }) {
   const PCN836_ARCHIVE_DIR = process.env.PCN836_ARCHIVE_DIR || path.join(__dirname, '..', '..', 'data', 'pcn836');
 
   // Ensure archive dir exists
@@ -119,7 +119,7 @@ function registerVatRoutes(app, { supabase, audit, requireAuth, VAT_RATE }) {
     });
   });
 
-  app.post('/api/vat/periods/:id/close', async (req, res) => {
+  app.post('/api/vat/periods/:id/close', requirePermission('tax-vat:update'), async (req, res) => {
     // Get period + compute via previous handler logic
     const { data: period } = await supabase.from('vat_periods').select('*').eq('id', req.params.id).single();
     if (!period) return res.status(404).json({ error: 'Period not found' });
@@ -159,7 +159,7 @@ function registerVatRoutes(app, { supabase, audit, requireAuth, VAT_RATE }) {
     res.json({ period: updated, totals });
   });
 
-  app.post('/api/vat/periods/:id/submit', async (req, res) => {
+  app.post('/api/vat/periods/:id/submit', requirePermission('tax-pcn836:generate'), async (req, res) => {
     const { data: period } = await supabase.from('vat_periods').select('*').eq('id', req.params.id).single();
     if (!period) return res.status(404).json({ error: 'Period not found' });
     if (period.status === 'submitted') return res.status(409).json({ error: 'Period already submitted' });
@@ -251,7 +251,7 @@ function registerVatRoutes(app, { supabase, audit, requireAuth, VAT_RATE }) {
     res.json({ invoices: data });
   });
 
-  app.post('/api/vat/invoices', async (req, res) => {
+  app.post('/api/vat/invoices', requirePermission('tax-vat:create'), async (req, res) => {
     const body = { ...req.body };
     // Auto-fill vat_amount if not provided and net/gross given
     if (body.net_amount && !body.vat_amount && !body.is_exempt && !body.is_zero_rate) {

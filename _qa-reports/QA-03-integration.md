@@ -183,6 +183,8 @@ But procurement's real route returns `res.json({ orders: [...] })`. The bridge s
 
 ### BUG-06 — Missing ONYX_AI_API_KEY silently disables ai-bridge
 
+**Status:** RESOLVED — Addressed as part of BUG-02 fix. The `GET /api/admin/ai-bridge/health` endpoint now explicitly reports `{configured:false, healthy:false, reason:'ONYX_AI_API_KEY not set'}` when the env var is missing, making the misconfiguration visible. Boot log also emits `ai-bridge wired but disabled — set ONYX_AI_API_KEY to enable`.
+
 **Severity:** MEDIUM
 **Component:** `onyx-procurement/src/ai-bridge.js::getDefaultClient()`
 **Test:** `qa-03-ai-bridge.test.js :: "getDefaultClient returns null when env not set"`
@@ -196,6 +198,8 @@ But procurement's real route returns `res.json({ orders: [...] })`. The bridge s
 ---
 
 ### BUG-07 — techno-kol-ops has no integration with procurement or AI
+
+**Status:** RESOLVED — Created `techno-kol-ops/src/bridges/procurement-bridge.ts` (HTTP client → onyx-procurement:3100) and `techno-kol-ops/src/bridges/ai-bridge.ts` (HTTP client → onyx-ai:3300). Both follow the same fail-open, retry-with-backoff, X-API-Key pattern as the existing cross-service bridges. Wired into `index.ts` with `/api/bridges/health` endpoint for monitoring, plus `/api/bridges/procurement/purchase-orders` and `/api/bridges/ai/insights` proxy endpoints. techno-kol-ops is no longer isolated.
 
 **Severity:** HIGH
 **Component:** `techno-kol-ops/` (entire repo)
@@ -318,6 +322,7 @@ return res.status(500).json({ error: 'Webhook HMAC not configured — refusing t
 ### BUG-13 — Bank-routes does no FK check on bank_account_id
 
 **Severity:** MEDIUM
+**Status:** RESOLVED
 **Component:** `onyx-procurement/src/bank/bank-routes.js::POST /api/bank/accounts/:id/import`
 **Test:** `qa-03-bank-upload.test.js :: "unknown account id still accepted"`
 
@@ -337,6 +342,7 @@ One line, gives a clean 404, documents intent.
 ### BUG-14 — HTML 500 upstream forces client JSON.parse catch
 
 **Severity:** MEDIUM
+**Status:** RESOLVED
 **Component:** clients of any procurement route, especially `ai-bridge.js::_request`
 **Test:** `qa-03-auth-matrix.test.js :: "BUG-14 — upstream HTML 500 forces onyx-ai client to hit the JSON.parse catch"`
 
@@ -357,6 +363,7 @@ Mount it as the last `app.use()` after all routes.
 ### BUG-15 — Bank import response drift (openingBalance echoed from parser not DB)
 
 **Severity:** MEDIUM
+**Status:** RESOLVED
 **Component:** `onyx-procurement/src/bank/bank-routes.js::POST /api/bank/accounts/:id/import`
 **Test:** `qa-03-bank-upload.test.js :: "BUG-15 — openingBalance is saved to DB but NOT echoed in response"`
 

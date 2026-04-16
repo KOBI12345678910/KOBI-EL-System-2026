@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Master Flow | זרימה ראשית — Techno-Kol Uzi ERP 2026</title>
+  <style>
+    :root {
+      --bg-0:#05070a;--bg-1:#0a0e14;--bg-2:#111720;--bg-3:#1a2230;
+      --border:#1f2a3a;--border-hi:#2a3a52;--text-0:#e6ecf5;--text-1:#a8b4c8;--text-2:#6b7a90;
+      --accent:#3a8dde;--accent-hi:#5aa8ff;--ok:#2bd48b;--warn:#f2b84d;--err:#ef5350;
+      --font:'Segoe UI','Heebo','Assistant',system-ui,sans-serif;--mono:'Consolas','Menlo',monospace;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg-0);color:var(--text-0);font-family:var(--font);min-height:100vh;
+      background-image:radial-gradient(ellipse at top,rgba(58,141,222,.04),transparent 60%)}
+    .container{max-width:1200px;margin:0 auto;padding:24px}
+
+    header{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:24px;
+      display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+    h1{font-size:22px;font-weight:600}
+    h1 span.sub{font-size:13px;color:var(--text-2);font-weight:400;margin-inline-start:8px}
+    .back-link{color:var(--accent-hi);text-decoration:none;font-size:13px;font-weight:500;
+      padding:6px 14px;border:1px solid var(--border);border-radius:6px;background:var(--bg-2)}
+    .back-link:hover{background:var(--bg-3)}
+
+    /* ═══ PIPELINE FLOW ═══ */
+    .flow-container{margin-bottom:32px}
+    .flow-title{font-size:16px;font-weight:600;margin-bottom:16px;color:var(--text-0)}
+    .flow-stages{display:flex;gap:0;overflow-x:auto;padding-bottom:8px}
+    .flow-stage{flex:1;min-width:110px;position:relative;cursor:pointer;transition:transform .15s}
+    .flow-stage:hover{transform:translateY(-2px)}
+    .stage-card{background:var(--bg-2);border:2px solid var(--border);border-radius:10px;
+      padding:14px 10px;text-align:center;position:relative;z-index:1;transition:border-color .2s}
+    .stage-card:hover{border-color:var(--accent)}
+    .stage-card.active{border-color:var(--ok);box-shadow:0 0 16px rgba(43,212,139,.15)}
+    .stage-icon{font-size:24px;margin-bottom:6px}
+    .stage-label{font-size:13px;font-weight:600;color:var(--text-0)}
+    .stage-label-en{font-size:10px;color:var(--text-2);margin-top:2px}
+    .stage-count{font-family:var(--mono);font-size:18px;font-weight:700;margin-top:8px}
+    .stage-value{font-family:var(--mono);font-size:11px;color:var(--text-2)}
+    .stage-arrow{position:absolute;top:50%;left:-14px;transform:translateY(-50%);
+      font-size:18px;color:var(--text-2);z-index:2}
+    .flow-stage:first-child .stage-arrow{display:none}
+
+    /* ═══ TOPOLOGY ═══ */
+    .topo-section{margin-bottom:32px}
+    .topo-grid{display:grid;grid-template-columns:1fr 2fr 1fr;gap:16px;align-items:center}
+    .topo-center{grid-column:2;display:flex;flex-direction:column;align-items:center}
+    .topo-sides{display:flex;flex-direction:column;gap:12px}
+    .topo-node{background:var(--bg-2);border:2px solid var(--border);border-radius:12px;
+      padding:16px;text-align:center;transition:border-color .2s}
+    .topo-node:hover{border-color:var(--accent)}
+    .topo-node.core{border-color:var(--ok);background:linear-gradient(180deg,rgba(43,212,139,.06),var(--bg-2));
+      box-shadow:0 0 20px rgba(43,212,139,.08)}
+    .topo-node .svc-name{font-size:16px;font-weight:700;color:var(--text-0)}
+    .topo-node .svc-role{font-size:11px;color:var(--text-2);margin-top:4px}
+    .topo-node .svc-connects{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+    .svc-tag{font-size:10px;padding:2px 8px;border-radius:10px;background:var(--bg-3);color:var(--accent-hi);border:1px solid var(--border)}
+    .topo-node .svc-status{margin-top:8px;display:inline-flex;align-items:center;gap:4px;
+      font-size:11px;font-weight:600;padding:3px 8px;border-radius:12px}
+    .svc-status.up{color:var(--ok);background:rgba(43,212,139,.08)}
+    .svc-status.down{color:var(--err);background:rgba(239,83,80,.08)}
+    .svc-status .dot{width:6px;height:6px;border-radius:50%}
+    .svc-status.up .dot{background:var(--ok)}.svc-status.down .dot{background:var(--err)}
+    .topo-connector{width:2px;height:32px;background:var(--border);margin:0 auto}
+
+    /* ═══ ENTITY RELATIONS ═══ */
+    .relations-section{margin-bottom:32px}
+    .entity-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+    .entity-card{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:16px}
+    .entity-card h3{font-size:15px;font-weight:600;color:var(--text-0);margin-bottom:10px}
+    .entity-links{display:flex;flex-direction:column;gap:6px}
+    .entity-link{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-1);
+      padding:6px 10px;background:var(--bg-3);border-radius:6px;border:1px solid var(--border);
+      cursor:pointer;transition:background .15s,border-color .15s}
+    .entity-link:hover{background:var(--bg-1);border-color:var(--accent)}
+    .entity-link .arrow{color:var(--accent-hi);font-size:14px}
+
+    /* ═══ EVENTS / TRIGGERS ═══ */
+    .events-section{margin-bottom:32px}
+    .events-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+    .event-card{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:16px}
+    .event-card .event-name{font-size:14px;font-weight:600;color:var(--text-0);margin-bottom:8px}
+    .event-card .event-name small{font-size:11px;font-weight:400;color:var(--text-2);display:block;margin-top:2px}
+    .event-actions{display:flex;flex-direction:column;gap:4px}
+    .event-action{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-1);
+      padding:4px 8px;background:var(--bg-3);border-radius:4px}
+    .event-action .icon{color:var(--ok);font-size:13px}
+
+    /* ═══ PIPELINE TABLE ═══ */
+    .items-section{margin-bottom:32px}
+    table{width:100%;border-collapse:separate;border-spacing:0;background:var(--bg-1);
+      border:1px solid var(--border);border-radius:10px;overflow:hidden}
+    th{background:var(--bg-2);color:var(--text-2);text-align:inherit;font-size:11px;
+      font-weight:600;text-transform:uppercase;letter-spacing:.5px;padding:12px 14px;border-bottom:1px solid var(--border)}
+    td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text-1);vertical-align:middle}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:rgba(58,141,222,.04)}
+    .stage-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:14px;
+      font-size:11px;font-weight:600;border:1px solid transparent}
+    .entity-type{font-size:10px;color:var(--text-2);text-transform:uppercase}
+
+    /* ═══ BUTTONS ═══ */
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;
+      font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);
+      font-family:var(--font);transition:all .15s}
+    .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .btn-primary:hover{background:var(--accent-hi)}
+    .btn-secondary{background:var(--bg-2);color:var(--text-1)}
+    .btn-secondary:hover{background:var(--bg-3);color:var(--text-0)}
+    .btn-auto{background:rgba(43,212,139,.1);color:var(--ok);border-color:rgba(43,212,139,.3)}
+    .btn-auto:hover{background:rgba(43,212,139,.15)}
+    .btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+
+    /* ═══ MODAL ═══ */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;
+      align-items:center;justify-content:center}
+    .modal-overlay.open{display:flex}
+    .modal{background:var(--bg-1);border:1px solid var(--border);border-radius:14px;
+      padding:24px;width:90%;max-width:500px;max-height:80vh;overflow-y:auto}
+    .modal h2{font-size:18px;margin-bottom:16px}
+    .modal label{display:block;font-size:12px;color:var(--text-2);margin-bottom:4px;margin-top:12px}
+    .modal input,.modal select{width:100%;padding:8px 12px;background:var(--bg-2);border:1px solid var(--border);
+      border-radius:6px;color:var(--text-0);font-size:13px;font-family:var(--font)}
+    .modal input:focus,.modal select:focus{outline:none;border-color:var(--accent)}
+
+    section h2{font-size:16px;font-weight:600;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+    footer{text-align:center;margin-top:24px;font-size:11px;color:var(--text-2);font-family:var(--mono)}
+
+    @media(max-width:768px){
+      .topo-grid{grid-template-columns:1fr}
+      .topo-center{grid-column:1}
+      .flow-stages{flex-wrap:nowrap}
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>Master Flow <span class="sub">· זרימה ראשית</span></h1>
+    <div style="display:flex;gap:8px">
+      <a href="index.html" class="back-link">חזרה לבית</a>
+    </div>
+  </header>
+
+  <!-- ═══ PIPELINE STAGES ═══ -->
+  <section class="flow-container">
+    <h2 class="flow-title">Business Pipeline — לקוח → הצעת מחיר → פרויקט → רכש → ייצור → סיום</h2>
+    <div class="flow-stages" id="flow-stages"></div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="openNewItem()">+ פריט חדש ב-Pipeline</button>
+      <button class="btn btn-auto" onclick="triggerEvent()">⚡ הפעל אוטומציה</button>
+    </div>
+  </section>
+
+  <!-- ═══ SERVICE TOPOLOGY ═══ -->
+  <section class="topo-section">
+    <h2>Service Architecture — ארכיטקטורת שירותים</h2>
+    <div class="topo-grid" id="topo-grid"></div>
+  </section>
+
+  <!-- ═══ ENTITY RELATIONS ═══ -->
+  <section class="relations-section">
+    <h2>Entity Relations — קשרי ישויות</h2>
+    <div class="entity-grid" id="entity-grid"></div>
+  </section>
+
+  <!-- ═══ EVENT TRIGGERS ═══ -->
+  <section class="events-section">
+    <h2>Automation Triggers — אוטומציות</h2>
+    <div class="events-grid" id="events-grid"></div>
+  </section>
+
+  <!-- ═══ PIPELINE ITEMS TABLE ═══ -->
+  <section class="items-section">
+    <h2>Active Pipeline Items — פריטים פעילים</h2>
+    <table>
+      <thead><tr>
+        <th>ישות</th><th>שם</th><th>לקוח</th><th>שלב</th><th>ערך</th><th>פעולות</th>
+      </tr></thead>
+      <tbody id="items-tbody"></tbody>
+    </table>
+  </section>
+
+  <footer>Techno-Kol Uzi ERP 2026 · Master Flow Engine · Pipeline v1.0</footer>
+</div>
+
+<!-- ═══ NEW ITEM MODAL ═══ -->
+<div class="modal-overlay" id="modal-new">
+  <div class="modal">
+    <h2>פריט Pipeline חדש</h2>
+    <label>סוג ישות</label>
+    <select id="f-type"><option value="lead">ליד</option><option value="quote">הצעת מחיר</option>
+      <option value="project">פרויקט</option><option value="work_order">הזמנת עבודה</option>
+      <option value="purchase_order">הזמנת רכש</option><option value="invoice">חשבונית</option></select>
+    <label>שם</label><input id="f-name" placeholder="שם הפריט">
+    <label>לקוח</label><input id="f-customer" placeholder="שם הלקוח">
+    <label>שלב התחלה</label>
+    <select id="f-stage"></select>
+    <label>ערך (₪)</label><input id="f-value" type="number" placeholder="0">
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="createItem()">צור פריט</button>
+      <button class="btn btn-secondary" onclick="closeModal('modal-new')">ביטול</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TRIGGER MODAL ═══ -->
+<div class="modal-overlay" id="modal-trigger">
+  <div class="modal">
+    <h2>⚡ הפעל אוטומציה</h2>
+    <label>אירוע</label>
+    <select id="f-event"></select>
+    <div class="btn-group">
+      <button class="btn btn-auto" onclick="fireTrigger()">⚡ הפעל</button>
+      <button class="btn btn-secondary" onclick="closeModal('modal-trigger')">ביטול</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var API = '';
+var stages = [];
+var topology = {};
+var relations = {};
+var triggers = {};
+var items = [];
+
+var STAGE_ICONS = {
+  lead:'🎯',quote:'📋',approval:'✅',order:'📦',project:'📁',work_orders:'🔧',
+  procurement:'🛒',inventory:'📦',execution:'🏗️',delivery:'🚚',
+  invoice:'💰',payment:'💳',closure:'✅'
+};
+
+function $(id){return document.getElementById(id)}
+function escapeHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+async function api(path,method,body){
+  var opts={method:method||'GET',headers:{'Content-Type':'application/json'}};
+  if(body)opts.body=JSON.stringify(body);
+  var r=await fetch(API+path,opts);
+  if(!r.ok){var e=await r.json().catch(function(){return{error:'HTTP '+r.status}});throw new Error(e.error||'Error')}
+  return r.json();
+}
+
+function fmtMoney(n){return '₪'+Number(n||0).toLocaleString('he-IL')}
+
+// ═══ RENDER PIPELINE ═══
+function renderStages(summary){
+  var el=$('flow-stages');
+  el.innerHTML='';
+  stages.forEach(function(s,i){
+    var d=summary[s.id]||{count:0,value:0};
+    var html='<div class="flow-stage" onclick="filterStage(\''+s.id+'\')">';
+    if(i>0)html+='<div class="stage-arrow">→</div>';
+    html+='<div class="stage-card" style="border-color:'+s.color+'22">';
+    html+='<div class="stage-icon">'+STAGE_ICONS[s.id]+'</div>';
+    html+='<div class="stage-label">'+escapeHtml(s.label)+'</div>';
+    html+='<div class="stage-label-en">'+escapeHtml(s.labelEn)+'</div>';
+    html+='<div class="stage-count" style="color:'+s.color+'">'+d.count+'</div>';
+    html+='<div class="stage-value">'+fmtMoney(d.value)+'</div>';
+    html+='</div></div>';
+    el.innerHTML+=html;
+  });
+}
+
+// ═══ RENDER TOPOLOGY ═══
+function renderTopology(services){
+  var el=$('topo-grid');
+  el.innerHTML='';
+  // Left side: procurement
+  var left='<div class="topo-sides">';
+  left+=renderTopoNode(services.procurement||{label:'רכש',labelEn:'Procurement',connects:['suppliers','purchasing','finance'],status:'up'});
+  left+=renderTopoNode(services.payroll||{label:'שכר',labelEn:'Payroll',connects:['employees','projects','costs'],status:'up'});
+  left+='</div>';
+  // Center: OPS
+  var center='<div class="topo-center">';
+  center+=renderTopoNode(services.ops||{label:'תפעול',labelEn:'OPS',connects:[],status:'checking'},true);
+  center+='</div>';
+  // Right: AI
+  var right='<div class="topo-sides">';
+  right+=renderTopoNode(services.ai||{label:'בינה',labelEn:'AI',connects:['analytics','forecasting','alerts'],status:'checking'});
+  right+='</div>';
+  el.innerHTML=left+center+right;
+}
+
+function renderTopoNode(svc,isCore){
+  var cls='topo-node'+(isCore?' core':'');
+  var statusCls=svc.status==='up'?'up':'down';
+  var html='<div class="'+cls+'">';
+  html+='<div class="svc-name">'+escapeHtml(svc.label||svc.labelEn)+'</div>';
+  html+='<div class="svc-role">'+escapeHtml(svc.labelEn||'')+(svc.port?' · :'+svc.port:'')+'</div>';
+  html+='<div class="svc-status '+statusCls+'"><span class="dot"></span>'+statusCls.toUpperCase()+'</div>';
+  if(svc.connects&&svc.connects.length){
+    html+='<div class="svc-connects">';
+    svc.connects.forEach(function(c){html+='<span class="svc-tag">'+escapeHtml(c)+'</span>'});
+    html+='</div>';
+  }
+  html+='</div>';
+  return html;
+}
+
+// ═══ RENDER RELATIONS ═══
+function renderRelations(rels){
+  var el=$('entity-grid');
+  var ICONS={customer:'👤',project:'📁',workOrder:'🔧',procurement:'🛒',finance:'💰'};
+  var LABELS={customer:'לקוח',project:'פרויקט',workOrder:'הזמנת עבודה',procurement:'רכש',finance:'כספים'};
+  el.innerHTML='';
+  Object.keys(rels).forEach(function(entity){
+    var r=rels[entity];
+    var html='<div class="entity-card"><h3>'+(ICONS[entity]||'📄')+' '+escapeHtml(LABELS[entity]||entity)+'</h3>';
+    html+='<div class="entity-links">';
+    r.links.forEach(function(link){
+      html+='<div class="entity-link"><span class="arrow">←</span>'+escapeHtml(link)+'</div>';
+    });
+    html+='</div></div>';
+    el.innerHTML+=html;
+  });
+}
+
+// ═══ RENDER EVENTS ═══
+function renderEvents(trigs){
+  var el=$('events-grid');
+  el.innerHTML='';
+  Object.keys(trigs).forEach(function(key){
+    var t=trigs[key];
+    var html='<div class="event-card">';
+    html+='<div class="event-name">⚡ '+escapeHtml(t.label)+'<small>'+escapeHtml(key)+'</small></div>';
+    html+='<div class="event-actions">';
+    t.actions.forEach(function(a){
+      html+='<div class="event-action"><span class="icon">→</span>'+escapeHtml(a)+'</div>';
+    });
+    html+='</div></div>';
+    el.innerHTML+=html;
+  });
+}
+
+// ═══ RENDER ITEMS TABLE ═══
+function renderItems(list){
+  var tbody=$('items-tbody');
+  if(!list||!list.length){
+    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text-2);padding:32px">אין פריטים פעילים — לחץ "+ פריט חדש" להתחיל</td></tr>';
+    return;
+  }
+  tbody.innerHTML='';
+  list.forEach(function(item){
+    var stage=stages.find(function(s){return s.id===item.current_stage})||{label:item.current_stage,color:'#999'};
+    var html='<tr>';
+    html+='<td><span class="entity-type">'+escapeHtml(item.entity_type)+'</span></td>';
+    html+='<td style="color:var(--text-0);font-weight:600">'+escapeHtml(item.entity_name)+'</td>';
+    html+='<td>'+escapeHtml(item.customer_name)+'</td>';
+    html+='<td><span class="stage-badge" style="background:'+stage.color+'15;color:'+stage.color+';border-color:'+stage.color+'33">'+escapeHtml(stage.label)+'</span></td>';
+    html+='<td style="font-family:var(--mono)">'+fmtMoney(item.value)+'</td>';
+    html+='<td><button class="btn btn-primary" style="padding:4px 10px;font-size:11px" onclick="advanceItem('+item.id+')">העבר שלב →</button></td>';
+    html+='</tr>';
+    tbody.innerHTML+=html;
+  });
+}
+
+// ═══ ACTIONS ═══
+function openNewItem(){
+  var sel=$('f-stage');
+  sel.innerHTML='';
+  stages.forEach(function(s){sel.innerHTML+='<option value="'+s.id+'">'+escapeHtml(s.label)+' — '+escapeHtml(s.labelEn)+'</option>'});
+  $('modal-new').classList.add('open');
+}
+
+function triggerEvent(){
+  var sel=$('f-event');
+  sel.innerHTML='';
+  Object.keys(triggers).forEach(function(k){sel.innerHTML+='<option value="'+k+'">'+escapeHtml(triggers[k].label)+'</option>'});
+  $('modal-trigger').classList.add('open');
+}
+
+function closeModal(id){$(id).classList.remove('open')}
+
+async function createItem(){
+  try{
+    await api('/api/pipeline/items','POST',{
+      entity_type:$('f-type').value,
+      entity_name:$('f-name').value,
+      customer_name:$('f-customer').value,
+      current_stage:$('f-stage').value,
+      value:Number($('f-value').value)||0
+    });
+    closeModal('modal-new');
+    loadAll();
+  }catch(e){alert('שגיאה: '+e.message)}
+}
+
+async function advanceItem(id){
+  try{
+    var res=await api('/api/pipeline/items/'+id+'/advance','POST',{});
+    loadAll();
+  }catch(e){alert('שגיאה: '+e.message)}
+}
+
+async function fireTrigger(){
+  try{
+    var res=await api('/api/pipeline/trigger','POST',{event:$('f-event').value});
+    closeModal('modal-trigger');
+    alert('✅ '+res.label+' — '+res.actions.length+' פעולות הופעלו');
+    loadAll();
+  }catch(e){alert('שגיאה: '+e.message)}
+}
+
+function filterStage(stageId){
+  api('/api/pipeline/items?stage='+stageId).then(function(r){renderItems(r.items)}).catch(function(){});
+}
+
+// ═══ LOAD ALL ═══
+async function loadAll(){
+  try{
+    var [stagesRes,summaryRes,topoRes,relsRes,trigsRes,itemsRes]=await Promise.all([
+      api('/api/pipeline/stages'),
+      api('/api/pipeline/summary'),
+      api('/api/pipeline/health'),
+      api('/api/pipeline/relations'),
+      api('/api/pipeline/triggers'),
+      api('/api/pipeline/items')
+    ]);
+    stages=stagesRes.stages;
+    topology=topoRes.services;
+    relations=relsRes.relations;
+    triggers=trigsRes.triggers;
+    items=itemsRes.items;
+
+    renderStages(summaryRes.summary);
+    renderTopology(topology);
+    renderRelations(relations);
+    renderEvents(triggers);
+    renderItems(items);
+  }catch(e){
+    console.error('Load failed:',e);
+    // Fallback to static data
+    api('/api/pipeline/stages').then(function(r){
+      stages=r.stages;
+      renderStages({});
+      api('/api/pipeline/relations').then(function(r2){relations=r2.relations;renderRelations(relations)});
+      api('/api/pipeline/triggers').then(function(r3){triggers=r3.triggers;renderEvents(triggers)});
+      api('/api/pipeline/health').then(function(r4){renderTopology(r4.services)});
+    }).catch(function(){});
+  }
+}
+
+loadAll();
+</script>
+</body>
+</html>

@@ -6,10 +6,19 @@ import { query } from '../db/connection';
 const router = Router();
 router.use(authenticate);
 
+// P0-2 fix: Cache brain state for 60s instead of running 6-phase cycle on every request
+let _brainCache: { data: any; ts: number } | null = null;
+const BRAIN_CACHE_TTL_MS = 60_000; // 60 seconds
+
 // GET מצב המוח
 router.get('/state', async (req: AuthRequest, res: Response) => {
   try {
+    const now = Date.now();
+    if (_brainCache && (now - _brainCache.ts) < BRAIN_CACHE_TTL_MS) {
+      return res.json(_brainCache.data);
+    }
     const cycle = await brainEngine.runFullCycle();
+    _brainCache = { data: cycle, ts: now };
     res.json(cycle);
   } catch (err: any) { res.status(500).json({ error: err.message }); }
 });

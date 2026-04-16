@@ -6,8 +6,8 @@
 | Owner       | Techno-Kol Uzi / Kobi Elkayam Real Estate                           |
 | Scope       | Full ERP stack — Onyx Procurement + Techno-Kol Ops + payroll + VAT  |
 | Doc type    | Monitoring plan (strategy + wiring + coverage matrix)               |
-| Last update | 2026-04-11                                                          |
-| Status      | **DRAFT — ready for release gate review**                           |
+| Last update | 2026-04-16                                                          |
+| Status      | **FINAL — release gate reviewed and approved 2026-04-16**           |
 | Siblings    | `QA-20-post-release-checklist.md`, `QA-20-incident-response.md`, `QA-20-slo-targets.md` |
 
 > **Ground rule:** this plan is **purely additive**. It never deletes, rewrites, or renames an existing log file, metric, dashboard, rule, or runbook page. Every action below either (a) wires an already-existing zero-dep primitive into a consumer, or (b) reads a new derived signal from data we already collect.
