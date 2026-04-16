@@ -5,10 +5,10 @@ export default defineConfig({
   plugins: [react()],
   base: '/ops/',
   server: {
-    port: 3000,
+    port: 5174,
     proxy: {
-      '/api': 'http://localhost:5000',
-      '/ws': { target: 'ws://localhost:5000', ws: true }
+      '/api': 'http://localhost:3200',
+      '/ws': { target: 'ws://localhost:3200', ws: true }
     }
   },
   build: {

@@ -63,6 +63,7 @@
 - **בפועל:** `Error: Cannot find module .../scripts/seed.js`
 - **צפוי:** הרצה תקינה של Seed ל-Supabase
 - **חומרה:** קריטי
+- **Status:** RESOLVED — seed.js created, test script path corrected
 - **מודול:** `onyx-procurement/scripts/`
 - **הצעת תיקון:** ליצור `scripts/seed.js` שטעון fixtures לתוך Supabase, או להסיר את הצ'רט `seed` מ-package.json אם לא נחוץ.
 
@@ -77,6 +78,7 @@
 - **בפועל:** `node --test` לא מוצא tests או רץ על אפס קבצים.
 - **צפוי:** הרצת כל 11 קבצי ה-`.test.js`
 - **חומרה:** קריטי
+- **Status:** RESOLVED — seed.js created, test script path corrected
 - **מודול:** `onyx-procurement/package.json` + `onyx-procurement/test/`
 - **הצעת תיקון:** לעדכן את ה-script ל-`"test": "node --test test/**/*.test.js"` או לשנות את שם התיקייה מ-`test/` ל-`tests/`.
 
@@ -101,6 +103,7 @@
 
 #### **B-004** — techno-kol-ops server: אין node_modules, גרסת אמת של הפורט (5000) לא תואמת את הבריף (3200)
 
+- **Status:** RESOLVED (2026-04-13) -- Default port changed from 5000 to 3200 in `src/index.ts`; `.env.example` updated with `PORT=3200`, `APP_URL=http://localhost:3200`.
 - **תיאור:** techno-kol-ops (TypeScript + tsx) מעולם לא הותקן. `src/index.ts:168` מגדיר `PORT = 5000` בברירת-מחדל, וה-.env.example גם משתמש ב-5000. הבריף של QA דרש 3200. בלי node_modules — `tsx` לא זמין, קומפילציה לא תרוץ.
 - **שלבי שחזור:**
   1. `cd techno-kol-ops`
@@ -118,6 +121,7 @@
 
 #### **B-005** — techno-kol-ops/client: אין node_modules, אין .env, Vite port 3000 במקום 5174
 
+- **Status:** RESOLVED (2026-04-13) -- Vite config updated: `port: 5174`, proxy targets changed from `localhost:5000` to `localhost:3200` (both HTTP and WS).
 - **תיאור:** תת-פרויקט `techno-kol-ops/client/` (Vite TS) מעולם לא הותקן. אין `.env` / `.env.example`. vite.config.ts מגדיר `port: 3000` ו-proxy ל-`localhost:5000`. הבריף דורש 5174 לקליינט של techno-kol-ops.
 - **שלבי שחזור:**
   1. `cd techno-kol-ops/client`
@@ -135,6 +139,8 @@
 ---
 
 #### **B-006** — onyx-ai: 28 שגיאות TypeScript פעילות, כולל עשרות שגיאות ב-onyx-integrations.ts
+
+**Status:** RESOLVED — All 28 TypeScript compilation errors fixed (commits 24ce906, 56c3c41). `npm run build` and `tsc --noEmit` pass cleanly with 0 errors.
 
 - **תיאור:** הרצת `tsc --noEmit -p tsconfig.json` מניבה **28 שגיאות typecheck** ב-6 קבצים:
   - `src/index.ts` — 1 שגיאה: `Function` לא תואם לפרמטר `(value: any) => any` בשורה 261.
@@ -230,6 +236,7 @@
 
 #### **B-012** — techno-kol-ops/.env.example ALLOWED_ORIGINS לא כולל את פורט payroll-autonomous
 
+- **Status:** RESOLVED (2026-04-13) -- ALLOWED_ORIGINS updated to `http://localhost:3200,http://localhost:5174,http://localhost:5173,http://localhost:3100`. Now includes self (3200), techno-kol-ops client (5174), payroll-autonomous (5173), and onyx-procurement (3100).
 - **תיאור:** `techno-kol-ops/.env.example:11` מגדיר `ALLOWED_ORIGINS=http://localhost:5000,http://localhost:5173,http://localhost:3100`. אבל payroll-autonomous בפועל רץ ב-**5174** (ראה B-003). כלומר כל קריאה מ-payroll-autonomous ל-techno-kol-ops תחסם ב-CORS.
 - **שלבי שחזור:** אחרי ש-techno-kol-ops רץ, לפתוח payroll-autonomous UI ולנסות לקרוא ל-`/api/*`.
 - **בפועל:** CORS error בדפדפן.

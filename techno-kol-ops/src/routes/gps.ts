@@ -67,16 +67,18 @@ router.get('/current', async (req: AuthRequest, res: Response) => {
   }
 });
 
-// GET — location history for one employee today
+// GET — location history for one employee today (P0-4 fix: bounded + LIMIT)
 router.get('/history/:employeeId', async (req: AuthRequest, res: Response) => {
   try {
+    const limit = Math.min(Math.max(parseInt(req.query.limit as string) || 500, 1), 2000);
     const { rows } = await query(`
       SELECT lat, lng, speed, timestamp
       FROM gps_locations
       WHERE employee_id = $1
         AND timestamp >= CURRENT_DATE::TIMESTAMPTZ
       ORDER BY timestamp ASC
-    `, [req.params.employeeId]);
+      LIMIT $2
+    `, [req.params.employeeId, limit]);
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch history' });

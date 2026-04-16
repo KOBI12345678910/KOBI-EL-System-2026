@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { AuthRequest, authenticate } from '../middleware/auth';
 import { pipelineService } from '../services/pipeline';
 import { query } from '../db/connection';
+import { eventBus } from '../realtime/eventBus';
 
 const router = Router();
 router.use(authenticate);
@@ -61,6 +62,14 @@ router.post('/', async (req: AuthRequest, res: Response) => {
       { ...project, client_name: '', client_phone: '' },
       'measurement_scheduled'
     );
+
+    // Domain event: project created
+    eventBus.emit('project:created', {
+      entity_type: 'Project', entity_id: project.id, action: 'created',
+      actor: req.user?.id || 'system',
+      timestamp: new Date().toISOString(),
+      name: title, client_id, total_price, project_number: projectNumber,
+    });
 
     res.status(201).json(project);
   } catch (err: any) {

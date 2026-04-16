@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supplier 360 — Techno-Kol Uzi ERP 2026</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            bg0: '#05070a', bg1: '#0a0e14', bg2: '#111720', bg3: '#1a2230',
+            border: '#1f2a3a', borderHi: '#2a3a52',
+            text0: '#e6ecf5', text1: '#a8b4c8', text2: '#6b7a90',
+            accent: '#3a8dde', accentHi: '#5aa8ff',
+            ok: '#2bd48b', warn: '#f2b84d', err: '#ef5350',
+          },
+          fontFamily: {
+            sans: ['Segoe UI', 'Heebo', 'Assistant', 'Arial Hebrew', 'system-ui', 'sans-serif'],
+            mono: ['Consolas', 'Menlo', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100vh; -webkit-font-smoothing: antialiased; }
+    body {
+      background: #05070a;
+      background-image:
+        radial-gradient(ellipse at top right, rgba(58,141,222,0.06), transparent 50%),
+        radial-gradient(ellipse at bottom left, rgba(43,212,139,0.04), transparent 50%);
+      background-attachment: fixed;
+    }
+    .skeleton { background: linear-gradient(90deg, #1a2230 25%, #2a3a52 50%, #1a2230 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .tab-btn.active { color: #5aa8ff; border-bottom-color: #3a8dde; }
+    .tab-panel { display: none; } .tab-panel.active { display: block; }
+    .dropdown-menu { display: none; } .dropdown-menu.show { display: block; }
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: right; padding: 10px 12px; font-size: 12px; color: #6b7a90; border-bottom: 1px solid #1f2a3a; white-space: nowrap; }
+    td { padding: 10px 12px; font-size: 13px; color: #a8b4c8; border-bottom: 1px solid rgba(31,42,58,0.5); }
+    tr:hover td { background: rgba(58,141,222,0.04); }
+    ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #0a0e14; } ::-webkit-scrollbar-thumb { background: #2a3a52; border-radius: 3px; }
+    .score-ring { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; font-family: 'Consolas', monospace; }
+  </style>
+</head>
+<body class="text-text0 font-sans">
+
+<!-- TOP NAV -->
+<nav class="bg-bg1 border-b border-border px-6 py-3 flex items-center justify-between">
+  <div class="flex items-center gap-3">
+    <a href="index.html" class="text-xs text-accent hover:text-accentHi border border-border rounded-md px-3 py-1.5 bg-bg2">בית</a>
+    <a href="pipeline-dashboard.html" class="text-xs text-accent hover:text-accentHi border border-border rounded-md px-3 py-1.5 bg-bg2">Pipeline</a>
+    <span class="text-text2 text-xs">/</span>
+    <span class="text-text1 text-sm font-semibold">Supplier 360</span>
+  </div>
+  <div class="flex items-center gap-3">
+    <button id="darkToggle" class="text-xs text-text2 border border-border rounded px-2 py-1 bg-bg2 hover:bg-bg3">&#9790; ערכת נושא</button>
+    <span class="text-text2 text-xs font-mono" id="clock"></span>
+  </div>
+</nav>
+
+<div class="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 flex gap-6">
+
+  <!-- MAIN CONTENT -->
+  <div class="flex-1 min-w-0">
+
+    <!-- LOADING SKELETON -->
+    <div id="loadingSkeleton">
+      <div class="bg-bg2 border border-border rounded-xl p-6 mb-5">
+        <div class="skeleton h-8 w-64 mb-3"></div>
+        <div class="skeleton h-4 w-96 mb-2"></div>
+        <div class="grid grid-cols-4 gap-4 mt-4">
+          <div class="skeleton h-4 w-full"></div><div class="skeleton h-4 w-full"></div>
+          <div class="skeleton h-4 w-full"></div><div class="skeleton h-4 w-full"></div>
+        </div>
+      </div>
+      <div class="grid grid-cols-3 gap-4 mb-5">
+        <div class="skeleton h-24 w-full rounded-lg"></div>
+        <div class="skeleton h-24 w-full rounded-lg"></div>
+        <div class="skeleton h-24 w-full rounded-lg"></div>
+      </div>
+    </div>
+
+    <!-- ERROR STATE -->
+    <div id="errorState" class="hidden text-center py-16">
+      <div class="text-4xl mb-4">&#9888;</div>
+      <div class="text-err text-lg font-semibold mb-2">שגיאה בטעינת נתוני ספק</div>
+      <div class="text-text2 text-sm mb-4" id="errorMsg"></div>
+      <button onclick="loadSupplier()" class="bg-accent text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-accentHi">&#x21bb; נסה שוב</button>
+    </div>
+
+    <!-- MAIN CONTENT AREA -->
+    <div id="supplierHeader" class="hidden">
+
+      <!-- HEADER SECTION -->
+      <div class="bg-gradient-to-b from-bg2 to-bg1 border border-border rounded-xl p-6 mb-5">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-xl bg-bg3 border border-borderHi flex items-center justify-center text-3xl" id="supplierIcon">&#127981;</div>
+            <div>
+              <div class="flex items-center gap-3 flex-wrap">
+                <h1 class="text-2xl font-bold text-text0" id="supplierName">-</h1>
+                <span class="badge bg-accent/15 text-accent border border-accent/30 font-mono text-xs" id="supplierNumber">-</span>
+                <span class="badge" id="statusBadge">-</span>
+                <span class="badge hidden" id="riskBadge">-</span>
+                <span class="badge hidden" id="preferredBadge" style="background:rgba(242,184,77,0.12);color:#f2b84d;border:1px solid rgba(242,184,77,0.3)">&#11088; ספק מועדף</span>
+              </div>
+              <div class="flex items-center gap-4 mt-1 text-xs text-text2">
+                <span>&#128100; איש קשר: <span class="text-text1" id="contactPerson">-</span></span>
+                <span>&#128337; עודכן: <span class="text-text1 font-mono" id="lastUpdated">-</span></span>
+              </div>
+            </div>
+          </div>
+          <!-- ACTIONS -->
+          <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="actionCreateRFQ()" class="bg-accent text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-accentHi flex items-center gap-2">
+              &#128203; צור בקשה להצעת מחיר
+            </button>
+            <div class="relative">
+              <button onclick="toggleDropdown()" class="bg-bg3 text-text1 border border-border px-3 py-2 rounded-lg text-sm hover:bg-borderHi flex items-center gap-1">
+                &#9776; פעולות נוספות &#9662;
+              </button>
+              <div id="actionsDropdown" class="dropdown-menu absolute left-0 top-full mt-1 bg-bg2 border border-borderHi rounded-lg shadow-2xl z-50 min-w-[220px]">
+                <button onclick="actionCreatePO()" class="w-full text-right px-4 py-2.5 text-sm text-text1 hover:bg-bg3 flex items-center gap-2">&#128722; צור הזמנת רכש</button>
+                <button onclick="actionRegisterInvoice()" class="w-full text-right px-4 py-2.5 text-sm text-text1 hover:bg-bg3 flex items-center gap-2">&#128176; רשום חשבונית ספק</button>
+                <button onclick="actionAttachContract()" class="w-full text-right px-4 py-2.5 text-sm text-text1 hover:bg-bg3 flex items-center gap-2">&#128196; צרף חוזה</button>
+                <button onclick="actionCreateReturn()" class="w-full text-right px-4 py-2.5 text-sm text-text1 hover:bg-bg3 flex items-center gap-2">&#8617; צור החזרה</button>
+                <div class="border-t border-border my-1"></div>
+                <button onclick="actionBlockSupplier()" class="w-full text-right px-4 py-2.5 text-sm text-err/80 hover:bg-err/10 flex items-center gap-2">&#9940; חסום ספק</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUPPLIER FIELDS ROW -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4 mt-5 pt-4 border-t border-border/50">
+          <div><div class="text-[11px] text-text2 mb-0.5">שם משפטי</div><div class="text-sm text-text0 font-medium" id="fLegalName">-</div></div>
+          <div><div class="text-[11px] text-text2 mb-0.5">ח.פ</div><div class="text-sm text-text0 font-medium font-mono" id="fIdNumber">-</div></div>
+          <div><div class="text-[11px] text-text2 mb-0.5">טלפון</div><div class="text-sm text-text0 font-medium font-mono" id="fPhone">-</div></div>
+          <div><div class="text-[11px] text-text2 mb-0.5">אימייל</div><div class="text-sm text-text0 font-medium" id="fEmail">-</div></div>
+          <div><div class="text-[11px] text-text2 mb-0.5">עיר</div><div class="text-sm text-text0 font-medium" id="fCity">-</div></div>
+          <div><div class="text-[11px] text-text2 mb-0.5">קטגוריה</div><div class="text-sm text-text0 font-medium" id="fCategory">-</div></div>
+          <div><div class="text-[11px] text-text2 mb-0.5">מאז</div><div class="text-sm text-text0 font-medium font-mono" id="fSince">-</div></div>
+        </div>
+      </div>
+
+      <!-- SUMMARY CARDS BAND -->
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-5">
+        <!-- Profile Card -->
+        <div class="bg-bg2 border border-border rounded-lg p-4">
+          <div class="text-[11px] text-text2 uppercase tracking-wide mb-2">&#127981; פרופיל</div>
+          <div class="text-sm text-text0 font-semibold" id="scProfileName">-</div>
+          <div class="text-xs text-text2 mt-1" id="scProfileDetails">-</div>
+        </div>
+        <!-- Procurement Card -->
+        <div class="bg-bg2 border border-border rounded-lg p-4">
+          <div class="text-[11px] text-text2 uppercase tracking-wide mb-2">&#128722; רכש</div>
+          <div class="flex items-center gap-3">
+            <div>
+              <div class="text-xs text-text2">RFQ פתוחים</div>
+              <div class="text-lg text-accent font-bold" id="scOpenRFQ">0</div>
+            </div>
+            <div>
+              <div class="text-xs text-text2">PO פתוחים</div>
+              <div class="text-lg text-warn font-bold" id="scOpenPO">0</div>
+            </div>
+            <div>
+              <div class="text-xs text-text2">PO באיחור</div>
+              <div class="text-lg text-err font-bold" id="scOverduePO">0</div>
+            </div>
+          </div>
+        </div>
+        <!-- Financial Card -->
+        <div class="bg-bg2 border border-border rounded-lg p-4">
+          <div class="text-[11px] text-text2 uppercase tracking-wide mb-2">&#128178; פיננסי</div>
+          <div class="text-lg text-text0 font-bold font-mono" id="scPayables">0</div>
+          <div class="text-xs text-text2 mt-1">חשבוניות לתשלום: <span id="scOpenInvoices">0</span></div>
+        </div>
+        <!-- Quality Card -->
+        <div class="bg-bg2 border border-border rounded-lg p-4">
+          <div class="text-[11px] text-text2 uppercase tracking-wide mb-2">&#128200; איכות</div>
+          <div class="flex items-center gap-3">
+            <div class="score-ring" id="scoreRing" style="border:3px solid #2bd48b;color:#2bd48b">-</div>
+            <div>
+              <div class="text-xs text-text2">ציון ביצועים</div>
+              <div class="text-sm text-text1" id="scScoreLabel">-</div>
+            </div>
+          </div>
+        </div>
+        <!-- AI Card -->
+        <div class="bg-bg2 border border-border rounded-lg p-4">
+          <div class="text-[11px] text-text2 uppercase tracking-wide mb-2">&#129302; AI סיכון</div>
+          <div class="text-sm text-text0" id="scAiSummary">אין תובנות</div>
+          <div class="text-xs text-text2 mt-1" id="scAiRisk">-</div>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="flex gap-0 border-b-2 border-border mb-5 overflow-x-auto" id="tabsBar">
+        <button class="tab-btn active px-4 py-2.5 text-sm font-medium text-text2 border-b-2 border-transparent -mb-[2px] whitespace-nowrap hover:text-text0 transition" data-tab="overview">&#128202; סקירה</button>
+        <button class="tab-btn px-4 py-2.5 text-sm font-medium text-text2 border-b-2 border-transparent -mb-[2px] whitespace-nowrap hover:text-text0 transition" data-tab="rfqs">&#128232; בקשות הצעת מחיר</button>
+        <button class="tab-btn px-4 py-2.5 text-sm font-medium text-text2 border-b-2 border-transparent -mb-[2px] whitespace-nowrap hover:text-text0 transition" data-tab="supplierQuotes">&#128203; הצעות ספק</button>
+        <button class="tab-btn px-4 py-2.5 text-sm font-medium text-text2 border-b-2 border-transparent -mb-[2px] whitespace-nowrap hover:text-text0 transition" data-tab="pos">&#128722; הזמנות רכש</button>
+        <button class="tab-btn px-4 py-2.5 text-sm font-medium text-text2 border-b-2 border-transparent -mb-[2px] whitespace-nowrap hover:text-text0 transition" data-tab="invoices">&#128176; חשבוניות ספק</button>
+        <button class="tab-btn px-4 py-2.5 text-sm font-medium text-text2 border-b-2 border-transparent -mb-[2px] whitespace-nowrap hover:text-text0 transition" data-tab="payments">&#128179; תשלומים</button>
+        <button class="tab-btn px-4 py-2.5 text-sm font-medium text-text2 border-b-2 border-transparent -mb-[2px] whitespace-nowrap hover:text-text0 transition" data-tab="returns">&#8617; החזרות</button>
+        <button class="tab-btn px-4 py-2.5 text-sm font-medium text-text2 border-b-2 border-transparent -mb-[2px] whitespace-nowrap hover:text-text0 transition" data-tab="warranty">&#128737; אחריות</button>
+        <button class="tab-btn px-4 py-2.5 text-sm font-medium text-text2 border-b-2 border-transparent -mb-[2px] whitespace-nowrap hover:text-text0 transition" data-tab="contracts">&#128196; חוזים</button>
+        <button class="tab-btn px-4 py-2.5 text-sm font-medium text-text2 border-b-2 border-transparent -mb-[2px] whitespace-nowrap hover:text-text0 transition" data-tab="documents">&#128206; מסמכים</button>
+        <button class="tab-btn px-4 py-2.5 text-sm font-medium text-text2 border-b-2 border-transparent -mb-[2px] whitespace-nowrap hover:text-text0 transition" data-tab="aiInsights">&#129302; תובנות AI</button>
+        <button class="tab-btn px-4 py-2.5 text-sm font-medium text-text2 border-b-2 border-transparent -mb-[2px] whitespace-nowrap hover:text-text0 transition" data-tab="audit">&#128214; יומן ביקורת</button>
+      </div>
+
+      <!-- TAB PANELS -->
+
+      <!-- OVERVIEW -->
+      <div class="tab-panel active" data-panel="overview">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <!-- Identity Panel -->
+          <div class="bg-bg2 border border-border rounded-lg p-5">
+            <h3 class="text-sm font-semibold text-text0 mb-3 pb-2 border-b border-border/50">&#127981; זהות ספק</h3>
+            <div class="grid grid-cols-2 gap-3 text-sm" id="identityPanel">
+              <div><span class="text-text2">שם:</span> <span class="text-text0" id="ovName">-</span></div>
+              <div><span class="text-text2">שם משפטי:</span> <span class="text-text0" id="ovLegalName">-</span></div>
+              <div><span class="text-text2">ח.פ:</span> <span class="text-text0 font-mono" id="ovIdNumber">-</span></div>
+              <div><span class="text-text2">קטגוריה:</span> <span class="text-text0" id="ovCategory">-</span></div>
+              <div><span class="text-text2">טלפון:</span> <span class="text-text0 font-mono" id="ovPhone">-</span></div>
+              <div><span class="text-text2">אימייל:</span> <span class="text-text0" id="ovEmail">-</span></div>
+              <div><span class="text-text2">כתובת:</span> <span class="text-text0" id="ovAddress">-</span></div>
+              <div><span class="text-text2">עיר:</span> <span class="text-text0" id="ovCity">-</span></div>
+              <div><span class="text-text2">איש קשר:</span> <span class="text-text0" id="ovContact">-</span></div>
+              <div><span class="text-text2">תנאי תשלום:</span> <span class="text-text0" id="ovPaymentTerms">-</span></div>
+            </div>
+          </div>
+          <!-- Procurement Summary -->
+          <div class="bg-bg2 border border-border rounded-lg p-5">
+            <h3 class="text-sm font-semibold text-text0 mb-3 pb-2 border-b border-border/50">&#128722; סיכום רכש</h3>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div><span class="text-text2">סה"כ הוצאות:</span> <span class="text-warn font-bold font-mono" id="ovTotalSpent">0</span></div>
+              <div><span class="text-text2">הזמנות רכש:</span> <span class="text-text0" id="ovTotalOrders">0</span></div>
+              <div><span class="text-text2">RFQ שנשלחו:</span> <span class="text-text0" id="ovTotalRFQ">0</span></div>
+              <div><span class="text-text2">אחוז אספקה בזמן:</span> <span class="text-ok font-bold" id="ovOnTimeRate">-</span></div>
+              <div><span class="text-text2">ממוצע ימי אספקה:</span> <span class="text-text0 font-mono" id="ovAvgDelivery">-</span></div>
+              <div><span class="text-text2">אחוז ליקויים:</span> <span class="text-text0" id="ovDefectRate">-</span></div>
+            </div>
+          </div>
+          <!-- Financial Summary -->
+          <div class="bg-bg2 border border-border rounded-lg p-5 lg:col-span-2">
+            <h3 class="text-sm font-semibold text-text0 mb-3 pb-2 border-b border-border/50">&#128178; סיכום פיננסי</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+              <div class="bg-bg3 rounded-lg p-3">
+                <div class="text-text2 text-xs mb-1">יתרת ספק</div>
+                <div class="text-lg font-bold font-mono text-text0" id="ovPayables">0</div>
+              </div>
+              <div class="bg-bg3 rounded-lg p-3">
+                <div class="text-text2 text-xs mb-1">חשבוניות פתוחות</div>
+                <div class="text-lg font-bold font-mono text-accent" id="ovOpenInv">0</div>
+              </div>
+              <div class="bg-bg3 rounded-lg p-3">
+                <div class="text-text2 text-xs mb-1">תשלומים השנה</div>
+                <div class="text-lg font-bold font-mono text-ok" id="ovPaidYear">0</div>
+              </div>
+              <div class="bg-bg3 rounded-lg p-3">
+                <div class="text-text2 text-xs mb-1">חוב באיחור</div>
+                <div class="text-lg font-bold font-mono text-err" id="ovOverdue">0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RFQs -->
+      <div class="tab-panel" data-panel="rfqs">
+        <div class="bg-bg2 border border-border rounded-lg overflow-hidden">
+          <div class="px-4 py-3 border-b border-border flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-text0">&#128232; בקשות הצעת מחיר</h3>
+            <button onclick="actionCreateRFQ()" class="text-xs bg-accent/15 text-accent px-3 py-1 rounded-md hover:bg-accent/25">+ RFQ חדש</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table>
+              <thead><tr>
+                <th>מס' RFQ</th><th>תאריך</th><th>פרויקט</th><th>פריטים</th><th>סכום מוערך</th><th>סטטוס</th>
+              </tr></thead>
+              <tbody id="rfqsTable"><tr><td colspan="6" class="text-center text-text2 py-8">&#128232; אין בקשות הצעת מחיר</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUPPLIER QUOTES -->
+      <div class="tab-panel" data-panel="supplierQuotes">
+        <div class="bg-bg2 border border-border rounded-lg overflow-hidden">
+          <div class="px-4 py-3 border-b border-border">
+            <h3 class="text-sm font-semibold text-text0">&#128203; הצעות ספק</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table>
+              <thead><tr>
+                <th>מס' הצעה</th><th>RFQ</th><th>תאריך</th><th>סכום</th><th>תוקף</th><th>סטטוס</th>
+              </tr></thead>
+              <tbody id="supplierQuotesTable"><tr><td colspan="6" class="text-center text-text2 py-8">&#128203; אין הצעות ספק</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PURCHASE ORDERS -->
+      <div class="tab-panel" data-panel="pos">
+        <div class="bg-bg2 border border-border rounded-lg overflow-hidden">
+          <div class="px-4 py-3 border-b border-border flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-text0">&#128722; הזמנות רכש</h3>
+            <button onclick="actionCreatePO()" class="text-xs bg-accent/15 text-accent px-3 py-1 rounded-md hover:bg-accent/25">+ הזמנת רכש חדשה</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table>
+              <thead><tr>
+                <th>מס' PO</th><th>תאריך</th><th>פרויקט</th><th>סכום</th><th>קבלה</th><th>סטטוס</th>
+              </tr></thead>
+              <tbody id="posTable"><tr><td colspan="6" class="text-center text-text2 py-8">&#128722; אין הזמנות רכש</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUPPLIER INVOICES -->
+      <div class="tab-panel" data-panel="invoices">
+        <div class="bg-bg2 border border-border rounded-lg overflow-hidden">
+          <div class="px-4 py-3 border-b border-border flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-text0">&#128176; חשבוניות ספק</h3>
+            <button onclick="actionRegisterInvoice()" class="text-xs bg-accent/15 text-accent px-3 py-1 rounded-md hover:bg-accent/25">+ רשום חשבונית</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table>
+              <thead><tr>
+                <th>מס' חשבונית</th><th>PO</th><th>תאריך</th><th>תאריך פירעון</th><th>סכום</th><th>יתרה</th><th>סטטוס</th>
+              </tr></thead>
+              <tbody id="invoicesTable"><tr><td colspan="7" class="text-center text-text2 py-8">&#128176; אין חשבוניות ספק</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAYMENTS -->
+      <div class="tab-panel" data-panel="payments">
+        <div class="bg-bg2 border border-border rounded-lg overflow-hidden">
+          <div class="px-4 py-3 border-b border-border">
+            <h3 class="text-sm font-semibold text-text0">&#128179; תשלומים לספק</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table>
+              <thead><tr>
+                <th>מס' תשלום</th><th>חשבונית</th><th>תאריך</th><th>סכום</th><th>אמצעי</th><th>סטטוס</th>
+              </tr></thead>
+              <tbody id="paymentsTable"><tr><td colspan="6" class="text-center text-text2 py-8">&#128179; אין תשלומים</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- RETURNS -->
+      <div class="tab-panel" data-panel="returns">
+        <div class="bg-bg2 border border-border rounded-lg overflow-hidden">
+          <div class="px-4 py-3 border-b border-border flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-text0">&#8617; החזרות</h3>
+            <button onclick="actionCreateReturn()" class="text-xs bg-accent/15 text-accent px-3 py-1 rounded-md hover:bg-accent/25">+ החזרה חדשה</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table>
+              <thead><tr>
+                <th>מס' החזרה</th><th>PO</th><th>סיבה</th><th>פריטים</th><th>סכום</th><th>סטטוס</th>
+              </tr></thead>
+              <tbody id="returnsTable"><tr><td colspan="6" class="text-center text-text2 py-8">&#8617; אין החזרות</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- WARRANTY -->
+      <div class="tab-panel" data-panel="warranty">
+        <div class="bg-bg2 border border-border rounded-lg overflow-hidden">
+          <div class="px-4 py-3 border-b border-border">
+            <h3 class="text-sm font-semibold text-text0">&#128737; אחריות</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table>
+              <thead><tr>
+                <th>מס' אחריות</th><th>PO / מוצר</th><th>תחילה</th><th>סיום</th><th>סוג</th><th>סטטוס</th>
+              </tr></thead>
+              <tbody id="warrantyTable"><tr><td colspan="6" class="text-center text-text2 py-8">&#128737; אין תיקי אחריות</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTRACTS -->
+      <div class="tab-panel" data-panel="contracts">
+        <div class="bg-bg2 border border-border rounded-lg overflow-hidden">
+          <div class="px-4 py-3 border-b border-border flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-text0">&#128196; חוזים</h3>
+            <button onclick="actionAttachContract()" class="text-xs bg-accent/15 text-accent px-3 py-1 rounded-md hover:bg-accent/25">+ צרף חוזה</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table>
+              <thead><tr>
+                <th>מס' חוזה</th><th>שם</th><th>תחילה</th><th>סיום</th><th>ערך</th><th>סטטוס</th>
+              </tr></thead>
+              <tbody id="contractsTable"><tr><td colspan="6" class="text-center text-text2 py-8">&#128196; אין חוזים</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- DOCUMENTS -->
+      <div class="tab-panel" data-panel="documents">
+        <div class="bg-bg2 border border-border rounded-lg overflow-hidden">
+          <div class="px-4 py-3 border-b border-border flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-text0">&#128206; מסמכים</h3>
+            <button onclick="actionUploadDoc()" class="text-xs bg-accent/15 text-accent px-3 py-1 rounded-md hover:bg-accent/25">+ העלה מסמך</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table>
+              <thead><tr>
+                <th>מס' מסמך</th><th>שם קובץ</th><th>סוג</th><th>הועלה ב</th>
+              </tr></thead>
+              <tbody id="documentsTable"><tr><td colspan="4" class="text-center text-text2 py-8">&#128206; אין מסמכים</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI INSIGHTS -->
+      <div class="tab-panel" data-panel="aiInsights">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="bg-bg2 border border-border rounded-lg p-5">
+            <h3 class="text-sm font-semibold text-text0 mb-3 pb-2 border-b border-border/50">&#129302; ניתוח סיכונים</h3>
+            <div id="aiRiskPanel" class="text-sm text-text1">טוען תובנות AI...</div>
+          </div>
+          <div class="bg-bg2 border border-border rounded-lg p-5">
+            <h3 class="text-sm font-semibold text-text0 mb-3 pb-2 border-b border-border/50">&#128200; חיזוי ביצועים</h3>
+            <div id="aiForecastPanel" class="text-sm text-text1">טוען חיזוי...</div>
+          </div>
+          <div class="bg-bg2 border border-border rounded-lg p-5 lg:col-span-2">
+            <h3 class="text-sm font-semibold text-text0 mb-3 pb-2 border-b border-border/50">&#128161; המלצות</h3>
+            <div id="aiRecommendations" class="text-sm text-text1">טוען המלצות...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AUDIT LOG -->
+      <div class="tab-panel" data-panel="audit">
+        <div class="bg-bg2 border border-border rounded-lg overflow-hidden">
+          <div class="px-4 py-3 border-b border-border">
+            <h3 class="text-sm font-semibold text-text0">&#128214; יומן ביקורת</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table>
+              <thead><tr>
+                <th>זמן</th><th>פעולה</th><th>בוצע ע"י</th><th>מקור</th><th>סיכום</th>
+              </tr></thead>
+              <tbody id="auditTable"><tr><td colspan="5" class="text-center text-text2 py-8">&#128214; אין רשומות ביקורת</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /supplierHeader -->
+  </div><!-- /main -->
+
+  <!-- SIDE PANEL -->
+  <aside class="w-72 shrink-0 hidden lg:block space-y-4" id="sidePanel">
+    <!-- Next Best Action -->
+    <div class="bg-bg2 border border-border rounded-lg p-4">
+      <h3 class="text-xs font-semibold text-text2 uppercase tracking-wide mb-3">&#127919; פעולה מומלצת</h3>
+      <div id="nextBestAction" class="text-sm text-text1">טוען...</div>
+    </div>
+    <!-- Performance Score -->
+    <div class="bg-bg2 border border-border rounded-lg p-4">
+      <h3 class="text-xs font-semibold text-text2 uppercase tracking-wide mb-3">&#128200; ציון ביצועים</h3>
+      <div class="flex items-center gap-4">
+        <div class="score-ring" id="sideScoreRing" style="border:3px solid #2bd48b;color:#2bd48b;width:64px;height:64px;font-size:22px">-</div>
+        <div class="space-y-1 text-xs">
+          <div class="flex justify-between gap-4"><span class="text-text2">אספקה בזמן</span><span class="text-ok" id="sideOnTime">-</span></div>
+          <div class="flex justify-between gap-4"><span class="text-text2">איכות</span><span class="text-text0" id="sideQuality">-</span></div>
+          <div class="flex justify-between gap-4"><span class="text-text2">מחיר</span><span class="text-text0" id="sidePrice">-</span></div>
+          <div class="flex justify-between gap-4"><span class="text-text2">תגובתיות</span><span class="text-text0" id="sideResponse">-</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- Linked Entities -->
+    <div class="bg-bg2 border border-border rounded-lg p-4">
+      <h3 class="text-xs font-semibold text-text2 uppercase tracking-wide mb-3">&#128279; ישויות מקושרות</h3>
+      <div class="space-y-2" id="linkedEntities">
+        <div class="text-sm text-text2">אין קישורים</div>
+      </div>
+    </div>
+    <!-- Alerts -->
+    <div class="bg-bg2 border border-border rounded-lg p-4">
+      <h3 class="text-xs font-semibold text-text2 uppercase tracking-wide mb-3">&#128276; התראות</h3>
+      <div class="text-2xl font-bold text-warn" id="alertCount">0</div>
+      <div class="text-xs text-text2 mt-1" id="alertSummary">אין התראות</div>
+    </div>
+  </aside>
+
+</div><!-- /container -->
+
+<script>
+// ==========================================================================
+// Supplier360 — JavaScript Controller
+// ==========================================================================
+
+const API_BASE = window.location.origin;
+let supplierId = null;
+let supplierData = null;
+
+function getSupplierIdFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('id') || params.get('supplierId') || 'demo';
+}
+
+// --- Helpers ---
+function $(id) { return document.getElementById(id); }
+function fmt(n) { return n != null ? Number(n).toLocaleString('he-IL') : '0'; }
+function fmtCurrency(n) { return n != null ? '\u20AA' + Number(n).toLocaleString('he-IL', { minimumFractionDigits: 0 }) : '\u20AA0'; }
+function fmtDate(d) { if (!d) return '-'; try { return new Date(d).toLocaleDateString('he-IL'); } catch { return d; } }
+function fmtDateTime(d) { if (!d) return '-'; try { const dt = new Date(d); return dt.toLocaleDateString('he-IL') + ' ' + dt.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }); } catch { return d; } }
+function fmtPct(n) { return n != null ? Number(n).toFixed(1) + '%' : '-'; }
+
+const STATUS_COLORS = {
+  active:    { bg: 'rgba(43,212,139,0.12)', color: '#2bd48b', border: 'rgba(43,212,139,0.3)' },
+  preferred: { bg: 'rgba(242,184,77,0.12)', color: '#f2b84d', border: 'rgba(242,184,77,0.3)' },
+  probation: { bg: 'rgba(239,83,80,0.12)',  color: '#ef5350', border: 'rgba(239,83,80,0.3)' },
+  blocked:   { bg: 'rgba(239,83,80,0.12)',  color: '#ef5350', border: 'rgba(239,83,80,0.3)' },
+  inactive:  { bg: 'rgba(107,122,144,0.12)', color: '#6b7a90', border: 'rgba(107,122,144,0.3)' },
+  draft:     { bg: 'rgba(107,122,144,0.12)', color: '#6b7a90', border: 'rgba(107,122,144,0.3)' },
+  sent:      { bg: 'rgba(58,141,222,0.12)',  color: '#5aa8ff', border: 'rgba(58,141,222,0.3)' },
+  approved:  { bg: 'rgba(43,212,139,0.12)',  color: '#2bd48b', border: 'rgba(43,212,139,0.3)' },
+  rejected:  { bg: 'rgba(239,83,80,0.12)',   color: '#ef5350', border: 'rgba(239,83,80,0.3)' },
+  open:      { bg: 'rgba(242,184,77,0.12)',  color: '#f2b84d', border: 'rgba(242,184,77,0.3)' },
+  closed:    { bg: 'rgba(107,122,144,0.12)', color: '#6b7a90', border: 'rgba(107,122,144,0.3)' },
+  paid:      { bg: 'rgba(43,212,139,0.12)',  color: '#2bd48b', border: 'rgba(43,212,139,0.3)' },
+  overdue:   { bg: 'rgba(239,83,80,0.12)',   color: '#ef5350', border: 'rgba(239,83,80,0.3)' },
+  pending:   { bg: 'rgba(58,141,222,0.12)',  color: '#5aa8ff', border: 'rgba(58,141,222,0.3)' },
+  received:  { bg: 'rgba(43,212,139,0.12)',  color: '#2bd48b', border: 'rgba(43,212,139,0.3)' },
+  partial:   { bg: 'rgba(242,184,77,0.12)',  color: '#f2b84d', border: 'rgba(242,184,77,0.3)' },
+  completed: { bg: 'rgba(43,212,139,0.12)',  color: '#2bd48b', border: 'rgba(43,212,139,0.3)' },
+  cancelled: { bg: 'rgba(107,122,144,0.12)', color: '#6b7a90', border: 'rgba(107,122,144,0.3)' },
+  converted_to_po: { bg: 'rgba(43,212,139,0.12)', color: '#2bd48b', border: 'rgba(43,212,139,0.3)' },
+  quotes_received: { bg: 'rgba(58,141,222,0.12)', color: '#5aa8ff', border: 'rgba(58,141,222,0.3)' },
+};
+
+const STATUS_LABELS = {
+  active: 'פעיל', preferred: 'מועדף', probation: 'מבחן', blocked: 'חסום', inactive: 'לא פעיל',
+  draft: 'טיוטה', sent: 'נשלח', approved: 'אושר', rejected: 'נדחה', open: 'פתוח', closed: 'סגור',
+  paid: 'שולם', overdue: 'באיחור', pending: 'ממתין', received: 'התקבל', partial: 'חלקי',
+  completed: 'הושלם', cancelled: 'בוטל', converted_to_po: 'הומר ל-PO', quotes_received: 'הצעות התקבלו',
+  in_progress: 'בתהליך', under_comparison: 'בהשוואה', valid: 'בתוקף', expired: 'פג תוקף',
+};
+
+const RISK_COLORS = {
+  low:    { bg: 'rgba(43,212,139,0.12)', color: '#2bd48b', border: 'rgba(43,212,139,0.3)', label: 'סיכון נמוך' },
+  medium: { bg: 'rgba(242,184,77,0.12)', color: '#f2b84d', border: 'rgba(242,184,77,0.3)', label: 'סיכון בינוני' },
+  high:   { bg: 'rgba(239,83,80,0.12)',  color: '#ef5350', border: 'rgba(239,83,80,0.3)', label: 'סיכון גבוה' },
+};
+
+function renderStatusBadge(status) {
+  const s = STATUS_COLORS[status] || STATUS_COLORS.draft;
+  const label = STATUS_LABELS[status] || status || '-';
+  return `<span class="badge" style="background:${s.bg};color:${s.color};border:1px solid ${s.border}">${label}</span>`;
+}
+
+function renderProgressBar(pct) {
+  const p = Math.min(100, Math.max(0, pct || 0));
+  const color = p >= 80 ? '#2bd48b' : p >= 50 ? '#f2b84d' : '#5aa8ff';
+  return `<div class="flex items-center gap-2"><div class="w-20 h-1.5 bg-bg3 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${p}%;background:${color}"></div></div><span class="text-xs font-mono">${p}%</span></div>`;
+}
+
+function getScoreColor(score) {
+  if (score >= 80) return '#2bd48b';
+  if (score >= 60) return '#f2b84d';
+  return '#ef5350';
+}
+
+// --- API Fetch ---
+async function apiFetch(path) {
+  const res = await fetch(API_BASE + path, { headers: { 'Accept': 'application/json' } });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+  return res.json();
+}
+
+// --- Demo data fallback ---
+function getDemoData() {
+  return {
+    supplier: {
+      id: 'demo-s001', supplier_number: 'SUP-2042', name: 'אלקטרו-חומרים בע"מ',
+      legal_name: 'אלקטרו-חומרים בע"מ', id_number: '514892367', category: 'חומרי גלם חשמליים',
+      phone: '04-8123456', email: 'orders@electro-mat.co.il', city: 'חיפה',
+      address: 'אזור תעשייה מפרץ, בניין 12', contact_person: 'עמיר דגן',
+      status: 'preferred', risk_level: 'low', payment_terms: 'שוטף + 45',
+      created_at: '2023-06-10', updated_at: '2026-04-12T16:45:00Z',
+      total_spent: 892000, total_orders: 45, open_rfq: 2, open_po: 3, overdue_po: 1,
+      payables: 67500, open_invoices: 3, paid_this_year: 340000, overdue_amount: 12000,
+      overall_score: 87, on_time_rate: 92.5, avg_delivery_days: 4.2, defect_rate: 1.8,
+      quality_score: 91, price_score: 78, response_score: 85,
+      ai_summary: 'ספק מועדף עם ביצועים מעולים. מומלץ להרחיב שיתוף פעולה',
+      ai_risk: 'סיכון נמוך - יציבות פיננסית גבוהה',
+      ai_forecast: 'צפי להמשך שיפור באחוזי אספקה בזמן ברבעון הבא',
+      ai_recommendations: [
+        'הגדל נפח הזמנות ב-20% לניצול הנחת כמות',
+        'חדש חוזה מסגרת לפני פקיעה ב-45 יום',
+        'בחן מוצרים חדשים מקטגוריית תאורת LED',
+      ],
+    },
+    rfqs: [
+      { rfq_number: 'RFQ-2026-034', date: '2026-04-10', project: 'PRJ-2026-018', items: 8, estimated_amount: 35000, state: 'sent' },
+      { rfq_number: 'RFQ-2026-029', date: '2026-03-25', project: 'PRJ-2026-012', items: 5, estimated_amount: 22000, state: 'quotes_received' },
+    ],
+    supplier_quotes: [
+      { quote_number: 'SQ-2026-081', rfq: 'RFQ-2026-029', date: '2026-03-28', amount: 20500, valid_until: '2026-04-28', state: 'approved' },
+      { quote_number: 'SQ-2026-072', rfq: 'RFQ-2026-022', date: '2026-03-10', amount: 48000, valid_until: '2026-04-10', state: 'converted_to_po' },
+    ],
+    purchase_orders: [
+      { po_number: 'PO-2026-058', date: '2026-04-05', project: 'PRJ-2026-018', amount: 20500, receiving_pct: 40, state: 'approved' },
+      { po_number: 'PO-2026-045', date: '2026-03-15', project: 'PRJ-2026-012', amount: 48000, receiving_pct: 100, state: 'received' },
+      { po_number: 'PO-2026-032', date: '2026-02-20', project: 'PRJ-2025-098', amount: 15000, receiving_pct: 80, state: 'partial' },
+    ],
+    invoices: [
+      { invoice_number: 'SINV-2026-112', po: 'PO-2026-045', date: '2026-03-20', due_date: '2026-05-04', amount: 48000, balance: 48000, state: 'open' },
+      { invoice_number: 'SINV-2026-098', po: 'PO-2026-032', date: '2026-03-01', due_date: '2026-04-15', amount: 12000, balance: 12000, state: 'overdue' },
+      { invoice_number: 'SINV-2026-076', po: 'PO-2026-028', date: '2026-02-01', due_date: '2026-03-17', amount: 35000, balance: 0, state: 'paid' },
+    ],
+    payments: [
+      { payment_number: 'SPAY-2026-044', invoice: 'SINV-2026-076', date: '2026-03-15', amount: 35000, method: 'העברה בנקאית', state: 'completed' },
+      { payment_number: 'SPAY-2026-031', invoice: 'SINV-2026-055', date: '2026-02-10', amount: 28000, method: 'שיק', state: 'completed' },
+    ],
+    returns: [
+      { return_number: 'RET-2026-007', po: 'PO-2026-032', reason: 'פגם בייצור', items: 3, amount: 2500, state: 'approved' },
+    ],
+    warranty: [
+      { warranty_number: 'WAR-2026-015', product: 'PO-2026-028 / כבלים תעשייתיים', start_date: '2026-02-01', end_date: '2027-02-01', type: 'אחריות יצרן', state: 'valid' },
+    ],
+    contracts: [
+      { contract_number: 'CON-2026-009', name: 'חוזה מסגרת שנתי 2026', start_date: '2026-01-01', end_date: '2026-12-31', value: 500000, state: 'active' },
+    ],
+    documents: [
+      { document_number: 'DOC-S-2026-022', filename: 'framework_agreement_2026.pdf', type: 'חוזה', uploaded_at: '2026-01-05T10:00:00Z' },
+      { document_number: 'DOC-S-2026-018', filename: 'quality_cert_ISO9001.pdf', type: 'תעודת איכות', uploaded_at: '2025-12-20T14:00:00Z' },
+      { document_number: 'DOC-S-2026-012', filename: 'insurance_2026.pdf', type: 'ביטוח', uploaded_at: '2025-12-15T09:30:00Z' },
+    ],
+    audit_log: [
+      { performed_at: '2026-04-12T16:45:00Z', action: 'עדכון ציון ביצועים', performed_by: 'מערכת', source: 'auto', summary: 'ציון עודכן ל-87' },
+      { performed_at: '2026-04-10T09:00:00Z', action: 'RFQ חדש נשלח', performed_by: 'שרה לוי', source: 'web', summary: 'RFQ-2026-034 נשלח לספק' },
+      { performed_at: '2026-04-05T11:20:00Z', action: 'PO אושר', performed_by: 'יוסי כהן', source: 'web', summary: 'PO-2026-058 אושר' },
+      { performed_at: '2026-03-28T14:00:00Z', action: 'הצעת ספק התקבלה', performed_by: 'ספק', source: 'portal', summary: 'SQ-2026-081 התקבלה' },
+    ],
+  };
+}
+
+// --- Load Supplier ---
+async function loadSupplier() {
+  $('loadingSkeleton').classList.remove('hidden');
+  $('supplierHeader').classList.add('hidden');
+  $('errorState').classList.add('hidden');
+
+  supplierId = getSupplierIdFromURL();
+  let data;
+
+  try {
+    data = await apiFetch('/api/suppliers/' + supplierId);
+  } catch (e) {
+    console.warn('API unavailable, loading demo data:', e.message);
+    data = getDemoData();
+  }
+
+  if (!data || !data.supplier) {
+    $('loadingSkeleton').classList.add('hidden');
+    $('errorState').classList.remove('hidden');
+    $('errorMsg').textContent = 'לא נמצא ספק עם מזהה: ' + supplierId;
+    return;
+  }
+
+  supplierData = data;
+  renderSupplier(data);
+}
+
+// --- Render ---
+function renderSupplier(data) {
+  const s = data.supplier;
+
+  $('loadingSkeleton').classList.add('hidden');
+  $('supplierHeader').classList.remove('hidden');
+
+  // Header
+  $('supplierName').textContent = s.name || s.legal_name || '-';
+  $('supplierNumber').textContent = s.supplier_number || s.id || '-';
+  $('contactPerson').textContent = s.contact_person || '-';
+  $('lastUpdated').textContent = fmtDateTime(s.updated_at);
+
+  // Status badge
+  const sc = STATUS_COLORS[s.status] || STATUS_COLORS.active;
+  const sb = $('statusBadge');
+  sb.textContent = STATUS_LABELS[s.status] || s.status || '-';
+  sb.style.cssText = `background:${sc.bg};color:${sc.color};border:1px solid ${sc.border}`;
+
+  // Risk badge
+  if (s.risk_level && RISK_COLORS[s.risk_level]) {
+    const rc = RISK_COLORS[s.risk_level];
+    const rb = $('riskBadge');
+    rb.textContent = rc.label;
+    rb.style.cssText = `background:${rc.bg};color:${rc.color};border:1px solid ${rc.border}`;
+    rb.classList.remove('hidden');
+  }
+
+  // Preferred badge
+  if (s.status === 'preferred') {
+    $('preferredBadge').classList.remove('hidden');
+  }
+
+  // Fields row
+  $('fLegalName').textContent = s.legal_name || s.name || '-';
+  $('fIdNumber').textContent = s.id_number || '-';
+  $('fPhone').textContent = s.phone || '-';
+  $('fEmail').textContent = s.email || '-';
+  $('fCity').textContent = s.city || '-';
+  $('fCategory').textContent = s.category || '-';
+  $('fSince').textContent = fmtDate(s.created_at);
+
+  // Summary cards
+  $('scProfileName').textContent = s.legal_name || s.name || '-';
+  $('scProfileDetails').textContent = [s.phone, s.city, s.category].filter(Boolean).join(' | ');
+  $('scOpenRFQ').textContent = fmt(s.open_rfq);
+  $('scOpenPO').textContent = fmt(s.open_po);
+  $('scOverduePO').textContent = fmt(s.overdue_po);
+  $('scPayables').textContent = fmtCurrency(s.payables);
+  $('scOpenInvoices').textContent = fmt(s.open_invoices);
+
+  // Score ring
+  const score = s.overall_score || 0;
+  const scoreColor = getScoreColor(score);
+  $('scoreRing').textContent = score;
+  $('scoreRing').style.borderColor = scoreColor;
+  $('scoreRing').style.color = scoreColor;
+  $('scScoreLabel').textContent = score >= 80 ? 'מצוין' : score >= 60 ? 'טוב' : 'דורש שיפור';
+
+  $('scAiSummary').textContent = s.ai_summary || 'אין תובנות';
+  $('scAiRisk').textContent = s.ai_risk || '-';
+
+  // Overview tab
+  $('ovName').textContent = s.name || '-';
+  $('ovLegalName').textContent = s.legal_name || '-';
+  $('ovIdNumber').textContent = s.id_number || '-';
+  $('ovCategory').textContent = s.category || '-';
+  $('ovPhone').textContent = s.phone || '-';
+  $('ovEmail').textContent = s.email || '-';
+  $('ovAddress').textContent = s.address || '-';
+  $('ovCity').textContent = s.city || '-';
+  $('ovContact').textContent = s.contact_person || '-';
+  $('ovPaymentTerms').textContent = s.payment_terms || '-';
+  $('ovTotalSpent').textContent = fmtCurrency(s.total_spent);
+  $('ovTotalOrders').textContent = fmt(s.total_orders);
+  $('ovTotalRFQ').textContent = fmt((s.open_rfq || 0) + 10);
+  $('ovOnTimeRate').textContent = fmtPct(s.on_time_rate);
+  $('ovAvgDelivery').textContent = s.avg_delivery_days ? s.avg_delivery_days + ' ימים' : '-';
+  $('ovDefectRate').textContent = fmtPct(s.defect_rate);
+  $('ovPayables').textContent = fmtCurrency(s.payables);
+  $('ovOpenInv').textContent = fmt(s.open_invoices);
+  $('ovPaidYear').textContent = fmtCurrency(s.paid_this_year);
+  $('ovOverdue').textContent = fmtCurrency(s.overdue_amount);
+
+  // Tables
+  renderRFQs(data.rfqs || []);
+  renderSupplierQuotes(data.supplier_quotes || []);
+  renderPOs(data.purchase_orders || []);
+  renderInvoices(data.invoices || []);
+  renderPayments(data.payments || []);
+  renderReturns(data.returns || []);
+  renderWarranty(data.warranty || []);
+  renderContracts(data.contracts || []);
+  renderDocuments(data.documents || []);
+  renderAudit(data.audit_log || []);
+  renderAIInsights(data.supplier);
+
+  // Side panel
+  renderSidePanel(data);
+}
+
+// --- Table Renderers ---
+function renderRFQs(rows) {
+  const tb = $('rfqsTable');
+  if (!rows.length) { tb.innerHTML = '<tr><td colspan="6" class="text-center text-text2 py-8">&#128232; אין בקשות הצעת מחיר</td></tr>'; return; }
+  tb.innerHTML = rows.map(r => `<tr class="cursor-pointer hover:bg-bg3/50">
+    <td class="font-mono text-accent">${r.rfq_number || '-'}</td>
+    <td>${fmtDate(r.date)}</td>
+    <td class="font-mono">${r.project || '-'}</td>
+    <td class="text-center">${r.items || 0}</td>
+    <td class="font-mono">${fmtCurrency(r.estimated_amount)}</td>
+    <td>${renderStatusBadge(r.state)}</td>
+  </tr>`).join('');
+}
+
+function renderSupplierQuotes(rows) {
+  const tb = $('supplierQuotesTable');
+  if (!rows.length) { tb.innerHTML = '<tr><td colspan="6" class="text-center text-text2 py-8">&#128203; אין הצעות ספק</td></tr>'; return; }
+  tb.innerHTML = rows.map(r => `<tr class="cursor-pointer hover:bg-bg3/50">
+    <td class="font-mono text-accent">${r.quote_number || '-'}</td>
+    <td class="font-mono">${r.rfq || '-'}</td>
+    <td>${fmtDate(r.date)}</td>
+    <td class="font-mono">${fmtCurrency(r.amount)}</td>
+    <td>${fmtDate(r.valid_until)}</td>
+    <td>${renderStatusBadge(r.state)}</td>
+  </tr>`).join('');
+}
+
+function renderPOs(rows) {
+  const tb = $('posTable');
+  if (!rows.length) { tb.innerHTML = '<tr><td colspan="6" class="text-center text-text2 py-8">&#128722; אין הזמנות רכש</td></tr>'; return; }
+  tb.innerHTML = rows.map(r => `<tr class="cursor-pointer hover:bg-bg3/50">
+    <td class="font-mono text-accent">${r.po_number || '-'}</td>
+    <td>${fmtDate(r.date)}</td>
+    <td class="font-mono">${r.project || '-'}</td>
+    <td class="font-mono">${fmtCurrency(r.amount)}</td>
+    <td>${renderProgressBar(r.receiving_pct)}</td>
+    <td>${renderStatusBadge(r.state)}</td>
+  </tr>`).join('');
+}
+
+function renderInvoices(rows) {
+  const tb = $('invoicesTable');
+  if (!rows.length) { tb.innerHTML = '<tr><td colspan="7" class="text-center text-text2 py-8">&#128176; אין חשבוניות ספק</td></tr>'; return; }
+  tb.innerHTML = rows.map(r => `<tr class="cursor-pointer hover:bg-bg3/50">
+    <td class="font-mono text-accent">${r.invoice_number || '-'}</td>
+    <td class="font-mono">${r.po || '-'}</td>
+    <td>${fmtDate(r.date)}</td>
+    <td>${fmtDate(r.due_date)}</td>
+    <td class="font-mono">${fmtCurrency(r.amount)}</td>
+    <td class="font-mono ${r.balance > 0 ? 'text-warn' : 'text-ok'}">${fmtCurrency(r.balance)}</td>
+    <td>${renderStatusBadge(r.state)}</td>
+  </tr>`).join('');
+}
+
+function renderPayments(rows) {
+  const tb = $('paymentsTable');
+  if (!rows.length) { tb.innerHTML = '<tr><td colspan="6" class="text-center text-text2 py-8">&#128179; אין תשלומים</td></tr>'; return; }
+  tb.innerHTML = rows.map(r => `<tr>
+    <td class="font-mono text-accent">${r.payment_number || '-'}</td>
+    <td class="font-mono">${r.invoice || '-'}</td>
+    <td>${fmtDate(r.date)}</td>
+    <td class="font-mono text-ok">${fmtCurrency(r.amount)}</td>
+    <td>${r.method || '-'}</td>
+    <td>${renderStatusBadge(r.state)}</td>
+  </tr>`).join('');
+}
+
+function renderReturns(rows) {
+  const tb = $('returnsTable');
+  if (!rows.length) { tb.innerHTML = '<tr><td colspan="6" class="text-center text-text2 py-8">&#8617; אין החזרות</td></tr>'; return; }
+  tb.innerHTML = rows.map(r => `<tr>
+    <td class="font-mono text-warn">${r.return_number || '-'}</td>
+    <td class="font-mono">${r.po || '-'}</td>
+    <td>${r.reason || '-'}</td>
+    <td class="text-center">${r.items || 0}</td>
+    <td class="font-mono">${fmtCurrency(r.amount)}</td>
+    <td>${renderStatusBadge(r.state)}</td>
+  </tr>`).join('');
+}
+
+function renderWarranty(rows) {
+  const tb = $('warrantyTable');
+  if (!rows.length) { tb.innerHTML = '<tr><td colspan="6" class="text-center text-text2 py-8">&#128737; אין תיקי אחריות</td></tr>'; return; }
+  tb.innerHTML = rows.map(r => `<tr>
+    <td class="font-mono text-accent">${r.warranty_number || '-'}</td>
+    <td>${r.product || '-'}</td>
+    <td>${fmtDate(r.start_date)}</td>
+    <td>${fmtDate(r.end_date)}</td>
+    <td>${r.type || '-'}</td>
+    <td>${renderStatusBadge(r.state)}</td>
+  </tr>`).join('');
+}
+
+function renderContracts(rows) {
+  const tb = $('contractsTable');
+  if (!rows.length) { tb.innerHTML = '<tr><td colspan="6" class="text-center text-text2 py-8">&#128196; אין חוזים</td></tr>'; return; }
+  tb.innerHTML = rows.map(r => `<tr class="cursor-pointer hover:bg-bg3/50">
+    <td class="font-mono text-accent">${r.contract_number || '-'}</td>
+    <td>${r.name || '-'}</td>
+    <td>${fmtDate(r.start_date)}</td>
+    <td>${fmtDate(r.end_date)}</td>
+    <td class="font-mono">${fmtCurrency(r.value)}</td>
+    <td>${renderStatusBadge(r.state)}</td>
+  </tr>`).join('');
+}
+
+function renderDocuments(rows) {
+  const tb = $('documentsTable');
+  if (!rows.length) { tb.innerHTML = '<tr><td colspan="4" class="text-center text-text2 py-8">&#128206; אין מסמכים</td></tr>'; return; }
+  tb.innerHTML = rows.map(r => `<tr>
+    <td class="font-mono text-accent">${r.document_number || '-'}</td>
+    <td>${r.filename || '-'}</td>
+    <td>${r.type || '-'}</td>
+    <td class="font-mono">${fmtDateTime(r.uploaded_at)}</td>
+  </tr>`).join('');
+}
+
+function renderAudit(rows) {
+  const tb = $('auditTable');
+  if (!rows.length) { tb.innerHTML = '<tr><td colspan="5" class="text-center text-text2 py-8">&#128214; אין רשומות ביקורת</td></tr>'; return; }
+  tb.innerHTML = rows.map(r => `<tr>
+    <td class="font-mono text-xs">${fmtDateTime(r.performed_at)}</td>
+    <td class="font-semibold">${r.action || '-'}</td>
+    <td>${r.performed_by || '-'}</td>
+    <td><span class="badge bg-bg3 text-text2 border border-border text-xs">${r.source || '-'}</span></td>
+    <td class="text-text2">${r.summary || '-'}</td>
+  </tr>`).join('');
+}
+
+// --- AI Insights tab ---
+function renderAIInsights(s) {
+  // Risk panel
+  $('aiRiskPanel').innerHTML = `
+    <div class="space-y-3">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full" style="background:${getScoreColor(s.overall_score || 0)}"></span>
+        <span>${s.ai_risk || 'אין נתוני סיכון'}</span>
+      </div>
+      <div class="grid grid-cols-2 gap-2 mt-2">
+        <div class="bg-bg3 rounded p-2 text-center">
+          <div class="text-xs text-text2">אספקה בזמן</div>
+          <div class="text-lg font-bold" style="color:${getScoreColor(s.on_time_rate || 0)}">${fmtPct(s.on_time_rate)}</div>
+        </div>
+        <div class="bg-bg3 rounded p-2 text-center">
+          <div class="text-xs text-text2">שיעור ליקויים</div>
+          <div class="text-lg font-bold" style="color:${(s.defect_rate || 0) < 3 ? '#2bd48b' : '#ef5350'}">${fmtPct(s.defect_rate)}</div>
+        </div>
+      </div>
+    </div>`;
+
+  // Forecast
+  $('aiForecastPanel').innerHTML = `<div class="text-text1">${s.ai_forecast || 'אין חיזוי זמין'}</div>`;
+
+  // Recommendations
+  const recs = s.ai_recommendations || [];
+  if (recs.length) {
+    $('aiRecommendations').innerHTML = `<ul class="space-y-2">${recs.map((r, i) =>
+      `<li class="flex items-start gap-2">
+        <span class="bg-accent/15 text-accent text-xs px-2 py-0.5 rounded mt-0.5">${i + 1}</span>
+        <span>${r}</span>
+      </li>`
+    ).join('')}</ul>`;
+  } else {
+    $('aiRecommendations').innerHTML = '<div class="text-text2">אין המלצות כרגע</div>';
+  }
+}
+
+// --- Side Panel ---
+function renderSidePanel(data) {
+  const s = data.supplier;
+
+  // Next Best Action logic
+  let nba = '';
+  if (s.overdue_po > 0) {
+    nba = `<div class="bg-err/10 border border-err/25 rounded-lg p-3 mb-2">
+      <div class="text-err text-sm font-semibold">&#9888; ${s.overdue_po} הזמנות רכש באיחור</div>
+      <div class="text-text2 text-xs mt-1">יש ליצור קשר עם הספק</div>
+      <button onclick="alert('שליחת תזכורת לספק')" class="mt-2 text-xs bg-err/15 text-err px-3 py-1 rounded hover:bg-err/25">שלח תזכורת</button>
+    </div>`;
+  } else if (s.open_rfq > 0) {
+    nba = `<div class="bg-accent/10 border border-accent/25 rounded-lg p-3 mb-2">
+      <div class="text-accent text-sm font-semibold">&#128232; ${s.open_rfq} RFQ פתוחים</div>
+      <div class="text-text2 text-xs mt-1">ממתין להצעות מהספק</div>
+      <button onclick="alert('בדיקת סטטוס RFQ')" class="mt-2 text-xs bg-accent/15 text-accent px-3 py-1 rounded hover:bg-accent/25">בדוק סטטוס</button>
+    </div>`;
+  } else if (s.overdue_amount > 0) {
+    nba = `<div class="bg-warn/10 border border-warn/25 rounded-lg p-3 mb-2">
+      <div class="text-warn text-sm font-semibold">&#128176; חשבונית ספק באיחור</div>
+      <div class="text-text2 text-xs mt-1">סכום: ${fmtCurrency(s.overdue_amount)}</div>
+      <button onclick="alert('תשלום חשבונית ספק')" class="mt-2 text-xs bg-warn/15 text-warn px-3 py-1 rounded hover:bg-warn/25">בצע תשלום</button>
+    </div>`;
+  } else {
+    nba = `<div class="bg-ok/10 border border-ok/25 rounded-lg p-3 mb-2">
+      <div class="text-ok text-sm font-semibold">&#10003; הכל תקין</div>
+      <div class="text-text2 text-xs mt-1">אין פעולות דחופות</div>
+    </div>`;
+  }
+  $('nextBestAction').innerHTML = nba;
+
+  // Performance score side panel
+  const score = s.overall_score || 0;
+  const scoreColor = getScoreColor(score);
+  $('sideScoreRing').textContent = score;
+  $('sideScoreRing').style.borderColor = scoreColor;
+  $('sideScoreRing').style.color = scoreColor;
+  $('sideOnTime').textContent = fmtPct(s.on_time_rate);
+  $('sideQuality').textContent = s.quality_score ? s.quality_score + '/100' : '-';
+  $('sidePrice').textContent = s.price_score ? s.price_score + '/100' : '-';
+  $('sideResponse').textContent = s.response_score ? s.response_score + '/100' : '-';
+
+  // Linked entities
+  const links = [];
+  if (data.purchase_orders && data.purchase_orders.length) {
+    const po = data.purchase_orders[0];
+    links.push(`<a class="flex items-center gap-2 p-2 bg-bg3 rounded-lg border border-border hover:border-accent text-sm cursor-pointer">
+      <span>&#128722;</span><div><div class="text-text1">${po.po_number}</div><div class="text-xs text-text2">${fmtCurrency(po.amount)}</div></div></a>`);
+  }
+  if (data.rfqs && data.rfqs.length) {
+    const rfq = data.rfqs[0];
+    links.push(`<a class="flex items-center gap-2 p-2 bg-bg3 rounded-lg border border-border hover:border-accent text-sm cursor-pointer">
+      <span>&#128232;</span><div><div class="text-text1">${rfq.rfq_number}</div><div class="text-xs text-text2">${fmtCurrency(rfq.estimated_amount)}</div></div></a>`);
+  }
+  if (data.contracts && data.contracts.length) {
+    const c = data.contracts[0];
+    links.push(`<a class="flex items-center gap-2 p-2 bg-bg3 rounded-lg border border-border hover:border-accent text-sm cursor-pointer">
+      <span>&#128196;</span><div><div class="text-text1">${c.contract_number}</div><div class="text-xs text-text2">${c.name}</div></div></a>`);
+  }
+  $('linkedEntities').innerHTML = links.length ? links.join('') : '<div class="text-sm text-text2">אין קישורים</div>';
+
+  // Alerts
+  let alertCount = 0;
+  let alertSummary = [];
+  if (s.overdue_po > 0) { alertCount++; alertSummary.push('PO באיחור'); }
+  if (s.overdue_amount > 0) { alertCount++; alertSummary.push('חשבונית לא שולמה'); }
+  if (s.defect_rate > 5) { alertCount++; alertSummary.push('שיעור ליקויים גבוה'); }
+  $('alertCount').textContent = alertCount;
+  $('alertSummary').textContent = alertSummary.length ? alertSummary.join(', ') : 'אין התראות';
+}
+
+// --- Tab switching ---
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      const panel = document.querySelector(`[data-panel="${btn.dataset.tab}"]`);
+      if (panel) panel.classList.add('active');
+    });
+  });
+});
+
+// --- Actions ---
+function toggleDropdown() {
+  $('actionsDropdown').classList.toggle('show');
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.relative')) $('actionsDropdown')?.classList.remove('show');
+});
+
+async function actionCreateRFQ() {
+  if (!supplierData) return;
+  try {
+    const res = await fetch(API_BASE + '/api/rfq/send', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ supplier_id: supplierId, supplier_name: supplierData.supplier.name })
+    });
+    if (res.ok) { alert('בקשה להצעת מחיר נוצרה בהצלחה!'); loadSupplier(); }
+    else alert('שגיאה ביצירת RFQ');
+  } catch { alert('RFQ נוצרה (דמו)'); }
+}
+
+async function actionCreatePO() {
+  if (!supplierData) return;
+  try {
+    const res = await fetch(API_BASE + '/api/purchase-orders', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ supplier_id: supplierId, supplier_name: supplierData.supplier.name })
+    });
+    if (res.ok) { alert('הזמנת רכש נוצרה בהצלחה!'); loadSupplier(); }
+    else alert('שגיאה ביצירת הזמנת רכש');
+  } catch { alert('הזמנת רכש נוצרה (דמו)'); }
+}
+
+async function actionRegisterInvoice() {
+  if (!supplierData) return;
+  try {
+    const res = await fetch(API_BASE + '/api/supplier-invoices', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ supplier_id: supplierId })
+    });
+    if (res.ok) { alert('חשבונית ספק נרשמה בהצלחה!'); loadSupplier(); }
+    else alert('שגיאה ברישום חשבונית');
+  } catch { alert('חשבונית ספק נרשמה (דמו)'); }
+}
+
+function actionAttachContract() { alert('פתיחת צירוף חוזה לספק: ' + (supplierData?.supplier?.name || '')); }
+function actionCreateReturn() { alert('פתיחת יצירת החזרה לספק: ' + (supplierData?.supplier?.name || '')); }
+function actionUploadDoc() { alert('פתיחת העלאת מסמך עבור ספק: ' + (supplierData?.supplier?.name || '')); }
+function actionBlockSupplier() {
+  if (confirm('האם לחסום את הספק? פעולה זו תמנע יצירת הזמנות רכש חדשות.')) {
+    alert('הספק נחסם (דמו)');
+  }
+}
+
+// --- Clock ---
+function updateClock() {
+  const now = new Date();
+  $('clock').textContent = now.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// --- Init ---
+loadSupplier();
+</script>
+</body>
+</html>

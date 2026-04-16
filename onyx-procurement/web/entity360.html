@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Entity 360 — Techno-Kol Uzi ERP 2026</title>
+  <style>
+    :root{--bg-0:#05070a;--bg-1:#0a0e14;--bg-2:#111720;--bg-3:#1a2230;--border:#1f2a3a;--border-hi:#2a3a52;--text-0:#e6ecf5;--text-1:#a8b4c8;--text-2:#6b7a90;--accent:#3a8dde;--accent-hi:#5aa8ff;--ok:#2bd48b;--warn:#f2b84d;--err:#ef5350;--font:'Segoe UI','Heebo','Assistant',system-ui,sans-serif;--mono:'Consolas','Menlo',monospace}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg-0);color:var(--text-0);font-family:var(--font);min-height:100vh;background-image:radial-gradient(ellipse at top,rgba(58,141,222,.04),transparent 60%)}
+    .container{max-width:1100px;margin:0 auto;padding:24px}
+
+    header{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+    .back-link{color:var(--accent-hi);text-decoration:none;font-size:13px;padding:6px 14px;border:1px solid var(--border);border-radius:6px;background:var(--bg-2)}
+
+    /* ENTITY HEADER */
+    .entity-header{background:linear-gradient(180deg,var(--bg-2),var(--bg-1));border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:20px}
+    .eh-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px}
+    .eh-title{display:flex;align-items:center;gap:12px}
+    .eh-icon{font-size:32px}
+    .eh-name{font-size:22px;font-weight:700}
+    .eh-type{font-size:12px;color:var(--text-2);text-transform:uppercase}
+    .eh-status{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:16px;font-size:12px;font-weight:600;background:rgba(43,212,139,.08);color:var(--ok);border:1px solid rgba(43,212,139,.25)}
+    .eh-fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:16px}
+    .eh-field{font-size:12px}.eh-field .lbl{color:var(--text-2);margin-bottom:2px}.eh-field .val{color:var(--text-0);font-weight:500}
+
+    /* ACTION BARS */
+    .action-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);font-family:var(--font);transition:all .15s}
+    .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn-primary:hover{background:var(--accent-hi)}
+    .btn-next{background:rgba(43,212,139,.1);color:var(--ok);border-color:rgba(43,212,139,.3)}.btn-next:hover{background:rgba(43,212,139,.18)}
+    .btn-secondary{background:var(--bg-2);color:var(--text-1)}.btn-secondary:hover{background:var(--bg-3);color:var(--text-0)}
+    .btn-danger{background:rgba(239,83,80,.08);color:var(--err);border-color:rgba(239,83,80,.25)}.btn-danger:hover{background:rgba(239,83,80,.15)}
+    .btn .ic{font-size:16px}
+
+    /* TABS */
+    .tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px;overflow-x:auto}
+    .tab{padding:10px 18px;font-size:13px;font-weight:500;color:var(--text-2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .15s}
+    .tab:hover{color:var(--text-0)}.tab.active{color:var(--accent-hi);border-bottom-color:var(--accent)}
+
+    /* TAB PANELS */
+    .tab-panel{display:none}.tab-panel.active{display:block}
+
+    /* CARDS / SECTIONS */
+    .section-title{font-size:15px;font-weight:600;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+    .card{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px}
+
+    /* RELATED LIST */
+    .rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+    .rel-item{display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg-3);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color .15s}
+    .rel-item:hover{border-color:var(--accent)}
+    .rel-icon{font-size:20px}.rel-label{font-size:13px;font-weight:500}.rel-count{font-family:var(--mono);font-size:12px;color:var(--text-2);margin-inline-start:auto}
+
+    /* STATUS TIMELINE */
+    .status-timeline{display:flex;gap:0;overflow-x:auto;padding:8px 0;margin-bottom:16px}
+    .st-step{display:flex;align-items:center;gap:0}
+    .st-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid var(--border);color:var(--text-2);background:var(--bg-2);transition:all .2s}
+    .st-dot.done{background:var(--ok);color:#fff;border-color:var(--ok)}
+    .st-dot.current{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 0 10px rgba(58,141,222,.3)}
+    .st-line{width:24px;height:2px;background:var(--border)}.st-line.done{background:var(--ok)}
+    .st-label{font-size:10px;color:var(--text-2);text-align:center;max-width:60px;margin-top:4px}
+
+    /* EMPTY STATE */
+    .empty{text-align:center;padding:40px;color:var(--text-2);font-size:14px}
+
+    /* RESPONSIVE */
+    @media(max-width:640px){.eh-fields{grid-template-columns:1fr 1fr}.rel-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div style="display:flex;align-items:center;gap:12px">
+      <a href="pipeline-dashboard.html" class="back-link">← Pipeline</a>
+      <a href="index.html" class="back-link">בית</a>
+    </div>
+    <div id="entity-type-selector" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+  </header>
+
+  <!-- ENTITY HEADER -->
+  <div class="entity-header" id="entity-header">
+    <div class="empty">טוען...</div>
+  </div>
+
+  <!-- NEXT STEP ACTIONS (Primary) -->
+  <div class="action-bar" id="next-actions"></div>
+
+  <!-- SECONDARY ACTIONS -->
+  <div class="action-bar" id="secondary-actions"></div>
+
+  <!-- STATUS TIMELINE -->
+  <div id="status-timeline"></div>
+
+  <!-- TABS -->
+  <div class="tabs" id="tabs"></div>
+
+  <!-- TAB PANELS -->
+  <div id="tab-panels"></div>
+</div>
+
+<script>
+var API = '';
+var entityDef = null;
+var entityType = new URLSearchParams(window.location.search).get('type') || 'project';
+var entityId = new URLSearchParams(window.location.search).get('id') || null;
+
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+
+async function api(path){
+  var r=await fetch(API+path);
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  return r.json();
+}
+
+// ═══ RENDER ENTITY TYPE SELECTOR ═══
+function renderTypeSelector(types){
+  var el=$('entity-type-selector');
+  var icons={lead:'🎯',customer:'👤',supplier:'🏭',quote:'📋',rfq:'📨',po:'🛒',project:'📁',work_order:'🔧',invoice:'💰',employee:'👷',contract:'📄',material:'📦',payment:'💳',task:'📌',document:'📄',alert:'🚨'};
+  var main=['customer','supplier','project','quote','rfq','po','work_order','invoice','employee'];
+  el.innerHTML='';
+  main.forEach(function(t){
+    var ty=types.find(function(x){return x.id===t});
+    if(!ty)return;
+    var cls=t===entityType?'btn btn-primary':'btn btn-secondary';
+    el.innerHTML+='<button class="'+cls+'" style="padding:5px 10px;font-size:11px" onclick="switchType(\''+t+'\')">'+(icons[t]||'')+ ' ' +esc(ty.label)+'</button>';
+  });
+}
+
+function switchType(type){
+  entityType=type;
+  entityId=null;
+  window.history.replaceState(null,'','entity360.html?type='+type);
+  loadEntity();
+}
+
+// ═══ RENDER HEADER ═══
+function renderHeader(def){
+  var el=$('entity-header');
+  el.innerHTML='<div class="eh-top">'
+    +'<div class="eh-title"><span class="eh-icon">'+esc(def.icon)+'</span>'
+    +'<div><div class="eh-name">'+esc(def.label)+' 360</div>'
+    +'<div class="eh-type">'+esc(def.labelEn)+' · '+esc(def.service)+'</div></div></div>'
+    +'<div class="eh-status">'+esc(def.purpose)+'</div></div>'
+    +'<div class="eh-fields" id="eh-fields"></div>';
+
+  var fields=$('eh-fields');
+  fields.innerHTML='';
+  def.topFields.forEach(function(f){
+    fields.innerHTML+='<div class="eh-field"><div class="lbl">'+esc(f)+'</div><div class="val">—</div></div>';
+  });
+}
+
+// ═══ RENDER NEXT STEPS ═══
+function renderNextSteps(def){
+  var el=$('next-actions');
+  el.innerHTML='<span style="font-size:12px;color:var(--text-2);padding:8px 0">שלב הבא:</span>';
+  def.nextSteps.forEach(function(a){
+    el.innerHTML+='<button class="btn btn-next" onclick="doAction(\''+a.id+'\')"><span class="ic">'+esc(a.icon)+'</span>'+esc(a.label)+'</button>';
+  });
+}
+
+// ═══ RENDER ACTIONS ═══
+function renderActions(def){
+  var el=$('secondary-actions');
+  el.innerHTML='';
+  def.actions.forEach(function(a){
+    var cls = a.id.includes('delete')||a.id.includes('cancel') ? 'btn btn-danger' : 'btn btn-secondary';
+    el.innerHTML+='<button class="'+cls+'" onclick="doAction(\''+a.id+'\')"><span class="ic">'+esc(a.icon)+'</span>'+esc(a.label)+'</button>';
+  });
+}
+
+// ═══ STATUS TIMELINE ═══
+function renderTimeline(def){
+  var el=$('status-timeline');
+  if(!def.statuses||!def.statuses.length){el.innerHTML='';return}
+  var current=0; // first status by default
+  var html='<div class="status-timeline">';
+  def.statuses.forEach(function(s,i){
+    if(i>0)html+='<div class="st-line'+(i<=current?' done':'')+'"></div>';
+    var cls=i<current?'st-dot done':i===current?'st-dot current':'st-dot';
+    html+='<div class="st-step"><div style="display:flex;flex-direction:column;align-items:center">'
+      +'<div class="'+cls+'">'+(i+1)+'</div>'
+      +'<div class="st-label">'+esc(s.replace(/_/g,' '))+'</div>'
+      +'</div></div>';
+  });
+  html+='</div>';
+  el.innerHTML=html;
+}
+
+// ═══ RENDER TABS ═══
+function renderTabs(def){
+  var tabs=['overview','related','finance','communications','documents','audit_log'];
+  var labels={overview:'סקירה',related:'ישויות קשורות',finance:'כספים',communications:'תקשורת',documents:'מסמכים',audit_log:'יומן'};
+  var tabsEl=$('tabs');
+  var panelsEl=$('tab-panels');
+  tabsEl.innerHTML='';panelsEl.innerHTML='';
+
+  tabs.forEach(function(t,i){
+    tabsEl.innerHTML+='<div class="tab'+(i===0?' active':'')+'" onclick="switchTab(\''+t+'\')">'+esc(labels[t]||t)+'</div>';
+    panelsEl.innerHTML+='<div class="tab-panel'+(i===0?' active':'')+'" id="panel-'+t+'"></div>';
+  });
+
+  // Render overview (related sections as grid)
+  var overviewHtml='<h3 class="section-title">קשרים ישירים</h3><div class="rel-grid">';
+  var relIcons={leads:'🎯',quotes:'📋',projects:'📁',invoices:'💰',payments:'💳',work_orders:'🔧',pos:'🛒',tasks:'📌',employees:'👷',documents:'📄',contracts:'📄',materials:'📦',suppliers:'🏭',audit_log:'📋',communications:'💬',support_tickets:'🎫',rfqs:'📨',returns:'↩️',warranties:'🛡️',receipts:'🧾',reports:'📊',alerts:'🚨',signatures:'✍️',performance:'📊',expenses:'🧾',attendance:'⏰',payroll:'💰',pension:'🏦',payslips:'📄',hr_documents:'📄'};
+  (def.relatedSections||[]).forEach(function(s){
+    overviewHtml+='<div class="rel-item" onclick="switchType(\''+s.replace(/s$/,'')+'\')">'
+      +'<span class="rel-icon">'+(relIcons[s]||'📄')+'</span>'
+      +'<span class="rel-label">'+esc(s.replace(/_/g,' '))+'</span>'
+      +'<span class="rel-count">→</span></div>';
+  });
+  overviewHtml+='</div>';
+
+  // Links from entity map
+  overviewHtml+='<h3 class="section-title" style="margin-top:20px">קישורים ב-Entity Map</h3><div class="rel-grid">';
+  (def.links||[]).forEach(function(l){
+    overviewHtml+='<div class="rel-item" onclick="switchType(\''+l+'\')">'
+      +'<span class="rel-icon">'+(relIcons[l+'s']||relIcons[l]||'🔗')+'</span>'
+      +'<span class="rel-label">'+esc(l.replace(/_/g,' '))+'</span>'
+      +'<span class="rel-count">→</span></div>';
+  });
+  overviewHtml+='</div>';
+
+  $('panel-overview').innerHTML=overviewHtml;
+
+  // Related tab
+  $('panel-related').innerHTML='<div class="card"><div class="empty">ישויות קשורות יוצגו כאן לפי הרשומה שנבחרה</div></div>';
+  $('panel-finance').innerHTML='<div class="card"><div class="empty">נתוני כספים: חשבוניות, תשלומים, תקציב</div></div>';
+  $('panel-communications').innerHTML='<div class="card"><div class="empty">תקשורת: הודעות, אימיילים, WhatsApp</div></div>';
+  $('panel-documents').innerHTML='<div class="card"><div class="empty">מסמכים מצורפים</div></div>';
+  $('panel-audit_log').innerHTML='<div class="card"><div class="empty">יומן שינויים ואירועים</div></div>';
+}
+
+function switchTab(tabId){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active')});
+  document.querySelectorAll('.tab').forEach(function(t){if(t.textContent&&t.onclick&&t.onclick.toString().indexOf(tabId)>-1)t.classList.add('active')});
+  var panel=document.getElementById('panel-'+tabId);
+  if(panel)panel.classList.add('active');
+  // Simple tab switch via click
+  var tabs=document.querySelectorAll('.tab');
+  var panels=document.querySelectorAll('.tab-panel');
+  tabs.forEach(function(t,i){
+    if(t.getAttribute('onclick')&&t.getAttribute('onclick').indexOf("'"+tabId+"'")>-1){
+      t.classList.add('active');
+      if(panels[i])panels[i].classList.add('active');
+    }
+  });
+}
+
+function doAction(actionId){
+  alert('פעולה: '+actionId+'\n\nפעולה זו תיושם בשלב הבא — חיבור ל-Workflow Engine');
+}
+
+// ═══ LOAD ═══
+async function loadEntity(){
+  try{
+    var [entityRes, typesRes]=await Promise.all([
+      api('/api/entity-map/'+entityType),
+      api('/api/entity-map-types')
+    ]);
+    entityDef=entityRes.entity;
+    document.title=entityDef.label+' 360 — Techno-Kol Uzi ERP 2026';
+    renderTypeSelector(typesRes.types);
+    renderHeader(entityDef);
+    renderNextSteps(entityDef);
+    renderActions(entityDef);
+    renderTimeline(entityDef);
+    renderTabs(entityDef);
+  }catch(e){
+    console.error(e);
+    $('entity-header').innerHTML='<div class="empty">שגיאה בטעינת ישות: '+esc(e.message)+'</div>';
+  }
+}
+
+loadEntity();
+</script>
+</body>
+</html>

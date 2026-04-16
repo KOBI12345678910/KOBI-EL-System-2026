@@ -4,7 +4,8 @@
  * Default theme: Palantir-style dark, Hebrew RTL.
  */
 
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback, lazy, Suspense } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AuditTrail from './components/AuditTrail';
 import BIDashboard from './components/BIDashboard';
 import NotificationCenter from './components/NotificationCenter';
@@ -21,6 +22,31 @@ import CustomerPortal from './components/CustomerPortal';
 import SalesLeaderboard from './components/SalesLeaderboard';
 import RealEstatePortfolio from './components/RealEstatePortfolio';
 import TenantPortal from './components/TenantPortal';
+
+// ── Enterprise Modules (lazy-loaded) ──
+const FinanceControlRoom = lazy(() => import('./components/FinanceControlRoom'));
+const UniversalInbox = lazy(() => import('./components/UniversalInbox'));
+const FormulaBuilder = lazy(() => import('./components/FormulaBuilder'));
+const AdvancedAIAgentConsole = lazy(() => import('./components/AdvancedAIAgentConsole'));
+const DocumentIntelligenceCenter = lazy(() => import('./components/DocumentIntelligenceCenter'));
+const RouteMenuPermissionSyncConsole = lazy(() => import('./components/RouteMenuPermissionSyncConsole'));
+const MobileExecutiveShell = lazy(() => import('./features/mobile/MobileExecutiveShell'));
+const ExecutiveControlTower = lazy(() => import('./features/controlRooms/ExecutiveControlTower'));
+const KPIEngine = lazy(() => import('./features/controlRooms/KPIEngine'));
+const CommandCenter = lazy(() => import('./features/controlRooms/CommandCenter'));
+const DashboardWidgetsBoard = lazy(() => import('./features/dashboard/DashboardWidgetsBoard'));
+const CRMControlRoom = lazy(() => import('./components/CRMControlRoom'));
+const ServiceControlRoom = lazy(() => import('./components/ServiceControlRoom'));
+const TreasuryControlRoom = lazy(() => import('./components/TreasuryControlRoom'));
+const QualityControlRoom = lazy(() => import('./components/QualityControlRoom'));
+const MaintenanceControlRoom = lazy(() => import('./components/MaintenanceControlRoom'));
+const PlanningControlRoom = lazy(() => import('./components/PlanningControlRoom'));
+const ComplianceDashboard = lazy(() => import('./components/ComplianceDashboard'));
+const PricingEngine = lazy(() => import('./components/PricingEngine'));
+
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
+});
 
 const API_URL =
   import.meta.env.VITE_API_URL ||
@@ -94,6 +120,26 @@ const NAV_GROUPS = [
     { id: 'supplier-portal', label: 'פורטל ספקים' },
     { id: 'customer-portal', label: 'פורטל לקוחות' },
     { id: 'tenant-portal', label: 'פורטל דיירים' },
+  ]},
+  { label: 'Enterprise', items: [
+    { id: 'exec-tower', label: 'Executive Tower' },
+    { id: 'finance-control', label: 'Finance Control Room' },
+    { id: 'command-center', label: 'Command Center' },
+    { id: 'kpi-engine', label: 'KPI Engine' },
+    { id: 'universal-inbox', label: 'Universal Inbox' },
+    { id: 'formula-builder', label: 'Formula Builder' },
+    { id: 'ai-agents', label: 'AI Agent Console' },
+    { id: 'doc-intelligence', label: 'Document Intelligence' },
+    { id: 'route-sync', label: 'Route/Permission Sync' },
+    { id: 'mobile-exec', label: 'Mobile Executive' },
+    { id: 'crm-control', label: 'CRM Control Room' },
+    { id: 'service-control', label: 'Service Control Room' },
+    { id: 'treasury-control', label: 'Treasury Control Room' },
+    { id: 'quality-control', label: 'Quality Control' },
+    { id: 'maintenance-control', label: 'Maintenance' },
+    { id: 'planning-control', label: 'Planning' },
+    { id: 'compliance-dash', label: 'Compliance' },
+    { id: 'pricing-engine', label: 'Pricing Engine' },
   ]},
   { label: 'מערכת', items: [
     { id: 'tickets', label: 'כרטיסי תמיכה' },
@@ -872,6 +918,24 @@ export default function App() {
       case 'tickets': return <TicketsTab />;
       case 'notifications': return <NotificationsTab />;
       case 'help': return <HelpTab />;
+      case 'exec-tower': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Executive Tower...</div>}><ExecutiveControlTower /></Suspense>;
+      case 'command-center': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Command Center...</div>}><CommandCenter /></Suspense>;
+      case 'kpi-engine': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading KPI Engine...</div>}><KPIEngine /></Suspense>;
+      case 'finance-control': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Finance Control Room...</div>}><FinanceControlRoom /></Suspense>;
+      case 'universal-inbox': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Universal Inbox...</div>}><UniversalInbox /></Suspense>;
+      case 'formula-builder': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Formula Builder...</div>}><FormulaBuilder /></Suspense>;
+      case 'ai-agents': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading AI Agent Console...</div>}><AdvancedAIAgentConsole /></Suspense>;
+      case 'doc-intelligence': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Document Intelligence...</div>}><DocumentIntelligenceCenter /></Suspense>;
+      case 'route-sync': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Route Sync...</div>}><RouteMenuPermissionSyncConsole /></Suspense>;
+      case 'mobile-exec': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Mobile Executive...</div>}><MobileExecutiveShell /></Suspense>;
+      case 'crm-control': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading CRM Control Room...</div>}><CRMControlRoom /></Suspense>;
+      case 'service-control': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Service Control Room...</div>}><ServiceControlRoom /></Suspense>;
+      case 'treasury-control': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Treasury Control Room...</div>}><TreasuryControlRoom /></Suspense>;
+      case 'quality-control': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Quality...</div>}><QualityControlRoom /></Suspense>;
+      case 'maintenance-control': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Maintenance...</div>}><MaintenanceControlRoom /></Suspense>;
+      case 'planning-control': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Planning...</div>}><PlanningControlRoom /></Suspense>;
+      case 'compliance-dash': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Compliance...</div>}><ComplianceDashboard /></Suspense>;
+      case 'pricing-engine': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Pricing...</div>}><PricingEngine /></Suspense>;
       default: return <DashboardTab wageSlips={wageSlips} employees={employees} />;
     }
   };
@@ -879,7 +943,7 @@ export default function App() {
   const currentLabel = NAV_GROUPS.flatMap(g => g.items).find(i => i.id === tab)?.label || tab;
 
   return (
-    <>
+    <QueryClientProvider client={queryClient}>
       <style>{css}</style>
       <div className="app-layout">
         <Sidebar activeTab={tab} onTabChange={setTab} />
@@ -901,6 +965,6 @@ export default function App() {
           {renderTab()}
         </div>
       </div>
-    </>
+    </QueryClientProvider>
   );
 }

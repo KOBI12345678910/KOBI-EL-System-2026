@@ -253,6 +253,7 @@ Every defect below is a real, reproducible finding. All IDs are stable — the t
 ### BUG-QA12-006 — Separation of duties: accountant can approve POs
 
 - **Severity:** MED
+- **Status:** RESOLVED
 - **Where:** `server.js` — `POST /api/purchase-orders/:id/approve` around line 819.
 - **Impact:** Accountant sees the money *and* approves the spend — classic SoD red flag for audit (and for SOX-lite checklist in `_qa-reports`).
 - **Fix shape:** `if (req.actor.role !== 'manager' && req.actor.role !== 'admin') return res.status(403).json({...})`.

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Onyx AI | בינה מלאכותית</title>
+  <style>
+    :root {
+      --bg-0: #05070a; --bg-1: #0a0e14; --bg-2: #111720; --bg-3: #1a2230;
+      --border: #1f2a3a; --text-0: #e6ecf5; --text-1: #a8b4c8; --text-2: #6b7a90;
+      --accent: #8b5cf6; --accent-hi: #a78bfa; --ok: #2bd48b; --err: #ef5350;
+      --font: 'Segoe UI','Heebo','Assistant',system-ui,sans-serif;
+      --mono: 'Consolas','Menlo',monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-0); color: var(--text-0); font-family: var(--font);
+      min-height: 100vh; padding: 24px;
+      background-image: radial-gradient(ellipse at top, rgba(139,92,246,0.06), transparent 60%);
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    header {
+      border-bottom: 1px solid var(--border); padding-bottom: 18px; margin-bottom: 24px;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+    }
+    h1 { font-size: 22px; font-weight: 600; }
+    h1 span.sub { font-size: 13px; color: var(--text-2); font-weight: 400; margin-inline-start: 8px; }
+    .back-link {
+      color: var(--accent-hi); text-decoration: none; font-size: 13px; font-weight: 500;
+      padding: 6px 14px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-2);
+    }
+    .back-link:hover { background: var(--bg-3); }
+    .card {
+      background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+      border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin-bottom: 16px;
+    }
+    .card h2 { font-size: 16px; margin-bottom: 12px; color: var(--text-0); }
+    .module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+    .module {
+      background: var(--bg-3); border: 1px solid var(--border); border-radius: 8px;
+      padding: 14px; text-align: center;
+    }
+    .module .icon { font-size: 28px; margin-bottom: 6px; }
+    .module .name { font-size: 14px; font-weight: 600; color: var(--text-0); }
+    .module .desc { font-size: 11px; color: var(--text-2); margin-top: 4px; }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px;
+      border-radius: 20px; font-size: 11px; font-weight: 600; margin-top: 8px;
+    }
+    .status-badge .d { width: 7px; height: 7px; border-radius: 50%; }
+    .status-badge.checking { background: rgba(242,184,77,0.08); color: #f2b84d; border: 1px solid rgba(242,184,77,0.3); }
+    .status-badge.checking .d { background: #f2b84d; }
+    .status-badge.up { background: rgba(43,212,139,0.08); color: var(--ok); border: 1px solid rgba(43,212,139,0.3); }
+    .status-badge.up .d { background: var(--ok); }
+    .status-badge.down { background: rgba(239,83,80,0.08); color: var(--err); border: 1px solid rgba(239,83,80,0.3); }
+    .status-badge.down .d { background: var(--err); }
+    #api-info { font-family: var(--mono); font-size: 12px; color: var(--text-2); }
+    #api-info code { color: var(--accent-hi); }
+    footer { text-align: center; margin-top: 24px; font-size: 11px; color: var(--text-2); font-family: var(--mono); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Onyx AI <span class="sub">· בינה מלאכותית</span></h1>
+      <a href="/" class="back-link">חזרה לבית</a>
+    </header>
+
+    <div class="card">
+      <h2>AI Service Status</h2>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <span id="ai-status" class="status-badge checking"><span class="d"></span><span>בודק...</span></span>
+        <span id="ai-latency" style="font-family:var(--mono);font-size:12px;color:var(--text-2)"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>AI Modules</h2>
+      <div class="module-grid">
+        <div class="module"><div class="icon">📊</div><div class="name">חריגות</div><div class="desc">Anomaly Detection</div></div>
+        <div class="module"><div class="icon">📈</div><div class="name">תחזיות</div><div class="desc">Forecasting</div></div>
+        <div class="module"><div class="icon">💡</div><div class="name">תובנות</div><div class="desc">Insights Engine</div></div>
+        <div class="module"><div class="icon">🧠</div><div class="name">ML</div><div class="desc">Machine Learning</div></div>
+        <div class="module"><div class="icon">💬</div><div class="name">NLP</div><div class="desc">Natural Language</div></div>
+        <div class="module"><div class="icon">🔍</div><div class="name">שאילתות</div><div class="desc">NLQ Queries</div></div>
+        <div class="module"><div class="icon">🏷️</div><div class="name">איכות</div><div class="desc">Quality Scoring</div></div>
+        <div class="module"><div class="icon">📅</div><div class="name">עונתיות</div><div class="desc">Seasonality</div></div>
+        <div class="module"><div class="icon">📉</div><div class="name">סטטיסטיקה</div><div class="desc">Statistics</div></div>
+        <div class="module"><div class="icon">📊</div><div class="name">מגמות</div><div class="desc">Trends</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>API Endpoints</h2>
+      <div id="api-info">
+        <p>Base URL: <code>http://localhost:3300</code></p>
+        <p style="margin-top:8px">Health: <code>GET /healthz</code></p>
+      </div>
+    </div>
+
+    <footer>Onyx AI Engine &middot; Techno-Kol Uzi ERP 2026</footer>
+  </div>
+
+  <script>
+    (function() {
+      var badge = document.getElementById('ai-status');
+      var latEl = document.getElementById('ai-latency');
+      var url = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+        ? 'http://localhost:3300/healthz'
+        : '/api/status';
+      var start = performance.now();
+      fetch(url, { cache: 'no-store', mode: 'cors' })
+        .then(function(r) {
+          var ms = Math.round(performance.now() - start);
+          latEl.textContent = ms + ' ms';
+          if (r.ok) {
+            badge.className = 'status-badge up';
+            badge.innerHTML = '<span class="d"></span><span>UP</span>';
+          } else {
+            badge.className = 'status-badge down';
+            badge.innerHTML = '<span class="d"></span><span>DOWN ' + r.status + '</span>';
+          }
+        })
+        .catch(function() {
+          badge.className = 'status-badge down';
+          badge.innerHTML = '<span class="d"></span><span>DOWN</span>';
+          latEl.textContent = 'timeout';
+        });
+    })();
+  </script>
+</body>
+</html>

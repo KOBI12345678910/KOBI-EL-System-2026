@@ -32,26 +32,10 @@ const os = require('node:os');
 // ─────────────────────────────────────────────────────────────
 // Known-bug workaround for PCN836 validator
 //
-// The current implementation of validatePcn836File insists that every line
-// in the file be exactly the same width. That contradicts the PCN836 spec
-// itself — record types have different widths (A=92, B=113, C/D=76, Z=60)
-// and the encoder in pcn836.js correctly emits them that way. The net
-// result is that /api/vat/periods/:id/submit will ALWAYS fail validation
-// with a 422, i.e. the submit endpoint is effectively broken in production.
-//
-// Monkey-patch validatePcn836File BEFORE loading vat-routes (which
-// destructures it at module-load time) so we can still exercise the
-// happy-path route logic (PCN836 build → submission insert → period update
-// → audit → archive) while the bug is filed separately.
+// QA-04-VAT-01 RESOLVED: The PCN836 validator now dispatches width checks
+// per record type (A=92, B=113, C/D=76, Z=60) matching the encoder and the
+// Israeli PCN836 spec. No monkey-patch needed.
 // ─────────────────────────────────────────────────────────────
-const pcn836Mod = require('../src/vat/pcn836.js');
-const originalValidate = pcn836Mod.validatePcn836File;
-pcn836Mod.validatePcn836File = function patchedValidate(file) {
-  const errors = originalValidate(file);
-  // Filter the spurious width-mismatch errors — they fire only because the
-  // validator wrongly assumes all PCN836 records share a single width.
-  return errors.filter((e) => !/^line \d+: width /.test(e));
-};
 
 const { registerVatRoutes } = require('../src/vat/vat-routes.js');
 

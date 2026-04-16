@@ -406,11 +406,10 @@ test('validatePcn836File: file with fewer than 3 records is flagged', () => {
   assert.ok(errors.some((e) => /Too few records/.test(e)));
 });
 
-test('validatePcn836File: real built file has no structural errors (A/B/Z present)', () => {
-  // NOTE: the validator also enforces equal line widths across records,
-  // but the current encoder emits records of DIFFERENT widths
-  // (A=92, B=113, C/D=76, Z=60). We filter those out and verify that
-  // the A/B/Z structural checks pass.
+test('validatePcn836File: real built file passes all checks including per-type widths', () => {
+  // QA-04-VAT-01 RESOLVED: validator dispatches per record type (A=92,
+  // B=113, C/D=76, Z=60) matching the encoder and the PCN836 spec.
+  // A correctly built file should have zero validation errors.
   const file = buildPcn836File({
     companyProfile: companyFixture,
     period: periodFixture,
@@ -418,14 +417,5 @@ test('validatePcn836File: real built file has no structural errors (A/B/Z presen
     outputInvoices: outputInvoicesFixture,
   });
   const errors = validatePcn836File(file);
-  const structural = errors.filter(
-    (e) =>
-      /Missing content/.test(e) ||
-      /Missing metadata/.test(e) ||
-      /Too few records/.test(e) ||
-      /First record must be header/.test(e) ||
-      /Second record must be summary/.test(e) ||
-      /Last record must be trailer/.test(e),
-  );
-  assert.deepEqual(structural, []);
+  assert.deepEqual(errors, [], 'correctly built file should have zero validation errors');
 });

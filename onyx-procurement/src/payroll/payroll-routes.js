@@ -28,7 +28,7 @@ const fs = require('fs');
 const { computeWageSlip } = require('./wage-slip-calculator');
 const { generateWageSlipPdf } = require('./pdf-generator');
 
-function registerPayrollRoutes(app, { supabase, audit }) {
+function registerPayrollRoutes(app, { supabase, audit, requirePermission }) {
   const PDF_DIR = process.env.PAYROLL_PDF_DIR
     || path.join(__dirname, '..', '..', 'storage', 'wage-slips');
 
@@ -293,7 +293,7 @@ function registerPayrollRoutes(app, { supabase, audit }) {
   });
 
   /** Compute and persist a wage slip. */
-  app.post('/api/payroll/wage-slips', async (req, res) => {
+  app.post('/api/payroll/wage-slips', requirePermission('payroll-runs:create'), async (req, res) => {
     try {
       const { employee_id, timesheet, period } = req.body;
       if (!employee_id) return res.status(400).json({ error: 'employee_id required' });
@@ -375,7 +375,7 @@ function registerPayrollRoutes(app, { supabase, audit }) {
   });
 
   // Agent-Y-QA12 FIX (BUG-QA12-005/007): admin-only + four-eyes principle.
-  app.post('/api/payroll/wage-slips/:id/approve', async (req, res) => {
+  app.post('/api/payroll/wage-slips/:id/approve', requirePermission('wage-slips:sign'), async (req, res) => {
     const { isAdmin, employeeId } = getCallerIdentity(req);
 
     // BUG-QA12-005: only admins may approve (viewers/employees cannot write)
@@ -416,7 +416,7 @@ function registerPayrollRoutes(app, { supabase, audit }) {
     res.json({ wage_slip: data });
   });
 
-  app.post('/api/payroll/wage-slips/:id/issue', async (req, res) => {
+  app.post('/api/payroll/wage-slips/:id/issue', requirePermission('wage-slips:generate'), async (req, res) => {
     try {
       const { data: slip } = await supabase.from('wage_slips').select('*').eq('id', req.params.id).single();
       if (!slip) return res.status(404).json({ error: 'Not found' });
@@ -470,7 +470,7 @@ function registerPayrollRoutes(app, { supabase, audit }) {
     }
   });
 
-  app.post('/api/payroll/wage-slips/:id/void', async (req, res) => {
+  app.post('/api/payroll/wage-slips/:id/void', requirePermission('payroll-runs:update'), async (req, res) => {
     const { data: prev } = await supabase.from('wage_slips').select('*').eq('id', req.params.id).single();
     if (!prev) return res.status(404).json({ error: 'Not found' });
     const reason = req.body.reason || 'no reason provided';
@@ -504,7 +504,7 @@ function registerPayrollRoutes(app, { supabase, audit }) {
 
   // Agent-Y-QA12 FIX (BUG-QA12-004/005): allowlist + admin-only on balance write
   const BALANCE_FIELDS = ['vacation_days_balance', 'sick_days_balance', 'study_fund_balance', 'severance_balance', 'snapshot_date'];
-  app.post('/api/payroll/employees/:id/balances', async (req, res) => {
+  app.post('/api/payroll/employees/:id/balances', requirePermission('employees:update'), async (req, res) => {
     const { isAdmin } = getCallerIdentity(req);
     if (!isAdmin) {
       return res.status(403).json({ error: 'forbidden', code: 'BALANCE_WRITE_DENIED', reason_he: 'עדכון יתרות דורש הרשאת מנהל' });

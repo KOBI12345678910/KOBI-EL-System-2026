@@ -7,7 +7,7 @@
 
 const { buildForm1320, buildForm1301, buildForm6111, buildForm30A } = require('./form-builders');
 
-function registerAnnualTaxRoutes(app, { supabase, audit }) {
+function registerAnnualTaxRoutes(app, { supabase, audit, requirePermission }) {
   // ═══ PROJECTS ═══
 
   app.get('/api/projects', async (req, res) => {
@@ -41,6 +41,28 @@ function registerAnnualTaxRoutes(app, { supabase, audit }) {
     res.json({ project: data });
   });
 
+  app.put('/api/projects/:id', async (req, res) => {
+    const { data: prev } = await supabase.from('projects').select('*').eq('id', req.params.id).single();
+    const { data, error } = await supabase.from('projects').update({
+      ...req.body,
+      updated_at: new Date().toISOString(),
+    }).eq('id', req.params.id).select().single();
+    if (error) return res.status(400).json({ error: error.message });
+    await audit('project', data.id, 'updated', req.actor || 'api',
+      `עודכן: ${Object.keys(req.body).join(', ')}`, prev, data);
+    res.json({ project: data });
+  });
+
+  app.delete('/api/projects/:id', async (req, res) => {
+    const { data: prev } = await supabase.from('projects').select('*').eq('id', req.params.id).single();
+    if (!prev) return res.status(404).json({ error: 'Project not found' });
+    const { error } = await supabase.from('projects').delete().eq('id', req.params.id);
+    if (error) return res.status(500).json({ error: error.message });
+    await audit('project', parseInt(req.params.id), 'deleted', req.actor || 'api',
+      `נמחק פרויקט: ${prev.name}`, prev, null);
+    res.json({ ok: true });
+  });
+
   // ═══ CUSTOMERS ═══
 
   app.get('/api/customers', async (req, res) => {
@@ -56,6 +78,28 @@ function registerAnnualTaxRoutes(app, { supabase, audit }) {
     res.status(201).json({ customer: data });
   });
 
+  app.put('/api/customers/:id', async (req, res) => {
+    const { data: prev } = await supabase.from('customers').select('*').eq('id', req.params.id).single();
+    const { data, error } = await supabase.from('customers').update({
+      ...req.body,
+      updated_at: new Date().toISOString(),
+    }).eq('id', req.params.id).select().single();
+    if (error) return res.status(400).json({ error: error.message });
+    await audit('customer', data.id, 'updated', req.actor || 'api',
+      `עודכן לקוח: ${data.name}`, prev, data);
+    res.json({ customer: data });
+  });
+
+  app.delete('/api/customers/:id', async (req, res) => {
+    const { data: prev } = await supabase.from('customers').select('*').eq('id', req.params.id).single();
+    if (!prev) return res.status(404).json({ error: 'Customer not found' });
+    const { error } = await supabase.from('customers').update({ active: false, updated_at: new Date().toISOString() }).eq('id', req.params.id);
+    if (error) return res.status(500).json({ error: error.message });
+    await audit('customer', parseInt(req.params.id), 'deleted', req.actor || 'api',
+      `בוטל לקוח: ${prev.name}`, prev, null);
+    res.json({ ok: true });
+  });
+
   // ═══ CUSTOMER INVOICES ═══
 
   app.get('/api/customer-invoices', async (req, res) => {
@@ -69,7 +113,7 @@ function registerAnnualTaxRoutes(app, { supabase, audit }) {
     res.json({ invoices: data });
   });
 
-  app.post('/api/customer-invoices', async (req, res) => {
+  app.post('/api/customer-invoices', requirePermission('invoices:create'), async (req, res) => {
     const body = { ...req.body };
     if (!body.vat_amount && body.net_amount) {
       const rate = body.vat_rate || 0.17;
@@ -101,7 +145,7 @@ function registerAnnualTaxRoutes(app, { supabase, audit }) {
     res.json({ payments: data });
   });
 
-  app.post('/api/customer-payments', async (req, res) => {
+  app.post('/api/customer-payments', requirePermission('payments:create'), async (req, res) => {
     const body = { ...req.body, created_by: req.actor || 'api' };
     const { data: payment, error } = await supabase.from('customer_payments').insert(body).select().single();
     if (error) return res.status(400).json({ error: error.message });
@@ -138,7 +182,7 @@ function registerAnnualTaxRoutes(app, { supabase, audit }) {
     res.json({ fiscal_years: data });
   });
 
-  app.post('/api/fiscal-years/:year/compute', async (req, res) => {
+  app.post('/api/fiscal-years/:year/compute', requirePermission('tax-annual:create'), async (req, res) => {
     const year = parseInt(req.params.year);
     if (isNaN(year)) return res.status(400).json({ error: 'Invalid year' });
 
@@ -190,7 +234,7 @@ function registerAnnualTaxRoutes(app, { supabase, audit }) {
 
   // ═══ ANNUAL FORMS ═══
 
-  app.post('/api/annual-tax/:year/forms/:type/generate', async (req, res) => {
+  app.post('/api/annual-tax/:year/forms/:type/generate', requirePermission('tax-annual:export'), async (req, res) => {
     const year = parseInt(req.params.year);
     const formType = req.params.type;
     if (!['1320', '1301', '6111', '30a'].includes(formType)) {

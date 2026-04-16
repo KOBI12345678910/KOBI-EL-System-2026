@@ -419,32 +419,32 @@ describe('QA-02.PCN.7 validatePcn836File edges', () => {
     assert.ok(errors.length > 0);
   });
 
-  test('7.02 file with lines of equal width passes width check', () => {
-    const uniform = {
+  test('7.02 file with correct per-type widths passes width check', () => {
+    // Validator dispatches by record type: A=92, B=113, C/D=76, Z=60
+    const valid = {
       content: 'x',
       metadata: {},
-      lines: ['A' + 'x'.repeat(9), 'B' + 'x'.repeat(9), 'Z' + 'x'.repeat(9)],
+      lines: ['A' + 'x'.repeat(91), 'B' + 'x'.repeat(112), 'Z' + 'x'.repeat(59)],
     };
-    const errors = validatePcn836File(uniform);
+    const errors = validatePcn836File(valid);
     const widthErr = errors.find(e => /line \d+: width/.test(e));
-    assert.equal(widthErr, undefined, 'uniform widths should not trigger width errors');
+    assert.equal(widthErr, undefined, 'correct per-type widths should not trigger width errors');
   });
 
-  test('7.03 file with differing widths flags (known real-file bug)', () => {
-    const nonUniform = {
+  test('7.03 file with wrong width for its record type flags an error', () => {
+    const badWidth = {
       content: 'x',
       metadata: {},
-      lines: ['A' + 'x'.repeat(9), 'B' + 'x'.repeat(8), 'Z' + 'x'.repeat(9)],
+      lines: ['A' + 'x'.repeat(91), 'B' + 'x'.repeat(50), 'Z' + 'x'.repeat(59)],
     };
-    const errors = validatePcn836File(nonUniform);
+    const errors = validatePcn836File(badWidth);
     assert.ok(errors.some(e => /line 1: width/.test(e)),
-      `expected width error on line 1, got ${JSON.stringify(errors)}`);
+      `expected width error on line 1 (B record wrong width), got ${JSON.stringify(errors)}`);
   });
 
-  test('7.04 DOCUMENTED BUG: validator is overly strict vs encoder', () => {
-    // Encoder emits records of different widths (A=92, B=113, C/D=76, Z=60)
-    // but validator insists on equal widths → real files fail validation.
-    // This test DOCUMENTS the inconsistency.
+  test('7.04 RESOLVED: validator accepts encoder output (per-type widths)', () => {
+    // QA-04-VAT-01 fix: validator now dispatches per record type (A=92, B=113,
+    // C/D=76, Z=60) matching the encoder output and the Israeli PCN836 spec.
     const f = buildPcn836File({
       companyProfile: baseCompany,
       period: basePeriod,
@@ -460,7 +460,7 @@ describe('QA-02.PCN.7 validatePcn836File edges', () => {
     });
     const errors = validatePcn836File(f);
     const widthErrors = errors.filter(e => /line \d+: width/.test(e));
-    assert.ok(widthErrors.length > 0,
-      'DOCUMENTED BUG: validator will complain about line widths that are correct per spec');
+    assert.equal(widthErrors.length, 0,
+      'validator should accept correctly generated files with no width errors');
   });
 });

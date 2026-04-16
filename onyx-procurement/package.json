@@ -7,7 +7,7 @@
     "prestart": "node scripts/validate-env.js",
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test": "node --test tests/",
+    "test": "node --test test/**/*.test.js",
     "migrate": "node scripts/migrate.js",
     "migrate:status": "node scripts/migrate.js --status",
     "migrate:rollback": "node scripts/migrate.js --down 1",

@@ -46,13 +46,18 @@ const RECOMMENDED_ENV = ['ALLOWED_ORIGINS', 'NODE_ENV', 'APP_URL'];
 function validateEnv() {
   const missing = REQUIRED_ENV.filter((k) => !process.env[k]);
   if (missing.length) {
-    console.error('');
-    console.error('TECHNO-KOL OPS boot failed — missing required env vars:');
-    missing.forEach((k) => console.error(`   - ${k}`));
-    console.error('');
-    console.error('   Copy .env.example -> .env and fill in real values.');
-    console.error('');
-    process.exit(1);
+    // Production: fail-closed. Development: warn only.
+    if (process.env.NODE_ENV === 'production') {
+      console.error('');
+      console.error('TECHNO-KOL OPS boot failed — missing required env vars:');
+      missing.forEach((k) => console.error(`   - ${k}`));
+      console.error('');
+      console.error('   Copy .env.example -> .env and fill in real values.');
+      console.error('');
+      process.exit(1);
+    }
+    console.warn('[security] missing env vars (dev mode, continuing):', missing.join(', '));
+    console.warn('[security]   Copy .env.example -> .env and fill in real values for stable operation.');
   }
 
   // Refuse the well-known default JWT secret in production
@@ -87,15 +92,32 @@ let helmetMw;
 try {
   const helmet = require('helmet');
   helmetMw = helmet({
-    // RTL dashboard / dynamic content → CSP tuned permissively; tighten later.
-    contentSecurityPolicy: false,
+    // BUG-SEC-010: Enable CSP with a permissive-but-present policy for RTL dashboard.
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+        imgSrc: ["'self'", "data:", "blob:", "https:"],
+        connectSrc: ["'self'", "ws:", "wss:", "http://localhost:*", "https://localhost:*"],
+        frameSrc: ["'none'"],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+      },
+    },
     crossOriginResourcePolicy: { policy: 'cross-origin' },
     crossOriginEmbedderPolicy: false,
   });
 } catch (e) {
-  console.warn(
-    '[security] helmet not installed — run `npm install helmet`. Falling back to no-op.'
-  );
+  // BUG-SEC-007: Fail-closed in production — no silent degradation
+  if (process.env.NODE_ENV === 'production') {
+    console.error('[security] FATAL: helmet not installed. Cannot start in production without security headers.');
+    console.error('   Run: npm install helmet');
+    process.exit(1);
+  }
+  console.warn('[security] helmet not installed — run `npm install helmet`. Falling back to no-op (dev only).');
   helmetMw = (_req, _res, next) => next();
 }
 
@@ -210,7 +232,7 @@ function requireAuth(req, res, next) {
   if (authHeader.startsWith('Bearer ')) {
     const token = authHeader.slice(7);
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
       req.user = decoded;
       req.actor = `user:${decoded.username || decoded.id}`;
       return next();

@@ -109,18 +109,10 @@ test('QA-03 PCN836 :: Hebrew char JS-length ≠ UTF-8 bytes ≠ windows-1255 byt
   );
 });
 
-test('QA-03 PCN836 :: BUG-08e — validator rejects every real built file, even pure ASCII', () => {
-  // Known-good ASCII input. By the strict reading of "fixed-width file",
-  // every line should be the same width — but the PCN836 standard actually
-  // uses DIFFERENT widths per record type:
-  //    A (header)  — 92
-  //    B (summary) — 113
-  //    C/D (invoice) — 76
-  //    Z (trailer) — 60
-  // The current validator does a naive "all lines equal width" check, so
-  // it reports false positives on every real file. The existing pcn836
-  // unit test explicitly filters these out — we assert the behaviour so
-  // any future fix has a failing test to prove the fix.
+test('QA-03 PCN836 :: BUG-08e RESOLVED — validator accepts real built files with per-type widths', () => {
+  // QA-04-VAT-01 fix: validator now dispatches per record type (A=92,
+  // B=113, C/D=76, Z=60) matching the encoder and the PCN836 spec.
+  // A correctly generated file should pass validation with zero width errors.
   const file = buildPcn836File({
     companyProfile: companyProfileAscii,
     period,
@@ -131,14 +123,15 @@ test('QA-03 PCN836 :: BUG-08e — validator rejects every real built file, even 
   const widths = new Set(file.lines.map((l) => l.length));
   assert.ok(
     widths.size > 1,
-    `BUG-08e: real file has multiple widths (${[...widths].join(',')}), but validator asserts one`,
+    `real file has multiple widths per record type (${[...widths].join(',')})`,
   );
 
   const errors = validatePcn836File(file);
   const widthErrors = errors.filter((e) => /width \d+/.test(e));
-  assert.ok(
-    widthErrors.length > 0,
-    'BUG-08e: validator reports width errors on a legitimate ASCII-only file',
+  assert.equal(
+    widthErrors.length,
+    0,
+    'BUG-08e RESOLVED: validator accepts legitimate files with correct per-type widths',
   );
 });
 
@@ -258,7 +251,7 @@ test('QA-03 PCN836 :: building a file with an empty legal_name does NOT crash th
     companyProfile: { ...companyProfileHebrew, legal_name: '' },
     period,
   });
-  // The structural assertions still hold — only width errors fire
+  // All validation should pass cleanly (no width errors after QA-04-VAT-01 fix)
   const errors = validatePcn836File(file);
   const structural = errors.filter(
     (e) =>

@@ -126,21 +126,10 @@ function runTrial(size) {
   const bytes = Buffer.byteLength(file.content, 'utf8');
   const throughput = size > 0 ? size / (buildMs / 1000) : 0;
 
-  // Validate: the existing validator enforces equal line widths, but
-  // real PCN836 records intentionally have different widths (A=92,
-  // B=113, C/D=76, Z=60). We filter those width errors out and only
-  // assert the STRUCTURAL checks (A/B/Z presence, min record count)
-  // so this bench does not misreport a validator limitation as a bug.
-  const allErrors = validatePcn836File(file);
-  const structuralErrors = allErrors.filter(
-    (e) =>
-      /Missing content/.test(e) ||
-      /Missing metadata/.test(e) ||
-      /Too few records/.test(e) ||
-      /First record must be header/.test(e) ||
-      /Second record must be summary/.test(e) ||
-      /Last record must be trailer/.test(e),
-  );
+  // QA-04-VAT-01 RESOLVED: validator now dispatches per record type
+  // (A=92, B=113, C/D=76, Z=60). All errors from a correctly built
+  // file are genuine issues.
+  const structuralErrors = validatePcn836File(file);
 
   if (structuralErrors.length > 0) {
     throw new Error(

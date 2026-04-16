@@ -60,6 +60,11 @@ router.post('/', async (req: AuthRequest, res: Response) => {
   }
 });
 
+// BUG-SEC-004: Column allowlist to prevent SQL injection via key interpolation
+const TASK_STATUS_ALLOWED_COLUMNS = new Set([
+  'status', 'notes', 'arrived_at', 'completed_at',
+]);
+
 // PUT update task status (from mobile)
 router.put('/:id/status', async (req: AuthRequest, res: Response) => {
   try {
@@ -71,8 +76,9 @@ router.put('/:id/status', async (req: AuthRequest, res: Response) => {
     if (status === 'done') updates.completed_at = new Date().toISOString();
     if (notes) updates.notes = notes;
 
-    const keys = Object.keys(updates);
-    const values = keys.map(k => updates[k]);
+    const safePairs = Object.entries(updates).filter(([k]) => TASK_STATUS_ALLOWED_COLUMNS.has(k));
+    const keys = safePairs.map(([k]) => k);
+    const values = safePairs.map(([, v]) => v);
     const setClause = keys.map((k, i) => `${k} = $${i + 2}`).join(', ');
 
     const { rows } = await query(

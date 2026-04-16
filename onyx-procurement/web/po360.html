@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PO 360 — Techno-Kol Uzi ERP 2026</title>
+  <style>
+    :root{--bg-0:#05070a;--bg-1:#0a0e14;--bg-2:#111720;--bg-3:#1a2230;--border:#1f2a3a;--border-hi:#2a3a52;--text-0:#e6ecf5;--text-1:#a8b4c8;--text-2:#6b7a90;--accent:#3a8dde;--accent-hi:#5aa8ff;--ok:#2bd48b;--warn:#f2b84d;--err:#ef5350;--purple:#a78bfa;--teal:#2dd4bf;--font:'Segoe UI','Heebo','Assistant',system-ui,sans-serif;--mono:'Consolas','Menlo',monospace}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg-0);color:var(--text-0);font-family:var(--font);min-height:100vh;background-image:radial-gradient(ellipse at top,rgba(58,141,222,.04),transparent 60%)}
+    .container{max-width:1200px;margin:0 auto;padding:24px}
+
+    .top-nav{display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap;gap:10px}
+    .nav-links{display:flex;gap:8px}
+    .back-link{color:var(--accent-hi);text-decoration:none;font-size:13px;padding:6px 14px;border:1px solid var(--border);border-radius:6px;background:var(--bg-2);transition:all .15s}
+    .back-link:hover{background:var(--bg-3);border-color:var(--accent)}
+
+    .header-card{background:linear-gradient(135deg,var(--bg-2),var(--bg-1));border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px;position:relative;overflow:hidden}
+    .header-card::before{content:'';position:absolute;top:0;right:0;width:200px;height:200px;background:radial-gradient(circle,rgba(45,212,191,.05),transparent 70%);pointer-events:none}
+    .header-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px}
+    .header-title{display:flex;align-items:center;gap:14px}
+    .header-icon{font-size:36px}
+    .header-name{font-size:24px;font-weight:700;line-height:1.2}
+    .header-sub{font-size:13px;color:var(--text-2);margin-top:2px}
+    .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:16px;font-size:12px;font-weight:600}
+    .badge-draft{background:rgba(107,122,144,.1);color:var(--text-2);border:1px solid rgba(107,122,144,.25)}
+    .badge-pending{background:rgba(242,184,77,.1);color:var(--warn);border:1px solid rgba(242,184,77,.25)}
+    .badge-approved{background:rgba(43,212,139,.1);color:var(--ok);border:1px solid rgba(43,212,139,.25)}
+    .badge-sent{background:rgba(58,141,222,.1);color:var(--accent-hi);border:1px solid rgba(58,141,222,.25)}
+    .badge-partial{background:rgba(45,212,191,.1);color:var(--teal);border:1px solid rgba(45,212,191,.25)}
+    .badge-full{background:rgba(43,212,139,.15);color:var(--ok);border:1px solid rgba(43,212,139,.3)}
+    .badge-rejected{background:rgba(239,83,80,.1);color:var(--err);border:1px solid rgba(239,83,80,.25)}
+    .badge-closed{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.25)}
+    .badges{display:flex;gap:8px;flex-wrap:wrap}
+    .header-fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:18px}
+    .hf{font-size:12px}.hf .lbl{color:var(--text-2);margin-bottom:2px}.hf .val{color:var(--text-0);font-weight:600;font-size:14px}
+
+    .nba{background:linear-gradient(135deg,rgba(43,212,139,.06),rgba(45,212,191,.04));border:1px solid rgba(43,212,139,.2);border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .nba-label{font-size:13px;color:var(--ok);font-weight:600}.nba-text{font-size:13px;color:var(--text-1)}
+
+    .action-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);font-family:var(--font);transition:all .15s;background:var(--bg-2);color:var(--text-1)}
+    .btn:hover{background:var(--bg-3);color:var(--text-0)}
+    .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn-primary:hover{background:var(--accent-hi)}
+    .btn-success{background:rgba(43,212,139,.12);color:var(--ok);border-color:rgba(43,212,139,.3)}.btn-success:hover{background:rgba(43,212,139,.2)}
+    .btn-danger{background:rgba(239,83,80,.08);color:var(--err);border-color:rgba(239,83,80,.25)}.btn-danger:hover{background:rgba(239,83,80,.15)}
+    .btn-purple{background:rgba(167,139,250,.1);color:var(--purple);border-color:rgba(167,139,250,.25)}.btn-purple:hover{background:rgba(167,139,250,.18)}
+    .btn-teal{background:rgba(45,212,191,.1);color:var(--teal);border-color:rgba(45,212,191,.25)}.btn-teal:hover{background:rgba(45,212,191,.18)}
+    .btn .ic{font-size:16px}
+
+    .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:20px}
+    .card{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:16px}
+    .card-title{font-size:12px;color:var(--text-2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+    .card-value{font-size:22px;font-weight:700;font-family:var(--mono)}
+    .card-sub{font-size:12px;color:var(--text-2);margin-top:4px}
+    .card-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(31,42,58,.5);font-size:13px}
+    .card-row:last-child{border-bottom:none}
+    .card-row .label{color:var(--text-2)}.card-row .value{color:var(--text-0);font-weight:600;font-family:var(--mono)}
+    .card-highlight{border-color:var(--teal);background:linear-gradient(135deg,rgba(45,212,191,.04),var(--bg-2))}
+
+    .timeline-bar{display:flex;align-items:center;gap:0;overflow-x:auto;padding:12px 0;margin-bottom:20px}
+    .tl-step{display:flex;flex-direction:column;align-items:center;min-width:70px}
+    .tl-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid var(--border);color:var(--text-2);background:var(--bg-2)}
+    .tl-dot.done{background:var(--ok);color:#fff;border-color:var(--ok)}
+    .tl-dot.current{background:var(--teal);color:#fff;border-color:var(--teal);box-shadow:0 0 12px rgba(45,212,191,.35)}
+    .tl-line{width:32px;height:2px;background:var(--border);flex-shrink:0;margin-bottom:18px}
+    .tl-line.done{background:var(--ok)}
+    .tl-label{font-size:10px;color:var(--text-2);text-align:center;margin-top:5px;max-width:72px}
+
+    .tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px;overflow-x:auto}
+    .tab{padding:10px 18px;font-size:13px;font-weight:500;color:var(--text-2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .15s}
+    .tab:hover{color:var(--text-0)}.tab.active{color:var(--accent-hi);border-bottom-color:var(--accent)}
+    .tab-panel{display:none}.tab-panel.active{display:block}
+
+    .tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:8px}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th{background:var(--bg-3);color:var(--text-2);font-weight:600;padding:10px 14px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--border)}
+    td{padding:10px 14px;border-bottom:1px solid rgba(31,42,58,.4);color:var(--text-1)}
+    tr:hover td{background:rgba(58,141,222,.03)}
+
+    .section{margin-bottom:24px}
+    .section-title{font-size:15px;font-weight:600;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+    .empty{text-align:center;padding:40px;color:var(--text-2);font-size:14px}
+    .empty-icon{font-size:32px;margin-bottom:8px}
+
+    .skeleton{background:linear-gradient(90deg,var(--bg-3) 25%,var(--bg-2) 50%,var(--bg-3) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .skel-line{height:14px;margin-bottom:8px;width:80%}
+    .skel-block{height:60px;margin-bottom:12px}
+
+    .ai-card{background:linear-gradient(135deg,rgba(167,139,250,.06),rgba(58,141,222,.04));border:1px solid rgba(167,139,250,.2);border-radius:10px;padding:16px}
+    .ai-title{font-size:13px;color:var(--purple);font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+    .ai-text{font-size:13px;color:var(--text-1);line-height:1.6}
+
+    /* PROGRESS BAR */
+    .progress-wrap{background:var(--bg-3);border-radius:6px;overflow:hidden;height:10px;margin:6px 0}
+    .progress-fill{height:100%;border-radius:6px;transition:width .3s}
+    .progress-ok{background:var(--ok)}.progress-warn{background:var(--warn)}.progress-partial{background:var(--teal)}
+
+    @media(max-width:768px){.cards-grid{grid-template-columns:1fr 1fr}.header-fields{grid-template-columns:1fr 1fr}}
+    @media(max-width:480px){.cards-grid{grid-template-columns:1fr}.header-fields{grid-template-columns:1fr}.action-bar{flex-direction:column}.btn{width:100%;justify-content:center}}
+  </style>
+</head>
+<body>
+<div class="container">
+  <nav class="top-nav">
+    <div class="nav-links">
+      <a href="index.html" class="back-link">בית</a>
+      <a href="pipeline-dashboard.html" class="back-link">Pipeline</a>
+      <a href="entity360.html?type=po" class="back-link">Entity 360</a>
+    </div>
+    <div style="font-size:12px;color:var(--text-2)">PO360 · Techno-Kol Uzi ERP 2026</div>
+  </nav>
+
+  <div id="loading">
+    <div class="skeleton skel-block" style="height:120px"></div>
+    <div class="skeleton skel-block" style="height:50px;width:60%"></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:16px">
+      <div class="skeleton skel-block"></div><div class="skeleton skel-block"></div>
+      <div class="skeleton skel-block"></div><div class="skeleton skel-block"></div>
+    </div>
+    <div class="skeleton skel-block" style="height:200px;margin-top:16px"></div>
+  </div>
+
+  <div id="main-content" style="display:none">
+    <div class="header-card" id="po-header"></div>
+    <div class="timeline-bar" id="status-timeline"></div>
+    <div class="nba" id="nba"></div>
+    <div class="action-bar" id="primary-actions"></div>
+    <div class="action-bar" id="secondary-actions"></div>
+    <div class="cards-grid" id="summary-cards"></div>
+    <div class="tabs" id="tabs"></div>
+    <div id="tab-panels"></div>
+  </div>
+
+  <div id="error-state" style="display:none">
+    <div class="card" style="text-align:center;padding:60px 20px">
+      <div style="font-size:48px;margin-bottom:16px">&#x26A0;</div>
+      <div style="font-size:18px;font-weight:600;margin-bottom:8px">שגיאה בטעינת הזמנת רכש</div>
+      <div style="color:var(--text-2);margin-bottom:20px" id="error-msg"></div>
+      <button class="btn btn-primary" onclick="loadPO()">נסה שנית</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var API = '';
+var poId = new URLSearchParams(window.location.search).get('id') || 'PO-2026-0031';
+
+var mockPO = {
+  po_number: 'PO-2026-0031',
+  supplier_name: 'אלקטרו-פלוס',
+  supplier_id: 'SUP-2042',
+  state: 'sent',
+  approval_status: 'approved',
+  receiving_status: 'partial',
+  created_at: '2026-03-25',
+  expected_delivery: '2026-04-15',
+  buyer: 'מיכל אברהם',
+  project_ref: 'PRJ-2026-0005',
+  project_name: 'פרויקט מגדלי השקמה',
+  rfq_ref: 'RFQ-2026-0018',
+  subtotal: 138500,
+  vat_rate: 17,
+  vat_amount: 23545,
+  grand_total: 162045,
+  currency: 'ILS',
+  lines: [
+    { num:1, sku:'MAT-5501', desc:'כבל חשמל NYY 5x16mm', ordered:800, received:500, open:300, unit:'מטר', price:95, total:76000 },
+    { num:2, sku:'MAT-5520', desc:'לוח חשמל משנה 160A', ordered:6, received:4, open:2, unit:'יחידה', price:7200, total:43200 },
+    { num:3, sku:'MAT-5535', desc:'ברקרים 3P 63A', ordered:24, received:24, open:0, unit:'יחידה', price:520, total:12480 },
+    { num:4, sku:'MAT-5540', desc:'פס צבירה נחושת 30x10mm', ordered:12, received:6, open:6, unit:'מטר', price:568, total:6820 }
+  ],
+  receipts: [
+    { receipt_no:'GRN-0081', date:'2026-04-02', received_by:'עמית רז', items:'3 פריטים', status:'completed' },
+    { receipt_no:'GRN-0095', date:'2026-04-08', received_by:'עמית רז', items:'2 פריטים', status:'completed' }
+  ],
+  invoices: [],
+  audit: [
+    { date:'2026-03-25 10:00', user:'מיכל אברהם', action:'יצירת PO', detail:'נוצר מ-RFQ-2026-0018' },
+    { date:'2026-03-25 14:00', user:'יוסי לוי', action:'אישור', detail:'מנהל רכש אישר' },
+    { date:'2026-03-26 08:00', user:'רונית שמש', action:'אישור כספי', detail:'סמנכ"ל כספים אישר' },
+    { date:'2026-03-26 09:30', user:'מיכל אברהם', action:'שליחה לספק', detail:'נשלח במייל לאלקטרו-פלוס' },
+    { date:'2026-04-02 13:00', user:'עמית רז', action:'קליטת סחורה', detail:'GRN-0081: 3 פריטים נקלטו' },
+    { date:'2026-04-08 11:00', user:'עמית רז', action:'קליטת סחורה', detail:'GRN-0095: 2 פריטים נקלטו' }
+  ]
+};
+
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function fmt(n){ return Number(n).toLocaleString('he-IL'); }
+function fmtCur(n){ return '\u20AA' + fmt(n); }
+
+var STATES = ['draft','pending_approval','approved','sent','partial_receipt','fully_received','invoiced','closed','cancelled'];
+var STATE_LABELS = {draft:'טיוטה',pending_approval:'ממתין לאישור',approved:'מאושר',sent:'נשלח לספק',partial_receipt:'קליטה חלקית',fully_received:'נקלט במלואו',invoiced:'חשבונית נרשמה',closed:'סגור',cancelled:'בוטל'};
+var STATE_BADGES = {draft:'badge-draft',pending_approval:'badge-pending',approved:'badge-approved',sent:'badge-sent',partial_receipt:'badge-partial',fully_received:'badge-full',invoiced:'badge-closed',closed:'badge-closed',cancelled:'badge-rejected'};
+var RCV_BADGES = {none:'badge-draft',partial:'badge-partial',full:'badge-full'};
+var RCV_LABELS = {none:'לא נקלט',partial:'קליטה חלקית',full:'נקלט במלואו'};
+
+function renderHeader(po){
+  var stBadge = STATE_BADGES[po.state]||'badge-draft';
+  var apBadge = po.approval_status==='approved'?'badge-approved':po.approval_status==='rejected'?'badge-rejected':'badge-pending';
+  var rcvBadge = RCV_BADGES[po.receiving_status]||'badge-draft';
+  document.getElementById('po-header').innerHTML =
+    '<div class="header-top"><div class="header-title"><span class="header-icon">&#x1F6D2;</span>' +
+    '<div><div class="header-name">' + esc(po.po_number) + '</div>' +
+    '<div class="header-sub">&#x1F3ED; ' + esc(po.supplier_name) + ' &middot; ' + esc(po.buyer) + '</div></div></div>' +
+    '<div class="badges"><span class="badge ' + stBadge + '">' + esc(STATE_LABELS[po.state]||po.state) + '</span>' +
+    '<span class="badge ' + apBadge + '">&#x2705; ' + esc(po.approval_status) + '</span>' +
+    '<span class="badge ' + rcvBadge + '">&#x1F4E6; ' + esc(RCV_LABELS[po.receiving_status]||po.receiving_status) + '</span></div></div>' +
+    '<div class="header-fields">' +
+      '<div class="hf"><div class="lbl">תאריך יצירה</div><div class="val">' + esc(po.created_at) + '</div></div>' +
+      '<div class="hf"><div class="lbl">אספקה צפויה</div><div class="val">' + esc(po.expected_delivery) + '</div></div>' +
+      '<div class="hf"><div class="lbl">ספק</div><div class="val">' + esc(po.supplier_name) + '</div></div>' +
+      '<div class="hf"><div class="lbl">פרויקט</div><div class="val">' + esc(po.project_name) + '</div></div>' +
+      '<div class="hf"><div class="lbl">סה"כ כולל מע"מ</div><div class="val" style="color:var(--accent-hi)">' + fmtCur(po.grand_total) + '</div></div>' +
+      '<div class="hf"><div class="lbl">הזמנת RFQ</div><div class="val" style="font-family:var(--mono)">' + esc(po.rfq_ref) + '</div></div>' +
+    '</div>';
+}
+
+function renderTimeline(po){
+  var el = document.getElementById('status-timeline');
+  var ci = STATES.indexOf(po.state); if(ci<0) ci=0;
+  var html = '';
+  STATES.forEach(function(s,i){
+    if(i>0) html+='<div class="tl-line'+(i<=ci?' done':'')+'"></div>';
+    var cls = i<ci?'tl-dot done':i===ci?'tl-dot current':'tl-dot';
+    html += '<div class="tl-step"><div class="'+cls+'">'+(i+1)+'</div><div class="tl-label">'+esc(STATE_LABELS[s])+'</div></div>';
+  });
+  el.innerHTML = html;
+}
+
+function renderNBA(po){
+  var el = document.getElementById('nba');
+  var msg='',action='',label='';
+  if(po.state==='draft'){ msg='ההזמנה בטיוטה. בקש אישור מהנהלה.'; action='request_approval'; label='&#x2705; בקש אישור'; }
+  else if(po.state==='pending_approval'){ msg='ממתין לאישור הנהלה. אין פעולה נדרשת כרגע.'; }
+  else if(po.state==='approved'){ msg='ההזמנה מאושרת! שלח לספק.'; action='send'; label='&#x1F4E8; שלח לספק'; }
+  else if(po.state==='sent'){ msg='ההזמנה נשלחה לספק. ציפייה לקליטת סחורה.'; action='receive'; label='&#x1F4E6; קלוט סחורה'; }
+  else if(po.receiving_status==='partial'){ msg='קליטה חלקית — המשך לקלוט את יתרת הפריטים.'; action='receive'; label='&#x1F4E6; קלוט סחורה נוספת'; }
+  else if(po.receiving_status==='full' && po.invoices.length===0){ msg='כל הסחורה נקלטה! רשום חשבונית ספק.'; action='register_invoice'; label='&#x1F4B0; רשום חשבונית'; }
+  else if(po.state==='invoiced'){ msg='חשבונית נרשמה. סגור את ההזמנה.'; action='close'; label='&#x2705; סגור PO'; }
+  else { msg='בדוק את הסטטוס הנוכחי.'; }
+  el.innerHTML = '<span class="nba-label">&#x1F4A1; הפעולה הבאה:</span><span class="nba-text">' + esc(msg) + '</span>' +
+    (action ? '<button class="btn btn-success" onclick="doAction(\'' + action + '\')">' + label + '</button>' : '');
+}
+
+function renderActions(po){
+  var p = document.getElementById('primary-actions');
+  var s = document.getElementById('secondary-actions');
+  var ph='', sh='';
+  if(po.state==='draft') ph+='<button class="btn btn-primary" onclick="doAction(\'request_approval\')"><span class="ic">&#x2705;</span>בקש אישור</button>';
+  if(po.state==='pending_approval'){
+    ph+='<button class="btn btn-success" onclick="doAction(\'approve\')"><span class="ic">&#x2714;</span>אשר</button>';
+    ph+='<button class="btn btn-danger" onclick="doAction(\'reject\')"><span class="ic">&#x274C;</span>דחה</button>';
+  }
+  if(po.state==='approved') ph+='<button class="btn btn-primary" onclick="doAction(\'send\')"><span class="ic">&#x1F4E8;</span>שלח לספק</button>';
+  if(po.state==='sent'||po.receiving_status==='partial') ph+='<button class="btn btn-teal" onclick="doAction(\'receive\')"><span class="ic">&#x1F4E6;</span>קלוט סחורה</button>';
+  if(po.receiving_status==='full' && po.invoices.length===0) ph+='<button class="btn btn-purple" onclick="doAction(\'register_invoice\')"><span class="ic">&#x1F4B0;</span>רשום חשבונית</button>';
+  ph+='<button class="btn btn-danger" onclick="doAction(\'close\')"><span class="ic">&#x1F512;</span>סגור</button>';
+
+  sh+='<button class="btn" onclick="doAction(\'export\')"><span class="ic">&#x1F4C4;</span>ייצוא PDF</button>';
+  sh+='<button class="btn" onclick="doAction(\'edit\')"><span class="ic">&#x270F;</span>ערוך</button>';
+  sh+='<button class="btn" onclick="doAction(\'attach\')"><span class="ic">&#x1F4CE;</span>צרף מסמך</button>';
+  sh+='<button class="btn" onclick="doAction(\'cancel\')"><span class="ic">&#x274C;</span>בטל</button>';
+  p.innerHTML = ph; s.innerHTML = sh;
+}
+
+function renderCards(po){
+  var totalOrdered = po.lines.reduce(function(s,l){return s+l.ordered},0);
+  var totalReceived = po.lines.reduce(function(s,l){return s+l.received},0);
+  var totalOpen = po.lines.reduce(function(s,l){return s+l.open},0);
+  var rcvPct = totalOrdered > 0 ? Math.round(totalReceived/totalOrdered*100) : 0;
+  var progressCls = rcvPct===100?'progress-ok':rcvPct>0?'progress-partial':'progress-warn';
+
+  document.getElementById('summary-cards').innerHTML =
+    '<div class="card"><div class="card-title">&#x1F3ED; ספק</div>' +
+      '<div class="card-row"><span class="label">שם</span><span class="value">' + esc(po.supplier_name) + '</span></div>' +
+      '<div class="card-row"><span class="label">מזהה</span><span class="value" style="font-family:var(--mono)">' + esc(po.supplier_id) + '</span></div>' +
+      '<button class="btn" style="margin-top:8px;width:100%;justify-content:center" onclick="navigate(\'entity360.html?type=supplier&id=' + po.supplier_id + '\')">&#x1F3ED; Supplier360</button>' +
+    '</div>' +
+    '<div class="card card-highlight"><div class="card-title">&#x1F4B0; סיכום כספי</div>' +
+      '<div class="card-row"><span class="label">סכום ביניים</span><span class="value">' + fmtCur(po.subtotal) + '</span></div>' +
+      '<div class="card-row"><span class="label">מע"מ (' + po.vat_rate + '%)</span><span class="value">' + fmtCur(po.vat_amount) + '</span></div>' +
+      '<div class="card-row" style="border-top:1px solid var(--border);padding-top:8px"><span class="label" style="font-weight:700;color:var(--text-0)">סה"כ</span><span class="value" style="font-size:18px;color:var(--accent-hi)">' + fmtCur(po.grand_total) + '</span></div>' +
+    '</div>' +
+    '<div class="card"><div class="card-title">&#x1F69A; אספקה וקליטה</div>' +
+      '<div class="card-row"><span class="label">אספקה צפויה</span><span class="value">' + esc(po.expected_delivery) + '</span></div>' +
+      '<div class="card-row"><span class="label">סטטוס קליטה</span><span class="value">' + rcvPct + '%</span></div>' +
+      '<div class="progress-wrap"><div class="progress-fill ' + progressCls + '" style="width:' + rcvPct + '%"></div></div>' +
+      '<div class="card-row"><span class="label">נקלטו / הוזמנו</span><span class="value">' + fmt(totalReceived) + ' / ' + fmt(totalOrdered) + '</span></div>' +
+      '<div class="card-row"><span class="label">פתוחים</span><span class="value" style="color:' + (totalOpen>0?'var(--warn)':'var(--ok)') + '">' + fmt(totalOpen) + '</span></div>' +
+    '</div>' +
+    '<div class="card"><div class="card-title">&#x1F4C1; קשר לפרויקט</div>' +
+      '<div class="card-row"><span class="label">פרויקט</span><span class="value">' + esc(po.project_name) + '</span></div>' +
+      '<div class="card-row"><span class="label">מזהה</span><span class="value" style="font-family:var(--mono)">' + esc(po.project_ref) + '</span></div>' +
+      '<div class="card-row"><span class="label">RFQ מקור</span><span class="value" style="font-family:var(--mono)">' + esc(po.rfq_ref) + '</span></div>' +
+    '</div>' +
+    '<div class="ai-card"><div class="ai-title">&#x1F916; תובנות AI רכש</div>' +
+      '<div class="ai-text">המחיר ב-PO זה <strong style="color:var(--ok)">7% מתחת לממוצע שוק</strong>. ' +
+      'הספק אלקטרו-פלוס מציג ציון אמינות של <strong>92/100</strong> ב-12 חודשים אחרונים. ' +
+      'זמן אספקה ממוצע: 18 ימים (צפוי: 21).</div></div>';
+}
+
+var TAB_DEFS = [
+  {id:'overview',label:'סקירה'},{id:'lines',label:'שורות'},{id:'supplier',label:'ספק'},
+  {id:'receiving',label:'קליטה'},{id:'invoices',label:'חשבוניות ספק'},{id:'project',label:'קשר לפרויקט'},
+  {id:'costing',label:'תמחיר'},{id:'returns',label:'החזרות'},{id:'warranty',label:'אחריות'},
+  {id:'documents',label:'מסמכים'},{id:'ai',label:'תובנות AI'},{id:'audit',label:'יומן ביקורת'}
+];
+
+function renderTabs(){
+  var te=document.getElementById('tabs'),pe=document.getElementById('tab-panels');
+  te.innerHTML='';pe.innerHTML='';
+  TAB_DEFS.forEach(function(t,i){
+    te.innerHTML+='<div class="tab'+(i===0?' active':'')+'" data-tab="'+t.id+'" onclick="switchTab(\''+t.id+'\')">'+esc(t.label)+'</div>';
+    pe.innerHTML+='<div class="tab-panel'+(i===0?' active':'')+'" id="panel-'+t.id+'"></div>';
+  });
+}
+function switchTab(id){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.getAttribute('data-tab')===id)});
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.toggle('active',p.id==='panel-'+id)});
+}
+
+function renderTabContent(po){
+  var totalOrdered = po.lines.reduce(function(s,l){return s+l.ordered},0);
+  var totalReceived = po.lines.reduce(function(s,l){return s+l.received},0);
+  var rcvPct = totalOrdered>0?Math.round(totalReceived/totalOrdered*100):0;
+
+  // OVERVIEW
+  document.getElementById('panel-overview').innerHTML =
+    '<div class="section"><div class="section-title">סקירת הזמנת רכש</div>' +
+    '<div class="card"><p style="color:var(--text-1);line-height:1.8;font-size:14px">' +
+    'הזמנת רכש <strong>' + esc(po.po_number) + '</strong> מספק <strong>' + esc(po.supplier_name) + '</strong> ' +
+    'עבור פרויקט <strong>' + esc(po.project_name) + '</strong>. ' +
+    'סה"כ: <strong>' + fmtCur(po.grand_total) + '</strong>. ' +
+    'קליטה: <strong>' + rcvPct + '%</strong> (' + fmt(totalReceived) + '/' + fmt(totalOrdered) + ' יחידות).</p></div></div>';
+
+  // LINES
+  var lHtml = '<div class="section"><div class="section-title">שורות הזמנה (' + po.lines.length + ')</div><div class="tbl-wrap"><table>' +
+    '<thead><tr><th>#</th><th>מק"ט</th><th>תיאור</th><th>הוזמן</th><th>נקלט</th><th>פתוח</th><th>יחידה</th><th>מחיר</th><th>סה"כ</th><th>קליטה</th></tr></thead><tbody>';
+  po.lines.forEach(function(l){
+    var pct = l.ordered>0?Math.round(l.received/l.ordered*100):0;
+    var clr = pct===100?'var(--ok)':pct>0?'var(--teal)':'var(--text-2)';
+    lHtml += '<tr><td>'+l.num+'</td><td style="font-family:var(--mono)">'+esc(l.sku)+'</td><td>'+esc(l.desc)+'</td>' +
+      '<td style="font-family:var(--mono)">'+fmt(l.ordered)+'</td><td style="font-family:var(--mono);color:var(--ok)">'+fmt(l.received)+'</td>' +
+      '<td style="font-family:var(--mono);color:'+(l.open>0?'var(--warn)':'var(--ok)')+'">'+fmt(l.open)+'</td>' +
+      '<td>'+esc(l.unit)+'</td><td style="font-family:var(--mono)">'+fmtCur(l.price)+'</td>' +
+      '<td style="font-family:var(--mono);font-weight:600">'+fmtCur(l.total)+'</td>' +
+      '<td><div style="display:flex;align-items:center;gap:6px"><div style="width:60px;height:6px;background:var(--bg-3);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+clr+';border-radius:3px"></div></div><span style="font-size:11px;color:'+clr+'">'+pct+'%</span></div></td></tr>';
+  });
+  lHtml += '</tbody></table></div></div>';
+  document.getElementById('panel-lines').innerHTML = lHtml;
+
+  // SUPPLIER
+  document.getElementById('panel-supplier').innerHTML =
+    '<div class="section"><div class="section-title">פרטי ספק</div>' +
+    '<div class="card"><div class="card-row"><span class="label">שם ספק</span><span class="value">' + esc(po.supplier_name) + '</span></div>' +
+    '<div class="card-row"><span class="label">מזהה</span><span class="value" style="font-family:var(--mono)">' + esc(po.supplier_id) + '</span></div>' +
+    '<div class="card-row"><span class="label">ציון אמינות</span><span class="value" style="color:var(--ok)">92/100</span></div>' +
+    '<div class="card-row"><span class="label">הזמנות קודמות</span><span class="value">14</span></div>' +
+    '<div class="card-row"><span class="label">זמן אספקה ממוצע</span><span class="value">18 ימים</span></div></div>' +
+    '<button class="btn btn-primary" style="margin-top:12px" onclick="navigate(\'entity360.html?type=supplier&id=' + po.supplier_id + '\')">&#x1F3ED; פתח Supplier360</button></div>';
+
+  // RECEIVING
+  var rHtml = '<div class="section"><div class="section-title">קליטת סחורה</div>' +
+    '<div class="card" style="margin-bottom:14px"><div class="card-title">התקדמות קליטה — ' + rcvPct + '%</div>' +
+    '<div class="progress-wrap" style="height:14px"><div class="progress-fill ' + (rcvPct===100?'progress-ok':'progress-partial') + '" style="width:' + rcvPct + '%"></div></div></div>';
+  if(po.receipts.length > 0){
+    rHtml += '<div class="tbl-wrap"><table><thead><tr><th>מספר קליטה</th><th>תאריך</th><th>קלט ע"י</th><th>פריטים</th><th>סטטוס</th></tr></thead><tbody>';
+    po.receipts.forEach(function(r){
+      rHtml += '<tr><td style="font-family:var(--mono)">'+esc(r.receipt_no)+'</td><td>'+esc(r.date)+'</td><td>'+esc(r.received_by)+'</td><td>'+esc(r.items)+'</td><td><span class="badge badge-approved">'+esc(r.status)+'</span></td></tr>';
+    });
+    rHtml += '</tbody></table></div>';
+  } else {
+    rHtml += '<div class="empty"><div class="empty-icon">&#x1F4E6;</div>טרם בוצעה קליטת סחורה</div>';
+  }
+  rHtml += '</div>';
+  document.getElementById('panel-receiving').innerHTML = rHtml;
+
+  // INVOICES
+  document.getElementById('panel-invoices').innerHTML =
+    '<div class="section"><div class="section-title">חשבוניות ספק</div>' +
+    '<div class="empty"><div class="empty-icon">&#x1F4B0;</div>טרם נרשמו חשבוניות ספק עבור PO זה.<br>' +
+    (po.receiving_status==='full'||po.receiving_status==='partial' ?
+      '<button class="btn btn-purple" style="margin-top:12px" onclick="doAction(\'register_invoice\')">&#x1F4B0; רשום חשבונית</button>' : '') +
+    '</div></div>';
+
+  // PROJECT
+  document.getElementById('panel-project').innerHTML =
+    '<div class="section"><div class="section-title">קשר לפרויקט</div>' +
+    '<div class="card"><div class="card-row"><span class="label">פרויקט</span><span class="value">' + esc(po.project_name) + '</span></div>' +
+    '<div class="card-row"><span class="label">מזהה פרויקט</span><span class="value" style="font-family:var(--mono)">' + esc(po.project_ref) + '</span></div>' +
+    '<div class="card-row"><span class="label">מקור RFQ</span><span class="value" style="font-family:var(--mono)">' + esc(po.rfq_ref) + '</span></div></div>' +
+    '<div style="display:flex;gap:8px;margin-top:12px">' +
+    '<button class="btn btn-primary" onclick="navigate(\'entity360.html?type=project\')">&#x1F4C1; Project360</button>' +
+    '<button class="btn" onclick="navigate(\'rfq360.html?id=' + po.rfq_ref + '\')">&#x1F4E8; RFQ360</button></div></div>';
+
+  // COSTING
+  document.getElementById('panel-costing').innerHTML =
+    '<div class="section"><div class="section-title">תמחיר</div>' +
+    '<div class="cards-grid">' +
+      '<div class="card"><div class="card-title">עלות בפועל</div><div class="card-value">' + fmtCur(po.grand_total) + '</div><div class="card-sub">כולל מע"מ</div></div>' +
+      '<div class="card"><div class="card-title">תקציב פרויקט (חשמל)</div><div class="card-value">' + fmtCur(180000) + '</div><div class="card-sub">תקציב מאושר</div></div>' +
+      '<div class="card"><div class="card-title">ניצול תקציב</div><div class="card-value" style="color:var(--ok)">90%</div>' +
+      '<div class="progress-wrap"><div class="progress-fill progress-ok" style="width:90%"></div></div></div>' +
+    '</div></div>';
+
+  // RETURNS
+  document.getElementById('panel-returns').innerHTML =
+    '<div class="section"><div class="section-title">החזרות</div>' +
+    '<div class="empty"><div class="empty-icon">&#x21A9;</div>אין החזרות רשומות עבור הזמנה זו</div></div>';
+
+  // WARRANTY
+  document.getElementById('panel-warranty').innerHTML =
+    '<div class="section"><div class="section-title">אחריות</div>' +
+    '<div class="card"><div class="card-row"><span class="label">אחריות ספק</span><span class="value">12 חודשים</span></div>' +
+    '<div class="card-row"><span class="label">תוקף אחריות</span><span class="value">עד 2027-04-15</span></div>' +
+    '<div class="card-row"><span class="label">תנאים</span><span class="value" style="font-size:12px;font-family:inherit">אחריות מלאה על פגמי ייצור</span></div></div></div>';
+
+  // DOCUMENTS
+  document.getElementById('panel-documents').innerHTML =
+    '<div class="section"><div class="section-title">מסמכים</div>' +
+    '<div class="empty"><div class="empty-icon">&#x1F4C2;</div>אין מסמכים מצורפים.<br>' +
+    '<button class="btn btn-primary" style="margin-top:12px" onclick="doAction(\'attach\')">&#x1F4CE; צרף מסמך</button></div></div>';
+
+  // AI
+  document.getElementById('panel-ai').innerHTML =
+    '<div class="section"><div class="section-title">תובנות AI רכש</div>' +
+    '<div class="cards-grid">' +
+      '<div class="ai-card"><div class="ai-title">&#x1F4B0; חיסכון</div><div class="ai-text">חיסכון של <strong style="color:var(--ok)">7%</strong> ביחס למחיר שוק ממוצע. סה"כ חיסכון: <strong>' + fmtCur(10400) + '</strong>.</div></div>' +
+      '<div class="ai-card"><div class="ai-title">&#x1F69A; חיזוי אספקה</div><div class="ai-text">סיכוי גבוה (<strong>85%</strong>) שהספק יספק את היתרה בזמן. ממוצע חריגה היסטורי: <strong>2 ימים</strong>.</div></div>' +
+      '<div class="ai-card"><div class="ai-title">&#x26A0; התראות</div><div class="ai-text">6 פסי צבירה עדיין פתוחים לקליטה. מומלץ ליצור קשר עם הספק לתיאום אספקה.</div></div>' +
+      '<div class="ai-card"><div class="ai-title">&#x1F4CA; ביצועי ספק</div><div class="ai-text">אלקטרו-פלוס: ציון אמינות <strong>92/100</strong>, זמן תגובה ממוצע <strong>1.2 ימים</strong>, איכות <strong>95%</strong>.</div></div>' +
+    '</div></div>';
+
+  // AUDIT
+  var aHtml = '<div class="section"><div class="section-title">יומן ביקורת</div><div class="tbl-wrap"><table>' +
+    '<thead><tr><th>תאריך</th><th>משתמש</th><th>פעולה</th><th>פרטים</th></tr></thead><tbody>';
+  po.audit.forEach(function(a){
+    aHtml += '<tr><td style="font-family:var(--mono);white-space:nowrap">'+esc(a.date)+'</td><td>'+esc(a.user)+'</td><td><strong>'+esc(a.action)+'</strong></td><td style="color:var(--text-2)">'+esc(a.detail)+'</td></tr>';
+  });
+  aHtml += '</tbody></table></div></div>';
+  document.getElementById('panel-audit').innerHTML = aHtml;
+}
+
+function doAction(actionId){
+  var labels = {request_approval:'בקש אישור',approve:'אשר',reject:'דחה',send:'שלח לספק',receive:'קלוט סחורה',register_invoice:'רשום חשבונית',close:'סגור PO',export:'ייצוא PDF',edit:'ערוך',attach:'צרף מסמך',cancel:'בטל'};
+  if(confirm('לבצע פעולה: '+(labels[actionId]||actionId)+'?')){
+    alert('פעולה "' + (labels[actionId]||actionId) + '" נשלחה ל-Workflow Engine.\n\nPOST /api/orchestrator/execute\n{ action: "'+actionId+'", entity: "po", id: "'+mockPO.po_number+'" }');
+  }
+}
+function navigate(url){ window.location.href = url; }
+
+async function loadPO(){
+  document.getElementById('loading').style.display='block';
+  document.getElementById('main-content').style.display='none';
+  document.getElementById('error-state').style.display='none';
+  try {
+    var po;
+    try { var res=await fetch(API+'/api/pos/'+encodeURIComponent(poId)); if(!res.ok) throw new Error('HTTP '+res.status); po=(await res.json()).po; } catch(e){ po=mockPO; }
+    renderHeader(po); renderTimeline(po); renderNBA(po); renderActions(po); renderCards(po); renderTabs(); renderTabContent(po);
+    document.getElementById('loading').style.display='none';
+    document.getElementById('main-content').style.display='block';
+    document.title = po.po_number + ' — PO360';
+  } catch(err){
+    document.getElementById('loading').style.display='none';
+    document.getElementById('error-state').style.display='block';
+    document.getElementById('error-msg').textContent = err.message;
+  }
+}
+
+loadPO();
+</script>
+</body>
+</html>

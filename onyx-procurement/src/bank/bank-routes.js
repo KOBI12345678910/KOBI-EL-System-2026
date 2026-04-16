@@ -8,7 +8,7 @@
 const { autoParse } = require('./parsers');
 const { autoReconcileBatch } = require('./matcher');
 
-function registerBankRoutes(app, { supabase, audit }) {
+function registerBankRoutes(app, { supabase, audit, requirePermission }) {
   // ═══ BANK ACCOUNTS ═══
 
   app.get('/api/bank/accounts', async (req, res) => {
@@ -39,7 +39,11 @@ function registerBankRoutes(app, { supabase, audit }) {
 
   // ═══ IMPORT STATEMENT ═══
 
-  app.post('/api/bank/accounts/:id/import', async (req, res) => {
+  app.post('/api/bank/accounts/:id/import', requirePermission('bank-statements:import'), async (req, res) => {
+    // BUG-13 fix: validate bank account exists before importing
+    const { data: acct } = await supabase.from('bank_accounts').select('id').eq('id', req.params.id).maybeSingle();
+    if (!acct) return res.status(404).json({ error: 'Bank account not found' });
+
     const { content, format, openingBalance } = req.body;
     if (!content) return res.status(400).json({ error: 'content (statement text) required' });
 
@@ -66,6 +70,7 @@ function registerBankRoutes(app, { supabase, audit }) {
     if (stmtErr) return res.status(400).json({ error: stmtErr.message });
 
     // Insert transactions
+    // QA-04-BANK-01 fix: explicitly set reconciled fields on insert
     const txRows = parsed.transactions.map(tx => ({
       bank_account_id: parseInt(req.params.id),
       bank_statement_id: statement.id,
@@ -75,6 +80,8 @@ function registerBankRoutes(app, { supabase, audit }) {
       balance_after: tx.balance_after,
       reference_number: tx.reference_number,
       raw_data: tx.raw_data,
+      reconciled: false,
+      reconciled_at: null,
     }));
 
     const { data: inserted, error: txErr } = await supabase.from('bank_transactions').insert(txRows).select('id');
@@ -93,12 +100,13 @@ function registerBankRoutes(app, { supabase, audit }) {
     await audit('bank_statement', statement.id, 'imported', req.actor || 'api',
       `יובאו ${inserted.length} תנועות בנק לחשבון ${req.params.id}`, null, statement);
 
+    // BUG-15 fix: use DB row values, not parser values that may be 0
     res.status(201).json({
       statement,
       imported: inserted.length,
       period: parsed.period,
-      openingBalance: parsed.openingBalance,
-      closingBalance: parsed.closingBalance,
+      openingBalance: statement.opening_balance,
+      closingBalance: statement.closing_balance,
     });
   });
 
@@ -117,7 +125,7 @@ function registerBankRoutes(app, { supabase, audit }) {
 
   // ═══ AUTO-RECONCILIATION ═══
 
-  app.post('/api/bank/accounts/:id/auto-reconcile', async (req, res) => {
+  app.post('/api/bank/accounts/:id/auto-reconcile', requirePermission('bank-reconciliation:create'), async (req, res) => {
     // Load unreconciled transactions
     const { data: txs } = await supabase.from('bank_transactions')
       .select('*')
@@ -154,7 +162,7 @@ function registerBankRoutes(app, { supabase, audit }) {
     });
   });
 
-  app.post('/api/bank/matches', async (req, res) => {
+  app.post('/api/bank/matches', requirePermission('bank-reconciliation:create'), async (req, res) => {
     const { bank_transaction_id, target_type, target_id, matched_amount, confidence, match_criteria } = req.body;
     const { data, error } = await supabase.from('reconciliation_matches').insert({
       bank_transaction_id, target_type, target_id,
@@ -182,6 +190,66 @@ function registerBankRoutes(app, { supabase, audit }) {
       `התאמה: ${target_type}#${target_id} ₪${matched_amount}`, null, data);
     res.status(201).json({ match: data });
   });
+
+  // ═══ LIST MATCHES ═══
+
+  app.get('/api/bank/matches', async (req, res) => {
+    let q = supabase.from('reconciliation_matches').select('*').order('created_at', { ascending: false });
+    if (req.query.bank_transaction_id) q = q.eq('bank_transaction_id', req.query.bank_transaction_id);
+    if (req.query.approved === 'true') q = q.eq('approved', true);
+    if (req.query.approved === 'false') q = q.eq('approved', false);
+    q = q.limit(parseInt(req.query.limit) || 200);
+    const { data, error } = await q;
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ matches: data });
+  });
+
+  // ═══ APPROVE / REJECT MATCH ═══
+
+  app.post('/api/bank/matches/:matchId/:action', requirePermission('bank-reconciliation:update'), async (req, res) => {
+    const { matchId, action } = req.params;
+    if (!['approve', 'reject'].includes(action)) {
+      return res.status(400).json({ error: 'Action must be "approve" or "reject"' });
+    }
+
+    const { data: match, error: fetchErr } = await supabase
+      .from('reconciliation_matches').select('*').eq('id', matchId).single();
+    if (fetchErr || !match) return res.status(404).json({ error: 'Match not found' });
+
+    if (action === 'approve') {
+      const { error } = await supabase.from('reconciliation_matches').update({
+        approved: true,
+        approved_by: req.actor || 'api',
+        approved_at: new Date().toISOString(),
+      }).eq('id', matchId);
+      if (error) return res.status(500).json({ error: error.message });
+
+      // Mark bank transaction as reconciled
+      await supabase.from('bank_transactions').update({
+        reconciled: true,
+        reconciled_at: new Date().toISOString(),
+        reconciled_by: req.actor || 'api',
+        matched_to_type: match.target_type,
+        matched_to_id: String(match.target_id),
+        match_confidence: match.confidence,
+      }).eq('id', match.bank_transaction_id);
+
+      await audit('reconciliation_match', parseInt(matchId), 'approved', req.actor || 'api',
+        `אושרה התאמה #${matchId}`, null, match);
+    } else {
+      const { error } = await supabase.from('reconciliation_matches').update({
+        approved: false,
+      }).eq('id', matchId);
+      if (error) return res.status(500).json({ error: error.message });
+
+      await audit('reconciliation_match', parseInt(matchId), 'rejected', req.actor || 'api',
+        `נדחתה התאמה #${matchId}`, null, match);
+    }
+
+    res.json({ ok: true, action, matchId });
+  });
+
+  // ═══ DISCREPANCIES ═══
 
   app.get('/api/bank/discrepancies', async (req, res) => {
     let q = supabase.from('reconciliation_discrepancies').select('*').order('created_at', { ascending: false });
