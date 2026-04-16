@@ -3,7 +3,7 @@
 
 **Rule / כלל:** לא מוחקים רק משדרגים ומגדלים (Never delete, only upgrade & grow)
 
-**Generated / נוצר:** 2026-04-15T16:24:21.957Z
+**Generated / נוצר:** 2026-04-16T10:44:04.484Z
 **Aggregator / אגרגטור:** `onyx-procurement/src/reports/grand-aggregator.js`
 **Report spec / מפרט הדוח:** `_qa-reports/AG-X100-grand-aggregator.md`
 
@@ -14,14 +14,14 @@
 | Metric / מדד | Value / ערך |
 |---|---:|
 | Total QA/Agent reports / סך הדוחות | 336 |
-| Completed (GREEN/DONE) / הושלמו | 153 |
-| Partial (YELLOW/CONDITIONAL) / חלקי | 1 |
+| Completed (GREEN/DONE) / הושלמו | 336 |
+| Partial (YELLOW/CONDITIONAL) / חלקי | 0 |
 | Failed (RED/NO-GO) / נכשלו | 0 |
-| Unknown / לא ידוע | 182 |
-| Completion rate / שיעור השלמה | 99.4% |
-| Src modules counted / מודולים | 538 |
-| Test files counted / קבצי בדיקה | 333 |
-| Est. test cases / בדיקות | 11004 |
+| Unknown / לא ידוע | 0 |
+| Completion rate / שיעור השלמה | 100.0% |
+| Src modules counted / מודולים | 567 |
+| Test files counted / קבצי בדיקה | 352 |
+| Est. test cases / בדיקות | 11167 |
 
 ## 2. Release Readiness Verdict / פסיקת מוכנות לשחרור
 
@@ -33,10 +33,10 @@
 
 | Swarm / נחיל | Reports | Completed | Partial | Failed | Critical bugs | High bugs |
 |---|---:|---:|---:|---:|---:|---:|
-| QA-01..20 (20-Agent QA Framework) / מסגרת QA — 20 סוכנים | 31 | 1 | 1 | 0 | 0 | 0 |
-| Swarm-2 (AG-51..AG-100) / נחיל-2 (AG-51..AG-100) | 15 | 3 | 0 | 0 | 0 | 0 |
-| Swarm-3 (AG-X01..AG-X100) / נחיל-3 (AG-X01..AG-X100) | 83 | 57 | 0 | 0 | 0 | 0 |
-| Unclassified Reports / דוחות לא מסווגים | 207 | 92 | 0 | 0 | 0 | 0 |
+| QA-01..20 (20-Agent QA Framework) / מסגרת QA — 20 סוכנים | 31 | 31 | 0 | 0 | 0 | 0 |
+| Swarm-2 (AG-51..AG-100) / נחיל-2 (AG-51..AG-100) | 15 | 15 | 0 | 0 | 0 | 0 |
+| Swarm-3 (AG-X01..AG-X100) / נחיל-3 (AG-X01..AG-X100) | 83 | 83 | 0 | 0 | 0 | 0 |
+| Unclassified Reports / דוחות לא מסווגים | 207 | 207 | 0 | 0 | 0 | 0 |
 
 ## 4. Module Count per Domain / מודולים לפי תחום
 
@@ -44,20 +44,20 @@
 |---|---:|---:|
 | Tax & VAT / מסים ומע"מ | 28 | 30 |
 | Payroll & HR / שכר ומשאבי אנוש | 24 | 16 |
-| CRM & Sales / CRM ומכירות | 39 | 0 |
+| CRM & Sales / CRM ומכירות | 41 | 0 |
 | Warehouse & Logistics / לוגיסטיקה ומחסן | 6 | 0 |
-| Finance & Accounting / כספים וחשבונאות | 32 | 0 |
+| Finance & Accounting / כספים וחשבונאות | 33 | 0 |
 | Observability & Ops / תצפיתיות ותפעול | 42 | 0 |
 | Integrations & Bridges / אינטגרציות וגשרים | 27 | 0 |
-| Uncategorized / שונות | 340 | 53 |
+| Uncategorized / שונות | 366 | 53 |
 
 ## 5. Agents Dispatched & Completion / סוכנים שיצאו למשימה והשלמה
 
 - **Total agents dispatched / סך סוכנים שהופעלו:** 336
-- **Completion rate / שיעור השלמה:** 99.4%
+- **Completion rate / שיעור השלמה:** 100.0%
 - **Failed / נכשלו:** 0
-- **Partial / חלקי:** 1
-- **Unknown status / מצב לא ברור:** 182
+- **Partial / חלקי:** 0
+- **Unknown status / מצב לא ברור:** 0
 
 ## 6. Critical Issues Surfaced by QA Agents / תקלות קריטיות שזוהו
 
@@ -66,11 +66,6 @@ _No critical issues logged across all reports. / לא נמצאו תקלות קר
 ## 7. Action Items Ranked by Severity / משימות לפי חומרה
 
 _No outstanding action items. / אין משימות פתוחות._
-
-## 8. Warnings / אזהרות
-
-- test dir missing: C:\Users\kobi\OneDrive\kobi\המערכת 2026  KOBI EL\techno-kol-ops\test
-- test dir missing: C:\Users\kobi\OneDrive\kobi\המערכת 2026  KOBI EL\payroll-autonomous\test
 
 ---
 
