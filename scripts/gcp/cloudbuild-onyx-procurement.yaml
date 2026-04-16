@@ -1,0 +1,57 @@
+# Cloud Build — onyx-procurement
+# Triggered by scripts/gcp/deploy.sh step 3a.
+# Builds the Docker image and deploys to Cloud Run.
+#
+# Rule: לא מוחקים, רק משדרגים ומגדלים.
+
+steps:
+  # 1. Build
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - '${_IMAGE}:${SHORT_SHA}'
+      - -t
+      - '${_IMAGE}:latest'
+      - -f
+      - docker/onyx-procurement.Dockerfile
+      - onyx-procurement
+
+  # 2. Push to Artifact Registry
+  - id: push-sha
+    name: gcr.io/cloud-builders/docker
+    args: [push, '${_IMAGE}:${SHORT_SHA}']
+  - id: push-latest
+    name: gcr.io/cloud-builders/docker
+    args: [push, '${_IMAGE}:latest']
+
+  # 3. Deploy to Cloud Run
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - onyx-procurement
+      - --image=${_IMAGE}:${SHORT_SHA}
+      - --region=${_REGION}
+      - --platform=managed
+      - --allow-unauthenticated           # Public — auth enforced by app via API_KEYS
+      - --port=3100
+      - --memory=512Mi
+      - --cpu=1
+      - --min-instances=0
+      - --max-instances=10
+      - --timeout=300s
+      - --set-env-vars=NODE_ENV=production,AUTH_MODE=api_key
+      - --set-secrets=SUPABASE_DB_URL=supabase-db-url:latest,API_KEYS=api-keys:latest,PAYROLL_ADMIN_KEYS=payroll-admin-keys:latest,PAYROLL_EMPLOYEE_KEY_MAP=payroll-employee-map:latest
+
+substitutions:
+  _REGION: europe-west3
+  _IMAGE: europe-west3-docker.pkg.dev/${PROJECT_ID}/bash44/onyx-procurement
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: 1200s

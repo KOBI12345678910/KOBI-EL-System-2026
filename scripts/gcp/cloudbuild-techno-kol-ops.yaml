@@ -1,0 +1,51 @@
+# Cloud Build — techno-kol-ops
+# Builds TypeScript service, deploys to Cloud Run.
+
+steps:
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - '${_IMAGE}:${SHORT_SHA}'
+      - -t
+      - '${_IMAGE}:latest'
+      - -f
+      - docker/techno-kol-ops.Dockerfile
+      - techno-kol-ops
+
+  - id: push-sha
+    name: gcr.io/cloud-builders/docker
+    args: [push, '${_IMAGE}:${SHORT_SHA}']
+  - id: push-latest
+    name: gcr.io/cloud-builders/docker
+    args: [push, '${_IMAGE}:latest']
+
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - techno-kol-ops
+      - --image=${_IMAGE}:${SHORT_SHA}
+      - --region=${_REGION}
+      - --platform=managed
+      - --allow-unauthenticated
+      - --port=3200
+      - --memory=512Mi
+      - --cpu=1
+      - --min-instances=0
+      - --max-instances=5
+      - --timeout=300s
+      - --set-env-vars=NODE_ENV=production
+      - --set-secrets=SUPABASE_DB_URL=supabase-db-url:latest,API_KEYS=api-keys:latest,ONYX_AI_URL=onyx-ai-url:latest,PROCUREMENT_API_URL=procurement-api-url:latest
+
+substitutions:
+  _REGION: europe-west3
+  _IMAGE: europe-west3-docker.pkg.dev/${PROJECT_ID}/bash44/techno-kol-ops
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: 1200s
