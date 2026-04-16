@@ -40,10 +40,11 @@ steps:
       - --timeout=60s
 
 substitutions:
-  _REGION: europe-west3
-  _IMAGE: europe-west3-docker.pkg.dev/${PROJECT_ID}/bash44/payroll-autonomous
+  _REGION: me-west1
+  _IMAGE: me-west1-docker.pkg.dev/${PROJECT_ID}/bash44/payroll-autonomous
 
 options:
   logging: CLOUD_LOGGING_ONLY
+  dynamic_substitutions: true
 
 timeout: 900s
