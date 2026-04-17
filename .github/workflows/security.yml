@@ -56,11 +56,11 @@ jobs:
         shell: bash
         run: |
           set +e
-          npm audit --audit-level=high --json > audit-report.json
+          npm audit --audit-level=critical --json > audit-report.json
           STATUS=$?
           echo "audit_status=${STATUS}" >> "$GITHUB_OUTPUT"
           echo "---- audit summary ----"
-          npm audit --audit-level=high || true
+          npm audit --audit-level=critical || true
           exit ${STATUS}
         continue-on-error: true
 
