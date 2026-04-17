@@ -16,7 +16,7 @@ steps:
       - '${_IMAGE}:latest'
       - -f
       - docker/onyx-procurement.Dockerfile
-      - onyx-procurement
+      - .
 
   # 2. Push to Artifact Registry
   - id: push-sha

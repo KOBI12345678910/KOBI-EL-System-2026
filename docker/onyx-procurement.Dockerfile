@@ -23,7 +23,7 @@ RUN apk add --no-cache \
     pango \
     giflib
 
-COPY package.json package-lock.json* ./
+COPY onyx-procurement/package.json onyx-procurement/package-lock.json* ./
 
 # Prefer npm ci when lockfile exists, fallback to install
 RUN if [ -f package-lock.json ]; then \
@@ -60,8 +60,10 @@ RUN addgroup -g 10001 -S onyx && \
 COPY --from=deps --chown=onyx:onyx /app/node_modules ./node_modules
 
 # Copy source
-COPY --chown=onyx:onyx . .
+COPY --chown=onyx:onyx onyx-procurement/ .
 
+# Copy shared packages needed by server.js
+COPY --chown=onyx:onyx packages/shared-audit /packages/shared-audit
 # Ensure runtime directories exist & are writable
 RUN mkdir -p /app/data /app/logs /app/data/backups && \
     chown -R onyx:onyx /app/data /app/logs
