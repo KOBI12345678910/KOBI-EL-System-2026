@@ -56,6 +56,8 @@ const BOMCalculator = lazy(() => import('./components/BOMCalculator'));
 const InventoryAlerts = lazy(() => import('./components/InventoryAlerts'));
 const CashFlowForecast = lazy(() => import('./components/CashFlowForecast'));
 const ProfitLoss = lazy(() => import('./components/ProfitLoss'));
+const ExecutiveDashboard = lazy(() => import('./components/ExecutiveDashboard'));
+const MonthlyTargets = lazy(() => import('./components/MonthlyTargets'));
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
@@ -147,6 +149,8 @@ const NAV_GROUPS = [
     { id: 'gantt', label: 'גנט' },
     { id: 'audit', label: 'יומן ביקורת' },
     { id: 'cashflow', label: '💸 תחזית תזרים' },
+    { id: 'exec-dashboard', label: '👔 דשבורד מנכ"ל' },
+    { id: 'targets', label: '🎯 יעדים חודשיים' },
   ]},
   { label: 'פורטלים', items: [
     { id: 'supplier-portal', label: 'פורטל ספקים' },
@@ -249,6 +253,72 @@ function buildCss(t) {
 
 /* ─── Payroll Tab Components (existing) ───────────────── */
 
+function KpiTicker() {
+  const [tickerData, setTickerData] = useState({
+    revenue: 145000,
+    projects: 7,
+    present: 28,
+    total: 30,
+    alerts: 3,
+    cashflow: 89000,
+  });
+
+  useEffect(() => {
+    const refresh = () => {
+      setTickerData(prev => ({
+        ...prev,
+        revenue: prev.revenue + Math.floor((Math.random() - 0.4) * 1000),
+        cashflow: prev.cashflow + Math.floor((Math.random() - 0.5) * 500),
+        alerts: Math.max(0, prev.alerts + (Math.random() > 0.8 ? (Math.random() > 0.5 ? 1 : -1) : 0)),
+      }));
+    };
+    const interval = setInterval(refresh, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const items = [
+    `💰 הכנסות: ₪${tickerData.revenue.toLocaleString('he-IL')}`,
+    `📋 פרויקטים: ${tickerData.projects}`,
+    `👥 עובדים: ${tickerData.present}/${tickerData.total}`,
+    `⚠️ התראות: ${tickerData.alerts}`,
+    `💵 תזרים: ₪${tickerData.cashflow.toLocaleString('he-IL')}`,
+  ];
+  const text = items.join('   |   ');
+
+  return (
+    <div style={{
+      marginTop: 20,
+      background: '#0f172a',
+      border: '1px solid #334155',
+      borderRadius: 8,
+      overflow: 'hidden',
+      height: 36,
+      display: 'flex',
+      alignItems: 'center',
+    }}>
+      <style>{`
+        @keyframes kpi-ticker {
+          0%   { transform: translateX(-100%); }
+          100% { transform: translateX(100vw); }
+        }
+        .kpi-ticker-text {
+          display: inline-block;
+          white-space: nowrap;
+          animation: kpi-ticker 28s linear infinite;
+          font-size: 13px;
+          color: #94a3b8;
+          padding: 0 40px;
+          direction: ltr;
+        }
+        .kpi-ticker-text:hover { animation-play-state: paused; }
+      `}</style>
+      <div style={{ overflow: 'hidden', width: '100%' }}>
+        <span className="kpi-ticker-text">{text}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{text}</span>
+      </div>
+    </div>
+  );
+}
+
 function DashboardTab({ wageSlips, employees, lang = 'he' }) {
   // Real-time WebSocket connection to techno-kol-ops (ws://localhost:3200)
   const { connected } = useRealtime();
@@ -317,6 +387,7 @@ function DashboardTab({ wageSlips, employees, lang = 'he' }) {
           </div>
         </div>
       </div>
+      <KpiTicker />
     </div>
   );
 }
@@ -1202,6 +1273,8 @@ export default function App() {
       case 'reports': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>טוען מרכז דוחות...</div>}><ReportsDashboard /></Suspense>;
       case 'cashflow': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>טוען תחזית תזרים...</div>}><CashFlowForecast /></Suspense>;
       case 'pnl': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>טוען דוח רווח והפסד...</div>}><ProfitLoss /></Suspense>;
+      case 'exec-dashboard': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>טוען דשבורד מנכ"ל...</div>}><ExecutiveDashboard /></Suspense>;
+      case 'targets': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>טוען יעדים חודשיים...</div>}><MonthlyTargets /></Suspense>;
       default: return <DashboardTab wageSlips={wageSlips} employees={employees} lang={lang} />;
     }
   };
