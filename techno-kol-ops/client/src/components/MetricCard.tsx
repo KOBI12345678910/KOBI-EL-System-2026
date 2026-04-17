@@ -31,7 +31,7 @@ export function MetricCard({ label, value, delta, color = '#FFA500', onClick }: 
       <div style={{ fontSize: 10, color: '#5C7080', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 8 }}>
         {label}
       </div>
-      <div style={{ fontSize: 28, fontWeight: 700, color, lineHeight: 1, marginBottom: 6, fontVariantNumeric: 'tabular-nums' }}>
+      <div style={{ fontSize: 28, fontWeight: 700, color, lineHeight: 1, marginBottom: 6, fontVariantNumeric: 'tabular-nums', transition: 'color 0.3s' }}>
         {value}
       </div>
       {delta && (

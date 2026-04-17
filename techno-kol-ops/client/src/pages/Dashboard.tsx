@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { useStore } from '../store/useStore';
@@ -7,6 +7,7 @@ import { MetricCard } from '../components/MetricCard';
 import { StatusTag } from '../components/StatusTag';
 import { AlertFeed } from '../components/AlertFeed';
 import { formatCurrency, formatDate, isOverdue, daysUntil } from '../utils/format';
+import { useRealtime, useRealtimeEvent } from '../hooks/useRealtime';
 
 const PIE_COLORS = ['#FC8585', '#FFB366', '#48AFF0', '#9D4EDD', '#3DCC91'];
 
@@ -21,6 +22,28 @@ export function Dashboard() {
   const [monthly, setMonthly] = useState<any[]>([]);
   const [prodData, setProdData] = useState<any[]>([]);
   const [matMix, setMatMix] = useState<any[]>([]);
+
+  // Real-time WebSocket connection
+  const { connected } = useRealtime();
+
+  // Live snapshot updates — auto-refresh KPI cards
+  useRealtimeEvent('snapshot_update', useCallback((data: any) => {
+    if (data) setSnapshot(data);
+  }, [setSnapshot]));
+
+  // Live alert feed — prepend new alerts
+  useRealtimeEvent('alert', useCallback((alert: any) => {
+    if (alert) setAlerts((prev: any[]) => [alert, ...prev]);
+  }, [setAlerts]));
+
+  // Live work-order updates — merge into snapshot's activeOrders
+  useRealtimeEvent('work_order_update', useCallback((wo: any) => {
+    if (!wo) return;
+    const current = useStore.getState().snapshot;
+    if (!current) return;
+    const orders = current.activeOrders.map((o: any) => o.id === wo.id ? { ...o, ...wo } : o);
+    setSnapshot({ ...current, activeOrders: orders });
+  }, [setSnapshot]));
 
   useEffect(() => {
     fetchSnapshot().then(d => { if (d) setSnapshot(d); });
@@ -39,6 +62,22 @@ export function Dashboard() {
 
   return (
     <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
+      {/* PAGE HEADER — WebSocket connection status indicator */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 10, gap: 6 }}>
+        <span style={{
+          display: 'inline-block',
+          width: 8,
+          height: 8,
+          borderRadius: '50%',
+          background: connected ? '#3DCC91' : '#FC8585',
+          boxShadow: connected ? '0 0 6px #3DCC91' : '0 0 4px #FC8585',
+          transition: 'background 0.3s, box-shadow 0.3s',
+        }} />
+        <span style={{ fontSize: 11, color: connected ? '#3DCC91' : '#FC8585', transition: 'color 0.3s' }}>
+          {connected ? '● חי' : '○ מנותק'}
+        </span>
+      </div>
+
       {/* METRICS */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 16 }}>
         <MetricCard label="הזמנות פעילות" value={snapshot.activeOrders.length} color="#48AFF0" onClick={() => navigate('/work-orders')} />

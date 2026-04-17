@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { pool, query } from './db/connection';
-import { initWebSocket } from './realtime/websocket';
+import { initWebSocket, broadcastToAll } from './realtime/websocket';
 import { startAlertEngine } from './realtime/alertEngine';
 import { startAutonomousEngine } from './realtime/autonomousEngine';
 import { getFactorySnapshot } from './services/ontology';
@@ -271,6 +271,16 @@ app.get('/api/bridges/ai/insights', async (req, res) => {
 initWebSocket(server);
 startAlertEngine();
 startAutonomousEngine();
+
+// ─── PERIODIC SNAPSHOT BROADCAST (every 30s) ──────────────────────
+// Broadcasts current system snapshot to all connected WS clients so
+// dashboards update in real-time without polling.
+setInterval(async () => {
+  try {
+    const snapshot = await getFactorySnapshot();
+    broadcastToAll('snapshot_update', snapshot);
+  } catch { /* ignore — never crash the server */ }
+}, 30000);
 
 // ─── v2.0 BRAIN + EVENT BUS + APOLLO ─────────────────
 initEventBus();

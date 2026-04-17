@@ -5,6 +5,7 @@
  */
 
 import React, { useEffect, useMemo, useState, useCallback, lazy, Suspense, useRef } from 'react';
+import { useRealtime, useRealtimeEvent } from './hooks/useRealtime';
 import { t } from './i18n/index.ts';
 import ShortcutsModal from './components/ShortcutsModal';
 import { exportToCSV } from './utils/export';
@@ -241,7 +242,25 @@ function buildCss(t) {
 /* ─── Payroll Tab Components (existing) ───────────────── */
 
 function DashboardTab({ wageSlips, employees, lang = 'he' }) {
+  // Real-time WebSocket connection to techno-kol-ops (ws://localhost:3200)
+  const { connected } = useRealtime();
+
+  // Live snapshot_update: override KPI stats from server push
+  const [liveSnapshot, setLiveSnapshot] = useState(null);
+  useRealtimeEvent('snapshot_update', useCallback((data) => {
+    if (data) setLiveSnapshot(data);
+  }, []));
+
   const stats = useMemo(() => {
+    if (liveSnapshot) {
+      return {
+        activeEmployees: liveSnapshot.attendance?.total ?? employees.filter(e => e.is_active).length,
+        slipsThisMonth: liveSnapshot.activeOrders?.length ?? 0,
+        totalGross: liveSnapshot.monthlyRevenue ?? 0,
+        totalNet: liveSnapshot.utilizationPct ?? 0,
+        isLive: true,
+      };
+    }
     const thisYear = new Date().getFullYear();
     const thisMonth = new Date().getMonth() + 1;
     const currentSlips = wageSlips.filter(s =>
@@ -252,15 +271,44 @@ function DashboardTab({ wageSlips, employees, lang = 'he' }) {
       activeEmployees: employees.filter(e => e.is_active).length,
       slipsThisMonth: currentSlips.length,
       totalGross, totalNet,
+      isLive: false,
     };
-  }, [wageSlips, employees]);
+  }, [wageSlips, employees, liveSnapshot]);
 
   return (
-    <div className="grid grid-4">
-      <div className="stat"><div className="stat-label">{t('dashboard.active_employees', lang)}</div><div className="stat-value">{stats.activeEmployees}</div></div>
-      <div className="stat"><div className="stat-label">{t('dashboard.slips_this_month', lang)}</div><div className="stat-value">{stats.slipsThisMonth}</div></div>
-      <div className="stat"><div className="stat-label">{t('dashboard.monthly_gross', lang)}</div><div className="stat-value">{fmtMoney(stats.totalGross)}</div></div>
-      <div className="stat"><div className="stat-label">{t('dashboard.monthly_net', lang)}</div><div className="stat-value">{fmtMoney(stats.totalNet)}</div></div>
+    <div>
+      {/* WebSocket connection status indicator */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+        <span style={{
+          display: 'inline-block', width: 8, height: 8, borderRadius: '50%',
+          background: connected ? '#3fb950' : '#f85149',
+          boxShadow: connected ? '0 0 6px #3fb950' : '0 0 4px #f85149',
+          transition: 'background 0.3s, box-shadow 0.3s',
+        }} />
+        <span style={{ fontSize: 11, color: connected ? '#3fb950' : '#f85149', transition: 'color 0.3s' }}>
+          {connected ? 'מחובר' : 'מנותק'}
+        </span>
+      </div>
+      <div className="grid grid-4">
+        <div className="stat">
+          <div className="stat-label">{t('dashboard.active_employees', lang)}</div>
+          <div className="stat-value" style={{ transition: 'opacity 0.3s' }}>{stats.activeEmployees}</div>
+        </div>
+        <div className="stat">
+          <div className="stat-label">{stats.isLive ? 'הזמנות פעילות' : t('dashboard.slips_this_month', lang)}</div>
+          <div className="stat-value" style={{ transition: 'opacity 0.3s' }}>{stats.slipsThisMonth}</div>
+        </div>
+        <div className="stat">
+          <div className="stat-label">{stats.isLive ? 'הכנסה חודשית' : t('dashboard.monthly_gross', lang)}</div>
+          <div className="stat-value" style={{ transition: 'opacity 0.3s' }}>{fmtMoney(stats.totalGross)}</div>
+        </div>
+        <div className="stat">
+          <div className="stat-label">{stats.isLive ? 'ניצולת מפעל' : t('dashboard.monthly_net', lang)}</div>
+          <div className="stat-value" style={{ transition: 'opacity 0.3s' }}>
+            {stats.isLive ? `${stats.totalNet}%` : fmtMoney(stats.totalNet)}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
