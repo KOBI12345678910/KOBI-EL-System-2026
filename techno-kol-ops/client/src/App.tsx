@@ -50,6 +50,8 @@ import Quote360 from './pages/360/Quote360';
 import RFQ360 from './pages/360/RFQ360';
 import Supplier360 from './pages/360/Supplier360';
 import WorkOrder360Detail from './pages/360/WorkOrder360';
+import { Reports } from './pages/Reports';
+import { InvoicePrint } from './pages/InvoicePrint';
 
 function Project360RouteWrapper() {
   const { id } = useParams<{ id: string }>();
@@ -137,6 +139,9 @@ function Layout() {
           <Route path="/360/rfq/:id" element={<RFQ360 />} />
           <Route path="/360/supplier/:id" element={<Supplier360 />} />
           <Route path="/360/work-order/:id" element={<WorkOrder360Detail />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/reports/:type" element={<Reports />} />
+          <Route path="/invoice/:id/print" element={<InvoicePrint />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

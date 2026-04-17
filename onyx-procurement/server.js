@@ -1827,3 +1827,8 @@ process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('unhandledRejection', (reason) => {
   console.error('❌ Unhandled promise rejection:', reason);
 });
+
+// Export the Express app for testing (supertest, jest).
+// When this module is required by tests, the server is already listening on PORT above.
+// Supertest will reuse the existing server or open its own connection.
+module.exports = app;
