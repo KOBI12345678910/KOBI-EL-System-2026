@@ -1,6 +1,6 @@
 {
   "name": "onyx-procurement",
-  "version": "1.1.0",
+  "version": "1.0.0",
   "description": "ONYX Procurement System — Autonomous AI-powered procurement for Techno Kol Uzi",
   "main": "server.js",
   "scripts": {
