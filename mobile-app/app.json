@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "Techno Kol ERP",
+    "slug": "techno-kol-erp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0b0d10"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.technokol.erp2026",
+      "infoPlist": {
+        "CFBundleLocalizations": ["he", "en"],
+        "CFBundleDevelopmentRegion": "he"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0b0d10"
+      },
+      "package": "com.technokol.erp2026"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "scheme": "technokolapp",
+    "platforms": ["ios", "android"],
+    "plugins": [
+      "expo-secure-store"
+    ],
+    "extra": {
+      "apiUrl": "http://localhost:3100"
+    }
+  }
+}
