@@ -19,12 +19,49 @@ const express = require('express');
 const { createClient } = require('@supabase/supabase-js');
 const cors = require('cors');
 const https = require('https');
+const http = require('http');
 const crypto = require('crypto');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
+
+// ─── Fire-and-forget notification to techno-kol-ops ─────────────────────────
+function sendErpNotification({ type = 'procurement', title, message, priority = 'high' }) {
+  try {
+    const TECHNO_KOL_URL = process.env.TECHNO_KOL_OPS_URL || 'http://localhost:3200';
+    const body = JSON.stringify({ type, title, message, priority });
+    const url = new URL('/api/notifications', TECHNO_KOL_URL);
+    const lib = url.protocol === 'https:' ? https : http;
+    const req = lib.request(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body),
+        'X-Internal-Service': 'onyx-procurement',
+      },
+    });
+    req.on('error', () => {}); // fire-and-forget — swallow errors
+    req.write(body);
+    req.end();
+  } catch (_) {
+    // never throw — notifications are best-effort
+  }
+}
+// ────────────────────────────────────────────────────────────────────────────
 const fs = require('fs');
 require('dotenv').config();
+
+// ═══ DOMAIN EVENT SYSTEM — shared-events + in-process EventBus ═══
+const { initDomainEvents, emitDomainEvent } = require('./src/wiring/domain-events');
+
+// ═══ RBAC — Role-Based Access Control (Agent 97) ═══════════════
+// Fine-grained authorization layer. requirePermission("resource:action")
+// returns Express middleware that checks req.user.role against the
+// role registry bootstrapped in rbac.js (80+ resources, wildcard support).
+// Wired AFTER requireAuth so req.user is always populated first.
+const rbac = require('./src/auth/rbac');
+const { requirePermission, requireAnyPermission } = rbac;
+console.log('✓ RBAC wired — ' + rbac.listRoles().length + ' roles, ' + rbac.RESOURCES.length + ' resources');
 
 // ═══ ERROR TRACKER (ops/error-tracker) — init early, wired last ═══
 let errorTracker = null;
@@ -135,6 +172,17 @@ const supabase = createClient(
   { auth: { persistSession: false, autoRefreshToken: false } }
 );
 
+// ═══ DOMAIN EVENTS — init after Supabase client is ready ═══
+try {
+  initDomainEvents({ supabase });
+  console.log('✓ domain-events wired — EventBus + shared-events producer');
+} catch (e) {
+  console.warn('⚠️  domain-events init failed (non-fatal):', e && e.message);
+}
+
+// ═══ STATE MACHINE ENFORCEMENT — runtime transition guard ═══
+const { enforceTransition, recordTransition } = require('./src/pipeline/state-enforcement');
+
 // ═══ DB QUERY ANALYZER — Agent 57 ═══
 // Mounts GET /api/admin/query-stats + POST /api/admin/query-stats/reset.
 // The primary `supabase` client above is intentionally NOT wrapped —
@@ -165,9 +213,32 @@ const API_KEYS = (process.env.API_KEYS || '')
   .filter(Boolean);
 const AUTH_MODE = process.env.AUTH_MODE || (API_KEYS.length ? 'api_key' : 'disabled');
 
+// BUG-SEC-011 FIX: never allow AUTH_MODE=disabled in production
+if (process.env.NODE_ENV === 'production' && AUTH_MODE === 'disabled') {
+  console.error('FATAL: AUTH_MODE=disabled is not allowed in production. Set API_KEYS env var.');
+  process.exit(1);
+}
+
+// API-key to RBAC role mapping.
+// Env format: API_KEY_ROLES="key1:owner,key2:accountant,key3:viewer"
+// Keys not listed default to 'admin' (backward-compat: existing API
+// keys keep unrestricted access until explicitly mapped to a role).
+const API_KEY_ROLES = new Map();
+(process.env.API_KEY_ROLES || '').split(',').filter(Boolean).forEach(pair => {
+  const idx = pair.indexOf(':');
+  if (idx > 0) {
+    const key = pair.slice(0, idx).trim();
+    const role = pair.slice(idx + 1).trim().toLowerCase();
+    if (key && role) API_KEY_ROLES.set(key, role);
+  }
+});
+
 function requireAuth(req, res, next) {
   if (AUTH_MODE === 'disabled') {
     req.actor = 'anonymous';
+    // Dev mode: grant owner-level access so RBAC middleware passes
+    // without friction (owner role has *:* god mode).
+    req.user = { id: 'dev-anonymous', role: 'owner', roles: ['owner'] };
     return next();
   }
   const apiKey = req.headers['x-api-key'] || (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
@@ -175,6 +246,11 @@ function requireAuth(req, res, next) {
     return res.status(401).json({ error: 'Unauthorized — missing or invalid X-API-Key header' });
   }
   req.actor = `api_key:${apiKey.slice(0, 6)}…`;
+
+  // Populate req.user for the RBAC layer (requirePermission reads
+  // req.user.role). Falls back to 'admin' for backward-compat.
+  const role = API_KEY_ROLES.get(apiKey) || 'admin';
+  req.user = { id: `api_key:${apiKey.slice(0, 6)}`, role, roles: [role] };
   next();
 }
 
@@ -186,6 +262,7 @@ const PUBLIC_API_PATHS = new Set([
   '/status',
   '/health',
   '/admin/ai-bridge/health',
+  '/events/health',
 ]);
 app.use('/api/', (req, res, next) => {
   if (PUBLIC_API_PATHS.has(req.path)) { req.actor = 'public'; return next(); }
@@ -391,16 +468,76 @@ async function sendSMS(to, message) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// HELPER: Audit log
+// SHARED AUDIT — replaces inline helper with the shared-audit package
+// (packages/shared-audit: AuditWriter, StateHistoryWriter, buildDiff)
 // ═══════════════════════════════════════════════════════════════
+const { AuditWriter, StateHistoryWriter, buildDiff } = require('../packages/shared-audit');
 
+const auditWriter = new AuditWriter({
+  supabase,
+  serviceName: 'ONYX_PROCUREMENT',
+  moduleName: 'core',
+});
+
+const stateHistoryWriter = new StateHistoryWriter({
+  supabase,
+  serviceName: 'ONYX_PROCUREMENT',
+});
+
+/**
+ * Backward-compatible audit() wrapper so existing inline calls and
+ * sub-modules (bank-routes, tax-routes, payroll-routes, etc.) keep
+ * working without any signature changes.
+ *
+ * Signature: audit(entityType, entityId, action, actor, detail, prev, next)
+ *
+ * Under the hood it writes to the shared AuditWriter (audit_logs table)
+ * AND falls back to the legacy audit_log table for read-path compat.
+ */
 async function audit(entityType, entityId, action, actor, detail, prev, next) {
-  await supabase.from('audit_log').insert({
-    entity_type: entityType, entity_id: entityId,
-    action, actor, detail,
-    previous_value: prev, new_value: next,
-  });
+  // 1. Write to shared audit_logs table via AuditWriter (fire-and-forget-safe)
+  try {
+    await auditWriter.log({
+      entityType,
+      entityId: String(entityId),
+      actionName: action,
+      oldValues: prev || null,
+      newValues: next || null,
+      userId: actor || null,
+      correlationId: null,
+      sourcePage: typeof detail === 'string' ? detail : null,
+    });
+  } catch (err) {
+    console.warn('[shared-audit] AuditWriter.log failed (non-fatal):', err && err.message);
+  }
+
+  // 2. Keep writing to legacy audit_log table for backward compat
+  try {
+    await supabase.from('audit_log').insert({
+      entity_type: entityType, entity_id: entityId,
+      action, actor, detail,
+      previous_value: prev, new_value: next,
+    });
+  } catch (err) {
+    console.warn('[shared-audit] legacy audit_log insert failed (non-fatal):', err && err.message);
+  }
+
+  // 3. Domain event: governance.audit.created (fire-and-forget)
+  emitDomainEvent('governance.audit.created', {
+    entityType: entityType, entityId, action: 'audit_entry_created',
+    actor: actor || 'system',
+    payload: { entityType, entityId, action },
+  }).catch(() => {});
 }
+
+// Expose audit infrastructure on app.locals for sub-modules
+app.locals.auditWriter = auditWriter;
+app.locals.stateHistoryWriter = stateHistoryWriter;
+app.locals.buildDiff = buildDiff;
+app.locals.enforceTransition = enforceTransition;
+app.locals.recordTransition = recordTransition;
+console.log('✓ shared-audit wired — AuditWriter + StateHistoryWriter + legacy audit()');
+console.log('✓ state-enforcement wired — enforceTransition + recordTransition available on app.locals');
 
 // ═══ NOTIFICATIONS (Agent-76) — Unified Notification Service ═══
 try {
@@ -467,7 +604,7 @@ const SUPPLIER_FIELDS = ['name', 'email', 'phone', 'address', 'tax_id', 'payment
 app.post('/api/suppliers', async (req, res) => {
   const { data, error } = await supabase.from('suppliers').insert(pickFields(req.body, SUPPLIER_FIELDS)).select().single();
   if (error) return res.status(400).json({ error: error.message });
-  await audit('supplier', data.id, 'created', req.body.created_by || 'api', `ספק חדש: ${data.name}`);
+  await audit('supplier', data.id, 'created', req.body.created_by || 'api', `ספק חדש: ${data.name}`, null, data);
   res.status(201).json({ supplier: data });
 });
 
@@ -527,7 +664,8 @@ app.post('/api/purchase-requests', async (req, res) => {
     await supabase.from('purchase_request_items').insert(itemsWithRequestId);
   }
 
-  await audit('purchase_request', request.id, 'created', requestData.requested_by, `בקשת רכש: ${items?.length || 0} פריטים`);
+  await audit('purchase_request', request.id, 'created', requestData.requested_by,
+    `בקשת רכש: ${items?.length || 0} פריטים`, null, request);
   res.status(201).json({ request, items });
 });
 
@@ -544,7 +682,7 @@ app.get('/api/purchase-requests', async (req, res) => {
 // API: RFQ — שליחת בקשה לכל הספקים במכה אחת
 // ═══════════════════════════════════════════════════════════════
 
-app.post('/api/rfq/send', async (req, res) => {
+app.post('/api/rfq/send', requirePermission('purchase-orders:create'), async (req, res) => {
   const { purchase_request_id, categories, response_window_hours, company_note } = req.body;
 
   // 1. Get the purchase request + items
@@ -642,9 +780,34 @@ app.post('/api/rfq/send', async (req, res) => {
   }
 
   // Update purchase request status
+  // (purchase_request has no state machine — skip enforcement, record history only)
   await supabase.from('purchase_requests').update({ status: 'rfq_sent' }).eq('id', purchase_request_id);
+  await recordTransition(supabase, {
+    entityType: 'purchase_request', entityId: purchase_request_id,
+    from: request?.status || 'new', to: 'rfq_sent',
+    actor: req.body.sent_by || req.actor || 'system',
+    reason: `RFQ sent to ${suppliers.length} suppliers`,
+  });
 
-  await audit('rfq', rfq.id, 'sent', req.body.sent_by || 'api', `RFQ שנשלח ל-${suppliers.length} ספקים`);
+  await audit('rfq', rfq.id, 'sent', req.body.sent_by || 'api',
+    `RFQ שנשלח ל-${suppliers.length} ספקים`, null, rfq);
+
+  // State history: RFQ new->sent
+  try {
+    await stateHistoryWriter.recordTransition({
+      entityType: 'rfq', entityId: String(rfq.id),
+      fromState: 'new', toState: 'sent',
+      userId: req.body.sent_by || req.actor || null,
+      reason: `RFQ sent to ${suppliers.length} suppliers`,
+    });
+  } catch (err) { console.warn('[state-history] RFQ send:', err && err.message); }
+
+  // Domain event: RFQ sent
+  emitDomainEvent('procurement.rfq.sent', {
+    entityType: 'RFQ', entityId: rfq.id, action: 'sent',
+    actor: req.body.sent_by || req.actor || 'api',
+    payload: { rfqId: rfq.id, supplierCount: suppliers.length, purchaseRequestId: purchase_request_id },
+  }).catch(() => {});
 
   // Log system event
   await supabase.from('system_events').insert({
@@ -746,7 +909,21 @@ app.post('/api/quotes', async (req, res) => {
     });
   }
 
-  await audit('quote', quote.id, 'received', quoteData.supplier_name, `הצעה: ₪${totalPrice.toLocaleString()} (${lineItems.length} פריטים)`);
+  await audit('quote', quote.id, 'received', quoteData.supplier_name,
+    `הצעה: ₪${totalPrice.toLocaleString()} (${lineItems.length} פריטים)`, null, quote);
+
+  // State history: RFQ recipient delivered -> quoted
+  try {
+    if (quoteData.rfq_id) {
+      await stateHistoryWriter.recordTransition({
+        entityType: 'rfq_recipient',
+        entityId: String(quoteData.rfq_id) + ':' + String(quoteData.supplier_id),
+        fromState: 'delivered', toState: 'quoted',
+        userId: quoteData.supplier_name || null,
+        reason: `Quote received: ₪${totalPrice.toLocaleString()}`,
+      });
+    }
+  } catch (err) { console.warn('[state-history] quote received:', err && err.message); }
 
   res.status(201).json({
     quote: { ...quote, line_items: lineItems },
@@ -759,7 +936,7 @@ app.post('/api/quotes', async (req, res) => {
 // API: DECIDE — AI בוחר את ההצעה הטובה ביותר
 // ═══════════════════════════════════════════════════════════════
 
-app.post('/api/rfq/:id/decide', async (req, res) => {
+app.post('/api/rfq/:id/decide', requirePermission('purchase-orders:approve'), async (req, res) => {
   const rfqId = req.params.id;
   const { price_weight, delivery_weight, rating_weight, reliability_weight, force } = req.body;
 
@@ -768,6 +945,19 @@ app.post('/api/rfq/:id/decide', async (req, res) => {
   if (!rfqRow) return res.status(404).json({ error: 'RFQ not found' });
   if (rfqRow.status === 'decided' && !force) {
     return res.status(409).json({ error: 'RFQ already decided — pass {force:true} to re-decide' });
+  }
+
+  // ── State machine enforcement: block if RFQ is in a final state ──
+  // The rfq state machine defines: draft->sent->quotes_received->under_comparison->approved->converted_to_po
+  // The decide endpoint can operate on sent/quotes_received/under_comparison/approved.
+  // We block only if the RFQ has already reached a terminal state.
+  if (rfqRow.status === 'rejected' || rfqRow.status === 'converted_to_po') {
+    const smRfqCheck = enforceTransition('rfq', rfqRow.status, 'approved');
+    return res.status(409).json({
+      error: `RFQ is in final state "${rfqRow.status}" \u2014 no further transitions allowed`,
+      allowed: smRfqCheck.allowed || [],
+      code: 'INVALID_TRANSITION',
+    });
   }
 
   // Weights — clamp 0..1, normalize to sum=1 (otherwise scores are meaningless)
@@ -928,7 +1118,14 @@ app.post('/api/rfq/:id/decide', async (req, res) => {
   }).select().single();
 
   // Update RFQ status
+  const rfqPrevStatus = rfqRow.status;
   await supabase.from('rfqs').update({ status: 'decided' }).eq('id', rfqId);
+  await recordTransition(supabase, {
+    entityType: 'rfq', entityId: rfqId,
+    from: rfqPrevStatus, to: 'decided',
+    actor: req.body.decided_by || req.actor || 'system',
+    reason: `Selected ${winner.supplier_name}`,
+  });
 
   // Update supplier stats
   await supabase.from('suppliers').update({
@@ -937,7 +1134,47 @@ app.post('/api/rfq/:id/decide', async (req, res) => {
     last_order_date: new Date().toISOString(),
   }).eq('id', winner.supplier_id);
 
-  await audit('procurement_decision', decision.id, 'decided', req.body.decided_by || 'AI', `בחר ${winner.supplier_name} — ₪${winner.total_price.toLocaleString()}`);
+  // Audit: PO creation from RFQ decision (previously unaudited)
+  await audit('purchase_order', po.id, 'created', req.body.decided_by || 'AI',
+    `PO created from RFQ decision: ${winner.supplier_name} — ₪${winner.total_with_vat}`, null, po);
+  await audit('procurement_decision', decision.id, 'decided', req.body.decided_by || 'AI',
+    `בחר ${winner.supplier_name} — ₪${winner.total_price.toLocaleString()}`, null, decision);
+
+  // State history: RFQ sent->decided, PO new->draft
+  try {
+    await stateHistoryWriter.recordTransition({
+      entityType: 'rfq', entityId: String(rfqId),
+      fromState: rfqRow.status || 'sent', toState: 'decided',
+      userId: req.body.decided_by || req.actor || null,
+      reason: `Selected ${winner.supplier_name}; savings ₪${savingsAmount}`,
+    });
+    await stateHistoryWriter.recordTransition({
+      entityType: 'purchase_order', entityId: String(po.id),
+      fromState: 'new', toState: 'draft',
+      userId: req.body.decided_by || req.actor || null,
+      reason: 'Auto-created from RFQ decision',
+    });
+  } catch (err) { console.warn('[state-history] RFQ decide:', err && err.message); }
+
+  // Domain events: PO created + Quote decided
+  emitDomainEvent('procurement.po.created', {
+    entityType: 'PurchaseOrder', entityId: po.id, action: 'created',
+    actor: req.body.decided_by || req.actor || 'AI',
+    payload: { poId: po.id, supplierId: winner.supplier_id, total: winner.total_with_vat, rfqId },
+  }).catch(() => {});
+  emitDomainEvent('commercial.quote.approved', {
+    entityType: 'ProcurementDecision', entityId: decision.id, action: 'decided',
+    actor: req.body.decided_by || req.actor || 'AI',
+    payload: { decisionId: decision.id, rfqId, selectedSupplierId: winner.supplier_id, total: winner.total_with_vat },
+  }).catch(() => {});
+
+  // Notify ERP — quote approved
+  sendErpNotification({
+    type: 'procurement',
+    title: 'הצעת מחיר אושרה',
+    message: `הצעת מחיר #${rfqId} אושרה — ${winner.supplier_name} ₪${winner.total_with_vat.toLocaleString()}`,
+    priority: 'high',
+  });
 
   res.json({
     decision_id: decision.id,
@@ -969,21 +1206,70 @@ app.get('/api/purchase-orders/:id', async (req, res) => {
 });
 
 // Approve PO
-app.post('/api/purchase-orders/:id/approve', async (req, res) => {
+app.post('/api/purchase-orders/:id/approve', requirePermission('purchase-orders:approve'), async (req, res) => {
+  // ── State machine enforcement: fetch current status, validate transition ──
+  const { data: currentPo } = await supabase.from('purchase_orders').select('id, status').eq('id', req.params.id).single();
+  if (!currentPo) return res.status(404).json({ error: 'PO not found' });
+  const poFromStatus = currentPo.status || 'draft';
+
+  const smCheck = enforceTransition('po', poFromStatus, 'approved');
+  if (!smCheck.valid) {
+    return res.status(409).json({ error: smCheck.error, allowed: smCheck.allowed, code: 'INVALID_TRANSITION' });
+  }
+
   const { data } = await supabase.from('purchase_orders').update({
     status: 'approved',
     approved_by: req.body.approved_by,
     approved_at: new Date().toISOString(),
   }).eq('id', req.params.id).select().single();
 
-  await audit('purchase_order', data.id, 'approved', req.body.approved_by, `PO approved: ₪${data.total}`);
+  await recordTransition(supabase, {
+    entityType: 'purchase_order', entityId: data.id,
+    from: poFromStatus, to: 'approved',
+    actor: req.body.approved_by || req.actor || 'system',
+    reason: req.body.reason || null,
+  });
+  await audit('purchase_order', data.id, 'approved', req.body.approved_by,
+    `PO approved: ₪${data.total}`, currentPo, data);
+
+  // Shared state_history write (supplements recordTransition above)
+  try {
+    await stateHistoryWriter.recordTransition({
+      entityType: 'purchase_order', entityId: String(data.id),
+      fromState: poFromStatus, toState: 'approved',
+      userId: req.body.approved_by || req.actor || null,
+      reason: `PO approved: ₪${data.total}`,
+    });
+  } catch (err) { console.warn('[state-history] PO approve:', err && err.message); }
+
+  // Domain event: PO approved
+  emitDomainEvent('procurement.po.approved', {
+    entityType: 'PurchaseOrder', entityId: data.id, action: 'approved',
+    actor: req.body.approved_by || req.actor || 'system',
+    payload: { poId: data.id, approverId: req.body.approved_by, total: data.total, supplierId: data.supplier_id },
+  }).catch(() => {});
+
+  // Notify ERP — PO approved
+  sendErpNotification({
+    type: 'procurement',
+    title: 'הזמנת רכש אושרה',
+    message: `הזמנת רכש #${data.id} אושרה על ידי ${req.body.approved_by || 'מנהל'} — ₪${data.total}`,
+    priority: 'high',
+  });
+
   res.json({ order: data, message: '✅ הזמנה אושרה' });
 });
 
 // Send PO to supplier via WhatsApp
-app.post('/api/purchase-orders/:id/send', async (req, res) => {
+app.post('/api/purchase-orders/:id/send', requirePermission('purchase-orders:update'), async (req, res) => {
   const { data: po } = await supabase.from('purchase_orders').select('*, po_line_items(*)').eq('id', req.params.id).single();
   if (!po) return res.status(404).json({ error: 'PO not found' });
+
+  // ── State machine enforcement: only approved POs can be sent ──
+  const smCheckSend = enforceTransition('po', po.status, 'sent');
+  if (!smCheckSend.valid) {
+    return res.status(409).json({ error: smCheckSend.error, allowed: smCheckSend.allowed, code: 'INVALID_TRANSITION' });
+  }
 
   const { data: supplier } = await supabase.from('suppliers').select('*').eq('id', po.supplier_id).single();
 
@@ -1034,16 +1320,60 @@ app.post('/api/purchase-orders/:id/send', async (req, res) => {
       whatsapp_message_id: sendResult.messageId || null,
       last_send_error: null,
     }).eq('id', po.id);
+    await recordTransition(supabase, {
+      entityType: 'purchase_order', entityId: po.id,
+      from: po.status, to: 'sent',
+      actor: req.actor || req.body.sent_by || 'system',
+      reason: `Sent to ${po.supplier_name} via WhatsApp`,
+    });
     await audit('purchase_order', po.id, 'sent', req.actor || req.body.sent_by || 'api',
-      `PO sent to ${po.supplier_name} via WhatsApp (msgId=${sendResult.messageId || 'n/a'})`);
+      `PO sent to ${po.supplier_name} via WhatsApp (msgId=${sendResult.messageId || 'n/a'})`,
+      po, { ...po, status: 'sent' });
+
+    // State history: PO -> sent
+    try {
+      await stateHistoryWriter.recordTransition({
+        entityType: 'purchase_order', entityId: String(po.id),
+        fromState: po.status || 'approved', toState: 'sent',
+        userId: req.actor || req.body.sent_by || null,
+        reason: `Sent to ${po.supplier_name} via WhatsApp`,
+      });
+    } catch (err) { console.warn('[state-history] PO send:', err && err.message); }
   } else {
     await supabase.from('purchase_orders').update({
       status: 'send_failed',
       last_send_error: sendResult.error || `HTTP ${sendResult.status || 'unknown'}`,
       send_attempt_at: new Date().toISOString(),
     }).eq('id', po.id);
+    await recordTransition(supabase, {
+      entityType: 'purchase_order', entityId: po.id,
+      from: po.status, to: 'send_failed',
+      actor: req.actor || req.body.sent_by || 'system',
+      reason: `Send failed: ${sendResult.error || sendResult.status}`,
+    });
     await audit('purchase_order', po.id, 'send_failed', req.actor || req.body.sent_by || 'api',
-      `PO send failed: ${sendResult.error || sendResult.status}`);
+      `PO send failed: ${sendResult.error || sendResult.status}`,
+      po, { ...po, status: 'send_failed' });
+
+    // State history: PO -> send_failed
+    try {
+      await stateHistoryWriter.recordTransition({
+        entityType: 'purchase_order', entityId: String(po.id),
+        fromState: po.status || 'approved', toState: 'send_failed',
+        userId: req.actor || req.body.sent_by || null,
+        reason: `Send failed: ${sendResult.error || sendResult.status}`,
+      });
+    } catch (err) { console.warn('[state-history] PO send_failed:', err && err.message); }
+  }
+
+  // Notify ERP — PO issued (sent to supplier = invoice issued)
+  if (sendResult.success) {
+    sendErpNotification({
+      type: 'procurement',
+      title: 'חשבונית הוצאה לספק',
+      message: `הזמנת רכש #${po.id} נשלחה ל-${po.supplier_name} — ₪${po.total}`,
+      priority: 'high',
+    });
   }
 
   res.status(sendResult.success ? 200 : 502).json({
@@ -1095,7 +1425,7 @@ app.put('/api/subcontractors/:id/pricing', async (req, res) => {
 });
 
 // Decide: % vs sqm
-app.post('/api/subcontractors/decide', async (req, res) => {
+app.post('/api/subcontractors/decide', requirePermission('purchase-orders:approve'), async (req, res) => {
   const { work_type, project_value, area_sqm, project_name, client_name, price_weight, quality_weight, reliability_weight } = req.body;
 
   const wPrice = price_weight || 0.6;
@@ -1199,34 +1529,70 @@ app.post('/api/subcontractors/decide', async (req, res) => {
 
 try {
   const { registerVatRoutes } = require('./src/vat/vat-routes');
-  registerVatRoutes(app, { supabase, audit, requireAuth, VAT_RATE });
+  registerVatRoutes(app, { supabase, audit, requireAuth, requirePermission, VAT_RATE });
 } catch (err) {
   console.error('⚠️  VAT module failed to load:', err.message);
 }
 
 try {
   const { registerAnnualTaxRoutes } = require('./src/tax/annual-tax-routes');
-  registerAnnualTaxRoutes(app, { supabase, audit });
+  registerAnnualTaxRoutes(app, { supabase, audit, requirePermission });
 } catch (err) {
   console.error('⚠️  Annual tax module failed to load:', err.message);
 }
 
 try {
   const { registerBankRoutes } = require('./src/bank/bank-routes');
-  registerBankRoutes(app, { supabase, audit });
+  registerBankRoutes(app, { supabase, audit, requirePermission });
 } catch (err) {
   console.error('⚠️  Bank reconciliation module failed to load:', err.message);
 }
 
 try {
   const { registerPayrollRoutes } = require('./src/payroll/payroll-routes');
-  registerPayrollRoutes(app, { supabase, audit });
+  registerPayrollRoutes(app, { supabase, audit, requirePermission });
 } catch (err) {
   console.error('⚠️  Payroll module failed to load:', err.message);
 }
 
 
 // ═══════════════════════════════════════════════════════════════
+// API: DOMAIN EVENTS — health + stats
+// ═══════════════════════════════════════════════════════════════
+app.get('/api/events/health', (_req, res) => {
+  try {
+    const dm = require('./src/wiring/domain-events');
+    const b = dm.getEventBus();
+    const p = dm.getProducer();
+    res.json({
+      status: 'ok', module: 'domain-events',
+      eventBus: b ? { active: true, stats: b.stats } : { active: false },
+      producer: p ? { active: true, service: 'ONYX_PROCUREMENT' } : { active: false },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (e) {
+    res.json({ status: 'error', error: e.message, timestamp: new Date().toISOString() });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// ═══ RBAC DIAGNOSTIC ENDPOINT (admin only) ═══
+app.get('/api/admin/rbac/status', async (req, res) => {
+  const callerRole = req.user && req.user.role;
+  if (callerRole !== 'admin' && callerRole !== 'owner') {
+    return res.status(403).json({ error: 'admin/owner role required' });
+  }
+  res.json({
+    module: 'rbac',
+    roles: rbac.listRoles(),
+    resources_count: rbac.RESOURCES.length,
+    auth_mode: process.env.AUTH_MODE || 'disabled',
+    api_key_roles_mapped: API_KEY_ROLES.size,
+    caller: { role: callerRole, permissions_count: rbac.getEffectivePermissions(req.user).length },
+  });
+});
+
+
 // API: ANALYTICS — דוחות
 // ═══════════════════════════════════════════════════════════════
 
@@ -1391,6 +1757,14 @@ app.get('/readyz', async (_req, res) => {
   }
 });
 
+// ═══ ENTERPRISE ROUTES — Control Rooms, Orchestration, Intelligence, AI, Documents, Dashboard, Admin ═══
+try {
+  const { registerEnterpriseRoutes } = require('./src/enterprise/enterprise-routes');
+  registerEnterpriseRoutes(app, supabase);
+} catch (e) {
+  console.warn('⚠️  Enterprise routes not loaded:', e && e.message);
+}
+
 // ═══ ERROR TRACKER middleware — MUST be attached LAST, after all routes ═══
 try {
   if (errorTracker && typeof errorTracker.errorHandler === 'function') {
@@ -1453,3 +1827,8 @@ process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('unhandledRejection', (reason) => {
   console.error('❌ Unhandled promise rejection:', reason);
 });
+
+// Export the Express app for testing (supertest, jest).
+// When this module is required by tests, the server is already listening on PORT above.
+// Supertest will reuse the existing server or open its own connection.
+module.exports = app;
