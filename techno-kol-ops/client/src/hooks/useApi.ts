@@ -66,3 +66,5 @@ export function useApi<T>(endpoint: string) {
 }
 
 export { api };
+
+export const apiGet = (url: string, params?: Record<string, any>) => api.get(url, { params }).then(r => r.data);

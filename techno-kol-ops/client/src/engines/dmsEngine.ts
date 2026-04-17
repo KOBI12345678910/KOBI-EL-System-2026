@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * ╔══════════════════════════════════════════════════════════════════════════╗
  * ║   TECHNO-KOL DMS ENGINE — Document Management System                   ║

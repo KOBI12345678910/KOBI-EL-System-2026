@@ -111,3 +111,5 @@ export function Sidebar() {
     </div>
   );
 }
+
+export default Sidebar;

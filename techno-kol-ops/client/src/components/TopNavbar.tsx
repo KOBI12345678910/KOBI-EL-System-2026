@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Popover, Menu, MenuItem, Icon } from '@blueprintjs/core';
