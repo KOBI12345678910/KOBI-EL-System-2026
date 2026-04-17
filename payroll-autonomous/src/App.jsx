@@ -43,6 +43,8 @@ const MaintenanceControlRoom = lazy(() => import('./components/MaintenanceContro
 const PlanningControlRoom = lazy(() => import('./components/PlanningControlRoom'));
 const ComplianceDashboard = lazy(() => import('./components/ComplianceDashboard'));
 const PricingEngine = lazy(() => import('./components/PricingEngine'));
+const AIAssistantKobi = lazy(() => import('./components/AIAssistantKobi'));
+const AIAssistantUzi = lazy(() => import('./components/AIAssistantUzi'));
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
@@ -140,6 +142,10 @@ const NAV_GROUPS = [
     { id: 'planning-control', label: 'Planning' },
     { id: 'compliance-dash', label: 'Compliance' },
     { id: 'pricing-engine', label: 'Pricing Engine' },
+  ]},
+  { label: 'עוזרי AI', items: [
+    { id: 'ai-kobi', label: '👑 עוזר קובי' },
+    { id: 'ai-uzi',  label: '🔧 עוזר עוזי' },
   ]},
   { label: 'מערכת', items: [
     { id: 'tickets', label: 'כרטיסי תמיכה' },
@@ -936,6 +942,8 @@ export default function App() {
       case 'planning-control': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Planning...</div>}><PlanningControlRoom /></Suspense>;
       case 'compliance-dash': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Compliance...</div>}><ComplianceDashboard /></Suspense>;
       case 'pricing-engine': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Pricing...</div>}><PricingEngine /></Suspense>;
+      case 'ai-kobi': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>טוען עוזר קובי...</div>}><AIAssistantKobi /></Suspense>;
+      case 'ai-uzi':  return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>טוען עוזר עוזי...</div>}><AIAssistantUzi /></Suspense>;
       default: return <DashboardTab wageSlips={wageSlips} employees={employees} />;
     }
   };
