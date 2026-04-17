@@ -27,7 +27,7 @@ COPY onyx-procurement/package.json onyx-procurement/package-lock.json* ./
 
 # Prefer npm ci when lockfile exists, fallback to install
 RUN if [ -f package-lock.json ]; then \
-      npm ci --omit=dev --no-audit --no-fund; \
+      npm install --omit=dev --no-audit --no-fund; \
     else \
       npm install --omit=dev --no-audit --no-fund; \
     fi
