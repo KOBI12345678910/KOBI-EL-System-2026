@@ -29,6 +29,8 @@ import RealEstatePortfolio from './components/RealEstatePortfolio';
 import TenantPortal from './components/TenantPortal';
 
 // ── Enterprise Modules (lazy-loaded) ──
+const DocumentUpload = lazy(() => import('./components/DocumentUpload'));
+const ContractGenerator = lazy(() => import('./components/ContractGenerator'));
 const FinanceControlRoom = lazy(() => import('./components/FinanceControlRoom'));
 const UniversalInbox = lazy(() => import('./components/UniversalInbox'));
 const FormulaBuilder = lazy(() => import('./components/FormulaBuilder'));
@@ -178,6 +180,8 @@ const NAV_GROUPS = [
     { id: 'pricing-engine', label: 'Pricing Engine' },
     { id: 'widgets-board', label: 'Dashboard Widgets' },
     { id: 'inventory-alerts', label: '📦 התראות מלאי' },
+    { id: 'doc-upload', label: '📁 העלאת מסמכים' },
+    { id: 'contract-gen', label: '📝 יצירת חוזים' },
   ]},
   { label: 'עוזרי AI', items: [
     { id: 'ai-kobi', label: '👑 עוזר קובי' },
@@ -1254,6 +1258,8 @@ export default function App() {
       case 'formula-builder': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Formula Builder...</div>}><FormulaBuilder /></Suspense>;
       case 'ai-agents': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading AI Agent Console...</div>}><AdvancedAIAgentConsole /></Suspense>;
       case 'doc-intelligence': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Document Intelligence...</div>}><DocumentIntelligenceCenter /></Suspense>;
+      case 'doc-upload': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading...</div>}><DocumentUpload /></Suspense>;
+      case 'contract-gen': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading...</div>}><ContractGenerator /></Suspense>;
       case 'route-sync': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Route Sync...</div>}><RouteMenuPermissionSyncConsole /></Suspense>;
       case 'mobile-exec': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Mobile Executive...</div>}><MobileExecutiveShell /></Suspense>;
       case 'crm-control': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading CRM Control Room...</div>}><CRMControlRoom /></Suspense>;

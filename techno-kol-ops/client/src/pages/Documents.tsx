@@ -1,6 +1,155 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useApi, api } from '../hooks/useApi';
 import { formatDate } from '../utils/format';
+
+// ── Mock File Library ─────────────────────────────────────────
+const MOCK_FILES = [
+  { id: 1, name: 'חוזה_לקוח_גלעד_2026.pdf',      category: 'חוזה לקוח',   date: '2026-01-15', size: '240 KB', type: 'pdf',   url: null },
+  { id: 2, name: 'הצעת_מחיר_פרויקט_B.docx',        category: 'הצעת מחיר',  date: '2026-01-22', size: '185 KB', type: 'docx',  url: null },
+  { id: 3, name: 'חשבונית_1042_ינואר.pdf',          category: 'חשבונית',    date: '2026-02-01', size: '98 KB',  type: 'pdf',   url: null },
+  { id: 4, name: 'תלוש_שכר_02-2026.pdf',            category: 'תלוש שכר',   date: '2026-02-28', size: '120 KB', type: 'pdf',   url: null },
+  { id: 5, name: 'חוזה_ספק_ציוד_משרד.pdf',          category: 'חוזה ספק',   date: '2026-03-05', size: '310 KB', type: 'pdf',   url: null },
+  { id: 6, name: 'תעודת_ביטוח_2026.pdf',            category: 'תעודת ביטוח',date: '2026-03-10', size: '430 KB', type: 'pdf',   url: null },
+  { id: 7, name: 'רישיון_עסק.png',                  category: 'רישיון',     date: '2026-03-15', size: '560 KB', type: 'image', url: 'https://via.placeholder.com/400x300/1a2028/4a9eff?text=License' },
+  { id: 8, name: 'תכנית_פרויקט.xlsx',               category: 'אחר',        date: '2026-03-20', size: '88 KB',  type: 'xlsx',  url: null },
+  { id: 9, name: 'חוזה_העסקה_כרמית_לוי.docx',       category: 'חוזה לקוח',  date: '2026-04-01', size: '200 KB', type: 'docx',  url: null },
+  { id: 10,'name': 'תמונת_אתר_בנייה.jpg',           category: 'אחר',        date: '2026-04-10', size: '1.2 MB', type: 'image', url: 'https://via.placeholder.com/400x300/1a2028/3fb950?text=Site+Photo' },
+];
+
+const FILE_CATEGORIES = ['הכל', 'חוזה לקוח', 'חוזה ספק', 'הצעת מחיר', 'חשבונית', 'תלוש שכר', 'רישיון', 'תעודת ביטוח', 'אחר'];
+
+function fileIcon(type: string): { icon: string; color: string } {
+  if (type === 'pdf')   return { icon: '📄', color: '#FC8585' };
+  if (type === 'docx' || type === 'doc') return { icon: '📝', color: '#48AFF0' };
+  if (type === 'xlsx' || type === 'xls') return { icon: '📊', color: '#3DCC91' };
+  if (type === 'image') return { icon: '🖼️', color: '#D383FF' };
+  return { icon: '📎', color: '#8b96a5' };
+}
+
+function FileLibrary() {
+  const [search, setSearch] = useState('');
+  const [catFilter, setCatFilter] = useState('הכל');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [preview, setPreview] = useState<(typeof MOCK_FILES)[0] | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const filtered = MOCK_FILES.filter(f => {
+    if (catFilter !== 'הכל' && f.category !== catFilter) return false;
+    if (search && !f.name.includes(search) && !f.category.includes(search)) return false;
+    if (dateFrom && f.date < dateFrom) return false;
+    if (dateTo && f.date > dateTo) return false;
+    return true;
+  });
+
+  const inputS: React.CSSProperties = {
+    background: '#383E47', border: '1px solid rgba(255,255,255,0.1)',
+    color: '#F6F7F9', padding: '6px 10px', fontSize: 12, outline: 'none',
+  };
+
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12, gap: 8 }}>
+        <h2 style={{ color: '#F6F7F9', fontSize: 14, fontWeight: 700, margin: 0 }}>ספריית מסמכים</h2>
+        <div style={{ flex: 1 }} />
+        <input
+          style={{ ...inputS, width: 160 }}
+          placeholder="חיפוש..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+        <input type="date" style={{ ...inputS, width: 130 }} value={dateFrom} onChange={e => setDateFrom(e.target.value)} title="מתאריך" />
+        <input type="date" style={{ ...inputS, width: 130 }} value={dateTo} onChange={e => setDateTo(e.target.value)} title="עד תאריך" />
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          style={{ background: 'rgba(72,175,240,0.1)', border: '1px solid #48AFF0', color: '#48AFF0', padding: '6px 14px', cursor: 'pointer', fontSize: 12 }}
+        >
+          ⬆️ העלה מסמך
+        </button>
+        <input ref={fileInputRef} type="file" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) alert(`הקובץ "${e.target.files[0].name}" הועלה (mock)`); }} />
+      </div>
+
+      {/* Category pills */}
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+        {FILE_CATEGORIES.map(c => (
+          <button key={c} onClick={() => setCatFilter(c)}
+            style={{
+              padding: '3px 10px', fontSize: 11, cursor: 'pointer',
+              background: catFilter === c ? 'rgba(255,165,0,0.15)' : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${catFilter === c ? '#FFA500' : 'rgba(255,255,255,0.1)'}`,
+              color: catFilter === c ? '#FFA500' : '#ABB3BF',
+            }}>
+            {c}
+          </button>
+        ))}
+      </div>
+
+      {/* File grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8 }}>
+        {filtered.map(f => {
+          const { icon, color } = fileIcon(f.type);
+          return (
+            <div key={f.id} style={{
+              background: '#2F343C', border: '1px solid rgba(255,255,255,0.07)',
+              padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10,
+            }}>
+              <span style={{ fontSize: 22, flexShrink: 0 }}>{icon}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 11, color: '#F6F7F9', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={f.name}>
+                  {f.name}
+                </div>
+                <div style={{ fontSize: 10, color: '#5C7080', marginTop: 2 }}>
+                  <span style={{ color, marginLeft: 6 }}>{f.category}</span>
+                  {f.date} · {f.size}
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {f.type === 'image' && (
+                  <button onClick={() => setPreview(f)}
+                    style={{ background: 'rgba(211,131,255,0.1)', border: '1px solid #D383FF', color: '#D383FF', padding: '2px 6px', cursor: 'pointer', fontSize: 10 }}>
+                    👁
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    const a = document.createElement('a');
+                    a.href = f.url || '#';
+                    a.download = f.name;
+                    a.click();
+                  }}
+                  style={{ background: 'rgba(61,204,145,0.1)', border: '1px solid #3DCC91', color: '#3DCC91', padding: '2px 6px', cursor: 'pointer', fontSize: 10 }}>
+                  ⬇
+                </button>
+              </div>
+            </div>
+          );
+        })}
+        {filtered.length === 0 && (
+          <div style={{ gridColumn: '1/-1', padding: 30, textAlign: 'center', color: '#5C7080', fontSize: 12 }}>
+            לא נמצאו מסמכים
+          </div>
+        )}
+      </div>
+
+      {/* Image Preview Modal */}
+      {preview && preview.url && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+        }} onClick={() => setPreview(null)}>
+          <div style={{ background: '#2F343C', border: '1px solid rgba(255,255,255,0.15)', padding: 20, maxWidth: '80vw' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+              <span style={{ color: '#F6F7F9', fontSize: 13, fontWeight: 600 }}>{preview.name}</span>
+              <button onClick={() => setPreview(null)}
+                style={{ background: 'none', border: 'none', color: '#5C7080', cursor: 'pointer', fontSize: 20 }}>×</button>
+            </div>
+            <img src={preview.url} alt={preview.name} style={{ maxWidth: '70vw', maxHeight: '70vh', display: 'block' }} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   draft:    { label: 'טיוטה',          color: '#5C7080' },
@@ -81,6 +230,14 @@ export function Documents() {
           </button>
         </div>
       </div>
+
+      {/* FILE LIBRARY */}
+      <FileLibrary />
+
+      <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.07)', margin: '4px 0 16px' }} />
+
+      {/* SIGNATURE DOCUMENTS HEADER */}
+      <div style={{ fontSize: 14, fontWeight: 700, color: '#F6F7F9', marginBottom: 10 }}>חתימות דיגיטליות</div>
 
       {/* FILTER TABS */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: 12 }}>
