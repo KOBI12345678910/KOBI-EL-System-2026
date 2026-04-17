@@ -39,7 +39,7 @@ steps:
       - --max-instances=5
       - --timeout=300s
       - --set-env-vars=NODE_ENV=production
-      - --set-secrets=SUPABASE_DB_URL=supabase-db-url:latest,API_KEYS=api-keys:latest,ONYX_AI_URL=onyx-ai-url:latest,PROCUREMENT_API_URL=procurement-api-url:latest
+      - --set-secrets=SUPABASE_DB_URL=supabase-db-url:latest,JWT_SECRET=jwt-secret:latest,API_KEYS=api-keys:latest,ONYX_AI_URL=onyx-ai-url:latest,PROCUREMENT_API_URL=procurement-api-url:latest
 
 substitutions:
   _REGION: me-west1

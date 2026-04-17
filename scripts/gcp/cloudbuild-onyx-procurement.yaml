@@ -45,7 +45,7 @@ steps:
       - --max-instances=10
       - --timeout=300s
       - --set-env-vars=NODE_ENV=production,AUTH_MODE=api_key
-      - --set-secrets=SUPABASE_DB_URL=supabase-db-url:latest,API_KEYS=api-keys:latest,PAYROLL_ADMIN_KEYS=payroll-admin-keys:latest,PAYROLL_EMPLOYEE_KEY_MAP=payroll-employee-map:latest
+      - --set-secrets=SUPABASE_DB_URL=supabase-db-url:latest,SUPABASE_URL=supabase-url:latest,SUPABASE_ANON_KEY=supabase-anon-key:latest,API_KEYS=api-keys:latest,PAYROLL_ADMIN_KEYS=payroll-admin-keys:latest,PAYROLL_EMPLOYEE_KEY_MAP=payroll-employee-map:latest
 
 substitutions:
   _REGION: me-west1
