@@ -2282,7 +2282,13 @@ class APIServer {
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
       res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-      if (req.method === 'OPTIONS') {
+      // DIRECT ROOT+HEALTH handler (before class router)
+        if (req.method === 'GET' && (req.url === '/' || req.url === '/healthz' || req.url === '/livez')) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ service: 'onyx-ai', version: '2.0.0', status: 'running' }));
+          return;
+        }
+        if (req.method === 'OPTIONS') {
         res.writeHead(204);
         res.end();
         return;
@@ -2311,6 +2317,11 @@ class APIServer {
     body: Record<string, unknown>,
     params: URLSearchParams,
   ): Promise<{ status: number; body: Record<string, unknown> }> {
+    // ROOT ROUTE (Cloud Run health check)
+    if (method === 'GET' && path === '/') {
+      return { status: 200, body: { service: 'onyx-ai', version: '2.0.0', status: 'running' } };
+    }
+
     // ═══════════════════════════════════════════════════════════
     // KUBERNETES-STYLE PROBES (Agent 41) — always evaluated first
     // /healthz → 200 + {ok, service, version, uptime}

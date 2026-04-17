@@ -60,6 +60,7 @@ const {
 } = require('./middleware/security.js');
 
 const app = express();
+app.set('trust proxy', true); // Cloud Run proxy support
 const server = createServer(app);
 
 // BUG-SEC-003: Replace wide-open CORS with env-based allowlist, add helmet & rate limiting
@@ -67,6 +68,11 @@ app.use(helmetMw);
 app.use(corsMw);
 app.use(express.json());
 app.use('/api/', apiRateLimit);
+
+//  ROOT ROUTE (Cloud Run health) 
+app.get("/", (_req, res) => {
+  res.json({ service: "techno-kol-ops", version: "2.0", status: "running" });
+});
 
 // ─── AUTH ─────────────────────────────────────
 app.use('/api/auth/login', loginRateLimit);

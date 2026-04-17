@@ -177,6 +177,7 @@ try {
   const rateLimit = require('express-rate-limit');
 
   apiRateLimit = rateLimit({
+    validate: false,
     windowMs: 15 * 60 * 1000, // 15 min
     max: parseInt(process.env.RATE_LIMIT_API_MAX, 10) || 300,
     standardHeaders: true,
@@ -186,6 +187,7 @@ try {
 
   // Tighter limit on the login endpoint specifically — brute-force guard.
   loginRateLimit = rateLimit({
+    validate: false,
     windowMs: 15 * 60 * 1000,
     max: parseInt(process.env.RATE_LIMIT_LOGIN_MAX, 10) || 10,
     standardHeaders: true,
