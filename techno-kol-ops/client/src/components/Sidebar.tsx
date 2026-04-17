@@ -27,6 +27,9 @@ const NAV = [
   { path: '/financial-autonomy', label: 'פיננסים אוטונומיים (FAE)', icon: '🧮', section: 'פיננסים' },
   { path: '/alerts', label: 'התראות', icon: '🔔', section: 'מערכת' },
   { path: '/alerts-intel', label: 'התראות חכמות (IAS v2)', icon: '🧠', section: 'מערכת' },
+  { path: '/control-room/operations', label: 'חדר בקרה תפעולי', icon: '🏗️', section: 'חדרי בקרה' },
+  { path: '/control-room/procurement', label: 'חדר בקרה רכש', icon: '📦', section: 'חדרי בקרה' },
+  { path: '/control-room/workforce', label: 'חדר בקרה כוח אדם', icon: '👷', section: 'חדרי בקרה' },
 ];
 
 export function Sidebar() {

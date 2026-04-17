@@ -142,6 +142,7 @@ const NAV_GROUPS = [
     { id: 'planning-control', label: 'Planning' },
     { id: 'compliance-dash', label: 'Compliance' },
     { id: 'pricing-engine', label: 'Pricing Engine' },
+    { id: 'widgets-board', label: 'Dashboard Widgets' },
   ]},
   { label: 'עוזרי AI', items: [
     { id: 'ai-kobi', label: '👑 עוזר קובי' },
@@ -942,6 +943,7 @@ export default function App() {
       case 'planning-control': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Planning...</div>}><PlanningControlRoom /></Suspense>;
       case 'compliance-dash': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Compliance...</div>}><ComplianceDashboard /></Suspense>;
       case 'pricing-engine': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Pricing...</div>}><PricingEngine /></Suspense>;
+      case 'widgets-board': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Widgets Board...</div>}><DashboardWidgetsBoard boardCode="main" /></Suspense>;
       case 'ai-kobi': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>טוען עוזר קובי...</div>}><AIAssistantKobi /></Suspense>;
       case 'ai-uzi':  return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>טוען עוזר עוזי...</div>}><AIAssistantUzi /></Suspense>;
       default: return <DashboardTab wageSlips={wageSlips} employees={employees} />;

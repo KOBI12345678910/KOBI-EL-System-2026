@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useParams } from 'react-router-dom';
 import { useStore } from './store/useStore';
 import { useWebSocket } from './hooks/useWebSocket';
 import { useAutonomousPipeline } from './hooks/useAutonomousPipeline';
@@ -33,6 +33,31 @@ import { DocumentManagement } from './pages/DocumentManagement';
 import { ProcurementHyperintelligencePage } from './pages/ProcurementHyperintelligence';
 // v3.0 — Financial Autonomy Engine
 import { FinancialAutonomy } from './pages/FinancialAutonomy';
+// v3.1 — 360 Detail Views + Control Rooms
+import { Project360 } from './pages/Project360';
+import { WorkOrder360 } from './pages/WorkOrder360';
+import OperationsControlRoom from './pages/controlRooms/OperationsControlRoom';
+import ProcurementControlRoom from './pages/controlRooms/ProcurementControlRoom';
+import WorkforceControlRoom from './pages/controlRooms/WorkforceControlRoom';
+import Customer360 from './pages/360/Customer360';
+import Employee360 from './pages/360/Employee360';
+import Finance360 from './pages/360/Finance360';
+import PO360 from './pages/360/PO360';
+import Project360Detail from './pages/360/Project360';
+import Quote360 from './pages/360/Quote360';
+import RFQ360 from './pages/360/RFQ360';
+import Supplier360 from './pages/360/Supplier360';
+import WorkOrder360Detail from './pages/360/WorkOrder360';
+
+function Project360RouteWrapper() {
+  const { id } = useParams<{ id: string }>();
+  return <Project360 projectId={id ? Number(id) : undefined} />;
+}
+
+function WorkOrder360RouteWrapper() {
+  const { id } = useParams<{ id: string }>();
+  return <WorkOrder360 workOrderId={id ? Number(id) : undefined} />;
+}
 
 function Layout() {
   useWebSocket();
@@ -95,6 +120,21 @@ function Layout() {
           <Route path="/procurement" element={<ProcurementHyperintelligencePage />} />
           {/* v3.0 Financial Autonomy Engine */}
           <Route path="/financial-autonomy" element={<FinancialAutonomy />} />
+          {/* v3.1 — 360 Detail Views + Control Rooms */}
+          <Route path="/project360/:id" element={<Project360RouteWrapper />} />
+          <Route path="/work-order360/:id" element={<WorkOrder360RouteWrapper />} />
+          <Route path="/control-room/operations" element={<OperationsControlRoom />} />
+          <Route path="/control-room/procurement" element={<ProcurementControlRoom />} />
+          <Route path="/control-room/workforce" element={<WorkforceControlRoom />} />
+          <Route path="/360/customer/:id" element={<Customer360 />} />
+          <Route path="/360/employee/:id" element={<Employee360 />} />
+          <Route path="/360/finance/:id" element={<Finance360 />} />
+          <Route path="/360/po/:id" element={<PO360 />} />
+          <Route path="/360/project/:id" element={<Project360Detail />} />
+          <Route path="/360/quote/:id" element={<Quote360 />} />
+          <Route path="/360/rfq/:id" element={<RFQ360 />} />
+          <Route path="/360/supplier/:id" element={<Supplier360 />} />
+          <Route path="/360/work-order/:id" element={<WorkOrder360Detail />} />
         </Routes>
       </div>
       <RealtimeToast />
