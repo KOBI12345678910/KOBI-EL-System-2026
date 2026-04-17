@@ -1159,6 +1159,8 @@ export default function App() {
       case 'employers': return <EmployersTab employers={employers} onReload={loadAll} />;
       case 'clock-in': return <ClockInTab employees={employees} />;
       case 'expenses': return <ExpensesTab />;
+      case 'schedule': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>טוען סידור עבודה...</div>}><WeeklySchedule /></Suspense>;
+      case 'field-map': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>טוען עובדים בשטח...</div>}><FieldWorkersMap /></Suspense>;
       case 'rfq': return <RfqTab />;
       case 'kanban': return <KanbanTab />;
       case 'sales': return <SalesTab />;

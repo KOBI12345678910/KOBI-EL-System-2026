@@ -23,6 +23,7 @@ const NAV = [
   { path: '/employees', label: 'עובדים', icon: '👥', section: 'כוח אדם' },
   { path: '/hr-autonomy', label: 'HR אוטונומי', icon: '🤖', section: 'כוח אדם' },
   { path: '/hours', label: 'שעות וחופשות', icon: '⏱️', section: 'כוח אדם' },
+  { path: '/schedule', label: 'סידור עבודה', icon: '📅', section: 'כוח אדם' },
   { path: '/clients', label: 'לקוחות', icon: '🤝', section: 'פיננסים' },
   { path: '/finance', label: 'כספים', icon: '💰', section: 'פיננסים' },
   { path: '/financial-autonomy', label: 'פיננסים אוטונומיים (FAE)', icon: '🧮', section: 'פיננסים' },
