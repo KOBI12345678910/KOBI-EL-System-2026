@@ -1,6 +1,158 @@
 import React, { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+// ─── Real-time notification bell (polls techno-kol-ops /api/notifications) ───
+
+export type RealtimeNotification = {
+  id: string;
+  type: "alert" | "work_order" | "payroll" | "project" | "system" | "procurement";
+  title: string;
+  message: string;
+  priority: "low" | "medium" | "high" | "critical";
+  read: boolean;
+  createdAt: string;
+};
+
+const TECHNO_KOL_BASE =
+  (typeof window !== "undefined" && (window as any).__TECHNO_KOL_URL__)
+    ? (window as any).__TECHNO_KOL_URL__
+    : ((import.meta as any)?.env?.VITE_TECHNO_KOL_URL ?? "http://localhost:3200");
+
+async function fetchRealtimeNotifications(): Promise<{ notifications: RealtimeNotification[]; unreadCount: number }> {
+  const token = localStorage.getItem("token") ?? "";
+  const res = await fetch(`${TECHNO_KOL_BASE}/api/notifications`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("fetch notifications failed");
+  return res.json();
+}
+
+async function markNotificationRead(id: string): Promise<void> {
+  const token = localStorage.getItem("token") ?? "";
+  await fetch(`${TECHNO_KOL_BASE}/api/notifications/${id}/read`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+async function markAllNotificationsRead(): Promise<void> {
+  const token = localStorage.getItem("token") ?? "";
+  await fetch(`${TECHNO_KOL_BASE}/api/notifications/read-all`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+const TYPE_ICONS: Record<string, string> = {
+  alert: "🚨",
+  work_order: "🔧",
+  payroll: "💰",
+  project: "📋",
+  system: "⚙️",
+  procurement: "🛒",
+};
+
+const PRIORITY_COLORS: Record<string, string> = {
+  critical: "bg-red-100 text-red-800 border border-red-300",
+  high: "bg-orange-100 text-orange-800 border border-orange-300",
+  medium: "bg-yellow-100 text-yellow-800 border border-yellow-200",
+  low: "bg-slate-100 text-slate-600 border border-slate-200",
+};
+
+/**
+ * NotificationBell — drop into the sidebar/header.
+ * Polls GET /api/notifications every 30s, shows unread badge, marks as read on click.
+ */
+export function NotificationBell() {
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+
+  const { data } = useQuery({
+    queryKey: ["realtimeNotifications"],
+    queryFn: fetchRealtimeNotifications,
+    refetchInterval: 30_000,
+  });
+
+  const readMutation = useMutation({
+    mutationFn: markNotificationRead,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["realtimeNotifications"] }),
+  });
+
+  const readAllMutation = useMutation({
+    mutationFn: markAllNotificationsRead,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["realtimeNotifications"] }),
+  });
+
+  const notifications = data?.notifications ?? [];
+  const unreadCount = data?.unreadCount ?? 0;
+
+  return (
+    <div className="relative" style={{ direction: "rtl" }}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="relative rounded-full p-2 text-slate-600 hover:bg-slate-100 focus:outline-none"
+        aria-label="התראות"
+      >
+        <span style={{ fontSize: 20 }}>🔔</span>
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
+            {unreadCount > 99 ? "99+" : unreadCount}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div
+          className="absolute left-0 z-50 mt-2 w-96 rounded-2xl border border-slate-200 bg-white shadow-xl"
+          style={{ maxHeight: 480, overflowY: "auto" }}
+        >
+          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+            <span className="font-bold text-slate-900">התראות</span>
+            {unreadCount > 0 && (
+              <button
+                type="button"
+                className="text-xs text-slate-500 hover:text-slate-800"
+                onClick={() => readAllMutation.mutate()}
+              >
+                סמן הכל כנקרא
+              </button>
+            )}
+          </div>
+
+          {notifications.length === 0 ? (
+            <div className="p-6 text-center text-sm text-slate-500">אין התראות</div>
+          ) : (
+            <ul className="divide-y divide-slate-100">
+              {notifications.map((n) => (
+                <li
+                  key={n.id}
+                  className={`flex cursor-pointer gap-3 px-4 py-3 hover:bg-slate-50 ${n.read ? "opacity-60" : "font-semibold"}`}
+                  onClick={() => { if (!n.read) readMutation.mutate(n.id); }}
+                >
+                  <span className="mt-0.5 text-lg">{TYPE_ICONS[n.type] ?? "📌"}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="truncate text-sm text-slate-900">{n.title}</div>
+                    <div className="truncate text-xs text-slate-500">{n.message}</div>
+                    <div className="mt-1 flex gap-1">
+                      <span className={`inline-flex rounded-full px-2 py-0.5 text-xs ${PRIORITY_COLORS[n.priority] ?? PRIORITY_COLORS.low}`}>
+                        {n.priority}
+                      </span>
+                    </div>
+                  </div>
+                  {!n.read && <span className="mt-1.5 h-2 w-2 rounded-full bg-blue-500 flex-shrink-0" />}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 type NotificationRow = {
   id: number;
   notification_number: string;

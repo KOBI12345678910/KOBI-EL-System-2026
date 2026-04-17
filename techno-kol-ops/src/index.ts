@@ -25,6 +25,8 @@ import pipelineRouter from './routes/pipeline';
 import intelligenceRouter from './routes/intelligence';
 import supplyChainRouter from './routes/supplyChain';
 
+import notificationsRouter from './routes/notifications';
+
 // ── v2.0 Foundry Layer ──
 import brainRouter from './routes/brain';
 import ontologyRouter from './routes/ontology';
@@ -123,6 +125,7 @@ app.use('/api/supply-chain', authenticate);
 app.use('/api/brain', authenticate);
 app.use('/api/aip', authenticate);
 app.use('/api/signatures', authenticate);
+app.use('/api/notifications', authenticate);
 
 // ─── ONTOLOGY SNAPSHOT ───────────────────────
 app.get('/api/ontology/snapshot', async (req, res) => {
@@ -157,6 +160,7 @@ app.use('/api/brain', brainRouter);
 app.use('/api/ontology', ontologyRouter);
 app.use('/api/aip', aipRouter);
 app.use('/api/signatures', signaturesRouter);
+app.use('/api/notifications', notificationsRouter);
 
 // ─── HEALTH CHECK ─────────────────────────────
 app.get('/api/health', async (req, res) => {

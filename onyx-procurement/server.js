@@ -19,10 +19,35 @@ const express = require('express');
 const { createClient } = require('@supabase/supabase-js');
 const cors = require('cors');
 const https = require('https');
+const http = require('http');
 const crypto = require('crypto');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
+
+// ─── Fire-and-forget notification to techno-kol-ops ─────────────────────────
+function sendErpNotification({ type = 'procurement', title, message, priority = 'high' }) {
+  try {
+    const TECHNO_KOL_URL = process.env.TECHNO_KOL_OPS_URL || 'http://localhost:3200';
+    const body = JSON.stringify({ type, title, message, priority });
+    const url = new URL('/api/notifications', TECHNO_KOL_URL);
+    const lib = url.protocol === 'https:' ? https : http;
+    const req = lib.request(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body),
+        'X-Internal-Service': 'onyx-procurement',
+      },
+    });
+    req.on('error', () => {}); // fire-and-forget — swallow errors
+    req.write(body);
+    req.end();
+  } catch (_) {
+    // never throw — notifications are best-effort
+  }
+}
+// ────────────────────────────────────────────────────────────────────────────
 const fs = require('fs');
 require('dotenv').config();
 
@@ -1143,6 +1168,14 @@ app.post('/api/rfq/:id/decide', requirePermission('purchase-orders:approve'), as
     payload: { decisionId: decision.id, rfqId, selectedSupplierId: winner.supplier_id, total: winner.total_with_vat },
   }).catch(() => {});
 
+  // Notify ERP — quote approved
+  sendErpNotification({
+    type: 'procurement',
+    title: 'הצעת מחיר אושרה',
+    message: `הצעת מחיר #${rfqId} אושרה — ${winner.supplier_name} ₪${winner.total_with_vat.toLocaleString()}`,
+    priority: 'high',
+  });
+
   res.json({
     decision_id: decision.id,
     purchase_order_id: po.id,
@@ -1215,6 +1248,14 @@ app.post('/api/purchase-orders/:id/approve', requirePermission('purchase-orders:
     actor: req.body.approved_by || req.actor || 'system',
     payload: { poId: data.id, approverId: req.body.approved_by, total: data.total, supplierId: data.supplier_id },
   }).catch(() => {});
+
+  // Notify ERP — PO approved
+  sendErpNotification({
+    type: 'procurement',
+    title: 'הזמנת רכש אושרה',
+    message: `הזמנת רכש #${data.id} אושרה על ידי ${req.body.approved_by || 'מנהל'} — ₪${data.total}`,
+    priority: 'high',
+  });
 
   res.json({ order: data, message: '✅ הזמנה אושרה' });
 });
@@ -1323,6 +1364,16 @@ app.post('/api/purchase-orders/:id/send', requirePermission('purchase-orders:upd
         reason: `Send failed: ${sendResult.error || sendResult.status}`,
       });
     } catch (err) { console.warn('[state-history] PO send_failed:', err && err.message); }
+  }
+
+  // Notify ERP — PO issued (sent to supplier = invoice issued)
+  if (sendResult.success) {
+    sendErpNotification({
+      type: 'procurement',
+      title: 'חשבונית הוצאה לספק',
+      message: `הזמנת רכש #${po.id} נשלחה ל-${po.supplier_name} — ₪${po.total}`,
+      priority: 'high',
+    });
   }
 
   res.status(sendResult.success ? 200 : 502).json({
