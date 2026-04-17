@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -19,6 +19,9 @@ import FinanceScreen from '../screens/FinanceScreen';
 import AlertsScreen from '../screens/AlertsScreen';
 import AIAssistantScreen from '../screens/AIAssistantScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
+import QuickActionsScreen from '../screens/QuickActionsScreen';
+import QRScannerScreen from '../screens/QRScannerScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -51,7 +54,7 @@ function MainTabs() {
 
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
+      screenOptions={{
         headerShown: false,
         tabBarStyle: {
           backgroundColor: colors.panel,
@@ -67,49 +70,64 @@ function MainTabs() {
           fontSize: fontSize.xs,
           fontWeight: '500',
         },
-        tabBarIcon: ({ focused, color, size }) => {
-          const icons: Record<string, [string, string]> = {
-            Dashboard: ['grid', 'grid-outline'],
-            WorkOrders: ['construct', 'construct-outline'],
-            Employees: ['people', 'people-outline'],
-            Finance: ['wallet', 'wallet-outline'],
-            AI: ['sparkles', 'sparkles-outline'],
-          };
-          const [filledIcon, outlineIcon] = icons[route.name] || ['help', 'help-outline'];
-          return (
-            <Ionicons
-              name={(focused ? filledIcon : outlineIcon) as any}
-              size={size}
-              color={color}
-            />
-          );
-        },
-      })}
+      }}
     >
       <Tab.Screen
         name="Dashboard"
         component={DashboardScreen}
-        options={{ title: 'דשבורד' }}
+        options={{
+          title: 'דשבורד',
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons name={focused ? 'home' : 'home-outline'} size={size} color={color} />
+          ),
+        }}
       />
       <Tab.Screen
         name="WorkOrders"
         component={WorkOrdersStack}
-        options={{ title: 'עבודה' }}
+        options={{
+          title: 'עבודה',
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons name={focused ? 'construct' : 'construct-outline'} size={size} color={color} />
+          ),
+        }}
       />
       <Tab.Screen
-        name="Employees"
-        component={EmployeesScreen}
-        options={{ title: 'עובדים' }}
+        name="QuickActions"
+        component={QuickActionsScreen}
+        options={{
+          title: 'פעולות',
+          tabBarIcon: ({ focused, color }) => (
+            <View style={styles.centerTabIcon}>
+              <Ionicons name={focused ? 'flash' : 'flash-outline'} size={28} color={color} />
+            </View>
+          ),
+          tabBarLabelStyle: {
+            fontSize: fontSize.xs,
+            fontWeight: '700',
+          },
+        }}
       />
       <Tab.Screen
-        name="Finance"
-        component={FinanceScreen}
-        options={{ title: 'פיננסים' }}
+        name="Notifications"
+        component={NotificationsScreen}
+        options={{
+          title: 'התראות',
+          tabBarBadge: notificationsCount > 0 ? notificationsCount : undefined,
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons name={focused ? 'notifications' : 'notifications-outline'} size={size} color={color} />
+          ),
+        }}
       />
       <Tab.Screen
         name="AI"
         component={AIAssistantScreen}
-        options={{ title: 'AI' }}
+        options={{
+          title: 'AI',
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons name={focused ? 'sparkles' : 'sparkles-outline'} size={size} color={color} />
+          ),
+        }}
       />
     </Tab.Navigator>
   );
@@ -136,6 +154,12 @@ export default function AppNavigator() {
             <RootStack.Screen name="Projects" component={ProjectsScreen} />
             <RootStack.Screen name="Materials" component={MaterialsScreen} />
             <RootStack.Screen name="Alerts" component={AlertsScreen} />
+            <RootStack.Screen name="Employees" component={EmployeesScreen} />
+            <RootStack.Screen
+              name="QRScanner"
+              component={QRScannerScreen}
+              options={{ presentation: 'modal' }}
+            />
           </>
         ) : (
           <RootStack.Screen name="Auth" component={AuthStack} />
@@ -144,3 +168,15 @@ export default function AppNavigator() {
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  centerTabIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.accent + '22',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: -4,
+  },
+});
