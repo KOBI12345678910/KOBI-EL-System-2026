@@ -52,6 +52,8 @@ const AIAssistantKobi = lazy(() => import('./components/AIAssistantKobi'));
 const AIAssistantUzi = lazy(() => import('./components/AIAssistantUzi'));
 const AdminPanel = lazy(() => import('./components/AdminPanel'));
 const ReportsDashboard = lazy(() => import('./components/ReportsDashboard'));
+const BOMCalculator = lazy(() => import('./components/BOMCalculator'));
+const InventoryAlerts = lazy(() => import('./components/InventoryAlerts'));
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
@@ -134,6 +136,7 @@ const NAV_GROUPS = [
     { id: 'rfq', label: 'השוואת הצעות' },
     { id: 'kanban', label: 'קנבאן CRM' },
     { id: 'sales', label: 'לוח מכירות' },
+    { id: 'bom', label: '📐 מחשבון BOM' },
   ]},
   { label: 'ניתוח ומעקב', items: [
     { id: 'bi', label: 'דוח BI' },
@@ -167,6 +170,7 @@ const NAV_GROUPS = [
     { id: 'compliance-dash', label: 'Compliance' },
     { id: 'pricing-engine', label: 'Pricing Engine' },
     { id: 'widgets-board', label: 'Dashboard Widgets' },
+    { id: 'inventory-alerts', label: '📦 התראות מלאי' },
   ]},
   { label: 'עוזרי AI', items: [
     { id: 'ai-kobi', label: '👑 עוזר קובי' },
@@ -1183,6 +1187,8 @@ export default function App() {
       case 'planning-control': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Planning...</div>}><PlanningControlRoom /></Suspense>;
       case 'compliance-dash': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Compliance...</div>}><ComplianceDashboard /></Suspense>;
       case 'pricing-engine': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Pricing...</div>}><PricingEngine /></Suspense>;
+      case 'bom': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading BOM Calculator...</div>}><BOMCalculator /></Suspense>;
+      case 'inventory-alerts': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Inventory Alerts...</div>}><InventoryAlerts /></Suspense>;
       case 'widgets-board': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Widgets Board...</div>}><DashboardWidgetsBoard boardCode="main" /></Suspense>;
       case 'ai-kobi': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>טוען עוזר קובי...</div>}><AIAssistantKobi /></Suspense>;
       case 'ai-uzi':  return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>טוען עוזר עוזי...</div>}><AIAssistantUzi /></Suspense>;
