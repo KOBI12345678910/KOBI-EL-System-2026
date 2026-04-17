@@ -85,6 +85,7 @@ export const Topbar: React.FC = () => {
     <header
       className="h-14 bg-[#1f2937] flex items-center justify-between px-4 border-b border-gray-700/50 shrink-0"
       role="banner"
+      aria-label="פס עליון"
     >
       {/* Left: page title */}
       <div className="flex items-center gap-3">

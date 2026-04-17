@@ -45,7 +45,10 @@ export function Sidebar() {
   const sections = [...new Set(NAV.map(n => n.section))];
 
   return (
-    <div style={{
+    <div
+      role="navigation"
+      aria-label="ניווט ראשי"
+      style={{
       width: 240,
       background: '#1C2127',
       borderRight: '1px solid rgba(255,255,255,0.1)',
@@ -76,6 +79,9 @@ export function Sidebar() {
               <div
                 key={item.path}
                 onClick={() => navigate(item.path)}
+                tabIndex={0}
+                aria-current={active ? 'page' : undefined}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(item.path); } }}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
