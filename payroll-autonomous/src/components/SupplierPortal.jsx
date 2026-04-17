@@ -92,15 +92,24 @@ const LABELS = {
   verifyToken: 'אימות וכניסה • Verify & sign in',
   logout: 'יציאה • Sign out',
   menu: {
-    overview: 'סקירה • Overview',
-    pos: 'הזמנות רכש • Purchase Orders',
-    asn: 'הודעת משלוח • ASN',
-    invoices: 'חשבוניות • Invoices',
-    payments: 'תשלומים • Payments',
-    contact: 'פרטי קשר • Contact',
-    certs: 'אישורים • Certifications',
-    tax: 'ניכוי במקור • Tax Withholding',
+    overview:      'סקירה • Overview',
+    myQuotes:      'הצעות שהגשתי • My Quotes',
+    pos:           'הזמנות רכש • Purchase Orders',
+    asn:           'הודעת משלוח • ASN',
+    invoices:      'חשבוניות • Invoices',
+    payments:      'תשלומים • Payments',
+    contact:       'פרטי קשר • Contact',
+    certs:         'אישורים • Certifications',
+    tax:           'ניכוי במקור • Tax Withholding',
   },
+  rfqNumber:        'מס׳ בקשה',
+  rfqDate:          'תאריך',
+  rfqStatus:        'סטטוס',
+  quoteAmount:      'סכום הצעה',
+  noQuotes:         'אין הצעות • No quotes submitted',
+  deliveryConfirm:  'אשר קבלה • Confirm Delivery',
+  deliveryDate:     'תאריך קבלה',
+  deliveryConfirmed:'קבלה אושרה',
   openPOs: 'הזמנות פתוחות • Open POs',
   poNumber: 'מס׳ הזמנה',
   poDate: 'תאריך הזמנה',
@@ -348,7 +357,9 @@ export default function SupplierPortal({ api, initialSession = null, theme = 'da
   // Data state
   const [pos, setPOs] = useState([]);
   const [payments, setPayments] = useState([]);
+  const [myQuotes, setMyQuotes] = useState([]);
   const [contactForm, setContactForm] = useState({});
+  const [deliveryState, setDeliveryState] = useState({}); // poId → deliveryDate
 
   /* ---------- helpers ---------- */
   const showError = useCallback((err) => {
@@ -398,6 +409,10 @@ export default function SupplierPortal({ api, initialSession = null, theme = 'da
         if (view === 'payments') {
           const list = await api.getPaymentHistory(session.supplierId);
           if (!cancelled) setPayments(Array.isArray(list) ? list : []);
+        }
+        if (view === 'myQuotes' && api.getMyQuotes) {
+          const list = await api.getMyQuotes(session.supplierId);
+          if (!cancelled) setMyQuotes(Array.isArray(list) ? list : []);
         }
       } catch (err) {
         if (!cancelled) showError(err);
@@ -473,6 +488,29 @@ export default function SupplierPortal({ api, initialSession = null, theme = 'da
       showError(err);
     }
   }, [api, session, ackState, clearBanner, showError, showSuccess]);
+
+  /* ---------- delivery confirmation ---------- */
+  const handleDeliveryConfirm = useCallback(async (poId) => {
+    clearBanner();
+    const deliveryDate = deliveryState[poId];
+    if (!deliveryDate) {
+      showError(new Error('נא לבחור תאריך קבלה'));
+      return;
+    }
+    try {
+      if (api.confirmDelivery) {
+        await api.confirmDelivery(session.supplierId, poId, deliveryDate, session.csrf);
+      } else {
+        // Fallback: acknowledge with delivery date
+        await api.acknowledgePO(session.supplierId, poId, deliveryDate, session.csrf);
+      }
+      showSuccess(LABELS.deliveryConfirmed);
+      const list = await api.listOpenPOs(session.supplierId);
+      setPOs(list || []);
+    } catch (err) {
+      showError(err);
+    }
+  }, [api, session, deliveryState, clearBanner, showError, showSuccess]);
 
   /* ---------- contact update ---------- */
   const handleContactSave = useCallback(async () => {
@@ -676,6 +714,42 @@ export default function SupplierPortal({ api, initialSession = null, theme = 'da
             </>
           )}
 
+          {/* Tab: הצעות שהגשתי */}
+          {view === 'myQuotes' && (
+            <>
+              <div style={s.panelTitle}>{LABELS.menu.myQuotes}</div>
+              {myQuotes.length === 0 ? (
+                <div style={{ color: palette.textDim }}>{LABELS.noQuotes}</div>
+              ) : (
+                <table style={s.table}>
+                  <thead>
+                    <tr>
+                      <th style={s.th}>{LABELS.rfqNumber}</th>
+                      <th style={s.th}>{LABELS.rfqDate}</th>
+                      <th style={s.th}>{LABELS.quoteAmount}</th>
+                      <th style={s.th}>{LABELS.currency}</th>
+                      <th style={s.th}>{LABELS.rfqStatus}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {myQuotes.map((q) => (
+                      <tr key={q.id}>
+                        <td style={s.td}>{q.rfqNumber || q.poNumber || q.id}</td>
+                        <td style={s.td}>{q.submittedAt || q.createdAt || ''}</td>
+                        <td style={s.td}>{q.amount || q.total || '—'}</td>
+                        <td style={s.td}>{q.currency || 'ILS'}</td>
+                        <td style={s.td}>
+                          <span style={s.statusBadge(q.status)}>{q.status || 'submitted'}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </>
+          )}
+
+          {/* Tab: הזמנות רכש — with delivery confirmation */}
           {view === 'pos' && (
             <>
               <div style={s.panelTitle}>{LABELS.openPOs}</div>
@@ -690,6 +764,7 @@ export default function SupplierPortal({ api, initialSession = null, theme = 'da
                       <th style={s.th}>{LABELS.poTotal}</th>
                       <th style={s.th}>{LABELS.poStatus}</th>
                       <th style={s.th}>{LABELS.promiseDate}</th>
+                      <th style={s.th}>{LABELS.deliveryDate}</th>
                       <th style={s.th}></th>
                     </tr>
                   </thead>
@@ -711,16 +786,33 @@ export default function SupplierPortal({ api, initialSession = null, theme = 'da
                               setAckState((p) => ({ ...p, [po.id]: e.target.value }))
                             }
                           />
-                        </td>
-                        <td style={s.td}>
                           <button
                             type="button"
-                            style={s.btn('primary')}
+                            style={{ ...s.btn('primary'), marginTop: 4, marginLeft: 0 }}
                             onClick={() => handleAcknowledge(po.id)}
                           >
                             {LABELS.acknowledge}
                           </button>
                         </td>
+                        {/* Delivery confirmation column */}
+                        <td style={s.td}>
+                          <input
+                            style={{ ...s.input, width: '140px' }}
+                            type="date"
+                            value={deliveryState[po.id] || ''}
+                            onChange={(e) =>
+                              setDeliveryState((p) => ({ ...p, [po.id]: e.target.value }))
+                            }
+                          />
+                          <button
+                            type="button"
+                            style={{ ...s.btn('primary'), marginTop: 4, marginLeft: 0, background: palette.success, color: '#fff' }}
+                            onClick={() => handleDeliveryConfirm(po.id)}
+                          >
+                            {LABELS.deliveryConfirm}
+                          </button>
+                        </td>
+                        <td style={s.td}></td>
                       </tr>
                     ))}
                   </tbody>

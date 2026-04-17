@@ -1326,13 +1326,388 @@ function ProfileScreen({ theme, api, customerId }) {
 }
 
 /* ================================================================== *
+ *  New screens: Projects, Quotes (approve/reject), Messages
+ * ================================================================== */
+
+// Tab 1 — פרויקטים שלי
+function ProjectsScreen({ theme, api, customerId }) {
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading]   = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const data = await (api.projects
+          ? api.projects(customerId)
+          : api.openOrders(customerId));       // fallback to open orders
+        if (alive) setProjects(Array.isArray(data) ? data : []);
+      } catch (_) { /* ignore */ }
+      finally { if (alive) setLoading(false); }
+    })();
+    return () => { alive = false; };
+  }, [api, customerId]);
+
+  if (loading) return <div style={{ color: theme.textDim }}>{HE.common.loading}</div>;
+  if (projects.length === 0) {
+    return (
+      <Panel theme={theme} title="פרויקטים שלי">
+        <div style={{ color: theme.textDim, fontSize: 14 }}>אין פרויקטים פעילים</div>
+      </Panel>
+    );
+  }
+
+  return (
+    <Panel theme={theme} title="פרויקטים שלי">
+      <div style={{ display: 'grid', gap: 14 }}>
+        {projects.map((p) => {
+          const progress = Number(p.progress || 0);
+          const stageColor =
+            progress >= 100 ? theme.success :
+            progress >= 50  ? theme.accent  : theme.warn;
+          return (
+            <div
+              key={p.id}
+              style={{
+                background: theme.panelAlt,
+                border: `1px solid ${theme.borderSoft}`,
+                borderRadius: 8,
+                padding: 16,
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: theme.text }}>
+                    {p.title || p.name || p.number || p.id}
+                  </div>
+                  {p.address && (
+                    <div style={{ fontSize: 12, color: theme.textDim, marginTop: 2 }}>{p.address}</div>
+                  )}
+                </div>
+                <StatusPill
+                  theme={theme}
+                  status={progress >= 100 ? 'paid' : 'unpaid'}
+                  text={p.current_stage_label || p.status || (progress >= 100 ? 'הסתיים' : 'פעיל')}
+                />
+              </div>
+
+              {/* Progress bar */}
+              <div style={{ marginTop: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ fontSize: 11, color: theme.textDim }}>התקדמות</span>
+                  <span style={{ fontSize: 11, color: stageColor, fontWeight: 600 }}>{progress}%</span>
+                </div>
+                <div style={{ height: 6, background: theme.bg, borderRadius: 3, overflow: 'hidden' }}>
+                  <div style={{
+                    height: '100%',
+                    width: `${Math.min(100, progress)}%`,
+                    background: stageColor,
+                    borderRadius: 3,
+                    transition: 'width 0.4s',
+                  }} />
+                </div>
+              </div>
+
+              {/* Dates */}
+              {(p.start_date || p.end_date || p.expected_completion) && (
+                <div style={{ display: 'flex', gap: 16, marginTop: 10, fontSize: 12, color: theme.textDim }}>
+                  {p.start_date && <span>התחלה: {fmtDate(p.start_date)}</span>}
+                  {(p.end_date || p.expected_completion) && (
+                    <span>סיום משוער: {fmtDate(p.end_date || p.expected_completion)}</span>
+                  )}
+                </div>
+              )}
+
+              <div style={{ marginTop: 10 }}>
+                <Button theme={theme} variant="ghost" onClick={() => {}}>
+                  צפה בפרטים
+                </Button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </Panel>
+  );
+}
+
+// Tab 2 — הצעות מחיר (Quotes — approve/reject)
+function QuotesApprovalScreen({ theme, api, customerId }) {
+  const [quotes, setQuotes]   = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy]       = useState(null);   // id of quote being actioned
+  const [toast, setToast]     = useState(null);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const data = await (api.quotes
+        ? api.quotes(customerId)
+        : Promise.resolve([]));
+      setQuotes(Array.isArray(data) ? data : []);
+    } catch (_) { /* ignore */ }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { load(); }, [customerId]);
+
+  const act = async (quoteId, action) => {
+    setBusy(quoteId); setToast(null);
+    try {
+      if (action === 'approve' && api.approveQuote) {
+        await api.approveQuote(customerId, quoteId);
+      } else if (action === 'reject' && api.rejectQuote) {
+        await api.rejectQuote(customerId, quoteId);
+      }
+      setToast({ kind: 'success', text: action === 'approve' ? 'הצעה אושרה' : 'הצעה נדחתה' });
+      await load();
+    } catch (_) {
+      setToast({ kind: 'error', text: HE.common.error });
+    } finally { setBusy(null); }
+  };
+
+  const onPdf = async (q) => {
+    try {
+      if (api.quotePdf) {
+        const res = await api.quotePdf(customerId, q.id);
+        if (res && res.ok) {
+          downloadBlob(res.bytes || res.fallbackText || '', (q.number || q.id) + '.pdf', 'application/pdf');
+        }
+      }
+    } catch (_) { /* swallow */ }
+  };
+
+  return (
+    <>
+      {toast && <Toast theme={theme} kind={toast.kind}>{toast.text}</Toast>}
+      <Panel theme={theme} title="הצעות מחיר">
+        {loading && <div style={{ color: theme.textDim }}>{HE.common.loading}</div>}
+        {!loading && quotes.length === 0 && (
+          <div style={{ color: theme.textDim, fontSize: 14 }}>אין הצעות מחיר ממתינות</div>
+        )}
+        {!loading && quotes.length > 0 && (
+          <div style={{ display: 'grid', gap: 12 }}>
+            {quotes.map((q) => (
+              <div
+                key={q.id}
+                style={{
+                  background: theme.panelAlt,
+                  border: `1px solid ${theme.borderSoft}`,
+                  borderRadius: 8,
+                  padding: 16,
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: 12,
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <div style={{ minWidth: 160 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: theme.text }}>
+                    הצעה #{q.number || q.id}
+                  </div>
+                  <div style={{ fontSize: 12, color: theme.textDim, marginTop: 2 }}>
+                    {fmtDate(q.issueDate || q.created_at)}
+                  </div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: theme.accent, marginTop: 4 }}>
+                    {fmtMoney(q.total || q.amount, q.currency)}
+                  </div>
+                </div>
+
+                <StatusPill
+                  theme={theme}
+                  status={
+                    q.status === 'approved' ? 'paid' :
+                    q.status === 'rejected' ? 'cancelled' :
+                    q.status === 'expired'  ? 'overdue' : 'unpaid'
+                  }
+                  text={
+                    q.status === 'approved' ? 'אושרה' :
+                    q.status === 'rejected' ? 'נדחתה' :
+                    q.status === 'expired'  ? 'פגה תוקף' : 'ממתינה לאישור'
+                  }
+                />
+
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <Button theme={theme} variant="ghost" onClick={() => onPdf(q)}>
+                    הורד PDF
+                  </Button>
+                  {(!q.status || q.status === 'pending' || q.status === 'sent') && (
+                    <>
+                      <Button
+                        theme={theme}
+                        variant="primary"
+                        disabled={busy === q.id}
+                        onClick={() => act(q.id, 'approve')}
+                      >
+                        אשר הצעה
+                      </Button>
+                      <Button
+                        theme={theme}
+                        variant="danger"
+                        disabled={busy === q.id}
+                        onClick={() => act(q.id, 'reject')}
+                      >
+                        דחה
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Panel>
+    </>
+  );
+}
+
+// Tab 4 — הודעות (Messages / chat thread)
+function MessagesScreen({ theme, api, customerId }) {
+  const [messages, setMessages]     = useState([]);
+  const [newMsg, setNewMsg]         = useState('');
+  const [sending, setSending]       = useState(false);
+  const [loading, setLoading]       = useState(true);
+  const bottomRef = React.useRef(null);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const data = await (api.messages
+        ? api.messages(customerId)
+        : Promise.resolve([]));
+      setMessages(Array.isArray(data) ? data : []);
+    } catch (_) { /* ignore */ }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { load(); }, [customerId]);
+
+  useEffect(() => {
+    if (bottomRef.current) {
+      try { bottomRef.current.scrollIntoView({ behavior: 'smooth' }); } catch (_) {}
+    }
+  }, [messages]);
+
+  const sendMsg = async () => {
+    if (!newMsg.trim()) return;
+    setSending(true);
+    const text = newMsg.trim();
+    setNewMsg('');
+    // Optimistic
+    const tmp = {
+      id: Date.now(),
+      text,
+      sender: 'customer',
+      sentAt: new Date().toISOString(),
+      _tmp: true,
+    };
+    setMessages((prev) => [...prev, tmp]);
+    try {
+      if (api.sendMessage) {
+        await api.sendMessage(customerId, text);
+        await load();
+      }
+    } catch (_) { /* swallow */ }
+    finally { setSending(false); }
+  };
+
+  const onKey = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+  };
+
+  return (
+    <Panel theme={theme} title="הודעות">
+      {/* Message thread */}
+      <div
+        style={{
+          height: 400,
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8,
+          padding: '8px 0',
+          marginBottom: 12,
+        }}
+      >
+        {loading && <div style={{ color: theme.textDim, fontSize: 13 }}>{HE.common.loading}</div>}
+        {!loading && messages.length === 0 && (
+          <div style={{ color: theme.textDim, fontSize: 13, textAlign: 'center', paddingTop: 40 }}>
+            אין הודעות עדיין — שלח הודעה לצוות
+          </div>
+        )}
+        {messages.map((m) => {
+          const isCustomer = m.sender === 'customer';
+          return (
+            <div
+              key={m.id}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: isCustomer ? 'flex-start' : 'flex-end',
+              }}
+            >
+              <div
+                style={{
+                  maxWidth: '70%',
+                  padding: '10px 14px',
+                  borderRadius: isCustomer ? '4px 14px 14px 14px' : '14px 4px 14px 14px',
+                  background: isCustomer ? theme.accentSoft : theme.panelAlt,
+                  border: `1px solid ${isCustomer ? theme.accent + '44' : theme.borderSoft}`,
+                  color: theme.text,
+                  fontSize: 13,
+                  lineHeight: 1.5,
+                  wordBreak: 'break-word',
+                }}
+              >
+                {m.text || m.body || m.message}
+              </div>
+              <div style={{ fontSize: 10, color: theme.textMuted, marginTop: 2, paddingInline: 4 }}>
+                {isCustomer ? 'אני' : (m.senderName || 'צוות')}
+                {' · '}
+                {m.sentAt ? fmtDate(m.sentAt) : ''}
+              </div>
+            </div>
+          );
+        })}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Input */}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+        <div style={{ flex: 1 }}>
+          <Textarea
+            theme={theme}
+            value={newMsg}
+            onChange={setNewMsg}
+            placeholder="כתוב הודעה לצוות…"
+            ariaLabel="הודעה חדשה"
+          />
+        </div>
+        <Button
+          theme={theme}
+          variant="primary"
+          onClick={sendMsg}
+          disabled={sending || !newMsg.trim()}
+        >
+          {sending ? 'שולח…' : 'שלח'}
+        </Button>
+      </div>
+    </Panel>
+  );
+}
+
+/* ================================================================== *
  *  Main component
  * ================================================================== */
 
 const SCREENS = {
   dashboard: Dashboard,
+  projects:  ProjectsScreen,
+  quotesApproval: QuotesApprovalScreen,
   invoices:  InvoicesScreen,
   orders:    OrdersScreen,
+  messages:  MessagesScreen,
   quote:     QuoteScreen,
   support:   SupportScreen,
   statement: StatementScreen,
@@ -1348,14 +1723,37 @@ function CustomerPortal(props) {
   );
   const [screen, setScreen] = useState('dashboard');
 
+  // Magic-link auto-login: check URL query param ?token=... or localStorage key 'customer_token'
+  useEffect(() => {
+    if (customerId || !api) return;
+    let tokenToVerify = null;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      tokenToVerify = params.get('token') || localStorage.getItem('customer_token');
+    } catch (_) { /* non-DOM env */ }
+    if (!tokenToVerify) return;
+    (async () => {
+      try {
+        const v = await api.verify(tokenToVerify);
+        if (v && v.ok) {
+          setCustomerId(v.customerId);
+          try { localStorage.setItem('customer_token', tokenToVerify); } catch (_) {}
+        }
+      } catch (_) { /* invalid token — ignore */ }
+    })();
+  }, [api, customerId]);
+
   const NAV = useMemo(() => ([
-    { key: 'dashboard', label: HE.nav.dashboard },
-    { key: 'invoices',  label: HE.nav.invoices },
-    { key: 'orders',    label: HE.nav.orders },
-    { key: 'quote',     label: HE.nav.quote },
-    { key: 'support',   label: HE.nav.support },
-    { key: 'statement', label: HE.nav.statement },
-    { key: 'profile',   label: HE.nav.profile },
+    { key: 'dashboard',      label: HE.nav.dashboard },
+    { key: 'projects',       label: 'פרויקטים שלי' },
+    { key: 'quotesApproval', label: 'הצעות מחיר' },
+    { key: 'invoices',       label: HE.nav.invoices },
+    { key: 'orders',         label: HE.nav.orders },
+    { key: 'messages',       label: 'הודעות' },
+    { key: 'quote',          label: HE.nav.quote },
+    { key: 'support',        label: HE.nav.support },
+    { key: 'statement',      label: HE.nav.statement },
+    { key: 'profile',        label: HE.nav.profile },
   ]), []);
 
   if (!api) {

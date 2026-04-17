@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useApi, api } from '../hooks/useApi';
+import { ProjectTimeline } from '../components/ProjectTimeline';
 
 const STAGES = [
   { key: 'deal_closed',          label: 'עסקה נסגרה',        icon: '🤝', color: '#48AFF0' },
@@ -28,6 +29,7 @@ export function Pipeline() {
   const [detail, setDetail] = useState<any>(null);
   const [showNew, setShowNew] = useState(false);
   const [advancing, setAdvancing] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list');
 
   useEffect(() => { fetch(); }, []);
 
@@ -61,6 +63,32 @@ export function Pipeline() {
         <h1 style={{ color: '#F6F7F9', fontSize: 18, fontWeight: 600, margin: 0 }}>שרשרת אספקה</h1>
         <span style={{ fontSize: 11, color: '#5C7080' }}>SUPPLY CHAIN PIPELINE</span>
         <div style={{ flex: 1 }} />
+        {/* View mode toggle */}
+        <div style={{ display: 'flex', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 3, overflow: 'hidden' }}>
+          <button
+            onClick={() => setViewMode('list')}
+            style={{
+              background: viewMode === 'list' ? 'rgba(72,175,240,0.15)' : 'transparent',
+              border: 'none',
+              borderLeft: '1px solid rgba(255,255,255,0.1)',
+              color: viewMode === 'list' ? '#48AFF0' : '#5C7080',
+              padding: '5px 12px', cursor: 'pointer', fontSize: 11, fontWeight: viewMode === 'list' ? 600 : 400,
+            }}
+          >
+            ☰ רשימה
+          </button>
+          <button
+            onClick={() => setViewMode('timeline')}
+            style={{
+              background: viewMode === 'timeline' ? 'rgba(72,175,240,0.15)' : 'transparent',
+              border: 'none',
+              color: viewMode === 'timeline' ? '#48AFF0' : '#5C7080',
+              padding: '5px 12px', cursor: 'pointer', fontSize: 11, fontWeight: viewMode === 'timeline' ? 600 : 400,
+            }}
+          >
+            ▬ ציר זמן
+          </button>
+        </div>
         <button
           onClick={() => setShowNew(true)}
           style={{ background: 'rgba(255,165,0,0.1)', border: '1px solid #FFA500', color: '#FFA500', padding: '6px 16px', cursor: 'pointer', fontSize: 12 }}
@@ -105,7 +133,23 @@ export function Pipeline() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: detail ? '1fr 480px' : '1fr', gap: 12 }}>
+      {/* Timeline view */}
+      {viewMode === 'timeline' && (
+        <div style={{ marginBottom: 16 }}>
+          <ProjectTimeline
+            projects={(projects || []).map((p: any) => ({
+              id: p.id,
+              name: p.title || p.name || p.project_number || String(p.id),
+              start_date: p.start_date || p.created_at,
+              end_date: p.end_date || p.expected_completion || p.start_date || p.created_at,
+              status: p.current_stage || p.status || 'active',
+              progress: p.progress || 0,
+            }))}
+          />
+        </div>
+      )}
+
+      <div style={{ display: viewMode === 'timeline' ? 'none' : 'grid', gridTemplateColumns: detail ? '1fr 480px' : '1fr', gap: 12 }}>
         <div>
           {activeStages.map(stage => (
             <div key={stage.key} style={{ marginBottom: 12 }}>
@@ -153,7 +197,35 @@ export function Pipeline() {
         )}
       </div>
 
-      {showNew && <NewProjectModal onClose={() => { setShowNew(false); fetch(); }} />}
+      {/* Floating action button for + פרויקט חדש */}
+      <button
+        onClick={() => setShowNew(true)}
+        title="פרויקט חדש"
+        style={{
+          position: 'fixed',
+          bottom: 32,
+          left: 32,
+          zIndex: 200,
+          width: 52,
+          height: 52,
+          borderRadius: '50%',
+          background: '#FFA500',
+          border: 'none',
+          color: '#1C2127',
+          fontSize: 26,
+          fontWeight: 700,
+          cursor: 'pointer',
+          boxShadow: '0 4px 16px rgba(255,165,0,0.4)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          lineHeight: 1,
+        }}
+      >
+        +
+      </button>
+
+      {showNew && <NewProjectDrawer onClose={() => { setShowNew(false); fetch(); }} />}
     </div>
   );
 }
@@ -343,6 +415,164 @@ function ProjectDetail({ project, onClose, onAdvance, advancing }: any) {
         })}
       </div>
     </div>
+  );
+}
+
+// Slide-in drawer: quick-create פרויקט חדש
+function NewProjectDrawer({ onClose }: { onClose: () => void }) {
+  const [form, setForm] = useState<any>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { data: clients, fetch: fetchClients } = useApi<any[]>('/api/clients');
+
+  useEffect(() => { fetchClients(); }, []);
+
+  const f = (field: string) => (e: any) => setForm((p: any) => ({ ...p, [field]: e.target.value }));
+
+  const handleSubmit = async () => {
+    if (!form.title || !form.title.trim()) {
+      setError('שם פרויקט הוא שדה חובה');
+      return;
+    }
+    setSubmitting(true);
+    setError(null);
+    try {
+      await api.post('/api/projects', {
+        title: form.title,
+        client_id: form.client_id,
+        start_date: form.start_date,
+        end_date: form.end_date,
+        budget: form.budget ? Number(form.budget) : undefined,
+      });
+      onClose();
+    } catch (err: any) {
+      setError(err?.message || 'שגיאה ביצירת הפרויקט');
+      setSubmitting(false);
+    }
+  };
+
+  const inputStyle = {
+    width: '100%', background: '#383E47',
+    border: '1px solid rgba(255,255,255,0.1)',
+    color: '#F6F7F9', padding: '9px 12px',
+    fontSize: 13, outline: 'none',
+    boxSizing: 'border-box' as const,
+    borderRadius: 3,
+    fontFamily: 'inherit',
+    direction: 'rtl' as const,
+  };
+  const labelStyle = {
+    fontSize: 10, color: '#5C7080',
+    display: 'block', marginBottom: 4,
+    marginTop: 14,
+    letterSpacing: '0.1em',
+  };
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 299 }}
+      />
+      {/* Drawer */}
+      <div
+        style={{
+          position: 'fixed', top: 0, right: 0, bottom: 0,
+          width: 420, maxWidth: '95vw',
+          background: '#2F343C',
+          borderLeft: '1px solid rgba(255,255,255,0.12)',
+          zIndex: 300,
+          display: 'flex', flexDirection: 'column',
+          direction: 'rtl',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+          boxShadow: '-8px 0 32px rgba(0,0,0,0.5)',
+          animation: 'slideInRight 0.22s ease',
+        }}
+      >
+        <style>{`@keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }`}</style>
+
+        {/* Header */}
+        <div style={{
+          padding: '16px 20px',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          background: '#383E47',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        }}>
+          <div>
+            <div style={{ color: '#FFA500', fontSize: 14, fontWeight: 700 }}>+ פרויקט חדש</div>
+            <div style={{ fontSize: 10, color: '#5C7080', marginTop: 2 }}>New Project</div>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#5C7080', cursor: 'pointer', fontSize: 20 }}>×</button>
+        </div>
+
+        {/* Form body */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '4px 20px 20px' }}>
+          <label style={labelStyle}>שם פרויקט *</label>
+          <input style={inputStyle} placeholder="שם הפרויקט" onChange={f('title')} value={form.title || ''} />
+
+          <label style={labelStyle}>לקוח</label>
+          <select style={inputStyle} onChange={f('client_id')} value={form.client_id || ''}>
+            <option value="">בחר לקוח</option>
+            {(clients || []).map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+
+          <label style={labelStyle}>תאריך התחלה</label>
+          <input type="date" style={inputStyle} onChange={f('start_date')} value={form.start_date || ''} />
+
+          <label style={labelStyle}>תאריך סיום</label>
+          <input type="date" style={inputStyle} onChange={f('end_date')} value={form.end_date || ''} />
+
+          <label style={labelStyle}>תקציב ₪</label>
+          <input type="number" style={inputStyle} placeholder="0" onChange={f('budget')} value={form.budget || ''} />
+
+          {error && (
+            <div style={{
+              marginTop: 12,
+              color: '#FC8585', fontSize: 12,
+              background: 'rgba(252,133,133,0.1)',
+              border: '1px solid rgba(252,133,133,0.3)',
+              borderRadius: 3, padding: '8px 12px',
+            }}>
+              {error}
+            </div>
+          )}
+        </div>
+
+        {/* Footer actions */}
+        <div style={{
+          padding: '14px 20px',
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+          display: 'flex', gap: 10,
+        }}>
+          <button
+            onClick={handleSubmit}
+            disabled={submitting}
+            style={{
+              flex: 1,
+              background: submitting ? 'rgba(255,165,0,0.08)' : 'rgba(255,165,0,0.15)',
+              border: '1px solid #FFA500',
+              color: submitting ? '#5C7080' : '#FFA500',
+              padding: '11px 0', cursor: submitting ? 'not-allowed' : 'pointer',
+              fontSize: 13, fontWeight: 700, borderRadius: 3,
+            }}
+          >
+            {submitting ? 'יוצר…' : 'צור פרויקט'}
+          </button>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'transparent',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: '#ABB3BF', padding: '11px 16px',
+              cursor: 'pointer', fontSize: 12, borderRadius: 3,
+            }}
+          >
+            ביטול
+          </button>
+        </div>
+      </div>
+    </>
   );
 }
 
