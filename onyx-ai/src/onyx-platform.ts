@@ -2270,16 +2270,77 @@ class APIServer {
     private agents: Map<string, AgentRuntime>,
   ) {}
 
+  // Per-IP sliding-window rate limiter (in-memory token bucket).
+  // AI endpoints get a much tighter budget (20 req / 15 min per IP).
+  private readonly rateLimitWindowMs = 15 * 60 * 1000; // 15 minutes
+  private readonly rateLimitMaxApi = 200;               // general API
+  private readonly rateLimitMaxAi  = 20;                // /api/agent, /api/dag, /api/tasks (AI)
+  private readonly ipCounters: Map<string, { count: number; resetAt: number }> = new Map();
+
+  private checkRateLimit(ip: string, max: number): boolean {
+    const now = Date.now();
+    let entry = this.ipCounters.get(ip);
+    if (!entry || now > entry.resetAt) {
+      entry = { count: 0, resetAt: now + this.rateLimitWindowMs };
+      this.ipCounters.set(ip, entry);
+    }
+    entry.count += 1;
+    return entry.count <= max;
+  }
+
+  private isAiPath(pathname: string): boolean {
+    return /^\/(api\/agent|api\/dag|api\/tasks|api\/orchestrat)/.test(pathname);
+  }
+
   start(port: number = 3100): void {
+    // CORS allowed origins — env-driven, fail-safe default for dev
+    const rawOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean);
+    const allowedOrigins: Set<string> = new Set(rawOrigins.length ? rawOrigins : [
+      'http://localhost:5173',
+      'http://localhost:3200',
+      'http://localhost:3100',
+    ]);
+
     this.server = http.createServer(async (req, res) => {
+      // ── Security headers (helmet-equivalent for raw http) ──────────────
       res.setHeader('Content-Type', 'application/json');
-      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('X-Frame-Options', 'DENY');
+      res.setHeader('X-XSS-Protection', '1; mode=block');
+      res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+      res.setHeader('Permissions-Policy', 'geolocation=(), camera=(), microphone=()');
+      res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+
+      // ── CORS — env-based origin allowlist ───────────────────────────────
+      const origin = req.headers['origin'] as string | undefined;
+      if (origin && (allowedOrigins.has(origin) || allowedOrigins.has('*'))) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Vary', 'Origin');
+      } else if (!origin) {
+        // same-origin / server-to-server — no CORS header needed
+      } else {
+        // Blocked origin
+        res.writeHead(403);
+        res.end(JSON.stringify({ error: 'CORS: origin not allowed' }));
+        return;
+      }
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-API-Key');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
 
       if (req.method === 'OPTIONS') {
         res.writeHead(204);
         res.end();
+        return;
+      }
+
+      // ── Rate limiting ────────────────────────────────────────────────────
+      const ip = (req.headers['x-forwarded-for'] as string || req.socket.remoteAddress || 'unknown').split(',')[0].trim();
+      const pathname = (req.url ?? '/').split('?')[0];
+      const maxForPath = this.isAiPath(pathname) ? this.rateLimitMaxAi : this.rateLimitMaxApi;
+      if (!this.checkRateLimit(ip, maxForPath)) {
+        res.writeHead(429, { 'Retry-After': String(Math.ceil(this.rateLimitWindowMs / 1000)) });
+        res.end(JSON.stringify({ error: 'יותר מדי בקשות, נסה שוב מאוחר יותר' }));
         return;
       }
 
@@ -2297,6 +2358,8 @@ class APIServer {
 
     this.server.listen(port, () => {
       console.log(`\n🌐 ONYX API Server running on port ${port}`);
+      console.log(`   Rate limits: general=${this.rateLimitMaxApi} req/15min, AI=${this.rateLimitMaxAi} req/15min`);
+      console.log(`   CORS origins: ${[...allowedOrigins].join(', ')}`);
     });
   }
 

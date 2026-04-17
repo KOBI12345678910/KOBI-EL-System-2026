@@ -602,6 +602,7 @@ const SUPPLIER_FIELDS = ['name', 'email', 'phone', 'address', 'tax_id', 'payment
 
 // Create supplier
 app.post('/api/suppliers', async (req, res) => {
+  if (!req.body.name || typeof req.body.name !== 'string') return res.status(400).json({ error: 'שם נדרש' });
   const { data, error } = await supabase.from('suppliers').insert(pickFields(req.body, SUPPLIER_FIELDS)).select().single();
   if (error) return res.status(400).json({ error: error.message });
   await audit('supplier', data.id, 'created', req.body.created_by || 'api', `ספק חדש: ${data.name}`, null, data);
@@ -648,6 +649,7 @@ app.get('/api/suppliers/search/:category', async (req, res) => {
 // ═══════════════════════════════════════════════════════════════
 
 app.post('/api/purchase-requests', async (req, res) => {
+  if (!req.body.requested_by || typeof req.body.requested_by !== 'string') return res.status(400).json({ error: 'שם נדרש' });
   const { items, ...requestData } = req.body;
   
   // Create request
@@ -1395,6 +1397,7 @@ app.get('/api/subcontractors', async (req, res) => {
 });
 
 app.post('/api/subcontractors', async (req, res) => {
+  if (!req.body.name || typeof req.body.name !== 'string') return res.status(400).json({ error: 'שם נדרש' });
   const { pricing, ...subData } = req.body;
   const { data, error } = await supabase.from('subcontractors').insert(subData).select().single();
   if (error) return res.status(400).json({ error: error.message });
