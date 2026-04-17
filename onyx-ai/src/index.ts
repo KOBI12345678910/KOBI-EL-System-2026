@@ -2635,6 +2635,57 @@ class APIServer {
       };
     }
 
+    // ── Notification endpoints ───────────────────────────────────────────────
+
+    // POST /api/notifications/whatsapp — send a raw WhatsApp message
+    if (method === 'POST' && path === '/api/notifications/whatsapp') {
+      const { sendWhatsApp } = await import('./services/notificationService');
+      await sendWhatsApp(body as any);
+      return { status: 200, body: { ok: true } };
+    }
+
+    // POST /api/notifications/email — send a raw email
+    if (method === 'POST' && path === '/api/notifications/email') {
+      const { sendEmail } = await import('./services/emailService');
+      await sendEmail(body as any);
+      return { status: 200, body: { ok: true } };
+    }
+
+    // POST /api/notifications/payslip/:employeeId — send payslip via WhatsApp + email
+    if (method === 'POST' && path.startsWith('/api/notifications/payslip/')) {
+      const employeeId = path.split('/').pop();
+      const { employee, wageSlip } = body as any;
+      const { sendPayslipNotification } = await import('./services/notificationService');
+      const { sendWageSlipEmail } = await import('./services/emailService');
+      await Promise.allSettled([
+        sendPayslipNotification(employee, wageSlip),
+        sendWageSlipEmail(employee, wageSlip),
+      ]);
+      return { status: 200, body: { ok: true, employeeId } };
+    }
+
+    // POST /api/notifications/work-order/:woId — send work order assignment
+    if (method === 'POST' && path.startsWith('/api/notifications/work-order/')) {
+      const woId = path.split('/').pop();
+      const { employee, workOrder } = body as any;
+      const { sendWorkOrderAssignment } = await import('./services/notificationService');
+      await sendWorkOrderAssignment(employee, workOrder);
+      return { status: 200, body: { ok: true, woId } };
+    }
+
+    // POST /api/notifications/invoice-reminder/:invoiceId — send payment reminder
+    if (method === 'POST' && path.startsWith('/api/notifications/invoice-reminder/')) {
+      const invoiceId = path.split('/').pop();
+      const { customer, invoice } = body as any;
+      const { sendInvoiceReminder } = await import('./services/notificationService');
+      const { sendInvoiceEmail } = await import('./services/emailService');
+      await Promise.allSettled([
+        sendInvoiceReminder(customer, invoice),
+        sendInvoiceEmail(customer, invoice),
+      ]);
+      return { status: 200, body: { ok: true, invoiceId } };
+    }
+
     return { status: 404, body: { error: 'Not found' } };
   }
 

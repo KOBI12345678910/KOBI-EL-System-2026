@@ -32,6 +32,7 @@ import brainRouter from './routes/brain';
 import ontologyRouter from './routes/ontology';
 import { aipRouter } from './routes/aip';
 import signaturesRouter from './routes/signatures';
+import adminRouter from './routes/admin';
 import { brainEngine } from './ai/brainEngine';
 import { apolloEngine } from './apollo/apolloEngine';
 import { initEventBus, eventBus } from './realtime/eventBus';
@@ -104,7 +105,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // ── BUG-SEC-006: Global auth on all /api/ routes (except auth & health) ──
-import { authenticate } from './middleware/auth';
+import { authenticate, requireAdmin } from './middleware/auth';
 app.use('/api/ontology', authenticate);
 app.use('/api/work-orders', authenticate);
 app.use('/api/employees', authenticate);
@@ -126,6 +127,7 @@ app.use('/api/brain', authenticate);
 app.use('/api/aip', authenticate);
 app.use('/api/signatures', authenticate);
 app.use('/api/notifications', authenticate);
+app.use('/api/admin', authenticate, requireAdmin, adminRouter);
 
 // ─── ONTOLOGY SNAPSHOT ───────────────────────
 app.get('/api/ontology/snapshot', async (req, res) => {
