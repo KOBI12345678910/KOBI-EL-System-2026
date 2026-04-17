@@ -3,6 +3,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopNavbar from './TopNavbar';
+import GlobalSearch from './GlobalSearch';
 import { theme } from '../styles/theme';
 
 const Layout: React.FC = () => {
@@ -18,6 +19,7 @@ const Layout: React.FC = () => {
         color: theme.text.primary,
       }}
     >
+      <GlobalSearch />
       <Sidebar />
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
         <TopNavbar />

@@ -5,12 +5,14 @@ import { Button, Popover, Menu, MenuItem, Icon } from '@blueprintjs/core';
 import { theme } from '../styles/theme';
 import { useAuth } from '../hooks/useAuth';
 import { useWebSocket } from '../hooks/useWebSocket';
+import { useGlobalSearch } from './GlobalSearch';
 
 const TopNavbar: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { connected } = useWebSocket();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { open: openSearch } = useGlobalSearch();
 
   const handleLogout = () => {
     logout();
@@ -75,8 +77,37 @@ const TopNavbar: React.FC = () => {
       {/* Spacer */}
       <div style={{ flex: 1 }} />
 
-      {/* Left: connection indicator + user menu */}
+      {/* Left: search + connection indicator + user menu */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        {/* Global search trigger */}
+        <button
+          onClick={openSearch}
+          title="חיפוש גלובלי (Ctrl+K)"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid #2a3340',
+            borderRadius: 4,
+            color: '#8b96a5',
+            cursor: 'pointer',
+            padding: '4px 10px',
+            fontSize: 12,
+            fontFamily: 'inherit',
+          }}
+        >
+          <Icon icon="search" size={13} />
+          <span>חיפוש</span>
+          <kbd style={{
+            background: '#1a2028',
+            border: '1px solid #2a3340',
+            borderRadius: 3,
+            padding: '1px 5px',
+            fontSize: 10,
+            color: '#8b96a5',
+          }}>Ctrl+K</kbd>
+        </button>
         <div
           title={connected ? 'מחובר' : 'מנותק'}
           style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: theme.text.secondary }}

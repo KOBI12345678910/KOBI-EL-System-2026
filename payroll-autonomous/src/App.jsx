@@ -4,7 +4,9 @@
  * Default theme: Palantir-style dark, Hebrew RTL.
  */
 
-import React, { useEffect, useMemo, useState, useCallback, lazy, Suspense } from 'react';
+import React, { useEffect, useMemo, useState, useCallback, lazy, Suspense, useRef } from 'react';
+import ShortcutsModal from './components/ShortcutsModal';
+import { exportToCSV } from './utils/export';
 import { GlobalErrorBoundary } from './components/GlobalErrorBoundary';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AuditTrail from './components/AuditTrail';
@@ -246,7 +248,10 @@ function DashboardTab({ wageSlips, employees }) {
 function WageSlipsTab({ wageSlips, onApprove, onIssue, onView }) {
   return (
     <div className="panel">
-      <h3 style={{ marginTop: 0 }}>תלושי שכר ({wageSlips.length})</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3 style={{ marginTop: 0 }}>תלושי שכר ({wageSlips.length})</h3>
+        <button onClick={() => window.print()} title="הדפס תלושי שכר">🖨️ הדפס</button>
+      </div>
       <table>
         <thead>
           <tr><th>תקופה</th><th>עובד</th><th>ת.ז</th><th>ברוטו</th><th>ניכויים</th><th>נטו</th><th>סטטוס</th><th>פעולות</th></tr>
@@ -262,6 +267,7 @@ function WageSlipsTab({ wageSlips, onApprove, onIssue, onView }) {
               <td><strong>{fmtMoney(slip.net_pay)}</strong></td>
               <td><span className={`badge badge-${slip.status}`}>{slip.status}</span></td>
               <td style={{ whiteSpace: 'nowrap' }}>
+                <button onClick={() => { onView(slip); setTimeout(() => window.print(), 500); }}>🖨️ הדפס</button>
                 <button onClick={() => onView(slip)}>צפה</button>
                 {slip.status === 'computed' && <button className="primary" onClick={() => onApprove(slip.id)}>אשר</button>}
                 {slip.status === 'approved' && <button className="primary" onClick={() => onIssue(slip.id)}>הנפק PDF</button>}
@@ -429,7 +435,22 @@ function EmployeesTab({ employees, employers, onReload }) {
     <div className="panel">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 style={{ margin: 0 }}>עובדים ({employees.length})</h3>
-        <button className="primary" onClick={() => setShowForm(!showForm)}>{showForm ? 'ביטול' : '+ עובד חדש'}</button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={() => {
+            const rows = employees.map(e => ({
+              employee_number: e.employee_number,
+              first_name: e.first_name,
+              last_name: e.last_name,
+              id_number: e.national_id,
+              position: e.position || '',
+              department: e.department || '',
+              start_date: e.start_date,
+              salary_base: e.base_salary,
+            }));
+            exportToCSV(rows, 'employees');
+          }}>📊 ייצוא</button>
+          <button className="primary" onClick={() => setShowForm(!showForm)}>{showForm ? 'ביטול' : '+ עובד חדש'}</button>
+        </div>
       </div>
       {showForm && (
         <div className="panel" style={{ marginTop: 16 }}>
@@ -852,22 +873,103 @@ function HelpTab() {
 /* ─── Sidebar Navigation ──────────────────────────────── */
 
 function Sidebar({ activeTab, onTabChange }) {
+  const [sidebarQuery, setSidebarQuery] = useState('');
+  const allItems = useMemo(() => NAV_GROUPS.flatMap(g => g.items), []);
+
+  const filteredItems = useMemo(() => {
+    if (!sidebarQuery.trim()) return null;
+    const q = sidebarQuery.toLowerCase();
+    return allItems.filter(item => item.label.toLowerCase().includes(q) || item.id.toLowerCase().includes(q));
+  }, [sidebarQuery, allItems]);
+
   return (
     <nav className="sidebar">
-      {NAV_GROUPS.map(group => (
-        <div key={group.label} className="sidebar-group">
-          <div className="sidebar-group-label">{group.label}</div>
-          {group.items.map(item => (
-            <button
-              key={item.id}
-              className={`sidebar-item ${activeTab === item.id ? 'active' : ''}`}
-              onClick={() => onTabChange(item.id)}
-            >
-              {item.label}
-            </button>
-          ))}
+      {/* Sidebar search */}
+      <div style={{ padding: '8px 12px 4px', position: 'relative', direction: 'rtl' }}>
+        <input
+          value={sidebarQuery}
+          onChange={e => setSidebarQuery(e.target.value)}
+          placeholder="חפש מודול..."
+          style={{
+            width: '100%',
+            background: '#1a2028',
+            border: '1px solid #2a3340',
+            borderRadius: 4,
+            color: '#e6edf3',
+            fontSize: 12,
+            padding: '6px 28px 6px 8px',
+            fontFamily: 'inherit',
+            outline: 'none',
+            direction: 'rtl',
+          }}
+          onKeyDown={e => { if (e.key === 'Escape') setSidebarQuery(''); }}
+        />
+        {sidebarQuery ? (
+          <button
+            onClick={() => setSidebarQuery('')}
+            style={{
+              position: 'absolute',
+              left: 18,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'transparent',
+              border: 'none',
+              color: '#8b96a5',
+              cursor: 'pointer',
+              fontSize: 13,
+              lineHeight: 1,
+              padding: 0,
+            }}
+          >
+            ×
+          </button>
+        ) : (
+          <span style={{
+            position: 'absolute',
+            left: 18,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: '#8b96a5',
+            fontSize: 11,
+            pointerEvents: 'none',
+          }}>🔍</span>
+        )}
+      </div>
+
+      {filteredItems ? (
+        /* Flat filtered list */
+        <div style={{ paddingTop: 4 }}>
+          {filteredItems.length === 0 ? (
+            <div style={{ padding: '10px 20px', fontSize: 12, color: '#8b96a5' }}>לא נמצא</div>
+          ) : (
+            filteredItems.map(item => (
+              <button
+                key={item.id}
+                className={`sidebar-item ${activeTab === item.id ? 'active' : ''}`}
+                onClick={() => { onTabChange(item.id); setSidebarQuery(''); }}
+              >
+                {item.label}
+              </button>
+            ))
+          )}
         </div>
-      ))}
+      ) : (
+        /* Normal grouped list */
+        NAV_GROUPS.map(group => (
+          <div key={group.label} className="sidebar-group">
+            <div className="sidebar-group-label">{group.label}</div>
+            {group.items.map(item => (
+              <button
+                key={item.id}
+                className={`sidebar-item ${activeTab === item.id ? 'active' : ''}`}
+                onClick={() => onTabChange(item.id)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        ))
+      )}
     </nav>
   );
 }
@@ -880,6 +982,33 @@ export default function App() {
   const [employees, setEmployees] = useState([]);
   const [employers, setEmployers] = useState([]);
   const [error, setError] = useState(null);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+
+  // ── Keyboard shortcuts ────────────────────────────────
+  useEffect(() => {
+    const handler = (e) => {
+      // Ignore when typing in an input/textarea/select
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target?.tagName)) return;
+
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key) {
+          case '1': e.preventDefault(); setTab('dashboard'); break;
+          case '2': e.preventDefault(); setTab('wage-slips'); break;
+          case '3': e.preventDefault(); setTab('employees'); break;
+          case '4': e.preventDefault(); setTab('rfq'); break;
+          case '5': e.preventDefault(); setTab('bi'); break;
+          case '/': e.preventDefault(); setShortcutsOpen(o => !o); break;
+          default: break;
+        }
+      }
+      if (e.key === 'Escape') {
+        setShortcutsOpen(false);
+        setError(null);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   const loadAll = useCallback(async () => {
     try {
@@ -963,6 +1092,7 @@ export default function App() {
     <GlobalErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <style>{css}</style>
+        <ShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
         <div className="app-layout">
           <Sidebar activeTab={tab} onTabChange={setTab} />
           <div className="main-content">
@@ -973,8 +1103,15 @@ export default function App() {
                   {currentLabel} | טכנו-קול עוזי | מנוע ERP ישראלי
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <button onClick={loadAll} style={{ fontSize: 12 }}>רענן</button>
+                <button
+                  onClick={() => setShortcutsOpen(true)}
+                  title="קיצורי מקלדת (Ctrl+/)"
+                  style={{ fontSize: 13, fontWeight: 700, padding: '6px 10px' }}
+                >
+                  ?
+                </button>
               </div>
             </header>
 
