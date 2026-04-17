@@ -3,7 +3,7 @@
 
 **Rule / כלל:** לא מוחקים רק משדרגים ומגדלים (Never delete, only upgrade & grow)
 
-**Generated / נוצר:** 2026-04-16T10:44:04.484Z
+**Generated / נוצר:** 2026-04-17T20:41:07.341Z
 **Aggregator / אגרגטור:** `onyx-procurement/src/reports/grand-aggregator.js`
 **Report spec / מפרט הדוח:** `_qa-reports/AG-X100-grand-aggregator.md`
 
@@ -20,8 +20,8 @@
 | Unknown / לא ידוע | 0 |
 | Completion rate / שיעור השלמה | 100.0% |
 | Src modules counted / מודולים | 567 |
-| Test files counted / קבצי בדיקה | 352 |
-| Est. test cases / בדיקות | 11167 |
+| Test files counted / קבצי בדיקה | 335 |
+| Est. test cases / בדיקות | 11014 |
 
 ## 2. Release Readiness Verdict / פסיקת מוכנות לשחרור
 
