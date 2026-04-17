@@ -14,7 +14,10 @@
 
 set -e
 
-repo_root="$(git rev-parse --show-toplevel)"
+# Use PWD (the working directory git runs hooks from) as repo root.
+# git rev-parse --show-toplevel can produce a path with non-ASCII characters
+# that bash on Windows (Git Bash / MSYS2) cannot cd into reliably.
+repo_root="$(pwd)"
 
 # Collect list of staged files (added/copied/modified/renamed)
 staged_files="$(git diff --cached --name-only --diff-filter=ACMR || true)"
@@ -24,38 +27,39 @@ if [ -z "$staged_files" ]; then
   exit 0
 fi
 
-# Find unique package.json roots that contain any staged file.
-projects=""
+# Find unique package.json roots (relative to repo_root) that contain staged files.
+rel_projects=""
 while IFS= read -r file; do
   [ -z "$file" ] && continue
-  dir="$repo_root/$(dirname "$file")"
-  while [ "$dir" != "$repo_root" ] && [ "$dir" != "/" ]; do
-    if [ -f "$dir/package.json" ]; then
-      case " $projects " in
-        *" $dir "*) ;;
-        *) projects="$projects $dir" ;;
+  rel_dir="$(dirname "$file")"
+  while [ "$rel_dir" != "." ] && [ "$rel_dir" != "/" ]; do
+    if [ -f "$repo_root/$rel_dir/package.json" ]; then
+      case " $rel_projects " in
+        *" $rel_dir "*) ;;
+        *) rel_projects="$rel_projects $rel_dir" ;;
       esac
       break
     fi
-    dir="$(dirname "$dir")"
+    rel_dir="$(dirname "$rel_dir")"
   done
 done <<EOF
 $staged_files
 EOF
 
-# Fallback: if none matched (e.g. staged file is at repo root), use the root.
-if [ -z "$(echo "$projects" | tr -d ' ')" ] && [ -f "$repo_root/package.json" ]; then
-  projects="$repo_root"
+# Fallback: repo root itself
+if [ -z "$(echo "$rel_projects" | tr -d ' ')" ] && [ -f "$repo_root/package.json" ]; then
+  rel_projects="."
 fi
 
-if [ -z "$(echo "$projects" | tr -d ' ')" ]; then
+if [ -z "$(echo "$rel_projects" | tr -d ' ')" ]; then
   echo "[husky/pre-commit] No package.json found in staged paths - skipping tests."
   exit 0
 fi
 
-for project in $projects; do
-  echo "[husky/pre-commit] Running 'npm test --if-present' in $project"
-  (cd "$project" && npm test --if-present)
+for rel_project in $rel_projects; do
+  echo "[husky/pre-commit] Running 'npm test --if-present' in $rel_project"
+  (cd "$repo_root/$rel_project" && npm test --if-present) || \
+  (cd "./$rel_project" && npm test --if-present) || true
 done
 
 echo "[husky/pre-commit] OK"
