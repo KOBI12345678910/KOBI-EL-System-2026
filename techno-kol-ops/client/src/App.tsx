@@ -1,5 +1,6 @@
 import React from 'react';
 import { Routes, Route, useParams } from 'react-router-dom';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { useStore } from './store/useStore';
 import { useWebSocket } from './hooks/useWebSocket';
 import { useAutonomousPipeline } from './hooks/useAutonomousPipeline';
@@ -21,6 +22,7 @@ import { Intelligence } from './pages/Intelligence';
 import { SupplyChain } from './pages/SupplyChain';
 import { Documents } from './pages/Documents';
 import { SignaturePage } from './pages/SignaturePage';
+import { NotFound } from './pages/NotFound';
 import { ProjectAnalysis } from './pages/ProjectAnalysis';
 import { Purchasing } from './pages/Purchasing';
 import { SituationDashboard } from './pages/SituationDashboard';
@@ -135,6 +137,7 @@ function Layout() {
           <Route path="/360/rfq/:id" element={<RFQ360 />} />
           <Route path="/360/supplier/:id" element={<Supplier360 />} />
           <Route path="/360/work-order/:id" element={<WorkOrder360Detail />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
       <RealtimeToast />
@@ -203,7 +206,7 @@ function Login() {
   );
 }
 
-export default function App() {
+function AppInner() {
   const { token } = useStore();
 
   // Public route — חתימה (ללא לוגין)
@@ -216,4 +219,12 @@ export default function App() {
   }
 
   return token ? <Layout /> : <Login />;
+}
+
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <AppInner />
+    </ErrorBoundary>
+  );
 }

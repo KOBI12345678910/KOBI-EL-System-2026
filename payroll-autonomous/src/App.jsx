@@ -5,6 +5,7 @@
  */
 
 import React, { useEffect, useMemo, useState, useCallback, lazy, Suspense } from 'react';
+import { GlobalErrorBoundary } from './components/GlobalErrorBoundary';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AuditTrail from './components/AuditTrail';
 import BIDashboard from './components/BIDashboard';
@@ -63,11 +64,17 @@ const API_KEY =
 async function api(path, { method = 'GET', body } = {}) {
   const headers = { 'Content-Type': 'application/json' };
   if (API_KEY) headers['X-API-Key'] = API_KEY;
-  const res = await fetch(`${API_URL}${path}`, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  let res;
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch (networkErr) {
+    // Network unreachable / CORS / DNS failure
+    throw new Error('השרת אינו זמין. בדוק חיבור רשת או הפעל את השרת.');
+  }
   if (!res.ok) {
     const text = await res.text();
     let err;
@@ -953,28 +960,35 @@ export default function App() {
   const currentLabel = NAV_GROUPS.flatMap(g => g.items).find(i => i.id === tab)?.label || tab;
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <style>{css}</style>
-      <div className="app-layout">
-        <Sidebar activeTab={tab} onTabChange={setTab} />
-        <div className="main-content">
-          <header style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h1 style={{ margin: 0, fontSize: 22 }}>KOBI EL System 2026</h1>
-              <div style={{ color: theme.textDim, fontSize: 12 }}>
-                {currentLabel} | טכנו-קול עוזי | מנוע ERP ישראלי
+    <GlobalErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <style>{css}</style>
+        <div className="app-layout">
+          <Sidebar activeTab={tab} onTabChange={setTab} />
+          <div className="main-content">
+            <header style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h1 style={{ margin: 0, fontSize: 22 }}>KOBI EL System 2026</h1>
+                <div style={{ color: theme.textDim, fontSize: 12 }}>
+                  {currentLabel} | טכנו-קול עוזי | מנוע ERP ישראלי
+                </div>
               </div>
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={loadAll} style={{ fontSize: 12 }}>רענן</button>
-            </div>
-          </header>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={loadAll} style={{ fontSize: 12 }}>רענן</button>
+              </div>
+            </header>
 
-          {error && <div className="error-banner">{error}</div>}
+            {error && (
+              <div className="error-banner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>{error}</span>
+                <button onClick={() => setError(null)} style={{ background: 'transparent', border: 'none', color: '#f85149', cursor: 'pointer', padding: '0 4px', fontSize: 16, lineHeight: 1 }}>✕</button>
+              </div>
+            )}
 
-          {renderTab()}
+            {renderTab()}
+          </div>
         </div>
-      </div>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </GlobalErrorBoundary>
   );
 }

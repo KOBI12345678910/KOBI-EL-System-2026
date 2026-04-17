@@ -1,42 +1,32 @@
 {
-  "name": "Techno-Kol ERP",
-  "name_he": "טכנו-קול ERP",
-  "short_name": "TK-ERP",
-  "description": "מערכת ERP מבוזרת לטכנו-קול עוזי — ניהול שכר, לקוחות, ציוד ותיעוד חכם",
-  "description_he": "מערכת ERP מבוזרת לטכנו-קול עוזי — ניהול שכר, לקוחות, ציוד ותיעוד חכם",
-  "start_url": "/",
-  "scope": "/",
-  "id": "tk-erp",
+  "name": "Techno Kol ERP",
+  "short_name": "TK ERP",
+  "description": "מערכת ERP - טכנו כל עוזי",
+  "theme_color": "#0b0d10",
+  "background_color": "#0b0d10",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui", "browser"],
-  "background_color": "#0b0d10",
-  "theme_color": "#4a9eff",
-  "orientation": "portrait-primary",
+  "orientation": "portrait",
+  "lang": "he",
   "dir": "rtl",
-  "lang": "he-IL",
+  "start_url": "/payroll/",
+  "scope": "/payroll/",
+  "id": "tk-erp",
   "categories": ["business", "finance", "productivity"],
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "/icons/icon-192.png",
+      "src": "pwa-192x192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
-      "src": "/icons/icon-256.png",
-      "sizes": "256x256",
-      "type": "image/png",
-      "purpose": "any"
+      "src": "pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     },
     {
-      "src": "/icons/icon-384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-512.png",
+      "src": "pwa-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -45,32 +35,20 @@
   "shortcuts": [
     {
       "name": "Create Invoice",
-      "name_he": "חשבונית חדשה",
       "short_name": "חשבונית",
       "description": "פתח מסך חשבונית חדשה",
-      "url": "/invoices/new",
+      "url": "/payroll/invoices/new",
       "icons": [
-        { "src": "/icons/icon-192.png", "sizes": "192x192" }
+        { "src": "pwa-192x192.png", "sizes": "192x192" }
       ]
     },
     {
       "name": "New Employee",
-      "name_he": "עובד חדש",
       "short_name": "עובד",
       "description": "רישום עובד חדש למערכת",
-      "url": "/employees/new",
+      "url": "/payroll/employees/new",
       "icons": [
-        { "src": "/icons/icon-192.png", "sizes": "192x192" }
-      ]
-    },
-    {
-      "name": "Scan Receipt",
-      "name_he": "סריקת קבלה",
-      "short_name": "סריקה",
-      "description": "סריקת קבלה / חשבונית נכנסת",
-      "url": "/scan/receipt",
-      "icons": [
-        { "src": "/icons/icon-192.png", "sizes": "192x192" }
+        { "src": "pwa-192x192.png", "sizes": "192x192" }
       ]
     }
   ]
