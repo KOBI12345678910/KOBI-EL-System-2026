@@ -26,19 +26,15 @@ jobs:
       matrix:
         include:
           - service: onyx-procurement
-            context: ./onyx-procurement
             dockerfile: docker/onyx-procurement.Dockerfile
             port: 3100
           - service: techno-kol-ops
-            context: ./techno-kol-ops
             dockerfile: docker/techno-kol-ops.Dockerfile
             port: 3200
           - service: onyx-ai
-            context: ./onyx-ai
             dockerfile: docker/onyx-ai.Dockerfile
             port: 3300
           - service: payroll-autonomous
-            context: ./payroll-autonomous
             dockerfile: docker/payroll-autonomous.Dockerfile
             port: 5173
 
@@ -68,7 +64,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.context }}
+          context: .
           file: ${{ matrix.dockerfile }}
           target: runtime
           push: true
