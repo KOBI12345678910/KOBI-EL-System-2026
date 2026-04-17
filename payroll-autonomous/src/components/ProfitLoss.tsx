@@ -188,8 +188,7 @@ export default function ProfitLoss() {
         <Row label="שיווק" value={d.marketing} indent />
         <Row label="ביטוח" value={d.insurance} indent />
         <Row label="הוצ' כלליות" value={d.general} indent />
-        <Row label="סה\"כ הוצ' תפעוליות" value={totalOpex} bold color="#f85149" />
-
+      <Row label={'סה"כ הוצ\' תפעוליות'} value={totalOpex} bold color="#f85149" />
         <div style={{ padding: '12px 8px', borderBottom: '1px solid #2a3340', display: 'flex',
           justifyContent: 'space-between', fontWeight: 700, fontSize: 15 }}>
           <span>רווח תפעולי (EBIT)</span>
