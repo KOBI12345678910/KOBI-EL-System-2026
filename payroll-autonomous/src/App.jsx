@@ -54,6 +54,8 @@ const AdminPanel = lazy(() => import('./components/AdminPanel'));
 const ReportsDashboard = lazy(() => import('./components/ReportsDashboard'));
 const BOMCalculator = lazy(() => import('./components/BOMCalculator'));
 const InventoryAlerts = lazy(() => import('./components/InventoryAlerts'));
+const CashFlowForecast = lazy(() => import('./components/CashFlowForecast'));
+const ProfitLoss = lazy(() => import('./components/ProfitLoss'));
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
@@ -144,6 +146,7 @@ const NAV_GROUPS = [
     { id: 'real-estate', label: 'נדל"ן' },
     { id: 'gantt', label: 'גנט' },
     { id: 'audit', label: 'יומן ביקורת' },
+    { id: 'cashflow', label: '💸 תחזית תזרים' },
   ]},
   { label: 'פורטלים', items: [
     { id: 'supplier-portal', label: 'פורטל ספקים' },
@@ -178,6 +181,7 @@ const NAV_GROUPS = [
   ]},
   { label: 'דוחות', items: [
     { id: 'reports', label: '📊 מרכז דוחות' },
+    { id: 'pnl', label: '📈 דוח רווח והפסד' },
   ]},
   { label: 'מערכת', items: [
     { id: 'tickets', label: 'כרטיסי תמיכה' },
@@ -1194,6 +1198,8 @@ export default function App() {
       case 'ai-uzi':  return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>טוען עוזר עוזי...</div>}><AIAssistantUzi /></Suspense>;
       case 'admin': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>טוען ניהול מערכת...</div>}><AdminPanel /></Suspense>;
       case 'reports': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>טוען מרכז דוחות...</div>}><ReportsDashboard /></Suspense>;
+      case 'cashflow': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>טוען תחזית תזרים...</div>}><CashFlowForecast /></Suspense>;
+      case 'pnl': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>טוען דוח רווח והפסד...</div>}><ProfitLoss /></Suspense>;
       default: return <DashboardTab wageSlips={wageSlips} employees={employees} lang={lang} />;
     }
   };
