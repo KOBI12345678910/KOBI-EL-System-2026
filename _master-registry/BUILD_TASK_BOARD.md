@@ -178,3 +178,14 @@ costing, FX admin, consolidation, annual tax) are deferred to Tier 2.
 | B-DO004 | API routes — 15 docs route files + _helpers + aggregator + business endpoints + mount | 7 | done | P0 | L5 | docs | Y | N |
 | B-DO005 | React pages — 10 v2 pages + _shared + App.tsx wiring | 7 | done | P0 | L7 | docs | N | Y |
 | B-DO006 | Docs permission matrix | 7 | done | P1 | L9 | docs | N | N |
+
+## Intelligence Mega Batch (2026-04-18)
+
+| id | title | phase | status | priority | build_layer | domain | api_needed | page_needed |
+|---|---|---|---|---|---|---|---|---|
+| B-IN001 | Migration 00057 — intelligence domain complete (ALTER 13 + CREATE 2 + RLS + CHECK lifecycles + audit triggers + seeds) | 7 | done | P0 | L3 | intelligence | N | N |
+| B-IN002 | Migration 00058 — intelligence menu wiring (11 entries under "בינה מלאכותית") | 7 | done | P0 | L7 | intelligence | N | N |
+| B-IN003 | Zod schemas — 15 intelligence models + _shared + barrel + package.json sub-path | 7 | done | P0 | L4 | intelligence | Y | Y |
+| B-IN004 | API routes — 15 intelligence route files + _helpers + aggregator + business endpoints + mount at /api/intelligence/* (legacy flat files preserved) | 7 | done | P0 | L5 | intelligence | Y | N |
+| B-IN005 | React pages — 9 intelligence pages + _shared + App.tsx wiring (9 lazy imports + 9 Routes) | 7 | done | P0 | L7 | intelligence | N | Y |
+| B-IN006 | Intelligence permission matrix (3 roles × all endpoints) | 7 | done | P1 | L9 | intelligence | N | N |
