@@ -2,6 +2,10 @@
 AI-Task-Manager.zip
 Location-Finder.zip
 
+# Merge staging nested re-imports (safe to ignore — tracked via _merge-staging-final/)
+_merge-staging/Location-Finder/Location-Finder/
+_merge-staging/technokoluzi-erp/technokoluzi-erp/
+
 # Node modules
 node_modules/
 
