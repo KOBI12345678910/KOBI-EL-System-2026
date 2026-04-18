@@ -128,3 +128,42 @@ Tasks created during Phase 1 that do not exist in RECOVERY:
 | B-EXEC-09 | Update `BUILD_CHANGELOG.md` (B-C080..B-C087) | 7 | done | high | — | all | Phase 7 section extended |
 | B-EXEC-10 | Update `BUILD_FINAL_STATUS.json` (execution completion_percent 3→92, execution_mega_batch_executed=true) | 7 | done | high | — | all | Project360 + WorkOrder360 gates passed |
 
+
+---
+
+## Phase 7 — Finance Tier 1 (Option 1 — Tight Deliverable, 2026-04-18)
+
+Batch: `B-BATCH-FINANCE-TIER1-01`. Scope: Invoice360 + Payment360 completion gate,
+core VAT route, +6 missing finance tables. Remaining finance entities
+(receipts, expenses, GL, bank, collection, dunning, budget, cashflow,
+costing, FX admin, consolidation, annual tax) are deferred to Tier 2.
+
+| ID | Task | Phase | Status | Priority | Evidence | Depends | Notes |
+|---|---|---|---|---|---|---|---|
+| B-FIN-01 | P1 — Export `getVatRateForDate` + VAT constants from `israeli-accounting-engine.ts` | 7 | done | critical | BUILD_CHANGELOG B-F001 | — | Unblocks route compilation |
+| B-FIN-02 | Emit `supabase/migrations/00051_finance_domain_complete.sql` | 7 | done | critical | BUILD_CHANGELOG B-F002 | B-FIN-01 | ALTER 18 tables + CREATE 6 new + CHECK constraints + RLS + audit triggers + FX seed |
+| B-FIN-03 | Emit `supabase/migrations/00052_finance_menu_wiring.sql` | 7 | done | critical | BUILD_CHANGELOG B-F003 | B-FIN-02 | 23 idempotent entries under category 6 |
+| B-FIN-04 | Emit 6 Zod schemas + barrel + `./finance` sub-path export | 7 | done | critical | BUILD_CHANGELOG B-F004 | B-FIN-02 | invoice math invariant enforced |
+| B-FIN-05 | Emit 3 API route files (`invoices.ts`, `payments.ts`, `vat-records.ts`) + aggregator | 7 | done | critical | BUILD_CHANGELOG B-F005 | B-FIN-04 | issue/void/reconcile/allocate/refund/export |
+| B-FIN-06 | Mount finance aggregator at `/api/v2/finance` in `routes/index.ts` | 7 | done | critical | BUILD_CHANGELOG B-F006 | B-FIN-05 | legacy `/finance` preserved untouched |
+| B-FIN-07 | Emit Invoice360 page w/ embedded line editor | 7 | done | critical | BUILD_CHANGELOG B-F007 | B-FIN-05 | Finance completion gate requirement |
+| B-FIN-08 | Emit Payment360 page w/ allocation interface | 7 | done | critical | BUILD_CHANGELOG B-F008 | B-FIN-05 | |
+| B-FIN-09 | Wire lazy imports + Route entries in `erp-app/src/App.tsx` | 7 | done | critical | BUILD_CHANGELOG B-F009 | B-FIN-07, B-FIN-08 | 2 lazy imports, 2 `<Route>` entries, APPEND-only |
+| B-FIN-10 | Emit `finance_permission_matrix.md` | 7 | done | high | BUILD_CHANGELOG B-F010 | B-FIN-05 | RACI per endpoint + state-transition RACI |
+| B-FIN-11 | Ledger updates (changelog + task board + FINAL_STATUS) | 7 | done | high | this entry | B-FIN-01..10 | completion bumped 8 → ~40 |
+
+### Deferred to Tier 2 (still `in_progress`)
+
+| ID | Task | Phase | Status | Priority | Depends | Notes |
+|---|---|---|---|---|---|---|
+| B-FIN-T2-01 | Receipts — Zod + API + page | 7 | in_progress | high | B-FIN-02 | Table exists (00051 ALTER) |
+| B-FIN-T2-02 | Expenses — Zod + API + page | 7 | in_progress | high | B-FIN-02 | |
+| B-FIN-T2-03 | GL transactions — Zod + API + page | 7 | in_progress | high | B-FIN-02 | |
+| B-FIN-T2-04 | Bank files + bank matches — Zod + API + page | 7 | in_progress | high | B-FIN-02 | |
+| B-FIN-T2-05 | Reconciliation exceptions — Zod + API + page | 7 | in_progress | high | B-FIN-02 | Table CREATE'd in 00051 |
+| B-FIN-T2-06 | Collection cases + collection actions — Zod + API + page | 7 | in_progress | high | B-FIN-02 | |
+| B-FIN-T2-07 | Dunning campaigns + dunning steps + reminder schedules — Zod + API + page | 7 | in_progress | high | B-FIN-02 | 3 tables CREATE'd in 00051 |
+| B-FIN-T2-08 | Budget entries + cashflow entries + costing entries — Zod + API + page | 7 | in_progress | normal | B-FIN-02 | |
+| B-FIN-T2-09 | FX rates admin — Zod already shipped (B-FIN-04); API + page | 7 | in_progress | normal | B-FIN-04 | |
+| B-FIN-T2-10 | Consolidation entries + annual tax reports — Zod + API + page | 7 | in_progress | normal | B-FIN-02 | |
+| B-FIN-T2-11 | Tax exports browser page (PCN836/874 archive) | 7 | in_progress | normal | B-FIN-05 | Export endpoint exists; UI pending |

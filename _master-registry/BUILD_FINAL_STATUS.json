@@ -125,7 +125,7 @@
     "execution":        { "expected_models": 29, "fully_present": 29, "partial": 0,  "completion_percent": 92, "business_readiness": "ready",    "gate_status": "passed",    "execution_mega_batch_executed": true, "notes": "B-BATCH-EXECUTION-MEGA-01 (2026-04-18): 10 new tables (project_resources/dependencies/production_orders/work_centers/labor_logs/installation_teams/site_visits/punch_lists/drawings/bom_headers/revision_control) + 19 enhanced via migration 00045; menu via 00046; 29 Zod schemas; 29 API routers with CRUD + transitions/start/complete-qa/acknowledge/resolve/release/approve; 22 pages incl. Project360 (phases+milestones+risks+blockers+tasks+work_orders tabs) + WorkOrder360 (with work_order_tasks editor); audit triggers + permission matrix. RLS deferred to dedicated migration." },
     "procurement":      { "expected_models": 18, "fully_present": 18, "partial": 0,  "completion_percent": 85, "business_readiness": "production", "gate_status": "unblocked", "notes": "B-BATCH-PROCUREMENT-MEGA-01 (2026-04-18): 18 models full-stack — migrations 00047 (+7 tables, ALTERs, seeds, RLS) + 00048 (16 menu entries); 18 Zod files + 18 API routes + aggregator; 14 v2 pages + App.tsx wiring; business endpoints: rfqs/send+award, po/approve+submit, goods-receipts with TWM trigger, twm/resolve, supplier-invoices/approve, approvals/decide. Permission matrix shipped." },
     "inventory":        { "expected_models": 18, "fully_present": 1,  "partial": 17, "completion_percent": 6,  "business_readiness": "blocked",  "gate_status": "blocked",   "notes": "materials full; inventory partial; 16 tables unregistered" },
-    "finance":          { "expected_models": 24, "fully_present": 2,  "partial": 22, "completion_percent": 8,  "business_readiness": "blocked",  "gate_status": "blocked",   "notes": "invoices + payments full; 22 partial (tax/vat/dunning/bank/fx/consolidation)" },
+    "finance":          { "expected_models": 24, "fully_present": 5,  "partial": 19, "completion_percent": 40, "business_readiness": "partial", "gate_status": "in_progress", "finance_tier1_executed": true, "notes": "B-BATCH-FINANCE-TIER1-01 (2026-04-18): P1 export VAT helper; migrations 00051 (ALTER 18 + CREATE 6: payment_allocations/dunning_campaigns/dunning_steps/collection_actions/reconciliation_exceptions/reminder_schedules + CHECK state lifecycles + invoice totals-integrity trigger + fx_rates seed + RLS) + 00052 (23 menu entries under cat 6); Zod (6 critical: invoice/invoice-line/payment/vat-record/tax-record/fx-rate) + barrel + `./finance` package sub-path; API (3 routes + aggregator: invoices w/ issue+void+lines-CRUD, payments w/ reconcile+allocate+refund, vat-records w/ PCN836/874 export); Invoice360 w/ embedded lines editor + Payment360 w/ allocation interface; mounted at `/api/v2/finance` preserving legacy `/finance`; permission matrix RACI. Invoice360 + Payment360 gates PASSED. 19 models (receipts/expenses/GL/bank/collection/dunning/budget/cashflow/costing/fx/consolidation/annual_tax) deferred to Tier 2 (B-FIN-T2-01..11)." },
     "workforce":        { "expected_models": 13, "fully_present": 1,  "partial": 12, "completion_percent": 8,  "business_readiness": "blocked",  "gate_status": "blocked",   "notes": "employees full (via Employee360); 12 partial (attendance/payroll/pension/benefits)" },
     "docs":             { "expected_models": 15, "fully_present": 0,  "partial": 15, "completion_percent": 0,  "business_readiness": "blocked",  "gate_status": "blocked",   "notes": "documents partial; knowledge_cards/document_chunks/entity_extractions hidden per P1b" },
     "intelligence":     { "expected_models": 15, "fully_present": 0,  "partial": 15, "completion_percent": 0,  "business_readiness": "blocked",  "gate_status": "blocked",   "notes": "ai_insights/forecast_models/anomaly_cases present in DB, all registry-gapped" },
@@ -135,7 +135,7 @@
     "comms":            { "expected_models": 11, "fully_present": 0,  "partial": 11, "completion_percent": 0,  "business_readiness": "blocked",  "gate_status": "blocked",   "notes": "help_articles/comms_threads/notification_deliveries all orphan/hidden" },
     "support_schemas":  { "expected_models": 30, "fully_present": 0,  "partial": 30, "completion_percent": 0,  "business_readiness": "blocked",  "gate_status": "blocked",   "notes": "public/pricing/planning/quality/routing/compliance/maintenance/service/treasury/crm_legacy — mostly orphan tables" }
   },
-  "domain_completion_average_percent": 12.8,
+  "domain_completion_average_percent": 15.3,
   "deployment_counts": {
     "tables_expected": 237,
     "tables_verified_in_supabase": 0,
@@ -219,6 +219,40 @@
     "domain_completion_average_percent uses unweighted mean of 13 domain completion_percent values.",
     "Commercial Mega Batch executed 2026-04-18 (B-BATCH-COMMERCIAL-MEGA-01): migrations 00043 + 00044, Zod/API/page for 4 new tables, App.tsx wiring, permission matrix. See `_master-registry/commercial_evidence_log.md`."
   ],
+  "finance_tier1_executed": true,
+  "finance_tier1_metadata": {
+    "date": "2026-04-18",
+    "batch_id": "B-BATCH-FINANCE-TIER1-01",
+    "option": 1,
+    "preconditions_fixed": ["P1 — export getVatRateForDate + VAT constants", "P2 — 6 missing finance tables", "P3 — menu wiring"],
+    "tables_added": [
+      "finance.payment_allocations",
+      "finance.dunning_campaigns",
+      "finance.dunning_steps",
+      "finance.collection_actions",
+      "finance.reconciliation_exceptions",
+      "finance.reminder_schedules"
+    ],
+    "tables_altered_count": 18,
+    "migrations": ["00051_finance_domain_complete.sql","00052_finance_menu_wiring.sql"],
+    "zod_files": 7,
+    "api_route_files": 4,
+    "page_files": 2,
+    "app_tsx_edits": 2,
+    "routes_mounted": "/api/v2/finance (legacy /finance untouched)",
+    "permission_matrix_doc": "_master-registry/domains/finance_permission_matrix.md",
+    "gates_passed": ["Invoice360 with embedded line editor", "Payment360 with allocation interface"],
+    "deferred": [
+      "Receipts / Expenses / GL — Zod+API+page",
+      "Bank files / bank matches / reconciliation exceptions — Zod+API+page",
+      "Collection cases / collection actions — Zod+API+page",
+      "Dunning campaigns / dunning steps / reminder schedules — Zod+API+page",
+      "Budget / cashflow / costing entries — Zod+API+page",
+      "FX rates admin — API+page (Zod shipped)",
+      "Consolidation entries / annual tax reports — Zod+API+page",
+      "Tax-exports archive browser page"
+    ]
+  },
   "commercial_mega_batch_executed": true,
   "commercial_mega_batch_metadata": {
     "date": "2026-04-18",

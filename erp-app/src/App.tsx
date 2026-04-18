@@ -1172,6 +1172,10 @@ const CommercialCustomerSegmentsPage = lazy(() => import('./pages/commercial/cus
 const CommercialSalesOrdersPage = lazy(() => import('./pages/commercial/sales-orders'));
 const CommercialPricingRulesPage = lazy(() => import('./pages/commercial/pricing-rules'));
 
+// === FINANCE DOMAIN (Tier 1 — 00051/00052) ===
+const FinanceInvoice360 = lazy(() => import('./pages/finance/Invoice360'));
+const FinancePayment360 = lazy(() => import('./pages/finance/Payment360'));
+
 // === PROCUREMENT DOMAIN (Mega Batch 00047/00048) — 14 v2 pages ===
 const ProcurementSuppliersListPageV2 = lazy(() => import('./pages/procurement/v2/SuppliersListPage'));
 const ProcurementSupplier360V2 = lazy(() => import('./pages/procurement/v2/Supplier360'));
@@ -1890,6 +1894,10 @@ function Router() {
           <Route path="/procurement-approvals" component={ProcurementApprovalsQueueV2} />
           <Route path="/contracts/:id" component={ProcurementContract360V2} />
           <Route path="/subcontractors" component={ProcurementSubcontractorsPageV2} />
+
+          {/* Finance Tier 1 (00051/00052) — Invoice360 + Payment360 */}
+          <Route path="/invoices/:id" component={FinanceInvoice360} />
+          <Route path="/payments/:id" component={FinancePayment360} />
 
           <Route component={NotFound} />
         </Switch>
