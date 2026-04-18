@@ -13,14 +13,14 @@
     ],
     "sources": [
       "finance.cashflow_entries",
-      "projects.projects"
+      "execution.projects"
     ]
   },
   {
     "id": "DSH-0002",
     "name": "dashboard_operations",
     "name_he": "דשבורד תפעול",
-    "domain": "projects",
+    "domain": "execution",
     "widgets": [
       "wo_open",
       "attendance_today",
@@ -28,9 +28,9 @@
       "production_orders"
     ],
     "sources": [
-      "projects.project_tasks",
-      "hr_workforce.attendance_logs",
-      "production.production_orders"
+      "execution.project_tasks",
+      "workforce.attendance_logs",
+      "execution.production_orders"
     ]
   },
   {
@@ -52,31 +52,31 @@
     "id": "DSH-0004",
     "name": "dashboard_workforce",
     "name_he": "דשבורד כח אדם",
-    "domain": "hr_workforce",
+    "domain": "workforce",
     "widgets": [
       "employees_active",
       "attendance_rate",
       "payroll_run"
     ],
     "sources": [
-      "hr_workforce.employees",
-      "hr_workforce.attendance_logs",
-      "hr_workforce.payroll_inputs"
+      "workforce.employees",
+      "workforce.attendance_logs",
+      "workforce.payroll_inputs"
     ]
   },
   {
     "id": "DSH-0005",
     "name": "dashboard_ai",
     "name_he": "דשבורד AI",
-    "domain": "ai_automation",
+    "domain": "intelligence",
     "widgets": [
       "automation_runs",
       "insights",
       "anomalies"
     ],
     "sources": [
-      "ai_automation.automation_runs",
-      "ai_automation.prediction_outputs"
+      "intelligence.automation_runs",
+      "intelligence.prediction_outputs"
     ]
   },
   {
@@ -116,47 +116,47 @@
     "id": "DSH-0008",
     "name": "dashboard_projects",
     "name_he": "דשבורד פרויקטים",
-    "domain": "projects",
+    "domain": "execution",
     "widgets": [
       "projects_by_status",
       "overdue",
       "upcoming_milestones"
     ],
     "sources": [
-      "projects.projects",
-      "projects.milestones"
+      "execution.projects",
+      "execution.milestones"
     ]
   },
   {
     "id": "DSH-0009",
     "name": "dashboard_production",
     "name_he": "דשבורד ייצור",
-    "domain": "production",
+    "domain": "execution",
     "widgets": [
       "oee",
       "scrap_rate",
       "wo_in_progress"
     ],
     "sources": [
-      "production.production_orders",
-      "production.scrap_logs",
-      "production.work_centers"
+      "execution.production_orders",
+      "execution.scrap_logs",
+      "execution.work_centers"
     ]
   },
   {
     "id": "DSH-0010",
     "name": "dashboard_sales",
     "name_he": "דשבורד מכירות",
-    "domain": "sales",
+    "domain": "commercial",
     "widgets": [
       "pipeline",
       "win_rate",
       "quota_attainment"
     ],
     "sources": [
-      "sales.opportunities",
-      "sales.quotes",
-      "sales.sales_pipeline"
+      "commercial.opportunities",
+      "commercial.quotes",
+      "commercial.sales_pipeline"
     ]
   }
 ]

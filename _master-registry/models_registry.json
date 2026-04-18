@@ -3,8 +3,8 @@
     "model_id": "MDL-0001",
     "model_name_en": "leads",
     "model_name_he": "leads",
-    "domain": "crm",
-    "subdomain": "crm",
+    "domain": "commercial",
+    "subdomain": "commercial",
     "description": "CRM · leads",
     "business_purpose": "Core model required by spec: crm.leads",
     "model_type": "master_data",
@@ -25,7 +25,7 @@
       "department_owner": "crm"
     },
     "database": {
-      "table_name": "crm.leads",
+      "table_name": "commercial.leads",
       "primary_key": "leads_id",
       "display_name_field": "name",
       "code_field": "leads_code",
@@ -38,7 +38,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "crm.leads",
+      "business_meaning": "commercial.leads",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -112,14 +112,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "crm",
+      "canonical_domain": "commercial",
+      "original_table": "crm.leads",
+      "canonical_table": "commercial.leads"
+    }
   },
   {
     "model_id": "MDL-0002",
     "model_name_en": "lead_sources",
     "model_name_he": "lead sources",
-    "domain": "crm",
-    "subdomain": "crm",
+    "domain": "commercial",
+    "subdomain": "commercial",
     "description": "CRM · lead_sources",
     "business_purpose": "Core model required by spec: crm.lead_sources",
     "model_type": "master_data",
@@ -140,7 +146,7 @@
       "department_owner": "crm"
     },
     "database": {
-      "table_name": "crm.lead_sources",
+      "table_name": "commercial.lead_sources",
       "primary_key": "lead_sources_id",
       "display_name_field": "name",
       "code_field": "lead_sources_code",
@@ -153,7 +159,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "crm.lead_sources",
+      "business_meaning": "commercial.lead_sources",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -227,14 +233,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "crm",
+      "canonical_domain": "commercial",
+      "original_table": "crm.lead_sources",
+      "canonical_table": "commercial.lead_sources"
+    }
   },
   {
     "model_id": "MDL-0003",
     "model_name_en": "customers",
     "model_name_he": "customers",
-    "domain": "crm",
-    "subdomain": "crm",
+    "domain": "commercial",
+    "subdomain": "commercial",
     "description": "CRM · customers",
     "business_purpose": "Core model required by spec: crm.customers",
     "model_type": "master_data",
@@ -255,7 +267,7 @@
       "department_owner": "crm"
     },
     "database": {
-      "table_name": "crm.customers",
+      "table_name": "commercial.customers",
       "primary_key": "customers_id",
       "display_name_field": "name",
       "code_field": "customers_code",
@@ -333,14 +345,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "crm",
+      "canonical_domain": "commercial",
+      "original_table": "crm.customers",
+      "canonical_table": "commercial.customers"
+    }
   },
   {
     "model_id": "MDL-0004",
     "model_name_en": "contacts",
     "model_name_he": "contacts",
-    "domain": "crm",
-    "subdomain": "crm",
+    "domain": "commercial",
+    "subdomain": "commercial",
     "description": "CRM · contacts",
     "business_purpose": "Core model required by spec: crm.contacts",
     "model_type": "master_data",
@@ -361,7 +379,7 @@
       "department_owner": "crm"
     },
     "database": {
-      "table_name": "crm.contacts",
+      "table_name": "commercial.contacts",
       "primary_key": "contacts_id",
       "display_name_field": "name",
       "code_field": "contacts_code",
@@ -439,14 +457,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "crm",
+      "canonical_domain": "commercial",
+      "original_table": "crm.contacts",
+      "canonical_table": "commercial.contacts"
+    }
   },
   {
     "model_id": "MDL-0005",
     "model_name_en": "activities",
     "model_name_he": "activities",
-    "domain": "crm",
-    "subdomain": "crm",
+    "domain": "commercial",
+    "subdomain": "commercial",
     "description": "CRM · activities",
     "business_purpose": "Core model required by spec: crm.activities",
     "model_type": "master_data",
@@ -467,7 +491,7 @@
       "department_owner": "crm"
     },
     "database": {
-      "table_name": "crm.activities",
+      "table_name": "commercial.activities",
       "primary_key": "activities_id",
       "display_name_field": "name",
       "code_field": "activities_code",
@@ -480,7 +504,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "crm.activities",
+      "business_meaning": "commercial.activities",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -546,14 +570,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "crm",
+      "canonical_domain": "commercial",
+      "original_table": "crm.activities",
+      "canonical_table": "commercial.activities"
+    }
   },
   {
     "model_id": "MDL-0006",
     "model_name_en": "meetings",
     "model_name_he": "meetings",
-    "domain": "crm",
-    "subdomain": "crm",
+    "domain": "commercial",
+    "subdomain": "commercial",
     "description": "CRM · meetings",
     "business_purpose": "Core model required by spec: crm.meetings",
     "model_type": "transactional",
@@ -574,7 +604,7 @@
       "department_owner": "crm"
     },
     "database": {
-      "table_name": "crm.meetings",
+      "table_name": "commercial.meetings",
       "primary_key": "meetings_id",
       "display_name_field": "name",
       "code_field": "meetings_code",
@@ -587,7 +617,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "crm.meetings",
+      "business_meaning": "commercial.meetings",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -653,14 +683,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "crm",
+      "canonical_domain": "commercial",
+      "original_table": "crm.meetings",
+      "canonical_table": "commercial.meetings"
+    }
   },
   {
     "model_id": "MDL-0007",
     "model_name_en": "communication_logs",
     "model_name_he": "communication logs",
-    "domain": "crm",
-    "subdomain": "crm",
+    "domain": "commercial",
+    "subdomain": "commercial",
     "description": "CRM · communication_logs",
     "business_purpose": "Core model required by spec: crm.communication_logs",
     "model_type": "audit",
@@ -681,7 +717,7 @@
       "department_owner": "crm"
     },
     "database": {
-      "table_name": "crm.communication_logs",
+      "table_name": "commercial.communication_logs",
       "primary_key": "communication_logs_id",
       "display_name_field": "name",
       "code_field": "communication_logs_code",
@@ -694,7 +730,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "crm.communication_logs",
+      "business_meaning": "commercial.communication_logs",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -760,14 +796,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "crm",
+      "canonical_domain": "commercial",
+      "original_table": "crm.communication_logs",
+      "canonical_table": "commercial.communication_logs"
+    }
   },
   {
     "model_id": "MDL-0008",
     "model_name_en": "customer_segments",
     "model_name_he": "customer segments",
-    "domain": "crm",
-    "subdomain": "crm",
+    "domain": "commercial",
+    "subdomain": "commercial",
     "description": "CRM · customer_segments",
     "business_purpose": "Core model required by spec: crm.customer_segments",
     "model_type": "master_data",
@@ -788,7 +830,7 @@
       "department_owner": "crm"
     },
     "database": {
-      "table_name": "crm.customer_segments",
+      "table_name": "commercial.customer_segments",
       "primary_key": "customer_segments_id",
       "display_name_field": "name",
       "code_field": "customer_segments_code",
@@ -867,14 +909,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "crm",
+      "canonical_domain": "commercial",
+      "original_table": "crm.customer_segments",
+      "canonical_table": "commercial.customer_segments"
+    }
   },
   {
     "model_id": "MDL-0009",
     "model_name_en": "opportunities",
     "model_name_he": "opportunities",
-    "domain": "sales",
-    "subdomain": "sales",
+    "domain": "commercial",
+    "subdomain": "commercial",
     "description": "מכירות · opportunities",
     "business_purpose": "Core model required by spec: sales.opportunities",
     "model_type": "master_data",
@@ -895,7 +943,7 @@
       "department_owner": "sales"
     },
     "database": {
-      "table_name": "sales.opportunities",
+      "table_name": "commercial.opportunities",
       "primary_key": "opportunities_id",
       "display_name_field": "name",
       "code_field": "opportunities_code",
@@ -908,7 +956,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "sales.opportunities",
+      "business_meaning": "commercial.opportunities",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -974,14 +1022,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial",
+      "original_table": "sales.opportunities",
+      "canonical_table": "commercial.opportunities"
+    }
   },
   {
     "model_id": "MDL-0010",
     "model_name_en": "quotes",
     "model_name_he": "quotes",
-    "domain": "sales",
-    "subdomain": "sales",
+    "domain": "commercial",
+    "subdomain": "commercial",
     "description": "מכירות · quotes",
     "business_purpose": "Core model required by spec: sales.quotes",
     "model_type": "transactional",
@@ -1002,7 +1056,7 @@
       "department_owner": "sales"
     },
     "database": {
-      "table_name": "sales.quotes",
+      "table_name": "commercial.quotes",
       "primary_key": "quotes_id",
       "display_name_field": "name",
       "code_field": "quotes_code",
@@ -1089,14 +1143,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial",
+      "original_table": "sales.quotes",
+      "canonical_table": "commercial.quotes"
+    }
   },
   {
     "model_id": "MDL-0011",
     "model_name_en": "quote_items",
     "model_name_he": "quote items",
-    "domain": "sales",
-    "subdomain": "sales",
+    "domain": "commercial",
+    "subdomain": "commercial",
     "description": "מכירות · quote_items",
     "business_purpose": "Core model required by spec: sales.quote_items",
     "model_type": "transactional",
@@ -1117,7 +1177,7 @@
       "department_owner": "sales"
     },
     "database": {
-      "table_name": "sales.quote_items",
+      "table_name": "commercial.quote_items",
       "primary_key": "quote_items_id",
       "display_name_field": "name",
       "code_field": "quote_items_code",
@@ -1205,14 +1265,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial",
+      "original_table": "sales.quote_items",
+      "canonical_table": "commercial.quote_items"
+    }
   },
   {
     "model_id": "MDL-0012",
     "model_name_en": "pricing_rules",
     "model_name_he": "pricing rules",
-    "domain": "sales",
-    "subdomain": "sales",
+    "domain": "commercial",
+    "subdomain": "commercial",
     "description": "מכירות · pricing_rules",
     "business_purpose": "Core model required by spec: sales.pricing_rules",
     "model_type": "master_data",
@@ -1233,7 +1299,7 @@
       "department_owner": "sales"
     },
     "database": {
-      "table_name": "sales.pricing_rules",
+      "table_name": "commercial.pricing_rules",
       "primary_key": "pricing_rules_id",
       "display_name_field": "name",
       "code_field": "pricing_rules_code",
@@ -1246,7 +1312,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "sales.pricing_rules",
+      "business_meaning": "commercial.pricing_rules",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -1312,14 +1378,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial",
+      "original_table": "sales.pricing_rules",
+      "canonical_table": "commercial.pricing_rules"
+    }
   },
   {
     "model_id": "MDL-0013",
     "model_name_en": "discounts",
     "model_name_he": "discounts",
-    "domain": "sales",
-    "subdomain": "sales",
+    "domain": "commercial",
+    "subdomain": "commercial",
     "description": "מכירות · discounts",
     "business_purpose": "Core model required by spec: sales.discounts",
     "model_type": "master_data",
@@ -1340,7 +1412,7 @@
       "department_owner": "sales"
     },
     "database": {
-      "table_name": "sales.discounts",
+      "table_name": "commercial.discounts",
       "primary_key": "discounts_id",
       "display_name_field": "name",
       "code_field": "discounts_code",
@@ -1353,7 +1425,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "sales.discounts",
+      "business_meaning": "commercial.discounts",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -1419,14 +1491,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial",
+      "original_table": "sales.discounts",
+      "canonical_table": "commercial.discounts"
+    }
   },
   {
     "model_id": "MDL-0014",
     "model_name_en": "approvals",
     "model_name_he": "approvals",
-    "domain": "sales",
-    "subdomain": "sales",
+    "domain": "commercial",
+    "subdomain": "commercial",
     "description": "מכירות · approvals",
     "business_purpose": "Core model required by spec: sales.approvals",
     "model_type": "master_data",
@@ -1447,7 +1525,7 @@
       "department_owner": "sales"
     },
     "database": {
-      "table_name": "sales.approvals",
+      "table_name": "commercial.approvals",
       "primary_key": "approvals_id",
       "display_name_field": "name",
       "code_field": "approvals_code",
@@ -1460,7 +1538,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "sales.approvals",
+      "business_meaning": "commercial.approvals",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -1526,14 +1604,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial",
+      "original_table": "sales.approvals",
+      "canonical_table": "commercial.approvals"
+    }
   },
   {
     "model_id": "MDL-0015",
     "model_name_en": "sales_orders",
     "model_name_he": "sales orders",
-    "domain": "sales",
-    "subdomain": "sales",
+    "domain": "commercial",
+    "subdomain": "commercial",
     "description": "מכירות · sales_orders",
     "business_purpose": "Core model required by spec: sales.sales_orders",
     "model_type": "transactional",
@@ -1554,7 +1638,7 @@
       "department_owner": "sales"
     },
     "database": {
-      "table_name": "sales.sales_orders",
+      "table_name": "commercial.sales_orders",
       "primary_key": "sales_orders_id",
       "display_name_field": "name",
       "code_field": "sales_orders_code",
@@ -1567,7 +1651,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "sales.sales_orders",
+      "business_meaning": "commercial.sales_orders",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -1633,14 +1717,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial",
+      "original_table": "sales.sales_orders",
+      "canonical_table": "commercial.sales_orders"
+    }
   },
   {
     "model_id": "MDL-0016",
     "model_name_en": "sales_pipeline",
     "model_name_he": "sales pipeline",
-    "domain": "sales",
-    "subdomain": "sales",
+    "domain": "commercial",
+    "subdomain": "commercial",
     "description": "מכירות · sales_pipeline",
     "business_purpose": "Core model required by spec: sales.sales_pipeline",
     "model_type": "master_data",
@@ -1661,7 +1751,7 @@
       "department_owner": "sales"
     },
     "database": {
-      "table_name": "sales.sales_pipeline",
+      "table_name": "commercial.sales_pipeline",
       "primary_key": "sales_pipeline_id",
       "display_name_field": "name",
       "code_field": "sales_pipeline_code",
@@ -1674,7 +1764,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "sales.sales_pipeline",
+      "business_meaning": "commercial.sales_pipeline",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -1740,14 +1830,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial",
+      "original_table": "sales.sales_pipeline",
+      "canonical_table": "commercial.sales_pipeline"
+    }
   },
   {
     "model_id": "MDL-0017",
     "model_name_en": "projects",
     "model_name_he": "projects",
-    "domain": "projects",
-    "subdomain": "projects",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "פרויקטים · projects",
     "business_purpose": "Core model required by spec: projects.projects",
     "model_type": "master_data",
@@ -1768,7 +1864,7 @@
       "department_owner": "projects"
     },
     "database": {
-      "table_name": "projects.projects",
+      "table_name": "execution.projects",
       "primary_key": "projects_id",
       "display_name_field": "name",
       "code_field": "projects_code",
@@ -1858,14 +1954,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution",
+      "original_table": "projects.projects",
+      "canonical_table": "execution.projects"
+    }
   },
   {
     "model_id": "MDL-0018",
     "model_name_en": "project_phases",
     "model_name_he": "project phases",
-    "domain": "projects",
-    "subdomain": "projects",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "פרויקטים · project_phases",
     "business_purpose": "Core model required by spec: projects.project_phases",
     "model_type": "master_data",
@@ -1886,7 +1988,7 @@
       "department_owner": "projects"
     },
     "database": {
-      "table_name": "projects.project_phases",
+      "table_name": "execution.project_phases",
       "primary_key": "project_phases_id",
       "display_name_field": "name",
       "code_field": "project_phases_code",
@@ -1977,14 +2079,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution",
+      "original_table": "projects.project_phases",
+      "canonical_table": "execution.project_phases"
+    }
   },
   {
     "model_id": "MDL-0019",
     "model_name_en": "project_tasks",
     "model_name_he": "project tasks",
-    "domain": "projects",
-    "subdomain": "projects",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "פרויקטים · project_tasks",
     "business_purpose": "Core model required by spec: projects.project_tasks",
     "model_type": "workflow",
@@ -2005,7 +2113,7 @@
       "department_owner": "projects"
     },
     "database": {
-      "table_name": "projects.project_tasks",
+      "table_name": "execution.project_tasks",
       "primary_key": "project_tasks_id",
       "display_name_field": "name",
       "code_field": "project_tasks_code",
@@ -2018,7 +2126,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.project_tasks",
+      "business_meaning": "execution.project_tasks",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -2084,14 +2192,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution",
+      "original_table": "projects.project_tasks",
+      "canonical_table": "execution.project_tasks"
+    }
   },
   {
     "model_id": "MDL-0020",
     "model_name_en": "milestones",
     "model_name_he": "milestones",
-    "domain": "projects",
-    "subdomain": "projects",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "פרויקטים · milestones",
     "business_purpose": "Core model required by spec: projects.milestones",
     "model_type": "master_data",
@@ -2112,7 +2226,7 @@
       "department_owner": "projects"
     },
     "database": {
-      "table_name": "projects.milestones",
+      "table_name": "execution.milestones",
       "primary_key": "milestones_id",
       "display_name_field": "name",
       "code_field": "milestones_code",
@@ -2191,14 +2305,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution",
+      "original_table": "projects.milestones",
+      "canonical_table": "execution.milestones"
+    }
   },
   {
     "model_id": "MDL-0021",
     "model_name_en": "dependencies",
     "model_name_he": "dependencies",
-    "domain": "projects",
-    "subdomain": "projects",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "פרויקטים · dependencies",
     "business_purpose": "Core model required by spec: projects.dependencies",
     "model_type": "master_data",
@@ -2219,7 +2339,7 @@
       "department_owner": "projects"
     },
     "database": {
-      "table_name": "projects.dependencies",
+      "table_name": "execution.dependencies",
       "primary_key": "dependencies_id",
       "display_name_field": "name",
       "code_field": "dependencies_code",
@@ -2232,7 +2352,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.dependencies",
+      "business_meaning": "execution.dependencies",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -2298,14 +2418,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution",
+      "original_table": "projects.dependencies",
+      "canonical_table": "execution.dependencies"
+    }
   },
   {
     "model_id": "MDL-0022",
     "model_name_en": "project_resources",
     "model_name_he": "project resources",
-    "domain": "projects",
-    "subdomain": "projects",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "פרויקטים · project_resources",
     "business_purpose": "Core model required by spec: projects.project_resources",
     "model_type": "master_data",
@@ -2326,7 +2452,7 @@
       "department_owner": "projects"
     },
     "database": {
-      "table_name": "projects.project_resources",
+      "table_name": "execution.project_resources",
       "primary_key": "project_resources_id",
       "display_name_field": "name",
       "code_field": "project_resources_code",
@@ -2339,7 +2465,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.project_resources",
+      "business_meaning": "execution.project_resources",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -2405,14 +2531,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution",
+      "original_table": "projects.project_resources",
+      "canonical_table": "execution.project_resources"
+    }
   },
   {
     "model_id": "MDL-0023",
     "model_name_en": "project_risk_entries",
     "model_name_he": "project risk entries",
-    "domain": "projects",
-    "subdomain": "projects",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "פרויקטים · project_risk_entries",
     "business_purpose": "Core model required by spec: projects.project_risk_entries",
     "model_type": "master_data",
@@ -2433,7 +2565,7 @@
       "department_owner": "projects"
     },
     "database": {
-      "table_name": "projects.project_risk_entries",
+      "table_name": "execution.project_risk_entries",
       "primary_key": "project_risk_entries_id",
       "display_name_field": "name",
       "code_field": "project_risk_entries_code",
@@ -2446,7 +2578,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.project_risk_entries",
+      "business_meaning": "execution.project_risk_entries",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -2512,14 +2644,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution",
+      "original_table": "projects.project_risk_entries",
+      "canonical_table": "execution.project_risk_entries"
+    }
   },
   {
     "model_id": "MDL-0024",
     "model_name_en": "project_progress_logs",
     "model_name_he": "project progress logs",
-    "domain": "projects",
-    "subdomain": "projects",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "פרויקטים · project_progress_logs",
     "business_purpose": "Core model required by spec: projects.project_progress_logs",
     "model_type": "audit",
@@ -2540,7 +2678,7 @@
       "department_owner": "projects"
     },
     "database": {
-      "table_name": "projects.project_progress_logs",
+      "table_name": "execution.project_progress_logs",
       "primary_key": "project_progress_logs_id",
       "display_name_field": "name",
       "code_field": "project_progress_logs_code",
@@ -2553,7 +2691,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.project_progress_logs",
+      "business_meaning": "execution.project_progress_logs",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -2619,14 +2757,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution",
+      "original_table": "projects.project_progress_logs",
+      "canonical_table": "execution.project_progress_logs"
+    }
   },
   {
     "model_id": "MDL-0025",
     "model_name_en": "technical_specs",
     "model_name_he": "technical specs",
-    "domain": "engineering",
-    "subdomain": "engineering",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "הנדסה · technical_specs",
     "business_purpose": "Core model required by spec: engineering.technical_specs",
     "model_type": "master_data",
@@ -2647,7 +2791,7 @@
       "department_owner": "engineering"
     },
     "database": {
-      "table_name": "engineering.technical_specs",
+      "table_name": "execution.technical_specs",
       "primary_key": "technical_specs_id",
       "display_name_field": "name",
       "code_field": "technical_specs_code",
@@ -2660,7 +2804,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "engineering.technical_specs",
+      "business_meaning": "execution.technical_specs",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -2726,14 +2870,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "engineering",
+      "canonical_domain": "execution",
+      "original_table": "engineering.technical_specs",
+      "canonical_table": "execution.technical_specs"
+    }
   },
   {
     "model_id": "MDL-0026",
     "model_name_en": "drawings",
     "model_name_he": "drawings",
-    "domain": "engineering",
-    "subdomain": "engineering",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "הנדסה · drawings",
     "business_purpose": "Core model required by spec: engineering.drawings",
     "model_type": "master_data",
@@ -2754,7 +2904,7 @@
       "department_owner": "engineering"
     },
     "database": {
-      "table_name": "engineering.drawings",
+      "table_name": "execution.drawings",
       "primary_key": "drawings_id",
       "display_name_field": "name",
       "code_field": "drawings_code",
@@ -2767,7 +2917,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "engineering.drawings",
+      "business_meaning": "execution.drawings",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -2833,14 +2983,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "engineering",
+      "canonical_domain": "execution",
+      "original_table": "engineering.drawings",
+      "canonical_table": "execution.drawings"
+    }
   },
   {
     "model_id": "MDL-0027",
     "model_name_en": "bom_headers",
     "model_name_he": "bom headers",
-    "domain": "engineering",
-    "subdomain": "engineering",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "הנדסה · bom_headers",
     "business_purpose": "Core model required by spec: engineering.bom_headers",
     "model_type": "master_data",
@@ -2861,7 +3017,7 @@
       "department_owner": "engineering"
     },
     "database": {
-      "table_name": "engineering.bom_headers",
+      "table_name": "execution.bom_headers",
       "primary_key": "bom_headers_id",
       "display_name_field": "name",
       "code_field": "bom_headers_code",
@@ -2874,7 +3030,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "engineering.bom_headers",
+      "business_meaning": "execution.bom_headers",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -2940,14 +3096,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "engineering",
+      "canonical_domain": "execution",
+      "original_table": "engineering.bom_headers",
+      "canonical_table": "execution.bom_headers"
+    }
   },
   {
     "model_id": "MDL-0028",
     "model_name_en": "bom_items",
     "model_name_he": "bom items",
-    "domain": "engineering",
-    "subdomain": "engineering",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "הנדסה · bom_items",
     "business_purpose": "Core model required by spec: engineering.bom_items",
     "model_type": "transactional",
@@ -2968,7 +3130,7 @@
       "department_owner": "engineering"
     },
     "database": {
-      "table_name": "engineering.bom_items",
+      "table_name": "execution.bom_items",
       "primary_key": "bom_items_id",
       "display_name_field": "name",
       "code_field": "bom_items_code",
@@ -2981,7 +3143,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "engineering.bom_items",
+      "business_meaning": "execution.bom_items",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -3047,14 +3209,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "engineering",
+      "canonical_domain": "execution",
+      "original_table": "engineering.bom_items",
+      "canonical_table": "execution.bom_items"
+    }
   },
   {
     "model_id": "MDL-0029",
     "model_name_en": "revision_control",
     "model_name_he": "revision control",
-    "domain": "engineering",
-    "subdomain": "engineering",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "הנדסה · revision_control",
     "business_purpose": "Core model required by spec: engineering.revision_control",
     "model_type": "master_data",
@@ -3075,7 +3243,7 @@
       "department_owner": "engineering"
     },
     "database": {
-      "table_name": "engineering.revision_control",
+      "table_name": "execution.revision_control",
       "primary_key": "revision_control_id",
       "display_name_field": "name",
       "code_field": "revision_control_code",
@@ -3088,7 +3256,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "engineering.revision_control",
+      "business_meaning": "execution.revision_control",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -3154,14 +3322,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "engineering",
+      "canonical_domain": "execution",
+      "original_table": "engineering.revision_control",
+      "canonical_table": "execution.revision_control"
+    }
   },
   {
     "model_id": "MDL-0030",
     "model_name_en": "product_configurations",
     "model_name_he": "product configurations",
-    "domain": "engineering",
-    "subdomain": "engineering",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "הנדסה · product_configurations",
     "business_purpose": "Core model required by spec: engineering.product_configurations",
     "model_type": "master_data",
@@ -3182,7 +3356,7 @@
       "department_owner": "engineering"
     },
     "database": {
-      "table_name": "engineering.product_configurations",
+      "table_name": "execution.product_configurations",
       "primary_key": "product_configurations_id",
       "display_name_field": "name",
       "code_field": "product_configurations_code",
@@ -3195,7 +3369,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "engineering.product_configurations",
+      "business_meaning": "execution.product_configurations",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -3261,14 +3435,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "engineering",
+      "canonical_domain": "execution",
+      "original_table": "engineering.product_configurations",
+      "canonical_table": "execution.product_configurations"
+    }
   },
   {
     "model_id": "MDL-0031",
     "model_name_en": "engineering_requests",
     "model_name_he": "engineering requests",
-    "domain": "engineering",
-    "subdomain": "engineering",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "הנדסה · engineering_requests",
     "business_purpose": "Core model required by spec: engineering.engineering_requests",
     "model_type": "master_data",
@@ -3289,7 +3469,7 @@
       "department_owner": "engineering"
     },
     "database": {
-      "table_name": "engineering.engineering_requests",
+      "table_name": "execution.engineering_requests",
       "primary_key": "engineering_requests_id",
       "display_name_field": "name",
       "code_field": "engineering_requests_code",
@@ -3302,7 +3482,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "engineering.engineering_requests",
+      "business_meaning": "execution.engineering_requests",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -3368,14 +3548,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "engineering",
+      "canonical_domain": "execution",
+      "original_table": "engineering.engineering_requests",
+      "canonical_table": "execution.engineering_requests"
+    }
   },
   {
     "model_id": "MDL-0032",
     "model_name_en": "approval_drawings",
     "model_name_he": "approval drawings",
-    "domain": "engineering",
-    "subdomain": "engineering",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "הנדסה · approval_drawings",
     "business_purpose": "Core model required by spec: engineering.approval_drawings",
     "model_type": "master_data",
@@ -3396,7 +3582,7 @@
       "department_owner": "engineering"
     },
     "database": {
-      "table_name": "engineering.approval_drawings",
+      "table_name": "execution.approval_drawings",
       "primary_key": "approval_drawings_id",
       "display_name_field": "name",
       "code_field": "approval_drawings_code",
@@ -3409,7 +3595,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "engineering.approval_drawings",
+      "business_meaning": "execution.approval_drawings",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -3475,7 +3661,13 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "engineering",
+      "canonical_domain": "execution",
+      "original_table": "engineering.approval_drawings",
+      "canonical_table": "execution.approval_drawings"
+    }
   },
   {
     "model_id": "MDL-0033",
@@ -5211,8 +5403,8 @@
     "model_id": "MDL-0049",
     "model_name_en": "production_orders",
     "model_name_he": "production orders",
-    "domain": "production",
-    "subdomain": "production",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "ייצור · production_orders",
     "business_purpose": "Core model required by spec: production.production_orders",
     "model_type": "transactional",
@@ -5233,7 +5425,7 @@
       "department_owner": "production"
     },
     "database": {
-      "table_name": "production.production_orders",
+      "table_name": "execution.production_orders",
       "primary_key": "production_orders_id",
       "display_name_field": "name",
       "code_field": "production_orders_code",
@@ -5246,7 +5438,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "production.production_orders",
+      "business_meaning": "execution.production_orders",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -5321,14 +5513,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "production",
+      "canonical_domain": "execution",
+      "original_table": "production.production_orders",
+      "canonical_table": "execution.production_orders"
+    }
   },
   {
     "model_id": "MDL-0050",
     "model_name_en": "production_steps",
     "model_name_he": "production steps",
-    "domain": "production",
-    "subdomain": "production",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "ייצור · production_steps",
     "business_purpose": "Core model required by spec: production.production_steps",
     "model_type": "master_data",
@@ -5349,7 +5547,7 @@
       "department_owner": "production"
     },
     "database": {
-      "table_name": "production.production_steps",
+      "table_name": "execution.production_steps",
       "primary_key": "production_steps_id",
       "display_name_field": "name",
       "code_field": "production_steps_code",
@@ -5362,7 +5560,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "production.production_steps",
+      "business_meaning": "execution.production_steps",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -5428,14 +5626,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "production",
+      "canonical_domain": "execution",
+      "original_table": "production.production_steps",
+      "canonical_table": "execution.production_steps"
+    }
   },
   {
     "model_id": "MDL-0051",
     "model_name_en": "work_centers",
     "model_name_he": "work centers",
-    "domain": "production",
-    "subdomain": "production",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "ייצור · work_centers",
     "business_purpose": "Core model required by spec: production.work_centers",
     "model_type": "master_data",
@@ -5456,7 +5660,7 @@
       "department_owner": "production"
     },
     "database": {
-      "table_name": "production.work_centers",
+      "table_name": "execution.work_centers",
       "primary_key": "work_centers_id",
       "display_name_field": "name",
       "code_field": "work_centers_code",
@@ -5469,7 +5673,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "production.work_centers",
+      "business_meaning": "execution.work_centers",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -5535,14 +5739,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "production",
+      "canonical_domain": "execution",
+      "original_table": "production.work_centers",
+      "canonical_table": "execution.work_centers"
+    }
   },
   {
     "model_id": "MDL-0052",
     "model_name_en": "labor_logs",
     "model_name_he": "labor logs",
-    "domain": "production",
-    "subdomain": "production",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "ייצור · labor_logs",
     "business_purpose": "Core model required by spec: production.labor_logs",
     "model_type": "audit",
@@ -5563,7 +5773,7 @@
       "department_owner": "production"
     },
     "database": {
-      "table_name": "production.labor_logs",
+      "table_name": "execution.labor_logs",
       "primary_key": "labor_logs_id",
       "display_name_field": "name",
       "code_field": "labor_logs_code",
@@ -5576,7 +5786,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "production.labor_logs",
+      "business_meaning": "execution.labor_logs",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -5642,14 +5852,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "production",
+      "canonical_domain": "execution",
+      "original_table": "production.labor_logs",
+      "canonical_table": "execution.labor_logs"
+    }
   },
   {
     "model_id": "MDL-0053",
     "model_name_en": "machine_logs",
     "model_name_he": "machine logs",
-    "domain": "production",
-    "subdomain": "production",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "ייצור · machine_logs",
     "business_purpose": "Core model required by spec: production.machine_logs",
     "model_type": "audit",
@@ -5670,7 +5886,7 @@
       "department_owner": "production"
     },
     "database": {
-      "table_name": "production.machine_logs",
+      "table_name": "execution.machine_logs",
       "primary_key": "machine_logs_id",
       "display_name_field": "name",
       "code_field": "machine_logs_code",
@@ -5683,7 +5899,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "production.machine_logs",
+      "business_meaning": "execution.machine_logs",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -5749,14 +5965,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "production",
+      "canonical_domain": "execution",
+      "original_table": "production.machine_logs",
+      "canonical_table": "execution.machine_logs"
+    }
   },
   {
     "model_id": "MDL-0054",
     "model_name_en": "material_consumption",
     "model_name_he": "material consumption",
-    "domain": "production",
-    "subdomain": "production",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "ייצור · material_consumption",
     "business_purpose": "Core model required by spec: production.material_consumption",
     "model_type": "master_data",
@@ -5777,7 +5999,7 @@
       "department_owner": "production"
     },
     "database": {
-      "table_name": "production.material_consumption",
+      "table_name": "execution.material_consumption",
       "primary_key": "material_consumption_id",
       "display_name_field": "name",
       "code_field": "material_consumption_code",
@@ -5790,7 +6012,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "production.material_consumption",
+      "business_meaning": "execution.material_consumption",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -5856,14 +6078,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "production",
+      "canonical_domain": "execution",
+      "original_table": "production.material_consumption",
+      "canonical_table": "execution.material_consumption"
+    }
   },
   {
     "model_id": "MDL-0055",
     "model_name_en": "scrap_logs",
     "model_name_he": "scrap logs",
-    "domain": "production",
-    "subdomain": "production",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "ייצור · scrap_logs",
     "business_purpose": "Core model required by spec: production.scrap_logs",
     "model_type": "audit",
@@ -5884,7 +6112,7 @@
       "department_owner": "production"
     },
     "database": {
-      "table_name": "production.scrap_logs",
+      "table_name": "execution.scrap_logs",
       "primary_key": "scrap_logs_id",
       "display_name_field": "name",
       "code_field": "scrap_logs_code",
@@ -5897,7 +6125,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "production.scrap_logs",
+      "business_meaning": "execution.scrap_logs",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -5963,14 +6191,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "production",
+      "canonical_domain": "execution",
+      "original_table": "production.scrap_logs",
+      "canonical_table": "execution.scrap_logs"
+    }
   },
   {
     "model_id": "MDL-0056",
     "model_name_en": "production_quality_checks",
     "model_name_he": "production quality checks",
-    "domain": "production",
-    "subdomain": "production",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "ייצור · production_quality_checks",
     "business_purpose": "Core model required by spec: production.production_quality_checks",
     "model_type": "master_data",
@@ -5991,7 +6225,7 @@
       "department_owner": "production"
     },
     "database": {
-      "table_name": "production.production_quality_checks",
+      "table_name": "execution.production_quality_checks",
       "primary_key": "production_quality_checks_id",
       "display_name_field": "name",
       "code_field": "production_quality_checks_code",
@@ -6004,7 +6238,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "production.production_quality_checks",
+      "business_meaning": "execution.production_quality_checks",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -6070,14 +6304,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "production",
+      "canonical_domain": "execution",
+      "original_table": "production.production_quality_checks",
+      "canonical_table": "execution.production_quality_checks"
+    }
   },
   {
     "model_id": "MDL-0057",
     "model_name_en": "installation_orders",
     "model_name_he": "installation orders",
-    "domain": "installation",
-    "subdomain": "installation",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "התקנות · installation_orders",
     "business_purpose": "Core model required by spec: installation.installation_orders",
     "model_type": "transactional",
@@ -6098,7 +6338,7 @@
       "department_owner": "installation"
     },
     "database": {
-      "table_name": "installation.installation_orders",
+      "table_name": "execution.installation_orders",
       "primary_key": "installation_orders_id",
       "display_name_field": "name",
       "code_field": "installation_orders_code",
@@ -6111,7 +6351,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "installation.installation_orders",
+      "business_meaning": "execution.installation_orders",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -6177,14 +6417,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "installation",
+      "canonical_domain": "execution",
+      "original_table": "installation.installation_orders",
+      "canonical_table": "execution.installation_orders"
+    }
   },
   {
     "model_id": "MDL-0058",
     "model_name_en": "installation_tasks",
     "model_name_he": "installation tasks",
-    "domain": "installation",
-    "subdomain": "installation",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "התקנות · installation_tasks",
     "business_purpose": "Core model required by spec: installation.installation_tasks",
     "model_type": "workflow",
@@ -6205,7 +6451,7 @@
       "department_owner": "installation"
     },
     "database": {
-      "table_name": "installation.installation_tasks",
+      "table_name": "execution.installation_tasks",
       "primary_key": "installation_tasks_id",
       "display_name_field": "name",
       "code_field": "installation_tasks_code",
@@ -6218,7 +6464,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "installation.installation_tasks",
+      "business_meaning": "execution.installation_tasks",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -6284,14 +6530,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "installation",
+      "canonical_domain": "execution",
+      "original_table": "installation.installation_tasks",
+      "canonical_table": "execution.installation_tasks"
+    }
   },
   {
     "model_id": "MDL-0059",
     "model_name_en": "installation_teams",
     "model_name_he": "installation teams",
-    "domain": "installation",
-    "subdomain": "installation",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "התקנות · installation_teams",
     "business_purpose": "Core model required by spec: installation.installation_teams",
     "model_type": "master_data",
@@ -6312,7 +6564,7 @@
       "department_owner": "installation"
     },
     "database": {
-      "table_name": "installation.installation_teams",
+      "table_name": "execution.installation_teams",
       "primary_key": "installation_teams_id",
       "display_name_field": "name",
       "code_field": "installation_teams_code",
@@ -6325,7 +6577,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "installation.installation_teams",
+      "business_meaning": "execution.installation_teams",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -6391,14 +6643,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "installation",
+      "canonical_domain": "execution",
+      "original_table": "installation.installation_teams",
+      "canonical_table": "execution.installation_teams"
+    }
   },
   {
     "model_id": "MDL-0060",
     "model_name_en": "schedules",
     "model_name_he": "schedules",
-    "domain": "installation",
-    "subdomain": "installation",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "התקנות · schedules",
     "business_purpose": "Core model required by spec: installation.schedules",
     "model_type": "master_data",
@@ -6419,7 +6677,7 @@
       "department_owner": "installation"
     },
     "database": {
-      "table_name": "installation.schedules",
+      "table_name": "execution.schedules",
       "primary_key": "schedules_id",
       "display_name_field": "name",
       "code_field": "schedules_code",
@@ -6432,7 +6690,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "installation.schedules",
+      "business_meaning": "execution.schedules",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -6498,14 +6756,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "installation",
+      "canonical_domain": "execution",
+      "original_table": "installation.schedules",
+      "canonical_table": "execution.schedules"
+    }
   },
   {
     "model_id": "MDL-0061",
     "model_name_en": "site_visits",
     "model_name_he": "site visits",
-    "domain": "installation",
-    "subdomain": "installation",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "התקנות · site_visits",
     "business_purpose": "Core model required by spec: installation.site_visits",
     "model_type": "master_data",
@@ -6526,7 +6790,7 @@
       "department_owner": "installation"
     },
     "database": {
-      "table_name": "installation.site_visits",
+      "table_name": "execution.site_visits",
       "primary_key": "site_visits_id",
       "display_name_field": "name",
       "code_field": "site_visits_code",
@@ -6539,7 +6803,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "installation.site_visits",
+      "business_meaning": "execution.site_visits",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -6605,14 +6869,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "installation",
+      "canonical_domain": "execution",
+      "original_table": "installation.site_visits",
+      "canonical_table": "execution.site_visits"
+    }
   },
   {
     "model_id": "MDL-0062",
     "model_name_en": "completion_reports",
     "model_name_he": "completion reports",
-    "domain": "installation",
-    "subdomain": "installation",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "התקנות · completion_reports",
     "business_purpose": "Core model required by spec: installation.completion_reports",
     "model_type": "analytical",
@@ -6633,7 +6903,7 @@
       "department_owner": "installation"
     },
     "database": {
-      "table_name": "installation.completion_reports",
+      "table_name": "execution.completion_reports",
       "primary_key": "completion_reports_id",
       "display_name_field": "name",
       "code_field": "completion_reports_code",
@@ -6646,7 +6916,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "installation.completion_reports",
+      "business_meaning": "execution.completion_reports",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -6712,14 +6982,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "installation",
+      "canonical_domain": "execution",
+      "original_table": "installation.completion_reports",
+      "canonical_table": "execution.completion_reports"
+    }
   },
   {
     "model_id": "MDL-0063",
     "model_name_en": "handover_documents",
     "model_name_he": "handover documents",
-    "domain": "installation",
-    "subdomain": "installation",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "התקנות · handover_documents",
     "business_purpose": "Core model required by spec: installation.handover_documents",
     "model_type": "document",
@@ -6740,7 +7016,7 @@
       "department_owner": "installation"
     },
     "database": {
-      "table_name": "installation.handover_documents",
+      "table_name": "execution.handover_documents",
       "primary_key": "handover_documents_id",
       "display_name_field": "name",
       "code_field": "handover_documents_code",
@@ -6753,7 +7029,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "installation.handover_documents",
+      "business_meaning": "execution.handover_documents",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -6819,14 +7095,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "installation",
+      "canonical_domain": "execution",
+      "original_table": "installation.handover_documents",
+      "canonical_table": "execution.handover_documents"
+    }
   },
   {
     "model_id": "MDL-0064",
     "model_name_en": "punch_lists",
     "model_name_he": "punch lists",
-    "domain": "installation",
-    "subdomain": "installation",
+    "domain": "execution",
+    "subdomain": "execution",
     "description": "התקנות · punch_lists",
     "business_purpose": "Core model required by spec: installation.punch_lists",
     "model_type": "master_data",
@@ -6847,7 +7129,7 @@
       "department_owner": "installation"
     },
     "database": {
-      "table_name": "installation.punch_lists",
+      "table_name": "execution.punch_lists",
       "primary_key": "punch_lists_id",
       "display_name_field": "name",
       "code_field": "punch_lists_code",
@@ -6860,7 +7142,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "installation.punch_lists",
+      "business_meaning": "execution.punch_lists",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -6926,7 +7208,13 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "installation",
+      "canonical_domain": "execution",
+      "original_table": "installation.punch_lists",
+      "canonical_table": "execution.punch_lists"
+    }
   },
   {
     "model_id": "MDL-0065",
@@ -8666,8 +8954,8 @@
     "model_id": "MDL-0081",
     "model_name_en": "employees",
     "model_name_he": "employees",
-    "domain": "hr_workforce",
-    "subdomain": "hr_workforce",
+    "domain": "workforce",
+    "subdomain": "workforce",
     "description": "כוח אדם · employees",
     "business_purpose": "Core model required by spec: hr_workforce.employees",
     "model_type": "master_data",
@@ -8688,7 +8976,7 @@
       "department_owner": "hr_workforce"
     },
     "database": {
-      "table_name": "hr_workforce.employees",
+      "table_name": "workforce.employees",
       "primary_key": "employees_id",
       "display_name_field": "name",
       "code_field": "employees_code",
@@ -8766,14 +9054,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce",
+      "original_table": "hr_workforce.employees",
+      "canonical_table": "workforce.employees"
+    }
   },
   {
     "model_id": "MDL-0082",
     "model_name_en": "contractors",
     "model_name_he": "contractors",
-    "domain": "hr_workforce",
-    "subdomain": "hr_workforce",
+    "domain": "workforce",
+    "subdomain": "workforce",
     "description": "כוח אדם · contractors",
     "business_purpose": "Core model required by spec: hr_workforce.contractors",
     "model_type": "master_data",
@@ -8794,7 +9088,7 @@
       "department_owner": "hr_workforce"
     },
     "database": {
-      "table_name": "hr_workforce.contractors",
+      "table_name": "workforce.contractors",
       "primary_key": "contractors_id",
       "display_name_field": "name",
       "code_field": "contractors_code",
@@ -8807,7 +9101,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.contractors",
+      "business_meaning": "workforce.contractors",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -8873,14 +9167,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce",
+      "original_table": "hr_workforce.contractors",
+      "canonical_table": "workforce.contractors"
+    }
   },
   {
     "model_id": "MDL-0083",
     "model_name_en": "teams",
     "model_name_he": "teams",
-    "domain": "hr_workforce",
-    "subdomain": "hr_workforce",
+    "domain": "workforce",
+    "subdomain": "workforce",
     "description": "כוח אדם · teams",
     "business_purpose": "Core model required by spec: hr_workforce.teams",
     "model_type": "master_data",
@@ -8901,7 +9201,7 @@
       "department_owner": "hr_workforce"
     },
     "database": {
-      "table_name": "hr_workforce.teams",
+      "table_name": "workforce.teams",
       "primary_key": "teams_id",
       "display_name_field": "name",
       "code_field": "teams_code",
@@ -8914,7 +9214,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.teams",
+      "business_meaning": "workforce.teams",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -8980,14 +9280,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce",
+      "original_table": "hr_workforce.teams",
+      "canonical_table": "workforce.teams"
+    }
   },
   {
     "model_id": "MDL-0084",
     "model_name_en": "attendance_logs",
     "model_name_he": "attendance logs",
-    "domain": "hr_workforce",
-    "subdomain": "hr_workforce",
+    "domain": "workforce",
+    "subdomain": "workforce",
     "description": "כוח אדם · attendance_logs",
     "business_purpose": "Core model required by spec: hr_workforce.attendance_logs",
     "model_type": "audit",
@@ -9008,7 +9314,7 @@
       "department_owner": "hr_workforce"
     },
     "database": {
-      "table_name": "hr_workforce.attendance_logs",
+      "table_name": "workforce.attendance_logs",
       "primary_key": "attendance_logs_id",
       "display_name_field": "name",
       "code_field": "attendance_logs_code",
@@ -9021,7 +9327,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.attendance_logs",
+      "business_meaning": "workforce.attendance_logs",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -9087,14 +9393,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce",
+      "original_table": "hr_workforce.attendance_logs",
+      "canonical_table": "workforce.attendance_logs"
+    }
   },
   {
     "model_id": "MDL-0085",
     "model_name_en": "assignments",
     "model_name_he": "assignments",
-    "domain": "hr_workforce",
-    "subdomain": "hr_workforce",
+    "domain": "workforce",
+    "subdomain": "workforce",
     "description": "כוח אדם · assignments",
     "business_purpose": "Core model required by spec: hr_workforce.assignments",
     "model_type": "operational",
@@ -9115,7 +9427,7 @@
       "department_owner": "hr_workforce"
     },
     "database": {
-      "table_name": "hr_workforce.assignments",
+      "table_name": "workforce.assignments",
       "primary_key": "assignments_id",
       "display_name_field": "name",
       "code_field": "assignments_code",
@@ -9194,14 +9506,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce",
+      "original_table": "hr_workforce.assignments",
+      "canonical_table": "workforce.assignments"
+    }
   },
   {
     "model_id": "MDL-0086",
     "model_name_en": "payroll_inputs",
     "model_name_he": "payroll inputs",
-    "domain": "hr_workforce",
-    "subdomain": "hr_workforce",
+    "domain": "workforce",
+    "subdomain": "workforce",
     "description": "כוח אדם · payroll_inputs",
     "business_purpose": "Core model required by spec: hr_workforce.payroll_inputs",
     "model_type": "operational",
@@ -9222,7 +9540,7 @@
       "department_owner": "hr_workforce"
     },
     "database": {
-      "table_name": "hr_workforce.payroll_inputs",
+      "table_name": "workforce.payroll_inputs",
       "primary_key": "payroll_inputs_id",
       "display_name_field": "name",
       "code_field": "payroll_inputs_code",
@@ -9235,7 +9553,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.payroll_inputs",
+      "business_meaning": "workforce.payroll_inputs",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -9301,14 +9619,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce",
+      "original_table": "hr_workforce.payroll_inputs",
+      "canonical_table": "workforce.payroll_inputs"
+    }
   },
   {
     "model_id": "MDL-0087",
     "model_name_en": "performance_reviews",
     "model_name_he": "performance reviews",
-    "domain": "hr_workforce",
-    "subdomain": "hr_workforce",
+    "domain": "workforce",
+    "subdomain": "workforce",
     "description": "כוח אדם · performance_reviews",
     "business_purpose": "Core model required by spec: hr_workforce.performance_reviews",
     "model_type": "master_data",
@@ -9329,7 +9653,7 @@
       "department_owner": "hr_workforce"
     },
     "database": {
-      "table_name": "hr_workforce.performance_reviews",
+      "table_name": "workforce.performance_reviews",
       "primary_key": "performance_reviews_id",
       "display_name_field": "name",
       "code_field": "performance_reviews_code",
@@ -9342,7 +9666,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.performance_reviews",
+      "business_meaning": "workforce.performance_reviews",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -9408,14 +9732,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce",
+      "original_table": "hr_workforce.performance_reviews",
+      "canonical_table": "workforce.performance_reviews"
+    }
   },
   {
     "model_id": "MDL-0088",
     "model_name_en": "skill_matrix",
     "model_name_he": "skill matrix",
-    "domain": "hr_workforce",
-    "subdomain": "hr_workforce",
+    "domain": "workforce",
+    "subdomain": "workforce",
     "description": "כוח אדם · skill_matrix",
     "business_purpose": "Core model required by spec: hr_workforce.skill_matrix",
     "model_type": "master_data",
@@ -9436,7 +9766,7 @@
       "department_owner": "hr_workforce"
     },
     "database": {
-      "table_name": "hr_workforce.skill_matrix",
+      "table_name": "workforce.skill_matrix",
       "primary_key": "skill_matrix_id",
       "display_name_field": "name",
       "code_field": "skill_matrix_code",
@@ -9449,7 +9779,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.skill_matrix",
+      "business_meaning": "workforce.skill_matrix",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -9515,14 +9845,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce",
+      "original_table": "hr_workforce.skill_matrix",
+      "canonical_table": "workforce.skill_matrix"
+    }
   },
   {
     "model_id": "MDL-0089",
     "model_name_en": "documents",
     "model_name_he": "documents",
-    "domain": "documents",
-    "subdomain": "documents",
+    "domain": "docs",
+    "subdomain": "docs",
     "description": "מסמכים · documents",
     "business_purpose": "Core model required by spec: documents.documents",
     "model_type": "document",
@@ -9543,7 +9879,7 @@
       "department_owner": "documents"
     },
     "database": {
-      "table_name": "documents.documents",
+      "table_name": "docs.documents",
       "primary_key": "documents_id",
       "display_name_field": "name",
       "code_field": "documents_code",
@@ -9556,7 +9892,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.documents",
+      "business_meaning": "docs.documents",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -9622,14 +9958,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs",
+      "original_table": "documents.documents",
+      "canonical_table": "docs.documents"
+    }
   },
   {
     "model_id": "MDL-0090",
     "model_name_en": "document_links",
     "model_name_he": "document links",
-    "domain": "documents",
-    "subdomain": "documents",
+    "domain": "docs",
+    "subdomain": "docs",
     "description": "מסמכים · document_links",
     "business_purpose": "Core model required by spec: documents.document_links",
     "model_type": "document",
@@ -9650,7 +9992,7 @@
       "department_owner": "documents"
     },
     "database": {
-      "table_name": "documents.document_links",
+      "table_name": "docs.document_links",
       "primary_key": "document_links_id",
       "display_name_field": "name",
       "code_field": "document_links_code",
@@ -9663,7 +10005,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.document_links",
+      "business_meaning": "docs.document_links",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -9729,14 +10071,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs",
+      "original_table": "documents.document_links",
+      "canonical_table": "docs.document_links"
+    }
   },
   {
     "model_id": "MDL-0091",
     "model_name_en": "document_versions",
     "model_name_he": "document versions",
-    "domain": "documents",
-    "subdomain": "documents",
+    "domain": "docs",
+    "subdomain": "docs",
     "description": "מסמכים · document_versions",
     "business_purpose": "Core model required by spec: documents.document_versions",
     "model_type": "document",
@@ -9757,7 +10105,7 @@
       "department_owner": "documents"
     },
     "database": {
-      "table_name": "documents.document_versions",
+      "table_name": "docs.document_versions",
       "primary_key": "document_versions_id",
       "display_name_field": "name",
       "code_field": "document_versions_code",
@@ -9770,7 +10118,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.document_versions",
+      "business_meaning": "docs.document_versions",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -9836,14 +10184,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs",
+      "original_table": "documents.document_versions",
+      "canonical_table": "docs.document_versions"
+    }
   },
   {
     "model_id": "MDL-0092",
     "model_name_en": "templates",
     "model_name_he": "templates",
-    "domain": "documents",
-    "subdomain": "documents",
+    "domain": "docs",
+    "subdomain": "docs",
     "description": "מסמכים · templates",
     "business_purpose": "Core model required by spec: documents.templates",
     "model_type": "document",
@@ -9864,7 +10218,7 @@
       "department_owner": "documents"
     },
     "database": {
-      "table_name": "documents.templates",
+      "table_name": "docs.templates",
       "primary_key": "templates_id",
       "display_name_field": "name",
       "code_field": "templates_code",
@@ -9877,7 +10231,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.templates",
+      "business_meaning": "docs.templates",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -9943,14 +10297,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs",
+      "original_table": "documents.templates",
+      "canonical_table": "docs.templates"
+    }
   },
   {
     "model_id": "MDL-0093",
     "model_name_en": "generated_files",
     "model_name_he": "generated files",
-    "domain": "documents",
-    "subdomain": "documents",
+    "domain": "docs",
+    "subdomain": "docs",
     "description": "מסמכים · generated_files",
     "business_purpose": "Core model required by spec: documents.generated_files",
     "model_type": "master_data",
@@ -9971,7 +10331,7 @@
       "department_owner": "documents"
     },
     "database": {
-      "table_name": "documents.generated_files",
+      "table_name": "docs.generated_files",
       "primary_key": "generated_files_id",
       "display_name_field": "name",
       "code_field": "generated_files_code",
@@ -9984,7 +10344,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.generated_files",
+      "business_meaning": "docs.generated_files",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -10050,14 +10410,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs",
+      "original_table": "documents.generated_files",
+      "canonical_table": "docs.generated_files"
+    }
   },
   {
     "model_id": "MDL-0094",
     "model_name_en": "signatures",
     "model_name_he": "signatures",
-    "domain": "documents",
-    "subdomain": "documents",
+    "domain": "docs",
+    "subdomain": "docs",
     "description": "מסמכים · signatures",
     "business_purpose": "Core model required by spec: documents.signatures",
     "model_type": "document",
@@ -10078,7 +10444,7 @@
       "department_owner": "documents"
     },
     "database": {
-      "table_name": "documents.signatures",
+      "table_name": "docs.signatures",
       "primary_key": "signatures_id",
       "display_name_field": "name",
       "code_field": "signatures_code",
@@ -10091,7 +10457,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.signatures",
+      "business_meaning": "docs.signatures",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -10157,14 +10523,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs",
+      "original_table": "documents.signatures",
+      "canonical_table": "docs.signatures"
+    }
   },
   {
     "model_id": "MDL-0095",
     "model_name_en": "attachments",
     "model_name_he": "attachments",
-    "domain": "documents",
-    "subdomain": "documents",
+    "domain": "docs",
+    "subdomain": "docs",
     "description": "מסמכים · attachments",
     "business_purpose": "Core model required by spec: documents.attachments",
     "model_type": "document",
@@ -10185,7 +10557,7 @@
       "department_owner": "documents"
     },
     "database": {
-      "table_name": "documents.attachments",
+      "table_name": "docs.attachments",
       "primary_key": "attachments_id",
       "display_name_field": "name",
       "code_field": "attachments_code",
@@ -10198,7 +10570,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.attachments",
+      "business_meaning": "docs.attachments",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -10264,14 +10636,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs",
+      "original_table": "documents.attachments",
+      "canonical_table": "docs.attachments"
+    }
   },
   {
     "model_id": "MDL-0096",
     "model_name_en": "archive_records",
     "model_name_he": "archive records",
-    "domain": "documents",
-    "subdomain": "documents",
+    "domain": "docs",
+    "subdomain": "docs",
     "description": "מסמכים · archive_records",
     "business_purpose": "Core model required by spec: documents.archive_records",
     "model_type": "master_data",
@@ -10292,7 +10670,7 @@
       "department_owner": "documents"
     },
     "database": {
-      "table_name": "documents.archive_records",
+      "table_name": "docs.archive_records",
       "primary_key": "archive_records_id",
       "display_name_field": "name",
       "code_field": "archive_records_code",
@@ -10305,7 +10683,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.archive_records",
+      "business_meaning": "docs.archive_records",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -10371,7 +10749,13 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs",
+      "original_table": "documents.archive_records",
+      "canonical_table": "docs.archive_records"
+    }
   },
   {
     "model_id": "MDL-0097",
@@ -11233,8 +11617,8 @@
     "model_id": "MDL-0105",
     "model_name_en": "automation_rules",
     "model_name_he": "automation rules",
-    "domain": "ai_automation",
-    "subdomain": "ai_automation",
+    "domain": "intelligence",
+    "subdomain": "intelligence",
     "description": "AI ואוטומציה · automation_rules",
     "business_purpose": "Core model required by spec: ai_automation.automation_rules",
     "model_type": "ai",
@@ -11255,7 +11639,7 @@
       "department_owner": "ai_automation"
     },
     "database": {
-      "table_name": "ai_automation.automation_rules",
+      "table_name": "intelligence.automation_rules",
       "primary_key": "automation_rules_id",
       "display_name_field": "name",
       "code_field": "automation_rules_code",
@@ -11268,7 +11652,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.automation_rules",
+      "business_meaning": "intelligence.automation_rules",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -11334,14 +11718,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence",
+      "original_table": "ai_automation.automation_rules",
+      "canonical_table": "intelligence.automation_rules"
+    }
   },
   {
     "model_id": "MDL-0106",
     "model_name_en": "automation_runs",
     "model_name_he": "automation runs",
-    "domain": "ai_automation",
-    "subdomain": "ai_automation",
+    "domain": "intelligence",
+    "subdomain": "intelligence",
     "description": "AI ואוטומציה · automation_runs",
     "business_purpose": "Core model required by spec: ai_automation.automation_runs",
     "model_type": "ai",
@@ -11362,7 +11752,7 @@
       "department_owner": "ai_automation"
     },
     "database": {
-      "table_name": "ai_automation.automation_runs",
+      "table_name": "intelligence.automation_runs",
       "primary_key": "automation_runs_id",
       "display_name_field": "name",
       "code_field": "automation_runs_code",
@@ -11375,7 +11765,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.automation_runs",
+      "business_meaning": "intelligence.automation_runs",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -11441,14 +11831,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence",
+      "original_table": "ai_automation.automation_runs",
+      "canonical_table": "intelligence.automation_runs"
+    }
   },
   {
     "model_id": "MDL-0107",
     "model_name_en": "ai_agents",
     "model_name_he": "ai agents",
-    "domain": "ai_automation",
-    "subdomain": "ai_automation",
+    "domain": "intelligence",
+    "subdomain": "intelligence",
     "description": "AI ואוטומציה · ai_agents",
     "business_purpose": "Core model required by spec: ai_automation.ai_agents",
     "model_type": "ai",
@@ -11469,7 +11865,7 @@
       "department_owner": "ai_automation"
     },
     "database": {
-      "table_name": "ai_automation.ai_agents",
+      "table_name": "intelligence.ai_agents",
       "primary_key": "ai_agents_id",
       "display_name_field": "name",
       "code_field": "ai_agents_code",
@@ -11482,7 +11878,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.ai_agents",
+      "business_meaning": "intelligence.ai_agents",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -11548,14 +11944,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence",
+      "original_table": "ai_automation.ai_agents",
+      "canonical_table": "intelligence.ai_agents"
+    }
   },
   {
     "model_id": "MDL-0108",
     "model_name_en": "ai_actions",
     "model_name_he": "ai actions",
-    "domain": "ai_automation",
-    "subdomain": "ai_automation",
+    "domain": "intelligence",
+    "subdomain": "intelligence",
     "description": "AI ואוטומציה · ai_actions",
     "business_purpose": "Core model required by spec: ai_automation.ai_actions",
     "model_type": "ai",
@@ -11576,7 +11978,7 @@
       "department_owner": "ai_automation"
     },
     "database": {
-      "table_name": "ai_automation.ai_actions",
+      "table_name": "intelligence.ai_actions",
       "primary_key": "ai_actions_id",
       "display_name_field": "name",
       "code_field": "ai_actions_code",
@@ -11589,7 +11991,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.ai_actions",
+      "business_meaning": "intelligence.ai_actions",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -11655,14 +12057,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence",
+      "original_table": "ai_automation.ai_actions",
+      "canonical_table": "intelligence.ai_actions"
+    }
   },
   {
     "model_id": "MDL-0109",
     "model_name_en": "prediction_outputs",
     "model_name_he": "prediction outputs",
-    "domain": "ai_automation",
-    "subdomain": "ai_automation",
+    "domain": "intelligence",
+    "subdomain": "intelligence",
     "description": "AI ואוטומציה · prediction_outputs",
     "business_purpose": "Core model required by spec: ai_automation.prediction_outputs",
     "model_type": "ai",
@@ -11683,7 +12091,7 @@
       "department_owner": "ai_automation"
     },
     "database": {
-      "table_name": "ai_automation.prediction_outputs",
+      "table_name": "intelligence.prediction_outputs",
       "primary_key": "prediction_outputs_id",
       "display_name_field": "name",
       "code_field": "prediction_outputs_code",
@@ -11696,7 +12104,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.prediction_outputs",
+      "business_meaning": "intelligence.prediction_outputs",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -11762,14 +12170,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence",
+      "original_table": "ai_automation.prediction_outputs",
+      "canonical_table": "intelligence.prediction_outputs"
+    }
   },
   {
     "model_id": "MDL-0110",
     "model_name_en": "recommendation_logs",
     "model_name_he": "recommendation logs",
-    "domain": "ai_automation",
-    "subdomain": "ai_automation",
+    "domain": "intelligence",
+    "subdomain": "intelligence",
     "description": "AI ואוטומציה · recommendation_logs",
     "business_purpose": "Core model required by spec: ai_automation.recommendation_logs",
     "model_type": "audit",
@@ -11790,7 +12204,7 @@
       "department_owner": "ai_automation"
     },
     "database": {
-      "table_name": "ai_automation.recommendation_logs",
+      "table_name": "intelligence.recommendation_logs",
       "primary_key": "recommendation_logs_id",
       "display_name_field": "name",
       "code_field": "recommendation_logs_code",
@@ -11803,7 +12217,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.recommendation_logs",
+      "business_meaning": "intelligence.recommendation_logs",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -11869,14 +12283,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence",
+      "original_table": "ai_automation.recommendation_logs",
+      "canonical_table": "intelligence.recommendation_logs"
+    }
   },
   {
     "model_id": "MDL-0111",
     "model_name_en": "prompt_templates",
     "model_name_he": "prompt templates",
-    "domain": "ai_automation",
-    "subdomain": "ai_automation",
+    "domain": "intelligence",
+    "subdomain": "intelligence",
     "description": "AI ואוטומציה · prompt_templates",
     "business_purpose": "Core model required by spec: ai_automation.prompt_templates",
     "model_type": "ai",
@@ -11897,7 +12317,7 @@
       "department_owner": "ai_automation"
     },
     "database": {
-      "table_name": "ai_automation.prompt_templates",
+      "table_name": "intelligence.prompt_templates",
       "primary_key": "prompt_templates_id",
       "display_name_field": "name",
       "code_field": "prompt_templates_code",
@@ -11910,7 +12330,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.prompt_templates",
+      "business_meaning": "intelligence.prompt_templates",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -11976,14 +12396,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence",
+      "original_table": "ai_automation.prompt_templates",
+      "canonical_table": "intelligence.prompt_templates"
+    }
   },
   {
     "model_id": "MDL-0112",
     "model_name_en": "orchestration_flows",
     "model_name_he": "orchestration flows",
-    "domain": "ai_automation",
-    "subdomain": "ai_automation",
+    "domain": "intelligence",
+    "subdomain": "intelligence",
     "description": "AI ואוטומציה · orchestration_flows",
     "business_purpose": "Core model required by spec: ai_automation.orchestration_flows",
     "model_type": "workflow",
@@ -12004,7 +12430,7 @@
       "department_owner": "ai_automation"
     },
     "database": {
-      "table_name": "ai_automation.orchestration_flows",
+      "table_name": "intelligence.orchestration_flows",
       "primary_key": "orchestration_flows_id",
       "display_name_field": "name",
       "code_field": "orchestration_flows_code",
@@ -12017,7 +12443,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.orchestration_flows",
+      "business_meaning": "intelligence.orchestration_flows",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -12083,7 +12509,13 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence",
+      "original_table": "ai_automation.orchestration_flows",
+      "canonical_table": "intelligence.orchestration_flows"
+    }
   },
   {
     "model_id": "MDL-0113",
@@ -14228,7 +14660,7 @@
     "model_id": "MDL-0133",
     "model_name_en": "crm_activities",
     "model_name_he": "crm activities",
-    "domain": "sales",
+    "domain": "commercial",
     "subdomain": "commercial",
     "description": "מכירות · crm_activities",
     "business_purpose": "crm_activities — auto-derived from DB",
@@ -14263,7 +14695,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "sales.crm_activities",
+      "business_meaning": "commercial.crm_activities",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -14329,13 +14761,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0134",
     "model_name_en": "customer_contacts",
     "model_name_he": "customer contacts",
-    "domain": "sales",
+    "domain": "commercial",
     "subdomain": "commercial",
     "description": "מכירות · customer_contacts",
     "business_purpose": "customer_contacts — auto-derived from DB",
@@ -14370,7 +14806,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "sales.customer_contacts",
+      "business_meaning": "commercial.customer_contacts",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -14436,13 +14872,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0135",
     "model_name_en": "customer_portal_accounts",
     "model_name_he": "customer portal accounts",
-    "domain": "sales",
+    "domain": "commercial",
     "subdomain": "commercial",
     "description": "מכירות · customer_portal_accounts",
     "business_purpose": "customer_portal_accounts — auto-derived from DB",
@@ -14477,7 +14917,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "sales.customer_portal_accounts",
+      "business_meaning": "commercial.customer_portal_accounts",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -14543,13 +14983,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0136",
     "model_name_en": "customers",
     "model_name_he": "customers",
-    "domain": "sales",
+    "domain": "commercial",
     "subdomain": "commercial",
     "description": "מכירות · customers",
     "business_purpose": "customers — auto-derived from DB",
@@ -14584,7 +15028,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "sales.customers",
+      "business_meaning": "commercial.customers",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -14650,13 +15094,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0137",
     "model_name_en": "lead_tag_assignments",
     "model_name_he": "lead tag assignments",
-    "domain": "sales",
+    "domain": "commercial",
     "subdomain": "commercial",
     "description": "מכירות · lead_tag_assignments",
     "business_purpose": "lead_tag_assignments — auto-derived from DB",
@@ -14691,7 +15139,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "sales.lead_tag_assignments",
+      "business_meaning": "commercial.lead_tag_assignments",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -14757,13 +15205,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0138",
     "model_name_en": "lead_tags",
     "model_name_he": "lead tags",
-    "domain": "sales",
+    "domain": "commercial",
     "subdomain": "commercial",
     "description": "מכירות · lead_tags",
     "business_purpose": "lead_tags — auto-derived from DB",
@@ -14798,7 +15250,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "sales.lead_tags",
+      "business_meaning": "commercial.lead_tags",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -14864,13 +15316,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0139",
     "model_name_en": "leads",
     "model_name_he": "leads",
-    "domain": "sales",
+    "domain": "commercial",
     "subdomain": "commercial",
     "description": "מכירות · leads",
     "business_purpose": "leads — auto-derived from DB",
@@ -14905,7 +15361,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "sales.leads",
+      "business_meaning": "commercial.leads",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -14979,13 +15435,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0140",
     "model_name_en": "opportunities",
     "model_name_he": "opportunities",
-    "domain": "sales",
+    "domain": "commercial",
     "subdomain": "commercial",
     "description": "מכירות · opportunities",
     "business_purpose": "opportunities — auto-derived from DB",
@@ -15020,7 +15480,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "sales.opportunities",
+      "business_meaning": "commercial.opportunities",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -15086,13 +15546,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0141",
     "model_name_en": "pipeline_stages",
     "model_name_he": "pipeline stages",
-    "domain": "sales",
+    "domain": "commercial",
     "subdomain": "commercial",
     "description": "מכירות · pipeline_stages",
     "business_purpose": "pipeline_stages — auto-derived from DB",
@@ -15127,7 +15591,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "sales.pipeline_stages",
+      "business_meaning": "commercial.pipeline_stages",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -15193,13 +15657,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0142",
     "model_name_en": "pricing_snapshots",
     "model_name_he": "pricing snapshots",
-    "domain": "sales",
+    "domain": "commercial",
     "subdomain": "commercial",
     "description": "מכירות · pricing_snapshots",
     "business_purpose": "pricing_snapshots — auto-derived from DB",
@@ -15234,7 +15702,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "sales.pricing_snapshots",
+      "business_meaning": "commercial.pricing_snapshots",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -15300,13 +15768,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0143",
     "model_name_en": "quote_approval_rules",
     "model_name_he": "quote approval rules",
-    "domain": "sales",
+    "domain": "commercial",
     "subdomain": "commercial",
     "description": "מכירות · quote_approval_rules",
     "business_purpose": "quote_approval_rules — auto-derived from DB",
@@ -15341,7 +15813,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "sales.quote_approval_rules",
+      "business_meaning": "commercial.quote_approval_rules",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -15407,13 +15879,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0144",
     "model_name_en": "quote_lines",
     "model_name_he": "quote lines",
-    "domain": "sales",
+    "domain": "commercial",
     "subdomain": "commercial",
     "description": "מכירות · quote_lines",
     "business_purpose": "quote_lines — auto-derived from DB",
@@ -15448,7 +15924,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "sales.quote_lines",
+      "business_meaning": "commercial.quote_lines",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -15514,13 +15990,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0145",
     "model_name_en": "quote_revisions",
     "model_name_he": "quote revisions",
-    "domain": "sales",
+    "domain": "commercial",
     "subdomain": "commercial",
     "description": "מכירות · quote_revisions",
     "business_purpose": "quote_revisions — auto-derived from DB",
@@ -15555,7 +16035,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "sales.quote_revisions",
+      "business_meaning": "commercial.quote_revisions",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -15621,13 +16101,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0146",
     "model_name_en": "quotes",
     "model_name_he": "quotes",
-    "domain": "sales",
+    "domain": "commercial",
     "subdomain": "commercial",
     "description": "מכירות · quotes",
     "business_purpose": "quotes — auto-derived from DB",
@@ -15662,7 +16146,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "sales.quotes",
+      "business_meaning": "commercial.quotes",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -15737,13 +16221,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0147",
     "model_name_en": "chatbot_sessions",
     "model_name_he": "chatbot sessions",
-    "domain": "crm",
+    "domain": "commercial",
     "subdomain": "comms",
     "description": "CRM · chatbot_sessions",
     "business_purpose": "chatbot_sessions — auto-derived from DB",
@@ -15778,7 +16266,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "crm.chatbot_sessions",
+      "business_meaning": "commercial.chatbot_sessions",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -15844,13 +16332,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "crm",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0148",
     "model_name_en": "comms_threads",
     "model_name_he": "comms threads",
-    "domain": "crm",
+    "domain": "commercial",
     "subdomain": "comms",
     "description": "CRM · comms_threads",
     "business_purpose": "comms_threads — auto-derived from DB",
@@ -15885,7 +16377,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "crm.comms_threads",
+      "business_meaning": "commercial.comms_threads",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -15951,13 +16443,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "crm",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0149",
     "model_name_en": "email_messages",
     "model_name_he": "email messages",
-    "domain": "crm",
+    "domain": "commercial",
     "subdomain": "comms",
     "description": "CRM · email_messages",
     "business_purpose": "email_messages — auto-derived from DB",
@@ -15992,7 +16488,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "crm.email_messages",
+      "business_meaning": "commercial.email_messages",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -16058,13 +16554,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "crm",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0150",
     "model_name_en": "help_articles",
     "model_name_he": "help articles",
-    "domain": "crm",
+    "domain": "commercial",
     "subdomain": "comms",
     "description": "CRM · help_articles",
     "business_purpose": "help_articles — auto-derived from DB",
@@ -16099,7 +16599,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "crm.help_articles",
+      "business_meaning": "commercial.help_articles",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -16165,13 +16665,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "crm",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0151",
     "model_name_en": "notification_deliveries",
     "model_name_he": "notification deliveries",
-    "domain": "crm",
+    "domain": "commercial",
     "subdomain": "comms",
     "description": "CRM · notification_deliveries",
     "business_purpose": "notification_deliveries — auto-derived from DB",
@@ -16206,7 +16710,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "crm.notification_deliveries",
+      "business_meaning": "commercial.notification_deliveries",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -16272,13 +16776,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "crm",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0152",
     "model_name_en": "notifications",
     "model_name_he": "notifications",
-    "domain": "crm",
+    "domain": "commercial",
     "subdomain": "comms",
     "description": "CRM · notifications",
     "business_purpose": "notifications — auto-derived from DB",
@@ -16313,7 +16821,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "crm.notifications",
+      "business_meaning": "commercial.notifications",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -16379,13 +16887,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "crm",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0153",
     "model_name_en": "portal_sessions",
     "model_name_he": "portal sessions",
-    "domain": "crm",
+    "domain": "commercial",
     "subdomain": "comms",
     "description": "CRM · portal_sessions",
     "business_purpose": "portal_sessions — auto-derived from DB",
@@ -16420,7 +16932,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "crm.portal_sessions",
+      "business_meaning": "commercial.portal_sessions",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -16486,13 +16998,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "crm",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0154",
     "model_name_en": "portal_users",
     "model_name_he": "portal users",
-    "domain": "crm",
+    "domain": "commercial",
     "subdomain": "comms",
     "description": "CRM · portal_users",
     "business_purpose": "portal_users — auto-derived from DB",
@@ -16527,7 +17043,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "crm.portal_users",
+      "business_meaning": "commercial.portal_users",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -16593,13 +17109,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "crm",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0155",
     "model_name_en": "sms_messages",
     "model_name_he": "sms messages",
-    "domain": "crm",
+    "domain": "commercial",
     "subdomain": "comms",
     "description": "CRM · sms_messages",
     "business_purpose": "sms_messages — auto-derived from DB",
@@ -16634,7 +17154,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "crm.sms_messages",
+      "business_meaning": "commercial.sms_messages",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -16700,13 +17220,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "crm",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0156",
     "model_name_en": "support_sla_tracking",
     "model_name_he": "support sla tracking",
-    "domain": "crm",
+    "domain": "commercial",
     "subdomain": "comms",
     "description": "CRM · support_sla_tracking",
     "business_purpose": "support_sla_tracking — auto-derived from DB",
@@ -16741,7 +17265,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "crm.support_sla_tracking",
+      "business_meaning": "commercial.support_sla_tracking",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -16807,13 +17331,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "crm",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0157",
     "model_name_en": "support_tickets",
     "model_name_he": "support tickets",
-    "domain": "crm",
+    "domain": "commercial",
     "subdomain": "comms",
     "description": "CRM · support_tickets",
     "business_purpose": "support_tickets — auto-derived from DB",
@@ -16848,7 +17376,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "crm.support_tickets",
+      "business_meaning": "commercial.support_tickets",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -16914,13 +17442,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "crm",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0158",
     "model_name_en": "whatsapp_messages",
     "model_name_he": "whatsapp messages",
-    "domain": "crm",
+    "domain": "commercial",
     "subdomain": "comms",
     "description": "CRM · whatsapp_messages",
     "business_purpose": "whatsapp_messages — auto-derived from DB",
@@ -16955,7 +17487,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "crm.whatsapp_messages",
+      "business_meaning": "commercial.whatsapp_messages",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -17021,7 +17553,11 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "crm",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0159",
@@ -17241,8 +17777,8 @@
     "model_id": "MDL-0161",
     "model_name_en": "lead_activities",
     "model_name_he": "lead activities",
-    "domain": "crm",
-    "subdomain": "crm",
+    "domain": "commercial",
+    "subdomain": "commercial",
     "description": "CRM · lead_activities",
     "business_purpose": "lead_activities — auto-derived from DB",
     "model_type": "master_data",
@@ -17263,7 +17799,7 @@
       "department_owner": "crm"
     },
     "database": {
-      "table_name": "crm.lead_activities",
+      "table_name": "commercial.lead_activities",
       "primary_key": "lead_activities_id",
       "display_name_field": "name",
       "code_field": "lead_activities_code",
@@ -17276,7 +17812,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "crm.lead_activities",
+      "business_meaning": "commercial.lead_activities",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -17342,14 +17878,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "crm",
+      "canonical_domain": "commercial",
+      "original_table": "crm.lead_activities",
+      "canonical_table": "commercial.lead_activities"
+    }
   },
   {
     "model_id": "MDL-0162",
     "model_name_en": "opportunities",
     "model_name_he": "opportunities",
-    "domain": "crm",
-    "subdomain": "crm",
+    "domain": "commercial",
+    "subdomain": "commercial",
     "description": "CRM · opportunities",
     "business_purpose": "opportunities — auto-derived from DB",
     "model_type": "master_data",
@@ -17370,7 +17912,7 @@
       "department_owner": "crm"
     },
     "database": {
-      "table_name": "crm.opportunities",
+      "table_name": "commercial.opportunities",
       "primary_key": "opportunities_id",
       "display_name_field": "name",
       "code_field": "opportunities_code",
@@ -17383,7 +17925,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "crm.opportunities",
+      "business_meaning": "commercial.opportunities",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -17449,13 +17991,19 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "crm",
+      "canonical_domain": "commercial",
+      "original_table": "crm.opportunities",
+      "canonical_table": "commercial.opportunities"
+    }
   },
   {
     "model_id": "MDL-0163",
     "model_name_en": "attachments",
     "model_name_he": "attachments",
-    "domain": "documents",
+    "domain": "docs",
     "subdomain": "docs",
     "description": "מסמכים · attachments",
     "business_purpose": "attachments — auto-derived from DB",
@@ -17490,7 +18038,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.attachments",
+      "business_meaning": "docs.attachments",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -17556,13 +18104,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs"
+    }
   },
   {
     "model_id": "MDL-0164",
     "model_name_en": "document_classifications",
     "model_name_he": "document classifications",
-    "domain": "documents",
+    "domain": "docs",
     "subdomain": "docs",
     "description": "מסמכים · document_classifications",
     "business_purpose": "document_classifications — auto-derived from DB",
@@ -17597,7 +18149,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.document_classifications",
+      "business_meaning": "docs.document_classifications",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -17663,13 +18215,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs"
+    }
   },
   {
     "model_id": "MDL-0165",
     "model_name_en": "document_signature_requests",
     "model_name_he": "document signature requests",
-    "domain": "documents",
+    "domain": "docs",
     "subdomain": "docs",
     "description": "מסמכים · document_signature_requests",
     "business_purpose": "document_signature_requests — auto-derived from DB",
@@ -17704,7 +18260,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.document_signature_requests",
+      "business_meaning": "docs.document_signature_requests",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -17770,13 +18326,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs"
+    }
   },
   {
     "model_id": "MDL-0166",
     "model_name_en": "document_versions",
     "model_name_he": "document versions",
-    "domain": "documents",
+    "domain": "docs",
     "subdomain": "docs",
     "description": "מסמכים · document_versions",
     "business_purpose": "document_versions — auto-derived from DB",
@@ -17811,7 +18371,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.document_versions",
+      "business_meaning": "docs.document_versions",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -17877,13 +18437,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs"
+    }
   },
   {
     "model_id": "MDL-0167",
     "model_name_en": "documents",
     "model_name_he": "documents",
-    "domain": "documents",
+    "domain": "docs",
     "subdomain": "docs",
     "description": "מסמכים · documents",
     "business_purpose": "documents — auto-derived from DB",
@@ -17918,7 +18482,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.documents",
+      "business_meaning": "docs.documents",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -17984,13 +18548,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs"
+    }
   },
   {
     "model_id": "MDL-0168",
     "model_name_en": "ocr_results",
     "model_name_he": "ocr results",
-    "domain": "documents",
+    "domain": "docs",
     "subdomain": "docs",
     "description": "מסמכים · ocr_results",
     "business_purpose": "ocr_results — auto-derived from DB",
@@ -18025,7 +18593,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.ocr_results",
+      "business_meaning": "docs.ocr_results",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -18091,13 +18659,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs"
+    }
   },
   {
     "model_id": "MDL-0169",
     "model_name_en": "print_jobs",
     "model_name_he": "print jobs",
-    "domain": "documents",
+    "domain": "docs",
     "subdomain": "docs",
     "description": "מסמכים · print_jobs",
     "business_purpose": "print_jobs — auto-derived from DB",
@@ -18132,7 +18704,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.print_jobs",
+      "business_meaning": "docs.print_jobs",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -18198,13 +18770,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs"
+    }
   },
   {
     "model_id": "MDL-0170",
     "model_name_en": "scan_sessions",
     "model_name_he": "scan sessions",
-    "domain": "documents",
+    "domain": "docs",
     "subdomain": "docs",
     "description": "מסמכים · scan_sessions",
     "business_purpose": "scan_sessions — auto-derived from DB",
@@ -18239,7 +18815,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.scan_sessions",
+      "business_meaning": "docs.scan_sessions",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -18305,14 +18881,18 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs"
+    }
   },
   {
     "model_id": "MDL-0171",
     "model_name_en": "classification_runs",
     "model_name_he": "classification runs",
-    "domain": "documents",
-    "subdomain": "documents",
+    "domain": "docs",
+    "subdomain": "docs",
     "description": "מסמכים · classification_runs",
     "business_purpose": "classification_runs — auto-derived from DB",
     "model_type": "document",
@@ -18333,7 +18913,7 @@
       "department_owner": "documents"
     },
     "database": {
-      "table_name": "documents.classification_runs",
+      "table_name": "docs.classification_runs",
       "primary_key": "classification_runs_id",
       "display_name_field": "name",
       "code_field": "classification_runs_code",
@@ -18346,7 +18926,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.classification_runs",
+      "business_meaning": "docs.classification_runs",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -18412,14 +18992,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs",
+      "original_table": "documents.classification_runs",
+      "canonical_table": "docs.classification_runs"
+    }
   },
   {
     "model_id": "MDL-0172",
     "model_name_en": "document_chunks",
     "model_name_he": "document chunks",
-    "domain": "documents",
-    "subdomain": "documents",
+    "domain": "docs",
+    "subdomain": "docs",
     "description": "מסמכים · document_chunks",
     "business_purpose": "document_chunks — auto-derived from DB",
     "model_type": "document",
@@ -18440,7 +19026,7 @@
       "department_owner": "documents"
     },
     "database": {
-      "table_name": "documents.document_chunks",
+      "table_name": "docs.document_chunks",
       "primary_key": "document_chunks_id",
       "display_name_field": "name",
       "code_field": "document_chunks_code",
@@ -18453,7 +19039,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.document_chunks",
+      "business_meaning": "docs.document_chunks",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -18519,14 +19105,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs",
+      "original_table": "documents.document_chunks",
+      "canonical_table": "docs.document_chunks"
+    }
   },
   {
     "model_id": "MDL-0173",
     "model_name_en": "document_relations",
     "model_name_he": "document relations",
-    "domain": "documents",
-    "subdomain": "documents",
+    "domain": "docs",
+    "subdomain": "docs",
     "description": "מסמכים · document_relations",
     "business_purpose": "document_relations — auto-derived from DB",
     "model_type": "document",
@@ -18547,7 +19139,7 @@
       "department_owner": "documents"
     },
     "database": {
-      "table_name": "documents.document_relations",
+      "table_name": "docs.document_relations",
       "primary_key": "document_relations_id",
       "display_name_field": "name",
       "code_field": "document_relations_code",
@@ -18560,7 +19152,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.document_relations",
+      "business_meaning": "docs.document_relations",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -18626,14 +19218,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs",
+      "original_table": "documents.document_relations",
+      "canonical_table": "docs.document_relations"
+    }
   },
   {
     "model_id": "MDL-0174",
     "model_name_en": "entity_extractions",
     "model_name_he": "entity extractions",
-    "domain": "documents",
-    "subdomain": "documents",
+    "domain": "docs",
+    "subdomain": "docs",
     "description": "מסמכים · entity_extractions",
     "business_purpose": "entity_extractions — auto-derived from DB",
     "model_type": "master_data",
@@ -18654,7 +19252,7 @@
       "department_owner": "documents"
     },
     "database": {
-      "table_name": "documents.entity_extractions",
+      "table_name": "docs.entity_extractions",
       "primary_key": "entity_extractions_id",
       "display_name_field": "name",
       "code_field": "entity_extractions_code",
@@ -18667,7 +19265,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.entity_extractions",
+      "business_meaning": "docs.entity_extractions",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -18733,14 +19331,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs",
+      "original_table": "documents.entity_extractions",
+      "canonical_table": "docs.entity_extractions"
+    }
   },
   {
     "model_id": "MDL-0175",
     "model_name_en": "extraction_runs",
     "model_name_he": "extraction runs",
-    "domain": "documents",
-    "subdomain": "documents",
+    "domain": "docs",
+    "subdomain": "docs",
     "description": "מסמכים · extraction_runs",
     "business_purpose": "extraction_runs — auto-derived from DB",
     "model_type": "master_data",
@@ -18761,7 +19365,7 @@
       "department_owner": "documents"
     },
     "database": {
-      "table_name": "documents.extraction_runs",
+      "table_name": "docs.extraction_runs",
       "primary_key": "extraction_runs_id",
       "display_name_field": "name",
       "code_field": "extraction_runs_code",
@@ -18774,7 +19378,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.extraction_runs",
+      "business_meaning": "docs.extraction_runs",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -18840,14 +19444,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs",
+      "original_table": "documents.extraction_runs",
+      "canonical_table": "docs.extraction_runs"
+    }
   },
   {
     "model_id": "MDL-0176",
     "model_name_en": "knowledge_cards",
     "model_name_he": "knowledge cards",
-    "domain": "documents",
-    "subdomain": "documents",
+    "domain": "docs",
+    "subdomain": "docs",
     "description": "מסמכים · knowledge_cards",
     "business_purpose": "knowledge_cards — auto-derived from DB",
     "model_type": "master_data",
@@ -18868,7 +19478,7 @@
       "department_owner": "documents"
     },
     "database": {
-      "table_name": "documents.knowledge_cards",
+      "table_name": "docs.knowledge_cards",
       "primary_key": "knowledge_cards_id",
       "display_name_field": "name",
       "code_field": "knowledge_cards_code",
@@ -18881,7 +19491,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.knowledge_cards",
+      "business_meaning": "docs.knowledge_cards",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -18947,14 +19557,20 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs",
+      "original_table": "documents.knowledge_cards",
+      "canonical_table": "docs.knowledge_cards"
+    }
   },
   {
     "model_id": "MDL-0177",
     "model_name_en": "ocr_runs",
     "model_name_he": "ocr runs",
-    "domain": "documents",
-    "subdomain": "documents",
+    "domain": "docs",
+    "subdomain": "docs",
     "description": "מסמכים · ocr_runs",
     "business_purpose": "ocr_runs — auto-derived from DB",
     "model_type": "document",
@@ -18975,7 +19591,7 @@
       "department_owner": "documents"
     },
     "database": {
-      "table_name": "documents.ocr_runs",
+      "table_name": "docs.ocr_runs",
       "primary_key": "ocr_runs_id",
       "display_name_field": "name",
       "code_field": "ocr_runs_code",
@@ -18988,7 +19604,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "documents.ocr_runs",
+      "business_meaning": "docs.ocr_runs",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -19054,13 +19670,19 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "documents",
+      "canonical_domain": "docs",
+      "original_table": "documents.ocr_runs",
+      "canonical_table": "docs.ocr_runs"
+    }
   },
   {
     "model_id": "MDL-0178",
     "model_name_en": "alerts",
     "model_name_he": "alerts",
-    "domain": "projects",
+    "domain": "execution",
     "subdomain": "execution",
     "description": "פרויקטים · alerts",
     "business_purpose": "alerts — auto-derived from DB",
@@ -19095,7 +19717,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.alerts",
+      "business_meaning": "execution.alerts",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -19161,13 +19783,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0179",
     "model_name_en": "delivery_events",
     "model_name_he": "delivery events",
-    "domain": "projects",
+    "domain": "execution",
     "subdomain": "execution",
     "description": "פרויקטים · delivery_events",
     "business_purpose": "delivery_events — auto-derived from DB",
@@ -19202,7 +19828,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.delivery_events",
+      "business_meaning": "execution.delivery_events",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -19268,13 +19894,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0180",
     "model_name_en": "installation_events",
     "model_name_he": "installation events",
-    "domain": "projects",
+    "domain": "execution",
     "subdomain": "execution",
     "description": "פרויקטים · installation_events",
     "business_purpose": "installation_events — auto-derived from DB",
@@ -19309,7 +19939,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.installation_events",
+      "business_meaning": "execution.installation_events",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -19375,13 +20005,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0181",
     "model_name_en": "logistics_orders",
     "model_name_he": "logistics orders",
-    "domain": "projects",
+    "domain": "execution",
     "subdomain": "execution",
     "description": "פרויקטים · logistics_orders",
     "business_purpose": "logistics_orders — auto-derived from DB",
@@ -19416,7 +20050,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.logistics_orders",
+      "business_meaning": "execution.logistics_orders",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -19482,13 +20116,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0182",
     "model_name_en": "project_blockers",
     "model_name_he": "project blockers",
-    "domain": "projects",
+    "domain": "execution",
     "subdomain": "execution",
     "description": "פרויקטים · project_blockers",
     "business_purpose": "project_blockers — auto-derived from DB",
@@ -19523,7 +20161,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.project_blockers",
+      "business_meaning": "execution.project_blockers",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -19589,13 +20227,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0183",
     "model_name_en": "project_cost_plans",
     "model_name_he": "project cost plans",
-    "domain": "projects",
+    "domain": "execution",
     "subdomain": "execution",
     "description": "פרויקטים · project_cost_plans",
     "business_purpose": "project_cost_plans — auto-derived from DB",
@@ -19630,7 +20272,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.project_cost_plans",
+      "business_meaning": "execution.project_cost_plans",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -19696,13 +20338,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0184",
     "model_name_en": "project_milestones",
     "model_name_he": "project milestones",
-    "domain": "projects",
+    "domain": "execution",
     "subdomain": "execution",
     "description": "פרויקטים · project_milestones",
     "business_purpose": "project_milestones — auto-derived from DB",
@@ -19737,7 +20383,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.project_milestones",
+      "business_meaning": "execution.project_milestones",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -19803,13 +20449,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0185",
     "model_name_en": "project_phases",
     "model_name_he": "project phases",
-    "domain": "projects",
+    "domain": "execution",
     "subdomain": "execution",
     "description": "פרויקטים · project_phases",
     "business_purpose": "project_phases — auto-derived from DB",
@@ -19844,7 +20494,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.project_phases",
+      "business_meaning": "execution.project_phases",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -19922,13 +20572,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0186",
     "model_name_en": "project_risks",
     "model_name_he": "project risks",
-    "domain": "projects",
+    "domain": "execution",
     "subdomain": "execution",
     "description": "פרויקטים · project_risks",
     "business_purpose": "project_risks — auto-derived from DB",
@@ -19963,7 +20617,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.project_risks",
+      "business_meaning": "execution.project_risks",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -20029,13 +20683,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0187",
     "model_name_en": "projects",
     "model_name_he": "projects",
-    "domain": "projects",
+    "domain": "execution",
     "subdomain": "execution",
     "description": "פרויקטים · projects",
     "business_purpose": "projects — auto-derived from DB",
@@ -20070,7 +20728,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.projects",
+      "business_meaning": "execution.projects",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -20148,13 +20806,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0188",
     "model_name_en": "signatures",
     "model_name_he": "signatures",
-    "domain": "projects",
+    "domain": "execution",
     "subdomain": "execution",
     "description": "פרויקטים · signatures",
     "business_purpose": "signatures — auto-derived from DB",
@@ -20189,7 +20851,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.signatures",
+      "business_meaning": "execution.signatures",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -20255,13 +20917,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0189",
     "model_name_en": "task_attachments",
     "model_name_he": "task attachments",
-    "domain": "projects",
+    "domain": "execution",
     "subdomain": "execution",
     "description": "פרויקטים · task_attachments",
     "business_purpose": "task_attachments — auto-derived from DB",
@@ -20296,7 +20962,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.task_attachments",
+      "business_meaning": "execution.task_attachments",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -20362,13 +21028,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0190",
     "model_name_en": "task_comments",
     "model_name_he": "task comments",
-    "domain": "projects",
+    "domain": "execution",
     "subdomain": "execution",
     "description": "פרויקטים · task_comments",
     "business_purpose": "task_comments — auto-derived from DB",
@@ -20403,7 +21073,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.task_comments",
+      "business_meaning": "execution.task_comments",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -20469,13 +21139,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0191",
     "model_name_en": "task_dependencies",
     "model_name_he": "task dependencies",
-    "domain": "projects",
+    "domain": "execution",
     "subdomain": "execution",
     "description": "פרויקטים · task_dependencies",
     "business_purpose": "task_dependencies — auto-derived from DB",
@@ -20510,7 +21184,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.task_dependencies",
+      "business_meaning": "execution.task_dependencies",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -20576,13 +21250,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0192",
     "model_name_en": "tasks",
     "model_name_he": "tasks",
-    "domain": "projects",
+    "domain": "execution",
     "subdomain": "execution",
     "description": "פרויקטים · tasks",
     "business_purpose": "tasks — auto-derived from DB",
@@ -20617,7 +21295,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.tasks",
+      "business_meaning": "execution.tasks",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -20683,13 +21361,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0193",
     "model_name_en": "work_order_qa_checklists",
     "model_name_he": "work order qa checklists",
-    "domain": "projects",
+    "domain": "execution",
     "subdomain": "execution",
     "description": "פרויקטים · work_order_qa_checklists",
     "business_purpose": "work_order_qa_checklists — auto-derived from DB",
@@ -20724,7 +21406,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.work_order_qa_checklists",
+      "business_meaning": "execution.work_order_qa_checklists",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -20790,13 +21472,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0194",
     "model_name_en": "work_order_qa_items",
     "model_name_he": "work order qa items",
-    "domain": "projects",
+    "domain": "execution",
     "subdomain": "execution",
     "description": "פרויקטים · work_order_qa_items",
     "business_purpose": "work_order_qa_items — auto-derived from DB",
@@ -20831,7 +21517,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.work_order_qa_items",
+      "business_meaning": "execution.work_order_qa_items",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -20897,13 +21583,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0195",
     "model_name_en": "work_order_tasks",
     "model_name_he": "work order tasks",
-    "domain": "projects",
+    "domain": "execution",
     "subdomain": "execution",
     "description": "פרויקטים · work_order_tasks",
     "business_purpose": "work_order_tasks — auto-derived from DB",
@@ -20938,7 +21628,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.work_order_tasks",
+      "business_meaning": "execution.work_order_tasks",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -21004,13 +21694,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0196",
     "model_name_en": "work_orders",
     "model_name_he": "work orders",
-    "domain": "projects",
+    "domain": "execution",
     "subdomain": "execution",
     "description": "פרויקטים · work_orders",
     "business_purpose": "work_orders — auto-derived from DB",
@@ -21045,7 +21739,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.work_orders",
+      "business_meaning": "execution.work_orders",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -21111,7 +21805,11 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0197",
@@ -26574,7 +27272,7 @@
     "model_id": "MDL-0248",
     "model_name_en": "agent_jobs",
     "model_name_he": "agent jobs",
-    "domain": "ai_automation",
+    "domain": "intelligence",
     "subdomain": "intelligence",
     "description": "AI ואוטומציה · agent_jobs",
     "business_purpose": "agent_jobs — auto-derived from DB",
@@ -26609,7 +27307,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.agent_jobs",
+      "business_meaning": "intelligence.agent_jobs",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -26675,13 +27373,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence"
+    }
   },
   {
     "model_id": "MDL-0249",
     "model_name_en": "agent_registry",
     "model_name_he": "agent registry",
-    "domain": "ai_automation",
+    "domain": "intelligence",
     "subdomain": "intelligence",
     "description": "AI ואוטומציה · agent_registry",
     "business_purpose": "agent_registry — auto-derived from DB",
@@ -26716,7 +27418,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.agent_registry",
+      "business_meaning": "intelligence.agent_registry",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -26782,13 +27484,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence"
+    }
   },
   {
     "model_id": "MDL-0250",
     "model_name_en": "ai_insights",
     "model_name_he": "ai insights",
-    "domain": "ai_automation",
+    "domain": "intelligence",
     "subdomain": "intelligence",
     "description": "AI ואוטומציה · ai_insights",
     "business_purpose": "ai_insights — auto-derived from DB",
@@ -26823,7 +27529,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.ai_insights",
+      "business_meaning": "intelligence.ai_insights",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -26889,13 +27595,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence"
+    }
   },
   {
     "model_id": "MDL-0251",
     "model_name_en": "anomaly_cases",
     "model_name_he": "anomaly cases",
-    "domain": "ai_automation",
+    "domain": "intelligence",
     "subdomain": "intelligence",
     "description": "AI ואוטומציה · anomaly_cases",
     "business_purpose": "anomaly_cases — auto-derived from DB",
@@ -26930,7 +27640,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.anomaly_cases",
+      "business_meaning": "intelligence.anomaly_cases",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -26996,13 +27706,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence"
+    }
   },
   {
     "model_id": "MDL-0252",
     "model_name_en": "anomaly_feedback",
     "model_name_he": "anomaly feedback",
-    "domain": "ai_automation",
+    "domain": "intelligence",
     "subdomain": "intelligence",
     "description": "AI ואוטומציה · anomaly_feedback",
     "business_purpose": "anomaly_feedback — auto-derived from DB",
@@ -27037,7 +27751,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.anomaly_feedback",
+      "business_meaning": "intelligence.anomaly_feedback",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -27103,13 +27817,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence"
+    }
   },
   {
     "model_id": "MDL-0253",
     "model_name_en": "decision_recommendations",
     "model_name_he": "decision recommendations",
-    "domain": "ai_automation",
+    "domain": "intelligence",
     "subdomain": "intelligence",
     "description": "AI ואוטומציה · decision_recommendations",
     "business_purpose": "decision_recommendations — auto-derived from DB",
@@ -27144,7 +27862,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.decision_recommendations",
+      "business_meaning": "intelligence.decision_recommendations",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -27210,13 +27928,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence"
+    }
   },
   {
     "model_id": "MDL-0254",
     "model_name_en": "forecast_models",
     "model_name_he": "forecast models",
-    "domain": "ai_automation",
+    "domain": "intelligence",
     "subdomain": "intelligence",
     "description": "AI ואוטומציה · forecast_models",
     "business_purpose": "forecast_models — auto-derived from DB",
@@ -27251,7 +27973,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.forecast_models",
+      "business_meaning": "intelligence.forecast_models",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -27317,13 +28039,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence"
+    }
   },
   {
     "model_id": "MDL-0255",
     "model_name_en": "model_executions",
     "model_name_he": "model executions",
-    "domain": "ai_automation",
+    "domain": "intelligence",
     "subdomain": "intelligence",
     "description": "AI ואוטומציה · model_executions",
     "business_purpose": "model_executions — auto-derived from DB",
@@ -27358,7 +28084,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.model_executions",
+      "business_meaning": "intelligence.model_executions",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -27424,13 +28150,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence"
+    }
   },
   {
     "model_id": "MDL-0256",
     "model_name_en": "model_registry",
     "model_name_he": "model registry",
-    "domain": "ai_automation",
+    "domain": "intelligence",
     "subdomain": "intelligence",
     "description": "AI ואוטומציה · model_registry",
     "business_purpose": "model_registry — auto-derived from DB",
@@ -27465,7 +28195,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.model_registry",
+      "business_meaning": "intelligence.model_registry",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -27531,13 +28261,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence"
+    }
   },
   {
     "model_id": "MDL-0257",
     "model_name_en": "quality_scores",
     "model_name_he": "quality scores",
-    "domain": "ai_automation",
+    "domain": "intelligence",
     "subdomain": "intelligence",
     "description": "AI ואוטומציה · quality_scores",
     "business_purpose": "quality_scores — auto-derived from DB",
@@ -27572,7 +28306,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.quality_scores",
+      "business_meaning": "intelligence.quality_scores",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -27638,13 +28372,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence"
+    }
   },
   {
     "model_id": "MDL-0258",
     "model_name_en": "recommendation_feedback",
     "model_name_he": "recommendation feedback",
-    "domain": "ai_automation",
+    "domain": "intelligence",
     "subdomain": "intelligence",
     "description": "AI ואוטומציה · recommendation_feedback",
     "business_purpose": "recommendation_feedback — auto-derived from DB",
@@ -27679,7 +28417,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.recommendation_feedback",
+      "business_meaning": "intelligence.recommendation_feedback",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -27745,13 +28483,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence"
+    }
   },
   {
     "model_id": "MDL-0259",
     "model_name_en": "seasonality_patterns",
     "model_name_he": "seasonality patterns",
-    "domain": "ai_automation",
+    "domain": "intelligence",
     "subdomain": "intelligence",
     "description": "AI ואוטומציה · seasonality_patterns",
     "business_purpose": "seasonality_patterns — auto-derived from DB",
@@ -27786,7 +28528,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.seasonality_patterns",
+      "business_meaning": "intelligence.seasonality_patterns",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -27852,13 +28594,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence"
+    }
   },
   {
     "model_id": "MDL-0260",
     "model_name_en": "trend_signals",
     "model_name_he": "trend signals",
-    "domain": "ai_automation",
+    "domain": "intelligence",
     "subdomain": "intelligence",
     "description": "AI ואוטומציה · trend_signals",
     "business_purpose": "trend_signals — auto-derived from DB",
@@ -27893,7 +28639,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.trend_signals",
+      "business_meaning": "intelligence.trend_signals",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -27959,7 +28705,11 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence"
+    }
   },
   {
     "model_id": "MDL-0261",
@@ -29891,7 +30641,7 @@
     "model_id": "MDL-0279",
     "model_name_en": "job_queue",
     "model_name_he": "job queue",
-    "domain": "ai_automation",
+    "domain": "intelligence",
     "subdomain": "orchestration",
     "description": "AI ואוטומציה · job_queue",
     "business_purpose": "job_queue — auto-derived from DB",
@@ -29926,7 +30676,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.job_queue",
+      "business_meaning": "intelligence.job_queue",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -29992,13 +30742,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence"
+    }
   },
   {
     "model_id": "MDL-0280",
     "model_name_en": "notifications",
     "model_name_he": "notifications",
-    "domain": "ai_automation",
+    "domain": "intelligence",
     "subdomain": "orchestration",
     "description": "AI ואוטומציה · notifications",
     "business_purpose": "notifications — auto-derived from DB",
@@ -30033,7 +30787,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.notifications",
+      "business_meaning": "intelligence.notifications",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -30099,13 +30853,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence"
+    }
   },
   {
     "model_id": "MDL-0281",
     "model_name_en": "universal_inbox",
     "model_name_he": "universal inbox",
-    "domain": "ai_automation",
+    "domain": "intelligence",
     "subdomain": "orchestration",
     "description": "AI ואוטומציה · universal_inbox",
     "business_purpose": "universal_inbox — auto-derived from DB",
@@ -30140,7 +30898,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.universal_inbox",
+      "business_meaning": "intelligence.universal_inbox",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -30206,13 +30964,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence"
+    }
   },
   {
     "model_id": "MDL-0282",
     "model_name_en": "workflow_definitions",
     "model_name_he": "workflow definitions",
-    "domain": "ai_automation",
+    "domain": "intelligence",
     "subdomain": "orchestration",
     "description": "AI ואוטומציה · workflow_definitions",
     "business_purpose": "workflow_definitions — auto-derived from DB",
@@ -30247,7 +31009,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.workflow_definitions",
+      "business_meaning": "intelligence.workflow_definitions",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -30313,13 +31075,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence"
+    }
   },
   {
     "model_id": "MDL-0283",
     "model_name_en": "workflow_runs",
     "model_name_he": "workflow runs",
-    "domain": "ai_automation",
+    "domain": "intelligence",
     "subdomain": "orchestration",
     "description": "AI ואוטומציה · workflow_runs",
     "business_purpose": "workflow_runs — auto-derived from DB",
@@ -30354,7 +31120,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.workflow_runs",
+      "business_meaning": "intelligence.workflow_runs",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -30420,13 +31186,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence"
+    }
   },
   {
     "model_id": "MDL-0284",
     "model_name_en": "workflow_step_runs",
     "model_name_he": "workflow step runs",
-    "domain": "ai_automation",
+    "domain": "intelligence",
     "subdomain": "orchestration",
     "description": "AI ואוטומציה · workflow_step_runs",
     "business_purpose": "workflow_step_runs — auto-derived from DB",
@@ -30461,7 +31231,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.workflow_step_runs",
+      "business_meaning": "intelligence.workflow_step_runs",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -30527,13 +31297,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence"
+    }
   },
   {
     "model_id": "MDL-0285",
     "model_name_en": "workflow_steps",
     "model_name_he": "workflow steps",
-    "domain": "ai_automation",
+    "domain": "intelligence",
     "subdomain": "orchestration",
     "description": "AI ואוטומציה · workflow_steps",
     "business_purpose": "workflow_steps — auto-derived from DB",
@@ -30568,7 +31342,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "ai_automation.workflow_steps",
+      "business_meaning": "intelligence.workflow_steps",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -30634,13 +31408,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "ai_automation",
+      "canonical_domain": "intelligence"
+    }
   },
   {
     "model_id": "MDL-0286",
     "model_name_en": "capacity_calendars",
     "model_name_he": "capacity calendars",
-    "domain": "projects",
+    "domain": "execution",
     "subdomain": "planning",
     "description": "פרויקטים · capacity_calendars",
     "business_purpose": "capacity_calendars — auto-derived from DB",
@@ -30675,7 +31453,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.capacity_calendars",
+      "business_meaning": "execution.capacity_calendars",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -30741,13 +31519,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0287",
     "model_name_en": "capacity_slots",
     "model_name_he": "capacity slots",
-    "domain": "projects",
+    "domain": "execution",
     "subdomain": "planning",
     "description": "פרויקטים · capacity_slots",
     "business_purpose": "capacity_slots — auto-derived from DB",
@@ -30782,7 +31564,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.capacity_slots",
+      "business_meaning": "execution.capacity_slots",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -30848,13 +31630,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0288",
     "model_name_en": "demand_forecasts",
     "model_name_he": "demand forecasts",
-    "domain": "projects",
+    "domain": "execution",
     "subdomain": "planning",
     "description": "פרויקטים · demand_forecasts",
     "business_purpose": "demand_forecasts — auto-derived from DB",
@@ -30889,7 +31675,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "projects.demand_forecasts",
+      "business_meaning": "execution.demand_forecasts",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -30955,13 +31741,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "projects",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0289",
     "model_name_en": "calculations",
     "model_name_he": "calculations",
-    "domain": "sales",
+    "domain": "commercial",
     "subdomain": "pricing",
     "description": "מכירות · calculations",
     "business_purpose": "calculations — auto-derived from DB",
@@ -30996,7 +31786,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "sales.calculations",
+      "business_meaning": "commercial.calculations",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -31062,13 +31852,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0290",
     "model_name_en": "rule_sets",
     "model_name_he": "rule sets",
-    "domain": "sales",
+    "domain": "commercial",
     "subdomain": "pricing",
     "description": "מכירות · rule_sets",
     "business_purpose": "rule_sets — auto-derived from DB",
@@ -31103,7 +31897,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "sales.rule_sets",
+      "business_meaning": "commercial.rule_sets",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -31169,7 +31963,11 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "sales",
+      "canonical_domain": "commercial"
+    }
   },
   {
     "model_id": "MDL-0291",
@@ -33753,7 +34551,7 @@
     "model_id": "MDL-0315",
     "model_name_en": "defects",
     "model_name_he": "defects",
-    "domain": "production",
+    "domain": "execution",
     "subdomain": "quality",
     "description": "ייצור · defects",
     "business_purpose": "defects — auto-derived from DB",
@@ -33788,7 +34586,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "production.defects",
+      "business_meaning": "execution.defects",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -33854,13 +34652,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "production",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0316",
     "model_name_en": "inspection_plans",
     "model_name_he": "inspection plans",
-    "domain": "production",
+    "domain": "execution",
     "subdomain": "quality",
     "description": "ייצור · inspection_plans",
     "business_purpose": "inspection_plans — auto-derived from DB",
@@ -33895,7 +34697,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "production.inspection_plans",
+      "business_meaning": "execution.inspection_plans",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -33961,13 +34763,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "production",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0317",
     "model_name_en": "inspection_runs",
     "model_name_he": "inspection runs",
-    "domain": "production",
+    "domain": "execution",
     "subdomain": "quality",
     "description": "ייצור · inspection_runs",
     "business_purpose": "inspection_runs — auto-derived from DB",
@@ -34002,7 +34808,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "production.inspection_runs",
+      "business_meaning": "execution.inspection_runs",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -34068,7 +34874,11 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "production",
+      "canonical_domain": "execution"
+    }
   },
   {
     "model_id": "MDL-0318",
@@ -34930,7 +35740,7 @@
     "model_id": "MDL-0326",
     "model_name_en": "attendance",
     "model_name_he": "attendance",
-    "domain": "hr_workforce",
+    "domain": "workforce",
     "subdomain": "workforce",
     "description": "כוח אדם · attendance",
     "business_purpose": "attendance — auto-derived from DB",
@@ -34965,7 +35775,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.attendance",
+      "business_meaning": "workforce.attendance",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -35031,13 +35841,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce"
+    }
   },
   {
     "model_id": "MDL-0327",
     "model_name_en": "employee_expenses",
     "model_name_he": "employee expenses",
-    "domain": "hr_workforce",
+    "domain": "workforce",
     "subdomain": "workforce",
     "description": "כוח אדם · employee_expenses",
     "business_purpose": "employee_expenses — auto-derived from DB",
@@ -35072,7 +35886,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.employee_expenses",
+      "business_meaning": "workforce.employee_expenses",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -35138,13 +35952,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce"
+    }
   },
   {
     "model_id": "MDL-0328",
     "model_name_en": "employee_pay_components",
     "model_name_he": "employee pay components",
-    "domain": "hr_workforce",
+    "domain": "workforce",
     "subdomain": "workforce",
     "description": "כוח אדם · employee_pay_components",
     "business_purpose": "employee_pay_components — auto-derived from DB",
@@ -35179,7 +35997,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.employee_pay_components",
+      "business_meaning": "workforce.employee_pay_components",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -35245,13 +36063,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce"
+    }
   },
   {
     "model_id": "MDL-0329",
     "model_name_en": "employees",
     "model_name_he": "employees",
-    "domain": "hr_workforce",
+    "domain": "workforce",
     "subdomain": "workforce",
     "description": "כוח אדם · employees",
     "business_purpose": "employees — auto-derived from DB",
@@ -35286,7 +36108,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.employees",
+      "business_meaning": "workforce.employees",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -35352,13 +36174,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce"
+    }
   },
   {
     "model_id": "MDL-0330",
     "model_name_en": "employers",
     "model_name_he": "employers",
-    "domain": "hr_workforce",
+    "domain": "workforce",
     "subdomain": "workforce",
     "description": "כוח אדם · employers",
     "business_purpose": "employers — auto-derived from DB",
@@ -35393,7 +36219,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.employers",
+      "business_meaning": "workforce.employers",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -35459,13 +36285,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce"
+    }
   },
   {
     "model_id": "MDL-0331",
     "model_name_en": "hr_profiles",
     "model_name_he": "hr profiles",
-    "domain": "hr_workforce",
+    "domain": "workforce",
     "subdomain": "workforce",
     "description": "כוח אדם · hr_profiles",
     "business_purpose": "hr_profiles — auto-derived from DB",
@@ -35500,7 +36330,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.hr_profiles",
+      "business_meaning": "workforce.hr_profiles",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -35566,13 +36396,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce"
+    }
   },
   {
     "model_id": "MDL-0332",
     "model_name_en": "leave_requests",
     "model_name_he": "leave requests",
-    "domain": "hr_workforce",
+    "domain": "workforce",
     "subdomain": "workforce",
     "description": "כוח אדם · leave_requests",
     "business_purpose": "leave_requests — auto-derived from DB",
@@ -35607,7 +36441,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.leave_requests",
+      "business_meaning": "workforce.leave_requests",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -35673,13 +36507,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce"
+    }
   },
   {
     "model_id": "MDL-0333",
     "model_name_en": "leave_types",
     "model_name_he": "leave types",
-    "domain": "hr_workforce",
+    "domain": "workforce",
     "subdomain": "workforce",
     "description": "כוח אדם · leave_types",
     "business_purpose": "leave_types — auto-derived from DB",
@@ -35714,7 +36552,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.leave_types",
+      "business_meaning": "workforce.leave_types",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -35780,13 +36618,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce"
+    }
   },
   {
     "model_id": "MDL-0334",
     "model_name_en": "pay_components",
     "model_name_he": "pay components",
-    "domain": "hr_workforce",
+    "domain": "workforce",
     "subdomain": "workforce",
     "description": "כוח אדם · pay_components",
     "business_purpose": "pay_components — auto-derived from DB",
@@ -35821,7 +36663,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.pay_components",
+      "business_meaning": "workforce.pay_components",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -35887,13 +36729,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce"
+    }
   },
   {
     "model_id": "MDL-0335",
     "model_name_en": "payroll_entries",
     "model_name_he": "payroll entries",
-    "domain": "hr_workforce",
+    "domain": "workforce",
     "subdomain": "workforce",
     "description": "כוח אדם · payroll_entries",
     "business_purpose": "payroll_entries — auto-derived from DB",
@@ -35928,7 +36774,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.payroll_entries",
+      "business_meaning": "workforce.payroll_entries",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -35994,13 +36840,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce"
+    }
   },
   {
     "model_id": "MDL-0336",
     "model_name_en": "payroll_exceptions",
     "model_name_he": "payroll exceptions",
-    "domain": "hr_workforce",
+    "domain": "workforce",
     "subdomain": "workforce",
     "description": "כוח אדם · payroll_exceptions",
     "business_purpose": "payroll_exceptions — auto-derived from DB",
@@ -36035,7 +36885,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.payroll_exceptions",
+      "business_meaning": "workforce.payroll_exceptions",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -36101,13 +36951,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce"
+    }
   },
   {
     "model_id": "MDL-0337",
     "model_name_en": "payroll_export_batches",
     "model_name_he": "payroll export batches",
-    "domain": "hr_workforce",
+    "domain": "workforce",
     "subdomain": "workforce",
     "description": "כוח אדם · payroll_export_batches",
     "business_purpose": "payroll_export_batches — auto-derived from DB",
@@ -36142,7 +36996,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.payroll_export_batches",
+      "business_meaning": "workforce.payroll_export_batches",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -36208,13 +37062,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce"
+    }
   },
   {
     "model_id": "MDL-0338",
     "model_name_en": "payroll_runs",
     "model_name_he": "payroll runs",
-    "domain": "hr_workforce",
+    "domain": "workforce",
     "subdomain": "workforce",
     "description": "כוח אדם · payroll_runs",
     "business_purpose": "payroll_runs — auto-derived from DB",
@@ -36249,7 +37107,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.payroll_runs",
+      "business_meaning": "workforce.payroll_runs",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -36315,13 +37173,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce"
+    }
   },
   {
     "model_id": "MDL-0339",
     "model_name_en": "pension_records",
     "model_name_he": "pension records",
-    "domain": "hr_workforce",
+    "domain": "workforce",
     "subdomain": "workforce",
     "description": "כוח אדם · pension_records",
     "business_purpose": "pension_records — auto-derived from DB",
@@ -36356,7 +37218,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.pension_records",
+      "business_meaning": "workforce.pension_records",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -36422,13 +37284,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce"
+    }
   },
   {
     "model_id": "MDL-0340",
     "model_name_en": "shifts",
     "model_name_he": "shifts",
-    "domain": "hr_workforce",
+    "domain": "workforce",
     "subdomain": "workforce",
     "description": "כוח אדם · shifts",
     "business_purpose": "shifts — auto-derived from DB",
@@ -36463,7 +37329,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.shifts",
+      "business_meaning": "workforce.shifts",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -36529,13 +37395,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce"
+    }
   },
   {
     "model_id": "MDL-0341",
     "model_name_en": "wage_slips",
     "model_name_he": "wage slips",
-    "domain": "hr_workforce",
+    "domain": "workforce",
     "subdomain": "workforce",
     "description": "כוח אדם · wage_slips",
     "business_purpose": "wage_slips — auto-derived from DB",
@@ -36570,7 +37440,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.wage_slips",
+      "business_meaning": "workforce.wage_slips",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -36636,13 +37506,17 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce"
+    }
   },
   {
     "model_id": "MDL-0342",
     "model_name_en": "workforce_assignments",
     "model_name_he": "workforce assignments",
-    "domain": "hr_workforce",
+    "domain": "workforce",
     "subdomain": "workforce",
     "description": "כוח אדם · workforce_assignments",
     "business_purpose": "workforce_assignments — auto-derived from DB",
@@ -36677,7 +37551,7 @@
     },
     "source_of_truth": {
       "is_primary_source": true,
-      "business_meaning": "hr_workforce.workforce_assignments",
+      "business_meaning": "workforce.workforce_assignments",
       "duplicate_risk_models": []
     },
     "lifecycle": {
@@ -36743,6 +37617,10 @@
       "must_have_permission_binding": true,
       "must_have_audit_binding": true
     },
-    "health_status": "healthy"
+    "health_status": "healthy",
+    "canonical_mapping": {
+      "original_domain": "hr_workforce",
+      "canonical_domain": "workforce"
+    }
   }
 ]

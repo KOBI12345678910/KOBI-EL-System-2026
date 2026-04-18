@@ -3,12 +3,12 @@
     "id": "RPT-0001",
     "name": "project_profitability_report",
     "sources": [
-      "projects.projects",
+      "execution.projects",
       "finance.invoices",
       "procurement.purchase_orders",
-      "production.material_consumption"
+      "execution.material_consumption"
     ],
-    "domain": "projects"
+    "domain": "execution"
   },
   {
     "id": "RPT-0002",
@@ -57,20 +57,20 @@
     "id": "RPT-0007",
     "name": "production_kpi",
     "sources": [
-      "production.production_orders",
-      "production.production_quality_checks"
+      "execution.production_orders",
+      "execution.production_quality_checks"
     ],
-    "domain": "production"
+    "domain": "execution"
   },
   {
     "id": "RPT-0008",
     "name": "sales_pipeline",
     "sources": [
-      "crm.leads",
-      "sales.opportunities",
-      "sales.quotes"
+      "commercial.leads",
+      "commercial.opportunities",
+      "commercial.quotes"
     ],
-    "domain": "sales"
+    "domain": "commercial"
   },
   {
     "id": "RPT-0009",
@@ -93,17 +93,17 @@
     "id": "RPT-0011",
     "name": "payroll_summary",
     "sources": [
-      "hr_workforce.payroll_inputs"
+      "workforce.payroll_inputs"
     ],
-    "domain": "hr_workforce"
+    "domain": "workforce"
   },
   {
     "id": "RPT-0012",
     "name": "attendance_report",
     "sources": [
-      "hr_workforce.attendance_logs"
+      "workforce.attendance_logs"
     ],
-    "domain": "hr_workforce"
+    "domain": "workforce"
   },
   {
     "id": "RPT-0013",
@@ -118,12 +118,12 @@
     "id": "RPT-0014",
     "name": "customer_360",
     "sources": [
-      "crm.customers",
-      "sales.quotes",
-      "projects.projects",
+      "commercial.customers",
+      "commercial.quotes",
+      "execution.projects",
       "finance.invoices"
     ],
-    "domain": "crm"
+    "domain": "commercial"
   },
   {
     "id": "RPT-0015",
@@ -138,9 +138,9 @@
     "id": "RPT-0016",
     "name": "overdue_projects_report",
     "sources": [
-      "projects.projects"
+      "execution.projects"
     ],
-    "domain": "projects"
+    "domain": "execution"
   },
   {
     "id": "RPT-0017",
@@ -164,10 +164,10 @@
     "id": "RPT-0019",
     "name": "installation_completion",
     "sources": [
-      "installation.installation_orders",
-      "installation.completion_reports"
+      "execution.installation_orders",
+      "execution.completion_reports"
     ],
-    "domain": "installation"
+    "domain": "execution"
   },
   {
     "id": "RPT-0020",

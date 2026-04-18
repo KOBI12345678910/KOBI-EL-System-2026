@@ -224,3 +224,21 @@ Scope: **backend reconciliation only**. The 53 existing pages under `erp-app/src
 | B-WF005 | 2026-04-18 | 7 | code | Gap-fill pages — `PayrollRun360.tsx` (header+status, 4 stat cards, 4 business-action buttons, tabs: lines editor + exceptions feed; closes completion_gate row 2 in workforce.md) + `WageSlipsArchivePage.tsx` (filters, table, publish action; closes completion_gate row 3). Added 2 lazy imports + 4 Routes to App.tsx (/payroll-runs/:id, /workforce/payroll-run/:id, /wage-slips-archive, /workforce/wage-slips-archive). NO duplicate list pages created. | `erp-app/src/pages/workforce/PayrollRun360.tsx`, `erp-app/src/pages/workforce/WageSlipsArchivePage.tsx`, `erp-app/src/App.tsx` |
 | B-WF006 | 2026-04-18 | 7 | docs | Workforce permission matrix — `_master-registry/domains/workforce_permission_matrix.md` with 7 roles × 24 modules. Self-only rules documented for employee-facing endpoints; approve/pay/publish transitions gated to hr_manager / finance_manager. PII markers + RLS strategy captured. | `_master-registry/domains/workforce_permission_matrix.md` |
 | B-WF007 | 2026-04-18 | 7 | docs | Registry hardening: 53 legacy `hr/*` pages confirmed as canonical UI surface; `workforce/*` directory contains only backend (migrations, Zod, routes) + 2 gap-fill pages. No duplicate list/360 pages built. Completion gate: employees/payroll/leave/pension/wage-slips all now have Zod + API + enforced status lifecycles + audit triggers + RLS. | `_master-registry/domains/workforce.md` (reference), `_master-registry/domains/workforce_permission_matrix.md` |
+
+## 2026-04-18 — Schema Reconciliation (Chapter 3)
+
+Canonical schema map applied:
+- crm, sales -> commercial
+- projects, production, installation, engineering -> execution
+- hr_workforce -> workforce
+- ai_automation -> intelligence
+- documents -> docs
+
+Files rewritten:
+- models_registry.json: 260 field rewrites
+- source_of_truth_registry.json: 10 entry rewrites
+- dashboards_registry.json: 23 entry rewrites
+- reports_registry.json: 23 entry rewrites
+- automations_registry.json: 9 entry rewrites
+
+Total replacements: 325

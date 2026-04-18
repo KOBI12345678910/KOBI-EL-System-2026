@@ -2,26 +2,26 @@
   "principle": "לכל משמעות עסקית קריטית יש מקור אמת אחד בלבד",
   "controlled_business_meanings": {
     "customer_master": {
-      "primary_source": "crm.customers",
+      "primary_source": "commercial.customers",
       "derived": [
-        "crm.customer_segments"
+        "commercial.customer_segments"
       ]
     },
     "contact_master": {
-      "primary_source": "crm.contacts",
+      "primary_source": "commercial.contacts",
       "derived": []
     },
     "project_master": {
-      "primary_source": "projects.projects",
+      "primary_source": "execution.projects",
       "derived": [
-        "projects.project_phases",
-        "projects.milestones"
+        "execution.project_phases",
+        "execution.milestones"
       ]
     },
     "quote_master": {
-      "primary_source": "sales.quotes",
+      "primary_source": "commercial.quotes",
       "derived": [
-        "sales.quote_items"
+        "commercial.quote_items"
       ]
     },
     "supplier_master": {
@@ -57,9 +57,9 @@
       ]
     },
     "employee_master": {
-      "primary_source": "hr_workforce.employees",
+      "primary_source": "workforce.employees",
       "derived": [
-        "hr_workforce.assignments"
+        "workforce.assignments"
       ]
     },
     "permissions_master": {

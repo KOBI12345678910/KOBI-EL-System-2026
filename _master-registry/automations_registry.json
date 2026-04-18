@@ -2,15 +2,15 @@
   {
     "id": "AUTO-0001",
     "name": "quote_approved_create_project",
-    "trigger": "sales.quotes.status=approved",
+    "trigger": "commercial.quotes.status=approved",
     "side_effects": [
-      "projects.projects.create"
+      "execution.execution.create"
     ]
   },
   {
     "id": "AUTO-0002",
     "name": "project_status_change_alert",
-    "trigger": "projects.projects.status.change",
+    "trigger": "execution.execution.status.change",
     "side_effects": [
       "orchestration.notifications.create"
     ]
@@ -18,7 +18,7 @@
   {
     "id": "AUTO-0003",
     "name": "overdue_project_alert",
-    "trigger": "projects.projects.target_delivery<today",
+    "trigger": "execution.execution.target_delivery<today",
     "side_effects": [
       "orchestration.notifications.create"
     ]
@@ -34,9 +34,9 @@
   {
     "id": "AUTO-0005",
     "name": "compute_wage_on_attendance_close",
-    "trigger": "hr_workforce.attendance_logs.status=submitted",
+    "trigger": "workforce.attendance_logs.status=submitted",
     "side_effects": [
-      "hr_workforce.payroll_inputs.create"
+      "workforce.payroll_inputs.create"
     ]
   },
   {
@@ -68,15 +68,15 @@
     "name": "ai_anomaly_detection_nightly",
     "trigger": "cron 0 3 * * *",
     "side_effects": [
-      "ai_automation.prediction_outputs.create"
+      "intelligence.prediction_outputs.create"
     ]
   },
   {
     "id": "AUTO-0010",
     "name": "send_quote_email_on_approve",
-    "trigger": "sales.quotes.status=approved",
+    "trigger": "commercial.quotes.status=approved",
     "side_effects": [
-      "documents.generated_files.create"
+      "docs.generated_files.create"
     ]
   },
   {
