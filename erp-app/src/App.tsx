@@ -1196,6 +1196,28 @@ const GovSLATimersPage = lazy(() => import('./pages/governance/SLATimersPage'));
 const GovEscalationRulesPage = lazy(() => import('./pages/governance/EscalationRulesPage'));
 const GovSecurityEventsPage = lazy(() => import('./pages/governance/SecurityEventsPage'));
 
+// === ORCHESTRATION DOMAIN (00063/00064) — 7 pages ===
+const OrchWorkflowDefinitionsPage = lazy(() => import('./pages/orchestration/WorkflowDefinitionsPage'));
+const OrchWorkflowRunsPage = lazy(() => import('./pages/orchestration/WorkflowRunsPage'));
+const OrchWorkflowRunDetailPage = lazy(() => import('./pages/orchestration/WorkflowRunDetailPage'));
+const OrchJobQueuePage = lazy(() => import('./pages/orchestration/JobQueuePage'));
+const OrchUniversalInboxPage = lazy(() => import('./pages/orchestration/UniversalInboxPage'));
+const OrchNotificationsPage = lazy(() => import('./pages/orchestration/NotificationsPage'));
+const OrchWorkflowTriggersPage = lazy(() => import('./pages/orchestration/WorkflowTriggersPage'));
+
+// === COMMS DOMAIN (00065/00066) — 10 pages ===
+const CommsInboxPage = lazy(() => import('./pages/comms/CommunicationsInboxPage'));
+const CommsEmailMessagesPage = lazy(() => import('./pages/comms/EmailMessagesPage'));
+const CommsSMSMessagesPage = lazy(() => import('./pages/comms/SMSMessagesPage'));
+const CommsWhatsAppMessagesPage = lazy(() => import('./pages/comms/WhatsAppMessagesPage'));
+const CommsNotificationsPage = lazy(() => import('./pages/comms/NotificationsPage'));
+const CommsSupportTicketsPage = lazy(() => import('./pages/comms/SupportTicketsPage'));
+const CommsPortalUsersPage = lazy(() => import('./pages/comms/PortalUsersPage'));
+const CommsChatbotSessionsPage = lazy(() => import('./pages/comms/ChatbotSessionsPage'));
+const CommsHelpArticlesPage = lazy(() => import('./pages/comms/HelpArticlesPage'));
+const CommsMessageTemplatesPage = lazy(() => import('./pages/comms/MessageTemplatesPage'));
+const CommsBroadcastCampaignsPage = lazy(() => import('./pages/comms/BroadcastCampaignsPage'));
+
 // === PROCUREMENT DOMAIN (Mega Batch 00047/00048) — 14 v2 pages ===
 const ProcurementSuppliersListPageV2 = lazy(() => import('./pages/procurement/v2/SuppliersListPage'));
 const ProcurementSupplier360V2 = lazy(() => import('./pages/procurement/v2/Supplier360'));
@@ -1224,6 +1246,16 @@ const DocsExtractionRunsPageV2 = lazy(() => import('./pages/docs/v2/ExtractionRu
 const DocsClassificationRunsPageV2 = lazy(() => import('./pages/docs/v2/ClassificationRunsPage'));
 const DocsSignatureRequestsPageV2 = lazy(() => import('./pages/docs/v2/SignatureRequestsPage'));
 const DocsKnowledgeCardsPageV2 = lazy(() => import('./pages/docs/v2/KnowledgeCardsPage'));
+
+// === ANALYTICS DOMAIN (00061/00062) — 8 pages ===
+const AnalyticsDashboardsListPage = lazy(() => import('./pages/analytics/DashboardsListPage'));
+const AnalyticsDashboardBuilderPage = lazy(() => import('./pages/analytics/DashboardBuilderPage'));
+const AnalyticsReportsListPage = lazy(() => import('./pages/analytics/ReportsListPage'));
+const AnalyticsReportDetailPage = lazy(() => import('./pages/analytics/ReportDetailPage'));
+const AnalyticsKPIDefinitionsPage = lazy(() => import('./pages/analytics/KPIDefinitionsPage'));
+const AnalyticsKPISnapshotsPage = lazy(() => import('./pages/analytics/KPISnapshotsPage'));
+const AnalyticsDrilldownPathsPage = lazy(() => import('./pages/analytics/DrilldownPathsPage'));
+const AnalyticsReadModelInvalidationsPage = lazy(() => import('./pages/analytics/ReadModelInvalidationsPage'));
 
 // === INTELLIGENCE DOMAIN (Mega Batch 00057/00058) — 9 pages ===
 const IntelligenceAIInsightsPage = lazy(() => import('./pages/intelligence/AIInsightsPage'));
@@ -1973,6 +2005,40 @@ function Router() {
           <Route path="/sla-timers" component={GovSLATimersPage} />
           <Route path="/escalation-rules" component={GovEscalationRulesPage} />
           <Route path="/security-events" component={GovSecurityEventsPage} />
+
+          {/* Orchestration Tier (00063/00064) — 7 pages */}
+          <Route path="/workflows" component={OrchWorkflowDefinitionsPage} />
+          <Route path="/workflows/:id" component={OrchWorkflowDefinitionsPage} />
+          <Route path="/workflow-runs" component={OrchWorkflowRunsPage} />
+          <Route path="/workflow-runs/:id" component={OrchWorkflowRunDetailPage} />
+          <Route path="/workflow-triggers" component={OrchWorkflowTriggersPage} />
+          <Route path="/job-queue" component={OrchJobQueuePage} />
+          <Route path="/universal-inbox" component={OrchUniversalInboxPage} />
+          <Route path="/inbox/:id" component={OrchUniversalInboxPage} />
+          <Route path="/notifications" component={OrchNotificationsPage} />
+
+          {/* Analytics Domain (00061/00062) — 8 pages */}
+          <Route path="/dashboards" component={AnalyticsDashboardsListPage} />
+          <Route path="/dashboards/:id" component={AnalyticsDashboardBuilderPage} />
+          <Route path="/reports" component={AnalyticsReportsListPage} />
+          <Route path="/reports/:id" component={AnalyticsReportDetailPage} />
+          <Route path="/kpi-definitions" component={AnalyticsKPIDefinitionsPage} />
+          <Route path="/kpi-snapshots" component={AnalyticsKPISnapshotsPage} />
+          <Route path="/drilldown-paths" component={AnalyticsDrilldownPathsPage} />
+          <Route path="/read-model-invalidations" component={AnalyticsReadModelInvalidationsPage} />
+
+          {/* Comms Tier (00065/00066) — 10 pages */}
+          <Route path="/communications" component={CommsInboxPage} />
+          <Route path="/email-messages" component={CommsEmailMessagesPage} />
+          <Route path="/sms-messages" component={CommsSMSMessagesPage} />
+          <Route path="/whatsapp-messages" component={CommsWhatsAppMessagesPage} />
+          <Route path="/notifications" component={CommsNotificationsPage} />
+          <Route path="/support-tickets" component={CommsSupportTicketsPage} />
+          <Route path="/portal-users" component={CommsPortalUsersPage} />
+          <Route path="/chatbot-sessions" component={CommsChatbotSessionsPage} />
+          <Route path="/help-articles" component={CommsHelpArticlesPage} />
+          <Route path="/message-templates" component={CommsMessageTemplatesPage} />
+          <Route path="/broadcast-campaigns" component={CommsBroadcastCampaignsPage} />
 
           {/* Intelligence Mega Batch (00057/00058) — 9 pages */}
           <Route path="/ai-insights" component={IntelligenceAIInsightsPage} />

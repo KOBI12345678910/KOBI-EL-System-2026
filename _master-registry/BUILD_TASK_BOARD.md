@@ -49,6 +49,18 @@ All 368 rows retain their original phase/priority/evidence_refs from RECOVERY_TA
 
 ## 2. New BUILD-specific tasks (B001+)
 
+### 2.analytics — Analytics Domain Mega Batch (2026-04-18)
+
+| id | title | phase | status | priority | evidence_refs | blocker | assigned_to | build_layer | domain | api_needed | page_needed | supabase_deployed | github_committed |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| B-ANL-001 | Migration 00061 — analytics domain complete (ALTERs + 4 new tables + CHECK + RLS + indexes + seeds) | 7 | done | P0 | B-E021 | none | build-agent | L3/L4 | analytics | Y | N | pending — Phase 11 | pending — Phase 11 |
+| B-ANL-002 | Migration 00062 — analytics menu wiring (9 routes under "דשבורד") | 7 | done | P0 | B-E022 | none | build-agent | L7 | analytics | N | N | pending — Phase 11 | pending — Phase 11 |
+| B-ANL-003 | Zod — 9 analytics modules + barrel + package.json subpath export | 7 | done | P0 | B-E023 | none | build-agent | L4 | analytics | Y | Y | pending — Phase 11 | pending — Phase 11 |
+| B-ANL-004 | API — 9 analytics routers + aggregator mounted `/api/analytics` (uses _safe-list-helpers) | 7 | done | P0 | B-E024 | none | build-agent | L7 | analytics | Y | N | pending — Phase 11 | pending — Phase 11 |
+| B-ANL-005 | Pages — 8 analytics pages + shared helper + App.tsx wiring (Hebrew RTL) | 7 | done | P0 | B-E025 | none | build-agent | L7 | analytics | N | Y | pending — Phase 11 | pending — Phase 11 |
+| B-ANL-006 | Permission matrix — analytics_permission_matrix.md (4 roles × 9 modules) | 7 | done | P1 | B-E026 | none | build-agent | L9 | analytics | N | N | pending — Phase 11 | pending — Phase 11 |
+
+
 Tasks created during Phase 1 that do not exist in RECOVERY:
 
 | id | title | phase | status | priority | evidence_refs | blocker | assigned_to | build_layer | domain | api_needed | page_needed | supabase_deployed | github_committed |

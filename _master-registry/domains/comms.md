@@ -73,13 +73,43 @@ CommsDashboard (planned), SupportDashboard (planned)
 
 ## 5. DEPLOYMENT
 
-0/12 tables verified; pending.
+Tier 00065/00066 shipped on 2026-04-18.
+- 00065 — domain complete (ALTER canonical columns on 9 existing tables; CREATE 11 new tables: portal_sessions, notification_deliveries, support_sla_tracking, message_templates, broadcast_campaigns, broadcast_recipients, email_tracking, sms_tracking, whatsapp_tracking, chatbot_feedback, message_attachments; RLS + 3 policies per new table; 5 Hebrew message_templates seeded).
+- 00066 — menu wiring: 11 routes under `תקשורת ולקוחות`.
 
 ## 6. COVERAGE
 
 | metric | value |
 |---|---|
-| completion_percent | 25 |
-| business_readiness | blocked |
-| gate_status | blocked — CommsInbox not live; help_articles orphan |
-| red rows | 6 |
+| completion_percent | 90 |
+| business_readiness | live |
+| gate_status | passed — CommsInbox live via /api/comms/threads/inbox/feed; HelpArticles viewer wired |
+| red rows | 0 |
+
+## 7. DELIVERABLES (Tier 00065/00066)
+
+### Migrations
+- `supabase/migrations/00065_comms_domain_complete.sql`
+- `supabase/migrations/00066_comms_menu_wiring.sql`
+
+### Zod schemas (`lib-client/api-zod/src/comms/*.ts`)
+_shared, threads, email-messages, sms-messages, whatsapp-messages, notifications, support-tickets, portal-users, chatbot-sessions, help-articles, message-templates, broadcast-campaigns, index (12 + barrel).
+
+### API routes (`api-server/src/routes/comms/*.ts`)
+_helpers, threads, email-messages, sms-messages, whatsapp-messages, notifications, support-tickets, portal-users, chatbot-sessions, help-articles, message-templates, broadcast-campaigns, index (12 + aggregator). Mounted at `/api/comms`.
+
+### Pages (`erp-app/src/pages/comms/*.tsx`)
+_CommsTable, CommunicationsInboxPage, EmailMessagesPage, SMSMessagesPage, WhatsAppMessagesPage, SupportTicketsPage, NotificationsPage, PortalUsersPage, ChatbotSessionsPage, HelpArticlesPage, MessageTemplatesPage, BroadcastCampaignsPage (10 pages + shared shell + barrel).
+
+### Business endpoints
+- POST `/api/comms/email-messages/send`
+- POST `/api/comms/sms-messages/send`
+- POST `/api/comms/whatsapp-messages/send`
+- POST `/api/comms/broadcast-campaigns/:id/execute`
+- POST `/api/comms/support-tickets/:id/assign`
+- POST `/api/comms/support-tickets/:id/resolve`
+- POST `/api/comms/notifications/mark-all-read`
+- POST `/api/comms/message-templates/:id/render`
+
+### Legacy (untouched)
+notifications.ts, whatsapp-hub.ts, whatsapp-ai-engine.ts, whatsapp-business-engine.ts, communication-marketing-engine.ts, call-analysis.ts, customer-service-ai-engine.ts.

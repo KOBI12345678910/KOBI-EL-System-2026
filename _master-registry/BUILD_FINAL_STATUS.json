@@ -130,7 +130,7 @@
     "docs":             { "expected_models": 15, "fully_present": 15, "partial": 0,  "completion_percent": 95, "business_readiness": "ready",    "gate_status": "green",     "notes": "Mega Batch 00055/00056 shipped — 9 new tables (document_versions, document_signature_requests, ocr_runs, extraction_runs, classification_runs, document_chunks, entity_extractions, document_relations, knowledge_cards) + 15 Zod + 15 API routes + 10 v2 pages + permission matrix. Audit triggers + RLS baseline + CHECK lifecycles live." },
     "intelligence":     { "expected_models": 15, "fully_present": 15, "partial": 0,  "completion_percent": 85, "business_readiness": "ready",    "gate_status": "in_progress", "notes": "Mega Batch 00057/00058 (2026-04-18) — ALTER 13 existing intelligence tables (audit cols + status), CREATE prompt_templates + orchestration_flows (uuid PK, CHECK). 15 Zod + 15 API routes mounted at /api/intelligence/* (uses _safe-list-helpers — zero raw user-string interpolation). 9 pages (AIInsightsPage, AnomalyCasesPage, RecommendationCenterPage, ForecastModelsPage, AgentRegistryPage, AgentJobsPage, OrchestrationFlowsPage, PromptTemplatesPage, ProcessMiningPage) + 11 menu entries under 'בינה מלאכותית' + permission matrix. Seeds: 4 flows + 6 prompt_templates (Hebrew). Legacy flat-file ai-*/anomaly-*/agent-*/ai-orchestration routes preserved untouched." },
     "governance":       { "expected_models": 32, "fully_present": 4,  "partial": 28, "completion_percent": 13, "business_readiness": "partial", "gate_status": "blocked",   "notes": "users_profile/roles/permissions/audit_log core full; escalation_rules/validations_log/health_checks orphan" },
-    "analytics":        { "expected_models": 10, "fully_present": 1,  "partial": 9,  "completion_percent": 10, "business_readiness": "blocked",  "gate_status": "blocked",   "notes": "dashboard_widgets dup; 10 broken dashboards; 0 analytics menu coverage per P1b" },
+    "analytics":        { "expected_models": 10, "fully_present": 10, "partial": 0,  "completion_percent": 82, "business_readiness": "ready",    "gate_status": "unblocked", "analytics_mega_batch_executed": true, "notes": "B-BATCH-ANALYTICS-MEGA-01 (2026-04-18): migrations 00061 (ALTER 14 existing + CREATE 4 new: kpi_definitions/report_definitions/report_runs/drilldown_paths + CHECK lifecycles: report_run 4-state / invalidation 3-state + RLS baseline + indexes + 7 seeded kpi_definitions) + 00062 (9 menu entries under 'דשבורד'). 9 Zod files + 9 API routes + aggregator at /api/analytics; business endpoints: reports/:id/run, kpi-definitions/:id/compute, read-model-invalidations/:id/reprocess, dashboards/:id/export (CSV/PDF). 8 pages (DashboardsList, DashboardBuilder, ReportsList, ReportDetail, KPIDefinitions, KPISnapshots, DrilldownPaths, ReadModelInvalidations) Hebrew RTL + App.tsx wiring. Permission matrix: 4 roles × 9 modules. Legacy analytics-engine/business-analytics/dashboard-kpi/dashboard-stats preserved untouched. Uses _safe-list-helpers — zero raw user-string interpolation." },
     "orchestration":    { "expected_models": 8,  "fully_present": 1,  "partial": 7,  "completion_percent": 13, "business_readiness": "blocked",  "gate_status": "blocked",   "notes": "orchestration_flows partial; notifications overlap with comms; job_executions orphan" },
     "comms":            { "expected_models": 11, "fully_present": 0,  "partial": 11, "completion_percent": 0,  "business_readiness": "blocked",  "gate_status": "blocked",   "notes": "help_articles/comms_threads/notification_deliveries all orphan/hidden" },
     "support_schemas":  { "expected_models": 30, "fully_present": 0,  "partial": 30, "completion_percent": 0,  "business_readiness": "blocked",  "gate_status": "blocked",   "notes": "public/pricing/planning/quality/routing/compliance/maintenance/service/treasury/crm_legacy — mostly orphan tables" }
@@ -268,6 +268,70 @@
       "RLS policies for 4 new commercial tables (separate migration per project convention)",
       "Enhancement Zod/API/pages for the 14 existing commercial tables",
       "18 full entity Zod + page triad — shipped only 4 NEW tables per context-budget prioritization"
+    ]
+  },
+  "analytics_mega_batch_executed": true,
+  "analytics_mega_batch_metadata": {
+    "date": "2026-04-18",
+    "batch_id": "B-BATCH-ANALYTICS-MEGA-01",
+    "models_covered": 14,
+    "tables_added": [
+      "analytics.kpi_definitions",
+      "analytics.report_definitions",
+      "analytics.report_runs",
+      "analytics.drilldown_paths"
+    ],
+    "tables_altered": [
+      "analytics.dashboard_definitions",
+      "analytics.dashboard_widgets",
+      "analytics.dashboard_boards",
+      "analytics.dashboard_board_widgets",
+      "analytics.user_dashboard_boards",
+      "analytics.kpi_snapshots",
+      "analytics.read_model_invalidations",
+      "analytics.rm_executive_summary",
+      "analytics.rm_operations_summary",
+      "analytics.rm_procurement_summary",
+      "analytics.rm_finance_summary",
+      "analytics.rm_workforce_summary",
+      "analytics.rm_ai_summary",
+      "analytics.custom_metrics"
+    ],
+    "migrations": ["00061_analytics_domain_complete.sql","00062_analytics_menu_wiring.sql"],
+    "zod_files": 10,
+    "api_route_files": 10,
+    "page_files": 9,
+    "app_tsx_edits": 2,
+    "api_server_index_edits": 1,
+    "permission_matrix_doc": "_master-registry/domains/analytics_permission_matrix.md",
+    "mount_path": "/api/analytics",
+    "business_endpoints": [
+      "POST /api/analytics/reports/:id/run",
+      "POST /api/analytics/kpi-definitions/:id/compute",
+      "POST /api/analytics/read-model-invalidations/:id/reprocess",
+      "POST /api/analytics/dashboards/:id/export"
+    ],
+    "status_lifecycles_enforced": [
+      "report_run: queued→running→complete→failed",
+      "read_model_invalidation: pending→processed→skipped"
+    ],
+    "rls_policies_added": 12,
+    "kpi_definitions_seeded": [
+      "revenue_mtd","expenses_mtd","gross_profit_mtd","headcount",
+      "open_invoices","overdue_invoices","inventory_value"
+    ],
+    "legacy_files_preserved_untouched": [
+      "api-server/src/routes/analytics-engine.ts",
+      "api-server/src/routes/business-analytics.ts",
+      "api-server/src/routes/dashboard-kpi.ts",
+      "api-server/src/routes/dashboard-stats.ts"
+    ],
+    "safe_sql_helpers_used": true,
+    "deferred": [
+      "Real dashboard widget renderer (currently list-only admin builder)",
+      "Report run worker (API enqueues; background processor pending)",
+      "Per-role refinement of RLS policies beyond 3-baseline pattern",
+      "Public/embedded dashboard sharing (Phase 14)"
     ]
   },
   "procurement_mega_batch_executed": true,

@@ -1,0 +1,11 @@
+export { default as CommunicationsInboxPage } from "./CommunicationsInboxPage";
+export { default as EmailMessagesPage } from "./EmailMessagesPage";
+export { default as SMSMessagesPage } from "./SMSMessagesPage";
+export { default as WhatsAppMessagesPage } from "./WhatsAppMessagesPage";
+export { default as SupportTicketsPage } from "./SupportTicketsPage";
+export { default as NotificationsPage } from "./NotificationsPage";
+export { default as PortalUsersPage } from "./PortalUsersPage";
+export { default as ChatbotSessionsPage } from "./ChatbotSessionsPage";
+export { default as HelpArticlesPage } from "./HelpArticlesPage";
+export { default as MessageTemplatesPage } from "./MessageTemplatesPage";
+export { default as BroadcastCampaignsPage } from "./BroadcastCampaignsPage";

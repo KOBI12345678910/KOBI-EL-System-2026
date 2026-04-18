@@ -133,6 +133,9 @@ import financeV2Router from "./finance/index";
 import governanceRouter from "./governance";
 import docsRouter from "./docs";
 import intelligenceRouter from "./intelligence";
+import analyticsRouter from "./analytics";
+import commsRouter from "./comms";
+import orchestrationRouter from "./orchestration";
 
 const router: IRouter = Router();
 
@@ -142,6 +145,9 @@ router.use("/procurement", procurementRouter);
 router.use("/docs", docsRouter);
 router.use("/governance", governanceRouter);
 router.use("/intelligence", intelligenceRouter);
+router.use("/analytics", analyticsRouter);
+router.use("/comms", commsRouter);
+router.use("/orchestration", orchestrationRouter);
 router.use(healthRouter);
 router.use(dashboardStatsRouter);
 router.use(dedicatedEntityRoutes);

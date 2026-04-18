@@ -125,3 +125,23 @@ Each phase gets its own section below when activated. Format:
 ```
 
 Phases 2–15 are currently `pending` — no section populated.
+
+---
+
+### Tier 00065/00066 — Comms Domain Complete
+- started: 2026-04-18
+- completed: 2026-04-18
+- inputs: `_safe-list-helpers.ts`, `00000_master_schema.sql` (existing comms tables), `00059_governance_domain_complete.sql` (migration style), `governance/users.ts` (route pattern)
+- deliverables:
+  - `supabase/migrations/00065_comms_domain_complete.sql` — ALTER 9 existing comms tables (canonical columns, status CHECKs); CREATE 11 new tables (portal_sessions, notification_deliveries, support_sla_tracking, message_templates, broadcast_campaigns, broadcast_recipients, email_tracking, sms_tracking, whatsapp_tracking, chatbot_feedback, message_attachments); RLS + 3 policies per new table; 5 Hebrew templates seeded
+  - `supabase/migrations/00066_comms_menu_wiring.sql` — 11 Hebrew menu entries under `תקשורת ולקוחות` category
+  - `lib-client/api-zod/src/comms/*.ts` — 12 schema files + barrel (13 files total)
+  - `api-server/src/routes/comms/*.ts` — 12 route files + aggregator (13 files total), mounted at `/api/comms`
+  - `erp-app/src/pages/comms/*.tsx` — 10 RTL pages + shared shell + barrel (12 files total)
+  - `erp-app/src/App.tsx` — 11 lazy imports + 11 route registrations
+  - `_master-registry/domains/comms_permission_matrix.md` — full SA/A/S/U/P matrix
+  - `_master-registry/domains/comms.md` — completion gate updated (90%, live)
+- evidence: B-E013, B-E015 (comms DISCOVERY)
+- decisions: reuse `_safe-list-helpers.ts`; do not touch 7 legacy routers; additive `/api/comms/*` tree
+- protected_files: notifications.ts, whatsapp-hub.ts, whatsapp-ai-engine.ts, whatsapp-business-engine.ts, communication-marketing-engine.ts, call-analysis.ts, customer-service-ai-engine.ts — untouched
+- exit_gate_met: Y (CommsInbox live at `/api/comms/threads/inbox/feed`; HelpArticles viewer wired at `/help-articles`)
