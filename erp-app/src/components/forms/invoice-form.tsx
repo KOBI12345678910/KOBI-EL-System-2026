@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { VAT_RATE } from "@/utils/money";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -111,7 +112,7 @@ export default function InvoiceForm({ open, onClose, onSave, invoice, customers 
             const itemSubtotal = item.quantity * item.unit_price;
             return sum + (itemSubtotal * (item.discount || 0) / 100);
         }, 0);
-        const taxTotal = (subtotal - discountTotal) * 0.18;
+        const taxTotal = (subtotal - discountTotal) * VAT_RATE;
         const total = subtotal - discountTotal + taxTotal;
         return { subtotal, discountTotal, taxTotal, total };
     };

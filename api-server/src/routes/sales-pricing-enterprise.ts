@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
+import { getVatRateForDate } from "./israeli-accounting-engine";
 
 const router = Router();
 
@@ -163,7 +164,8 @@ router.post("/sales/orders", async (req: Request, res: Response) => {
     delete d.lines;
     const subtotal = lines.reduce((s: number, l: any) => s + (l.lineTotal || 0), 0);
     const discountAmt = Number(d.discountAmount) || 0;
-    const taxAmt = Number(d.taxAmount) || (subtotal - discountAmt) * 0.18;
+    // B-D031: date-aware VAT rate (0.18 from 2026-01-01, 0.17 prior)
+    const taxAmt = Number(d.taxAmount) || (subtotal - discountAmt) * getVatRateForDate(d.orderDate || new Date());
     const total = subtotal - discountAmt + taxAmt;
     const result = await db.execute(sql`INSERT INTO sales_orders (
       order_number, order_type, customer_id, customer_name, customer_contact, customer_phone, customer_email,
@@ -214,7 +216,8 @@ router.put("/sales/orders/:id", async (req: Request, res: Response) => {
     delete d.lines;
     const subtotal = lines.reduce((s: number, l: any) => s + (l.lineTotal || 0), 0);
     const discountAmt = Number(d.discountAmount) || 0;
-    const taxAmt = Number(d.taxAmount) || (subtotal - discountAmt) * 0.18;
+    // B-D031: date-aware VAT rate (0.18 from 2026-01-01, 0.17 prior)
+    const taxAmt = Number(d.taxAmount) || (subtotal - discountAmt) * getVatRateForDate(d.orderDate || new Date());
     const total = subtotal - discountAmt + taxAmt;
     await db.execute(sql`UPDATE sales_orders SET
       order_type=${d.orderType || 'standard'}, customer_id=${d.customerId}, customer_name=${d.customerName},
@@ -324,7 +327,8 @@ router.post("/sales/quotations", async (req: Request, res: Response) => {
     const lines = d.lines || [];
     delete d.lines;
     const subtotal = lines.reduce((s: number, l: any) => s + (l.lineTotal || 0), 0);
-    const taxAmt = Number(d.taxAmount) || subtotal * 0.18;
+    // B-D031: date-aware VAT rate (0.18 from 2026-01-01, 0.17 prior)
+    const taxAmt = Number(d.taxAmount) || subtotal * getVatRateForDate(d.quoteDate || new Date());
     const total = subtotal + taxAmt;
     const result = await db.execute(sql`INSERT INTO sales_quotations (quote_number, customer_id, customer_name, quote_date, valid_until, status, notes, subtotal, tax_amount, total, created_by)
       VALUES (${num}, ${d.customerId}, ${d.customerName}, ${d.quoteDate || new Date().toISOString().slice(0,10)}, ${d.validUntil}, ${d.status || 'draft'}, ${d.notes}, ${subtotal}, ${taxAmt}, ${total}, ${d.createdBy}) RETURNING id`);
@@ -345,7 +349,8 @@ router.put("/sales/quotations/:id", async (req: Request, res: Response) => {
     const lines = d.lines || [];
     delete d.lines;
     const subtotal = lines.reduce((s: number, l: any) => s + (l.lineTotal || 0), 0);
-    const taxAmt = Number(d.taxAmount) || subtotal * 0.18;
+    // B-D031: date-aware VAT rate (0.18 from 2026-01-01, 0.17 prior)
+    const taxAmt = Number(d.taxAmount) || subtotal * getVatRateForDate(d.quoteDate || new Date());
     const total = subtotal + taxAmt;
     await db.execute(sql`UPDATE sales_quotations SET customer_id=${d.customerId}, customer_name=${d.customerName}, quote_date=${d.quoteDate}, valid_until=${d.validUntil}, status=${d.status}, notes=${d.notes}, subtotal=${subtotal}, tax_amount=${taxAmt}, total=${total}, updated_at=NOW() WHERE id=${id}`);
     await db.execute(sql`DELETE FROM sales_quotation_lines WHERE quotation_id = ${id}`);
@@ -428,7 +433,8 @@ router.post("/sales/invoices", async (req: Request, res: Response) => {
     const lines = d.lines || [];
     delete d.lines;
     const subtotal = lines.reduce((s: number, l: any) => s + (l.lineTotal || 0), 0);
-    const taxAmt = Number(d.taxAmount) || subtotal * 0.18;
+    // B-D031: date-aware VAT rate (0.18 from 2026-01-01, 0.17 prior)
+    const taxAmt = Number(d.taxAmount) || subtotal * getVatRateForDate(d.invoiceDate || new Date());
     const total = subtotal + taxAmt;
     const result = await db.execute(sql`INSERT INTO sales_invoices (invoice_number, customer_id, customer_name, sales_order_id, invoice_date, due_date, status, subtotal, tax_amount, total, notes, created_by)
       VALUES (${num}, ${d.customerId}, ${d.customerName}, ${d.salesOrderId}, ${d.invoiceDate || new Date().toISOString().slice(0,10)}, ${d.dueDate}, ${d.status || 'draft'}, ${subtotal}, ${taxAmt}, ${total}, ${d.notes}, ${d.createdBy}) RETURNING id`);
@@ -448,7 +454,8 @@ router.put("/sales/invoices/:id", async (req: Request, res: Response) => {
     const lines = d.lines || [];
     delete d.lines;
     const subtotal = lines.reduce((s: number, l: any) => s + (l.lineTotal || 0), 0);
-    const taxAmt = Number(d.taxAmount) || subtotal * 0.18;
+    // B-D031: date-aware VAT rate (0.18 from 2026-01-01, 0.17 prior)
+    const taxAmt = Number(d.taxAmount) || subtotal * getVatRateForDate(d.invoiceDate || new Date());
     const total = subtotal + taxAmt;
     await db.execute(sql`UPDATE sales_invoices SET customer_id=${d.customerId}, customer_name=${d.customerName}, sales_order_id=${d.salesOrderId}, invoice_date=${d.invoiceDate}, due_date=${d.dueDate}, status=${d.status}, subtotal=${subtotal}, tax_amount=${taxAmt}, total=${total}, amount_paid=${d.amountPaid || 0}, notes=${d.notes}, updated_at=NOW() WHERE id=${id}`);
     await db.execute(sql`DELETE FROM sales_invoice_lines WHERE invoice_id = ${id}`);

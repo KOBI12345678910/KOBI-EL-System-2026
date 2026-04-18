@@ -6,6 +6,7 @@
 
 import { Router, Request, Response } from 'express';
 import pool from '@workspace/db';
+import { getVatRateForDate } from './israeli-accounting-engine';
 
 const router = Router();
 
@@ -523,8 +524,8 @@ router.post('/calculate/:costingId', async (req: Request, res: Response) => {
     const discountAmount = actualPrice * (discountPercentage / 100);
     const finalPriceBeforeVat = actualPrice - discountAmount;
 
-    // מע"מ 18% (מ-2026-01-01, לפני כן 17%)
-    const vatAmount = finalPriceBeforeVat * 0.18;
+    // B-D031: date-aware VAT rate (0.18 from 2026-01-01, 0.17 prior)
+    const vatAmount = finalPriceBeforeVat * getVatRateForDate((costing as any).created_at || new Date());
     const finalPriceWithVat = finalPriceBeforeVat + vatAmount;
 
     // עמלת מכירות - 7.5% מהמחיר לפני מע"מ

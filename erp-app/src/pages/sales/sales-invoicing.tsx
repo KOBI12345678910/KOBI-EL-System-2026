@@ -4,6 +4,7 @@ import { globalConfirm } from "@/components/confirm-dialog";
 import { authFetch } from "@/lib/utils";
 import ActivityLog from "@/components/activity-log";
 import RelatedRecords from "@/components/related-records";
+import { VAT_RATE } from "@/utils/money";
 
 const API = "/api";
 const getHeaders = () => ({ "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("erp_token") || ""}` });
@@ -195,7 +196,7 @@ export default function SalesInvoicing() {
             <button onClick={addLine} className="btn btn-outline btn-sm mb-3"><Plus className="w-3.5 h-3.5 mr-1" />הוסף שורה</button>
             {(() => {
               const subtotal = lines.reduce((s, l) => s + l.lineTotal, 0);
-              const vat = subtotal * 0.18;
+              const vat = subtotal * VAT_RATE;
               const total = subtotal + vat;
               return (
                 <div className="flex justify-start">

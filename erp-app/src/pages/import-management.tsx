@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { authFetch } from "@/lib/utils";
+import { VAT_RATE } from "@/utils/money";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, Legend,
@@ -89,7 +90,7 @@ function generateShipments(): Shipment[] {
     const freight = Math.floor(goods * 0.08);
     const insurance = Math.floor(goods * 0.015);
     const customs = Math.floor(goods * 0.06);
-    const vat = Math.floor((goods + freight + insurance + customs) * 0.18);
+    const vat = Math.floor((goods + freight + insurance + customs) * VAT_RATE);
     const broker = 3500;
     const handling = 2200;
     const inland = 1800;

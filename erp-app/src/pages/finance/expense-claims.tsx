@@ -10,6 +10,7 @@ import { SmartPagination } from "@/components/smart-pagination";
 import { useApiAction } from "@/hooks/use-api-action";
 import { authFetch } from "@/lib/utils";
 import ActivityLog from "@/components/activity-log";
+import { VAT_RATE } from "@/utils/money";
 import RelatedRecords from "@/components/related-records";
 import BulkActions, { useBulkSelection, BulkCheckbox, defaultBulkActions } from "@/components/bulk-actions";
 import AttachmentsSection from "@/components/attachments-section";
@@ -226,7 +227,7 @@ export default function ExpenseClaimsPage() {
                     </div>
                     <div className="bg-card rounded-lg p-2 border">
                       <div className="text-[10px] text-muted-foreground mb-1">סכום מע"מ</div>
-                      <div className="font-bold text-orange-600">₪{fmt(Math.round((Number(form.totalClaimed) || 0) * 0.18 * 100) / 100)}</div>
+                      <div className="font-bold text-orange-600">₪{fmt(Math.round((Number(form.totalClaimed) || 0) * VAT_RATE * 100) / 100)}</div>
                     </div>
                     <div className="bg-teal-100 rounded-lg p-2 border border-teal-300">
                       <div className="text-[10px] text-teal-700 mb-1">סה"כ כולל מע"מ</div>

@@ -2,6 +2,7 @@ import { db } from "@workspace/db";
 import { entityRecordsTable, moduleEntitiesTable, notificationsTable } from "@workspace/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { eventBus, type RecordEvent } from "./event-bus";
+import { getVatRateForDate } from "../routes/israeli-accounting-engine";
 
 interface EnrichmentResult {
   handler: string;
@@ -129,9 +130,11 @@ function extractQuotationContext(data: Record<string, any>): Record<string, any>
   const amount = Number(data.total || data.amount || data.total_amount || 0);
 
   if (amount > 0) {
+    // B-D031: date-aware VAT rate (0.18 from 2026-01-01, 0.17 prior)
+    const _vatRate = getVatRateForDate(data.issue_date || data.quotation_date || data.date || new Date());
     enriched.price_tier = amount > 100000 ? "enterprise" : amount > 30000 ? "business" : amount > 10000 ? "standard" : "basic";
-    enriched.vat_amount = Math.round(amount * 0.18 * 100) / 100;
-    enriched.amount_with_vat = Math.round(amount * 1.18 * 100) / 100;
+    enriched.vat_amount = Math.round(amount * _vatRate * 100) / 100;
+    enriched.amount_with_vat = Math.round(amount * (1 + _vatRate) * 100) / 100;
   }
 
   if (data.items && Array.isArray(data.items)) {
@@ -214,9 +217,12 @@ function extractFinanceContext(data: Record<string, any>): Record<string, any> {
   const cost = Number(data.cost || data.total_cost || data.production_cost || 0);
 
   if (amount > 0) {
+    // B-D031: date-aware VAT rate (0.18 from 2026-01-01, 0.17 prior)
+    const _vatRate = getVatRateForDate(data.invoice_date || data.date || data.payment_date || new Date());
+    const _grossFactor = 1 + _vatRate;
     enriched.revenue_amount = amount;
-    enriched.vat_component = Math.round(amount * 0.18 * 100) / 100;
-    enriched.net_revenue = Math.round(amount / 1.18 * 100) / 100;
+    enriched.vat_component = Math.round(amount * _vatRate * 100) / 100;
+    enriched.net_revenue = Math.round(amount / _grossFactor * 100) / 100;
   }
 
   if (amount > 0 && cost > 0) {

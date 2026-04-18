@@ -643,7 +643,9 @@ class QuoteCollector {
     const deliveryFee = params.freeDelivery ? 0 : (params.deliveryFee ?? 0);
     const totalPrice = subtotal + deliveryFee;
     const vatIncluded = params.vatIncluded ?? false;
-    const vatAmount = vatIncluded ? 0 : Math.round(totalPrice * 0.18);
+    // B-D031: date-aware Israeli VAT rate (0.18 from 2026-01-01, 0.17 prior)
+    const _vatRate = new Date() >= new Date('2026-01-01T00:00:00Z') ? 0.18 : 0.17;
+    const vatAmount = vatIncluded ? 0 : Math.round(totalPrice * _vatRate);
     const totalWithVat = totalPrice + vatAmount;
 
     const quote: SupplierQuote = {

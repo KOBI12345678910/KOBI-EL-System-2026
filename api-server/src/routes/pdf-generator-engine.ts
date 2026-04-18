@@ -4,6 +4,7 @@
 
 import { Router, Request, Response } from "express";
 import { pool } from "@workspace/db";
+import { getVatRateForDate } from "./israeli-accounting-engine";
 
 const router = Router();
 
@@ -1055,7 +1056,8 @@ router.post("/pdf-generator/generate/:templateCode", async (req: Request, res: R
       const subtotal = parseFloat(variables.subtotal) || 0;
       const discount = parseFloat(variables.discount_amount) || 0;
       const beforeVat = subtotal - discount;
-      const vatAmount = beforeVat * 0.18;
+      // B-D031: date-aware VAT rate (use document date if provided)
+      const vatAmount = beforeVat * getVatRateForDate(variables.document_date || variables.issue_date || new Date());
       const grandTotal = beforeVat + vatAmount;
 
       htmlContent = htmlContent.replace(/\{\{before_vat\}\}/g, beforeVat.toFixed(2));

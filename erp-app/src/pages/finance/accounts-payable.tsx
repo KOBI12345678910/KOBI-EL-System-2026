@@ -13,6 +13,7 @@ import { authFetch } from "@/lib/utils";
 import BulkActions, { useBulkSelection, BulkCheckbox, defaultBulkActions } from "@/components/bulk-actions";
 import ActivityLog from "@/components/activity-log";
 import RelatedRecords from "@/components/related-records";
+import { VAT_RATE } from "@/utils/money";
 import AttachmentsSection from "@/components/attachments-section";
 
 const API = "/api";
@@ -482,7 +483,7 @@ export default function AccountsPayablePage() {
                 <div><label className="block text-sm font-medium mb-1">תאריך חשבונית *</label><input type="date" value={form.invoiceDate || ""} onChange={e => setForm({ ...form, invoiceDate: e.target.value })} className="w-full border rounded-lg px-3 py-2" /></div>
                 <div><label className="block text-sm font-medium mb-1">תאריך לתשלום *</label><input type="date" value={form.dueDate || ""} onChange={e => setForm({ ...form, dueDate: e.target.value })} className="w-full border rounded-lg px-3 py-2" /></div>
                 <div><label className="block text-sm font-medium mb-1">תנאי תשלום</label><select value={form.paymentTerms || ""} onChange={e => setForm({ ...form, paymentTerms: e.target.value })} className="w-full border rounded-lg px-3 py-2"><option value="">ללא</option>{Object.entries(termsMap).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
-                <div><label className="block text-sm font-medium mb-1">סכום כולל (₪) *</label><input type="number" step="0.01" value={form.amount || ""} onChange={e => { const amt = Number(e.target.value) || 0; setForm({ ...form, amount: e.target.value, vatAmount: (amt * 0.18 / 1.18).toFixed(2), netAmount: (amt / 1.18).toFixed(2) }); }} className="w-full border rounded-lg px-3 py-2" /></div>
+                <div><label className="block text-sm font-medium mb-1">סכום כולל (₪) *</label><input type="number" step="0.01" value={form.amount || ""} onChange={e => { const amt = Number(e.target.value) || 0; setForm({ ...form, amount: e.target.value, vatAmount: (amt * VAT_RATE / (1 + VAT_RATE)).toFixed(2), netAmount: (amt / (1 + VAT_RATE)).toFixed(2) }); }} className="w-full border rounded-lg px-3 py-2" /></div>
                 <div><label className="block text-sm font-medium mb-1">מע"מ (₪)</label><input type="number" step="0.01" value={form.vatAmount || ""} onChange={e => setForm({ ...form, vatAmount: e.target.value })} className="w-full border rounded-lg px-3 py-2" /></div>
                 <div><label className="block text-sm font-medium mb-1">סכום נטו (₪)</label><input type="number" step="0.01" value={form.netAmount || ""} onChange={e => setForm({ ...form, netAmount: e.target.value })} className="w-full border rounded-lg px-3 py-2" /></div>
                 <div><label className="block text-sm font-medium mb-1">מטבע</label><select value={form.currency || "ILS"} onChange={e => setForm({ ...form, currency: e.target.value })} className="w-full border rounded-lg px-3 py-2"><option value="ILS">₪ שקל</option><option value="USD">$ דולר</option><option value="EUR">€ אירו</option></select></div>

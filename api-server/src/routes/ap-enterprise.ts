@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { validateSession } from "../lib/auth";
 import { runPaymentAnomalyDetection } from "./finance-enterprise";
+import { getVatRateForDate } from "./israeli-accounting-engine";
 
 const router = Router();
 
@@ -87,7 +88,9 @@ router.post("/ap", async (req, res) => {
   const user = (req as any).user;
   const num = await nextNum("AP-", "accounts_payable", "ap_number");
   const s = (v: any) => v ? `'${String(v).replace(/'/g, "''")}'` : "NULL";
-  const vatAmount = Number(d.vatAmount) || (Number(d.amount || 0) * 0.18);
+  // CANONICALIZATION D032: `amount` is NET (ex-VAT). Uses date-aware VAT rate (B-D031).
+  const _vatRate = getVatRateForDate(d.invoiceDate || new Date());
+  const vatAmount = Number(d.vatAmount) || (Number(d.amount || 0) * _vatRate);
   const netAmount = Number(d.netAmount) || (Number(d.amount || 0) - vatAmount);
   await q(`INSERT INTO accounts_payable (ap_number, invoice_number, supplier_id, supplier_name, invoice_date, due_date, amount, net_amount, vat_amount, paid_amount, currency, status, payment_terms, description, category, notes, tags, priority, gl_account, gl_account_name, cost_center, department, project_name, payment_method, bank_account, contact_person, contact_phone, contact_email, withholding_tax, discount_percent, discount_amount, discount_date, is_recurring, recurring_frequency, three_way_match, po_matched, grn_matched)
     VALUES ('${num}', ${s(d.invoiceNumber)}, ${d.supplierId||'NULL'}, ${s(d.supplierName)}, '${d.invoiceDate || new Date().toISOString().slice(0,10)}', '${d.dueDate || new Date().toISOString().slice(0,10)}', ${d.amount||0}, ${netAmount}, ${vatAmount}, 0, '${d.currency||'ILS'}', '${d.status||'open'}', ${s(d.paymentTerms)}, ${s(d.description)}, ${s(d.category)}, ${s(d.notes)}, ${s(d.tags)}, '${d.priority||'normal'}', ${s(d.glAccount)}, ${s(d.glAccountName)}, ${s(d.costCenter)}, ${s(d.department)}, ${s(d.projectName)}, ${s(d.paymentMethod)}, ${s(d.bankAccount)}, ${s(d.contactPerson)}, ${s(d.contactPhone)}, ${s(d.contactEmail)}, ${d.withholdingTax||0}, ${d.discountPercent||0}, ${d.discountAmount||0}, ${d.discountDate ? `'${d.discountDate}'` : 'NULL'}, ${d.isRecurring||false}, ${s(d.recurringFrequency)}, ${d.threeWayMatch||false}, ${d.poMatched||false}, ${d.grnMatched||false})`);

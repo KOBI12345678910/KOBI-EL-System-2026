@@ -6,6 +6,7 @@
 
 import { Router, Request, Response } from 'express';
 import pool from '@workspace/db';
+import { getVatRateForDate } from './israeli-accounting-engine';
 
 const router = Router();
 
@@ -467,7 +468,8 @@ router.post('/calculate/:workerId/:period', async (req: Request, res: Response) 
     // סך עמלה
     const totalCommission = baseCommission + bonusAmount - totalDeductions;
     const commissionBeforeVat = totalCommission;
-    const vatOnCommission = totalCommission * 0.18;
+    // B-D031: date-aware VAT rate (0.18 post-2026-01-01, 0.17 prior)
+    const vatOnCommission = totalCommission * getVatRateForDate(new Date());
     const commissionWithVat = totalCommission + vatOnCommission;
 
     // יצירת מספר חישוב ייחודי

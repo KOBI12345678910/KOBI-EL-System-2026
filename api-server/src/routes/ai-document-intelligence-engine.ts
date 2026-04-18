@@ -5,6 +5,7 @@
 
 import { Router, Request, Response } from 'express';
 import pool from '@workspace/db';
+import { getVatRateForDate } from './israeli-accounting-engine';
 
 const router = Router();
 
@@ -328,8 +329,8 @@ router.post('/process/:documentId', async (req: Request, res: Response) => {
     // ========================================
     const extractStart = Date.now();
     const totalAmount = req.body.total_amount || parseFloat((Math.random() * 50000 + 500).toFixed(2));
-    const vatAmount = req.body.vat_amount || parseFloat((totalAmount * 0.18).toFixed(2));
     const documentDate = req.body.document_date || new Date().toISOString().split('T')[0];
+    const vatAmount = req.body.vat_amount || parseFloat((totalAmount * getVatRateForDate(documentDate)).toFixed(2));
     const documentNumber = req.body.document_number || `DOC-${Date.now()}`;
 
     const extractedItems = req.body.items || [

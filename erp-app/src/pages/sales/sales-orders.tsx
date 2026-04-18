@@ -8,6 +8,7 @@ import { authFetch } from "@/lib/utils";
 import ActivityLog from "@/components/activity-log";
 import BulkActions, { useBulkSelection, BulkCheckbox, defaultBulkActions } from "@/components/bulk-actions";
 import RelatedRecords from "@/components/related-records";
+import { VAT_RATE } from "@/utils/money";
 
 const API = "/api";
 const getHeaders = () => ({ "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("erp_token") || ""}` });
@@ -206,7 +207,7 @@ export default function SalesOrders() {
               <h3 className="text-sm font-bold text-blue-800 mb-3 flex items-center gap-2"><DollarSign className="w-4 h-4" /> סיכום + מע״מ 18%</h3>
               <div className="grid grid-cols-3 gap-3 text-sm">
                 <div className="bg-card rounded-lg p-3 text-center border"><div className="text-xs text-muted-foreground mb-1">סכום לפני מע״מ</div><div className="text-lg font-bold text-foreground">{fmtC(lines.reduce((s, l) => s + l.lineTotal, 0))}</div></div>
-                <div className="bg-card rounded-lg p-3 text-center border border-blue-300"><div className="text-xs text-blue-600 mb-1">מע״מ 18%</div><div className="text-lg font-bold text-blue-700">{fmtC(Math.round(lines.reduce((s, l) => s + l.lineTotal, 0) * 0.18 * 100) / 100)}</div></div>
+                <div className="bg-card rounded-lg p-3 text-center border border-blue-300"><div className="text-xs text-blue-600 mb-1">מע״מ 18%</div><div className="text-lg font-bold text-blue-700">{fmtC(Math.round(lines.reduce((s, l) => s + l.lineTotal, 0) * VAT_RATE * 100) / 100)}</div></div>
                 <div className="bg-blue-600 rounded-lg p-3 text-center"><div className="text-xs text-blue-100 mb-1">סה״כ כולל מע״מ</div><div className="text-lg font-bold text-white">{fmtC(Math.round(lines.reduce((s, l) => s + l.lineTotal, 0) * 1.18 * 100) / 100)}</div></div>
               </div>
             </div>
@@ -215,7 +216,7 @@ export default function SalesOrders() {
               <div className="bg-[#1a1f2e] border border-border/30 rounded-lg p-4 min-w-[280px] space-y-2">
                 {(() => {
                   const subtotal = lines.reduce((s, l) => s + l.lineTotal, 0);
-                  const vat = subtotal * 0.18;
+                  const vat = subtotal * VAT_RATE;
                   const total = subtotal + vat;
                   return (
                     <>

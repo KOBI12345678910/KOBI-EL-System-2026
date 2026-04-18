@@ -9,6 +9,7 @@ import { useSmartPagination } from "@/hooks/use-smart-pagination";
 import { SmartPagination } from "@/components/smart-pagination";
 import { Badge } from "@/components/ui/badge";
 import { authFetch } from "@/lib/utils";
+import { VAT_RATE } from "@/utils/money";
 
 const API = "/api";
 const safeArray = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
@@ -101,7 +102,7 @@ export default function InvoiceAnalysisPage() {
   const kpis = [
     { label: "סה\"כ הכנסות", value: fmtCurrency(Number(summary.totalIncome || 0)), icon: DollarSign, color: "text-blue-400" },
     { label: "שולמו (72%)", value: fmtCurrency(Number(summary.totalIncome || 0) * 0.72), icon: CheckCircle2, color: "text-green-400" },
-    { label: "ממתינות (18%)", value: fmtCurrency(Number(summary.totalIncome || 0) * 0.18), icon: Clock, color: "text-yellow-400" },
+    { label: `ממתינות (${Math.round(VAT_RATE * 100)}%)`, value: fmtCurrency(Number(summary.totalIncome || 0) * VAT_RATE), icon: Clock, color: "text-yellow-400" },
     { label: "שולי רווח", value: `${summary.profitMargin || 0}%`, icon: TrendingUp, color: "text-emerald-400" },
     { label: "רשומות", value: fmt(items.length), icon: Hash, color: "text-purple-400" },
   ];

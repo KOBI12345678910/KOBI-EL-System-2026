@@ -8,6 +8,7 @@ import {
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { VAT_RATE } from "@/utils/money";
 import { authJson, authFetch } from "@/lib/utils";
 import RelatedRecords from "@/components/related-records";
 import AttachmentsSection from "@/components/attachments-section";
@@ -89,7 +90,7 @@ export default function ContractorDecisionPage() {
   };
 
   const invoiceVal = Number(calcForm.invoiceAmount || 0);
-  const exVat = invoiceVal > 0 ? Math.round((invoiceVal / 1.18) * 100) / 100 : 0;
+  const exVat = invoiceVal > 0 ? Math.round((invoiceVal / (1 + VAT_RATE)) * 100) / 100 : 0;
   const livePercentCost = exVat * (Number(calcForm.contractorPercent || 0) / 100);
   const liveSqmCost = Number(calcForm.squareMeters || 0) * Number(calcForm.ratePerSqm || 0);
 

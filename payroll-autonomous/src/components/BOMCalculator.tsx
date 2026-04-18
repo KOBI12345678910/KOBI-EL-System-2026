@@ -4,6 +4,9 @@
  */
 import React, { useState, useMemo } from 'react';
 
+// B-D031: date-aware Israeli VAT rate (0.18 from 2026-01-01, 0.17 prior)
+const VAT_RATE = new Date() >= new Date('2026-01-01T00:00:00Z') ? 0.18 : 0.17;
+
 // ── Types ──────────────────────────────────────────────────────────────────
 interface BOMLine {
   material: string;
@@ -227,7 +230,7 @@ export default function BOMCalculator() {
   const totalMaterials = useMemo(() => bom.reduce((s, l) => s + l.qty * l.pricePerUnit, 0), [bom]);
   const laborCost = totalMaterials * 0.5;
   const subtotal = totalMaterials + laborCost;
-  const vat = subtotal * 0.18;
+  const vat = subtotal * VAT_RATE;
   const grandTotal = subtotal + vat;
 
   const fmt = (n: number) => `₪${n.toLocaleString('he-IL', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;

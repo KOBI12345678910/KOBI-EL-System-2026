@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { validateSession } from "../lib/auth";
+import { getVatRateForDate } from "./israeli-accounting-engine";
 
 const router = Router();
 
@@ -89,8 +90,12 @@ router.post("/ar", async (req, res) => {
   const d = req.body;
   const num = await nextNum("AR-", "accounts_receivable", "ar_number");
   const s = (v: any) => v ? `'${String(v).replace(/'/g, "''")}'` : "NULL";
-  const vatAmount = Number(d.vatAmount) || (Number(d.amount || 0) * 0.18 / 1.18);
-  const netAmount = Number(d.netAmount) || (Number(d.amount || 0) / 1.18);
+  // CANONICALIZATION D032: AR historically stored `amount` as GROSS (includes VAT).
+  // Date-aware VAT rate (B-D031) — returns 0.18 for 2026+ dates, 0.17 for prior.
+  const _vatRate = getVatRateForDate(d.invoiceDate || new Date());
+  const _grossFactor = 1 + _vatRate;
+  const vatAmount = Number(d.vatAmount) || (Number(d.amount || 0) * _vatRate / _grossFactor);
+  const netAmount = Number(d.netAmount) || (Number(d.amount || 0) / _grossFactor);
   await q(`INSERT INTO accounts_receivable (ar_number, invoice_number, customer_id, customer_name, customer_phone, customer_email, invoice_date, due_date, amount, net_amount, vat_amount, paid_amount, currency, status, payment_terms, description, category, notes, tags, priority, gl_account, gl_account_name, cost_center, department, project_name, payment_method, salesperson, contact_person, contact_phone, withholding_tax, discount_percent, discount_amount, discount_date, credit_limit, order_number, delivery_note)
     VALUES ('${num}', ${s(d.invoiceNumber)}, ${d.customerId||'NULL'}, ${s(d.customerName)}, ${s(d.customerPhone)}, ${s(d.customerEmail)}, '${d.invoiceDate || new Date().toISOString().slice(0,10)}', '${d.dueDate || new Date().toISOString().slice(0,10)}', ${d.amount||0}, ${netAmount.toFixed(2)}, ${vatAmount.toFixed(2)}, 0, '${d.currency||'ILS'}', '${d.status||'open'}', ${s(d.paymentTerms)}, ${s(d.description)}, ${s(d.category)}, ${s(d.notes)}, ${s(d.tags)}, '${d.priority||'normal'}', ${s(d.glAccount)}, ${s(d.glAccountName)}, ${s(d.costCenter)}, ${s(d.department)}, ${s(d.projectName)}, ${s(d.paymentMethod)}, ${s(d.salesperson)}, ${s(d.contactPerson)}, ${s(d.contactPhone)}, ${d.withholdingTax||0}, ${d.discountPercent||0}, ${d.discountAmount||0}, ${d.discountDate ? `'${d.discountDate}'` : 'NULL'}, ${d.creditLimit||0}, ${s(d.orderNumber)}, ${s(d.deliveryNote)})`);
   const rows = await q(`SELECT * FROM accounts_receivable WHERE ar_number='${num}'`);

@@ -69,6 +69,11 @@ function extractRecordId(path: string): number | null {
   return match ? Number(match[1]) : null;
 }
 
+// B-SEC: whitelist of tables allowed for audit SELECTs (prevents SQLi via sql.raw)
+const AUDIT_ALLOWED_TABLES: ReadonlySet<string> = new Set(
+  Object.values(CRUD_TABLE_MAP)
+);
+
 export function auditMiddleware(req: Request, res: Response, next: NextFunction) {
   if (req.method === "GET" || req.method === "OPTIONS" || req.method === "HEAD") {
     return next();
@@ -86,8 +91,14 @@ export function auditMiddleware(req: Request, res: Response, next: NextFunction)
   if (req.method === "PUT" || req.method === "PATCH") action = "UPDATE";
   if (req.method === "DELETE") action = "DELETE";
 
-  if (action === "UPDATE" && recordId) {
-    db.execute(sql.raw(`SELECT * FROM ${tableName} WHERE id = ${recordId}`))
+  // B-SEC: only run pre-read when tableName is in the whitelist AND recordId is a safe integer.
+  // resolveTableFromPath already returns whitelisted tables, but this double-check hardens against future map changes.
+  const tableIsSafe = AUDIT_ALLOWED_TABLES.has(tableName);
+  const recordIdIsSafe = typeof recordId === "number" && Number.isInteger(recordId) && recordId > 0;
+
+  if (action === "UPDATE" && recordIdIsSafe && tableIsSafe) {
+    // Parameterized: sql.identifier() for table + bound param for id (prevents SQLi)
+    db.execute(sql`SELECT * FROM ${sql.identifier(tableName)} WHERE id = ${recordId}`)
       .then(result => {
         const oldValues = result.rows?.[0] || null;
         res.json = function (body: any) {
@@ -101,8 +112,8 @@ export function auditMiddleware(req: Request, res: Response, next: NextFunction)
         next();
       })
       .catch(() => next());
-  } else if (action === "DELETE" && recordId) {
-    db.execute(sql.raw(`SELECT * FROM ${tableName} WHERE id = ${recordId}`))
+  } else if (action === "DELETE" && recordIdIsSafe && tableIsSafe) {
+    db.execute(sql`SELECT * FROM ${sql.identifier(tableName)} WHERE id = ${recordId}`)
       .then(result => {
         const oldValues = result.rows?.[0] || null;
         res.json = function (body: any) {

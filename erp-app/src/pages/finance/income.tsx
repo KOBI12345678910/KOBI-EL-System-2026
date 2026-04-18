@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { VAT_RATE } from "@/utils/money";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -313,7 +314,7 @@ export default function IncomePage() {
 
   const autoCalcVat = (amt: string) => {
     const a = Number(amt) || 0;
-    return String(Math.round(a * 0.18 * 100) / 100);
+    return String(Math.round(a * VAT_RATE * 100) / 100);
   };
 
   return (

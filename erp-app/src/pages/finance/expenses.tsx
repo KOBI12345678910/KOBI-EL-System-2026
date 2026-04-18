@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { VAT_RATE } from "@/utils/money";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -281,7 +282,7 @@ export default function ExpensesPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div><Label>סכום</Label><Input type="number" value={form.amount} onChange={e => {
                     const amt = e.target.value;
-                    const vat = String(Math.round(Number(amt || 0) * 0.18 * 100) / 100);
+                    const vat = String(Math.round(Number(amt || 0) * VAT_RATE * 100) / 100);
                     setForm({ ...form, amount: amt, vat_amount: vat });
                   }} className="bg-slate-800 border-slate-700" /></div>
                   <div><Label>מע"מ 18%</Label><Input type="number" value={form.vat_amount} onChange={e => setForm({ ...form, vat_amount: e.target.value })} className="bg-slate-800 border-slate-700" /></div>

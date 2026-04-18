@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
+import { getVatRateForDate } from "./israeli-accounting-engine";
 
 const router: IRouter = Router();
 
@@ -41,14 +42,14 @@ const ENTITY_RELATIONS: Record<string, Record<string, (data: Record<string, any>
     }),
     tax_report: (data) => ({
       type: "output_vat",
-      amount: data.vat_amount || Math.round((data.total_amount || 0) * 0.18),
+      amount: data.vat_amount || Math.round((data.total_amount || 0) * getVatRateForDate(data.date || data.invoice_date || new Date())),
       invoice_number: data.invoice_number,
       date: data.issue_date,
       created_by_ai: true,
     }),
     vat_report: (data) => ({
       type: "output_vat",
-      amount: data.vat_amount || Math.round((data.total_amount || 0) * 0.18),
+      amount: data.vat_amount || Math.round((data.total_amount || 0) * getVatRateForDate(data.date || data.invoice_date || new Date())),
       invoice_number: data.invoice_number,
       customer_name: data.customer_name,
       date: data.issue_date,
@@ -74,7 +75,7 @@ const ENTITY_RELATIONS: Record<string, Record<string, (data: Record<string, any>
     }),
     vat_report: (data) => ({
       type: "output_vat",
-      amount: data.vat_amount || Math.round((data.total_amount || 0) * 0.18),
+      amount: data.vat_amount || Math.round((data.total_amount || 0) * getVatRateForDate(data.date || data.invoice_date || new Date())),
       invoice_number: data.invoice_number,
       created_by_ai: true,
     }),

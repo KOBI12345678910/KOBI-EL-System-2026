@@ -10,6 +10,7 @@ import {
 } from "@workspace/db/schema";
 import { eq, ilike, or, and, desc } from "drizzle-orm";
 import { z } from "zod/v4";
+import { getVatRateForDate } from "./israeli-accounting-engine";
 
 const router: IRouter = Router();
 
@@ -102,7 +103,8 @@ router.get("/project-analyses", async (req, res) => {
         const operationalOverhead = subtotal * (parseFloat(analysis.operationalOverheadPercent || "0") / 100);
         const creditFee = subtotal * (parseFloat(analysis.creditFeePercent || "0") / 100);
         const totalCost = subtotal + contingency + operationalOverhead + creditFee;
-        const vat = totalCost * 0.18;
+        // B-D031: date-aware VAT rate
+        const vat = totalCost * getVatRateForDate((analysis as any).analysisDate || new Date());
         const totalWithVat = totalCost + vat;
 
         const salePrice = parseFloat(analysis.actualSalePrice || "0") || parseFloat(analysis.proposedSalePrice || "0");
@@ -452,7 +454,8 @@ router.get("/project-analyses/:id/calculate", async (req, res) => {
     const operationalOverhead = subtotal * (operationalPct / 100);
     const creditFee = subtotal * (creditPct / 100);
     const totalBeforeVat = subtotal + contingency + operationalOverhead + creditFee;
-    const vat = totalBeforeVat * 0.18;
+    // B-D031: date-aware VAT rate
+    const vat = totalBeforeVat * getVatRateForDate((analysis as any).analysisDate || new Date());
     const totalWithVat = totalBeforeVat + vat;
 
     const proposedSale = parseFloat(analysis.proposedSalePrice || "0");

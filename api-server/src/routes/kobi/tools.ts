@@ -5,6 +5,7 @@ import { execSync } from "child_process";
 import * as XLSX from "xlsx";
 import { importData, handleSchedulerTool, handleTriggerTool, getAgentStatus } from "../../lib/super-ai-agent";
 import { saveMemory } from "./memory";
+import { getVatRateForDate } from "../israeli-accounting-engine";
 
 const ROOT = join(process.cwd(), "../..");
 
@@ -1158,17 +1159,21 @@ async function financialCalc(input: { action: string; amount_cents?: number; rat
   switch (action) {
     case "vat_calc": {
       if (!amount_cents) throw new Error("amount_cents נדרש");
-      const vatRate = 0.18;
+      // B-D031: date-aware VAT rate (0.18 from 2026-01-01, 0.17 prior)
+      const vatRate = getVatRateForDate(new Date());
       const vat = Math.round(amount_cents * vatRate);
       const total = amount_cents + vat;
       const amtNis = (amount_cents / 100).toLocaleString("he-IL");
       const vatNis = (vat / 100).toLocaleString("he-IL");
       const totalNis = (total / 100).toLocaleString("he-IL");
-      return { result: `🧮 **חישוב מע"מ 18%**:\nסכום: ${amtNis} ₪\nמע"מ: ${vatNis} ₪\nסה"כ כולל מע"מ: ${totalNis} ₪` };
+      const vatPct = Math.round(vatRate * 100);
+      return { result: `🧮 **חישוב מע"מ ${vatPct}%**:\nסכום: ${amtNis} ₪\nמע"מ: ${vatNis} ₪\nסה"כ כולל מע"מ: ${totalNis} ₪` };
     }
     case "vat_extract": {
       if (!amount_cents) throw new Error("amount_cents נדרש");
-      const base = Math.round(amount_cents / 1.18);
+      // B-D031: date-aware VAT rate (0.18 from 2026-01-01, 0.17 prior)
+      const _vatRate = getVatRateForDate(new Date());
+      const base = Math.round(amount_cents / (1 + _vatRate));
       const vat = amount_cents - base;
       return { result: `🧮 **הפרדת מע"מ**:\nסה"כ כולל: ${(amount_cents / 100).toLocaleString("he-IL")} ₪\nבסיס: ${(base / 100).toLocaleString("he-IL")} ₪\nמע"מ: ${(vat / 100).toLocaleString("he-IL")} ₪` };
     }
@@ -1878,10 +1883,12 @@ async function workflowTrigger(input: { action: string; workflow_type?: string; 
       if (order.rows.length === 0) throw new Error(`הזמנה ${entity_id} לא נמצאה`);
       const o = order.rows[0];
       try {
+        // B-D031: date-aware VAT rate (0.18 from 2026-01-01, 0.17 prior)
+        const _vatRate = getVatRateForDate(new Date());
         const inv = await pool.query(`
           INSERT INTO customer_invoices (customer_id, invoice_number, status, total_amount_cents, vat_amount_cents, invoice_date, due_date, sales_order_id)
           VALUES ($1, $2, 'draft', $3, $4, NOW(), NOW() + INTERVAL '30 days', $5) RETURNING id, invoice_number
-        `, [o.customer_id, `INV-${Date.now()}`, o.total_amount_cents, Math.round(Number(o.total_amount_cents) * 0.18), entity_id]);
+        `, [o.customer_id, `INV-${Date.now()}`, o.total_amount_cents, Math.round(Number(o.total_amount_cents) * _vatRate), entity_id]);
         await pool.query("UPDATE sales_orders SET status = 'invoiced' WHERE id = $1", [entity_id]);
         return { result: `✅ חשבונית נוצרה: [${inv.rows[0].id}] ${inv.rows[0].invoice_number}\nהזמנה ${entity_id} עודכנה ל-invoiced` };
       } catch (e: any) {

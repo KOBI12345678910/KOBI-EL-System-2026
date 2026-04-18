@@ -8,6 +8,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { validateSession } from "../lib/auth";
+import { getVatRateForDate } from "./israeli-accounting-engine";
 
 // ===================== טיפוסים =====================
 
@@ -236,7 +237,8 @@ router.post("/import-management/shipments", async (req: AuthRequest, res: Respon
     const customs_duty_amount = ils_value * (dutyRate / 100);
     const purchase_tax = 0; // מס קנייה - תלוי בסיווג המוצר
     const vat_base = ils_value + customs_duty_amount + purchase_tax;
-    const vat_amount = vat_base * 0.18; // מע"מ 18% (מ-2026-01-01, לפני כן 17%)
+    // B-D031: date-aware VAT rate (0.18 post-2026-01-01, 0.17 prior)
+    const vat_amount = vat_base * getVatRateForDate((req.body as any).shipment_date || new Date());
     const total_landed_cost = ils_value + customs_duty_amount + purchase_tax + vat_amount;
 
     const rows = await safeQuery(`
@@ -289,7 +291,8 @@ router.put("/import-management/shipments/:id", async (req: AuthRequest, res: Res
       const ils = cif * rate;
       const duty = ils * (dutyRate / 100);
       const ptax = Number(fields.purchase_tax ?? current[0].purchase_tax) || 0;
-      const vat = (ils + duty + ptax) * 0.18;
+      // B-D031: date-aware VAT rate
+      const vat = (ils + duty + ptax) * getVatRateForDate(fields.shipment_date ?? current[0].shipment_date ?? new Date());
       const landed = ils + duty + ptax + vat;
 
       fields.cif_value = cif;

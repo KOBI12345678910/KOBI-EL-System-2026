@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { VAT_RATE } from "@/utils/money";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -273,7 +274,7 @@ export default function ExpenseFilingPage() {
                     value={form.amount}
                     onChange={e => {
                       const amt = e.target.value;
-                      const vat = String(Math.round(Number(amt || 0) * 0.18 * 100) / 100);
+                      const vat = String(Math.round(Number(amt || 0) * VAT_RATE * 100) / 100);
                       setForm({ ...form, amount: amt, vat_amount: vat });
                     }}
                     className="bg-slate-800 border-slate-700 mt-1"
@@ -294,7 +295,7 @@ export default function ExpenseFilingPage() {
                 <div className="bg-slate-800 rounded-lg p-3 text-sm text-slate-300 space-y-1">
                   <div className="flex justify-between">
                     <span>סה"כ ללא מע"מ</span>
-                    <span className="text-white font-medium">{(Number(form.amount || 0) / 1.18).toFixed(2)}</span>
+                    <span className="text-white font-medium">{(Number(form.amount || 0) / (1 + VAT_RATE)).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>מע"מ 18%</span>
