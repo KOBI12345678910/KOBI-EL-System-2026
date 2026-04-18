@@ -1216,9 +1216,11 @@ router.post("/kimi/dev/execute-action", async (req: Request, res: Response) => {
       }
       case "db_indexes": {
         const { tableName: idxTable } = params;
-        const q = idxTable
-          ? sql.raw(`SELECT indexname, indexdef FROM pg_indexes WHERE tablename = '${idxTable.replace(/[^a-zA-Z0-9_]/g, "")}' ORDER BY indexname`)
-          : sql.raw(`SELECT tablename, indexname, indexdef FROM pg_indexes WHERE schemaname = 'public' ORDER BY tablename, indexname LIMIT 100`);
+        // B-SEC: parameterized WHERE (identifier pre-sanitized via regex allowlist)
+        const idxTableSafe = idxTable ? String(idxTable).replace(/[^a-zA-Z0-9_]/g, "") : null;
+        const q = idxTableSafe
+          ? sql`SELECT indexname, indexdef FROM pg_indexes WHERE tablename = ${idxTableSafe} ORDER BY indexname`
+          : sql`SELECT tablename, indexname, indexdef FROM pg_indexes WHERE schemaname = 'public' ORDER BY tablename, indexname LIMIT 100`;
         const idxRes = await db.execute(q);
         result = idxRes.rows || [];
         break;
@@ -1382,9 +1384,12 @@ router.post("/kimi/dev/execute-action", async (req: Request, res: Response) => {
       }
       case "audit_log": {
         const { tableName: auditTable, limit: auditLimit = 20 } = params;
-        const auditQ = auditTable
-          ? sql.raw(`SELECT id, operation, table_name, record_id, changed_by, changes, created_at FROM audit_log WHERE table_name = '${auditTable.replace(/[^a-zA-Z0-9_]/g, "")}' ORDER BY created_at DESC LIMIT ${Math.min(Number(auditLimit), 50)}`)
-          : sql.raw(`SELECT id, operation, table_name, record_id, changed_by, changes, created_at FROM audit_log ORDER BY created_at DESC LIMIT ${Math.min(Number(auditLimit), 50)}`);
+        // B-SEC: parameterized WHERE + LIMIT bound to safe integer
+        const auditLim = Math.min(Math.max(1, Number(auditLimit) || 20), 50);
+        const auditTableSafe = auditTable ? String(auditTable).replace(/[^a-zA-Z0-9_]/g, "") : null;
+        const auditQ = auditTableSafe
+          ? sql`SELECT id, operation, table_name, record_id, changed_by, changes, created_at FROM audit_log WHERE table_name = ${auditTableSafe} ORDER BY created_at DESC LIMIT ${auditLim}`
+          : sql`SELECT id, operation, table_name, record_id, changed_by, changes, created_at FROM audit_log ORDER BY created_at DESC LIMIT ${auditLim}`;
         try {
           const auditRes = await db.execute(auditQ);
           result = { entries: auditRes.rows || [], count: (auditRes.rows || []).length };
@@ -2134,13 +2139,14 @@ router.post("/kimi/dev/execute-action", async (req: Request, res: Response) => {
       }
       case "recent_activity": {
         const { hours = 24 } = params;
-        const h = Math.min(Number(hours), 168);
+        const h = Math.min(Math.max(1, Number(hours) || 24), 168);
         try {
+          // B-SEC: parameterized INTERVAL via make_interval (no string interpolation)
           const actQ = await Promise.allSettled([
-            db.execute(sql.raw(`SELECT count(*) as c FROM audit_logs WHERE created_at > NOW() - INTERVAL '${h} hours'`)),
-            db.execute(sql.raw(`SELECT count(*) as c FROM entity_records WHERE created_at > NOW() - INTERVAL '${h} hours'`)),
-            db.execute(sql.raw(`SELECT count(*) as c FROM kimi_conversations`)),
-            db.execute(sql.raw(`SELECT action, count(*) as c FROM audit_logs WHERE created_at > NOW() - INTERVAL '${h} hours' GROUP BY action ORDER BY c DESC LIMIT 10`)),
+            db.execute(sql`SELECT count(*) as c FROM audit_logs WHERE created_at > NOW() - make_interval(hours => ${h})`),
+            db.execute(sql`SELECT count(*) as c FROM entity_records WHERE created_at > NOW() - make_interval(hours => ${h})`),
+            db.execute(sql`SELECT count(*) as c FROM kimi_conversations`),
+            db.execute(sql`SELECT action, count(*) as c FROM audit_logs WHERE created_at > NOW() - make_interval(hours => ${h}) GROUP BY action ORDER BY c DESC LIMIT 10`),
           ]);
           const actGet = (idx: number) => {
             const r2 = actQ[idx];

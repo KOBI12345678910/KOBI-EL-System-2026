@@ -41,7 +41,8 @@ async function nextEcrNum(): Promise<string> {
   const year = new Date().getFullYear();
   const pattern = `ECR${year}-%`;
   try {
-    const r = await db.execute(sql.raw(`SELECT ecr_number FROM engineering_change_requests WHERE ecr_number LIKE '${pattern}' ORDER BY id DESC LIMIT 1`));
+    // B-SEC: parameterized LIKE (pattern is server-constructed but safer as param)
+    const r = await db.execute(sql`SELECT ecr_number FROM engineering_change_requests WHERE ecr_number LIKE ${pattern} ORDER BY id DESC LIMIT 1`);
     const last = (r.rows[0] as any)?.ecr_number;
     const seq = last ? parseInt(last.split("-").pop()!) + 1 : 1;
     return `ECR${year}-${String(seq).padStart(4, "0")}`;
@@ -54,7 +55,8 @@ async function nextEcoNum(): Promise<string> {
   const year = new Date().getFullYear();
   const pattern = `ECO${year}-%`;
   try {
-    const r = await db.execute(sql.raw(`SELECT eco_number FROM engineering_change_orders WHERE eco_number LIKE '${pattern}' ORDER BY id DESC LIMIT 1`));
+    // B-SEC: parameterized LIKE
+    const r = await db.execute(sql`SELECT eco_number FROM engineering_change_orders WHERE eco_number LIKE ${pattern} ORDER BY id DESC LIMIT 1`);
     const last = (r.rows[0] as any)?.eco_number;
     const seq = last ? parseInt(last.split("-").pop()!) + 1 : 1;
     return `ECO${year}-${String(seq).padStart(4, "0")}`;
