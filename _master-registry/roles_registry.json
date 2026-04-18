@@ -1,0 +1,23 @@
+{
+  "roles": [
+    "admin",
+    "ceo",
+    "finance_manager",
+    "sales_manager",
+    "sales_rep",
+    "project_manager",
+    "procurement_manager",
+    "warehouse_manager",
+    "production_manager",
+    "installation_manager",
+    "service_manager",
+    "engineer",
+    "hr_manager",
+    "operations_manager",
+    "analyst",
+    "ai_operator",
+    "auditor",
+    "read_only_executive"
+  ],
+  "count": 18
+}

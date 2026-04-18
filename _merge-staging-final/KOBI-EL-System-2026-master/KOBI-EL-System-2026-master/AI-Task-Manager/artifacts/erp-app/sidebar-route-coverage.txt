@@ -1,0 +1,7 @@
+=== Sidebar Route Coverage Audit ===
+Date: 2026-04-03T03:20:17Z
+
+Sidebar hrefs (unique, normalized): 675
+App.tsx routes+redirects (unique): 759
+
+STATUS: PASSED — All 675 sidebar hrefs are covered.

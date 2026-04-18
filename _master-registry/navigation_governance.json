@@ -1,0 +1,21 @@
+{
+  "objective": "להבטיח שכל הדפים מובילים אחד לשני בצורה לוגית",
+  "mandatory_rules": [
+    "לכל list page יש link ל-detail page",
+    "לכל detail page יש link חזרה ל-list page",
+    "לכל detail page יש related records panels",
+    "לכל create form יש save + cancel + save_and_open",
+    "לכל edit form יש return_to_parent",
+    "לכל workflow page יש previous_step ו-next_step אם זה wizard",
+    "לכל dashboard card יש drilldown page",
+    "לכל page יש breadcrumb_parent",
+    "אין מסך ללא record context אם הוא detail/edit"
+  ],
+  "required_navigation_fields_per_page": [
+    "links_from_pages",
+    "links_to_pages",
+    "breadcrumb_parent",
+    "return_targets",
+    "open_from_record_types"
+  ]
+}

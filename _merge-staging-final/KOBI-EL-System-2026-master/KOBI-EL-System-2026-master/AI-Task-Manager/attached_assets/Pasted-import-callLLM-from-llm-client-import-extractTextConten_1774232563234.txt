@@ -1,0 +1,90 @@
+import { callLLM } from "../llm/client";
+import { extractTextContent } from "../llm/parser";
+import { FileTool } from "./fileTool";
+import { TerminalTool } from "./terminalTool";
+
+export interface Connector {
+  id: string;
+  name: string;
+  type: string;
+  status: "connected" | "disconnected" | "error";
+  config: Record<string, string>;
+}
+
+export class ConnectorsTool {
+  private fileTool: FileTool;
+  private terminal: TerminalTool;
+  private connectors: Map<string, Connector> = new Map();
+
+  constructor(fileTool: FileTool, terminal: TerminalTool) {
+    this.fileTool = fileTool;
+    this.terminal = terminal;
+  }
+
+  getAvailableConnectors(): Array<{ name: string; type: string; package: string; envVars: string[] }> {
+    return [
+      { name: "Stripe", type: "payment", package: "stripe", envVars: ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"] },
+      { name: "PayPal", type: "payment", package: "@paypal/checkout-server-sdk", envVars: ["PAYPAL_CLIENT_ID", "PAYPAL_SECRET"] },
+      { name: "Notion", type: "productivity", package: "@notionhq/client", envVars: ["NOTION_TOKEN"] },
+      { name: "Slack", type: "communication", package: "@slack/web-api", envVars: ["SLACK_BOT_TOKEN", "SLACK_SIGNING_SECRET"] },
+      { name: "Linear", type: "project", package: "@linear/sdk", envVars: ["LINEAR_API_KEY"] },
+      { name: "Google Sheets", type: "data", package: "googleapis", envVars: ["GOOGLE_CLIENT_EMAIL", "GOOGLE_PRIVATE_KEY", "GOOGLE_SHEET_ID"] },
+      { name: "SendGrid", type: "email", package: "@sendgrid/mail", envVars: ["SENDGRID_API_KEY"] },
+      { name: "Twilio", type: "sms", package: "twilio", envVars: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_PHONE"] },
+      { name: "OpenAI", type: "ai", package: "openai", envVars: ["OPENAI_API_KEY"] },
+      { name: "Supabase", type: "database", package: "@supabase/supabase-js", envVars: ["SUPABASE_URL", "SUPABASE_ANON_KEY"] },
+      { name: "Firebase", type: "database", package: "firebase-admin", envVars: ["FIREBASE_PROJECT_ID", "FIREBASE_PRIVATE_KEY", "FIREBASE_CLIENT_EMAIL"] },
+      { name: "AWS S3", type: "storage", package: "@aws-sdk/client-s3", envVars: ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION", "S3_BUCKET"] },
+      { name: "Cloudinary", type: "media", package: "cloudinary", envVars: ["CLOUDINARY_CLOUD_NAME", "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET"] },
+      { name: "Plaid", type: "fintech", package: "plaid", envVars: ["PLAID_CLIENT_ID", "PLAID_SECRET", "PLAID_ENV"] },
+      { name: "BigQuery", type: "data", package: "@google-cloud/bigquery", envVars: ["GOOGLE_APPLICATION_CREDENTIALS"] },
+      { name: "Redis", type: "cache", package: "ioredis", envVars: ["REDIS_URL"] },
+      { name: "MongoDB", type: "database", package: "mongodb", envVars: ["MONGODB_URI"] },
+      { name: "Telegram", type: "bot", package: "telegraf", envVars: ["TELEGRAM_BOT_TOKEN"] },
+      { name: "Discord", type: "bot", package: "discord.js", envVars: ["DISCORD_BOT_TOKEN"] },
+    ];
+  }
+
+  async connect(connectorName: string): Promise<Connector> {
+    const available = this.getAvailableConnectors();
+    const spec = available.find((c) => c.name.toLowerCase() === connectorName.toLowerCase());
+    if (!spec) throw new Error(`Unknown connector: ${connectorName}. Available: ${available.map((c) => c.name).join(", ")}`);
+
+    // Install package
+    await this.terminal.execute(`npm install ${spec.package}`, { timeout: 30000 });
+
+    // Generate connector code
+    const response = await callLLM({
+      system: `Generate a production-ready connector/SDK wrapper for ${spec.name}.
+Include: initialization, common operations, error handling, TypeScript types.
+Respond with ONLY TypeScript code.`,
+      messages: [{
+        role: "user",
+        content: `Generate ${spec.name} connector using ${spec.package}.
+Env vars: ${spec.envVars.join(", ")}
+Include: init, common CRUD operations, error handling, types.`,
+      }],
+    });
+
+    let code = extractTextContent(response.content);
+    code = code.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+
+    const filePath = `src/connectors/${spec.name.toLowerCase().replace(/\s/g, "-")}.ts`;
+    this.fileTool.createFile(filePath, code);
+
+    const connector: Connector = {
+      id: `conn_${Date.now()}`,
+      name: spec.name,
+      type: spec.type,
+      status: "connected",
+      config: Object.fromEntries(spec.envVars.map((v) => [v, ""])),
+    };
+
+    this.connectors.set(connector.id, connector);
+    return connector;
+  }
+
+  getConnected(): Connector[] {
+    return Array.from(this.connectors.values());
+  }
+}

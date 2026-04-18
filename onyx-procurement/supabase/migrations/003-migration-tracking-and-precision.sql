@@ -111,7 +111,7 @@ END$$;
 -- PART C: NEW COLUMNS FOR WAVE 1.5 FIXES
 -- ─────────────────────────────────────────────────────────────
 
--- B-05/B-06: Track VAT rate per transaction (17% now, future reforms)
+-- B-05/B-06: Track VAT rate per transaction (18% from 2026-01-01; 17% before)
 ALTER TABLE supplier_quotes ADD COLUMN IF NOT EXISTS vat_rate NUMERIC(5,4);
 ALTER TABLE supplier_quotes ADD COLUMN IF NOT EXISTS subtotal NUMERIC(14,2);
 ALTER TABLE purchase_orders ADD COLUMN IF NOT EXISTS vat_rate NUMERIC(5,4);
@@ -145,7 +145,7 @@ VALUES
   (0.1700, '2006-07-01', 'VAT 17% — default since 2006', 'חוק מע"מ 1975'),
   (0.1800, '2013-06-02', 'VAT 18% — temporary hike', 'תקנות מע"מ 2013'),
   (0.1700, '2015-10-01', 'VAT 17% — reduction back', 'תקנות מע"מ 2015'),
-  (0.1700, '2026-01-01', 'VAT 17% — continues', 'עדכון שנתי 2026')
+  (0.1800, '2026-01-01', 'VAT 18% — rate increase effective 1 Jan 2026', 'תיקון חוק מע"מ 2026')
 ON CONFLICT DO NOTHING;
 
 COMMENT ON TABLE vat_rates IS 'Historical VAT rates with effective dates. B-05 fix.';

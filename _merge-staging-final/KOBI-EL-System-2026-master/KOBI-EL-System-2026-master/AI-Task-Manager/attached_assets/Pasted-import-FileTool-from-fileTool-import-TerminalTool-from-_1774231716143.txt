@@ -1,0 +1,308 @@
+import { FileTool } from "./fileTool";
+import { TerminalTool } from "./terminalTool";
+
+export class NotificationSetupTool {
+  private fileTool: FileTool;
+  private terminal: TerminalTool;
+
+  constructor(fileTool: FileTool, terminal: TerminalTool) {
+    this.fileTool = fileTool;
+    this.terminal = terminal;
+  }
+
+  async setup(): Promise<void> {
+    this.fileTool.createFile("src/notifications/index.ts", `export type NotificationChannel = 'in-app' | 'email' | 'push' | 'sms' | 'webhook';
+
+export interface Notification {
+  id: string;
+  userId: string;
+  type: string;
+  title: string;
+  body: string;
+  channels: NotificationChannel[];
+  data?: Record<string, any>;
+  read: boolean;
+  createdAt: Date;
+  readAt?: Date;
+}
+
+export interface NotificationPreferences {
+  userId: string;
+  channels: Record<string, boolean>;
+  quiet: { enabled: boolean; from: string; to: string };
+  frequency: 'instant' | 'hourly' | 'daily';
+}
+
+// In-memory store (replace with DB in production)
+const notifications: Notification[] = [];
+
+class NotificationService {
+  private handlers: Map<NotificationChannel, (n: Notification) => Promise<void>> = new Map();
+
+  registerChannel(channel: NotificationChannel, handler: (n: Notification) => Promise<void>) {
+    this.handlers.set(channel, handler);
+  }
+
+  async send(params: {
+    userId: string;
+    type: string;
+    title: string;
+    body: string;
+    channels?: NotificationChannel[];
+    data?: Record<string, any>;
+  }): Promise<Notification> {
+    const notification: Notification = {
+      id: \`notif_\${Date.now()}_\${Math.random().toString(36).slice(2, 6)}\`,
+      userId: params.userId,
+      type: params.type,
+      title: params.title,
+      body: params.body,
+      channels: params.channels || ['in-app'],
+      data: params.data,
+      read: false,
+      createdAt: new Date(),
+    };
+
+    notifications.push(notification);
+
+    // Dispatch to channels
+    for (const channel of notification.channels) {
+      const handler = this.handlers.get(channel);
+      if (handler) {
+        try {
+          await handler(notification);
+        } catch (err) {
+          console.error(\`Notification channel \${channel} failed:\`, err);
+        }
+      }
+    }
+
+    return notification;
+  }
+
+  async sendBulk(userIds: string[], params: Omit<Parameters<typeof this.send>[0], 'userId'>): Promise<Notification[]> {
+    return Promise.all(userIds.map(userId => this.send({ ...params, userId })));
+  }
+
+  getForUser(userId: string, options?: { unreadOnly?: boolean; limit?: number }): Notification[] {
+    let results = notifications.filter(n => n.userId === userId);
+    if (options?.unreadOnly) results = results.filter(n => !n.read);
+    results.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return results.slice(0, options?.limit || 50);
+  }
+
+  markAsRead(notificationId: string): boolean {
+    const n = notifications.find(n => n.id === notificationId);
+    if (n) { n.read = true; n.readAt = new Date(); return true; }
+    return false;
+  }
+
+  markAllAsRead(userId: string): number {
+    let count = 0;
+    for (const n of notifications) {
+      if (n.userId === userId && !n.read) {
+        n.read = true;
+        n.readAt = new Date();
+        count++;
+      }
+    }
+    return count;
+  }
+
+  getUnreadCount(userId: string): number {
+    return notifications.filter(n => n.userId === userId && !n.read).length;
+  }
+}
+
+export const notificationService = new NotificationService();
+
+// Register default in-app channel
+notificationService.registerChannel('in-app', async (n) => {
+  // In-app notifications are stored by default
+  console.log(\`[Notification] \${n.userId}: \${n.title}\`);
+});
+`);
+
+    // Generate SSE endpoint for real-time notifications
+    this.fileTool.createFile("src/notifications/sse.ts", `import { Request, Response, Router } from 'express';
+import { notificationService, Notification } from './index';
+
+export const notificationRouter = Router();
+
+// SSE endpoint for real-time notifications
+const clients = new Map<string, Response[]>();
+
+notificationRouter.get('/stream', (req: Request, res: Response) => {
+  const userId = (req as any).user?.id;
+  if (!userId) return res.status(401).end();
+
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
+    'X-Accel-Buffering': 'no',
+  });
+
+  // Send existing unread notifications
+  const unread = notificationService.getForUser(userId, { unreadOnly: true });
+  for (const n of unread) {
+    res.write(\`data: \${JSON.stringify(n)}\\n\\n\`);
+  }
+
+  // Register client
+  if (!clients.has(userId)) clients.set(userId, []);
+  clients.get(userId)!.push(res);
+
+  // Heartbeat
+  const heartbeat = setInterval(() => res.write(': heartbeat\\n\\n'), 30000);
+
+  req.on('close', () => {
+    clearInterval(heartbeat);
+    const userClients = clients.get(userId) || [];
+    clients.set(userId, userClients.filter(c => c !== res));
+  });
+});
+
+// Push notification to SSE clients
+export function pushToClient(userId: string, notification: Notification) {
+  const userClients = clients.get(userId) || [];
+  for (const client of userClients) {
+    client.write(\`data: \${JSON.stringify(notification)}\\n\\n\`);
+  }
+}
+
+// REST endpoints
+notificationRouter.get('/', (req: Request, res: Response) => {
+  const userId = (req as any).user?.id;
+  const unreadOnly = req.query.unread === 'true';
+  const limit = parseInt(req.query.limit as string) || 50;
+  res.json(notificationService.getForUser(userId, { unreadOnly, limit }));
+});
+
+notificationRouter.post('/:id/read', (req: Request, res: Response) => {
+  const success = notificationService.markAsRead(req.params.id);
+  res.json({ success });
+});
+
+notificationRouter.post('/read-all', (req: Request, res: Response) => {
+  const userId = (req as any).user?.id;
+  const count = notificationService.markAllAsRead(userId);
+  res.json({ marked: count });
+});
+
+notificationRouter.get('/unread-count', (req: Request, res: Response) => {
+  const userId = (req as any).user?.id;
+  res.json({ count: notificationService.getUnreadCount(userId) });
+});
+`);
+
+    // Generate React notification component
+    this.fileTool.createFile("src/components/Notifications/NotificationBell.tsx", `import { useState, useEffect, useCallback } from 'react';
+
+interface Notification {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  read: boolean;
+  createdAt: string;
+}
+
+export function NotificationBell() {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    // Connect to SSE
+    const eventSource = new EventSource('/api/notifications/stream');
+    
+    eventSource.onmessage = (event) => {
+      const notification = JSON.parse(event.data);
+      setNotifications(prev => [notification, ...prev]);
+      setUnreadCount(prev => prev + 1);
+    };
+
+    eventSource.onerror = () => {
+      eventSource.close();
+      // Reconnect after 5 seconds
+      setTimeout(() => {
+        // Reconnect logic
+      }, 5000);
+    };
+
+    // Load initial notifications
+    fetch('/api/notifications?limit=20')
+      .then(r => r.json())
+      .then(data => setNotifications(data));
+
+    fetch('/api/notifications/unread-count')
+      .then(r => r.json())
+      .then(data => setUnreadCount(data.count));
+
+    return () => eventSource.close();
+  }, []);
+
+  const markAsRead = useCallback(async (id: string) => {
+    await fetch(\`/api/notifications/\${id}/read\`, { method: 'POST' });
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    setUnreadCount(prev => Math.max(0, prev - 1));
+  }, []);
+
+  const markAllRead = useCallback(async () => {
+    await fetch('/api/notifications/read-all', { method: 'POST' });
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    setUnreadCount(0);
+  }, []);
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
+        )}
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 max-h-96 overflow-y-auto">
+          <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700">
+            <span className="font-semibold text-sm">Notifications</span>
+            {unreadCount > 0 && (
+              <button onClick={markAllRead} className="text-xs text-blue-500 hover:underline">
+                Mark all read
+              </button>
+            )}
+          </div>
+          {notifications.length === 0 ? (
+            <div className="p-4 text-center text-gray-400 text-sm">No notifications</div>
+          ) : (
+            notifications.map(n => (
+              <div
+                key={n.id}
+                onClick={() => !n.read && markAsRead(n.id)}
+                className={\`p-3 border-b border-gray-100 dark:border-gray-800 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 \${!n.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''}\`}
+              >
+                <div className="font-medium text-sm">{n.title}</div>
+                <div className="text-xs text-gray-500 mt-1">{n.body}</div>
+                <div className="text-xs text-gray-400 mt-1">
+                  {new Date(n.createdAt).toLocaleString()}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+`);
+  }
+}

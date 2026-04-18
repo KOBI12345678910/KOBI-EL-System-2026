@@ -1,0 +1,206 @@
+export interface CronJob {
+  id: string;
+  name: string;
+  schedule: string; // cron expression
+  command: string | (() => Promise<void>);
+  enabled: boolean;
+  lastRun?: Date;
+  nextRun?: Date;
+  runCount: number;
+  lastError?: string;
+  timeout: number;
+}
+
+export interface CronLogEntry {
+  jobId: string;
+  startedAt: Date;
+  completedAt: Date;
+  success: boolean;
+  output?: string;
+  error?: string;
+  duration: number;
+}
+
+export class CronTool {
+  private jobs: Map<string, CronJob & { timer?: NodeJS.Timeout }> = new Map();
+  private logs: CronLogEntry[] = [];
+  private maxLogs = 1000;
+  private executor: (command: string) => Promise<{ success: boolean; output: string; error?: string }>;
+  private onLog: (msg: string) => void;
+
+  constructor(
+    executor: (cmd: string) => Promise<{ success: boolean; output: string; error?: string }>,
+    onLog: (msg: string) => void
+  ) {
+    this.executor = executor;
+    this.onLog = onLog;
+  }
+
+  register(job: Omit<CronJob, "runCount" | "id"> & { id?: string }): CronJob {
+    const id = job.id || `cron_${Date.now()}`;
+    const cronJob: CronJob = {
+      ...job,
+      id,
+      runCount: 0,
+      timeout: job.timeout || 60000,
+    };
+
+    this.jobs.set(id, cronJob);
+
+    if (cronJob.enabled) {
+      this.scheduleJob(cronJob);
+    }
+
+    this.onLog(`⏰ Registered cron job: ${cronJob.name} (${cronJob.schedule})`);
+    return cronJob;
+  }
+
+  private scheduleJob(job: CronJob & { timer?: NodeJS.Timeout }): void {
+    const intervalMs = this.parseScheduleToMs(job.schedule);
+    if (intervalMs <= 0) return;
+
+    job.nextRun = new Date(Date.now() + intervalMs);
+
+    job.timer = setInterval(async () => {
+      if (!job.enabled) return;
+
+      const startTime = Date.now();
+      this.onLog(`⏰ Running: ${job.name}`);
+
+      try {
+        let result;
+        if (typeof job.command === "function") {
+          await job.command();
+          result = { success: true, output: "Function completed" };
+        } else {
+          result = await this.executor(job.command);
+        }
+
+        job.lastRun = new Date();
+        job.runCount++;
+        job.nextRun = new Date(Date.now() + intervalMs);
+
+        const logEntry: CronLogEntry = {
+          jobId: job.id,
+          startedAt: new Date(startTime),
+          completedAt: new Date(),
+          success: result.success,
+          output: result.output?.slice(0, 500),
+          error: result.error,
+          duration: Date.now() - startTime,
+        };
+
+        this.logs.push(logEntry);
+        if (this.logs.length > this.maxLogs) this.logs.shift();
+
+        if (result.success) {
+          this.onLog(`  ✅ ${job.name} completed (${logEntry.duration}ms)`);
+          job.lastError = undefined;
+        } else {
+          this.onLog(`  ❌ ${job.name} failed: ${result.error}`);
+          job.lastError = result.error;
+        }
+      } catch (err: any) {
+        job.lastError = err.message;
+        this.onLog(`  ❌ ${job.name} error: ${err.message}`);
+      }
+    }, intervalMs);
+  }
+
+  enable(jobId: string): boolean {
+    const job = this.jobs.get(jobId);
+    if (!job) return false;
+    job.enabled = true;
+    this.scheduleJob(job);
+    return true;
+  }
+
+  disable(jobId: string): boolean {
+    const job = this.jobs.get(jobId);
+    if (!job) return false;
+    job.enabled = false;
+    if (job.timer) clearInterval(job.timer);
+    return true;
+  }
+
+  async runNow(jobId: string): Promise<CronLogEntry | null> {
+    const job = this.jobs.get(jobId);
+    if (!job) return null;
+
+    const startTime = Date.now();
+    try {
+      let result;
+      if (typeof job.command === "function") {
+        await job.command();
+        result = { success: true, output: "OK" };
+      } else {
+        result = await this.executor(job.command);
+      }
+
+      const entry: CronLogEntry = {
+        jobId,
+        startedAt: new Date(startTime),
+        completedAt: new Date(),
+        success: result.success,
+        output: result.output?.slice(0, 500),
+        error: result.error,
+        duration: Date.now() - startTime,
+      };
+
+      this.logs.push(entry);
+      job.lastRun = new Date();
+      job.runCount++;
+      return entry;
+    } catch (err: any) {
+      return {
+        jobId,
+        startedAt: new Date(startTime),
+        completedAt: new Date(),
+        success: false,
+        error: err.message,
+        duration: Date.now() - startTime,
+      };
+    }
+  }
+
+  remove(jobId: string): boolean {
+    const job = this.jobs.get(jobId);
+    if (job?.timer) clearInterval(job.timer);
+    return this.jobs.delete(jobId);
+  }
+
+  getJobs(): CronJob[] {
+    return Array.from(this.jobs.values()).map(({ timer, ...job }) => job);
+  }
+
+  getLogs(jobId?: string, limit = 50): CronLogEntry[] {
+    let results = this.logs;
+    if (jobId) results = results.filter((l) => l.jobId === jobId);
+    return results.slice(-limit);
+  }
+
+  stopAll(): void {
+    for (const [, job] of this.jobs) {
+      if (job.timer) clearInterval(job.timer);
+    }
+  }
+
+  private parseScheduleToMs(schedule: string): number {
+    // Simple parser: supports "every Xs/Xm/Xh/Xd" and basic cron
+    const match = schedule.match(/every\s+(\d+)\s*(s|sec|m|min|h|hour|d|day)/i);
+    if (match) {
+      const value = parseInt(match[1]);
+      const unit = match[2].toLowerCase();
+      if (unit.startsWith("s")) return value * 1000;
+      if (unit.startsWith("m")) return value * 60 * 1000;
+      if (unit.startsWith("h")) return value * 60 * 60 * 1000;
+      if (unit.startsWith("d")) return value * 24 * 60 * 60 * 1000;
+    }
+
+    // Cron-like: */5 * * * * = every 5 minutes
+    const cronMatch = schedule.match(/^\*\/(\d+)\s/);
+    if (cronMatch) return parseInt(cronMatch[1]) * 60 * 1000;
+
+    return 60000; // Default: 1 minute
+  }
+}

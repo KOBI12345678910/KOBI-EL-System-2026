@@ -1,0 +1,308 @@
+[
+  [
+    "/policies",
+    "compliance.policies",
+    "מדיניות ונהלים",
+    12
+  ],
+  [
+    "/policy-acknowledgements",
+    "compliance.policy_acknowledgements",
+    "אישורי מדיניות",
+    12
+  ],
+  [
+    "/employers",
+    "workforce.employers",
+    "מעסיקים (חברות בית)",
+    8
+  ],
+  [
+    "/hr-profiles",
+    "workforce.hr_profiles",
+    "פרופילי כ״א",
+    8
+  ],
+  [
+    "/leave-types",
+    "workforce.leave_types",
+    "סוגי חופשות",
+    8
+  ],
+  [
+    "/pay-components",
+    "workforce.pay_components",
+    "רכיבי שכר",
+    8
+  ],
+  [
+    "/pension-records",
+    "workforce.pension_records",
+    "רשומות פנסיה",
+    8
+  ],
+  [
+    "/orders",
+    "public.orders",
+    "הזמנות (כלליות)",
+    2
+  ],
+  [
+    "/user-roles",
+    "governance.user_roles",
+    "תפקידי משתמשים",
+    15
+  ],
+  [
+    "/user-preferences",
+    "governance.user_preferences",
+    "העדפות משתמש",
+    15
+  ],
+  [
+    "/user-profiles",
+    "public.user_profiles",
+    "פרופילי משתמשים",
+    15
+  ],
+  [
+    "/universal-inbox",
+    "orchestration.universal_inbox",
+    "תיבה אחודה",
+    9
+  ],
+  [
+    "/fx-rates",
+    "finance.fx_rates",
+    "שערי מט״ח",
+    6
+  ],
+  [
+    "/gl-transactions",
+    "finance.gl_transactions",
+    "תנועות הנה״ח",
+    6
+  ],
+  [
+    "/annual-tax-reports",
+    "finance.annual_tax_reports",
+    "דוחות שנתיים",
+    7
+  ],
+  [
+    "/bank-matches",
+    "finance.bank_matches",
+    "התאמות בנק",
+    6
+  ],
+  [
+    "/supplier-contacts",
+    "procurement.supplier_contacts",
+    "אנשי קשר ספקים",
+    3
+  ],
+  [
+    "/supplier-scorecards",
+    "procurement.supplier_scorecards",
+    "כרטיסי דירוג ספקים",
+    3
+  ],
+  [
+    "/supplier-portal-accounts",
+    "procurement.supplier_portal_accounts",
+    "חשבונות פורטל ספקים",
+    3
+  ],
+  [
+    "/warranty-cases",
+    "procurement.warranty_cases",
+    "תיקי אחריות",
+    3
+  ],
+  [
+    "/rfq-supplier-invites",
+    "procurement.rfq_supplier_invites",
+    "הזמנות ספקים ל-RFQ",
+    3
+  ],
+  [
+    "/help-articles",
+    "comms.help_articles",
+    "מאמרי עזרה",
+    9
+  ],
+  [
+    "/portal-users",
+    "comms.portal_users",
+    "משתמשי פורטל",
+    9
+  ],
+  [
+    "/agent-registry",
+    "intelligence.agent_registry",
+    "רישום סוכנים",
+    11
+  ],
+  [
+    "/ai-insights",
+    "intelligence.ai_insights",
+    "תובנות AI",
+    11
+  ],
+  [
+    "/anomaly-cases",
+    "intelligence.anomaly_cases",
+    "תיקי אנומליות",
+    11
+  ],
+  [
+    "/decision-recommendations",
+    "intelligence.decision_recommendations",
+    "המלצות החלטה",
+    11
+  ],
+  [
+    "/forecast-models",
+    "intelligence.forecast_models",
+    "מודלי תחזית",
+    11
+  ],
+  [
+    "/model-registry",
+    "intelligence.model_registry",
+    "רישום מודלים",
+    11
+  ],
+  [
+    "/trend-signals",
+    "intelligence.trend_signals",
+    "איתותי מגמות",
+    11
+  ],
+  [
+    "/quality-scores",
+    "intelligence.quality_scores",
+    "ציוני איכות",
+    11
+  ],
+  [
+    "/seasonality-patterns",
+    "intelligence.seasonality_patterns",
+    "דפוסי עונתיות",
+    11
+  ],
+  [
+    "/capacity-calendars",
+    "planning.capacity_calendars",
+    "יומני קיבולת",
+    4
+  ],
+  [
+    "/demand-forecasts",
+    "planning.demand_forecasts",
+    "תחזיות ביקוש",
+    4
+  ],
+  [
+    "/inspection-plans",
+    "quality.inspection_plans",
+    "תוכניות בדיקה",
+    11
+  ],
+  [
+    "/defects-list",
+    "quality.defects",
+    "ליקויים",
+    11
+  ],
+  [
+    "/rule-sets",
+    "pricing.rule_sets",
+    "מערכות כללי תמחור",
+    2
+  ],
+  [
+    "/reorder-rules",
+    "inventory.reorder_rules",
+    "כללי חידוש מלאי",
+    5
+  ],
+  [
+    "/material-categories",
+    "inventory.material_categories",
+    "קטגוריות חומרים",
+    5
+  ],
+  [
+    "/material-requests",
+    "inventory.material_requests",
+    "דרישות חומר",
+    5
+  ],
+  [
+    "/manufacturing-batches",
+    "inventory.manufacturing_batches",
+    "אצוות ייצור",
+    5
+  ],
+  [
+    "/barcode-scans",
+    "inventory.barcode_scans",
+    "סריקות ברקוד",
+    5
+  ],
+  [
+    "/cash-forecasts",
+    "treasury.cash_forecasts",
+    "תחזיות מזומן",
+    6
+  ],
+  [
+    "/cash-positions",
+    "treasury.cash_positions",
+    "פוזיציות מזומן",
+    6
+  ],
+  [
+    "/bank-accounts",
+    "treasury.bank_accounts",
+    "חשבונות בנק",
+    6
+  ],
+  [
+    "/logistics-orders",
+    "execution.logistics_orders",
+    "הזמנות לוגיסטיקה",
+    4
+  ],
+  [
+    "/project-milestones",
+    "execution.project_milestones",
+    "אבני דרך פרויקט",
+    4
+  ],
+  [
+    "/project-risks",
+    "execution.project_risks",
+    "סיכוני פרויקט",
+    4
+  ],
+  [
+    "/project-blockers",
+    "execution.project_blockers",
+    "חסמי פרויקט",
+    4
+  ],
+  [
+    "/signatures",
+    "execution.signatures",
+    "חתימות",
+    10
+  ],
+  [
+    "/knowledge-cards",
+    "documents.knowledge_cards",
+    "כרטיסי ידע",
+    10
+  ]
+]

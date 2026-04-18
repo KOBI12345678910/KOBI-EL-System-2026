@@ -1,0 +1,100 @@
+import { TerminalTool } from "./terminalTool";
+import * as fs from "fs";
+import * as path from "path";
+
+export class PackageTool {
+  private terminal: TerminalTool;
+  private workspaceDir: string;
+
+  constructor(workspaceDir: string, terminal: TerminalTool) {
+    this.workspaceDir = workspaceDir;
+    this.terminal = terminal;
+  }
+
+  private detectPackageManager(): "npm" | "yarn" | "pnpm" | "bun" | "pip" | "cargo" {
+    if (fs.existsSync(path.join(this.workspaceDir, "bun.lockb"))) return "bun";
+    if (fs.existsSync(path.join(this.workspaceDir, "pnpm-lock.yaml"))) return "pnpm";
+    if (fs.existsSync(path.join(this.workspaceDir, "yarn.lock"))) return "yarn";
+    if (fs.existsSync(path.join(this.workspaceDir, "requirements.txt"))) return "pip";
+    if (fs.existsSync(path.join(this.workspaceDir, "Cargo.toml"))) return "cargo";
+    return "npm";
+  }
+
+  async install(
+    packages: string[],
+    options?: { dev?: boolean; onOutput?: (data: string) => void }
+  ) {
+    const pm = this.detectPackageManager();
+    let command: string;
+
+    switch (pm) {
+      case "npm":
+        command = `npm install ${options?.dev ? "-D" : ""} ${packages.join(" ")}`;
+        break;
+      case "yarn":
+        command = `yarn add ${options?.dev ? "-D" : ""} ${packages.join(" ")}`;
+        break;
+      case "pnpm":
+        command = `pnpm add ${options?.dev ? "-D" : ""} ${packages.join(" ")}`;
+        break;
+      case "bun":
+        command = `bun add ${options?.dev ? "-d" : ""} ${packages.join(" ")}`;
+        break;
+      case "pip":
+        command = `pip install ${packages.join(" ")}`;
+        break;
+      case "cargo":
+        command = packages.map((p) => `cargo add ${p}`).join(" && ");
+        break;
+    }
+
+    return this.terminal.execute(command, {
+      timeout: 120000,
+      onOutput: options?.onOutput
+        ? (data) => options.onOutput!(data)
+        : undefined,
+    });
+  }
+
+  async uninstall(packages: string[]) {
+    const pm = this.detectPackageManager();
+    let command: string;
+
+    switch (pm) {
+      case "npm": command = `npm uninstall ${packages.join(" ")}`; break;
+      case "yarn": command = `yarn remove ${packages.join(" ")}`; break;
+      case "pnpm": command = `pnpm remove ${packages.join(" ")}`; break;
+      case "bun": command = `bun remove ${packages.join(" ")}`; break;
+      case "pip": command = `pip uninstall -y ${packages.join(" ")}`; break;
+      case "cargo": command = packages.map((p) => `cargo remove ${p}`).join(" && "); break;
+    }
+
+    return this.terminal.execute(command);
+  }
+
+  async installAll() {
+    const pm = this.detectPackageManager();
+    const commands: Record<string, string> = {
+      npm: "npm install",
+      yarn: "yarn install",
+      pnpm: "pnpm install",
+      bun: "bun install",
+      pip: "pip install -r requirements.txt",
+      cargo: "cargo build",
+    };
+    return this.terminal.execute(commands[pm], { timeout: 180000 });
+  }
+
+  async initProject(type: "node" | "python" | "react" | "next" | "vite") {
+    const commands: Record<string, string> = {
+      node: "npm init -y",
+      python: "python -m venv venv && echo 'flask' > requirements.txt",
+      react: "npx create-react-app . --template typescript",
+      next: "npx create-next-app@latest . --typescript --tailwind --app --no-src-dir --import-alias '@/*'",
+      vite: "npm create vite@latest . -- --template react-ts",
+    };
+    return this.terminal.execute(commands[type] || commands.node, {
+      timeout: 300000,
+    });
+  }
+}

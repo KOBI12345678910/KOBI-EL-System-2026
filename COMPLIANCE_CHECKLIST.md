@@ -103,7 +103,7 @@
 - [A] Uploaded via שער עולמי (Sha'ar Olami) / מערכת דיווח מקוון
 
 ### What the system does automatically
-- [A] Applies VAT at 17% (2026 rate)
+- [A] Applies VAT at 18% (effective 2026-01-01; 17% for transactions dated 2015-10-01 through 2025-12-31)
 - [A] Generates sequential invoice numbers per עוסק
 - [A] Calculates monthly VAT delta (output − input)
 - [A] Generates PCN874 file and PCN836 file
@@ -371,7 +371,7 @@
 
 ### Rates (2026)
 - **Corporate tax:** 23%
-- **VAT:** 17%
+- **VAT:** 18% (from 2026-01-01; 17% pre-2026)
 - **Top personal marginal:** 50% (47% + 3% יסף)
 
 ### Penalties

@@ -1,0 +1,295 @@
+import { FileTool } from "./fileTool";
+import { TerminalTool } from "./terminalTool";
+import { PackageTool } from "./packageTool";
+
+export interface ScaffoldTemplate {
+  name: string;
+  files: Record<string, string>;
+  packages?: string[];
+  devPackages?: string[];
+  commands?: string[];
+}
+
+export class ScaffoldTool {
+  private fileTool: FileTool;
+  private terminal: TerminalTool;
+  private packageTool: PackageTool;
+
+  constructor(fileTool: FileTool, terminal: TerminalTool, packageTool: PackageTool) {
+    this.fileTool = fileTool;
+    this.terminal = terminal;
+    this.packageTool = packageTool;
+  }
+
+  getTemplates(): Record<string, ScaffoldTemplate> {
+    return {
+      "express-api": {
+        name: "Express REST API",
+        packages: ["express", "cors", "helmet", "morgan", "dotenv", "zod"],
+        devPackages: ["typescript", "tsx", "@types/node", "@types/express", "@types/cors", "@types/morgan", "vitest"],
+        files: {
+          "tsconfig.json": `{
+  "compilerOptions": {
+    "target": "ES2022", "module": "commonjs", "lib": ["ES2022"],
+    "outDir": "./dist", "rootDir": "./src", "strict": true,
+    "esModuleInterop": true, "skipLibCheck": true,
+    "resolveJsonModule": true, "declaration": true, "sourceMap": true
+  },
+  "include": ["src/**/*"]
+}`,
+          "src/index.ts": `import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import { config } from 'dotenv';
+import { router } from './routes';
+import { errorHandler, notFound } from './middleware/errorHandler';
+
+config();
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(helmet());
+app.use(cors());
+app.use(morgan('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use('/api', router);
+app.use(notFound);
+app.use(errorHandler);
+
+app.listen(PORT, () => console.log(\`Server running on port \${PORT}\`));
+export default app;`,
+
+          "src/routes/index.ts": `import { Router } from 'express';
+import { healthRouter } from './health';
+
+export const router = Router();
+router.use('/health', healthRouter);`,
+
+          "src/routes/health.ts": `import { Router, Request, Response } from 'express';
+
+export const healthRouter = Router();
+
+healthRouter.get('/', (req: Request, res: Response) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString(), uptime: process.uptime() });
+});`,
+
+          "src/middleware/errorHandler.ts": `import { Request, Response, NextFunction } from 'express';
+
+export class AppError extends Error {
+  statusCode: number;
+  constructor(message: string, statusCode: number) {
+    super(message);
+    this.statusCode = statusCode;
+  }
+}
+
+export function notFound(req: Request, res: Response, next: NextFunction) {
+  next(new AppError(\`Route \${req.originalUrl} not found\`, 404));
+}
+
+export function errorHandler(err: AppError, req: Request, res: Response, next: NextFunction) {
+  const statusCode = err.statusCode || 500;
+  res.status(statusCode).json({
+    error: { message: err.message, status: statusCode },
+  });
+}`,
+
+          "src/middleware/validate.ts": `import { Request, Response, NextFunction } from 'express';
+import { ZodSchema, ZodError } from 'zod';
+
+export function validate(schema: ZodSchema) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    try {
+      schema.parse({ body: req.body, query: req.query, params: req.params });
+      next();
+    } catch (err) {
+      if (err instanceof ZodError) {
+        res.status(400).json({ errors: err.errors });
+      } else {
+        next(err);
+      }
+    }
+  };
+}`,
+
+          ".env": `PORT=3000
+NODE_ENV=development`,
+          ".env.example": `PORT=3000
+NODE_ENV=development`,
+          ".gitignore": `node_modules/\ndist/\n.env\n.env.local\ncoverage/`,
+        },
+      },
+
+      "react-vite": {
+        name: "React + Vite + TailwindCSS",
+        commands: ["npm create vite@latest . -- --template react-ts", "npm install", "npm install -D tailwindcss @tailwindcss/vite"],
+        files: {
+          "vite.config.ts": `import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+});`,
+
+          "src/App.tsx": `import { useState } from 'react';
+
+function App() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center">
+      <h1 className="text-4xl font-bold mb-4">Kobi App</h1>
+      <p className="text-xl mb-8">Count: {count}</p>
+      <button
+        onClick={() => setCount(c => c + 1)}
+        className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold transition-colors"
+      >
+        Click me
+      </button>
+    </div>
+  );
+}
+
+export default App;`,
+
+          "src/index.css": `@import "tailwindcss";`,
+        },
+      },
+
+      "next-fullstack": {
+        name: "Next.js Full-Stack App",
+        commands: [
+          "npx create-next-app@latest . --typescript --tailwind --app --no-src-dir --import-alias '@/*' --use-npm",
+        ],
+        files: {
+          "app/page.tsx": `export default function Home() {
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center p-24">
+      <h1 className="text-6xl font-bold text-center mb-8">
+        Welcome to <span className="text-purple-500">Kobi App</span>
+      </h1>
+      <p className="text-xl text-gray-400">Built with Next.js, TypeScript & Tailwind CSS</p>
+    </main>
+  );
+}`,
+
+          "app/api/health/route.ts": `import { NextResponse } from 'next/server';
+
+export async function GET() {
+  return NextResponse.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+  });
+}`,
+        },
+      },
+
+      "fastapi": {
+        name: "FastAPI Python Backend",
+        commands: ["python -m venv venv", "pip install fastapi uvicorn sqlalchemy pydantic python-dotenv"],
+        files: {
+          "main.py": `from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+from routes import router
+
+load_dotenv()
+app = FastAPI(title="Kobi API", version="1.0.0")
+
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+app.include_router(router, prefix="/api")
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+`,
+
+          "routes/__init__.py": `from fastapi import APIRouter
+router = APIRouter()
+
+@router.get("/items")
+async def get_items():
+    return {"items": []}
+`,
+
+          "models/__init__.py": `from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+import os
+
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./app.db")
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+`,
+
+          "requirements.txt": `fastapi==0.109.0
+uvicorn==0.27.0
+sqlalchemy==2.0.25
+pydantic==2.5.3
+python-dotenv==1.0.0
+`,
+
+          ".env": `DATABASE_URL=sqlite:///./app.db
+SECRET_KEY=change-me`,
+        },
+      },
+
+      "fullstack-t3": {
+        name: "T3 Stack (Next.js + tRPC + Prisma + Tailwind)",
+        commands: [
+          "npx create-t3-app@latest . --noGit --CI --trpc --tailwind --prisma --nextAuth --appRouter",
+        ],
+        files: {},
+      },
+    };
+  }
+
+  async scaffold(templateName: string): Promise<{ success: boolean; output: string }> {
+    const template = this.getTemplates()[templateName];
+    if (!template) {
+      return { success: false, output: `Template '${templateName}' not found. Available: ${Object.keys(this.getTemplates()).join(", ")}` };
+    }
+
+    let output = `Scaffolding: ${template.name}\n`;
+
+    // Run init commands
+    if (template.commands) {
+      for (const cmd of template.commands) {
+        output += `\n> ${cmd}\n`;
+        const result = await this.terminal.execute(cmd, { timeout: 300000 });
+        output += result.stdout + "\n";
+        if (!result.success) {
+          output += `Warning: ${result.stderr}\n`;
+        }
+      }
+    }
+
+    // Install packages
+    if (template.packages?.length) {
+      output += `\nInstalling: ${template.packages.join(", ")}\n`;
+      await this.packageTool.install(template.packages);
+    }
+    if (template.devPackages?.length) {
+      output += `Installing dev: ${template.devPackages.join(", ")}\n`;
+      await this.packageTool.install(template.devPackages, { dev: true });
+    }
+
+    // Create files (overwrite if template provides them)
+    for (const [filePath, content] of Object.entries(template.files)) {
+      this.fileTool.createFile(filePath, content);
+      output += `Created: ${filePath}\n`;
+    }
+
+    return { success: true, output };
+  }
+}

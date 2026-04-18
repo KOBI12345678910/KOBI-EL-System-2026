@@ -1,0 +1,114 @@
+// ============================================================
+// kimi-usage-example.ts — דוגמאות שימוש ב-ERP שלך
+// ============================================================
+
+import { getKimiClient, KimiError } from './kimi-client';
+
+// שים ב-Replit Secrets: KIMI_API_KEY = sk-...
+const kimi = getKimiClient();
+
+// ── 1. שאלה פשוטה ─────────────────────────────────────────────
+async function simpleAsk() {
+  const answer = await kimi.ask(
+    'מה הצעד הבא לטפל בהזמנת לקוח שלא שולמה?',
+    'אתה מנהל ERP מקצועי. תן תשובות קצרות ומעשיות.'
+  );
+  console.log(answer);
+}
+
+// ── 2. משימת ERP מלאה ─────────────────────────────────────────
+async function erpTask() {
+  const result = await kimi.runTask({
+    systemPrompt: `
+      אתה מנהל מערכת ERP חכם של חברת Techno-Kol.
+      אתה מנתח נתונים ומחזיר JSON בלבד.
+      אין להוסיף טקסט מחוץ ל-JSON.
+    `,
+    userMessage: `
+      נתח את הנתונים הבאים ותחזיר JSON:
+      - הזמנה #1042: לקוח "מכון רוז'נסקי", סכום 14,500₪, תשלום פתוח 30 יום
+      - הזמנה #1043: לקוח "בניה דרומי", סכום 6,200₪, תשלום פתוח 5 ימים
+      
+      פורמט: { "orders": [{ "id", "customer", "amount", "risk_level", "action" }] }
+    `,
+    onSuccess: async (json) => {
+      try {
+        const data = JSON.parse(json);
+        console.log('ניתוח הזמנות:', data);
+      } catch {
+        console.log('תגובה:', json);
+      }
+    },
+    onError: (err: KimiError) => {
+      console.error(`שגיאה: [${err.type}] ${err.message}`);
+    },
+  });
+  return result;
+}
+
+// ── 3. שיחה עם היסטוריה (multi-turn) ─────────────────────────
+async function multiTurnChat() {
+  const history = [
+    { role: 'system' as const, content: 'אתה מנהל ERP מקצועי.' },
+  ];
+
+  async function turn(userMessage: string): Promise<string> {
+    history.push({ role: 'user', content: userMessage });
+    const response = await kimi.chat({ messages: history });
+    history.push({ role: 'assistant', content: response });
+    return response;
+  }
+
+  console.log(await turn('מה המצב הכספי הכללי של החברה?'));
+  console.log(await turn('אילו לקוחות הם הסיכון הגבוה ביותר?'));
+  console.log(await turn('מה הצעד הבא שאני צריך לעשות?'));
+}
+
+// ── 4. Health check לפני כל startup ───────────────────────────
+async function startup() {
+  console.log('🔍 בודק חיבור ל-Kimi...');
+  const health = await kimi.healthCheck();
+
+  if (!health.ok) {
+    console.error(`❌ Kimi לא זמין: ${health.error}`);
+    console.error('בדוק KIMI_API_KEY ב-Replit Secrets');
+    process.exit(1);
+  }
+
+  console.log(`✅ Kimi פעיל — latency: ${health.latencyMs}ms`);
+}
+
+// ── 5. מנוע אוטומציה — ריצה תקופתית ─────────────────────────
+async function automationEngine() {
+  const tasks = [
+    {
+      name: 'daily-report',
+      systemPrompt: 'אתה מנתח נתונים. החזר JSON בלבד.',
+      userMessage: 'צור דוח יומי תמציתי על פעילות המערכת. JSON עם שדות: summary, alerts, next_actions',
+    },
+    {
+      name: 'inventory-check',
+      systemPrompt: 'אתה מנהל מלאי. החזר JSON בלבד.',
+      userMessage: 'בדוק אם יש פריטים קריטיים שצריך להזמין. JSON עם שדות: items_to_order, urgency',
+    },
+  ];
+
+  for (const task of tasks) {
+    console.log(`\n⚙️  מריץ: ${task.name}`);
+    const result = await kimi.runTask({
+      ...task,
+      onSuccess: async (r) => console.log(`✅ ${task.name}:`, r.substring(0, 200)),
+      onError: (e) => console.error(`❌ ${task.name}: [${e.type}] ${e.message}`),
+    });
+    if (!result) console.warn(`⚠️  ${task.name} לא הצליח`);
+  }
+}
+
+// ── Main ──────────────────────────────────────────────────────
+(async () => {
+  await startup();
+  await simpleAsk();
+  await erpTask();
+  // await multiTurnChat();
+  // await automationEngine();
+})();

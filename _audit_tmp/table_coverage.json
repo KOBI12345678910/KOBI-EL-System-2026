@@ -1,0 +1,1933 @@
+[
+  {
+    "fq": "analytics.dashboard_board_widgets",
+    "schema": "analytics",
+    "name": "dashboard_board_widgets",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "analytics.dashboard_boards",
+    "schema": "analytics",
+    "name": "dashboard_boards",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "analytics.dashboard_definitions",
+    "schema": "analytics",
+    "name": "dashboard_definitions",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "analytics.dashboard_widgets",
+    "schema": "analytics",
+    "name": "dashboard_widgets",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "analytics.kpi_snapshots",
+    "schema": "analytics",
+    "name": "kpi_snapshots",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "analytics.read_model_invalidations",
+    "schema": "analytics",
+    "name": "read_model_invalidations",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "analytics.rm_ai_summary",
+    "schema": "analytics",
+    "name": "rm_ai_summary",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "analytics.rm_executive_summary",
+    "schema": "analytics",
+    "name": "rm_executive_summary",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "analytics.rm_finance_summary",
+    "schema": "analytics",
+    "name": "rm_finance_summary",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "analytics.rm_operations_summary",
+    "schema": "analytics",
+    "name": "rm_operations_summary",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "analytics.rm_procurement_summary",
+    "schema": "analytics",
+    "name": "rm_procurement_summary",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "analytics.rm_workforce_summary",
+    "schema": "analytics",
+    "name": "rm_workforce_summary",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "analytics.user_dashboard_boards",
+    "schema": "analytics",
+    "name": "user_dashboard_boards",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "commercial.crm_activities",
+    "schema": "commercial",
+    "name": "crm_activities",
+    "status": "missing-from-menu",
+    "suggested": "/crm-activities",
+    "priority": ""
+  },
+  {
+    "fq": "commercial.customer_contacts",
+    "schema": "commercial",
+    "name": "customer_contacts",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "commercial.customer_portal_accounts",
+    "schema": "commercial",
+    "name": "customer_portal_accounts",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "commercial.customers",
+    "schema": "commercial",
+    "name": "customers",
+    "status": "has-menu",
+    "hit": "/customers",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "commercial.lead_tag_assignments",
+    "schema": "commercial",
+    "name": "lead_tag_assignments",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "commercial.lead_tags",
+    "schema": "commercial",
+    "name": "lead_tags",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "commercial.leads",
+    "schema": "commercial",
+    "name": "leads",
+    "status": "has-menu",
+    "hit": "/leads",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "commercial.opportunities",
+    "schema": "commercial",
+    "name": "opportunities",
+    "status": "missing-from-menu",
+    "suggested": "/opportunities",
+    "priority": "high"
+  },
+  {
+    "fq": "commercial.pipeline_stages",
+    "schema": "commercial",
+    "name": "pipeline_stages",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "commercial.pricing_snapshots",
+    "schema": "commercial",
+    "name": "pricing_snapshots",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "commercial.quote_approval_rules",
+    "schema": "commercial",
+    "name": "quote_approval_rules",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "commercial.quote_lines",
+    "schema": "commercial",
+    "name": "quote_lines",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "commercial.quote_revisions",
+    "schema": "commercial",
+    "name": "quote_revisions",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "commercial.quotes",
+    "schema": "commercial",
+    "name": "quotes",
+    "status": "has-menu",
+    "hit": "/quotes",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "comms.chatbot_sessions",
+    "schema": "comms",
+    "name": "chatbot_sessions",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "comms.comms_threads",
+    "schema": "comms",
+    "name": "comms_threads",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "comms.email_messages",
+    "schema": "comms",
+    "name": "email_messages",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "comms.help_articles",
+    "schema": "comms",
+    "name": "help_articles",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "comms.notification_deliveries",
+    "schema": "comms",
+    "name": "notification_deliveries",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "comms.notifications",
+    "schema": "comms",
+    "name": "notifications",
+    "status": "has-menu",
+    "hit": "/notifications",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "comms.portal_sessions",
+    "schema": "comms",
+    "name": "portal_sessions",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "comms.portal_users",
+    "schema": "comms",
+    "name": "portal_users",
+    "status": "missing-from-menu",
+    "suggested": "/portal-users",
+    "priority": ""
+  },
+  {
+    "fq": "comms.sms_messages",
+    "schema": "comms",
+    "name": "sms_messages",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "comms.support_sla_tracking",
+    "schema": "comms",
+    "name": "support_sla_tracking",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "comms.support_tickets",
+    "schema": "comms",
+    "name": "support_tickets",
+    "status": "missing-from-menu",
+    "suggested": "/support-tickets",
+    "priority": "high"
+  },
+  {
+    "fq": "comms.whatsapp_messages",
+    "schema": "comms",
+    "name": "whatsapp_messages",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "compliance.policies",
+    "schema": "compliance",
+    "name": "policies",
+    "status": "missing-from-menu",
+    "suggested": "/policies",
+    "priority": "high"
+  },
+  {
+    "fq": "compliance.policy_acknowledgements",
+    "schema": "compliance",
+    "name": "policy_acknowledgements",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "crm.lead_activities",
+    "schema": "crm",
+    "name": "lead_activities",
+    "status": "missing-from-menu",
+    "suggested": "/lead-activities",
+    "priority": ""
+  },
+  {
+    "fq": "crm.leads",
+    "schema": "crm",
+    "name": "leads",
+    "status": "has-menu",
+    "hit": "/leads",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "crm.opportunities",
+    "schema": "crm",
+    "name": "opportunities",
+    "status": "missing-from-menu",
+    "suggested": "/opportunities",
+    "priority": "high"
+  },
+  {
+    "fq": "docs.attachments",
+    "schema": "docs",
+    "name": "attachments",
+    "status": "missing-from-menu",
+    "suggested": "/attachments",
+    "priority": ""
+  },
+  {
+    "fq": "docs.document_classifications",
+    "schema": "docs",
+    "name": "document_classifications",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "docs.document_signature_requests",
+    "schema": "docs",
+    "name": "document_signature_requests",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "docs.document_versions",
+    "schema": "docs",
+    "name": "document_versions",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "docs.documents",
+    "schema": "docs",
+    "name": "documents",
+    "status": "has-menu",
+    "hit": "/documents",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "docs.ocr_results",
+    "schema": "docs",
+    "name": "ocr_results",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "docs.print_jobs",
+    "schema": "docs",
+    "name": "print_jobs",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "docs.scan_sessions",
+    "schema": "docs",
+    "name": "scan_sessions",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "documents.classification_runs",
+    "schema": "documents",
+    "name": "classification_runs",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "documents.document_chunks",
+    "schema": "documents",
+    "name": "document_chunks",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "documents.document_relations",
+    "schema": "documents",
+    "name": "document_relations",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "documents.entity_extractions",
+    "schema": "documents",
+    "name": "entity_extractions",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "documents.extraction_runs",
+    "schema": "documents",
+    "name": "extraction_runs",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "documents.knowledge_cards",
+    "schema": "documents",
+    "name": "knowledge_cards",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "documents.ocr_runs",
+    "schema": "documents",
+    "name": "ocr_runs",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "execution.alerts",
+    "schema": "execution",
+    "name": "alerts",
+    "status": "missing-from-menu",
+    "suggested": "/alerts",
+    "priority": ""
+  },
+  {
+    "fq": "execution.delivery_events",
+    "schema": "execution",
+    "name": "delivery_events",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "execution.installation_events",
+    "schema": "execution",
+    "name": "installation_events",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "execution.logistics_orders",
+    "schema": "execution",
+    "name": "logistics_orders",
+    "status": "missing-from-menu",
+    "suggested": "/logistics-orders",
+    "priority": ""
+  },
+  {
+    "fq": "execution.project_blockers",
+    "schema": "execution",
+    "name": "project_blockers",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "execution.project_cost_plans",
+    "schema": "execution",
+    "name": "project_cost_plans",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "execution.project_milestones",
+    "schema": "execution",
+    "name": "project_milestones",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "execution.project_phases",
+    "schema": "execution",
+    "name": "project_phases",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "execution.project_risks",
+    "schema": "execution",
+    "name": "project_risks",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "execution.projects",
+    "schema": "execution",
+    "name": "projects",
+    "status": "has-menu",
+    "hit": "/projects",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "execution.signatures",
+    "schema": "execution",
+    "name": "signatures",
+    "status": "missing-from-menu",
+    "suggested": "/signatures",
+    "priority": ""
+  },
+  {
+    "fq": "execution.task_attachments",
+    "schema": "execution",
+    "name": "task_attachments",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "execution.task_comments",
+    "schema": "execution",
+    "name": "task_comments",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "execution.task_dependencies",
+    "schema": "execution",
+    "name": "task_dependencies",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "execution.tasks",
+    "schema": "execution",
+    "name": "tasks",
+    "status": "has-menu",
+    "hit": "/tasks",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "execution.work_order_qa_checklists",
+    "schema": "execution",
+    "name": "work_order_qa_checklists",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "execution.work_order_qa_items",
+    "schema": "execution",
+    "name": "work_order_qa_items",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "execution.work_order_tasks",
+    "schema": "execution",
+    "name": "work_order_tasks",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "execution.work_orders",
+    "schema": "execution",
+    "name": "work_orders",
+    "status": "has-menu",
+    "hit": "/work-orders",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "finance.annual_tax_reports",
+    "schema": "finance",
+    "name": "annual_tax_reports",
+    "status": "missing-from-menu",
+    "suggested": "/annual-tax-reports",
+    "priority": ""
+  },
+  {
+    "fq": "finance.bank_files",
+    "schema": "finance",
+    "name": "bank_files",
+    "status": "missing-from-menu",
+    "suggested": "/bank-files",
+    "priority": ""
+  },
+  {
+    "fq": "finance.bank_matches",
+    "schema": "finance",
+    "name": "bank_matches",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "finance.budget_entries",
+    "schema": "finance",
+    "name": "budget_entries",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "finance.cashflow_entries",
+    "schema": "finance",
+    "name": "cashflow_entries",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "finance.collection_actions",
+    "schema": "finance",
+    "name": "collection_actions",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "finance.collection_cases",
+    "schema": "finance",
+    "name": "collection_cases",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "finance.consolidation_entries",
+    "schema": "finance",
+    "name": "consolidation_entries",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "finance.costing_entries",
+    "schema": "finance",
+    "name": "costing_entries",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "finance.dunning_campaigns",
+    "schema": "finance",
+    "name": "dunning_campaigns",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "finance.dunning_steps",
+    "schema": "finance",
+    "name": "dunning_steps",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "finance.expenses",
+    "schema": "finance",
+    "name": "expenses",
+    "status": "has-menu",
+    "hit": "/expenses",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "finance.fx_rates",
+    "schema": "finance",
+    "name": "fx_rates",
+    "status": "missing-from-menu",
+    "suggested": "/fx-rates",
+    "priority": ""
+  },
+  {
+    "fq": "finance.gl_transactions",
+    "schema": "finance",
+    "name": "gl_transactions",
+    "status": "missing-from-menu",
+    "suggested": "/gl-transactions",
+    "priority": ""
+  },
+  {
+    "fq": "finance.invoice_lines",
+    "schema": "finance",
+    "name": "invoice_lines",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "finance.invoices",
+    "schema": "finance",
+    "name": "invoices",
+    "status": "has-menu",
+    "hit": "/invoices",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "finance.payment_allocations",
+    "schema": "finance",
+    "name": "payment_allocations",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "finance.payments",
+    "schema": "finance",
+    "name": "payments",
+    "status": "has-menu",
+    "hit": "/payments",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "finance.receipts",
+    "schema": "finance",
+    "name": "receipts",
+    "status": "has-menu",
+    "hit": "/receipts",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "finance.reconciliation_exceptions",
+    "schema": "finance",
+    "name": "reconciliation_exceptions",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "finance.reminder_schedules",
+    "schema": "finance",
+    "name": "reminder_schedules",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "finance.tax_exports",
+    "schema": "finance",
+    "name": "tax_exports",
+    "status": "has-menu",
+    "hit": "/tax-exports",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "finance.tax_records",
+    "schema": "finance",
+    "name": "tax_records",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "finance.vat_records",
+    "schema": "finance",
+    "name": "vat_records",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.alert_subscriptions",
+    "schema": "governance",
+    "name": "alert_subscriptions",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.audit_log_attachments",
+    "schema": "governance",
+    "name": "audit_log_attachments",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.audit_logs",
+    "schema": "governance",
+    "name": "audit_logs",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.command_logs",
+    "schema": "governance",
+    "name": "command_logs",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.config_entries",
+    "schema": "governance",
+    "name": "config_entries",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.domain_events",
+    "schema": "governance",
+    "name": "domain_events",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.escalation_rules",
+    "schema": "governance",
+    "name": "escalation_rules",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.event_deliveries",
+    "schema": "governance",
+    "name": "event_deliveries",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.event_subscriptions",
+    "schema": "governance",
+    "name": "event_subscriptions",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.feature_flag_targets",
+    "schema": "governance",
+    "name": "feature_flag_targets",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.feature_flags",
+    "schema": "governance",
+    "name": "feature_flags",
+    "status": "has-menu",
+    "hit": "/feature-flags",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.health_checks",
+    "schema": "governance",
+    "name": "health_checks",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.idempotency_keys",
+    "schema": "governance",
+    "name": "idempotency_keys",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.integration_connections",
+    "schema": "governance",
+    "name": "integration_connections",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.integration_sync_logs",
+    "schema": "governance",
+    "name": "integration_sync_logs",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.job_executions",
+    "schema": "governance",
+    "name": "job_executions",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.object_permissions",
+    "schema": "governance",
+    "name": "object_permissions",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.permissions",
+    "schema": "governance",
+    "name": "permissions",
+    "status": "missing-from-menu",
+    "suggested": "/permissions",
+    "priority": "high"
+  },
+  {
+    "fq": "governance.queue_jobs",
+    "schema": "governance",
+    "name": "queue_jobs",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.role_permissions",
+    "schema": "governance",
+    "name": "role_permissions",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.roles",
+    "schema": "governance",
+    "name": "roles",
+    "status": "has-menu",
+    "hit": "/roles",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.saved_filters",
+    "schema": "governance",
+    "name": "saved_filters",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.security_events",
+    "schema": "governance",
+    "name": "security_events",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.sla_timers",
+    "schema": "governance",
+    "name": "sla_timers",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.state_history",
+    "schema": "governance",
+    "name": "state_history",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.user_preferences",
+    "schema": "governance",
+    "name": "user_preferences",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.user_roles",
+    "schema": "governance",
+    "name": "user_roles",
+    "status": "missing-from-menu",
+    "suggested": "/user-roles",
+    "priority": "high"
+  },
+  {
+    "fq": "governance.users_profile",
+    "schema": "governance",
+    "name": "users_profile",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.validations_log",
+    "schema": "governance",
+    "name": "validations_log",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.webhook_deliveries",
+    "schema": "governance",
+    "name": "webhook_deliveries",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.webhook_endpoints",
+    "schema": "governance",
+    "name": "webhook_endpoints",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.workflow_instances",
+    "schema": "governance",
+    "name": "workflow_instances",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.workflow_step_executions",
+    "schema": "governance",
+    "name": "workflow_step_executions",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.workflow_steps",
+    "schema": "governance",
+    "name": "workflow_steps",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "governance.workflows",
+    "schema": "governance",
+    "name": "workflows",
+    "status": "missing-from-menu",
+    "suggested": "/workflows",
+    "priority": "high"
+  },
+  {
+    "fq": "intelligence.agent_jobs",
+    "schema": "intelligence",
+    "name": "agent_jobs",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "intelligence.agent_registry",
+    "schema": "intelligence",
+    "name": "agent_registry",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "intelligence.ai_insights",
+    "schema": "intelligence",
+    "name": "ai_insights",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "intelligence.anomaly_cases",
+    "schema": "intelligence",
+    "name": "anomaly_cases",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "intelligence.anomaly_feedback",
+    "schema": "intelligence",
+    "name": "anomaly_feedback",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "intelligence.decision_recommendations",
+    "schema": "intelligence",
+    "name": "decision_recommendations",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "intelligence.forecast_models",
+    "schema": "intelligence",
+    "name": "forecast_models",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "intelligence.model_executions",
+    "schema": "intelligence",
+    "name": "model_executions",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "intelligence.model_registry",
+    "schema": "intelligence",
+    "name": "model_registry",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "intelligence.quality_scores",
+    "schema": "intelligence",
+    "name": "quality_scores",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "intelligence.recommendation_feedback",
+    "schema": "intelligence",
+    "name": "recommendation_feedback",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "intelligence.seasonality_patterns",
+    "schema": "intelligence",
+    "name": "seasonality_patterns",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "intelligence.trend_signals",
+    "schema": "intelligence",
+    "name": "trend_signals",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "inventory.barcode_scans",
+    "schema": "inventory",
+    "name": "barcode_scans",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "inventory.inventory",
+    "schema": "inventory",
+    "name": "inventory",
+    "status": "has-menu",
+    "hit": "/inventory",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "inventory.inventory_issues",
+    "schema": "inventory",
+    "name": "inventory_issues",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "inventory.inventory_movements",
+    "schema": "inventory",
+    "name": "inventory_movements",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "inventory.inventory_receipts",
+    "schema": "inventory",
+    "name": "inventory_receipts",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "inventory.inventory_reservations",
+    "schema": "inventory",
+    "name": "inventory_reservations",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "inventory.inventory_transfers",
+    "schema": "inventory",
+    "name": "inventory_transfers",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "inventory.manufacturing_batches",
+    "schema": "inventory",
+    "name": "manufacturing_batches",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "inventory.material_categories",
+    "schema": "inventory",
+    "name": "material_categories",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "inventory.material_lots",
+    "schema": "inventory",
+    "name": "material_lots",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "inventory.material_request_lines",
+    "schema": "inventory",
+    "name": "material_request_lines",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "inventory.material_requests",
+    "schema": "inventory",
+    "name": "material_requests",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "inventory.materials",
+    "schema": "inventory",
+    "name": "materials",
+    "status": "has-menu",
+    "hit": "/materials",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "inventory.reorder_rules",
+    "schema": "inventory",
+    "name": "reorder_rules",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "inventory.shortage_snapshots",
+    "schema": "inventory",
+    "name": "shortage_snapshots",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "inventory.stock_count_lines",
+    "schema": "inventory",
+    "name": "stock_count_lines",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "inventory.stock_counts",
+    "schema": "inventory",
+    "name": "stock_counts",
+    "status": "has-menu",
+    "hit": "/stock-counts",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "inventory.warehouses",
+    "schema": "inventory",
+    "name": "warehouses",
+    "status": "has-menu",
+    "hit": "/warehouses",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "maintenance.assets",
+    "schema": "maintenance",
+    "name": "assets",
+    "status": "missing-from-menu",
+    "suggested": "/assets",
+    "priority": "high"
+  },
+  {
+    "fq": "maintenance.work_orders",
+    "schema": "maintenance",
+    "name": "work_orders",
+    "status": "has-menu",
+    "hit": "/work-orders",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "orchestration.job_queue",
+    "schema": "orchestration",
+    "name": "job_queue",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "orchestration.notifications",
+    "schema": "orchestration",
+    "name": "notifications",
+    "status": "has-menu",
+    "hit": "/notifications",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "orchestration.universal_inbox",
+    "schema": "orchestration",
+    "name": "universal_inbox",
+    "status": "missing-from-menu",
+    "suggested": "/universal-inbox",
+    "priority": ""
+  },
+  {
+    "fq": "orchestration.workflow_definitions",
+    "schema": "orchestration",
+    "name": "workflow_definitions",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "orchestration.workflow_runs",
+    "schema": "orchestration",
+    "name": "workflow_runs",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "orchestration.workflow_step_runs",
+    "schema": "orchestration",
+    "name": "workflow_step_runs",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "orchestration.workflow_steps",
+    "schema": "orchestration",
+    "name": "workflow_steps",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "planning.capacity_calendars",
+    "schema": "planning",
+    "name": "capacity_calendars",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "planning.capacity_slots",
+    "schema": "planning",
+    "name": "capacity_slots",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "planning.demand_forecasts",
+    "schema": "planning",
+    "name": "demand_forecasts",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "pricing.calculations",
+    "schema": "pricing",
+    "name": "calculations",
+    "status": "missing-from-menu",
+    "suggested": "/calculations",
+    "priority": ""
+  },
+  {
+    "fq": "pricing.rule_sets",
+    "schema": "pricing",
+    "name": "rule_sets",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "procurement.approval_steps",
+    "schema": "procurement",
+    "name": "approval_steps",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "procurement.approvals",
+    "schema": "procurement",
+    "name": "approvals",
+    "status": "has-menu",
+    "hit": "/approvals",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "procurement.contract_milestones",
+    "schema": "procurement",
+    "name": "contract_milestones",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "procurement.contracts",
+    "schema": "procurement",
+    "name": "contracts",
+    "status": "has-menu",
+    "hit": "/contracts",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "procurement.purchase_order_lines",
+    "schema": "procurement",
+    "name": "purchase_order_lines",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "procurement.purchase_orders",
+    "schema": "procurement",
+    "name": "purchase_orders",
+    "status": "missing-from-menu",
+    "suggested": "/purchase-orders",
+    "priority": "high"
+  },
+  {
+    "fq": "procurement.returns",
+    "schema": "procurement",
+    "name": "returns",
+    "status": "missing-from-menu",
+    "suggested": "/returns",
+    "priority": "high"
+  },
+  {
+    "fq": "procurement.rfq_comparison_snapshots",
+    "schema": "procurement",
+    "name": "rfq_comparison_snapshots",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "procurement.rfq_items",
+    "schema": "procurement",
+    "name": "rfq_items",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "procurement.rfq_supplier_invites",
+    "schema": "procurement",
+    "name": "rfq_supplier_invites",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "procurement.rfqs",
+    "schema": "procurement",
+    "name": "rfqs",
+    "status": "has-menu",
+    "hit": "/rfqs",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "procurement.supplier_contacts",
+    "schema": "procurement",
+    "name": "supplier_contacts",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "procurement.supplier_invoices",
+    "schema": "procurement",
+    "name": "supplier_invoices",
+    "status": "missing-from-menu",
+    "suggested": "/supplier-invoices",
+    "priority": "high"
+  },
+  {
+    "fq": "procurement.supplier_portal_accounts",
+    "schema": "procurement",
+    "name": "supplier_portal_accounts",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "procurement.supplier_quote_lines",
+    "schema": "procurement",
+    "name": "supplier_quote_lines",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "procurement.supplier_quotes",
+    "schema": "procurement",
+    "name": "supplier_quotes",
+    "status": "missing-from-menu",
+    "suggested": "/supplier-quotes",
+    "priority": "high"
+  },
+  {
+    "fq": "procurement.supplier_scorecards",
+    "schema": "procurement",
+    "name": "supplier_scorecards",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "procurement.suppliers",
+    "schema": "procurement",
+    "name": "suppliers",
+    "status": "has-menu",
+    "hit": "/suppliers",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "procurement.warranty_cases",
+    "schema": "procurement",
+    "name": "warranty_cases",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "public.app_menu",
+    "schema": "public",
+    "name": "app_menu",
+    "status": "missing-from-menu",
+    "suggested": "/app-menu",
+    "priority": ""
+  },
+  {
+    "fq": "public.customers",
+    "schema": "public",
+    "name": "customers",
+    "status": "has-menu",
+    "hit": "/customers",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "public.employees",
+    "schema": "public",
+    "name": "employees",
+    "status": "has-menu",
+    "hit": "/employees",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "public.inventory_items",
+    "schema": "public",
+    "name": "inventory_items",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "public.orders",
+    "schema": "public",
+    "name": "orders",
+    "status": "missing-from-menu",
+    "suggested": "/orders",
+    "priority": "high"
+  },
+  {
+    "fq": "public.properties",
+    "schema": "public",
+    "name": "properties",
+    "status": "has-menu",
+    "hit": "/properties",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "public.suppliers",
+    "schema": "public",
+    "name": "suppliers",
+    "status": "has-menu",
+    "hit": "/suppliers",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "public.user_profiles",
+    "schema": "public",
+    "name": "user_profiles",
+    "status": "missing-from-menu",
+    "suggested": "/user-profiles",
+    "priority": ""
+  },
+  {
+    "fq": "quality.defects",
+    "schema": "quality",
+    "name": "defects",
+    "status": "missing-from-menu",
+    "suggested": "/defects",
+    "priority": "high"
+  },
+  {
+    "fq": "quality.inspection_plans",
+    "schema": "quality",
+    "name": "inspection_plans",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "quality.inspection_runs",
+    "schema": "quality",
+    "name": "inspection_runs",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "routing.menu_nodes",
+    "schema": "routing",
+    "name": "menu_nodes",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "routing.route_permission_map",
+    "schema": "routing",
+    "name": "route_permission_map",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "routing.route_registry",
+    "schema": "routing",
+    "name": "route_registry",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "service.ticket_comments",
+    "schema": "service",
+    "name": "ticket_comments",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "service.tickets",
+    "schema": "service",
+    "name": "tickets",
+    "status": "has-menu",
+    "hit": "/tickets",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "treasury.bank_accounts",
+    "schema": "treasury",
+    "name": "bank_accounts",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "treasury.cash_forecasts",
+    "schema": "treasury",
+    "name": "cash_forecasts",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "treasury.cash_positions",
+    "schema": "treasury",
+    "name": "cash_positions",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "workforce.attendance",
+    "schema": "workforce",
+    "name": "attendance",
+    "status": "has-menu",
+    "hit": "/attendance",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "workforce.employee_expenses",
+    "schema": "workforce",
+    "name": "employee_expenses",
+    "status": "has-menu",
+    "hit": "/employee-expenses",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "workforce.employee_pay_components",
+    "schema": "workforce",
+    "name": "employee_pay_components",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "workforce.employees",
+    "schema": "workforce",
+    "name": "employees",
+    "status": "has-menu",
+    "hit": "/employees",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "workforce.employers",
+    "schema": "workforce",
+    "name": "employers",
+    "status": "missing-from-menu",
+    "suggested": "/employers",
+    "priority": "high"
+  },
+  {
+    "fq": "workforce.hr_profiles",
+    "schema": "workforce",
+    "name": "hr_profiles",
+    "status": "missing-from-menu",
+    "suggested": "/hr-profiles",
+    "priority": "high"
+  },
+  {
+    "fq": "workforce.leave_requests",
+    "schema": "workforce",
+    "name": "leave_requests",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "workforce.leave_types",
+    "schema": "workforce",
+    "name": "leave_types",
+    "status": "missing-from-menu",
+    "suggested": "/leave-types",
+    "priority": "high"
+  },
+  {
+    "fq": "workforce.pay_components",
+    "schema": "workforce",
+    "name": "pay_components",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "workforce.payroll_entries",
+    "schema": "workforce",
+    "name": "payroll_entries",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "workforce.payroll_exceptions",
+    "schema": "workforce",
+    "name": "payroll_exceptions",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "workforce.payroll_export_batches",
+    "schema": "workforce",
+    "name": "payroll_export_batches",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "workforce.payroll_runs",
+    "schema": "workforce",
+    "name": "payroll_runs",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "workforce.pension_records",
+    "schema": "workforce",
+    "name": "pension_records",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "workforce.shifts",
+    "schema": "workforce",
+    "name": "shifts",
+    "status": "missing-from-menu",
+    "suggested": "/shifts",
+    "priority": "high"
+  },
+  {
+    "fq": "workforce.wage_slips",
+    "schema": "workforce",
+    "name": "wage_slips",
+    "status": "has-menu",
+    "hit": "/wage-slips",
+    "suggested": "",
+    "priority": ""
+  },
+  {
+    "fq": "workforce.workforce_assignments",
+    "schema": "workforce",
+    "name": "workforce_assignments",
+    "status": "internal-only",
+    "suggested": "",
+    "priority": ""
+  }
+]

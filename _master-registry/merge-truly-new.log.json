@@ -1,0 +1,412 @@
+{
+  "at": "2026-04-18T06:35:48.496Z",
+  "copied": 0,
+  "skipped": 718,
+  "skip_breakdown": {
+    "root-config-skipped": 2,
+    "dest-exists": 716
+  },
+  "copied_list": [],
+  "skip_sample": [
+    {
+      "path": ".replit",
+      "reason": "root-config-skipped"
+    },
+    {
+      "path": "artifacts/api-server/src/app.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/index.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/admin-seed.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/ai-enrichment-service.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/auth.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/automations.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/contractor-decision.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/cross-module-sync.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/data-flow-sync.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/data-sync.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/db-health.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/escalation-engine.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/gmail-service.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/kimi-agents-seed.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/kimi-examples.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/logger.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/notification-dispatcher.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/notification-service.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/permission-engine.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/permission-middleware.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/production-indexes.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/project-costing-engine.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/security-upgrade.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/seed-modules.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/session-cleanup.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/sms-service.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/startup-migrations.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/super-ai-agent.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/techno-kol-uzi-ai-engine.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/whatsapp-service.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/lib/workflow-engine.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/middleware/api-standards.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/middleware/production-middleware.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/ai-data-flow.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/ai-document-intelligence-engine.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/ai-document-processor.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/ai-engine-routes.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/ai-gaps.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/ai-operations.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/ai-smart-alerts.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/ap-enterprise.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/ar-enterprise.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/attendance-payroll-engine.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/audit-log.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/auth.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/bom-product-engine.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/chat.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/claude/chat.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/claude/knowledge.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/cmms.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/commission-calculator-engine.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/company-financials-realtime-engine.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/contractor-payment-engine.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/crm.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/dashboard-kpi.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/dashboard-stats.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/dedicated-entity-routes.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/delivery-returns.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/digital-contracts-engine.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/documents.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/employee-portfolio-engine.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/employee-value-engine.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/entity-crud-registry.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/executive-control.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/factory-seed.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/finance-accounting.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/finance-customers-suppliers.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/finance-enterprise.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/finance-enterprise2.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/finance-enterprise3.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/finance-enterprise4.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/finance-new-pages.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/finance.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/generic-crud.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/global-search.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/goods_receipts.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/health.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/hr-enterprise.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/hr-sap-upgrade.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/hr.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/import-management-engine.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/index.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/installations-module.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/inventory-warehouse.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/israeli-accounting-engine.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/kimi/agents.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/kimi/chat.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/kimi/dev-platform.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/kimi/index.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/kobi/chat.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/kobi/index.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/kobi/system-prompt.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/kobi/tools.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/live-ops.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/module-path-aliases.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/notifications.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/oracle-financial-core.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/pdf-generator-engine.ts",
+      "reason": "dest-exists"
+    },
+    {
+      "path": "artifacts/api-server/src/routes/platform/entities.ts",
+      "reason": "dest-exists"
+    }
+  ]
+}

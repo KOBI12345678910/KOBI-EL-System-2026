@@ -1,0 +1,958 @@
+[
+  {
+    "idx": 1,
+    "name": "lead_sources",
+    "expected": "crm.lead_sources",
+    "domain": "crm",
+    "subdomain": "crm",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 2,
+    "name": "customers",
+    "expected": "crm.customers",
+    "domain": "crm",
+    "subdomain": "crm",
+    "category": "hidden_in_other_schema",
+    "db_found_at": [
+      "commercial.customers",
+      "public.customers"
+    ]
+  },
+  {
+    "idx": 3,
+    "name": "contacts",
+    "expected": "crm.contacts",
+    "domain": "crm",
+    "subdomain": "crm",
+    "category": "has_api_route_no_db",
+    "api_files": [
+      "supplier-details.ts",
+      "suppliers.ts"
+    ]
+  },
+  {
+    "idx": 4,
+    "name": "activities",
+    "expected": "crm.activities",
+    "domain": "crm",
+    "subdomain": "crm",
+    "category": "has_api_route_no_db",
+    "api_files": [
+      "crm-ultimate.ts"
+    ]
+  },
+  {
+    "idx": 5,
+    "name": "meetings",
+    "expected": "crm.meetings",
+    "domain": "crm",
+    "subdomain": "crm",
+    "category": "has_api_route_no_db",
+    "api_files": [
+      "crm-ultimate.ts",
+      "hr-enterprise.ts"
+    ]
+  },
+  {
+    "idx": 6,
+    "name": "communication_logs",
+    "expected": "crm.communication_logs",
+    "domain": "crm",
+    "subdomain": "crm",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 7,
+    "name": "customer_segments",
+    "expected": "crm.customer_segments",
+    "domain": "crm",
+    "subdomain": "crm",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 8,
+    "name": "opportunities",
+    "expected": "sales.opportunities",
+    "domain": "sales",
+    "subdomain": "sales",
+    "category": "hidden_in_other_schema",
+    "db_found_at": [
+      "commercial.opportunities",
+      "crm.opportunities"
+    ]
+  },
+  {
+    "idx": 9,
+    "name": "quotes",
+    "expected": "sales.quotes",
+    "domain": "sales",
+    "subdomain": "sales",
+    "category": "hidden_in_other_schema",
+    "db_found_at": [
+      "commercial.quotes"
+    ]
+  },
+  {
+    "idx": 10,
+    "name": "quote_items",
+    "expected": "sales.quote_items",
+    "domain": "sales",
+    "subdomain": "sales",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 11,
+    "name": "pricing_rules",
+    "expected": "sales.pricing_rules",
+    "domain": "sales",
+    "subdomain": "sales",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 12,
+    "name": "discounts",
+    "expected": "sales.discounts",
+    "domain": "sales",
+    "subdomain": "sales",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 13,
+    "name": "approvals",
+    "expected": "sales.approvals",
+    "domain": "sales",
+    "subdomain": "sales",
+    "category": "hidden_in_other_schema",
+    "db_found_at": [
+      "procurement.approvals"
+    ]
+  },
+  {
+    "idx": 14,
+    "name": "sales_orders",
+    "expected": "sales.sales_orders",
+    "domain": "sales",
+    "subdomain": "sales",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 15,
+    "name": "sales_pipeline",
+    "expected": "sales.sales_pipeline",
+    "domain": "sales",
+    "subdomain": "sales",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 16,
+    "name": "projects",
+    "expected": "projects.projects",
+    "domain": "projects",
+    "subdomain": "projects",
+    "category": "hidden_in_other_schema",
+    "db_found_at": [
+      "execution.projects"
+    ]
+  },
+  {
+    "idx": 17,
+    "name": "project_phases",
+    "expected": "projects.project_phases",
+    "domain": "projects",
+    "subdomain": "projects",
+    "category": "hidden_in_other_schema",
+    "db_found_at": [
+      "execution.project_phases"
+    ]
+  },
+  {
+    "idx": 18,
+    "name": "project_tasks",
+    "expected": "projects.project_tasks",
+    "domain": "projects",
+    "subdomain": "projects",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 19,
+    "name": "milestones",
+    "expected": "projects.milestones",
+    "domain": "projects",
+    "subdomain": "projects",
+    "category": "has_api_route_no_db",
+    "api_files": [
+      "projects-module.ts",
+      "route-aliases.ts"
+    ]
+  },
+  {
+    "idx": 20,
+    "name": "dependencies",
+    "expected": "projects.dependencies",
+    "domain": "projects",
+    "subdomain": "projects",
+    "category": "has_fe_call_no_db",
+    "fe_calls": [
+      "supply-chain/bom-where-used/dependencies"
+    ]
+  },
+  {
+    "idx": 21,
+    "name": "project_resources",
+    "expected": "projects.project_resources",
+    "domain": "projects",
+    "subdomain": "projects",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 22,
+    "name": "project_risk_entries",
+    "expected": "projects.project_risk_entries",
+    "domain": "projects",
+    "subdomain": "projects",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 23,
+    "name": "project_progress_logs",
+    "expected": "projects.project_progress_logs",
+    "domain": "projects",
+    "subdomain": "projects",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 24,
+    "name": "technical_specs",
+    "expected": "engineering.technical_specs",
+    "domain": "engineering",
+    "subdomain": "engineering",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 25,
+    "name": "drawings",
+    "expected": "engineering.drawings",
+    "domain": "engineering",
+    "subdomain": "engineering",
+    "category": "has_fe_call_no_db",
+    "fe_calls": [
+      "engineering/drawing-management/drawings",
+      "engineering/engineering-command-center/recentdrawings",
+      "engineering/engineering-office/drawings"
+    ]
+  },
+  {
+    "idx": 26,
+    "name": "bom_headers",
+    "expected": "engineering.bom_headers",
+    "domain": "engineering",
+    "subdomain": "engineering",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 27,
+    "name": "bom_items",
+    "expected": "engineering.bom_items",
+    "domain": "engineering",
+    "subdomain": "engineering",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 28,
+    "name": "revision_control",
+    "expected": "engineering.revision_control",
+    "domain": "engineering",
+    "subdomain": "engineering",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 29,
+    "name": "product_configurations",
+    "expected": "engineering.product_configurations",
+    "domain": "engineering",
+    "subdomain": "engineering",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 30,
+    "name": "engineering_requests",
+    "expected": "engineering.engineering_requests",
+    "domain": "engineering",
+    "subdomain": "engineering",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 31,
+    "name": "approval_drawings",
+    "expected": "engineering.approval_drawings",
+    "domain": "engineering",
+    "subdomain": "engineering",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 34,
+    "name": "supplier_price_lists",
+    "expected": "procurement.supplier_price_lists",
+    "domain": "procurement",
+    "subdomain": "procurement",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 35,
+    "name": "purchase_requests",
+    "expected": "procurement.purchase_requests",
+    "domain": "procurement",
+    "subdomain": "procurement",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 37,
+    "name": "purchase_order_items",
+    "expected": "procurement.purchase_order_items",
+    "domain": "procurement",
+    "subdomain": "procurement",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 38,
+    "name": "goods_receipts",
+    "expected": "procurement.goods_receipts",
+    "domain": "procurement",
+    "subdomain": "procurement",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 39,
+    "name": "procurement_approvals",
+    "expected": "procurement.procurement_approvals",
+    "domain": "procurement",
+    "subdomain": "procurement",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 40,
+    "name": "items",
+    "expected": "inventory.items",
+    "domain": "inventory",
+    "subdomain": "inventory",
+    "category": "has_api_route_no_db",
+    "api_files": [
+      "delivery-returns.ts",
+      "dispatch-planning.ts",
+      "finance-enterprise.ts"
+    ]
+  },
+  {
+    "idx": 41,
+    "name": "raw_materials",
+    "expected": "inventory.raw_materials",
+    "domain": "inventory",
+    "subdomain": "inventory",
+    "category": "has_fe_call_no_db",
+    "fe_calls": [
+      "procurement/raw_materials_dashboard",
+      "procurement/raw_materials_list"
+    ]
+  },
+  {
+    "idx": 43,
+    "name": "stock_balances",
+    "expected": "inventory.stock_balances",
+    "domain": "inventory",
+    "subdomain": "inventory",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 44,
+    "name": "stock_movements",
+    "expected": "inventory.stock_movements",
+    "domain": "inventory",
+    "subdomain": "inventory",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 45,
+    "name": "reservations",
+    "expected": "inventory.reservations",
+    "domain": "inventory",
+    "subdomain": "inventory",
+    "category": "has_api_route_no_db",
+    "api_files": [
+      "quote-builder.ts"
+    ]
+  },
+  {
+    "idx": 46,
+    "name": "batch_lots",
+    "expected": "inventory.batch_lots",
+    "domain": "inventory",
+    "subdomain": "inventory",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 48,
+    "name": "production_orders",
+    "expected": "production.production_orders",
+    "domain": "production",
+    "subdomain": "production",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 49,
+    "name": "production_steps",
+    "expected": "production.production_steps",
+    "domain": "production",
+    "subdomain": "production",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 50,
+    "name": "work_centers",
+    "expected": "production.work_centers",
+    "domain": "production",
+    "subdomain": "production",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 51,
+    "name": "labor_logs",
+    "expected": "production.labor_logs",
+    "domain": "production",
+    "subdomain": "production",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 52,
+    "name": "machine_logs",
+    "expected": "production.machine_logs",
+    "domain": "production",
+    "subdomain": "production",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 53,
+    "name": "material_consumption",
+    "expected": "production.material_consumption",
+    "domain": "production",
+    "subdomain": "production",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 54,
+    "name": "scrap_logs",
+    "expected": "production.scrap_logs",
+    "domain": "production",
+    "subdomain": "production",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 55,
+    "name": "production_quality_checks",
+    "expected": "production.production_quality_checks",
+    "domain": "production",
+    "subdomain": "production",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 56,
+    "name": "installation_orders",
+    "expected": "installation.installation_orders",
+    "domain": "installation",
+    "subdomain": "installation",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 57,
+    "name": "installation_tasks",
+    "expected": "installation.installation_tasks",
+    "domain": "installation",
+    "subdomain": "installation",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 58,
+    "name": "installation_teams",
+    "expected": "installation.installation_teams",
+    "domain": "installation",
+    "subdomain": "installation",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 59,
+    "name": "schedules",
+    "expected": "installation.schedules",
+    "domain": "installation",
+    "subdomain": "installation",
+    "category": "has_api_route_no_db",
+    "api_files": [
+      "ai-agents-system.ts",
+      "bi-scheduled-reports.ts",
+      "cashflow-management.ts"
+    ]
+  },
+  {
+    "idx": 60,
+    "name": "site_visits",
+    "expected": "installation.site_visits",
+    "domain": "installation",
+    "subdomain": "installation",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 61,
+    "name": "completion_reports",
+    "expected": "installation.completion_reports",
+    "domain": "installation",
+    "subdomain": "installation",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 62,
+    "name": "handover_documents",
+    "expected": "installation.handover_documents",
+    "domain": "installation",
+    "subdomain": "installation",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 63,
+    "name": "punch_lists",
+    "expected": "installation.punch_lists",
+    "domain": "installation",
+    "subdomain": "installation",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 64,
+    "name": "service_tickets",
+    "expected": "service.service_tickets",
+    "domain": "service",
+    "subdomain": "service",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 65,
+    "name": "warranty_records",
+    "expected": "service.warranty_records",
+    "domain": "service",
+    "subdomain": "service",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 66,
+    "name": "service_visits",
+    "expected": "service.service_visits",
+    "domain": "service",
+    "subdomain": "service",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 67,
+    "name": "issue_categories",
+    "expected": "service.issue_categories",
+    "domain": "service",
+    "subdomain": "service",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 68,
+    "name": "resolution_logs",
+    "expected": "service.resolution_logs",
+    "domain": "service",
+    "subdomain": "service",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 69,
+    "name": "maintenance_plans",
+    "expected": "service.maintenance_plans",
+    "domain": "service",
+    "subdomain": "service",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 70,
+    "name": "service_feedback",
+    "expected": "service.service_feedback",
+    "domain": "service",
+    "subdomain": "service",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 71,
+    "name": "sla_rules",
+    "expected": "service.sla_rules",
+    "domain": "service",
+    "subdomain": "service",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 73,
+    "name": "invoice_items",
+    "expected": "finance.invoice_items",
+    "domain": "finance",
+    "subdomain": "finance",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 77,
+    "name": "expense_categories",
+    "expected": "finance.expense_categories",
+    "domain": "finance",
+    "subdomain": "finance",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 79,
+    "name": "profitability_snapshots",
+    "expected": "finance.profitability_snapshots",
+    "domain": "finance",
+    "subdomain": "finance",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 80,
+    "name": "employees",
+    "expected": "hr_workforce.employees",
+    "domain": "hr_workforce",
+    "subdomain": "hr_workforce",
+    "category": "hidden_in_other_schema",
+    "db_found_at": [
+      "public.employees",
+      "workforce.employees"
+    ]
+  },
+  {
+    "idx": 81,
+    "name": "contractors",
+    "expected": "hr_workforce.contractors",
+    "domain": "hr_workforce",
+    "subdomain": "hr_workforce",
+    "category": "has_api_route_no_db",
+    "api_files": [
+      "contractor-payment-engine.ts",
+      "hr.ts",
+      "payroll-module.ts"
+    ]
+  },
+  {
+    "idx": 82,
+    "name": "teams",
+    "expected": "hr_workforce.teams",
+    "domain": "hr_workforce",
+    "subdomain": "hr_workforce",
+    "category": "has_fe_call_no_db",
+    "fe_calls": [
+      "fabrication/fab-installation-orders/teams",
+      "installation/installation-scheduling/teams",
+      "installation/installation-teams/availability"
+    ]
+  },
+  {
+    "idx": 83,
+    "name": "attendance_logs",
+    "expected": "hr_workforce.attendance_logs",
+    "domain": "hr_workforce",
+    "subdomain": "hr_workforce",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 84,
+    "name": "assignments",
+    "expected": "hr_workforce.assignments",
+    "domain": "hr_workforce",
+    "subdomain": "hr_workforce",
+    "category": "has_api_route_no_db",
+    "api_files": [
+      "hr-enterprise.ts",
+      "sla-management.ts",
+      "work-orders.ts"
+    ]
+  },
+  {
+    "idx": 85,
+    "name": "payroll_inputs",
+    "expected": "hr_workforce.payroll_inputs",
+    "domain": "hr_workforce",
+    "subdomain": "hr_workforce",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 86,
+    "name": "performance_reviews",
+    "expected": "hr_workforce.performance_reviews",
+    "domain": "hr_workforce",
+    "subdomain": "hr_workforce",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 87,
+    "name": "skill_matrix",
+    "expected": "hr_workforce.skill_matrix",
+    "domain": "hr_workforce",
+    "subdomain": "hr_workforce",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 88,
+    "name": "documents",
+    "expected": "documents.documents",
+    "domain": "documents",
+    "subdomain": "documents",
+    "category": "hidden_in_other_schema",
+    "db_found_at": [
+      "docs.documents"
+    ]
+  },
+  {
+    "idx": 89,
+    "name": "document_links",
+    "expected": "documents.document_links",
+    "domain": "documents",
+    "subdomain": "documents",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 90,
+    "name": "document_versions",
+    "expected": "documents.document_versions",
+    "domain": "documents",
+    "subdomain": "documents",
+    "category": "hidden_in_other_schema",
+    "db_found_at": [
+      "docs.document_versions"
+    ]
+  },
+  {
+    "idx": 91,
+    "name": "templates",
+    "expected": "documents.templates",
+    "domain": "documents",
+    "subdomain": "documents",
+    "category": "has_api_route_no_db",
+    "api_files": [
+      "ai-prompt-templates.ts",
+      "communication-marketing-engine.ts",
+      "contract-templates.ts"
+    ]
+  },
+  {
+    "idx": 92,
+    "name": "generated_files",
+    "expected": "documents.generated_files",
+    "domain": "documents",
+    "subdomain": "documents",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 93,
+    "name": "signatures",
+    "expected": "documents.signatures",
+    "domain": "documents",
+    "subdomain": "documents",
+    "category": "hidden_in_other_schema",
+    "db_found_at": [
+      "execution.signatures"
+    ]
+  },
+  {
+    "idx": 94,
+    "name": "attachments",
+    "expected": "documents.attachments",
+    "domain": "documents",
+    "subdomain": "documents",
+    "category": "hidden_in_other_schema",
+    "db_found_at": [
+      "docs.attachments"
+    ]
+  },
+  {
+    "idx": 95,
+    "name": "archive_records",
+    "expected": "documents.archive_records",
+    "domain": "documents",
+    "subdomain": "documents",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 96,
+    "name": "dashboards",
+    "expected": "analytics.dashboards",
+    "domain": "analytics",
+    "subdomain": "analytics",
+    "category": "has_api_route_no_db",
+    "api_files": [
+      "bi-dashboards.ts"
+    ]
+  },
+  {
+    "idx": 98,
+    "name": "kpi_definitions",
+    "expected": "analytics.kpi_definitions",
+    "domain": "analytics",
+    "subdomain": "analytics",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 99,
+    "name": "reports",
+    "expected": "analytics.reports",
+    "domain": "analytics",
+    "subdomain": "analytics",
+    "category": "has_api_route_no_db",
+    "api_files": [
+      "ai-business-automation.ts",
+      "crm-analytics-sync.ts",
+      "external-api.ts"
+    ]
+  },
+  {
+    "idx": 100,
+    "name": "report_sources",
+    "expected": "analytics.report_sources",
+    "domain": "analytics",
+    "subdomain": "analytics",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 101,
+    "name": "forecast_models",
+    "expected": "analytics.forecast_models",
+    "domain": "analytics",
+    "subdomain": "analytics",
+    "category": "hidden_in_other_schema",
+    "db_found_at": [
+      "intelligence.forecast_models"
+    ]
+  },
+  {
+    "idx": 102,
+    "name": "scenario_models",
+    "expected": "analytics.scenario_models",
+    "domain": "analytics",
+    "subdomain": "analytics",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 103,
+    "name": "scorecards",
+    "expected": "analytics.scorecards",
+    "domain": "analytics",
+    "subdomain": "analytics",
+    "category": "has_api_route_no_db",
+    "api_files": [
+      "shipping-freight.ts",
+      "supplier-intelligence-new.ts"
+    ]
+  },
+  {
+    "idx": 104,
+    "name": "automation_rules",
+    "expected": "ai_automation.automation_rules",
+    "domain": "ai_automation",
+    "subdomain": "ai_automation",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 105,
+    "name": "automation_runs",
+    "expected": "ai_automation.automation_runs",
+    "domain": "ai_automation",
+    "subdomain": "ai_automation",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 106,
+    "name": "ai_agents",
+    "expected": "ai_automation.ai_agents",
+    "domain": "ai_automation",
+    "subdomain": "ai_automation",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 107,
+    "name": "ai_actions",
+    "expected": "ai_automation.ai_actions",
+    "domain": "ai_automation",
+    "subdomain": "ai_automation",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 108,
+    "name": "prediction_outputs",
+    "expected": "ai_automation.prediction_outputs",
+    "domain": "ai_automation",
+    "subdomain": "ai_automation",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 109,
+    "name": "recommendation_logs",
+    "expected": "ai_automation.recommendation_logs",
+    "domain": "ai_automation",
+    "subdomain": "ai_automation",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 110,
+    "name": "prompt_templates",
+    "expected": "ai_automation.prompt_templates",
+    "domain": "ai_automation",
+    "subdomain": "ai_automation",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 111,
+    "name": "orchestration_flows",
+    "expected": "ai_automation.orchestration_flows",
+    "domain": "ai_automation",
+    "subdomain": "ai_automation",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 112,
+    "name": "users",
+    "expected": "governance.users",
+    "domain": "governance",
+    "subdomain": "governance",
+    "category": "has_api_route_no_db",
+    "api_files": [
+      "audit-log.ts",
+      "auth.ts",
+      "chat.ts"
+    ]
+  },
+  {
+    "idx": 116,
+    "name": "change_logs",
+    "expected": "governance.change_logs",
+    "domain": "governance",
+    "subdomain": "governance",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 117,
+    "name": "system_settings",
+    "expected": "governance.system_settings",
+    "domain": "governance",
+    "subdomain": "governance",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 118,
+    "name": "validation_rules",
+    "expected": "governance.validation_rules",
+    "domain": "governance",
+    "subdomain": "governance",
+    "category": "truly_absent"
+  },
+  {
+    "idx": 119,
+    "name": "data_quality_issues",
+    "expected": "governance.data_quality_issues",
+    "domain": "governance",
+    "subdomain": "governance",
+    "category": "truly_absent"
+  }
+]

@@ -1,0 +1,5298 @@
+# ============================================================
+# KOBI EL - ERP System Modules 13-18 DETAILED Specification
+# Enterprise Product Architecture - SAP/Oracle/Priority Level
+# Modules: HR, Operations, Documents, Reports, Automations, Settings
+# ============================================================
+
+# ============================================================
+# MODULE 13: HR (Human Resources)
+# ============================================================
+module_13_hr:
+  module_id: 13
+  name: "HR"
+  label_he: "משאבי אנוש"
+  icon: groups
+  route: /hr
+  priority: medium
+  purpose: "ניהול עובדים, תפקידים, נוכחות, שכר, משימות והרשאות"
+
+  # ----------------------------------------------------------
+  # SUBMENU
+  # ----------------------------------------------------------
+  submenus:
+    - label: "עובדים"
+      route: /hr/employees
+      icon: person
+    - label: "תפקידים"
+      route: /hr/roles
+      icon: badge
+    - label: "נוכחות"
+      route: /hr/attendance
+      icon: schedule
+    - label: "שכר"
+      route: /hr/payroll
+      icon: payments
+    - label: "משימות עובדים"
+      route: /hr/employee-tasks
+      icon: task_alt
+
+  # ----------------------------------------------------------
+  # ENTITIES
+  # ----------------------------------------------------------
+  entities:
+
+    # === DEPARTMENTS ===
+    departments:
+      type: master_data
+      table_name: departments
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: name
+          type: varchar(100)
+          required: true
+          unique: true
+          label_he: "שם מחלקה"
+        - name: code
+          type: varchar(20)
+          required: true
+          unique: true
+          label_he: "קוד מחלקה"
+        - name: manager_id
+          type: uuid
+          nullable: true
+          foreign_key: employees.id
+          label_he: "מנהל מחלקה"
+        - name: parent_department_id
+          type: uuid
+          nullable: true
+          foreign_key: departments.id
+          self_referencing: true
+          label_he: "מחלקת אב"
+        - name: is_active
+          type: boolean
+          default: true
+          label_he: "פעיל"
+        - name: created_at
+          type: timestamp
+          auto_generated: true
+      indexes:
+        - columns: [code]
+          unique: true
+        - columns: [parent_department_id]
+        - columns: [manager_id]
+
+    # === EMPLOYEES ===
+    employees:
+      type: master_data
+      table_name: employees
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: employee_number
+          type: varchar(20)
+          auto_generated: true
+          unique: true
+          label_he: "מספר עובד"
+          auto_number_config:
+            prefix: "EMP-"
+            padding: 5
+            example: "EMP-00001"
+        - name: first_name
+          type: varchar(50)
+          required: true
+          label_he: "שם פרטי"
+        - name: last_name
+          type: varchar(50)
+          required: true
+          label_he: "שם משפחה"
+        - name: full_name
+          type: varchar(101)
+          computed: true
+          formula: "first_name || ' ' || last_name"
+          label_he: "שם מלא"
+        - name: id_number
+          type: varchar(20)
+          required: true
+          unique: true
+          label_he: "תעודת זהות"
+        - name: email
+          type: varchar(100)
+          required: true
+          unique: true
+          label_he: "אימייל"
+          validation: email_format
+        - name: phone
+          type: varchar(20)
+          nullable: true
+          label_he: "טלפון"
+        - name: mobile
+          type: varchar(20)
+          nullable: true
+          label_he: "נייד"
+        - name: address
+          type: varchar(200)
+          nullable: true
+          label_he: "כתובת"
+        - name: city
+          type: varchar(100)
+          nullable: true
+          label_he: "עיר"
+        - name: zip_code
+          type: varchar(10)
+          nullable: true
+          label_he: "מיקוד"
+        - name: date_of_birth
+          type: date
+          nullable: true
+          label_he: "תאריך לידה"
+        - name: gender
+          type: enum
+          values: [male, female, other]
+          required: true
+          label_he: "מין"
+          display_values_he:
+            male: "זכר"
+            female: "נקבה"
+            other: "אחר"
+        - name: hire_date
+          type: date
+          required: true
+          label_he: "תאריך גיוס"
+        - name: termination_date
+          type: date
+          nullable: true
+          label_he: "תאריך סיום העסקה"
+        - name: department_id
+          type: uuid
+          required: true
+          foreign_key: departments.id
+          label_he: "מחלקה"
+        - name: position
+          type: varchar(100)
+          required: true
+          label_he: "תפקיד"
+        - name: manager_id
+          type: uuid
+          nullable: true
+          foreign_key: employees.id
+          self_referencing: true
+          label_he: "מנהל ישיר"
+        - name: employment_type
+          type: enum
+          values: [full_time, part_time, contractor, intern]
+          required: true
+          label_he: "סוג העסקה"
+          display_values_he:
+            full_time: "משרה מלאה"
+            part_time: "משרה חלקית"
+            contractor: "קבלן"
+            intern: "מתמחה"
+        - name: salary
+          type: decimal(12,2)
+          required: true
+          label_he: "שכר"
+        - name: bank_name
+          type: varchar(100)
+          nullable: true
+          label_he: "שם בנק"
+        - name: bank_branch
+          type: varchar(20)
+          nullable: true
+          label_he: "סניף בנק"
+        - name: bank_account
+          type: varchar(30)
+          nullable: true
+          label_he: "מספר חשבון"
+        - name: tax_id
+          type: varchar(20)
+          nullable: true
+          label_he: "מספר תיק ניכויים"
+        - name: status_id
+          type: enum
+          values: [active, on_leave, suspended, terminated]
+          required: true
+          default: active
+          label_he: "סטטוס"
+          display_values_he:
+            active: "פעיל"
+            on_leave: "בחופשה"
+            suspended: "מושעה"
+            terminated: "סיום העסקה"
+        - name: emergency_contact_name
+          type: varchar(100)
+          nullable: true
+          label_he: "איש קשר לחירום"
+        - name: emergency_contact_phone
+          type: varchar(20)
+          nullable: true
+          label_he: "טלפון חירום"
+        - name: notes
+          type: text
+          nullable: true
+          label_he: "הערות"
+        - name: created_at
+          type: timestamp
+          auto_generated: true
+        - name: updated_at
+          type: timestamp
+          auto_generated: true
+          on_update: true
+      indexes:
+        - columns: [employee_number]
+          unique: true
+        - columns: [id_number]
+          unique: true
+        - columns: [email]
+          unique: true
+        - columns: [department_id]
+        - columns: [manager_id]
+        - columns: [status_id]
+        - columns: [hire_date]
+
+    # === ATTENDANCE ===
+    attendance:
+      type: transactional
+      table_name: attendance
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: employee_id
+          type: uuid
+          required: true
+          foreign_key: employees.id
+          label_he: "עובד"
+        - name: date
+          type: date
+          required: true
+          label_he: "תאריך"
+        - name: clock_in
+          type: time
+          required: true
+          label_he: "שעת כניסה"
+        - name: clock_out
+          type: time
+          nullable: true
+          label_he: "שעת יציאה"
+        - name: total_hours
+          type: decimal(5,2)
+          computed: true
+          formula: "EXTRACT(EPOCH FROM (clock_out - clock_in)) / 3600"
+          label_he: "סה\"כ שעות"
+        - name: overtime_hours
+          type: decimal(5,2)
+          default: 0
+          label_he: "שעות נוספות"
+        - name: absence_type
+          type: enum
+          values: [none, sick, vacation, personal, other]
+          nullable: true
+          label_he: "סוג היעדרות"
+          display_values_he:
+            none: "ללא"
+            sick: "מחלה"
+            vacation: "חופשה"
+            personal: "אישי"
+            other: "אחר"
+        - name: status_id
+          type: enum
+          values: [present, absent, late, half_day]
+          required: true
+          label_he: "סטטוס"
+          display_values_he:
+            present: "נוכח"
+            absent: "נעדר"
+            late: "איחור"
+            half_day: "חצי יום"
+        - name: notes
+          type: text
+          nullable: true
+          label_he: "הערות"
+        - name: approved_by
+          type: uuid
+          nullable: true
+          foreign_key: users.id
+          label_he: "אושר על ידי"
+        - name: created_at
+          type: timestamp
+          auto_generated: true
+      indexes:
+        - columns: [employee_id, date]
+          unique: true
+        - columns: [date]
+        - columns: [status_id]
+        - columns: [absence_type]
+
+    # === PAYROLL RUNS ===
+    payroll_runs:
+      type: transactional
+      table_name: payroll_runs
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: run_number
+          type: varchar(20)
+          auto_generated: true
+          unique: true
+          label_he: "מספר ריצה"
+          auto_number_config:
+            prefix: "PAY-"
+            padding: 5
+            example: "PAY-00001"
+        - name: period_start
+          type: date
+          required: true
+          label_he: "תחילת תקופה"
+        - name: period_end
+          type: date
+          required: true
+          label_he: "סוף תקופה"
+        - name: run_date
+          type: date
+          required: true
+          label_he: "תאריך ריצה"
+        - name: total_gross
+          type: decimal(14,2)
+          default: 0
+          label_he: "סה\"כ ברוטו"
+        - name: total_deductions
+          type: decimal(14,2)
+          default: 0
+          label_he: "סה\"כ ניכויים"
+        - name: total_net
+          type: decimal(14,2)
+          default: 0
+          label_he: "סה\"כ נטו"
+        - name: status_id
+          type: enum
+          values: [draft, calculated, approved, paid, cancelled]
+          required: true
+          default: draft
+          label_he: "סטטוס"
+          display_values_he:
+            draft: "טיוטה"
+            calculated: "חושב"
+            approved: "מאושר"
+            paid: "שולם"
+            cancelled: "מבוטל"
+        - name: created_by
+          type: uuid
+          required: true
+          foreign_key: users.id
+          label_he: "נוצר על ידי"
+        - name: approved_by
+          type: uuid
+          nullable: true
+          foreign_key: users.id
+          label_he: "אושר על ידי"
+        - name: created_at
+          type: timestamp
+          auto_generated: true
+      indexes:
+        - columns: [run_number]
+          unique: true
+        - columns: [period_start, period_end]
+        - columns: [status_id]
+
+    # === PAYROLL ITEMS ===
+    payroll_items:
+      type: line_items
+      table_name: payroll_items
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: payroll_run_id
+          type: uuid
+          required: true
+          foreign_key: payroll_runs.id
+          on_delete: cascade
+          label_he: "ריצת שכר"
+        - name: employee_id
+          type: uuid
+          required: true
+          foreign_key: employees.id
+          label_he: "עובד"
+        - name: base_salary
+          type: decimal(12,2)
+          required: true
+          label_he: "שכר בסיס"
+        - name: overtime_pay
+          type: decimal(12,2)
+          default: 0
+          label_he: "תשלום שעות נוספות"
+        - name: bonuses
+          type: decimal(12,2)
+          default: 0
+          label_he: "בונוסים"
+        - name: gross_pay
+          type: decimal(12,2)
+          required: true
+          computed: true
+          formula: "base_salary + overtime_pay + bonuses"
+          label_he: "ברוטו"
+        - name: tax_deduction
+          type: decimal(12,2)
+          default: 0
+          label_he: "ניכוי מס"
+        - name: social_security
+          type: decimal(12,2)
+          default: 0
+          label_he: "ביטוח לאומי"
+        - name: pension
+          type: decimal(12,2)
+          default: 0
+          label_he: "פנסיה"
+        - name: other_deductions
+          type: decimal(12,2)
+          default: 0
+          label_he: "ניכויים אחרים"
+        - name: net_pay
+          type: decimal(12,2)
+          required: true
+          computed: true
+          formula: "gross_pay - tax_deduction - social_security - pension - other_deductions"
+          label_he: "נטו"
+        - name: notes
+          type: text
+          nullable: true
+          label_he: "הערות"
+      indexes:
+        - columns: [payroll_run_id, employee_id]
+          unique: true
+        - columns: [employee_id]
+
+    # === EMPLOYEE TASKS ===
+    employee_tasks:
+      type: transactional
+      table_name: employee_tasks
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: employee_id
+          type: uuid
+          required: true
+          foreign_key: employees.id
+          label_he: "עובד"
+        - name: title
+          type: varchar(200)
+          required: true
+          label_he: "כותרת"
+        - name: description
+          type: text
+          nullable: true
+          label_he: "תיאור"
+        - name: assigned_by
+          type: uuid
+          required: true
+          foreign_key: users.id
+          label_he: "שויך על ידי"
+        - name: due_date
+          type: date
+          required: true
+          label_he: "תאריך יעד"
+        - name: priority
+          type: enum
+          values: [low, medium, high, critical]
+          required: true
+          default: medium
+          label_he: "עדיפות"
+          display_values_he:
+            low: "נמוכה"
+            medium: "בינונית"
+            high: "גבוהה"
+            critical: "קריטית"
+        - name: status_id
+          type: enum
+          values: [todo, in_progress, done, cancelled]
+          required: true
+          default: todo
+          label_he: "סטטוס"
+          display_values_he:
+            todo: "לביצוע"
+            in_progress: "בתהליך"
+            done: "הושלם"
+            cancelled: "בוטל"
+        - name: notes
+          type: text
+          nullable: true
+          label_he: "הערות"
+        - name: created_at
+          type: timestamp
+          auto_generated: true
+        - name: updated_at
+          type: timestamp
+          auto_generated: true
+          on_update: true
+      indexes:
+        - columns: [employee_id]
+        - columns: [assigned_by]
+        - columns: [due_date]
+        - columns: [status_id]
+        - columns: [priority]
+
+  # ----------------------------------------------------------
+  # PAGES
+  # ----------------------------------------------------------
+  pages:
+
+    # === EMPLOYEES LIST ===
+    employees_list:
+      route: /hr/employees
+      title: "עובדים"
+      layout: standard_list
+      description: "רשימת כל העובדים במערכת"
+      toolbar:
+        primary_action:
+          label: "עובד חדש"
+          icon: add
+          target: /hr/employees/create
+          permission: hr.employees.create
+        secondary_actions:
+          - label: "ייצוא Excel"
+            icon: download
+            action: export_excel
+            permission: hr.employees.export
+          - label: "ייצוא CSV"
+            icon: download
+            action: export_csv
+            permission: hr.employees.export
+          - label: "ייבוא עובדים"
+            icon: upload
+            action: import_employees
+            permission: hr.employees.create
+        search:
+          placeholder: "חיפוש לפי שם, מספר עובד, אימייל, טלפון..."
+          searches_in: [employee_number, full_name, first_name, last_name, email, phone, mobile, id_number]
+      filters:
+        - field: department_id
+          type: select
+          label: "מחלקה"
+          source: departments
+          display_field: name
+        - field: status_id
+          type: multi_select
+          label: "סטטוס"
+          options:
+            - {value: active, label: "פעיל"}
+            - {value: on_leave, label: "בחופשה"}
+            - {value: suspended, label: "מושעה"}
+            - {value: terminated, label: "סיום העסקה"}
+        - field: employment_type
+          type: multi_select
+          label: "סוג העסקה"
+          options:
+            - {value: full_time, label: "משרה מלאה"}
+            - {value: part_time, label: "משרה חלקית"}
+            - {value: contractor, label: "קבלן"}
+            - {value: intern, label: "מתמחה"}
+        - field: manager_id
+          type: select
+          label: "מנהל ישיר"
+          source: employees
+          display_field: full_name
+        - field: hire_date
+          type: date_range
+          label: "תאריך גיוס"
+        - field: position
+          type: text
+          label: "תפקיד"
+      table:
+        columns:
+          - {field: employee_number, label: "מס' עובד", sortable: true, width: 100}
+          - {field: full_name, label: "שם מלא", sortable: true, width: 180, link_to: "/hr/employees/:id"}
+          - {field: department_id, label: "מחלקה", sortable: true, width: 130, display: departments.name}
+          - {field: position, label: "תפקיד", sortable: true, width: 140}
+          - {field: employment_type, label: "סוג העסקה", sortable: true, width: 110}
+          - {field: phone, label: "טלפון", sortable: false, width: 120}
+          - {field: email, label: "אימייל", sortable: false, width: 180}
+          - {field: manager_id, label: "מנהל ישיר", sortable: true, width: 150, display: employees.full_name}
+          - {field: hire_date, label: "תאריך גיוס", sortable: true, width: 110, format: date}
+          - {field: status_id, label: "סטטוס", sortable: true, width: 100, display: badge}
+        default_sort: {field: full_name, direction: asc}
+        row_actions:
+          - {action: view, label: "צפייה", icon: visibility, target: "/hr/employees/:id"}
+          - {action: edit, label: "עריכה", icon: edit, target: "/hr/employees/:id/edit", permission: hr.employees.edit}
+          - {action: delete, label: "מחיקה", icon: delete, confirmation: "האם למחוק את העובד?", permission: hr.employees.delete}
+        bulk_actions:
+          - {action: export, label: "ייצוא נבחרים"}
+          - {action: change_status, label: "שינוי סטטוס"}
+          - {action: change_department, label: "שינוי מחלקה"}
+        pagination:
+          default_page_size: 25
+          page_size_options: [10, 25, 50, 100]
+
+    # === EMPLOYEE CREATE ===
+    employee_create:
+      route: /hr/employees/create
+      title: "עובד חדש"
+      layout: standard_form
+      permission: hr.employees.create
+      form:
+        sections:
+          - title: "פרטים אישיים"
+            icon: person
+            columns: 2
+            fields:
+              - name: first_name
+                type: text
+                label: "שם פרטי"
+                required: true
+                placeholder: "הזן שם פרטי"
+                max_length: 50
+                grid_column: 1
+              - name: last_name
+                type: text
+                label: "שם משפחה"
+                required: true
+                placeholder: "הזן שם משפחה"
+                max_length: 50
+                grid_column: 2
+              - name: id_number
+                type: text
+                label: "תעודת זהות"
+                required: true
+                placeholder: "הזן ת.ז."
+                max_length: 20
+                validation: israeli_id
+                grid_column: 1
+              - name: gender
+                type: select
+                label: "מין"
+                required: true
+                options:
+                  - {value: male, label: "זכר"}
+                  - {value: female, label: "נקבה"}
+                  - {value: other, label: "אחר"}
+                grid_column: 2
+              - name: date_of_birth
+                type: date
+                label: "תאריך לידה"
+                required: false
+                grid_column: 1
+              - name: email
+                type: email
+                label: "אימייל"
+                required: true
+                placeholder: "example@company.com"
+                grid_column: 2
+              - name: phone
+                type: phone
+                label: "טלפון"
+                required: false
+                grid_column: 1
+              - name: mobile
+                type: phone
+                label: "נייד"
+                required: false
+                grid_column: 2
+              - name: address
+                type: text
+                label: "כתובת"
+                required: false
+                max_length: 200
+                grid_column: 1
+              - name: city
+                type: text
+                label: "עיר"
+                required: false
+                max_length: 100
+                grid_column: 2
+              - name: zip_code
+                type: text
+                label: "מיקוד"
+                required: false
+                max_length: 10
+                grid_column: 1
+
+          - title: "פרטי העסקה"
+            icon: work
+            columns: 2
+            fields:
+              - name: department_id
+                type: select
+                label: "מחלקה"
+                required: true
+                source: departments
+                display_field: name
+                filter: "is_active=true"
+                grid_column: 1
+              - name: position
+                type: text
+                label: "תפקיד"
+                required: true
+                max_length: 100
+                grid_column: 2
+              - name: manager_id
+                type: select
+                label: "מנהל ישיר"
+                required: false
+                source: employees
+                display_field: full_name
+                filter: "status_id=active"
+                grid_column: 1
+              - name: employment_type
+                type: select
+                label: "סוג העסקה"
+                required: true
+                options:
+                  - {value: full_time, label: "משרה מלאה"}
+                  - {value: part_time, label: "משרה חלקית"}
+                  - {value: contractor, label: "קבלן"}
+                  - {value: intern, label: "מתמחה"}
+                grid_column: 2
+              - name: hire_date
+                type: date
+                label: "תאריך גיוס"
+                required: true
+                default: today
+                grid_column: 1
+              - name: salary
+                type: currency
+                label: "שכר"
+                required: true
+                currency: ILS
+                grid_column: 2
+              - name: status_id
+                type: select
+                label: "סטטוס"
+                required: true
+                default: active
+                options:
+                  - {value: active, label: "פעיל"}
+                  - {value: on_leave, label: "בחופשה"}
+                  - {value: suspended, label: "מושעה"}
+                  - {value: terminated, label: "סיום העסקה"}
+                grid_column: 1
+
+          - title: "פרטי בנק"
+            icon: account_balance
+            columns: 2
+            fields:
+              - name: bank_name
+                type: text
+                label: "שם בנק"
+                required: false
+                max_length: 100
+                grid_column: 1
+              - name: bank_branch
+                type: text
+                label: "סניף"
+                required: false
+                max_length: 20
+                grid_column: 2
+              - name: bank_account
+                type: text
+                label: "מספר חשבון"
+                required: false
+                max_length: 30
+                grid_column: 1
+              - name: tax_id
+                type: text
+                label: "מספר תיק ניכויים"
+                required: false
+                max_length: 20
+                grid_column: 2
+
+          - title: "איש קשר לחירום"
+            icon: emergency
+            columns: 2
+            fields:
+              - name: emergency_contact_name
+                type: text
+                label: "שם איש קשר"
+                required: false
+                max_length: 100
+                grid_column: 1
+              - name: emergency_contact_phone
+                type: phone
+                label: "טלפון חירום"
+                required: false
+                grid_column: 2
+
+          - title: "הערות"
+            icon: notes
+            columns: 1
+            fields:
+              - name: notes
+                type: textarea
+                label: "הערות"
+                required: false
+                rows: 4
+                grid_column: 1
+
+        actions:
+          submit:
+            label: "שמירה"
+            icon: save
+            action: create_employee
+            redirect_to: "/hr/employees/:id"
+          cancel:
+            label: "ביטול"
+            icon: close
+            target: /hr/employees
+
+    # === EMPLOYEE PROFILE ===
+    employee_profile:
+      route: "/hr/employees/:id"
+      title: "כרטיס עובד"
+      layout: profile_with_tabs
+      permission: hr.employees.view
+      header:
+        display_fields:
+          - {field: full_name, type: title}
+          - {field: employee_number, type: subtitle}
+          - {field: position, type: info}
+          - {field: department_id, type: info, display: departments.name}
+          - {field: status_id, type: badge}
+        actions:
+          - {label: "עריכה", icon: edit, target: "/hr/employees/:id/edit", permission: hr.employees.edit}
+          - {label: "מחיקה", icon: delete, action: delete_employee, confirmation: "האם למחוק את העובד?", permission: hr.employees.delete}
+          - {label: "שליחת מייל", icon: email, action: send_email}
+          - {label: "יצירת משימה", icon: add_task, target: "/hr/employee-tasks/create?employee_id=:id"}
+      tabs:
+        - name: personal_details
+          label: "פרטים אישיים"
+          icon: person
+          type: detail_card
+          entity: employees
+          display_sections:
+            - title: "מידע אישי"
+              fields:
+                - {field: first_name, label: "שם פרטי"}
+                - {field: last_name, label: "שם משפחה"}
+                - {field: id_number, label: "תעודת זהות"}
+                - {field: gender, label: "מין"}
+                - {field: date_of_birth, label: "תאריך לידה", format: date}
+                - {field: email, label: "אימייל"}
+                - {field: phone, label: "טלפון"}
+                - {field: mobile, label: "נייד"}
+                - {field: address, label: "כתובת"}
+                - {field: city, label: "עיר"}
+                - {field: zip_code, label: "מיקוד"}
+            - title: "פרטי בנק"
+              fields:
+                - {field: bank_name, label: "שם בנק"}
+                - {field: bank_branch, label: "סניף"}
+                - {field: bank_account, label: "מספר חשבון"}
+                - {field: tax_id, label: "תיק ניכויים"}
+            - title: "איש קשר לחירום"
+              fields:
+                - {field: emergency_contact_name, label: "שם"}
+                - {field: emergency_contact_phone, label: "טלפון"}
+            - title: "הערות"
+              fields:
+                - {field: notes, label: "הערות", type: rich_text}
+
+        - name: employment_details
+          label: "פרטי העסקה"
+          icon: work
+          type: detail_card
+          entity: employees
+          display_sections:
+            - title: "העסקה"
+              fields:
+                - {field: employee_number, label: "מספר עובד"}
+                - {field: department_id, label: "מחלקה", display: departments.name, link_to: "/settings/departments/:department_id"}
+                - {field: position, label: "תפקיד"}
+                - {field: manager_id, label: "מנהל ישיר", display: employees.full_name, link_to: "/hr/employees/:manager_id"}
+                - {field: employment_type, label: "סוג העסקה"}
+                - {field: hire_date, label: "תאריך גיוס", format: date}
+                - {field: termination_date, label: "תאריך סיום", format: date}
+                - {field: salary, label: "שכר", format: currency}
+                - {field: status_id, label: "סטטוס", display: badge}
+
+        - name: attendance_history
+          label: "נוכחות"
+          icon: schedule
+          type: table
+          entity: attendance
+          filter: "employee_id=:id"
+          table_columns:
+            - {field: date, label: "תאריך", sortable: true, format: date}
+            - {field: clock_in, label: "כניסה", sortable: true, format: time}
+            - {field: clock_out, label: "יציאה", sortable: true, format: time}
+            - {field: total_hours, label: "סה\"כ שעות", sortable: true}
+            - {field: overtime_hours, label: "שעות נוספות", sortable: true}
+            - {field: absence_type, label: "סוג היעדרות", sortable: true}
+            - {field: status_id, label: "סטטוס", sortable: true, display: badge}
+            - {field: notes, label: "הערות"}
+          table_filters:
+            - {field: date, type: date_range, label: "תאריך"}
+            - {field: status_id, type: multi_select, label: "סטטוס"}
+            - {field: absence_type, type: multi_select, label: "סוג היעדרות"}
+          table_actions:
+            - {action: add_attendance, label: "הוספת רשומת נוכחות", icon: add}
+
+        - name: payroll_history
+          label: "שכר"
+          icon: payments
+          type: table
+          entity: payroll_items
+          filter: "employee_id=:id"
+          join: "payroll_runs ON payroll_items.payroll_run_id = payroll_runs.id"
+          table_columns:
+            - {field: payroll_runs.run_number, label: "מספר ריצה", sortable: true, link_to: "/hr/payroll/:payroll_run_id"}
+            - {field: payroll_runs.period_start, label: "תחילת תקופה", format: date}
+            - {field: payroll_runs.period_end, label: "סוף תקופה", format: date}
+            - {field: base_salary, label: "שכר בסיס", format: currency}
+            - {field: overtime_pay, label: "שעות נוספות", format: currency}
+            - {field: bonuses, label: "בונוסים", format: currency}
+            - {field: gross_pay, label: "ברוטו", format: currency}
+            - {field: tax_deduction, label: "מס", format: currency}
+            - {field: social_security, label: "ביטוח לאומי", format: currency}
+            - {field: pension, label: "פנסיה", format: currency}
+            - {field: other_deductions, label: "ניכויים אחרים", format: currency}
+            - {field: net_pay, label: "נטו", format: currency, highlight: true}
+          table_filters:
+            - {field: payroll_runs.period_start, type: date_range, label: "תקופה"}
+
+        - name: tasks
+          label: "משימות"
+          icon: task_alt
+          type: table
+          entity: employee_tasks
+          filter: "employee_id=:id"
+          table_columns:
+            - {field: title, label: "כותרת", sortable: true, link_to: "/hr/employee-tasks/:id"}
+            - {field: due_date, label: "תאריך יעד", sortable: true, format: date}
+            - {field: priority, label: "עדיפות", sortable: true, display: badge}
+            - {field: status_id, label: "סטטוס", sortable: true, display: badge}
+            - {field: assigned_by, label: "שויך ע\"י", display: users.full_name}
+            - {field: created_at, label: "נוצר", format: datetime}
+          table_filters:
+            - {field: status_id, type: multi_select, label: "סטטוס"}
+            - {field: priority, type: multi_select, label: "עדיפות"}
+            - {field: due_date, type: date_range, label: "תאריך יעד"}
+          table_actions:
+            - {action: create_task, label: "משימה חדשה", icon: add, target: "/hr/employee-tasks/create?employee_id=:id"}
+
+        - name: documents_files
+          label: "מסמכים וקבצים"
+          icon: folder
+          type: file_grid
+          entity: files
+          filter: "entity_type=employee AND entity_id=:id"
+          actions:
+            - {action: upload_file, label: "העלאת קובץ", icon: upload}
+            - {action: link_document, label: "קישור מסמך", icon: link}
+          display:
+            grid_fields: [file_name, file_type, file_size, uploaded_by, created_at]
+            preview: true
+            download: true
+            delete: true
+
+        - name: activity_log
+          label: "לוג פעילות"
+          icon: history
+          type: timeline
+          entity: activity_logs
+          filter: "entity_type=employee AND entity_id=:id"
+          display_fields:
+            - {field: action_type, label: "פעולה"}
+            - {field: actor, label: "משתמש", display: users.full_name}
+            - {field: created_at, label: "תאריך", format: datetime}
+            - {field: old_value_json, label: "ערך ישן", type: json_diff}
+            - {field: new_value_json, label: "ערך חדש", type: json_diff}
+
+    # === EMPLOYEE EDIT ===
+    employee_edit:
+      route: "/hr/employees/:id/edit"
+      title: "עריכת עובד"
+      layout: standard_form
+      permission: hr.employees.edit
+      form:
+        inherits: employee_create
+        pre_populated: true
+        actions:
+          submit:
+            label: "עדכון"
+            icon: save
+            action: update_employee
+            redirect_to: "/hr/employees/:id"
+          cancel:
+            label: "ביטול"
+            icon: close
+            target: "/hr/employees/:id"
+
+    # === ROLES LIST ===
+    roles_list:
+      route: /hr/roles
+      title: "תפקידים ומחלקות"
+      layout: standard_list
+      description: "ניהול מחלקות ותפקידים בארגון"
+      toolbar:
+        primary_action:
+          label: "מחלקה חדשה"
+          icon: add
+          target: /hr/roles/create-department
+          permission: hr.roles.create
+      sections:
+        - title: "מחלקות"
+          type: tree_view
+          entity: departments
+          display_fields:
+            - {field: name, label: "שם מחלקה"}
+            - {field: code, label: "קוד"}
+            - {field: manager_id, label: "מנהל", display: employees.full_name}
+            - {field: is_active, label: "פעיל", display: toggle}
+          child_field: parent_department_id
+          actions:
+            - {action: add_child, label: "הוספת תת-מחלקה", icon: add}
+            - {action: edit, label: "עריכה", icon: edit}
+            - {action: toggle_active, label: "הפעלה/כיבוי", icon: toggle_on}
+            - {action: delete, label: "מחיקה", icon: delete, confirmation: "האם למחוק את המחלקה?"}
+
+    # === ATTENDANCE LIST ===
+    attendance_list:
+      route: /hr/attendance
+      title: "נוכחות"
+      layout: dual_view
+      description: "מעקב נוכחות עובדים - תצוגת לוח שנה ורשימה"
+      view_toggle:
+        options:
+          - {value: calendar, label: "לוח שנה", icon: calendar_month}
+          - {value: list, label: "רשימה", icon: list}
+        default: list
+      toolbar:
+        primary_action:
+          label: "רשומת נוכחות חדשה"
+          icon: add
+          action: open_attendance_form
+          permission: hr.attendance.create
+        secondary_actions:
+          - label: "ייצוא דוח נוכחות"
+            icon: download
+            action: export_attendance_report
+            permission: hr.attendance.export
+      filters:
+        - field: employee_id
+          type: select
+          label: "עובד"
+          source: employees
+          display_field: full_name
+          filter: "status_id=active"
+        - field: department_id
+          type: select
+          label: "מחלקה"
+          source: departments
+          display_field: name
+        - field: date
+          type: date_range
+          label: "טווח תאריכים"
+        - field: status_id
+          type: multi_select
+          label: "סטטוס"
+          options:
+            - {value: present, label: "נוכח"}
+            - {value: absent, label: "נעדר"}
+            - {value: late, label: "איחור"}
+            - {value: half_day, label: "חצי יום"}
+        - field: absence_type
+          type: multi_select
+          label: "סוג היעדרות"
+          options:
+            - {value: none, label: "ללא"}
+            - {value: sick, label: "מחלה"}
+            - {value: vacation, label: "חופשה"}
+            - {value: personal, label: "אישי"}
+            - {value: other, label: "אחר"}
+      calendar_view:
+        entity: attendance
+        date_field: date
+        title_field: "employees.full_name"
+        color_coding:
+          present: "#4CAF50"
+          absent: "#F44336"
+          late: "#FF9800"
+          half_day: "#2196F3"
+        on_day_click: open_attendance_form
+        on_event_click: open_attendance_detail
+      list_view:
+        table_columns:
+          - {field: date, label: "תאריך", sortable: true, format: date}
+          - {field: employee_id, label: "עובד", sortable: true, display: employees.full_name, link_to: "/hr/employees/:employee_id"}
+          - {field: clock_in, label: "כניסה", sortable: true, format: time}
+          - {field: clock_out, label: "יציאה", sortable: true, format: time}
+          - {field: total_hours, label: "סה\"כ שעות", sortable: true}
+          - {field: overtime_hours, label: "שעות נוספות", sortable: true}
+          - {field: absence_type, label: "סוג היעדרות", sortable: true}
+          - {field: status_id, label: "סטטוס", sortable: true, display: badge}
+          - {field: approved_by, label: "אושר ע\"י", display: users.full_name}
+          - {field: notes, label: "הערות"}
+        default_sort: {field: date, direction: desc}
+        row_actions:
+          - {action: edit, label: "עריכה", icon: edit, permission: hr.attendance.edit}
+          - {action: approve, label: "אישור", icon: check, permission: hr.attendance.approve}
+          - {action: delete, label: "מחיקה", icon: delete, permission: hr.attendance.delete}
+      attendance_form_modal:
+        title: "רשומת נוכחות"
+        fields:
+          - {name: employee_id, type: select, label: "עובד", required: true, source: employees, display_field: full_name}
+          - {name: date, type: date, label: "תאריך", required: true, default: today}
+          - {name: clock_in, type: time, label: "שעת כניסה", required: true}
+          - {name: clock_out, type: time, label: "שעת יציאה", required: false}
+          - {name: overtime_hours, type: number, label: "שעות נוספות", required: false, default: 0}
+          - {name: absence_type, type: select, label: "סוג היעדרות", required: false, options: [{value: none, label: "ללא"}, {value: sick, label: "מחלה"}, {value: vacation, label: "חופשה"}, {value: personal, label: "אישי"}, {value: other, label: "אחר"}]}
+          - {name: status_id, type: select, label: "סטטוס", required: true, options: [{value: present, label: "נוכח"}, {value: absent, label: "נעדר"}, {value: late, label: "איחור"}, {value: half_day, label: "חצי יום"}]}
+          - {name: notes, type: textarea, label: "הערות", required: false}
+
+    # === PAYROLL LIST ===
+    payroll_list:
+      route: /hr/payroll
+      title: "שכר"
+      layout: standard_list
+      description: "ניהול ריצות שכר"
+      toolbar:
+        primary_action:
+          label: "ריצת שכר חדשה"
+          icon: add
+          target: /hr/payroll/create
+          permission: hr.payroll.create
+        secondary_actions:
+          - label: "ייצוא"
+            icon: download
+            action: export_payroll
+            permission: hr.payroll.export
+      filters:
+        - field: status_id
+          type: multi_select
+          label: "סטטוס"
+          options:
+            - {value: draft, label: "טיוטה"}
+            - {value: calculated, label: "חושב"}
+            - {value: approved, label: "מאושר"}
+            - {value: paid, label: "שולם"}
+            - {value: cancelled, label: "מבוטל"}
+        - field: period_start
+          type: date_range
+          label: "תקופה"
+      table:
+        columns:
+          - {field: run_number, label: "מספר ריצה", sortable: true, link_to: "/hr/payroll/:id"}
+          - {field: period_start, label: "תחילת תקופה", sortable: true, format: date}
+          - {field: period_end, label: "סוף תקופה", sortable: true, format: date}
+          - {field: run_date, label: "תאריך ריצה", sortable: true, format: date}
+          - {field: total_gross, label: "סה\"כ ברוטו", sortable: true, format: currency}
+          - {field: total_deductions, label: "סה\"כ ניכויים", sortable: true, format: currency}
+          - {field: total_net, label: "סה\"כ נטו", sortable: true, format: currency, highlight: true}
+          - {field: status_id, label: "סטטוס", sortable: true, display: badge}
+          - {field: created_by, label: "נוצר ע\"י", display: users.full_name}
+        default_sort: {field: run_date, direction: desc}
+        row_actions:
+          - {action: view, label: "צפייה", icon: visibility, target: "/hr/payroll/:id"}
+          - {action: approve, label: "אישור", icon: check, permission: hr.payroll.approve, condition: "status_id=calculated"}
+          - {action: mark_paid, label: "סימון כשולם", icon: payments, permission: hr.payroll.approve, condition: "status_id=approved"}
+          - {action: cancel, label: "ביטול", icon: cancel, permission: hr.payroll.approve, condition: "status_id IN (draft,calculated)"}
+
+    # === PAYROLL CREATE ===
+    payroll_create:
+      route: /hr/payroll/create
+      title: "ריצת שכר חדשה"
+      layout: standard_form
+      permission: hr.payroll.create
+      form:
+        sections:
+          - title: "פרטי ריצה"
+            columns: 2
+            fields:
+              - name: period_start
+                type: date
+                label: "תחילת תקופה"
+                required: true
+                grid_column: 1
+              - name: period_end
+                type: date
+                label: "סוף תקופה"
+                required: true
+                grid_column: 2
+              - name: run_date
+                type: date
+                label: "תאריך ריצה"
+                required: true
+                default: today
+                grid_column: 1
+        actions:
+          submit:
+            label: "יצירה וחישוב"
+            icon: calculate
+            action: create_and_calculate_payroll
+            redirect_to: "/hr/payroll/:id"
+          cancel:
+            label: "ביטול"
+            icon: close
+            target: /hr/payroll
+
+    # === PAYROLL DETAILS ===
+    payroll_details:
+      route: "/hr/payroll/:id"
+      title: "ריצת שכר"
+      layout: detail_with_items
+      permission: hr.payroll.view
+      header:
+        display_fields:
+          - {field: run_number, type: title}
+          - {field: period_start, type: info, label: "מ-", format: date}
+          - {field: period_end, type: info, label: "עד", format: date}
+          - {field: status_id, type: badge}
+        summary_cards:
+          - {label: "סה\"כ ברוטו", field: total_gross, format: currency, color: blue}
+          - {label: "סה\"כ ניכויים", field: total_deductions, format: currency, color: orange}
+          - {label: "סה\"כ נטו", field: total_net, format: currency, color: green}
+        actions:
+          - {label: "חישוב מחדש", icon: calculate, action: recalculate_payroll, permission: hr.payroll.edit, condition: "status_id=draft"}
+          - {label: "אישור", icon: check, action: approve_payroll, permission: hr.payroll.approve, condition: "status_id=calculated"}
+          - {label: "סימון כשולם", icon: payments, action: mark_payroll_paid, permission: hr.payroll.approve, condition: "status_id=approved"}
+          - {label: "ביטול", icon: cancel, action: cancel_payroll, permission: hr.payroll.approve, condition: "status_id IN (draft,calculated)"}
+          - {label: "ייצוא PDF", icon: picture_as_pdf, action: export_payroll_pdf}
+          - {label: "ייצוא Excel", icon: download, action: export_payroll_excel}
+      items_table:
+        entity: payroll_items
+        filter: "payroll_run_id=:id"
+        columns:
+          - {field: employee_id, label: "עובד", display: employees.full_name, link_to: "/hr/employees/:employee_id"}
+          - {field: base_salary, label: "שכר בסיס", format: currency, editable: true, condition: "payroll_run.status_id=draft"}
+          - {field: overtime_pay, label: "שעות נוספות", format: currency, editable: true, condition: "payroll_run.status_id=draft"}
+          - {field: bonuses, label: "בונוסים", format: currency, editable: true, condition: "payroll_run.status_id=draft"}
+          - {field: gross_pay, label: "ברוטו", format: currency}
+          - {field: tax_deduction, label: "מס", format: currency}
+          - {field: social_security, label: "ביטוח לאומי", format: currency}
+          - {field: pension, label: "פנסיה", format: currency}
+          - {field: other_deductions, label: "ניכויים אחרים", format: currency, editable: true, condition: "payroll_run.status_id=draft"}
+          - {field: net_pay, label: "נטו", format: currency, highlight: true}
+          - {field: notes, label: "הערות", editable: true}
+        default_sort: {field: employees.full_name, direction: asc}
+
+    # === EMPLOYEE TASKS LIST ===
+    employee_tasks_list:
+      route: /hr/employee-tasks
+      title: "משימות עובדים"
+      layout: standard_list
+      description: "ניהול משימות שהוקצו לעובדים"
+      toolbar:
+        primary_action:
+          label: "משימה חדשה"
+          icon: add
+          target: /hr/employee-tasks/create
+          permission: hr.employee_tasks.create
+      filters:
+        - field: employee_id
+          type: select
+          label: "עובד"
+          source: employees
+          display_field: full_name
+        - field: assigned_by
+          type: select
+          label: "שויך ע\"י"
+          source: users
+          display_field: full_name
+        - field: status_id
+          type: multi_select
+          label: "סטטוס"
+          options:
+            - {value: todo, label: "לביצוע"}
+            - {value: in_progress, label: "בתהליך"}
+            - {value: done, label: "הושלם"}
+            - {value: cancelled, label: "בוטל"}
+        - field: priority
+          type: multi_select
+          label: "עדיפות"
+          options:
+            - {value: low, label: "נמוכה"}
+            - {value: medium, label: "בינונית"}
+            - {value: high, label: "גבוהה"}
+            - {value: critical, label: "קריטית"}
+        - field: due_date
+          type: date_range
+          label: "תאריך יעד"
+      table:
+        columns:
+          - {field: title, label: "כותרת", sortable: true, link_to: "/hr/employee-tasks/:id"}
+          - {field: employee_id, label: "עובד", sortable: true, display: employees.full_name, link_to: "/hr/employees/:employee_id"}
+          - {field: due_date, label: "תאריך יעד", sortable: true, format: date}
+          - {field: priority, label: "עדיפות", sortable: true, display: badge}
+          - {field: status_id, label: "סטטוס", sortable: true, display: badge}
+          - {field: assigned_by, label: "שויך ע\"י", display: users.full_name}
+          - {field: created_at, label: "נוצר", sortable: true, format: datetime}
+        default_sort: {field: due_date, direction: asc}
+        row_actions:
+          - {action: edit, label: "עריכה", icon: edit, permission: hr.employee_tasks.edit}
+          - {action: change_status, label: "שינוי סטטוס", icon: swap_horiz}
+          - {action: delete, label: "מחיקה", icon: delete, permission: hr.employee_tasks.delete}
+
+    # === EMPLOYEE TASK CREATE ===
+    employee_task_create:
+      route: /hr/employee-tasks/create
+      title: "משימה חדשה"
+      layout: standard_form
+      permission: hr.employee_tasks.create
+      form:
+        sections:
+          - title: "פרטי משימה"
+            columns: 2
+            fields:
+              - name: employee_id
+                type: select
+                label: "עובד"
+                required: true
+                source: employees
+                display_field: full_name
+                filter: "status_id=active"
+                grid_column: 1
+                pre_fill_from_query: employee_id
+              - name: title
+                type: text
+                label: "כותרת"
+                required: true
+                max_length: 200
+                grid_column: 2
+              - name: description
+                type: textarea
+                label: "תיאור"
+                required: false
+                rows: 4
+                grid_column: "1-2"
+              - name: due_date
+                type: date
+                label: "תאריך יעד"
+                required: true
+                grid_column: 1
+              - name: priority
+                type: select
+                label: "עדיפות"
+                required: true
+                default: medium
+                options:
+                  - {value: low, label: "נמוכה"}
+                  - {value: medium, label: "בינונית"}
+                  - {value: high, label: "גבוהה"}
+                  - {value: critical, label: "קריטית"}
+                grid_column: 2
+              - name: status_id
+                type: select
+                label: "סטטוס"
+                required: true
+                default: todo
+                options:
+                  - {value: todo, label: "לביצוע"}
+                  - {value: in_progress, label: "בתהליך"}
+                  - {value: done, label: "הושלם"}
+                  - {value: cancelled, label: "בוטל"}
+                grid_column: 1
+              - name: notes
+                type: textarea
+                label: "הערות"
+                required: false
+                rows: 3
+                grid_column: "1-2"
+        actions:
+          submit:
+            label: "יצירה"
+            icon: save
+            action: create_employee_task
+            redirect_to: "/hr/employee-tasks/:id"
+          cancel:
+            label: "ביטול"
+            icon: close
+            target: /hr/employee-tasks
+
+  # ----------------------------------------------------------
+  # NAVIGATION MAP
+  # ----------------------------------------------------------
+  navigation_map:
+    employees_list:
+      navigates_to:
+        - {target: employee_create, trigger: "primary action button"}
+        - {target: employee_profile, trigger: "click row name"}
+        - {target: employee_edit, trigger: "row action edit"}
+    employee_profile:
+      navigates_to:
+        - {target: employee_edit, trigger: "header edit button"}
+        - {target: attendance_list, trigger: "attendance tab filtered"}
+        - {target: payroll_details, trigger: "click payroll run link"}
+        - {target: employee_task_create, trigger: "create task action"}
+    payroll_list:
+      navigates_to:
+        - {target: payroll_create, trigger: "primary action button"}
+        - {target: payroll_details, trigger: "click row"}
+    payroll_details:
+      navigates_to:
+        - {target: employee_profile, trigger: "click employee name"}
+
+
+# ============================================================
+# MODULE 14: OPERATIONS
+# ============================================================
+module_14_operations:
+  module_id: 14
+  name: "Operations"
+  label_he: "תפעול"
+  icon: engineering
+  route: /operations
+  priority: medium
+  purpose: "תהליכי עבודה, סטטוסים, SLA, תורים, ביצוע ותפעול"
+
+  # ----------------------------------------------------------
+  # SUBMENU
+  # ----------------------------------------------------------
+  submenus:
+    - label: "תהליכי עבודה"
+      route: /operations/workflows
+      icon: account_tree
+    - label: "תורי עבודה"
+      route: /operations/queues
+      icon: queue
+    - label: "מעקב SLA"
+      route: /operations/sla
+      icon: timer
+    - label: "לוח ביצוע"
+      route: /operations/execution-board
+      icon: dashboard
+    - label: "חריגות"
+      route: /operations/exceptions
+      icon: warning
+
+  # ----------------------------------------------------------
+  # ENTITIES
+  # ----------------------------------------------------------
+  entities:
+
+    workflows:
+      type: master_data
+      table_name: workflows
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: name
+          type: varchar(200)
+          required: true
+          label_he: "שם תהליך"
+        - name: description
+          type: text
+          nullable: true
+          label_he: "תיאור"
+        - name: trigger_entity
+          type: enum
+          values: [document, customer, supplier, project, task, purchase_order, sales_order]
+          required: true
+          label_he: "ישות מפעילה"
+          display_values_he:
+            document: "מסמך"
+            customer: "לקוח"
+            supplier: "ספק"
+            project: "פרויקט"
+            task: "משימה"
+            purchase_order: "הזמנת רכש"
+            sales_order: "הזמנת לקוח"
+        - name: trigger_event
+          type: enum
+          values: [created, updated, status_changed, amount_exceeded, due_date_approaching]
+          required: true
+          label_he: "אירוע מפעיל"
+          display_values_he:
+            created: "נוצר"
+            updated: "עודכן"
+            status_changed: "שינוי סטטוס"
+            amount_exceeded: "חריגת סכום"
+            due_date_approaching: "תאריך יעד מתקרב"
+        - name: conditions_json
+          type: json
+          nullable: true
+          label_he: "תנאים"
+        - name: is_active
+          type: boolean
+          default: true
+          label_he: "פעיל"
+        - name: created_by
+          type: uuid
+          required: true
+          foreign_key: users.id
+          label_he: "נוצר על ידי"
+        - name: created_at
+          type: timestamp
+          auto_generated: true
+        - name: updated_at
+          type: timestamp
+          auto_generated: true
+          on_update: true
+      indexes:
+        - columns: [trigger_entity, trigger_event]
+        - columns: [is_active]
+
+    workflow_steps:
+      type: master_data
+      table_name: workflow_steps
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: workflow_id
+          type: uuid
+          required: true
+          foreign_key: workflows.id
+          on_delete: cascade
+          label_he: "תהליך"
+        - name: step_order
+          type: integer
+          required: true
+          label_he: "סדר שלב"
+        - name: step_type
+          type: enum
+          values: [send_notification, change_status, assign_user, create_task, send_email, webhook, approval]
+          required: true
+          label_he: "סוג שלב"
+          display_values_he:
+            send_notification: "שליחת התראה"
+            change_status: "שינוי סטטוס"
+            assign_user: "שיוך משתמש"
+            create_task: "יצירת משימה"
+            send_email: "שליחת אימייל"
+            webhook: "Webhook"
+            approval: "אישור"
+        - name: config_json
+          type: json
+          required: true
+          label_he: "הגדרות שלב"
+        - name: delay_minutes
+          type: integer
+          nullable: true
+          label_he: "השהייה (דקות)"
+        - name: condition_json
+          type: json
+          nullable: true
+          label_he: "תנאי שלב"
+      indexes:
+        - columns: [workflow_id, step_order]
+          unique: true
+
+    workflow_executions:
+      type: transactional
+      table_name: workflow_executions
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: workflow_id
+          type: uuid
+          required: true
+          foreign_key: workflows.id
+          label_he: "תהליך"
+        - name: entity_type
+          type: varchar(50)
+          required: true
+          label_he: "סוג ישות"
+        - name: entity_id
+          type: uuid
+          required: true
+          label_he: "מזהה ישות"
+        - name: started_at
+          type: timestamp
+          required: true
+          auto_generated: true
+          label_he: "התחלה"
+        - name: completed_at
+          type: timestamp
+          nullable: true
+          label_he: "סיום"
+        - name: status
+          type: enum
+          values: [running, completed, failed, cancelled]
+          required: true
+          default: running
+          label_he: "סטטוס"
+          display_values_he:
+            running: "פועל"
+            completed: "הושלם"
+            failed: "נכשל"
+            cancelled: "בוטל"
+        - name: current_step
+          type: integer
+          default: 1
+          label_he: "שלב נוכחי"
+        - name: error_message
+          type: text
+          nullable: true
+          label_he: "הודעת שגיאה"
+      indexes:
+        - columns: [workflow_id]
+        - columns: [entity_type, entity_id]
+        - columns: [status]
+        - columns: [started_at]
+
+    work_queues:
+      type: master_data
+      table_name: work_queues
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: name
+          type: varchar(200)
+          required: true
+          label_he: "שם תור"
+        - name: description
+          type: text
+          nullable: true
+          label_he: "תיאור"
+        - name: entity_type
+          type: varchar(50)
+          required: true
+          label_he: "סוג ישות"
+        - name: assigned_team
+          type: varchar(100)
+          nullable: true
+          label_he: "צוות אחראי"
+        - name: priority
+          type: enum
+          values: [low, medium, high, critical]
+          required: true
+          default: medium
+          label_he: "עדיפות"
+          display_values_he:
+            low: "נמוכה"
+            medium: "בינונית"
+            high: "גבוהה"
+            critical: "קריטית"
+        - name: sla_hours
+          type: integer
+          nullable: true
+          label_he: "SLA (שעות)"
+        - name: is_active
+          type: boolean
+          default: true
+          label_he: "פעיל"
+        - name: created_at
+          type: timestamp
+          auto_generated: true
+      indexes:
+        - columns: [entity_type]
+        - columns: [is_active]
+
+    queue_items:
+      type: transactional
+      table_name: queue_items
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: queue_id
+          type: uuid
+          required: true
+          foreign_key: work_queues.id
+          label_he: "תור"
+        - name: entity_type
+          type: varchar(50)
+          required: true
+          label_he: "סוג ישות"
+        - name: entity_id
+          type: uuid
+          required: true
+          label_he: "מזהה ישות"
+        - name: assigned_to
+          type: uuid
+          nullable: true
+          foreign_key: users.id
+          label_he: "מוקצה ל"
+        - name: priority
+          type: enum
+          values: [low, medium, high, critical]
+          required: true
+          default: medium
+          label_he: "עדיפות"
+        - name: status
+          type: enum
+          values: [pending, in_progress, completed, escalated]
+          required: true
+          default: pending
+          label_he: "סטטוס"
+          display_values_he:
+            pending: "ממתין"
+            in_progress: "בטיפול"
+            completed: "הושלם"
+            escalated: "הועלה לטיפול"
+        - name: entered_at
+          type: timestamp
+          required: true
+          auto_generated: true
+          label_he: "נכנס לתור"
+        - name: due_at
+          type: timestamp
+          nullable: true
+          label_he: "דדליין"
+        - name: completed_at
+          type: timestamp
+          nullable: true
+          label_he: "הושלם"
+      indexes:
+        - columns: [queue_id, status]
+        - columns: [assigned_to]
+        - columns: [due_at]
+
+    sla_definitions:
+      type: master_data
+      table_name: sla_definitions
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: name
+          type: varchar(200)
+          required: true
+          label_he: "שם SLA"
+        - name: entity_type
+          type: varchar(50)
+          required: true
+          label_he: "סוג ישות"
+        - name: condition_json
+          type: json
+          required: true
+          label_he: "תנאים"
+        - name: target_hours
+          type: integer
+          required: true
+          label_he: "שעות יעד"
+        - name: warning_hours
+          type: integer
+          required: true
+          label_he: "שעות אזהרה"
+        - name: is_active
+          type: boolean
+          default: true
+          label_he: "פעיל"
+        - name: created_at
+          type: timestamp
+          auto_generated: true
+      indexes:
+        - columns: [entity_type]
+        - columns: [is_active]
+
+    sla_tracking:
+      type: transactional
+      table_name: sla_tracking
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: sla_definition_id
+          type: uuid
+          required: true
+          foreign_key: sla_definitions.id
+          label_he: "הגדרת SLA"
+        - name: entity_type
+          type: varchar(50)
+          required: true
+          label_he: "סוג ישות"
+        - name: entity_id
+          type: uuid
+          required: true
+          label_he: "מזהה ישות"
+        - name: started_at
+          type: timestamp
+          required: true
+          label_he: "התחלה"
+        - name: target_at
+          type: timestamp
+          required: true
+          label_he: "יעד"
+        - name: warning_at
+          type: timestamp
+          required: true
+          label_he: "אזהרה"
+        - name: completed_at
+          type: timestamp
+          nullable: true
+          label_he: "הושלם"
+        - name: status
+          type: enum
+          values: [on_track, warning, breached, completed]
+          required: true
+          default: on_track
+          label_he: "סטטוס"
+          display_values_he:
+            on_track: "בזמן"
+            warning: "אזהרה"
+            breached: "חריגה"
+            completed: "הושלם"
+      indexes:
+        - columns: [sla_definition_id]
+        - columns: [entity_type, entity_id]
+        - columns: [status]
+        - columns: [target_at]
+
+  # ----------------------------------------------------------
+  # PAGES
+  # ----------------------------------------------------------
+  pages:
+
+    # === WORKFLOWS LIST ===
+    workflows_list:
+      route: /operations/workflows
+      title: "תהליכי עבודה"
+      layout: standard_list
+      toolbar:
+        primary_action:
+          label: "תהליך חדש"
+          icon: add
+          target: /operations/workflows/create
+          permission: operations.workflows.create
+      filters:
+        - field: trigger_entity
+          type: multi_select
+          label: "ישות מפעילה"
+          options:
+            - {value: document, label: "מסמך"}
+            - {value: customer, label: "לקוח"}
+            - {value: supplier, label: "ספק"}
+            - {value: project, label: "פרויקט"}
+            - {value: task, label: "משימה"}
+            - {value: purchase_order, label: "הזמנת רכש"}
+            - {value: sales_order, label: "הזמנת לקוח"}
+        - field: trigger_event
+          type: multi_select
+          label: "אירוע"
+          options:
+            - {value: created, label: "נוצר"}
+            - {value: updated, label: "עודכן"}
+            - {value: status_changed, label: "שינוי סטטוס"}
+            - {value: amount_exceeded, label: "חריגת סכום"}
+            - {value: due_date_approaching, label: "תאריך יעד מתקרב"}
+        - field: is_active
+          type: toggle
+          label: "פעיל בלבד"
+          default: true
+      table:
+        columns:
+          - {field: name, label: "שם תהליך", sortable: true, link_to: "/operations/workflows/:id"}
+          - {field: trigger_entity, label: "ישות", sortable: true}
+          - {field: trigger_event, label: "אירוע", sortable: true}
+          - {field: steps_count, label: "מספר שלבים", computed: true, formula: "COUNT(workflow_steps WHERE workflow_id=:id)"}
+          - {field: is_active, label: "פעיל", sortable: true, display: toggle, action: toggle_active}
+          - {field: executions_count, label: "ריצות", computed: true, formula: "COUNT(workflow_executions WHERE workflow_id=:id)"}
+          - {field: created_by, label: "נוצר ע\"י", display: users.full_name}
+          - {field: created_at, label: "נוצר", sortable: true, format: datetime}
+        default_sort: {field: name, direction: asc}
+        row_actions:
+          - {action: view, label: "צפייה", icon: visibility, target: "/operations/workflows/:id"}
+          - {action: edit, label: "עריכה", icon: edit, target: "/operations/workflows/:id/edit", permission: operations.workflows.edit}
+          - {action: duplicate, label: "שכפול", icon: content_copy, permission: operations.workflows.create}
+          - {action: test_run, label: "ריצת ניסיון", icon: play_arrow, permission: operations.workflows.edit}
+          - {action: delete, label: "מחיקה", icon: delete, permission: operations.workflows.delete}
+
+    # === WORKFLOW CREATE ===
+    workflow_create:
+      route: /operations/workflows/create
+      title: "תהליך עבודה חדש"
+      layout: standard_form
+      permission: operations.workflows.create
+      form:
+        sections:
+          - title: "פרטי תהליך"
+            columns: 2
+            fields:
+              - name: name
+                type: text
+                label: "שם תהליך"
+                required: true
+                max_length: 200
+                grid_column: "1-2"
+              - name: description
+                type: textarea
+                label: "תיאור"
+                required: false
+                rows: 3
+                grid_column: "1-2"
+              - name: trigger_entity
+                type: select
+                label: "ישות מפעילה"
+                required: true
+                options:
+                  - {value: document, label: "מסמך"}
+                  - {value: customer, label: "לקוח"}
+                  - {value: supplier, label: "ספק"}
+                  - {value: project, label: "פרויקט"}
+                  - {value: task, label: "משימה"}
+                  - {value: purchase_order, label: "הזמנת רכש"}
+                  - {value: sales_order, label: "הזמנת לקוח"}
+                grid_column: 1
+              - name: trigger_event
+                type: select
+                label: "אירוע מפעיל"
+                required: true
+                options:
+                  - {value: created, label: "נוצר"}
+                  - {value: updated, label: "עודכן"}
+                  - {value: status_changed, label: "שינוי סטטוס"}
+                  - {value: amount_exceeded, label: "חריגת סכום"}
+                  - {value: due_date_approaching, label: "תאריך יעד מתקרב"}
+                grid_column: 2
+              - name: conditions_json
+                type: condition_builder
+                label: "תנאים"
+                required: false
+                config:
+                  fields_source: "dynamic based on trigger_entity"
+                  operators: [equals, not_equals, greater_than, less_than, contains, starts_with, is_empty, is_not_empty]
+                grid_column: "1-2"
+              - name: is_active
+                type: toggle
+                label: "פעיל"
+                default: true
+                grid_column: 1
+          - title: "שלבים"
+            type: step_editor
+            entity: workflow_steps
+            step_card_fields:
+              - name: step_type
+                type: select
+                label: "סוג שלב"
+                required: true
+                options:
+                  - {value: send_notification, label: "שליחת התראה", icon: notifications}
+                  - {value: change_status, label: "שינוי סטטוס", icon: swap_horiz}
+                  - {value: assign_user, label: "שיוך משתמש", icon: person_add}
+                  - {value: create_task, label: "יצירת משימה", icon: add_task}
+                  - {value: send_email, label: "שליחת אימייל", icon: email}
+                  - {value: webhook, label: "Webhook", icon: webhook}
+                  - {value: approval, label: "אישור", icon: check_circle}
+              - name: config_json
+                type: dynamic_config
+                label: "הגדרות"
+                config_per_type:
+                  send_notification:
+                    fields:
+                      - {name: user_ids, type: multi_select, label: "נמענים", source: users}
+                      - {name: message, type: textarea, label: "הודעה"}
+                  change_status:
+                    fields:
+                      - {name: new_status, type: select, label: "סטטוס חדש", source: "dynamic based on entity"}
+                  assign_user:
+                    fields:
+                      - {name: user_id, type: select, label: "משתמש", source: users}
+                  create_task:
+                    fields:
+                      - {name: title, type: text, label: "כותרת משימה"}
+                      - {name: assignee_id, type: select, label: "מבצע", source: users}
+                      - {name: due_days, type: number, label: "ימים לביצוע"}
+                  send_email:
+                    fields:
+                      - {name: to, type: text, label: "נמען"}
+                      - {name: subject, type: text, label: "נושא"}
+                      - {name: body, type: rich_text, label: "תוכן"}
+                  webhook:
+                    fields:
+                      - {name: url, type: text, label: "URL"}
+                      - {name: method, type: select, label: "Method", options: [POST, PUT, PATCH]}
+                      - {name: headers_json, type: json_editor, label: "Headers"}
+                  approval:
+                    fields:
+                      - {name: approver_id, type: select, label: "מאשר", source: users}
+                      - {name: timeout_hours, type: number, label: "זמן המתנה (שעות)"}
+              - name: delay_minutes
+                type: number
+                label: "השהייה (דקות)"
+                required: false
+              - name: condition_json
+                type: condition_builder
+                label: "תנאי שלב"
+                required: false
+            actions:
+              add_step:
+                label: "הוספת שלב"
+                icon: add
+              reorder:
+                type: drag_drop
+              remove_step:
+                icon: delete
+        actions:
+          submit:
+            label: "שמירה"
+            icon: save
+            action: create_workflow
+            redirect_to: "/operations/workflows/:id"
+          cancel:
+            label: "ביטול"
+            target: /operations/workflows
+
+    # === WORKFLOW DETAILS ===
+    workflow_details:
+      route: "/operations/workflows/:id"
+      title: "תהליך עבודה"
+      layout: detail_with_tabs
+      permission: operations.workflows.view
+      header:
+        display_fields:
+          - {field: name, type: title}
+          - {field: trigger_entity, type: info, label: "ישות"}
+          - {field: trigger_event, type: info, label: "אירוע"}
+          - {field: is_active, type: badge}
+        actions:
+          - {label: "עריכה", icon: edit, target: "/operations/workflows/:id/edit", permission: operations.workflows.edit}
+          - {label: "ריצת ניסיון", icon: play_arrow, action: test_run_workflow, permission: operations.workflows.edit}
+          - {label: "הפעלה/כיבוי", icon: toggle_on, action: toggle_active, permission: operations.workflows.edit}
+          - {label: "מחיקה", icon: delete, action: delete_workflow, confirmation: "האם למחוק את התהליך?", permission: operations.workflows.delete}
+      tabs:
+        - name: steps
+          label: "שלבים"
+          icon: account_tree
+          type: visual_step_editor
+          entity: workflow_steps
+          filter: "workflow_id=:id"
+          display: step_cards_in_sequence
+          step_card_fields:
+            - {field: step_order, label: "#"}
+            - {field: step_type, label: "סוג", display: icon_with_label}
+            - {field: config_json, label: "הגדרות", display: summary}
+            - {field: delay_minutes, label: "השהייה"}
+            - {field: condition_json, label: "תנאי", display: badge_if_present}
+
+        - name: execution_history
+          label: "היסטוריית ריצות"
+          icon: history
+          type: table
+          entity: workflow_executions
+          filter: "workflow_id=:id"
+          table_columns:
+            - {field: entity_type, label: "סוג ישות"}
+            - {field: entity_id, label: "מזהה ישות", link_to: "/:entity_type/:entity_id"}
+            - {field: started_at, label: "התחלה", sortable: true, format: datetime}
+            - {field: completed_at, label: "סיום", format: datetime}
+            - {field: current_step, label: "שלב נוכחי"}
+            - {field: status, label: "סטטוס", display: badge}
+            - {field: error_message, label: "שגיאה"}
+          default_sort: {field: started_at, direction: desc}
+
+    # === QUEUES LIST ===
+    queues_list:
+      route: /operations/queues
+      title: "תורי עבודה"
+      layout: standard_list
+      toolbar:
+        primary_action:
+          label: "תור חדש"
+          icon: add
+          target: /operations/queues/create
+          permission: operations.queues.create
+      filters:
+        - field: entity_type
+          type: select
+          label: "סוג ישות"
+        - field: priority
+          type: multi_select
+          label: "עדיפות"
+          options:
+            - {value: low, label: "נמוכה"}
+            - {value: medium, label: "בינונית"}
+            - {value: high, label: "גבוהה"}
+            - {value: critical, label: "קריטית"}
+        - field: is_active
+          type: toggle
+          label: "פעיל בלבד"
+          default: true
+      table:
+        columns:
+          - {field: name, label: "שם תור", sortable: true, link_to: "/operations/queues/:id"}
+          - {field: entity_type, label: "סוג ישות", sortable: true}
+          - {field: assigned_team, label: "צוות", sortable: true}
+          - {field: priority, label: "עדיפות", sortable: true, display: badge}
+          - {field: sla_hours, label: "SLA (שעות)", sortable: true}
+          - {field: pending_count, label: "ממתינים", computed: true, formula: "COUNT(queue_items WHERE queue_id=:id AND status=pending)"}
+          - {field: in_progress_count, label: "בטיפול", computed: true, formula: "COUNT(queue_items WHERE queue_id=:id AND status=in_progress)"}
+          - {field: is_active, label: "פעיל", display: toggle, action: toggle_active}
+        default_sort: {field: priority, direction: desc}
+        row_actions:
+          - {action: view, label: "צפייה", icon: visibility, target: "/operations/queues/:id"}
+          - {action: edit, label: "עריכה", icon: edit, permission: operations.queues.edit}
+          - {action: delete, label: "מחיקה", icon: delete, permission: operations.queues.delete}
+
+    # === QUEUE DETAILS ===
+    queue_details:
+      route: "/operations/queues/:id"
+      title: "תור עבודה"
+      layout: detail_with_items
+      permission: operations.queues.view
+      header:
+        display_fields:
+          - {field: name, type: title}
+          - {field: entity_type, type: info}
+          - {field: assigned_team, type: info}
+          - {field: priority, type: badge}
+        summary_cards:
+          - {label: "ממתינים", value: pending_count, color: orange}
+          - {label: "בטיפול", value: in_progress_count, color: blue}
+          - {label: "הושלמו", value: completed_count, color: green}
+          - {label: "הועלו לטיפול", value: escalated_count, color: red}
+      items_table:
+        entity: queue_items
+        filter: "queue_id=:id"
+        columns:
+          - {field: entity_type, label: "סוג"}
+          - {field: entity_id, label: "פריט", link_to: "/:entity_type/:entity_id"}
+          - {field: assigned_to, label: "מוקצה ל", display: users.full_name}
+          - {field: priority, label: "עדיפות", display: badge}
+          - {field: status, label: "סטטוס", display: badge}
+          - {field: entered_at, label: "נכנס לתור", format: datetime}
+          - {field: due_at, label: "דדליין", format: datetime}
+          - {field: completed_at, label: "הושלם", format: datetime}
+        row_actions:
+          - {action: assign, label: "שיוך", icon: person_add, action_type: drag_drop_or_select}
+          - {action: escalate, label: "העלאה לטיפול", icon: arrow_upward}
+          - {action: complete, label: "סימון כהושלם", icon: check}
+        filters:
+          - {field: status, type: multi_select, label: "סטטוס"}
+          - {field: assigned_to, type: select, label: "מוקצה ל", source: users}
+          - {field: priority, type: multi_select, label: "עדיפות"}
+
+    # === SLA MONITORING ===
+    sla_monitoring:
+      route: /operations/sla
+      title: "מעקב SLA"
+      layout: dashboard_with_table
+      permission: operations.sla.view
+      dashboard_cards:
+        - {label: "בזמן", metric: "COUNT(sla_tracking WHERE status=on_track)", color: green, icon: check_circle}
+        - {label: "אזהרה", metric: "COUNT(sla_tracking WHERE status=warning)", color: orange, icon: warning}
+        - {label: "חריגה", metric: "COUNT(sla_tracking WHERE status=breached)", color: red, icon: error}
+        - {label: "הושלם", metric: "COUNT(sla_tracking WHERE status=completed)", color: blue, icon: done_all}
+      toolbar:
+        primary_action:
+          label: "הגדרת SLA חדשה"
+          icon: add
+          target: /operations/sla/create
+          permission: operations.sla.create
+      filters:
+        - field: status
+          type: multi_select
+          label: "סטטוס"
+          options:
+            - {value: on_track, label: "בזמן"}
+            - {value: warning, label: "אזהרה"}
+            - {value: breached, label: "חריגה"}
+            - {value: completed, label: "הושלם"}
+        - field: entity_type
+          type: select
+          label: "סוג ישות"
+        - field: sla_definition_id
+          type: select
+          label: "הגדרת SLA"
+          source: sla_definitions
+          display_field: name
+        - field: started_at
+          type: date_range
+          label: "תאריך"
+      table:
+        columns:
+          - {field: sla_definition_id, label: "SLA", display: sla_definitions.name}
+          - {field: entity_type, label: "סוג ישות"}
+          - {field: entity_id, label: "פריט", link_to: "/:entity_type/:entity_id"}
+          - {field: started_at, label: "התחלה", format: datetime, sortable: true}
+          - {field: warning_at, label: "אזהרה", format: datetime, sortable: true}
+          - {field: target_at, label: "יעד", format: datetime, sortable: true}
+          - {field: completed_at, label: "הושלם", format: datetime}
+          - {field: remaining_time, label: "זמן נותר", computed: true, format: duration}
+          - {field: status, label: "סטטוס", display: badge, sortable: true}
+        default_sort: {field: target_at, direction: asc}
+
+    # === EXECUTION BOARD ===
+    execution_board:
+      route: /operations/execution-board
+      title: "לוח ביצוע"
+      layout: kanban
+      permission: operations.executions.view
+      kanban_config:
+        entity: workflow_executions
+        columns:
+          - {status: running, label: "פועל", color: blue}
+          - {status: completed, label: "הושלם", color: green}
+          - {status: failed, label: "נכשל", color: red}
+          - {status: cancelled, label: "בוטל", color: grey}
+        card_fields:
+          - {field: workflow_id, display: workflows.name, type: title}
+          - {field: entity_type, type: subtitle}
+          - {field: current_step, type: info, label: "שלב"}
+          - {field: started_at, type: info, format: datetime}
+          - {field: error_message, type: error, condition: "status=failed"}
+        card_actions:
+          - {action: retry, label: "נסה שוב", icon: refresh, condition: "status=failed"}
+          - {action: cancel, label: "ביטול", icon: cancel, condition: "status=running"}
+          - {action: view_details, label: "פרטים", icon: visibility}
+      filters:
+        - field: workflow_id
+          type: select
+          label: "תהליך"
+          source: workflows
+          display_field: name
+        - field: entity_type
+          type: select
+          label: "סוג ישות"
+        - field: started_at
+          type: date_range
+          label: "תאריך"
+
+    # === EXCEPTIONS ===
+    exceptions_list:
+      route: /operations/exceptions
+      title: "חריגות"
+      layout: standard_list
+      description: "ריצות שנכשלו, SLA שנחרגו, ופריטים שדורשים טיפול"
+      sections:
+        - title: "ריצות שנכשלו"
+          entity: workflow_executions
+          filter: "status=failed"
+          table_columns:
+            - {field: workflow_id, label: "תהליך", display: workflows.name}
+            - {field: entity_type, label: "סוג ישות"}
+            - {field: entity_id, label: "פריט", link_to: "/:entity_type/:entity_id"}
+            - {field: started_at, label: "התחלה", format: datetime}
+            - {field: error_message, label: "שגיאה"}
+          row_actions:
+            - {action: retry, label: "נסה שוב", icon: refresh}
+            - {action: dismiss, label: "התעלם", icon: close}
+        - title: "SLA שנחרגו"
+          entity: sla_tracking
+          filter: "status=breached"
+          table_columns:
+            - {field: sla_definition_id, label: "SLA", display: sla_definitions.name}
+            - {field: entity_type, label: "סוג ישות"}
+            - {field: entity_id, label: "פריט", link_to: "/:entity_type/:entity_id"}
+            - {field: target_at, label: "יעד", format: datetime}
+            - {field: overdue_time, label: "חריגה", computed: true, format: duration}
+        - title: "פריטים שהועלו לטיפול"
+          entity: queue_items
+          filter: "status=escalated"
+          table_columns:
+            - {field: queue_id, label: "תור", display: work_queues.name}
+            - {field: entity_type, label: "סוג ישות"}
+            - {field: entity_id, label: "פריט", link_to: "/:entity_type/:entity_id"}
+            - {field: entered_at, label: "נכנס לתור", format: datetime}
+            - {field: due_at, label: "דדליין", format: datetime}
+
+  navigation_map:
+    workflows_list:
+      navigates_to:
+        - {target: workflow_create, trigger: "primary action"}
+        - {target: workflow_details, trigger: "click row"}
+    workflow_details:
+      navigates_to:
+        - {target: workflow_edit, trigger: "edit button"}
+        - {target: entity_detail, trigger: "click execution entity link"}
+    queues_list:
+      navigates_to:
+        - {target: queue_details, trigger: "click row"}
+    execution_board:
+      navigates_to:
+        - {target: workflow_details, trigger: "click card"}
+
+
+# ============================================================
+# MODULE 15: DOCUMENTS (Center)
+# ============================================================
+module_15_documents:
+  module_id: 15
+  name: "Documents"
+  label_he: "מסמכים"
+  icon: folder
+  route: /documents
+  priority: high
+  purpose: "מרכז מסמכים, קבצים, חתימות, גרסאות, שיוכים וישויות קשורות"
+
+  submenus:
+    - label: "כל הקבצים"
+      route: /documents/files
+      icon: description
+    - label: "תיקיות"
+      route: /documents/folders
+      icon: folder
+    - label: "תבניות"
+      route: /documents/templates
+      icon: article
+    - label: "חתימות"
+      route: /documents/signatures
+      icon: draw
+    - label: "גרסאות"
+      route: /documents/versions
+      icon: history
+    - label: "מסמכים מקושרים"
+      route: /documents/linked
+      icon: link
+
+  entities:
+
+    files:
+      type: master_data
+      table_name: files
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: file_name
+          type: varchar(255)
+          required: true
+          label_he: "שם קובץ"
+        - name: file_url
+          type: text
+          required: true
+          label_he: "כתובת קובץ"
+        - name: file_type
+          type: varchar(50)
+          required: true
+          label_he: "סוג קובץ"
+        - name: file_size
+          type: integer
+          required: true
+          label_he: "גודל קובץ"
+        - name: folder_id
+          type: uuid
+          nullable: true
+          foreign_key: folders.id
+          label_he: "תיקייה"
+        - name: entity_type
+          type: varchar(50)
+          nullable: true
+          label_he: "סוג ישות מקושרת"
+        - name: entity_id
+          type: uuid
+          nullable: true
+          label_he: "מזהה ישות מקושרת"
+        - name: uploaded_by
+          type: uuid
+          required: true
+          foreign_key: users.id
+          label_he: "הועלה ע\"י"
+        - name: description
+          type: text
+          nullable: true
+          label_he: "תיאור"
+        - name: tags
+          type: text[]
+          nullable: true
+          label_he: "תגיות"
+        - name: is_public
+          type: boolean
+          default: false
+          label_he: "ציבורי"
+        - name: created_at
+          type: timestamp
+          auto_generated: true
+      indexes:
+        - columns: [folder_id]
+        - columns: [entity_type, entity_id]
+        - columns: [file_type]
+        - columns: [uploaded_by]
+
+    folders:
+      type: master_data
+      table_name: folders
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: name
+          type: varchar(200)
+          required: true
+          label_he: "שם תיקייה"
+        - name: parent_folder_id
+          type: uuid
+          nullable: true
+          foreign_key: folders.id
+          self_referencing: true
+          label_he: "תיקיית אב"
+        - name: created_by
+          type: uuid
+          required: true
+          foreign_key: users.id
+          label_he: "נוצר ע\"י"
+        - name: is_system
+          type: boolean
+          default: false
+          label_he: "תיקיית מערכת"
+        - name: created_at
+          type: timestamp
+          auto_generated: true
+      indexes:
+        - columns: [parent_folder_id]
+        - columns: [name, parent_folder_id]
+          unique: true
+
+    document_templates:
+      type: master_data
+      table_name: document_templates
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: name
+          type: varchar(200)
+          required: true
+          label_he: "שם תבנית"
+        - name: description
+          type: text
+          nullable: true
+          label_he: "תיאור"
+        - name: template_type
+          type: enum
+          values: [invoice, receipt, quote, contract, letter, report, other]
+          required: true
+          label_he: "סוג תבנית"
+          display_values_he:
+            invoice: "חשבונית"
+            receipt: "קבלה"
+            quote: "הצעת מחיר"
+            contract: "חוזה"
+            letter: "מכתב"
+            report: "דוח"
+            other: "אחר"
+        - name: content_html
+          type: text
+          required: true
+          label_he: "תוכן HTML"
+        - name: variables_json
+          type: json
+          nullable: true
+          label_he: "משתנים"
+        - name: is_active
+          type: boolean
+          default: true
+          label_he: "פעיל"
+        - name: created_by
+          type: uuid
+          required: true
+          foreign_key: users.id
+          label_he: "נוצר ע\"י"
+        - name: created_at
+          type: timestamp
+          auto_generated: true
+        - name: updated_at
+          type: timestamp
+          auto_generated: true
+          on_update: true
+      indexes:
+        - columns: [template_type]
+        - columns: [is_active]
+
+    signatures:
+      type: transactional
+      table_name: signatures
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: document_id
+          type: uuid
+          nullable: true
+          foreign_key: documents.id
+          label_he: "מסמך"
+        - name: file_id
+          type: uuid
+          nullable: true
+          foreign_key: files.id
+          label_he: "קובץ"
+        - name: signer_name
+          type: varchar(200)
+          required: true
+          label_he: "שם חותם"
+        - name: signer_email
+          type: varchar(100)
+          required: true
+          label_he: "אימייל חותם"
+        - name: signed_at
+          type: timestamp
+          nullable: true
+          label_he: "תאריך חתימה"
+        - name: status
+          type: enum
+          values: [pending, signed, declined, expired]
+          required: true
+          default: pending
+          label_he: "סטטוס"
+          display_values_he:
+            pending: "ממתין"
+            signed: "נחתם"
+            declined: "סורב"
+            expired: "פג תוקף"
+        - name: token
+          type: text
+          required: true
+          unique: true
+          label_he: "טוקן"
+        - name: expires_at
+          type: timestamp
+          required: true
+          label_he: "תוקף"
+        - name: created_at
+          type: timestamp
+          auto_generated: true
+      indexes:
+        - columns: [token]
+          unique: true
+        - columns: [document_id]
+        - columns: [file_id]
+        - columns: [status]
+
+    file_versions:
+      type: transactional
+      table_name: file_versions
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: file_id
+          type: uuid
+          required: true
+          foreign_key: files.id
+          on_delete: cascade
+          label_he: "קובץ"
+        - name: version_number
+          type: integer
+          required: true
+          label_he: "מספר גרסה"
+        - name: file_url
+          type: text
+          required: true
+          label_he: "כתובת קובץ"
+        - name: file_size
+          type: integer
+          required: true
+          label_he: "גודל"
+        - name: change_notes
+          type: text
+          nullable: true
+          label_he: "הערות שינוי"
+        - name: uploaded_by
+          type: uuid
+          required: true
+          foreign_key: users.id
+          label_he: "הועלה ע\"י"
+        - name: created_at
+          type: timestamp
+          auto_generated: true
+      indexes:
+        - columns: [file_id, version_number]
+          unique: true
+
+  pages:
+
+    # === ALL FILES ===
+    all_files:
+      route: /documents/files
+      title: "כל הקבצים"
+      layout: dual_view
+      view_toggle:
+        options:
+          - {value: grid, label: "רשת", icon: grid_view}
+          - {value: list, label: "רשימה", icon: list}
+        default: grid
+      toolbar:
+        primary_action:
+          label: "העלאת קובץ"
+          icon: upload
+          action: open_upload_modal
+          permission: documents.files.create
+        secondary_actions:
+          - label: "תיקייה חדשה"
+            icon: create_new_folder
+            action: create_folder_modal
+            permission: documents.folders.create
+      filters:
+        - field: file_type
+          type: multi_select
+          label: "סוג קובץ"
+          options:
+            - {value: pdf, label: "PDF"}
+            - {value: doc, label: "Word"}
+            - {value: xls, label: "Excel"}
+            - {value: img, label: "תמונה"}
+            - {value: other, label: "אחר"}
+        - field: folder_id
+          type: select
+          label: "תיקייה"
+          source: folders
+          display_field: name
+        - field: entity_type
+          type: select
+          label: "ישות מקושרת"
+          options:
+            - {value: customer, label: "לקוח"}
+            - {value: supplier, label: "ספק"}
+            - {value: project, label: "פרויקט"}
+            - {value: employee, label: "עובד"}
+            - {value: document, label: "מסמך"}
+        - field: created_at
+          type: date_range
+          label: "תאריך העלאה"
+        - field: uploaded_by
+          type: select
+          label: "הועלה ע\"י"
+          source: users
+          display_field: full_name
+        - field: tags
+          type: tags_input
+          label: "תגיות"
+      grid_view:
+        card_fields:
+          - {field: file_name, type: title}
+          - {field: file_type, type: icon}
+          - {field: file_size, type: info, format: file_size}
+          - {field: uploaded_by, type: info, display: users.full_name}
+          - {field: created_at, type: info, format: date}
+        preview_on_click: true
+        actions:
+          - {action: download, icon: download}
+          - {action: preview, icon: visibility}
+          - {action: share, icon: share}
+          - {action: delete, icon: delete}
+      list_view:
+        table_columns:
+          - {field: file_name, label: "שם קובץ", sortable: true}
+          - {field: file_type, label: "סוג", sortable: true}
+          - {field: file_size, label: "גודל", sortable: true, format: file_size}
+          - {field: folder_id, label: "תיקייה", display: folders.name, link_to: "/documents/folders/:folder_id"}
+          - {field: entity_type, label: "ישות מקושרת"}
+          - {field: tags, label: "תגיות", display: tag_chips}
+          - {field: uploaded_by, label: "הועלה ע\"י", display: users.full_name}
+          - {field: created_at, label: "תאריך", sortable: true, format: datetime}
+        default_sort: {field: created_at, direction: desc}
+        row_actions:
+          - {action: download, label: "הורדה", icon: download}
+          - {action: preview, label: "תצוגה מקדימה", icon: visibility}
+          - {action: edit, label: "עריכה", icon: edit}
+          - {action: move, label: "העברה לתיקייה", icon: drive_file_move}
+          - {action: delete, label: "מחיקה", icon: delete, confirmation: "האם למחוק את הקובץ?"}
+      preview_panel:
+        position: right
+        width: 400
+        fields:
+          - {field: file_name, label: "שם"}
+          - {field: file_type, label: "סוג"}
+          - {field: file_size, label: "גודל", format: file_size}
+          - {field: description, label: "תיאור"}
+          - {field: tags, label: "תגיות"}
+          - {field: uploaded_by, label: "הועלה ע\"י"}
+          - {field: created_at, label: "תאריך"}
+          - {field: entity_type, label: "ישות מקושרת"}
+        preview_types:
+          pdf: inline_viewer
+          image: image_viewer
+          doc: download_prompt
+          other: download_prompt
+      upload_modal:
+        title: "העלאת קובץ"
+        fields:
+          - {name: file, type: file_upload, label: "קובץ", required: true, accept: "*/*", max_size_mb: 50, multiple: true}
+          - {name: folder_id, type: select, label: "תיקייה", source: folders, display_field: name}
+          - {name: entity_type, type: select, label: "ישות מקושרת", options: [{value: "", label: "ללא"}, {value: customer, label: "לקוח"}, {value: supplier, label: "ספק"}, {value: project, label: "פרויקט"}, {value: employee, label: "עובד"}]}
+          - {name: entity_id, type: dynamic_select, label: "ישות", depends_on: entity_type}
+          - {name: description, type: textarea, label: "תיאור"}
+          - {name: tags, type: tags_input, label: "תגיות"}
+
+    # === FOLDERS ===
+    folders_page:
+      route: /documents/folders
+      title: "תיקיות"
+      layout: tree_with_content
+      sidebar:
+        type: tree_navigation
+        entity: folders
+        display_field: name
+        child_field: parent_folder_id
+        actions:
+          - {action: create_folder, label: "תיקייה חדשה", icon: create_new_folder}
+          - {action: rename, label: "שינוי שם", icon: edit}
+          - {action: delete, label: "מחיקה", icon: delete, confirmation: "האם למחוק את התיקייה?"}
+        drag_drop:
+          enabled: true
+          type: files_to_folders
+      content:
+        entity: files
+        filter: "folder_id=:selected_folder_id"
+        display: grid_or_list
+        columns:
+          - {field: file_name, label: "שם קובץ", sortable: true}
+          - {field: file_type, label: "סוג"}
+          - {field: file_size, label: "גודל", format: file_size}
+          - {field: uploaded_by, label: "הועלה ע\"י", display: users.full_name}
+          - {field: created_at, label: "תאריך", format: datetime}
+        actions:
+          - {action: upload, label: "העלאה לתיקייה", icon: upload}
+          - {action: download, label: "הורדה", icon: download}
+          - {action: move, label: "העברה", icon: drive_file_move}
+          - {action: delete, label: "מחיקה", icon: delete}
+
+    # === TEMPLATES ===
+    templates_list:
+      route: /documents/templates
+      title: "תבניות מסמכים"
+      layout: standard_list
+      toolbar:
+        primary_action:
+          label: "תבנית חדשה"
+          icon: add
+          target: /documents/templates/create
+          permission: documents.templates.create
+      filters:
+        - field: template_type
+          type: multi_select
+          label: "סוג תבנית"
+          options:
+            - {value: invoice, label: "חשבונית"}
+            - {value: receipt, label: "קבלה"}
+            - {value: quote, label: "הצעת מחיר"}
+            - {value: contract, label: "חוזה"}
+            - {value: letter, label: "מכתב"}
+            - {value: report, label: "דוח"}
+            - {value: other, label: "אחר"}
+        - field: is_active
+          type: toggle
+          label: "פעיל בלבד"
+          default: true
+      table:
+        columns:
+          - {field: name, label: "שם תבנית", sortable: true, link_to: "/documents/templates/:id"}
+          - {field: template_type, label: "סוג", sortable: true}
+          - {field: description, label: "תיאור"}
+          - {field: is_active, label: "פעיל", display: toggle}
+          - {field: created_by, label: "נוצר ע\"י", display: users.full_name}
+          - {field: updated_at, label: "עודכן", format: datetime, sortable: true}
+        row_actions:
+          - {action: edit, label: "עריכה", icon: edit, target: "/documents/templates/:id/edit"}
+          - {action: preview, label: "תצוגה מקדימה", icon: visibility}
+          - {action: duplicate, label: "שכפול", icon: content_copy}
+          - {action: delete, label: "מחיקה", icon: delete}
+
+    # === TEMPLATE CREATE/EDIT ===
+    template_create:
+      route: /documents/templates/create
+      title: "תבנית חדשה"
+      layout: editor_with_preview
+      permission: documents.templates.create
+      form:
+        sections:
+          - title: "פרטי תבנית"
+            columns: 2
+            fields:
+              - name: name
+                type: text
+                label: "שם תבנית"
+                required: true
+                grid_column: 1
+              - name: template_type
+                type: select
+                label: "סוג תבנית"
+                required: true
+                options:
+                  - {value: invoice, label: "חשבונית"}
+                  - {value: receipt, label: "קבלה"}
+                  - {value: quote, label: "הצעת מחיר"}
+                  - {value: contract, label: "חוזה"}
+                  - {value: letter, label: "מכתב"}
+                  - {value: report, label: "דוח"}
+                  - {value: other, label: "אחר"}
+                grid_column: 2
+              - name: description
+                type: textarea
+                label: "תיאור"
+                required: false
+                rows: 2
+                grid_column: "1-2"
+          - title: "תוכן תבנית"
+            type: rich_text_editor
+            fields:
+              - name: content_html
+                type: rich_text
+                label: "תוכן"
+                required: true
+                toolbar: [bold, italic, underline, heading, list, table, image, link, variable_insert]
+                variable_insert:
+                  label: "הוספת משתנה"
+                  variables:
+                    - {name: "{{company_name}}", label: "שם חברה"}
+                    - {name: "{{company_address}}", label: "כתובת חברה"}
+                    - {name: "{{company_phone}}", label: "טלפון חברה"}
+                    - {name: "{{company_email}}", label: "אימייל חברה"}
+                    - {name: "{{customer_name}}", label: "שם לקוח"}
+                    - {name: "{{customer_address}}", label: "כתובת לקוח"}
+                    - {name: "{{customer_phone}}", label: "טלפון לקוח"}
+                    - {name: "{{customer_email}}", label: "אימייל לקוח"}
+                    - {name: "{{document_number}}", label: "מספר מסמך"}
+                    - {name: "{{document_date}}", label: "תאריך מסמך"}
+                    - {name: "{{total_amount}}", label: "סכום כולל"}
+                    - {name: "{{items_table}}", label: "טבלת פריטים"}
+                    - {name: "{{current_date}}", label: "תאריך נוכחי"}
+                    - {name: "{{signer_name}}", label: "שם חותם"}
+              - name: is_active
+                type: toggle
+                label: "פעיל"
+                default: true
+      preview_panel:
+        position: right
+        width: "50%"
+        renders: content_html with sample data
+      actions:
+        submit:
+          label: "שמירה"
+          icon: save
+          action: create_template
+          redirect_to: "/documents/templates/:id"
+        cancel:
+          label: "ביטול"
+          target: /documents/templates
+
+    # === SIGNATURES ===
+    signatures_page:
+      route: /documents/signatures
+      title: "חתימות"
+      layout: tabbed_list
+      tabs:
+        - name: pending
+          label: "ממתינים"
+          filter: "status=pending"
+          badge_count: true
+        - name: signed
+          label: "נחתמו"
+          filter: "status=signed"
+        - name: declined
+          label: "סורבו"
+          filter: "status=declined"
+        - name: expired
+          label: "פג תוקף"
+          filter: "status=expired"
+      toolbar:
+        primary_action:
+          label: "שליחה לחתימה"
+          icon: draw
+          action: open_signature_request_modal
+          permission: documents.signatures.create
+      table:
+        columns:
+          - {field: document_id, label: "מסמך", display: documents.document_number, link_to: "/finance/:document_id"}
+          - {field: file_id, label: "קובץ", display: files.file_name, link_to: "/documents/files/:file_id"}
+          - {field: signer_name, label: "שם חותם"}
+          - {field: signer_email, label: "אימייל חותם"}
+          - {field: status, label: "סטטוס", display: badge}
+          - {field: expires_at, label: "תוקף", format: datetime}
+          - {field: signed_at, label: "תאריך חתימה", format: datetime}
+          - {field: created_at, label: "נשלח", format: datetime, sortable: true}
+        row_actions:
+          - {action: resend, label: "שליחה מחדש", icon: send, condition: "status=pending"}
+          - {action: cancel, label: "ביטול", icon: cancel, condition: "status=pending"}
+          - {action: view_signed, label: "צפייה", icon: visibility, condition: "status=signed"}
+      signature_request_modal:
+        title: "שליחה לחתימה"
+        fields:
+          - {name: document_id, type: select, label: "מסמך", source: documents, display_field: document_number}
+          - {name: file_id, type: select, label: "קובץ", source: files, display_field: file_name}
+          - {name: signer_name, type: text, label: "שם חותם", required: true}
+          - {name: signer_email, type: email, label: "אימייל חותם", required: true}
+          - {name: expires_at, type: datetime, label: "תוקף", required: true, default: "7 days from now"}
+          - {name: message, type: textarea, label: "הודעה לחותם"}
+
+    # === VERSIONS ===
+    versions_page:
+      route: /documents/versions
+      title: "גרסאות"
+      layout: file_select_with_detail
+      sidebar:
+        type: file_search
+        entity: files
+        search_fields: [file_name]
+        display_field: file_name
+      content:
+        entity: file_versions
+        filter: "file_id=:selected_file_id"
+        table_columns:
+          - {field: version_number, label: "גרסה", sortable: true}
+          - {field: file_size, label: "גודל", format: file_size}
+          - {field: change_notes, label: "הערות שינוי"}
+          - {field: uploaded_by, label: "הועלה ע\"י", display: users.full_name}
+          - {field: created_at, label: "תאריך", format: datetime, sortable: true}
+        row_actions:
+          - {action: download, label: "הורדה", icon: download}
+          - {action: preview, label: "תצוגה מקדימה", icon: visibility}
+          - {action: compare, label: "השוואה", icon: compare, type: select_two}
+          - {action: restore, label: "שחזור גרסה", icon: restore, confirmation: "האם לשחזר גרסה זו?"}
+        compare_view:
+          type: side_by_side_diff
+          supports: [text, pdf]
+
+    # === LINKED DOCUMENTS ===
+    linked_documents:
+      route: /documents/linked
+      title: "מסמכים מקושרים"
+      layout: graph_with_table
+      entity: document_links
+      visual_graph:
+        node_types:
+          - {entity: documents, color: blue, icon: description}
+          - {entity: files, color: green, icon: attach_file}
+        edge_types:
+          - {link_type: based_on, label: "מבוסס על", color: blue}
+          - {link_type: converted_to, label: "הומר ל", color: green}
+          - {link_type: paid_by, label: "שולם ע\"י", color: purple}
+          - {link_type: receipt_for, label: "קבלה עבור", color: orange}
+          - {link_type: related_to, label: "קשור ל", color: grey}
+          - {link_type: attachment_reference, label: "קובץ מצורף", color: teal}
+        on_node_click: navigate_to_entity
+      table:
+        columns:
+          - {field: source_document_id, label: "מסמך מקור", display: documents.document_number, link_to: "/finance/:source_document_id"}
+          - {field: link_type, label: "סוג קישור"}
+          - {field: target_document_id, label: "מסמך יעד", display: documents.document_number, link_to: "/finance/:target_document_id"}
+          - {field: notes, label: "הערות"}
+          - {field: created_at, label: "תאריך", format: datetime}
+      filters:
+        - {field: link_type, type: multi_select, label: "סוג קישור"}
+        - {field: source_document_id, type: select, label: "מסמך מקור", source: documents}
+
+  navigation_map:
+    all_files:
+      navigates_to:
+        - {target: file_detail, trigger: "click file"}
+        - {target: folders_page, trigger: "click folder link"}
+    folders_page:
+      navigates_to:
+        - {target: file_detail, trigger: "click file in folder"}
+    templates_list:
+      navigates_to:
+        - {target: template_create, trigger: "primary action"}
+        - {target: template_edit, trigger: "click row"}
+    signatures_page:
+      navigates_to:
+        - {target: document_detail, trigger: "click document link"}
+        - {target: file_detail, trigger: "click file link"}
+
+
+# ============================================================
+# MODULE 16: REPORTS
+# ============================================================
+module_16_reports:
+  module_id: 16
+  name: "Reports"
+  label_he: "דוחות"
+  icon: bar_chart
+  route: /reports
+  priority: high
+  purpose: "דוחות, KPI, חתכים, ייצוא, בקרה וניתוחים"
+
+  submenus:
+    - label: "דוחות הנהלה"
+      route: /reports/executive
+      icon: business
+    - label: "דוחות מכירות"
+      route: /reports/sales
+      icon: trending_up
+    - label: "דוחות כספיים"
+      route: /reports/finance
+      icon: account_balance
+    - label: "דוחות פרויקטים"
+      route: /reports/projects
+      icon: assignment
+    - label: "דוחות תפעוליים"
+      route: /reports/operational
+      icon: engineering
+    - label: "דוחות מותאמים"
+      route: /reports/custom
+      icon: tune
+
+  pages:
+
+    # === EXECUTIVE REPORTS ===
+    executive_reports:
+      route: /reports/executive
+      title: "דוחות הנהלה"
+      layout: report_gallery
+      reports:
+
+        - name: revenue_trend
+          label: "מגמת הכנסות"
+          route: /reports/executive/revenue-trend
+          description: "מגמת הכנסות לאורך זמן"
+          chart_type: line
+          data_source: documents
+          data_filter: "direction=income AND status_id NOT IN (draft, cancelled)"
+          date_field: issue_date
+          metric_field: total_amount
+          aggregation: sum
+          date_range_selector:
+            default: last_12_months
+            options: [last_30_days, last_3_months, last_6_months, last_12_months, current_year, last_year, custom]
+          filters:
+            - {field: document_type_id, type: multi_select, label: "סוג מסמך"}
+            - {field: customer_id, type: select, label: "לקוח", source: customers}
+          chart_config:
+            x_axis: date
+            y_axis: total_amount
+            group_by: [day, week, month, quarter]
+            default_group: month
+          data_table:
+            columns:
+              - {field: period, label: "תקופה"}
+              - {field: total_revenue, label: "הכנסות", format: currency}
+              - {field: count, label: "מספר מסמכים"}
+              - {field: avg_amount, label: "ממוצע", format: currency}
+              - {field: change_percent, label: "שינוי %", format: percent}
+          export_options: [pdf, excel, csv]
+
+        - name: expense_trend
+          label: "מגמת הוצאות"
+          route: /reports/executive/expense-trend
+          description: "מגמת הוצאות לאורך זמן"
+          chart_type: line
+          data_source: documents
+          data_filter: "direction=expense AND status_id NOT IN (draft, cancelled)"
+          date_field: issue_date
+          metric_field: total_amount
+          aggregation: sum
+          date_range_selector:
+            default: last_12_months
+            options: [last_30_days, last_3_months, last_6_months, last_12_months, current_year, last_year, custom]
+          filters:
+            - {field: category_id, type: multi_select, label: "קטגוריה", source: categories}
+            - {field: supplier_id, type: select, label: "ספק", source: suppliers}
+          chart_config:
+            x_axis: date
+            y_axis: total_amount
+            group_by: [day, week, month, quarter]
+            default_group: month
+          data_table:
+            columns:
+              - {field: period, label: "תקופה"}
+              - {field: total_expenses, label: "הוצאות", format: currency}
+              - {field: count, label: "מספר מסמכים"}
+              - {field: avg_amount, label: "ממוצע", format: currency}
+              - {field: change_percent, label: "שינוי %", format: percent}
+          export_options: [pdf, excel, csv]
+
+        - name: profit_loss
+          label: "רווח והפסד"
+          route: /reports/executive/profit-loss
+          description: "דוח רווח והפסד"
+          chart_type: bar_stacked
+          data_source: documents
+          date_range_selector:
+            default: current_year
+            options: [last_3_months, last_6_months, current_year, last_year, custom]
+          filters:
+            - {field: category_id, type: multi_select, label: "קטגוריה"}
+          chart_config:
+            x_axis: period
+            y_axis: [revenue, expenses, profit]
+            colors: {revenue: green, expenses: red, profit: blue}
+          data_table:
+            columns:
+              - {field: period, label: "תקופה"}
+              - {field: revenue, label: "הכנסות", format: currency}
+              - {field: expenses, label: "הוצאות", format: currency}
+              - {field: profit, label: "רווח", format: currency}
+              - {field: profit_margin, label: "מרווח רווח %", format: percent}
+          export_options: [pdf, excel, csv]
+
+        - name: cash_flow
+          label: "תזרים מזומנים"
+          route: /reports/executive/cash-flow
+          description: "דוח תזרים מזומנים"
+          chart_type: waterfall
+          date_range_selector:
+            default: current_year
+            options: [last_3_months, last_6_months, current_year, last_year, custom]
+          chart_config:
+            categories: [opening_balance, income_received, expenses_paid, net_flow, closing_balance]
+          data_table:
+            columns:
+              - {field: period, label: "תקופה"}
+              - {field: opening_balance, label: "יתרת פתיחה", format: currency}
+              - {field: income_received, label: "הכנסות שהתקבלו", format: currency}
+              - {field: expenses_paid, label: "הוצאות ששולמו", format: currency}
+              - {field: net_flow, label: "תזרים נטו", format: currency}
+              - {field: closing_balance, label: "יתרת סגירה", format: currency}
+          export_options: [pdf, excel, csv]
+
+        - name: top_customers
+          label: "לקוחות מובילים"
+          route: /reports/executive/top-customers
+          description: "לקוחות לפי היקף הכנסות"
+          chart_type: horizontal_bar
+          data_source: documents
+          data_filter: "direction=income"
+          group_by_field: customer_id
+          metric_field: total_amount
+          aggregation: sum
+          date_range_selector:
+            default: current_year
+            options: [last_3_months, last_6_months, current_year, last_year, custom]
+          filters:
+            - {field: limit, type: number, label: "מספר לקוחות", default: 10}
+          data_table:
+            columns:
+              - {field: rank, label: "#"}
+              - {field: customer_name, label: "לקוח", link_to: "/customers/:customer_id"}
+              - {field: total_revenue, label: "הכנסות", format: currency}
+              - {field: document_count, label: "מספר מסמכים"}
+              - {field: avg_amount, label: "ממוצע למסמך", format: currency}
+              - {field: percent_of_total, label: "אחוז מסך", format: percent}
+          export_options: [pdf, excel, csv]
+
+        - name: top_products
+          label: "מוצרים מובילים"
+          route: /reports/executive/top-products
+          description: "מוצרים ושירותים לפי היקף מכירות"
+          chart_type: horizontal_bar
+          data_source: document_items
+          group_by_field: product_id
+          metric_field: line_total
+          aggregation: sum
+          date_range_selector:
+            default: current_year
+            options: [last_3_months, last_6_months, current_year, last_year, custom]
+          filters:
+            - {field: category_id, type: select, label: "קטגוריה", source: categories}
+            - {field: limit, type: number, label: "מספר מוצרים", default: 10}
+          data_table:
+            columns:
+              - {field: rank, label: "#"}
+              - {field: product_name, label: "מוצר", link_to: "/products/:product_id"}
+              - {field: total_sales, label: "מכירות", format: currency}
+              - {field: quantity_sold, label: "כמות"}
+              - {field: avg_price, label: "מחיר ממוצע", format: currency}
+              - {field: percent_of_total, label: "אחוז מסך", format: percent}
+          export_options: [pdf, excel, csv]
+
+    # === SALES REPORTS ===
+    sales_reports:
+      route: /reports/sales
+      title: "דוחות מכירות"
+      layout: report_gallery
+      reports:
+
+        - name: sales_by_customer
+          label: "מכירות לפי לקוח"
+          route: /reports/sales/by-customer
+          chart_type: bar
+          date_range_selector:
+            default: current_year
+            options: [last_30_days, last_3_months, last_6_months, current_year, last_year, custom]
+          filters:
+            - {field: customer_id, type: multi_select, label: "לקוחות", source: customers}
+          data_table:
+            columns:
+              - {field: customer_name, label: "לקוח", link_to: "/customers/:customer_id"}
+              - {field: total_sales, label: "סה\"כ מכירות", format: currency}
+              - {field: invoice_count, label: "חשבוניות"}
+              - {field: avg_sale, label: "ממוצע", format: currency}
+              - {field: last_sale_date, label: "מכירה אחרונה", format: date}
+          export_options: [pdf, excel, csv]
+
+        - name: sales_by_product
+          label: "מכירות לפי מוצר"
+          route: /reports/sales/by-product
+          chart_type: bar
+          date_range_selector:
+            default: current_year
+            options: [last_30_days, last_3_months, last_6_months, current_year, last_year, custom]
+          filters:
+            - {field: category_id, type: select, label: "קטגוריה", source: categories}
+          data_table:
+            columns:
+              - {field: product_name, label: "מוצר", link_to: "/products/:product_id"}
+              - {field: quantity_sold, label: "כמות"}
+              - {field: total_sales, label: "סה\"כ מכירות", format: currency}
+              - {field: avg_price, label: "מחיר ממוצע", format: currency}
+          export_options: [pdf, excel, csv]
+
+        - name: sales_by_period
+          label: "מכירות לפי תקופה"
+          route: /reports/sales/by-period
+          chart_type: line
+          date_range_selector:
+            default: last_12_months
+            options: [last_30_days, last_3_months, last_6_months, last_12_months, current_year, custom]
+          chart_config:
+            group_by: [day, week, month, quarter]
+            default_group: month
+          data_table:
+            columns:
+              - {field: period, label: "תקופה"}
+              - {field: total_sales, label: "מכירות", format: currency}
+              - {field: order_count, label: "הזמנות"}
+              - {field: change_percent, label: "שינוי %", format: percent}
+          export_options: [pdf, excel, csv]
+
+        - name: pipeline_summary
+          label: "סיכום Pipeline"
+          route: /reports/sales/pipeline
+          chart_type: funnel
+          data_source: opportunities
+          data_table:
+            columns:
+              - {field: stage, label: "שלב"}
+              - {field: count, label: "הזדמנויות"}
+              - {field: total_value, label: "ערך כולל", format: currency}
+              - {field: weighted_value, label: "ערך משוקלל", format: currency}
+              - {field: avg_probability, label: "הסתברות ממוצעת", format: percent}
+              - {field: conversion_rate, label: "שיעור המרה", format: percent}
+          export_options: [pdf, excel, csv]
+
+        - name: quote_conversion_rate
+          label: "שיעור המרת הצעות"
+          route: /reports/sales/quote-conversion
+          chart_type: pie
+          date_range_selector:
+            default: last_6_months
+            options: [last_3_months, last_6_months, current_year, last_year, custom]
+          data_table:
+            columns:
+              - {field: status, label: "סטטוס"}
+              - {field: count, label: "מספר הצעות"}
+              - {field: total_value, label: "ערך כולל", format: currency}
+              - {field: percent, label: "אחוז", format: percent}
+          export_options: [pdf, excel, csv]
+
+        - name: sales_forecast
+          label: "תחזית מכירות"
+          route: /reports/sales/forecast
+          chart_type: line_with_projection
+          date_range_selector:
+            default: next_6_months
+            options: [next_3_months, next_6_months, next_12_months]
+          data_table:
+            columns:
+              - {field: period, label: "תקופה"}
+              - {field: confirmed_value, label: "ערך מאושר", format: currency}
+              - {field: pipeline_value, label: "ערך Pipeline", format: currency}
+              - {field: forecast_value, label: "תחזית", format: currency}
+          export_options: [pdf, excel, csv]
+
+    # === FINANCE REPORTS ===
+    finance_reports:
+      route: /reports/finance
+      title: "דוחות כספיים"
+      layout: report_gallery
+      reports:
+
+        - name: receivables_aging
+          label: "גיול חייבים"
+          route: /reports/finance/receivables-aging
+          chart_type: stacked_bar
+          data_source: documents
+          data_filter: "direction=income AND balance_due > 0"
+          data_table:
+            columns:
+              - {field: customer_name, label: "לקוח", link_to: "/customers/:customer_id"}
+              - {field: current, label: "שוטף", format: currency}
+              - {field: days_30, label: "30 יום", format: currency}
+              - {field: days_60, label: "60 יום", format: currency}
+              - {field: days_90, label: "90 יום", format: currency}
+              - {field: days_120_plus, label: "120+ יום", format: currency}
+              - {field: total, label: "סה\"כ", format: currency}
+          export_options: [pdf, excel, csv]
+
+        - name: payables_aging
+          label: "גיול זכאים"
+          route: /reports/finance/payables-aging
+          chart_type: stacked_bar
+          data_source: documents
+          data_filter: "direction=expense AND balance_due > 0"
+          data_table:
+            columns:
+              - {field: supplier_name, label: "ספק", link_to: "/suppliers/:supplier_id"}
+              - {field: current, label: "שוטף", format: currency}
+              - {field: days_30, label: "30 יום", format: currency}
+              - {field: days_60, label: "60 יום", format: currency}
+              - {field: days_90, label: "90 יום", format: currency}
+              - {field: days_120_plus, label: "120+ יום", format: currency}
+              - {field: total, label: "סה\"כ", format: currency}
+          export_options: [pdf, excel, csv]
+
+        - name: income_by_category
+          label: "הכנסות לפי קטגוריה"
+          route: /reports/finance/income-by-category
+          chart_type: pie
+          date_range_selector:
+            default: current_year
+            options: [last_3_months, last_6_months, current_year, last_year, custom]
+          data_table:
+            columns:
+              - {field: category_name, label: "קטגוריה"}
+              - {field: total_amount, label: "סכום", format: currency}
+              - {field: count, label: "מספר מסמכים"}
+              - {field: percent, label: "אחוז", format: percent}
+          export_options: [pdf, excel, csv]
+
+        - name: expense_by_category
+          label: "הוצאות לפי קטגוריה"
+          route: /reports/finance/expense-by-category
+          chart_type: pie
+          date_range_selector:
+            default: current_year
+            options: [last_3_months, last_6_months, current_year, last_year, custom]
+          data_table:
+            columns:
+              - {field: category_name, label: "קטגוריה"}
+              - {field: total_amount, label: "סכום", format: currency}
+              - {field: count, label: "מספר מסמכים"}
+              - {field: percent, label: "אחוז", format: percent}
+          export_options: [pdf, excel, csv]
+
+        - name: payment_methods_breakdown
+          label: "התפלגות אמצעי תשלום"
+          route: /reports/finance/payment-methods
+          chart_type: donut
+          date_range_selector:
+            default: current_year
+            options: [last_3_months, last_6_months, current_year, last_year, custom]
+          data_table:
+            columns:
+              - {field: payment_method, label: "אמצעי תשלום"}
+              - {field: total_amount, label: "סכום", format: currency}
+              - {field: count, label: "מספר תשלומים"}
+              - {field: percent, label: "אחוז", format: percent}
+          export_options: [pdf, excel, csv]
+
+        - name: tax_summary
+          label: "סיכום מע\"מ"
+          route: /reports/finance/tax-summary
+          chart_type: bar_grouped
+          date_range_selector:
+            default: current_year
+            options: [last_3_months, last_6_months, current_year, last_year, custom]
+          data_table:
+            columns:
+              - {field: period, label: "תקופה"}
+              - {field: output_tax, label: "מע\"מ עסקאות", format: currency}
+              - {field: input_tax, label: "מע\"מ תשומות", format: currency}
+              - {field: net_tax, label: "מע\"מ לתשלום", format: currency}
+          export_options: [pdf, excel, csv]
+
+        - name: bank_reconciliation_status
+          label: "סטטוס התאמת בנק"
+          route: /reports/finance/bank-reconciliation
+          chart_type: summary_cards
+          data_table:
+            columns:
+              - {field: account, label: "חשבון"}
+              - {field: book_balance, label: "יתרת ספרים", format: currency}
+              - {field: bank_balance, label: "יתרת בנק", format: currency}
+              - {field: difference, label: "הפרש", format: currency}
+              - {field: unmatched_items, label: "פריטים לא מותאמים"}
+              - {field: last_reconciled, label: "התאמה אחרונה", format: date}
+          export_options: [pdf, excel, csv]
+
+    # === PROJECT REPORTS ===
+    project_reports:
+      route: /reports/projects
+      title: "דוחות פרויקטים"
+      layout: report_gallery
+      reports:
+
+        - name: project_profitability
+          label: "רווחיות פרויקטים"
+          route: /reports/projects/profitability
+          chart_type: bar_grouped
+          filters:
+            - {field: project_id, type: multi_select, label: "פרויקטים", source: projects}
+            - {field: status_id, type: multi_select, label: "סטטוס"}
+          data_table:
+            columns:
+              - {field: project_name, label: "פרויקט", link_to: "/projects/:project_id"}
+              - {field: budget, label: "תקציב", format: currency}
+              - {field: actual_cost, label: "עלות בפועל", format: currency}
+              - {field: revenue, label: "הכנסות", format: currency}
+              - {field: profit, label: "רווח", format: currency}
+              - {field: profit_margin, label: "מרווח %", format: percent}
+              - {field: budget_utilization, label: "ניצול תקציב %", format: percent}
+          export_options: [pdf, excel, csv]
+
+        - name: task_completion_rate
+          label: "שיעור השלמת משימות"
+          route: /reports/projects/task-completion
+          chart_type: bar_stacked
+          filters:
+            - {field: project_id, type: select, label: "פרויקט", source: projects}
+            - {field: assigned_to, type: select, label: "מבצע", source: users}
+          data_table:
+            columns:
+              - {field: project_name, label: "פרויקט"}
+              - {field: total_tasks, label: "סה\"כ משימות"}
+              - {field: completed, label: "הושלמו"}
+              - {field: in_progress, label: "בתהליך"}
+              - {field: overdue, label: "באיחור"}
+              - {field: completion_rate, label: "שיעור השלמה", format: percent}
+          export_options: [pdf, excel, csv]
+
+        - name: budget_vs_actual
+          label: "תקציב מול ביצוע"
+          route: /reports/projects/budget-vs-actual
+          chart_type: bar_grouped
+          filters:
+            - {field: project_id, type: multi_select, label: "פרויקטים", source: projects}
+          data_table:
+            columns:
+              - {field: project_name, label: "פרויקט", link_to: "/projects/:project_id"}
+              - {field: budget, label: "תקציב", format: currency}
+              - {field: actual, label: "ביצוע", format: currency}
+              - {field: variance, label: "הפרש", format: currency}
+              - {field: variance_percent, label: "חריגה %", format: percent}
+          export_options: [pdf, excel, csv]
+
+        - name: resource_utilization
+          label: "ניצול משאבים"
+          route: /reports/projects/resource-utilization
+          chart_type: heatmap
+          filters:
+            - {field: project_id, type: select, label: "פרויקט", source: projects}
+            - {field: date_range, type: date_range, label: "תקופה"}
+          data_table:
+            columns:
+              - {field: employee_name, label: "עובד", link_to: "/hr/employees/:employee_id"}
+              - {field: assigned_hours, label: "שעות מוקצות"}
+              - {field: actual_hours, label: "שעות בפועל"}
+              - {field: utilization, label: "ניצול %", format: percent}
+              - {field: project_count, label: "פרויקטים"}
+          export_options: [pdf, excel, csv]
+
+        - name: milestone_tracking
+          label: "מעקב אבני דרך"
+          route: /reports/projects/milestones
+          chart_type: gantt
+          filters:
+            - {field: project_id, type: select, label: "פרויקט", source: projects}
+            - {field: status_id, type: multi_select, label: "סטטוס"}
+          data_table:
+            columns:
+              - {field: project_name, label: "פרויקט"}
+              - {field: milestone_name, label: "אבן דרך"}
+              - {field: due_date, label: "תאריך יעד", format: date}
+              - {field: completed_date, label: "תאריך השלמה", format: date}
+              - {field: status_id, label: "סטטוס", display: badge}
+              - {field: days_variance, label: "חריגת ימים"}
+          export_options: [pdf, excel, csv]
+
+    # === OPERATIONAL REPORTS ===
+    operational_reports:
+      route: /reports/operational
+      title: "דוחות תפעוליים"
+      layout: report_gallery
+      reports:
+
+        - name: workflow_performance
+          label: "ביצועי תהליכים"
+          route: /reports/operational/workflow-performance
+          chart_type: bar
+          date_range_selector:
+            default: last_3_months
+            options: [last_30_days, last_3_months, last_6_months, current_year, custom]
+          data_table:
+            columns:
+              - {field: workflow_name, label: "תהליך"}
+              - {field: total_executions, label: "סה\"כ ריצות"}
+              - {field: completed, label: "הושלמו"}
+              - {field: failed, label: "נכשלו"}
+              - {field: avg_duration, label: "זמן ממוצע", format: duration}
+              - {field: success_rate, label: "שיעור הצלחה", format: percent}
+          export_options: [pdf, excel, csv]
+
+        - name: sla_compliance
+          label: "עמידה ב-SLA"
+          route: /reports/operational/sla-compliance
+          chart_type: gauge
+          date_range_selector:
+            default: last_3_months
+            options: [last_30_days, last_3_months, last_6_months, current_year, custom]
+          data_table:
+            columns:
+              - {field: sla_name, label: "SLA"}
+              - {field: total_tracked, label: "סה\"כ"}
+              - {field: on_track, label: "בזמן"}
+              - {field: breached, label: "חריגות"}
+              - {field: compliance_rate, label: "עמידה %", format: percent}
+              - {field: avg_resolution_time, label: "זמן טיפול ממוצע", format: duration}
+          export_options: [pdf, excel, csv]
+
+        - name: queue_throughput
+          label: "תפוקת תורים"
+          route: /reports/operational/queue-throughput
+          chart_type: bar
+          date_range_selector:
+            default: last_30_days
+            options: [last_7_days, last_30_days, last_3_months, custom]
+          data_table:
+            columns:
+              - {field: queue_name, label: "תור"}
+              - {field: items_entered, label: "נכנסו"}
+              - {field: items_completed, label: "הושלמו"}
+              - {field: items_pending, label: "ממתינים"}
+              - {field: avg_wait_time, label: "זמן המתנה ממוצע", format: duration}
+              - {field: throughput_rate, label: "תפוקה/יום"}
+          export_options: [pdf, excel, csv]
+
+        - name: exception_rate
+          label: "שיעור חריגות"
+          route: /reports/operational/exception-rate
+          chart_type: line
+          date_range_selector:
+            default: last_3_months
+            options: [last_30_days, last_3_months, last_6_months, current_year, custom]
+          data_table:
+            columns:
+              - {field: period, label: "תקופה"}
+              - {field: total_operations, label: "סה\"כ פעולות"}
+              - {field: exceptions, label: "חריגות"}
+              - {field: exception_rate, label: "שיעור חריגות", format: percent}
+              - {field: top_exception_type, label: "חריגה נפוצה"}
+          export_options: [pdf, excel, csv]
+
+    # === CUSTOM REPORTS ===
+    custom_reports:
+      route: /reports/custom
+      title: "דוחות מותאמים"
+      layout: report_builder
+      saved_reports_list:
+        table_columns:
+          - {field: name, label: "שם דוח", link_to: "/reports/custom/:id"}
+          - {field: entity_type, label: "ישות"}
+          - {field: created_by, label: "נוצר ע\"י", display: users.full_name}
+          - {field: created_at, label: "נוצר", format: datetime}
+          - {field: last_run, label: "ריצה אחרונה", format: datetime}
+        row_actions:
+          - {action: run, label: "הרצה", icon: play_arrow}
+          - {action: edit, label: "עריכה", icon: edit}
+          - {action: duplicate, label: "שכפול", icon: content_copy}
+          - {action: delete, label: "מחיקה", icon: delete}
+      report_builder:
+        step_1_entity_select:
+          label: "בחירת ישות"
+          options:
+            - {value: customers, label: "לקוחות"}
+            - {value: suppliers, label: "ספקים"}
+            - {value: documents, label: "מסמכים"}
+            - {value: products, label: "מוצרים"}
+            - {value: projects, label: "פרויקטים"}
+            - {value: employees, label: "עובדים"}
+            - {value: opportunities, label: "הזדמנויות"}
+            - {value: quotes, label: "הצעות מחיר"}
+            - {value: sales_orders, label: "הזמנות לקוח"}
+            - {value: purchase_orders, label: "הזמנות רכש"}
+            - {value: payments, label: "תשלומים"}
+            - {value: attendance, label: "נוכחות"}
+            - {value: inventory_movements, label: "תנועות מלאי"}
+        step_2_field_select:
+          label: "בחירת שדות"
+          type: multi_select_with_reorder
+          source: "dynamic based on entity"
+          includes_related: true
+          allow_computed_fields: true
+          computed_field_types: [count, sum, avg, min, max]
+        step_3_filter_builder:
+          label: "סינון"
+          type: condition_builder
+          operators: [equals, not_equals, greater_than, less_than, between, contains, starts_with, ends_with, is_empty, is_not_empty, in_list]
+          allow_and_or: true
+        step_4_grouping:
+          label: "קיבוץ"
+          type: multi_select
+          source: "selected fields"
+          aggregations: [count, sum, avg, min, max]
+        step_5_sorting:
+          label: "מיון"
+          type: multi_select_with_direction
+          source: "selected fields"
+          directions: [asc, desc]
+        step_6_charting:
+          label: "תרשים"
+          chart_types: [none, bar, line, pie, donut, area, scatter, horizontal_bar]
+          config:
+            x_axis: "select from fields"
+            y_axis: "select from fields"
+            group_by: "select from fields"
+        step_7_save:
+          fields:
+            - {name: name, type: text, label: "שם הדוח", required: true}
+            - {name: description, type: textarea, label: "תיאור"}
+            - {name: is_shared, type: toggle, label: "שיתוף עם כולם"}
+        actions:
+          run: {label: "הרצה", icon: play_arrow}
+          save: {label: "שמירה", icon: save}
+          save_as_template: {label: "שמירה כתבנית", icon: save_as}
+          export_pdf: {label: "ייצוא PDF", icon: picture_as_pdf}
+          export_excel: {label: "ייצוא Excel", icon: download}
+          export_csv: {label: "ייצוא CSV", icon: download}
+
+  navigation_map:
+    executive_reports:
+      navigates_to:
+        - {target: individual_report, trigger: "click report card"}
+    custom_reports:
+      navigates_to:
+        - {target: report_builder, trigger: "create new"}
+        - {target: saved_report_view, trigger: "click saved report"}
+
+
+# ============================================================
+# MODULE 17: AUTOMATIONS
+# ============================================================
+module_17_automations:
+  module_id: 17
+  name: "Automations"
+  label_he: "אוטומציות"
+  icon: smart_toy
+  route: /automations
+  priority: medium
+  purpose: "טריגרים, חוקים, אוטומציות, תזמונים, webhooks, integrations"
+
+  submenus:
+    - label: "חוקים"
+      route: /automations/rules
+      icon: rule
+    - label: "טריגרים"
+      route: /automations/triggers
+      icon: bolt
+    - label: "תזמונים"
+      route: /automations/schedules
+      icon: schedule
+    - label: "Webhook Logs"
+      route: /automations/webhook-logs
+      icon: webhook
+    - label: "ריצות אינטגרציה"
+      route: /automations/integration-runs
+      icon: sync
+
+  entities:
+
+    automation_rules:
+      type: master_data
+      table_name: automation_rules
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: name
+          type: varchar(200)
+          required: true
+          label_he: "שם חוק"
+        - name: description
+          type: text
+          nullable: true
+          label_he: "תיאור"
+        - name: entity_type
+          type: varchar(50)
+          required: true
+          label_he: "סוג ישות"
+        - name: trigger_event
+          type: varchar(50)
+          required: true
+          label_he: "אירוע מפעיל"
+        - name: conditions_json
+          type: json
+          nullable: true
+          label_he: "תנאים"
+        - name: actions_json
+          type: json
+          required: true
+          label_he: "פעולות"
+        - name: is_active
+          type: boolean
+          default: true
+          label_he: "פעיל"
+        - name: execution_count
+          type: integer
+          default: 0
+          label_he: "מספר ריצות"
+        - name: last_executed_at
+          type: timestamp
+          nullable: true
+          label_he: "ריצה אחרונה"
+        - name: created_by
+          type: uuid
+          required: true
+          foreign_key: users.id
+          label_he: "נוצר ע\"י"
+        - name: created_at
+          type: timestamp
+          auto_generated: true
+        - name: updated_at
+          type: timestamp
+          auto_generated: true
+          on_update: true
+      indexes:
+        - columns: [entity_type, trigger_event]
+        - columns: [is_active]
+
+    scheduled_tasks:
+      type: master_data
+      table_name: scheduled_tasks
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: name
+          type: varchar(200)
+          required: true
+          label_he: "שם תזמון"
+        - name: description
+          type: text
+          nullable: true
+          label_he: "תיאור"
+        - name: cron_expression
+          type: varchar(100)
+          required: true
+          label_he: "ביטוי Cron"
+        - name: task_type
+          type: enum
+          values: [generate_recurring, send_reminders, cleanup, sync, report]
+          required: true
+          label_he: "סוג משימה"
+          display_values_he:
+            generate_recurring: "יצירת מסמכים מחזוריים"
+            send_reminders: "שליחת תזכורות"
+            cleanup: "ניקוי נתונים"
+            sync: "סנכרון"
+            report: "דוח"
+        - name: task_config_json
+          type: json
+          required: true
+          label_he: "הגדרות משימה"
+        - name: is_active
+          type: boolean
+          default: true
+          label_he: "פעיל"
+        - name: last_run_at
+          type: timestamp
+          nullable: true
+          label_he: "ריצה אחרונה"
+        - name: next_run_at
+          type: timestamp
+          required: true
+          label_he: "ריצה הבאה"
+        - name: created_at
+          type: timestamp
+          auto_generated: true
+      indexes:
+        - columns: [is_active]
+        - columns: [next_run_at]
+
+    webhooks:
+      type: master_data
+      table_name: webhooks
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: name
+          type: varchar(200)
+          required: true
+          label_he: "שם Webhook"
+        - name: url
+          type: text
+          required: true
+          label_he: "URL"
+        - name: method
+          type: enum
+          values: [POST, PUT, PATCH]
+          required: true
+          default: POST
+          label_he: "Method"
+        - name: entity_type
+          type: varchar(50)
+          required: true
+          label_he: "סוג ישות"
+        - name: trigger_event
+          type: varchar(50)
+          required: true
+          label_he: "אירוע"
+        - name: headers_json
+          type: json
+          nullable: true
+          label_he: "Headers"
+        - name: is_active
+          type: boolean
+          default: true
+          label_he: "פעיל"
+        - name: secret_key
+          type: text
+          required: true
+          auto_generated: true
+          label_he: "Secret Key"
+        - name: created_at
+          type: timestamp
+          auto_generated: true
+      indexes:
+        - columns: [entity_type, trigger_event]
+        - columns: [is_active]
+
+    webhook_logs:
+      type: audit
+      table_name: webhook_logs
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: webhook_id
+          type: uuid
+          required: true
+          foreign_key: webhooks.id
+          label_he: "Webhook"
+        - name: request_url
+          type: text
+          required: true
+          label_he: "URL"
+        - name: request_body
+          type: json
+          required: true
+          label_he: "Request Body"
+        - name: response_status
+          type: integer
+          required: true
+          label_he: "Response Status"
+        - name: response_body
+          type: text
+          nullable: true
+          label_he: "Response Body"
+        - name: executed_at
+          type: timestamp
+          required: true
+          label_he: "זמן ביצוע"
+        - name: duration_ms
+          type: integer
+          required: true
+          label_he: "משך (ms)"
+      indexes:
+        - columns: [webhook_id]
+        - columns: [executed_at]
+        - columns: [response_status]
+
+    integration_connections:
+      type: master_data
+      table_name: integration_connections
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: name
+          type: varchar(200)
+          required: true
+          label_he: "שם חיבור"
+        - name: provider
+          type: enum
+          values: [priority, hashavshevet, green_invoice, rivhit, cardcom, tranzila, payplus, google, whatsapp]
+          required: true
+          label_he: "ספק"
+          display_values_he:
+            priority: "Priority"
+            hashavshevet: "חשבשבת"
+            green_invoice: "Green Invoice"
+            rivhit: "רווחית"
+            cardcom: "Cardcom"
+            tranzila: "Tranzila"
+            payplus: "PayPlus"
+            google: "Google"
+            whatsapp: "WhatsApp"
+        - name: config_json
+          type: json
+          required: true
+          label_he: "הגדרות חיבור"
+        - name: status
+          type: enum
+          values: [active, inactive, error]
+          required: true
+          default: inactive
+          label_he: "סטטוס"
+          display_values_he:
+            active: "פעיל"
+            inactive: "לא פעיל"
+            error: "שגיאה"
+        - name: last_sync_at
+          type: timestamp
+          nullable: true
+          label_he: "סנכרון אחרון"
+        - name: created_at
+          type: timestamp
+          auto_generated: true
+      indexes:
+        - columns: [provider]
+        - columns: [status]
+
+    integration_runs:
+      type: transactional
+      table_name: integration_runs
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: connection_id
+          type: uuid
+          required: true
+          foreign_key: integration_connections.id
+          label_he: "חיבור"
+        - name: direction
+          type: enum
+          values: [inbound, outbound]
+          required: true
+          label_he: "כיוון"
+          display_values_he:
+            inbound: "נכנס"
+            outbound: "יוצא"
+        - name: entity_type
+          type: varchar(50)
+          required: true
+          label_he: "סוג ישות"
+        - name: records_processed
+          type: integer
+          default: 0
+          label_he: "רשומות שעובדו"
+        - name: records_failed
+          type: integer
+          default: 0
+          label_he: "רשומות שנכשלו"
+        - name: started_at
+          type: timestamp
+          required: true
+          label_he: "התחלה"
+        - name: completed_at
+          type: timestamp
+          nullable: true
+          label_he: "סיום"
+        - name: status
+          type: enum
+          values: [running, completed, failed]
+          required: true
+          default: running
+          label_he: "סטטוס"
+          display_values_he:
+            running: "פועל"
+            completed: "הושלם"
+            failed: "נכשל"
+        - name: error_log
+          type: text
+          nullable: true
+          label_he: "לוג שגיאות"
+      indexes:
+        - columns: [connection_id]
+        - columns: [status]
+        - columns: [started_at]
+
+  pages:
+
+    # === RULES LIST ===
+    rules_list:
+      route: /automations/rules
+      title: "חוקי אוטומציה"
+      layout: standard_list
+      toolbar:
+        primary_action:
+          label: "חוק חדש"
+          icon: add
+          target: /automations/rules/create
+          permission: automations.rules.create
+      filters:
+        - field: entity_type
+          type: select
+          label: "סוג ישות"
+          options:
+            - {value: document, label: "מסמך"}
+            - {value: customer, label: "לקוח"}
+            - {value: supplier, label: "ספק"}
+            - {value: project, label: "פרויקט"}
+            - {value: task, label: "משימה"}
+            - {value: purchase_order, label: "הזמנת רכש"}
+            - {value: sales_order, label: "הזמנת לקוח"}
+            - {value: employee, label: "עובד"}
+            - {value: payment, label: "תשלום"}
+        - field: trigger_event
+          type: select
+          label: "אירוע"
+        - field: is_active
+          type: toggle
+          label: "פעיל בלבד"
+          default: true
+      table:
+        columns:
+          - {field: name, label: "שם חוק", sortable: true, link_to: "/automations/rules/:id"}
+          - {field: entity_type, label: "ישות", sortable: true}
+          - {field: trigger_event, label: "אירוע", sortable: true}
+          - {field: is_active, label: "פעיל", display: toggle, action: toggle_active}
+          - {field: execution_count, label: "ריצות", sortable: true}
+          - {field: last_executed_at, label: "ריצה אחרונה", format: datetime, sortable: true}
+          - {field: created_by, label: "נוצר ע\"י", display: users.full_name}
+        default_sort: {field: name, direction: asc}
+        row_actions:
+          - {action: edit, label: "עריכה", icon: edit, target: "/automations/rules/:id/edit"}
+          - {action: duplicate, label: "שכפול", icon: content_copy}
+          - {action: test, label: "ריצת ניסיון", icon: play_arrow}
+          - {action: delete, label: "מחיקה", icon: delete}
+
+    # === RULE CREATE/EDIT ===
+    rule_create:
+      route: /automations/rules/create
+      title: "חוק אוטומציה חדש"
+      layout: form_builder
+      permission: automations.rules.create
+      form:
+        sections:
+          - title: "פרטי חוק"
+            columns: 2
+            fields:
+              - name: name
+                type: text
+                label: "שם חוק"
+                required: true
+                max_length: 200
+                grid_column: "1-2"
+              - name: description
+                type: textarea
+                label: "תיאור"
+                required: false
+                grid_column: "1-2"
+              - name: entity_type
+                type: select
+                label: "סוג ישות"
+                required: true
+                options:
+                  - {value: document, label: "מסמך"}
+                  - {value: customer, label: "לקוח"}
+                  - {value: supplier, label: "ספק"}
+                  - {value: project, label: "פרויקט"}
+                  - {value: task, label: "משימה"}
+                  - {value: purchase_order, label: "הזמנת רכש"}
+                  - {value: sales_order, label: "הזמנת לקוח"}
+                  - {value: employee, label: "עובד"}
+                  - {value: payment, label: "תשלום"}
+                grid_column: 1
+              - name: trigger_event
+                type: select
+                label: "אירוע מפעיל"
+                required: true
+                options:
+                  - {value: created, label: "נוצר"}
+                  - {value: updated, label: "עודכן"}
+                  - {value: status_changed, label: "שינוי סטטוס"}
+                  - {value: deleted, label: "נמחק"}
+                  - {value: amount_exceeded, label: "חריגת סכום"}
+                  - {value: due_date_reached, label: "תאריך יעד הגיע"}
+                grid_column: 2
+              - name: is_active
+                type: toggle
+                label: "פעיל"
+                default: true
+                grid_column: 1
+          - title: "תנאים"
+            type: condition_builder
+            field_name: conditions_json
+            config:
+              fields_source: "dynamic based on entity_type"
+              operators: [equals, not_equals, greater_than, less_than, between, contains, is_empty, is_not_empty, in_list]
+              allow_and_or: true
+              allow_nested_groups: true
+          - title: "פעולות"
+            type: actions_builder
+            field_name: actions_json
+            action_types:
+              - name: send_notification
+                label: "שליחת התראה"
+                icon: notifications
+                fields:
+                  - {name: user_ids, type: multi_select, label: "נמענים", source: users}
+                  - {name: message, type: textarea, label: "הודעה", supports_variables: true}
+              - name: change_status
+                label: "שינוי סטטוס"
+                icon: swap_horiz
+                fields:
+                  - {name: new_status, type: select, label: "סטטוס חדש", source: "dynamic based on entity_type"}
+              - name: create_record
+                label: "יצירת רשומה"
+                icon: add_circle
+                fields:
+                  - {name: target_entity, type: select, label: "ישות יעד"}
+                  - {name: field_mappings, type: mapping_editor, label: "מיפוי שדות"}
+              - name: send_email
+                label: "שליחת אימייל"
+                icon: email
+                fields:
+                  - {name: to, type: text, label: "נמען", supports_variables: true}
+                  - {name: subject, type: text, label: "נושא", supports_variables: true}
+                  - {name: body, type: rich_text, label: "תוכן", supports_variables: true}
+              - name: webhook
+                label: "Webhook"
+                icon: webhook
+                fields:
+                  - {name: url, type: text, label: "URL"}
+                  - {name: method, type: select, label: "Method", options: [POST, PUT, PATCH]}
+                  - {name: headers_json, type: json_editor, label: "Headers"}
+                  - {name: body_template, type: json_editor, label: "Body Template", supports_variables: true}
+              - name: assign_user
+                label: "שיוך משתמש"
+                icon: person_add
+                fields:
+                  - {name: user_id, type: select, label: "משתמש", source: users}
+              - name: create_task
+                label: "יצירת משימה"
+                icon: add_task
+                fields:
+                  - {name: title, type: text, label: "כותרת", supports_variables: true}
+                  - {name: assignee_id, type: select, label: "מבצע", source: users}
+                  - {name: due_days, type: number, label: "ימים לביצוע"}
+                  - {name: priority, type: select, label: "עדיפות", options: [low, medium, high, critical]}
+        actions:
+          submit:
+            label: "שמירה"
+            icon: save
+            action: create_rule
+            redirect_to: "/automations/rules/:id"
+          test:
+            label: "ריצת ניסיון"
+            icon: play_arrow
+            action: test_rule
+          cancel:
+            label: "ביטול"
+            target: /automations/rules
+
+    # === SCHEDULES ===
+    schedules_list:
+      route: /automations/schedules
+      title: "תזמונים"
+      layout: standard_list
+      toolbar:
+        primary_action:
+          label: "תזמון חדש"
+          icon: add
+          target: /automations/schedules/create
+          permission: automations.schedules.create
+      table:
+        columns:
+          - {field: name, label: "שם", sortable: true, link_to: "/automations/schedules/:id"}
+          - {field: task_type, label: "סוג משימה", sortable: true}
+          - {field: cron_expression, label: "Cron", sortable: false}
+          - {field: cron_readable, label: "תזמון", computed: true, format: cron_human_readable}
+          - {field: is_active, label: "פעיל", display: toggle, action: toggle_active}
+          - {field: last_run_at, label: "ריצה אחרונה", format: datetime, sortable: true}
+          - {field: next_run_at, label: "ריצה הבאה", format: datetime, sortable: true}
+        default_sort: {field: next_run_at, direction: asc}
+        row_actions:
+          - {action: edit, label: "עריכה", icon: edit}
+          - {action: run_now, label: "הרצה עכשיו", icon: play_arrow}
+          - {action: toggle_active, label: "הפעלה/כיבוי", icon: toggle_on}
+          - {action: delete, label: "מחיקה", icon: delete}
+
+    # === SCHEDULE CREATE ===
+    schedule_create:
+      route: /automations/schedules/create
+      title: "תזמון חדש"
+      layout: standard_form
+      permission: automations.schedules.create
+      form:
+        sections:
+          - title: "פרטי תזמון"
+            columns: 2
+            fields:
+              - name: name
+                type: text
+                label: "שם"
+                required: true
+                grid_column: "1-2"
+              - name: description
+                type: textarea
+                label: "תיאור"
+                required: false
+                grid_column: "1-2"
+              - name: task_type
+                type: select
+                label: "סוג משימה"
+                required: true
+                options:
+                  - {value: generate_recurring, label: "יצירת מסמכים מחזוריים"}
+                  - {value: send_reminders, label: "שליחת תזכורות"}
+                  - {value: cleanup, label: "ניקוי נתונים"}
+                  - {value: sync, label: "סנכרון"}
+                  - {value: report, label: "דוח"}
+                grid_column: 1
+              - name: cron_expression
+                type: cron_editor
+                label: "תזמון"
+                required: true
+                cron_presets:
+                  - {value: "0 0 * * *", label: "כל יום בחצות"}
+                  - {value: "0 8 * * *", label: "כל יום ב-8:00"}
+                  - {value: "0 0 * * 0", label: "כל יום ראשון"}
+                  - {value: "0 0 1 * *", label: "כל ראשון לחודש"}
+                grid_column: 2
+              - name: task_config_json
+                type: dynamic_config
+                label: "הגדרות משימה"
+                required: true
+                config_per_task_type:
+                  generate_recurring:
+                    fields:
+                      - {name: template_id, type: select, label: "תבנית מסמך", source: recurring_documents}
+                  send_reminders:
+                    fields:
+                      - {name: entity_type, type: select, label: "סוג ישות"}
+                      - {name: days_before_due, type: number, label: "ימים לפני מועד"}
+                      - {name: notification_type, type: select, label: "סוג התראה", options: [email, in_app, both]}
+                  cleanup:
+                    fields:
+                      - {name: entity_type, type: select, label: "סוג ישות"}
+                      - {name: older_than_days, type: number, label: "ישן מ (ימים)"}
+                      - {name: status_filter, type: multi_select, label: "סטטוס"}
+                  sync:
+                    fields:
+                      - {name: connection_id, type: select, label: "חיבור", source: integration_connections}
+                      - {name: entity_type, type: select, label: "סוג ישות"}
+                      - {name: direction, type: select, label: "כיוון", options: [{value: inbound, label: "נכנס"}, {value: outbound, label: "יוצא"}]}
+                  report:
+                    fields:
+                      - {name: report_id, type: select, label: "דוח"}
+                      - {name: recipients, type: multi_select, label: "נמענים", source: users}
+                      - {name: format, type: select, label: "פורמט", options: [pdf, excel]}
+                grid_column: "1-2"
+              - name: is_active
+                type: toggle
+                label: "פעיל"
+                default: true
+                grid_column: 1
+        actions:
+          submit:
+            label: "שמירה"
+            icon: save
+            action: create_schedule
+            redirect_to: /automations/schedules
+          cancel:
+            label: "ביטול"
+            target: /automations/schedules
+
+    # === WEBHOOK LOGS ===
+    webhook_logs_list:
+      route: /automations/webhook-logs
+      title: "Webhook Logs"
+      layout: standard_list
+      filters:
+        - field: webhook_id
+          type: select
+          label: "Webhook"
+          source: webhooks
+          display_field: name
+        - field: response_status
+          type: multi_select
+          label: "Status Code"
+          options:
+            - {value: "2xx", label: "2xx Success"}
+            - {value: "4xx", label: "4xx Client Error"}
+            - {value: "5xx", label: "5xx Server Error"}
+        - field: executed_at
+          type: date_range
+          label: "תאריך"
+      table:
+        columns:
+          - {field: executed_at, label: "זמן", sortable: true, format: datetime}
+          - {field: webhook_id, label: "Webhook", display: webhooks.name}
+          - {field: request_url, label: "URL"}
+          - {field: response_status, label: "Status", sortable: true, display: status_code_badge}
+          - {field: duration_ms, label: "משך (ms)", sortable: true}
+        default_sort: {field: executed_at, direction: desc}
+        expandable_row:
+          sections:
+            - {title: "Request Body", field: request_body, type: json_viewer}
+            - {title: "Response Body", field: response_body, type: code_viewer}
+
+    # === INTEGRATION RUNS ===
+    integration_runs_list:
+      route: /automations/integration-runs
+      title: "ריצות אינטגרציה"
+      layout: standard_list
+      toolbar:
+        primary_action:
+          label: "ריצה ידנית"
+          icon: play_arrow
+          action: open_manual_run_modal
+          permission: automations.integrations.create
+      filters:
+        - field: connection_id
+          type: select
+          label: "חיבור"
+          source: integration_connections
+          display_field: name
+        - field: direction
+          type: multi_select
+          label: "כיוון"
+          options:
+            - {value: inbound, label: "נכנס"}
+            - {value: outbound, label: "יוצא"}
+        - field: status
+          type: multi_select
+          label: "סטטוס"
+          options:
+            - {value: running, label: "פועל"}
+            - {value: completed, label: "הושלם"}
+            - {value: failed, label: "נכשל"}
+        - field: started_at
+          type: date_range
+          label: "תאריך"
+      table:
+        columns:
+          - {field: connection_id, label: "חיבור", display: integration_connections.name, sortable: true}
+          - {field: direction, label: "כיוון", sortable: true}
+          - {field: entity_type, label: "סוג ישות", sortable: true}
+          - {field: records_processed, label: "עובדו", sortable: true}
+          - {field: records_failed, label: "נכשלו", sortable: true}
+          - {field: started_at, label: "התחלה", format: datetime, sortable: true}
+          - {field: completed_at, label: "סיום", format: datetime}
+          - {field: duration, label: "משך", computed: true, format: duration}
+          - {field: status, label: "סטטוס", display: badge, sortable: true}
+        default_sort: {field: started_at, direction: desc}
+        row_actions:
+          - {action: view_log, label: "צפייה בלוג", icon: visibility}
+          - {action: retry, label: "נסה שוב", icon: refresh, condition: "status=failed"}
+        expandable_row:
+          sections:
+            - {title: "לוג שגיאות", field: error_log, type: code_viewer, condition: "error_log IS NOT NULL"}
+      manual_run_modal:
+        title: "ריצה ידנית"
+        fields:
+          - {name: connection_id, type: select, label: "חיבור", required: true, source: integration_connections, display_field: name}
+          - {name: direction, type: select, label: "כיוון", required: true, options: [{value: inbound, label: "נכנס"}, {value: outbound, label: "יוצא"}]}
+          - {name: entity_type, type: select, label: "סוג ישות", required: true}
+
+  navigation_map:
+    rules_list:
+      navigates_to:
+        - {target: rule_create, trigger: "primary action"}
+        - {target: rule_detail, trigger: "click row"}
+    schedules_list:
+      navigates_to:
+        - {target: schedule_create, trigger: "primary action"}
+
+
+# ============================================================
+# MODULE 18: SETTINGS
+# ============================================================
+module_18_settings:
+  module_id: 18
+  name: "Settings"
+  label_he: "הגדרות"
+  icon: settings
+  route: /settings
+  priority: critical
+  purpose: "הגדרות מערכת, מאסטר דאטה, הרשאות, סטטוסים, מספור, לוגים"
+
+  submenus:
+    - label: "פרופיל חברה"
+      route: /settings/company
+      icon: business
+    - label: "משתמשים"
+      route: /settings/users
+      icon: people
+    - label: "הרשאות"
+      route: /settings/permissions
+      icon: security
+    - label: "סטטוסים"
+      route: /settings/statuses
+      icon: label
+    - label: "קטגוריות"
+      route: /settings/categories
+      icon: category
+    - label: "מספור אוטומטי"
+      route: /settings/numbering
+      icon: format_list_numbered
+    - label: "אמצעי תשלום"
+      route: /settings/payment-methods
+      icon: credit_card
+    - label: "הגדרות מס"
+      route: /settings/tax
+      icon: receipt
+    - label: "תבניות"
+      route: /settings/templates
+      icon: article
+    - label: "לוג מערכת"
+      route: /settings/audit-log
+      icon: history
+
+  entities:
+
+    company_settings:
+      type: singleton
+      table_name: company_settings
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: company_name
+          type: varchar(200)
+          required: true
+          label_he: "שם חברה"
+        - name: logo_url
+          type: text
+          nullable: true
+          label_he: "לוגו"
+        - name: address
+          type: varchar(200)
+          nullable: true
+          label_he: "כתובת"
+        - name: city
+          type: varchar(100)
+          nullable: true
+          label_he: "עיר"
+        - name: phone
+          type: varchar(20)
+          nullable: true
+          label_he: "טלפון"
+        - name: email
+          type: varchar(100)
+          nullable: true
+          label_he: "אימייל"
+        - name: website
+          type: varchar(200)
+          nullable: true
+          label_he: "אתר"
+        - name: tax_id
+          type: varchar(20)
+          nullable: true
+          label_he: "ח.פ. / עוסק מורשה"
+        - name: default_currency
+          type: varchar(3)
+          default: "ILS"
+          label_he: "מטבע ברירת מחדל"
+        - name: default_tax_rate
+          type: decimal(5,2)
+          default: 17.00
+          label_he: "שיעור מע\"מ ברירת מחדל"
+        - name: fiscal_year_start_month
+          type: integer
+          default: 1
+          label_he: "חודש תחילת שנת כספים"
+        - name: date_format
+          type: varchar(20)
+          default: "DD/MM/YYYY"
+          label_he: "פורמט תאריך"
+        - name: language
+          type: varchar(5)
+          default: "he"
+          label_he: "שפה"
+
+    users:
+      type: master_data
+      table_name: users
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: username
+          type: varchar(50)
+          required: true
+          unique: true
+          label_he: "שם משתמש"
+        - name: email
+          type: varchar(100)
+          required: true
+          unique: true
+          label_he: "אימייל"
+        - name: full_name
+          type: varchar(100)
+          required: true
+          label_he: "שם מלא"
+        - name: password_hash
+          type: text
+          required: true
+          label_he: "סיסמה"
+          write_only: true
+        - name: role_id
+          type: uuid
+          required: true
+          foreign_key: roles.id
+          label_he: "תפקיד"
+        - name: department_id
+          type: uuid
+          nullable: true
+          foreign_key: departments.id
+          label_he: "מחלקה"
+        - name: is_active
+          type: boolean
+          default: true
+          label_he: "פעיל"
+        - name: last_login
+          type: timestamp
+          nullable: true
+          label_he: "כניסה אחרונה"
+        - name: avatar_url
+          type: text
+          nullable: true
+          label_he: "תמונת פרופיל"
+        - name: created_at
+          type: timestamp
+          auto_generated: true
+        - name: updated_at
+          type: timestamp
+          auto_generated: true
+          on_update: true
+      indexes:
+        - columns: [username]
+          unique: true
+        - columns: [email]
+          unique: true
+        - columns: [role_id]
+        - columns: [is_active]
+
+    roles:
+      type: master_data
+      table_name: roles
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: name
+          type: varchar(100)
+          required: true
+          unique: true
+          label_he: "שם תפקיד"
+        - name: description
+          type: text
+          nullable: true
+          label_he: "תיאור"
+        - name: is_system
+          type: boolean
+          default: false
+          label_he: "תפקיד מערכת"
+        - name: created_at
+          type: timestamp
+          auto_generated: true
+      indexes:
+        - columns: [name]
+          unique: true
+
+    role_permissions:
+      type: junction
+      table_name: role_permissions
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: role_id
+          type: uuid
+          required: true
+          foreign_key: roles.id
+          on_delete: cascade
+          label_he: "תפקיד"
+        - name: module
+          type: varchar(50)
+          required: true
+          label_he: "מודול"
+        - name: action
+          type: enum
+          values: [view, create, edit, delete, export, approve, admin]
+          required: true
+          label_he: "פעולה"
+          display_values_he:
+            view: "צפייה"
+            create: "יצירה"
+            edit: "עריכה"
+            delete: "מחיקה"
+            export: "ייצוא"
+            approve: "אישור"
+            admin: "ניהול"
+        - name: is_allowed
+          type: boolean
+          default: false
+          label_he: "מותר"
+      indexes:
+        - columns: [role_id, module, action]
+          unique: true
+
+    statuses:
+      type: master_data
+      table_name: statuses
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: name
+          type: varchar(100)
+          required: true
+          label_he: "שם סטטוס"
+        - name: color
+          type: varchar(7)
+          required: true
+          label_he: "צבע"
+        - name: entity_type
+          type: varchar(50)
+          required: true
+          label_he: "סוג ישות"
+        - name: sort_order
+          type: integer
+          required: true
+          label_he: "סדר"
+        - name: is_default
+          type: boolean
+          default: false
+          label_he: "ברירת מחדל"
+        - name: is_final
+          type: boolean
+          default: false
+          label_he: "סטטוס סופי"
+        - name: is_active
+          type: boolean
+          default: true
+          label_he: "פעיל"
+      indexes:
+        - columns: [entity_type, sort_order]
+        - columns: [entity_type, is_default]
+
+    auto_number_sequences:
+      type: system
+      table_name: auto_number_sequences
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: entity_type
+          type: varchar(50)
+          required: true
+          unique: true
+          label_he: "סוג ישות"
+        - name: prefix
+          type: varchar(20)
+          required: true
+          label_he: "קידומת"
+        - name: next_value
+          type: integer
+          required: true
+          default: 1
+          label_he: "ערך הבא"
+        - name: padding_length
+          type: integer
+          required: true
+          default: 5
+          label_he: "אורך ריפוד"
+        - name: reset_yearly
+          type: boolean
+          default: false
+          label_he: "איפוס שנתי"
+      indexes:
+        - columns: [entity_type]
+          unique: true
+
+    tax_codes:
+      type: master_data
+      table_name: tax_codes
+      fields:
+        - name: id
+          type: uuid
+          primary_key: true
+          auto_generated: true
+        - name: name
+          type: varchar(100)
+          required: true
+          label_he: "שם קוד מס"
+        - name: rate
+          type: decimal(5,2)
+          required: true
+          label_he: "שיעור"
+        - name: is_default
+          type: boolean
+          default: false
+          label_he: "ברירת מחדל"
+        - name: is_active
+          type: boolean
+          default: true
+          label_he: "פעיל"
+      indexes:
+        - columns: [is_default]
+        - columns: [is_active]
+
+  pages:
+
+    # === COMPANY PROFILE ===
+    company_profile:
+      route: /settings/company
+      title: "פרופיל חברה"
+      layout: standard_form
+      permission: settings.company.edit
+      form:
+        sections:
+          - title: "פרטי חברה"
+            icon: business
+            columns: 2
+            fields:
+              - name: company_name
+                type: text
+                label: "שם חברה"
+                required: true
+                grid_column: "1-2"
+              - name: logo_url
+                type: image_upload
+                label: "לוגו"
+                accept: "image/*"
+                max_size_mb: 5
+                preview: true
+                grid_column: "1-2"
+              - name: address
+                type: text
+                label: "כתובת"
+                grid_column: 1
+              - name: city
+                type: text
+                label: "עיר"
+                grid_column: 2
+              - name: phone
+                type: phone
+                label: "טלפון"
+                grid_column: 1
+              - name: email
+                type: email
+                label: "אימייל"
+                grid_column: 2
+              - name: website
+                type: url
+                label: "אתר"
+                grid_column: 1
+              - name: tax_id
+                type: text
+                label: "ח.פ. / עוסק מורשה"
+                grid_column: 2
+          - title: "הגדרות ברירת מחדל"
+            icon: tune
+            columns: 2
+            fields:
+              - name: default_currency
+                type: select
+                label: "מטבע ברירת מחדל"
+                options:
+                  - {value: ILS, label: "שקל (ILS)"}
+                  - {value: USD, label: "דולר (USD)"}
+                  - {value: EUR, label: "אירו (EUR)"}
+                grid_column: 1
+              - name: default_tax_rate
+                type: number
+                label: "שיעור מע\"מ (%)"
+                step: 0.01
+                grid_column: 2
+              - name: fiscal_year_start_month
+                type: select
+                label: "חודש תחילת שנת כספים"
+                options:
+                  - {value: 1, label: "ינואר"}
+                  - {value: 2, label: "פברואר"}
+                  - {value: 3, label: "מרץ"}
+                  - {value: 4, label: "אפריל"}
+                  - {value: 5, label: "מאי"}
+                  - {value: 6, label: "יוני"}
+                  - {value: 7, label: "יולי"}
+                  - {value: 8, label: "אוגוסט"}
+                  - {value: 9, label: "ספטמבר"}
+                  - {value: 10, label: "אוקטובר"}
+                  - {value: 11, label: "נובמבר"}
+                  - {value: 12, label: "דצמבר"}
+                grid_column: 1
+              - name: date_format
+                type: select
+                label: "פורמט תאריך"
+                options:
+                  - {value: "DD/MM/YYYY", label: "DD/MM/YYYY"}
+                  - {value: "MM/DD/YYYY", label: "MM/DD/YYYY"}
+                  - {value: "YYYY-MM-DD", label: "YYYY-MM-DD"}
+                grid_column: 2
+              - name: language
+                type: select
+                label: "שפה"
+                options:
+                  - {value: he, label: "עברית"}
+                  - {value: en, label: "English"}
+                grid_column: 1
+        actions:
+          submit:
+            label: "שמירה"
+            icon: save
+            action: update_company_settings
+
+    # === USERS LIST ===
+    users_list:
+      route: /settings/users
+      title: "משתמשים"
+      layout: standard_list
+      permission: settings.users.view
+      toolbar:
+        primary_action:
+          label: "משתמש חדש"
+          icon: add
+          target: /settings/users/create
+          permission: settings.users.create
+      filters:
+        - field: role_id
+          type: select
+          label: "תפקיד"
+          source: roles
+          display_field: name
+        - field: department_id
+          type: select
+          label: "מחלקה"
+          source: departments
+          display_field: name
+        - field: is_active
+          type: toggle
+          label: "פעיל בלבד"
+          default: true
+      table:
+        columns:
+          - {field: full_name, label: "שם מלא", sortable: true, link_to: "/settings/users/:id"}
+          - {field: username, label: "שם משתמש", sortable: true}
+          - {field: email, label: "אימייל", sortable: true}
+          - {field: role_id, label: "תפקיד", display: roles.name, sortable: true}
+          - {field: department_id, label: "מחלקה", display: departments.name}
+          - {field: is_active, label: "פעיל", display: toggle}
+          - {field: last_login, label: "כניסה אחרונה", format: datetime, sortable: true}
+          - {field: created_at, label: "נוצר", format: date, sortable: true}
+        default_sort: {field: full_name, direction: asc}
+        row_actions:
+          - {action: view, label: "צפייה", icon: visibility, target: "/settings/users/:id"}
+          - {action: edit, label: "עריכה", icon: edit, target: "/settings/users/:id/edit", permission: settings.users.edit}
+          - {action: reset_password, label: "איפוס סיסמה", icon: lock_reset, permission: settings.users.edit}
+          - {action: deactivate, label: "השבתה", icon: block, confirmation: "האם להשבית את המשתמש?", permission: settings.users.edit}
+
+    # === USER CREATE ===
+    user_create:
+      route: /settings/users/create
+      title: "משתמש חדש"
+      layout: standard_form
+      permission: settings.users.create
+      form:
+        sections:
+          - title: "פרטי משתמש"
+            columns: 2
+            fields:
+              - name: full_name
+                type: text
+                label: "שם מלא"
+                required: true
+                grid_column: 1
+              - name: username
+                type: text
+                label: "שם משתמש"
+                required: true
+                unique: true
+                grid_column: 2
+              - name: email
+                type: email
+                label: "אימייל"
+                required: true
+                unique: true
+                grid_column: 1
+              - name: password
+                type: password
+                label: "סיסמה"
+                required: true
+                min_length: 8
+                grid_column: 2
+              - name: role_id
+                type: select
+                label: "תפקיד"
+                required: true
+                source: roles
+                display_field: name
+                grid_column: 1
+              - name: department_id
+                type: select
+                label: "מחלקה"
+                required: false
+                source: departments
+                display_field: name
+                grid_column: 2
+              - name: avatar_url
+                type: image_upload
+                label: "תמונת פרופיל"
+                accept: "image/*"
+                max_size_mb: 2
+                grid_column: "1-2"
+              - name: is_active
+                type: toggle
+                label: "פעיל"
+                default: true
+                grid_column: 1
+        actions:
+          submit:
+            label: "יצירה"
+            icon: save
+            action: create_user
+            redirect_to: "/settings/users/:id"
+          cancel:
+            label: "ביטול"
+            target: /settings/users
+
+    # === USER DETAILS ===
+    user_details:
+      route: "/settings/users/:id"
+      title: "פרטי משתמש"
+      layout: profile_with_tabs
+      permission: settings.users.view
+      header:
+        display_fields:
+          - {field: full_name, type: title}
+          - {field: username, type: subtitle}
+          - {field: role_id, type: info, display: roles.name}
+          - {field: is_active, type: badge}
+        actions:
+          - {label: "עריכה", icon: edit, target: "/settings/users/:id/edit", permission: settings.users.edit}
+          - {label: "איפוס סיסמה", icon: lock_reset, action: reset_password, permission: settings.users.edit}
+      tabs:
+        - name: details
+          label: "פרטים"
+          type: detail_card
+          fields:
+            - {field: full_name, label: "שם מלא"}
+            - {field: username, label: "שם משתמש"}
+            - {field: email, label: "אימייל"}
+            - {field: role_id, label: "תפקיד", display: roles.name}
+            - {field: department_id, label: "מחלקה", display: departments.name}
+            - {field: is_active, label: "פעיל"}
+            - {field: last_login, label: "כניסה אחרונה", format: datetime}
+            - {field: created_at, label: "נוצר", format: datetime}
+        - name: activity_log
+          label: "לוג פעילות"
+          type: timeline
+          entity: activity_logs
+          filter: "actor=:id"
+          display_fields:
+            - {field: action_type, label: "פעולה"}
+            - {field: entity_type, label: "ישות"}
+            - {field: entity_id, label: "מזהה"}
+            - {field: created_at, label: "תאריך", format: datetime}
+
+    # === PERMISSIONS MATRIX ===
+    permissions_matrix:
+      route: /settings/permissions
+      title: "הרשאות"
+      layout: matrix_view
+      permission: settings.permissions.admin
+      matrix:
+        rows:
+          entity: roles
+          display_field: name
+          filter: "is_system=false OR is_system=true"
+        columns:
+          modules:
+            - {value: dashboard, label: "דשבורד"}
+            - {value: crm, label: "CRM"}
+            - {value: sales, label: "מכירות"}
+            - {value: customers, label: "לקוחות"}
+            - {value: suppliers, label: "ספקים"}
+            - {value: products, label: "מוצרים"}
+            - {value: projects, label: "פרויקטים"}
+            - {value: procurement, label: "רכש"}
+            - {value: inventory, label: "מלאי"}
+            - {value: finance, label: "פיננסים"}
+            - {value: billing, label: "חיוב"}
+            - {value: payments, label: "תשלומים"}
+            - {value: hr, label: "משאבי אנוש"}
+            - {value: operations, label: "תפעול"}
+            - {value: documents, label: "מסמכים"}
+            - {value: reports, label: "דוחות"}
+            - {value: automations, label: "אוטומציות"}
+            - {value: settings, label: "הגדרות"}
+          actions:
+            - {value: view, label: "צפייה", icon: visibility}
+            - {value: create, label: "יצירה", icon: add}
+            - {value: edit, label: "עריכה", icon: edit}
+            - {value: delete, label: "מחיקה", icon: delete}
+            - {value: export, label: "ייצוא", icon: download}
+            - {value: approve, label: "אישור", icon: check}
+            - {value: admin, label: "ניהול", icon: admin_panel_settings}
+        cell:
+          type: checkbox
+          entity: role_permissions
+          field: is_allowed
+          save_on_toggle: true
+        toolbar:
+          actions:
+            - {label: "תפקיד חדש", icon: add, action: create_role_modal}
+            - {label: "שמירת הכל", icon: save, action: save_all_permissions}
+        create_role_modal:
+          title: "תפקיד חדש"
+          fields:
+            - {name: name, type: text, label: "שם תפקיד", required: true}
+            - {name: description, type: textarea, label: "תיאור"}
+
+    # === STATUSES ===
+    statuses_page:
+      route: /settings/statuses
+      title: "סטטוסים"
+      layout: grouped_inline_editor
+      permission: settings.statuses.edit
+      grouping:
+        field: entity_type
+        groups:
+          - {value: document, label: "מסמכים"}
+          - {value: customer, label: "לקוחות"}
+          - {value: supplier, label: "ספקים"}
+          - {value: project, label: "פרויקטים"}
+          - {value: task, label: "משימות"}
+          - {value: opportunity, label: "הזדמנויות"}
+          - {value: purchase_order, label: "הזמנות רכש"}
+          - {value: employee, label: "עובדים"}
+          - {value: payroll, label: "שכר"}
+          - {value: attendance, label: "נוכחות"}
+      inline_fields:
+        - {field: name, type: text, label: "שם", width: 200}
+        - {field: color, type: color_picker, label: "צבע", width: 80}
+        - {field: sort_order, type: number, label: "סדר", width: 60}
+        - {field: is_default, type: radio_per_group, label: "ברירת מחדל", width: 80}
+        - {field: is_final, type: checkbox, label: "סופי", width: 60}
+        - {field: is_active, type: toggle, label: "פעיל", width: 60}
+      reorderable: true
+      reorder_method: drag_drop
+      actions:
+        add:
+          label: "הוספת סטטוס"
+          icon: add
+          position: per_group
+        delete:
+          icon: delete
+          confirmation: "האם למחוק את הסטטוס?"
+          condition: "is_system=false"
+
+    # === CATEGORIES ===
+    categories_page:
+      route: /settings/categories
+      title: "קטגוריות"
+      layout: tree_inline_editor
+      permission: settings.categories.edit
+      tree:
+        entity: categories
+        display_field: name
+        child_field: parent_category_id
+        additional_fields:
+          - {field: direction, label: "כיוון", type: select, options: [{value: income, label: "הכנסה"}, {value: expense, label: "הוצאה"}, {value: both, label: "הכנסה והוצאה"}]}
+          - {field: is_active, label: "פעיל", type: toggle}
+        drag_drop: true
+        actions:
+          - {action: add_root, label: "קטגוריה ראשית חדשה", icon: add}
+          - {action: add_child, label: "תת-קטגוריה", icon: add}
+          - {action: edit, label: "עריכה", icon: edit, inline: true}
+          - {action: delete, label: "מחיקה", icon: delete, confirmation: "האם למחוק? כל תתי-הקטגוריות יימחקו"}
+
+    # === NUMBERING ===
+    numbering_page:
+      route: /settings/numbering
+      title: "מספור אוטומטי"
+      layout: inline_table_editor
+      permission: settings.numbering.edit
+      table:
+        entity: auto_number_sequences
+        columns:
+          - {field: entity_type, label: "סוג ישות", type: text, editable: false, width: 180}
+          - {field: prefix, label: "קידומת", type: text, editable: true, width: 100}
+          - {field: next_value, label: "ערך הבא", type: number, editable: true, width: 100}
+          - {field: padding_length, label: "אורך ריפוד", type: number, editable: true, width: 100}
+          - {field: reset_yearly, label: "איפוס שנתי", type: toggle, editable: true, width: 100}
+          - {field: preview, label: "תצוגה מקדימה", type: computed, computed_format: "prefix + padded(next_value, padding_length)", width: 150}
+        seed_data:
+          - {entity_type: customers, prefix: "CUS-", next_value: 1, padding_length: 5}
+          - {entity_type: suppliers, prefix: "SUP-", next_value: 1, padding_length: 5}
+          - {entity_type: invoices, prefix: "INV-", next_value: 1, padding_length: 6}
+          - {entity_type: receipts, prefix: "RCP-", next_value: 1, padding_length: 6}
+          - {entity_type: payment_requests, prefix: "PRQ-", next_value: 1, padding_length: 6}
+          - {entity_type: credit_notes, prefix: "CRN-", next_value: 1, padding_length: 6}
+          - {entity_type: quotes, prefix: "QUO-", next_value: 1, padding_length: 5}
+          - {entity_type: sales_orders, prefix: "SO-", next_value: 1, padding_length: 5}
+          - {entity_type: purchase_orders, prefix: "PO-", next_value: 1, padding_length: 5}
+          - {entity_type: projects, prefix: "PRJ-", next_value: 1, padding_length: 4}
+          - {entity_type: employees, prefix: "EMP-", next_value: 1, padding_length: 5}
+          - {entity_type: payroll_runs, prefix: "PAY-", next_value: 1, padding_length: 5}
+        actions:
+          save:
+            label: "שמירה"
+            icon: save
+            action: save_numbering
+
+    # === PAYMENT METHODS ===
+    payment_methods_page:
+      route: /settings/payment-methods
+      title: "אמצעי תשלום"
+      layout: inline_table_editor
+      permission: settings.payment_methods.edit
+      table:
+        entity: payment_methods
+        columns:
+          - {field: name, label: "שם", type: text, editable: true, width: 200}
+          - {field: code, label: "קוד", type: text, editable: true, width: 100}
+          - {field: is_active, label: "פעיל", type: toggle, editable: true, width: 80}
+        actions:
+          add:
+            label: "אמצעי תשלום חדש"
+            icon: add
+          save:
+            label: "שמירה"
+            icon: save
+          delete:
+            icon: delete
+            confirmation: "האם למחוק?"
+
+    # === TAX SETTINGS ===
+    tax_settings:
+      route: /settings/tax
+      title: "הגדרות מס"
+      layout: inline_table_editor
+      permission: settings.tax.edit
+      table:
+        entity: tax_codes
+        columns:
+          - {field: name, label: "שם קוד מס", type: text, editable: true, width: 200}
+          - {field: rate, label: "שיעור (%)", type: number, editable: true, step: 0.01, width: 100}
+          - {field: is_default, label: "ברירת מחדל", type: radio, editable: true, width: 100}
+          - {field: is_active, label: "פעיל", type: toggle, editable: true, width: 80}
+        actions:
+          add:
+            label: "קוד מס חדש"
+            icon: add
+          save:
+            label: "שמירה"
+            icon: save
+
+    # === TEMPLATES ===
+    templates_settings:
+      route: /settings/templates
+      title: "תבניות מסמכים"
+      layout: redirect
+      redirect_to: /documents/templates
+      description: "מפנה לניהול תבניות במודול מסמכים"
+
+    # === AUDIT LOG ===
+    audit_log:
+      route: /settings/audit-log
+      title: "לוג מערכת"
+      layout: searchable_table
+      permission: settings.audit_log.view
+      toolbar:
+        search:
+          placeholder: "חיפוש לפי ישות, פעולה, משתמש..."
+          searches_in: [entity_type, entity_id, action_type, actor]
+        secondary_actions:
+          - label: "ייצוא"
+            icon: download
+            action: export_audit_log
+            permission: settings.audit_log.export
+      filters:
+        - field: entity_type
+          type: multi_select
+          label: "סוג ישות"
+          options:
+            - {value: customer, label: "לקוח"}
+            - {value: supplier, label: "ספק"}
+            - {value: document, label: "מסמך"}
+            - {value: payment, label: "תשלום"}
+            - {value: product, label: "מוצר"}
+            - {value: project, label: "פרויקט"}
+            - {value: employee, label: "עובד"}
+            - {value: purchase_order, label: "הזמנת רכש"}
+            - {value: sales_order, label: "הזמנת לקוח"}
+            - {value: quote, label: "הצעת מחיר"}
+            - {value: inventory_movement, label: "תנועת מלאי"}
+            - {value: user, label: "משתמש"}
+            - {value: role, label: "תפקיד"}
+            - {value: settings, label: "הגדרות"}
+        - field: action_type
+          type: multi_select
+          label: "פעולה"
+          options:
+            - {value: created, label: "נוצר"}
+            - {value: updated, label: "עודכן"}
+            - {value: deleted, label: "נמחק"}
+            - {value: linked, label: "קושר"}
+            - {value: unlinked, label: "בוטל קישור"}
+            - {value: uploaded_file, label: "הועלה קובץ"}
+            - {value: payment_recorded, label: "תשלום נרשם"}
+            - {value: status_changed, label: "שינוי סטטוס"}
+            - {value: login, label: "התחברות"}
+            - {value: logout, label: "התנתקות"}
+        - field: actor
+          type: select
+          label: "משתמש"
+          source: users
+          display_field: full_name
+        - field: created_at
+          type: date_range
+          label: "תאריך"
+      table:
+        columns:
+          - {field: created_at, label: "תאריך", sortable: true, format: datetime}
+          - {field: actor, label: "משתמש", display: users.full_name, sortable: true}
+          - {field: action_type, label: "פעולה", sortable: true, display: badge}
+          - {field: entity_type, label: "סוג ישות", sortable: true}
+          - {field: entity_id, label: "מזהה ישות", link_to: "/:entity_type/:entity_id"}
+          - {field: summary, label: "סיכום", computed: true}
+        default_sort: {field: created_at, direction: desc}
+        pagination:
+          default_page_size: 50
+          page_size_options: [25, 50, 100, 200]
+      detail_modal:
+        title: "פרטי שינוי"
+        trigger: click_row
+        sections:
+          - title: "מידע כללי"
+            fields:
+              - {field: created_at, label: "תאריך", format: datetime}
+              - {field: actor, label: "משתמש", display: users.full_name}
+              - {field: action_type, label: "פעולה"}
+              - {field: entity_type, label: "סוג ישות"}
+              - {field: entity_id, label: "מזהה ישות"}
+          - title: "ערכים ישנים"
+            field: old_value_json
+            type: json_viewer
+            highlight: diff
+          - title: "ערכים חדשים"
+            field: new_value_json
+            type: json_viewer
+            highlight: diff
+          - title: "השוואה"
+            type: json_diff_viewer
+            old_field: old_value_json
+            new_field: new_value_json
+            display: side_by_side
+
+  navigation_map:
+    users_list:
+      navigates_to:
+        - {target: user_create, trigger: "primary action"}
+        - {target: user_details, trigger: "click row"}
+    user_details:
+      navigates_to:
+        - {target: user_edit, trigger: "edit button"}
+    permissions_matrix:
+      navigates_to:
+        - {target: role_detail, trigger: "click role name"}
+    statuses_page:
+      navigates_to: []
+    categories_page:
+      navigates_to: []
+    audit_log:
+      navigates_to:
+        - {target: entity_detail, trigger: "click entity link"}
+        - {target: audit_detail_modal, trigger: "click row"}

@@ -1,0 +1,79 @@
+{
+  "total_sources_processed": 9,
+  "total_files_extracted": 5990,
+  "total_unique_files": 4226,
+  "duplicates_eliminated": 1764,
+  "conflicts_found": 2240,
+  "new_code_files_added": 1727,
+  "counts": {
+    "CODE-NEW": 1750,
+    "CODE-EXISTING": 32,
+    "CODE-CONFLICT": 2240,
+    "CONFIG": 80,
+    "ASSET": 21,
+    "DOCS": 48,
+    "BINARY-SKIP": 55
+  },
+  "copied": {
+    "CODE-NEW": 1727,
+    "CONFIG": 80,
+    "ASSET": 21,
+    "DOCS": 38,
+    "CODE-CONFLICT-ARCHIVED": 2240
+  },
+  "new_entities_counts": {
+    "pages": 564,
+    "routes_api": 100,
+    "migrations": 0,
+    "schema_files": 222
+  },
+  "final_project_file_count": 6595,
+  "final_project_bytes": 2891125355,
+  "per_source_stats": {
+    "technokoluzi-erp": {
+      "files": 1045,
+      "bytes": 23985739,
+      "skipped": 1
+    },
+    "AI-Task-Manager": {
+      "files": 2883,
+      "bytes": 55783044,
+      "skipped": 4
+    },
+    "Location-Finder": {
+      "files": 205,
+      "bytes": 809669,
+      "skipped": 1
+    },
+    "GPS-Connect": {
+      "files": 208,
+      "bytes": 708253,
+      "skipped": 1
+    },
+    "Invoice-Ledger": {
+      "files": 115,
+      "bytes": 411707,
+      "skipped": 1
+    },
+    "erp-upload": {
+      "files": 1518,
+      "bytes": 29133668,
+      "skipped": 2
+    },
+    "files-2": {
+      "files": 6,
+      "bytes": 94757,
+      "skipped": 0
+    },
+    "files-4": {
+      "files": 5,
+      "bytes": 37550,
+      "skipped": 0
+    },
+    "files-5": {
+      "files": 5,
+      "bytes": 37550,
+      "skipped": 0
+    }
+  }
+}

@@ -1,0 +1,962 @@
+חשוב מאוד לפני שמתחילים:
+
+אנחנו לא בונים עוד ERP רגיל.
+אנחנו לא בונים רק מערכת ניהול.
+אנחנו לא בונים רק טפסים ומסכים.
+
+אנחנו בונים מערכת-על:
+Universal Enterprise Operating System Builder
+
+זאת צריכה להיות פלטפורמה פנימית מטורפת, מתקדמת, metadata-driven, AI-ready, extensible, שיכולה בעתיד לבנות ולנהל אינסוף מודולים, אינסוף מחלקות, אינסוף ישויות, אינסוף מסכים, אינסוף תהליכים, אינסוף לוגיקות עסקיות ואינסוף אוטומציות.
+
+המטרה היא להפוך את המערכת למנוע ליצירת מערכות.
+כלומר:
+אנחנו לא רוצים לפתח כל מודול מחדש.
+אנחנו רוצים לבנות מנוע שיודע לייצר כל מודול.
+
+==================================================
+1. החזון העליון
+==================================================
+
+אני רוצה שהמערכת תהיה ברמה של:
+
+- ERP
+- CRM
+- HRM
+- MRP
+- BI
+- DMS
+- Workflow Engine
+- Automation Platform
+- Internal App Builder
+- AI Control Layer
+- Configuration Platform
+- Enterprise Studio
+
+המערכת צריכה להיות מסוגלת בעתיד לייצר:
+- מודולי ליבה עסקיים
+- מודולי תפעול
+- מודולי כספים
+- מודולי ייצור
+- מודולי AI
+- מודולי אוטומציות
+- מודולי דוחות
+- מודולי אינטגרציות
+- מודולי שליטה ובקרה
+- מודולי Workspace מותאמים
+
+אני רוצה שזה יהיה בסיס אינסופי, לא מערכת סגורה.
+
+==================================================
+2. Builder כ-Core Platform
+==================================================
+
+ה-Builder שאני מבקש ממך לבנות הוא לא פיצ'ר.
+הוא לא מסך.
+הוא לא מחולל טפסים.
+
+הוא צריך להיות Core Platform Layer של כל המערכת.
+
+כלומר:
+כל מודול חדש במערכת בעתיד אמור להיבנות או להיות מנוהל דרך אותו Builder.
+
+ה-Builder חייב לשלוט על:
+- מודולים
+- ישויות
+- שדות
+- מסכים
+- תפריטים
+- כפתורים
+- פעולות
+- קטגוריות
+- סטטוסים
+- הרשאות
+- workflows
+- automations
+- templates
+- dashboards
+- widgets
+- reports
+- document types
+- page layouts
+- UI blocks
+- business rules
+- formulas
+- AI blocks בעתיד
+
+==================================================
+3. עקרונות טכנולוגיים מחייבים
+==================================================
+
+המערכת חייבת להיות בנויה לפי עקרונות של:
+
+1. metadata-driven architecture
+2. schema-driven UI generation
+3. modular domain design
+4. dynamic rendering engine
+5. reusable component system
+6. configuration over hardcode
+7. event-driven readiness
+8. audit-ready architecture
+9. API-first / AI-ready architecture
+10. enterprise scalability
+
+אני לא רוצה build חד-פעמי.
+אני רוצה foundation.
+
+==================================================
+4. שכבות המערכת שחייבות להתקיים
+==================================================
+
+אני רוצה שתתכנן את ה-Builder כמערכת רב-שכבתית:
+
+Layer 1 - Metadata Core
+שכבת מטא-דאטה שמחזיקה את כל ההגדרות של המערכת.
+
+Layer 2 - Domain Definition Layer
+שכבה שבה מוגדרים מודולים, ישויות, שדות, קשרים, קטגוריות, סטטוסים.
+
+Layer 3 - UI Composition Layer
+שכבה שמייצרת מסכים, טפסים, רשימות, detail pages, widgets, layouts.
+
+Layer 4 - Logic & Rule Layer
+שכבה שמנהלת validations, formulas, actions, workflows, transitions, business rules.
+
+Layer 5 - Runtime Engine
+שכבה שמריצה בפועל את כל מה שהוגדר דרך המטא-דאטה.
+
+Layer 6 - Permissions & Governance Layer
+שכבה שמנהלת הרשאות, גישה, audit, גרסאות, publish flow.
+
+Layer 7 - Integration & AI Layer
+שכבה עתידית לחיבורים חיצוניים, AI providers, webhooks, API mapping, agents.
+
+==================================================
+5. מודולי ה-Builder - פירוט עמוק
+==================================================
+
+------------------------------------------
+A. Core Metadata Engine
+------------------------------------------
+
+זה הלב של המערכת.
+
+בלי המודול הזה אין Builder.
+אני רוצה מנוע מרכזי ששומר את כל מבני המערכת כנתונים.
+
+הוא חייב לנהל:
+- modules metadata
+- entities metadata
+- fields metadata
+- relations metadata
+- forms metadata
+- views metadata
+- detail pages metadata
+- buttons metadata
+- actions metadata
+- status metadata
+- categories metadata
+- permissions metadata
+- menu metadata
+- dashboard metadata
+- workflow metadata
+- automation metadata
+- template metadata
+- version metadata
+
+הוא חייב להיות:
+- generic
+- normalized
+- extensible
+- safe for future migrations
+- stable for runtime rendering
+
+------------------------------------------
+B. Module Builder
+------------------------------------------
+
+מודול ליצירת מודולים עסקיים ומערכתיים.
+
+למה הוא נדרש:
+כי כל תחום במערכת צריך להיות מוגדר כמודול עצמאי שניתן לנהל, להפעיל, להסתיר, לשייך לתפריט ולהרשאות.
+
+מה צריך להיות בפנים:
+- יצירת מודול
+- עריכת מודול
+- אקטיבציה / דיאקטיבציה
+- קישור לקטגוריה
+- בחירת אייקון
+- בחירת צבע
+- קביעת סדר
+- קביעת route/system key
+- קביעת תפקידים מורשים
+- קביעת האם זה מודול מערכת או מודול עסקי
+- קביעת האם מוצג בתפריט צד
+- קביעת האם מופיע בדשבורד
+- קביעת owner / admin של המודול
+
+מודול צריך לדעת להחזיק:
+- entities
+- pages
+- dashboards
+- permissions
+- menu items
+- templates
+- actions
+
+------------------------------------------
+C. Entity Builder
+------------------------------------------
+
+ישות היא אובייקט מערכת.
+זה הבסיס של כל העסק.
+
+אני רוצה Entity Builder עצום ומתקדם.
+
+מה הוא צריך לתמוך:
+- master entities
+- transaction entities
+- child entities
+- reference entities
+- configuration entities
+- log entities
+- system entities
+- document entities
+- event entities
+- analytics entities
+
+כל ישות צריכה להכיל:
+- שם בעברית
+- שם באנגלית
+- entity key
+- module binding
+- entity type
+- table binding
+- primary display field
+- system flags
+- behavior flags
+- ownership model
+- lifecycle support
+- numbering support
+- status support
+- category support
+- attachments support
+- notes support
+- audit support
+- soft delete
+- archive mode
+- search indexing
+- default views
+
+בנוסף:
+אני רוצה שתהיה אפשרות להגדיר Entity Behavior.
+כלומר:
+לא רק מבנה, אלא גם התנהגות.
+
+לדוגמה:
+- האם זו ישות עם workflow
+- האם זו ישות עם אישורים
+- האם זו ישות עם history
+- האם זו ישות עם related records
+- האם זו ישות עם versioning
+- האם זו ישות עם child lines
+
+------------------------------------------
+D. Field Builder
+------------------------------------------
+
+זה מנוע קריטי וצריך להיות קיצוני ברמה שלו.
+
+אני לא רוצה רק שדות בסיסיים.
+אני רוצה מערכת שדות ברמה של פלטפורמה.
+
+סוגי שדות:
+- text
+- long text
+- rich text
+- integer
+- decimal
+- currency
+- percent
+- date
+- datetime
+- time
+- duration
+- boolean
+- checkbox
+- radio
+- single select
+- multi select
+- tags
+- status
+- category
+- email
+- phone
+- URL
+- address
+- geolocation
+- barcode
+- QR
+- file
+- image
+- signature
+- relation
+- relation list
+- user reference
+- team reference
+- role reference
+- formula
+- computed
+- JSON
+- array
+- object
+- AI-generated
+- external reference
+- document reference
+
+לכל שדה חייב להיות:
+- label
+- key
+- type
+- subtype
+- description
+- placeholder
+- tooltip
+- help text
+- default value
+- required rule
+- unique rule
+- validation rules
+- conditional visibility
+- conditional editability
+- searchability
+- filterability
+- sortability
+- exportability
+- display formatting
+- section placement
+- tab placement
+- list placement
+- detail placement
+- read-only behavior
+- dynamic options
+- formula engine binding
+- dependency mapping
+- field-level permissions
+- field-level audit
+
+אני רוצה גם:
+Field Sets
+כלומר קבוצות שדות שניתן לעשות להן reuse במספר ישויות.
+
+------------------------------------------
+E. Relations Builder
+------------------------------------------
+
+מערכת ERP בלי קשרים זה צעצוע.
+
+אני רוצה מנוע קשרים ברמה רצינית:
+- one to one
+- one to many
+- many to one
+- many to many
+- self relation
+- polymorphic-ready future
+- parent-child hierarchies
+
+הוא צריך לתמוך ב:
+- relation display
+- relation constraints
+- relation actions
+- related list rendering
+- reverse relation awareness
+- lazy loading / scalable relation patterns בעתיד
+- relation-based filters
+- relation-based buttons
+- relation inheritance future-ready
+
+אני רוצה שגם הקשרים יהיו metadata-driven ולא hardcoded.
+
+------------------------------------------
+F. Form Builder
+------------------------------------------
+
+אני רוצה Form Builder שנראה כמו מערכת מקצועית, לא כמו טופס טכני.
+
+הוא צריך לתמוך ב:
+- create form
+- edit form
+- read-only form
+- modal form
+- drawer form
+- wizard / step form
+- quick create form
+- approval form
+
+הוא חייב לכלול:
+- tabs
+- sections
+- groups
+- columns
+- responsive width
+- field ordering
+- field visibility rules
+- conditional logic
+- validation messages
+- help texts
+- related record pickers
+- attachments area
+- notes area
+- AI panel future-ready
+
+אני רוצה גם:
+Form Templates
+כדי שאפשר יהיה לשכפל טפסים בין מודולים.
+
+------------------------------------------
+G. List / View Builder
+------------------------------------------
+
+זה לא רק טבלה.
+אני רוצה מנוע תצוגות.
+
+סוגי views:
+- table
+- compact list
+- board future
+- kanban future
+- calendar future
+- timeline future
+- analytics list
+- grouped list
+
+ה-view צריך לתמוך ב:
+- visible columns
+- frozen columns future-ready
+- search fields
+- quick filters
+- advanced filters
+- saved views
+- default sorting
+- bulk actions
+- row actions
+- status chips
+- inline actions
+- pagination
+- export
+- customizable density
+- user-specific preferences future-ready
+
+------------------------------------------
+H. Detail Page Builder
+------------------------------------------
+
+כרטיס ישות חייב להיות מודולרי.
+
+אני רוצה ש-detail page יהיה בנוי מבלוקים.
+
+בלוקים אפשריים:
+- header info
+- KPI strip
+- main fields
+- tabs
+- related records table
+- document block
+- notes block
+- comments block
+- audit block
+- status history
+- workflow panel
+- buttons panel
+- AI summary block future-ready
+
+כל כרטיס צריך להיות בנוי מ:
+- header layout
+- section layout
+- tabs
+- card blocks
+- side panel blocks
+- related entity blocks
+
+------------------------------------------
+I. Categories Builder
+------------------------------------------
+
+אני רוצה מנגנון אוניברסלי לקטגוריות, היררכיות וטקסונומיה.
+
+הוא צריך לתמוך ב:
+- flat categories
+- parent-child hierarchy
+- multi-level taxonomy
+- color coding
+- icon support
+- active/inactive
+- entity binding
+- shared category sets
+- reusable categories across modules future-ready
+
+------------------------------------------
+J. Status Builder
+------------------------------------------
+
+אני לא רוצה status field רגיל.
+אני רוצה Status Management Layer.
+
+הוא צריך לנהל:
+- status sets
+- status values
+- colors
+- sequence
+- default state
+- final state
+- locked state
+- transition rules
+- status permissions
+- status-trigger hooks future-ready
+
+אני רוצה שבעתיד יהיה אפשר לקשור:
+- workflow
+- automation
+- approvals
+- notifications
+לכל שינוי סטטוס.
+
+------------------------------------------
+K. Buttons & Actions Builder
+------------------------------------------
+
+זה חייב להיות מטורף וחזק.
+
+אני רוצה שכל כפתור במערכת ינוהל דרך metadata.
+
+מיקומים:
+- page header
+- row action
+- bulk action
+- form footer
+- detail header
+- detail side panel
+- widget header
+- toolbar
+- contextual menu
+
+סוגי פעולה:
+- create
+- save
+- edit
+- update
+- delete
+- duplicate
+- approve
+- reject
+- submit
+- cancel
+- archive
+- restore
+- convert
+- assign
+- export
+- import
+- print
+- send
+- open modal
+- open drawer
+- open related page
+- change status
+- run workflow
+- run automation
+- call integration
+- call AI future
+- custom handler
+
+לכל כפתור:
+- label
+- action key
+- icon
+- color
+- style variant
+- permission requirement
+- visibility logic
+- condition logic
+- confirmation requirement
+- target screen
+- target entity
+- success behavior
+- failure behavior
+- logging behavior
+
+------------------------------------------
+L. Permissions Builder
+------------------------------------------
+
+אני רוצה Governance ברמה ארגונית.
+
+רמות שליטה:
+- module level
+- entity level
+- record level future-ready
+- field level
+- action level
+- button level
+- screen level
+
+סוגי הרשאות:
+- view
+- create
+- edit
+- delete
+- approve
+- export
+- manage
+- administer
+- configure
+
+אני רוצה גם future-ready ל:
+- row-level security
+- ownership-based access
+- department-based access
+- approval authority matrix
+
+------------------------------------------
+M. Menu Builder
+------------------------------------------
+
+אם המערכת אינסופית, גם התפריט חייב להיות אינסופי.
+
+הוא צריך לתמוך ב:
+- nested menus
+- grouped menus
+- role-based menus
+- icon mapping
+- sort order
+- hidden modules
+- quick access items
+- favorites future-ready
+- workspace-specific navigation future-ready
+
+------------------------------------------
+N. Dashboard & Widget Builder
+------------------------------------------
+
+אני רוצה מנוע BI פנימי, לא סתם כרטיסים.
+
+סוגי widgets:
+- KPI
+- count
+- sum
+- avg
+- variance
+- trend
+- table
+- chart
+- status summary
+- task queue
+- alert feed
+- recent activity
+- approval inbox
+- performance comparison
+
+אני רוצה שהוא יהיה מוכן לעתיד גם ל:
+- drill-down
+- filter sync
+- dashboard templates
+- user role dashboards
+- live refresh modes
+- executive cockpit
+
+------------------------------------------
+O. Workflow Builder
+------------------------------------------
+
+אני רוצה future-proof workflow architecture.
+
+הוא צריך לתמוך ב:
+- state transitions
+- approvals
+- branching logic
+- conditions
+- assignments
+- escalations
+- reminders
+- deadlines
+- step ownership
+- audit
+- exception handling future-ready
+
+כרגע לא חייבים לבנות הכול,
+אבל הארכיטקטורה חייבת להיות מוכנה לזה מהיסוד.
+
+------------------------------------------
+P. Automation Builder
+------------------------------------------
+
+אני רוצה מנוע אוטומציות עתידי, metadata-driven.
+
+טריגרים:
+- on create
+- on update
+- on delete
+- on field change
+- on status change
+- on time schedule
+- on threshold breach
+- on approval
+- on import
+- on integration event future-ready
+
+פעולות:
+- update record
+- create child record
+- create task
+- send alert
+- notify role
+- change status
+- calculate value
+- call external service
+- run workflow
+- run AI future
+
+------------------------------------------
+Q. Template Engine
+------------------------------------------
+
+כדי להגיע לאינסוף מודולים, חייבים templates.
+
+אני רוצה template engine עבור:
+- modules
+- entities
+- field sets
+- forms
+- views
+- detail pages
+- dashboards
+- workflows
+- status sets
+- permissions presets
+- button sets
+
+כך שנוכל ליצור מהר:
+- “מודול חדש לפי תבנית”
+- “ישות חדשה לפי תבנית”
+- “טופס חדש לפי תבנית”
+
+------------------------------------------
+R. Versioning / Draft / Publish
+------------------------------------------
+
+במערכת כזאת אי אפשר לעבוד בלי גרסאות.
+
+אני רוצה:
+- draft mode
+- preview mode
+- publish mode
+- activate/deactivate
+- version history
+- publish logs
+- rollback-ready architecture
+
+כי כל שינוי במטא-דאטה משפיע על המערכת.
+
+------------------------------------------
+S. Runtime Rendering Engine
+------------------------------------------
+
+זה אחד הדברים הכי חשובים.
+
+ה-Builder לא רק שומר הגדרות —
+צריך להיות Runtime Engine שיודע לייצר בפועל את המסכים וההתנהגות.
+
+המנוע צריך לדעת:
+- לקרוא metadata
+- לייצר screens
+- לייצר forms
+- לייצר lists
+- לייצר detail pages
+- לייצר buttons
+- ליישם permissions
+- ליישם validations
+- ליישם layouts
+- ליישם status behavior
+- ליישם category behavior
+
+זה ה-Core האמיתי של כל הפלטפורמה.
+
+------------------------------------------
+T. API / AI Ready Layer
+------------------------------------------
+
+אני רוצה שהמערכת תהיה בנויה כך שבעתיד AI לא יכתוב קוד.
+
+במקום זה,
+AI ישתמש ב-Builder API.
+
+כלומר:
+Claude / AI אחר יוכל לומר:
+- create module
+- create entity
+- add fields
+- generate form
+- add buttons
+- build dashboard
+- attach workflow
+
+והמערכת תבצע זאת דרך שכבת API מסודרת.
+
+זה קריטי.
+
+==================================================
+6. דרישות על נוספות מהידע שלך
+==================================================
+
+אני מוסיף דרישות ארכיטקטורה מתקדמות:
+
+1. Shared Component Registry
+מאגר רכיבים חוזרים לשימוש חוזר.
+
+2. Field Set Library
+ספריית קבוצות שדות לשכפול.
+
+3. Action Registry
+רשימת פעולות מערכתיות לשימוש חוזר.
+
+4. Validation Registry
+מאגר ולידציות לשימוש חוזר.
+
+5. Layout System
+ניהול פריסות מסכים ובלוקים.
+
+6. Workspace Readiness
+הכנה לאזורי עבודה שונים בעתיד.
+
+7. Event Log Readiness
+הכנה ללוג אירועים מערכתיים.
+
+8. Formula Engine Readiness
+מוכנות לנוסחאות וחישובים.
+
+9. Search Index Strategy
+הכנה לחיפוש גלובלי.
+
+10. Document Type Readiness
+הכנה לסוגי מסמכים דינמיים.
+
+11. Audit by Metadata
+תיעוד שינויים גם בהגדרות ה-Builder.
+
+12. Multi-role configuration future-ready
+התאמות לתפקידים ומחלקות שונות.
+
+13. Render rules engine
+מנוע חוקים לתצוגה דינמית.
+
+14. Condition engine
+מנוע תנאים לשדות, כפתורים ומסכים.
+
+15. Dependency graph
+מיפוי תלות בין רכיבי metadata.
+
+==================================================
+7. איך לפרק את זה נכון
+==================================================
+
+אני לא רוצה שתבנה את כל זה בבת אחת.
+
+תבנה לפי הפאזות הבאות:
+
+Phase 1:
+Metadata Core + Module Builder + Entity Builder + Field Builder Foundation
+
+Phase 2:
+Relations + Forms + Views + Detail Pages
+
+Phase 3:
+Categories + Statuses + Buttons + Actions
+
+Phase 4:
+Permissions + Menu + Dashboards + Widgets
+
+Phase 5:
+Workflow Architecture + Automation Architecture + Templates + Versioning
+
+Phase 6:
+Runtime Expansion + API/AI Ready Layer
+
+==================================================
+8. מה אני רוצה עכשיו
+==================================================
+
+כרגע אני לא רוצה הכול.
+
+אני רוצה רק את Phase 1.
+
+Phase 1 חייב לכלול:
+
+1. Core metadata database schema
+2. system_modules
+3. system_entities
+4. system_fields
+5. בסיס ל-system_relations
+6. Module Builder UI
+7. Entity Builder UI
+8. Field Builder UI בסיסי
+9. CRUD מלא
+10. RTL מלא
+11. Runtime בסיסי להצגת הנתונים
+
+==================================================
+9. מה אני רוצה שתגיש לי לפני בנייה
+==================================================
+
+לפני שאתה כותב קוד,
+תציג לי קודם:
+
+1. מפת ארכיטקטורה מלאה
+2. פירוט של כל הטבלאות של Phase 1
+3. פירוט הקשרים ביניהן
+4. אילו מסכים ייבנו ב-Phase 1
+5. אילו יכולות ייכנסו עכשיו ואילו רק בעתיד
+6. איך זה נשאר גנרי לכל המערכת
+7. איך זה יאפשר אינסוף מודולים בעתיד
+8. איך ה-runtime engine ייגש ל-metadata
+
+==================================================
+10. פורמט תשובה חובה
+==================================================
+
+אני רוצה שבסיום התכנון תענה כך:
+
+מה הולכים לבנות:
+- ...
+
+למה זה Core Platform ולא פיצ'ר קטן:
+- ...
+
+אילו מודולים של ה-Builder קיימים:
+- ...
+
+מה יש בתוך כל מודול:
+- ...
+
+מה נבנה ב-Phase 1 בלבד:
+- ...
+
+מה עדיין לא נבנה ב-Phase 1:
+- ...
+
+אילו טבלאות Core ייבנו עכשיו:
+- ...
+
+איך זה יאפשר בעתיד אינסוף מודולים:
+- ...
+
+איך זה יהיה תקף לכל המערכת:
+- ...
+
+האם הארכיטקטורה metadata-driven:
+- כן / לא
+
+האם הארכיטקטורה extensible:
+- כן / לא
+
+האם זה AI-ready בעתיד:
+- כן / לא

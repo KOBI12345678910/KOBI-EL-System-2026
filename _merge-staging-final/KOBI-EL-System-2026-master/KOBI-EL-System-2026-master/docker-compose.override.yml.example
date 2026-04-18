@@ -1,0 +1,79 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# docker-compose.override.yml  (dev-only example)
+#
+# Copy to docker-compose.override.yml to activate dev overrides:
+#   cp docker-compose.override.yml.example docker-compose.override.yml
+#
+# Docker Compose will merge this on top of docker-compose.yml automatically.
+# DO NOT COMMIT the override file — keep only this example in VCS.
+# ═══════════════════════════════════════════════════════════════════════════
+
+services:
+
+  # ── Postgres: expose a second port for external tools (pgAdmin, DBeaver)
+  postgres:
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: erp
+      POSTGRES_PASSWORD: erp_dev_password
+      POSTGRES_DB: erp_main
+
+  # ── Redis: no password in dev
+  redis:
+    command: redis-server --appendonly yes
+
+  # ── ONYX PROCUREMENT — dev mode with hot reload
+  onyx-procurement:
+    build:
+      target: deps   # stop at deps stage; we run with live source via bind-mount
+    command: ["node", "--watch", "server.js"]
+    environment:
+      NODE_ENV: development
+      LOG_LEVEL: debug
+    volumes:
+      - ./onyx-procurement:/app:delegated
+      - /app/node_modules        # anonymous volume keeps container deps
+    ports:
+      - "9229:9229"              # Node inspector
+
+  # ── TECHNO-KOL OPS — dev mode with tsx watch
+  techno-kol-ops:
+    build:
+      target: deps
+    command: ["npx", "tsx", "watch", "src/index.ts"]
+    environment:
+      NODE_ENV: development
+      LOG_LEVEL: debug
+    volumes:
+      - ./techno-kol-ops:/app:delegated
+      - /app/node_modules
+    ports:
+      - "9230:9229"
+
+  # ── ONYX AI — dev mode with ts-node
+  onyx-ai:
+    build:
+      target: deps
+    command: ["npx", "ts-node", "src/index.ts"]
+    environment:
+      NODE_ENV: development
+      LOG_LEVEL: debug
+    volumes:
+      - ./onyx-ai:/app:delegated
+      - /app/node_modules
+    ports:
+      - "9231:9229"
+
+  # ── PAYROLL AUTONOMOUS — Vite dev server instead of nginx build
+  payroll-autonomous:
+    build:
+      target: deps   # skip the nginx runtime stage
+    command: ["npx", "vite", "--host", "0.0.0.0", "--port", "5173"]
+    environment:
+      NODE_ENV: development
+    volumes:
+      - ./payroll-autonomous:/app:delegated
+      - /app/node_modules
+    ports:
+      - "5173:5173"

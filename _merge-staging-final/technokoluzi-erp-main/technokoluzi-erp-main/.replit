@@ -1,0 +1,19 @@
+modules = ["nodejs-20"]
+
+[nix]
+channel = "stable-24_05"
+
+[workflows]
+runButton = "Start Server"
+
+[[workflows.workflow]]
+name = "Start Server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm install -g pnpm && pnpm install && pnpm start"
+
+[deployment]
+run = ["sh", "-c", "npm install -g pnpm && pnpm install && pnpm start"]
+build = ["sh", "-c", "npm install -g pnpm && pnpm install"]

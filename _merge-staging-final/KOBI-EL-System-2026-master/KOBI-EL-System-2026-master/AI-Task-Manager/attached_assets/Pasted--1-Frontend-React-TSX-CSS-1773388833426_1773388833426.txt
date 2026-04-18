@@ -1,0 +1,111 @@
+חרי הסשן האחרון — הנה תמונת האמת המלאה, ללא עיגולים:
+
+---
+
+❌ 1. קוד Frontend — React / TSX / CSS
+| מה | למה לא |
+
+|---|---|
+
+| לא רואה קבצי .tsx קיימים | אין גישה לפייל-סיסטם |
+
+| לא יכול לערוך דפים קיימים | לא יכול לכתוב לדיסק |
+
+| לא רואה מה מוצג בדפדפן בפועל | אין גישה ל-DOM/runtime |
+
+| לא יכול ליצור קומפוננטות חדשות | אין כלי לכתיבת קבצים |
+
+| לא יכול לשנות ניתוב (Router) | קובץ App.tsx לא נגיש |
+
+| לא יכול לשנות Layout / Sidebar | קובץ Layout לא נגיש |
+
+| לא רואה שגיאות JS בדפדפן | אין גישה ל-console |
+
+מה כן אני יכול לתת: קוד TSX מוכן שהמתכנת מדביק בקובץ הנכון.
+
+---
+
+❌ 2. קוד Backend — Express.js / Routes / Middleware
+| מה | למה לא |
+
+|---|---|
+
+| לא רואה routes קיימים | אין גישה ל-artifacts/api-server/src/routes/ |
+
+| לא יכול להוסיף endpoint חדש | לא כותב קבצים |
+
+| לא רואה middleware קיים | קבצי TypeScript לא נגישים |
+
+| לא יודע מה ה-API מחזיר בפועל | אין גישה ל-runtime logs |
+
+| לא רואה שגיאות שרת (crashes) | אין גישה ל-console.log של Node |
+
+| לא יכול לשנות auth/validation קיים | קוד לא נגיש |
+
+מה כן: אני כותב קוד Express מוכן, המתכנת מדביק.
+
+---
+
+❌ 3. Drizzle ORM / Schema
+| מה | למה לא |
+
+|---|---|
+
+| לא רואה קבצי schema.ts | אין גישה ל-lib/db/src/schema/ |
+
+| לא יכול להריץ drizzle-kit push | אין גישה ל-terminal |
+
+| לא יכול להריץ drizzle-kit generate | אין גישה ל-terminal |
+
+| שינויים ב-DB (CREATE TABLE) לא מתעדכנים ב-schema | Drizzle schema = קוד TypeScript נפרד |
+
+⚠️ הסכנה הגדולה: אני יוצר טבלאות ב-PostgreSQL ישירות — אבל ה-schema של Drizzle לא מתעדכן! זה יכול לגרום לאי-התאמה.
+
+---
+
+❌ 4. Terminal / CLI
+
+# אלה הפקודות שאני לא יכול להריץ:
+npm install <package>
+npm run dev / build
+git commit / push / pull
+drizzle-kit push
+drizzle-kit generate
+node / ts-node
+pm2 restart
+---
+
+❌ 5. Environment & Config
+| מה | למה לא |
+
+|---|---|
+
+| לא רואה .env | קובץ לא נגיש |
+
+| לא יודע DATABASE_URL | ה-env לא חשוף |
+
+| לא יודע על איזה PORT רץ הכל | runtime info |
+
+| לא רואה package.json | קובץ לא נגיש |
+
+| לא רואה vite.config.ts | קובץ לא נגיש |
+
+---
+
+❌ 6. שירותים חיצוניים
+| מה | למה לא |
+
+|---|---|
+
+| לא יכול לשלוח Email | אין SMTP/SendGrid |
+
+| לא יכול לשלוח SMS/WhatsApp | אין Twilio/etc |
+
+| לא יכול לתזמן Cron Jobs | אין גישה ל-OS scheduler |
+
+| לא מנהל קבצים שהועלו | אין גישה ל-file storage |
+
+| לא יכול להגדיר 2FA / SSO | אין כלי לזה |
+
+| לא יכול לגשת ל-APIs חיצוניים | אין HTTP client |
+

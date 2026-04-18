@@ -1,0 +1,417 @@
+import { Agent } from "../agent/core";
+import { StepExecutor } from "../agent/executor";
+import { TaskPlanner } from "../agent/planner";
+import { ErrorHandler } from "../agent/errorHandler";
+import { AgentMemory } from "../agent/memory";
+import { SnapshotTool } from "../tools/snapshotTool";
+import { TerminalTool } from "../tools/terminalTool";
+import { FileTool } from "../tools/fileTool";
+import { PreviewTool } from "../tools/previewTool";
+import { LintTool } from "../tools/lintTool";
+import { TestTool } from "../tools/testTool";
+import { BrowserTool } from "../tools/browserTool";
+import { SmartContextTool } from "../tools/smartContextTool";
+import { v4 as uuidv4 } from "uuid";
+
+export interface BuildFlowConfig {
+  workspaceDir: string;
+  maxRetries: number;
+  autoTest: boolean;
+  autoLint: boolean;
+  autoSnapshot: boolean;
+  autoPreview: boolean;
+}
+
+export interface BuildFlowResult {
+  flowId: string;
+  success: boolean;
+  phases: Array<{
+    name: string;
+    status: "success" | "failed" | "skipped" | "fixed";
+    duration: number;
+    output?: string;
+    error?: string;
+    retries: number;
+  }>;
+  totalDuration: number;
+  filesCreated: string[];
+  filesModified: string[];
+  previewUrl?: string;
+  testResults?: { passed: number; failed: number };
+  lintResults?: { errors: number; warnings: number };
+}
+
+export class BuildFlow {
+  private memory: AgentMemory;
+  private planner: TaskPlanner;
+  private executor: StepExecutor;
+  private errorHandler: ErrorHandler;
+  private snapshotTool: SnapshotTool;
+  private terminal: TerminalTool;
+  private fileTool: FileTool;
+  private previewTool: PreviewTool;
+  private lintTool: LintTool;
+  private testTool: TestTool;
+  private smartContext: SmartContextTool;
+  private config: BuildFlowConfig;
+  private onLog: (msg: string) => void;
+  private onPhase: (phase: string, status: string) => void;
+
+  constructor(
+    config: BuildFlowConfig,
+    onLog: (msg: string) => void,
+    onPhase: (phase: string, status: string) => void
+  ) {
+    this.config = config;
+    this.onLog = onLog;
+    this.onPhase = onPhase;
+
+    this.memory = new AgentMemory(config.workspaceDir);
+    this.planner = new TaskPlanner(this.memory);
+    this.terminal = new TerminalTool(config.workspaceDir);
+    this.fileTool = new FileTool(config.workspaceDir);
+    this.executor = new StepExecutor(config.workspaceDir, this.memory, onLog);
+    this.errorHandler = new ErrorHandler(config.workspaceDir, this.memory, onLog);
+    this.snapshotTool = new SnapshotTool(config.workspaceDir, this.terminal);
+    this.previewTool = new PreviewTool(config.workspaceDir, this.terminal, new BrowserTool(this.terminal));
+    this.lintTool = new LintTool(config.workspaceDir, this.terminal, this.fileTool);
+    this.testTool = new TestTool(config.workspaceDir, this.terminal, this.fileTool);
+    this.smartContext = new SmartContextTool(config.workspaceDir);
+  }
+
+  /**
+   * FULL BUILD FLOW — from task description to running app
+   * 
+   * Phase 1: Snapshot (backup)
+   * Phase 2: Plan (AI creates steps)
+   * Phase 3: Execute (run each step)
+   * Phase 4: Validate (lint, type check)
+   * Phase 5: Test (run tests)
+   * Phase 6: Fix (auto-fix any issues)
+   * Phase 7: Build (compile/bundle)
+   * Phase 8: Preview (start dev server)
+   * Phase 9: Verify (health check)
+   * Phase 10: Commit (auto-commit on success)
+   */
+  async run(task: string, context?: string): Promise<BuildFlowResult> {
+    const flowId = uuidv4();
+    const startTime = Date.now();
+    const phases: BuildFlowResult["phases"] = [];
+    const filesCreated: string[] = [];
+    const filesModified: string[] = [];
+    let previewUrl: string | undefined;
+    let testResults: { passed: number; failed: number } | undefined;
+    let lintResults: { errors: number; warnings: number } | undefined;
+
+    this.onLog(`\n${"═".repeat(60)}`);
+    this.onLog(`🚀 BUILD FLOW START: ${task.slice(0, 80)}`);
+    this.onLog(`${"═".repeat(60)}\n`);
+
+    // ====== PHASE 1: SNAPSHOT ======
+    if (this.config.autoSnapshot) {
+      const phase = await this.runPhase("snapshot", async () => {
+        const snap = await this.snapshotTool.create(
+          `pre-build-${flowId.slice(0, 8)}`,
+          `Before: ${task.slice(0, 100)}`
+        );
+        return `Snapshot created: ${snap.id} (${snap.files} files)`;
+      });
+      phases.push(phase);
+    }
+
+    // ====== PHASE 2: PLAN ======
+    let plan: any;
+    const planPhase = await this.runPhase("plan", async () => {
+      const smartCtx = this.smartContext.getContextForTask(task);
+      plan = await this.planner.createPlan(task, `${context || ""}\n${smartCtx}`);
+      return `Plan: ${plan.steps.length} steps — ${plan.taskSummary}`;
+    });
+    phases.push(planPhase);
+
+    if (!planPhase.status.includes("success") || !plan) {
+      return this.buildResult(flowId, false, phases, startTime, filesCreated, filesModified);
+    }
+
+    // ====== PHASE 3: EXECUTE ======
+    const executePhase = await this.runPhase("execute", async () => {
+      let completed = 0;
+      let failed = 0;
+
+      for (const step of plan.steps) {
+        this.onLog(`\n  📌 Step ${step.id}/${plan.steps.length}: ${step.description}`);
+
+        let result = await this.executor.executeStep(step);
+
+        // Auto-fix on failure
+        if (!result.success) {
+          this.onLog(`  ⚠️ Step failed, attempting fix...`);
+          
+          for (let retry = 0; retry < this.config.maxRetries; retry++) {
+            const fixResult = await this.errorHandler.analyzeAndFix({
+              error: result.error || result.output,
+              command: step.details?.command,
+              filePath: step.details?.path,
+              stepDescription: step.description,
+              taskId: flowId,
+              attempt: retry + 1,
+            });
+
+            if (fixResult.success) {
+              result = await this.executor.executeStep(step);
+              if (result.success) {
+                this.onLog(`  ✅ Fixed on retry ${retry + 1}`);
+                break;
+              }
+            }
+          }
+        }
+
+        if (result.success) {
+          completed++;
+          filesCreated.push(...result.filesChanged.filter((f) => !filesModified.includes(f)));
+        } else {
+          failed++;
+          this.onLog(`  ❌ Step failed permanently: ${step.description}`);
+        }
+
+        filesModified.push(...result.filesChanged);
+      }
+
+      return `Executed: ${completed} success, ${failed} failed out of ${plan.steps.length}`;
+    });
+    phases.push(executePhase);
+
+    // ====== PHASE 4: VALIDATE (Lint + Type Check) ======
+    if (this.config.autoLint) {
+      const validatePhase = await this.runPhase("validate", async () => {
+        // Type check
+        const typeResult = await this.lintTool.typeCheck();
+        let output = `TypeScript: ${typeResult.errors.length} errors`;
+
+        if (typeResult.errors.length > 0) {
+          // Auto-fix type errors
+          this.onLog(`  🔧 Fixing ${typeResult.errors.length} type errors...`);
+          for (const error of typeResult.errors.slice(0, 10)) {
+            await this.errorHandler.analyzeAndFix({
+              error: `${error.file}:${error.line}: ${error.message}`,
+              filePath: error.file,
+              stepDescription: "Fix TypeScript error",
+              taskId: flowId,
+              attempt: 1,
+            });
+          }
+        }
+
+        // Lint
+        const lintResult = await this.lintTool.lint({ fix: true });
+        lintResults = { errors: lintResult.errors, warnings: lintResult.warnings };
+        output += ` | Lint: ${lintResult.errors} errors, ${lintResult.warnings} warnings`;
+
+        // Format
+        await this.lintTool.format();
+
+        if (lintResult.errors > 0) throw new Error(`${lintResult.errors} lint errors remain`);
+        return output;
+      });
+      phases.push(validatePhase);
+    }
+
+    // ====== PHASE 5: TEST ======
+    if (this.config.autoTest) {
+      const testPhase = await this.runPhase("test", async () => {
+        const result = await this.testTool.runTests();
+        testResults = { passed: result.passed, failed: result.failed };
+
+        if (result.failed > 0) {
+          // Auto-fix failed tests
+          this.onLog(`  🔧 Attempting to fix ${result.failed} failing tests...`);
+          for (const detail of result.details.filter((d) => d.status === "fail").slice(0, 5)) {
+            await this.errorHandler.analyzeAndFix({
+              error: detail.error || `Test failed: ${detail.name}`,
+              stepDescription: `Fix failing test: ${detail.name}`,
+              taskId: flowId,
+              attempt: 1,
+            });
+          }
+
+          // Re-run tests
+          const retryResult = await this.testTool.runTests();
+          testResults = { passed: retryResult.passed, failed: retryResult.failed };
+
+          if (retryResult.failed > 0) {
+            throw new Error(`${retryResult.failed} tests still failing`);
+          }
+        }
+
+        return `Tests: ${result.passed} passed, ${result.failed} failed`;
+      });
+      phases.push(testPhase);
+    }
+
+    // ====== PHASE 6: BUILD ======
+    const buildPhase = await this.runPhase("build", async () => {
+      // Detect build command
+      const result = await this.terminal.execute("npm run build 2>&1 || echo 'NO_BUILD_SCRIPT'", {
+        timeout: 120000,
+      });
+
+      if (result.stdout.includes("NO_BUILD_SCRIPT")) {
+        return "No build script — skipped";
+      }
+
+      if (!result.success) {
+        // Try to fix build errors
+        const fixResult = await this.errorHandler.analyzeAndFix({
+          error: result.stderr || result.stdout,
+          command: "npm run build",
+          stepDescription: "Fix build error",
+          taskId: flowId,
+          attempt: 1,
+        });
+
+        if (fixResult.success) {
+          const retryBuild = await this.terminal.execute("npm run build", { timeout: 120000 });
+          if (!retryBuild.success) throw new Error("Build still failing after fix");
+          return "Build succeeded (after fix)";
+        }
+        throw new Error("Build failed: " + (result.stderr || result.stdout).slice(0, 300));
+      }
+
+      return "Build succeeded";
+    });
+    phases.push(buildPhase);
+
+    // ====== PHASE 7: PREVIEW ======
+    if (this.config.autoPreview) {
+      const previewPhase = await this.runPhase("preview", async () => {
+        const preview = await this.previewTool.startDevServer();
+        previewUrl = preview.url;
+        return `Server running at ${preview.url} (${preview.framework})`;
+      });
+      phases.push(previewPhase);
+    }
+
+    // ====== PHASE 8: VERIFY ======
+    if (previewUrl) {
+      const verifyPhase = await this.runPhase("verify", async () => {
+        const browser = new BrowserTool(this.terminal);
+        const health = await browser.checkUrl(previewUrl!);
+
+        if (!health.ok) {
+          // Wait and retry
+          await new Promise((r) => setTimeout(r, 5000));
+          const retry = await browser.checkUrl(previewUrl!);
+          if (!retry.ok) throw new Error(`Server not responding: status ${retry.status}`);
+        }
+
+        return `Server healthy: HTTP ${health.status}`;
+      });
+      phases.push(verifyPhase);
+    }
+
+    // ====== PHASE 9: COMMIT ======
+    const allSuccess = phases.every((p) => p.status === "success" || p.status === "fixed" || p.status === "skipped");
+
+    if (allSuccess) {
+      const commitPhase = await this.runPhase("commit", async () => {
+        await this.terminal.execute("git add -A");
+        const msg = `feat: ${task.slice(0, 50)}`;
+        await this.terminal.execute(`git commit -m "${msg}" --allow-empty`);
+        return `Committed: ${msg}`;
+      });
+      phases.push(commitPhase);
+    }
+
+    // ====== PHASE 10: POST-SNAPSHOT ======
+    if (this.config.autoSnapshot && allSuccess) {
+      const snapPhase = await this.runPhase("post-snapshot", async () => {
+        const snap = await this.snapshotTool.create(
+          `post-build-${flowId.slice(0, 8)}`,
+          `After: ${task.slice(0, 100)}`
+        );
+        return `Post-build snapshot: ${snap.id}`;
+      });
+      phases.push(snapPhase);
+    }
+
+    // Record for learning
+    this.smartContext.recordTask({
+      taskId: flowId,
+      task,
+      success: allSuccess,
+      stepsCount: plan?.steps?.length || 0,
+      errorsCount: phases.filter((p) => p.retries > 0).length,
+      duration: Date.now() - startTime,
+      fixesApplied: phases.filter((p) => p.status === "fixed").map((p) => p.name),
+      timestamp: new Date(),
+    });
+
+    this.onLog(`\n${"═".repeat(60)}`);
+    this.onLog(`${allSuccess ? "✅" : "⚠️"} BUILD FLOW ${allSuccess ? "COMPLETE" : "PARTIAL"} (${((Date.now() - startTime) / 1000).toFixed(1)}s)`);
+    this.onLog(`${"═".repeat(60)}\n`);
+
+    return this.buildResult(flowId, allSuccess, phases, startTime, filesCreated, filesModified, previewUrl, testResults, lintResults);
+  }
+
+  private async runPhase(
+    name: string,
+    fn: () => Promise<string>
+  ): Promise<BuildFlowResult["phases"][0]> {
+    const start = Date.now();
+    let retries = 0;
+
+    this.onPhase(name, "running");
+    this.onLog(`\n▶ Phase: ${name.toUpperCase()}`);
+
+    try {
+      const output = await fn();
+      this.onPhase(name, "success");
+      this.onLog(`  ✅ ${name}: ${output}`);
+      return { name, status: "success", duration: Date.now() - start, output, retries };
+    } catch (err: any) {
+      retries++;
+      this.onLog(`  ⚠️ ${name} failed: ${err.message}`);
+
+      // One retry
+      try {
+        const output = await fn();
+        this.onPhase(name, "fixed");
+        this.onLog(`  🔧 ${name}: Fixed — ${output}`);
+        return { name, status: "fixed", duration: Date.now() - start, output, retries };
+      } catch (err2: any) {
+        this.onPhase(name, "failed");
+        this.onLog(`  ❌ ${name}: ${err2.message}`);
+        return { name, status: "failed", duration: Date.now() - start, error: err2.message, retries };
+      }
+    }
+  }
+
+  private buildResult(
+    flowId: string,
+    success: boolean,
+    phases: BuildFlowResult["phases"],
+    startTime: number,
+    filesCreated: string[],
+    filesModified: string[],
+    previewUrl?: string,
+    testResults?: { passed: number; failed: number },
+    lintResults?: { errors: number; warnings: number }
+  ): BuildFlowResult {
+    return {
+      flowId,
+      success,
+      phases,
+      totalDuration: Date.now() - startTime,
+      filesCreated: [...new Set(filesCreated)],
+      filesModified: [...new Set(filesModified)],
+      previewUrl,
+      testResults,
+      lintResults,
+    };
+  }
+
+  async cleanup() {
+    await this.previewTool.stopAll();
+    this.terminal.stopAll();
+  }
+}

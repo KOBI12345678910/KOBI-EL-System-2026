@@ -1,0 +1,467 @@
+[
+  {
+    "model": "lead_sources",
+    "expected_table": "crm.lead_sources",
+    "domain": "crm"
+  },
+  {
+    "model": "contacts",
+    "expected_table": "crm.contacts",
+    "domain": "crm"
+  },
+  {
+    "model": "activities",
+    "expected_table": "crm.activities",
+    "domain": "crm"
+  },
+  {
+    "model": "meetings",
+    "expected_table": "crm.meetings",
+    "domain": "crm"
+  },
+  {
+    "model": "communication_logs",
+    "expected_table": "crm.communication_logs",
+    "domain": "crm"
+  },
+  {
+    "model": "customer_segments",
+    "expected_table": "crm.customer_segments",
+    "domain": "crm"
+  },
+  {
+    "model": "quote_items",
+    "expected_table": "sales.quote_items",
+    "domain": "sales"
+  },
+  {
+    "model": "pricing_rules",
+    "expected_table": "sales.pricing_rules",
+    "domain": "sales"
+  },
+  {
+    "model": "discounts",
+    "expected_table": "sales.discounts",
+    "domain": "sales"
+  },
+  {
+    "model": "sales_orders",
+    "expected_table": "sales.sales_orders",
+    "domain": "sales"
+  },
+  {
+    "model": "sales_pipeline",
+    "expected_table": "sales.sales_pipeline",
+    "domain": "sales"
+  },
+  {
+    "model": "project_tasks",
+    "expected_table": "projects.project_tasks",
+    "domain": "projects"
+  },
+  {
+    "model": "milestones",
+    "expected_table": "projects.milestones",
+    "domain": "projects"
+  },
+  {
+    "model": "dependencies",
+    "expected_table": "projects.dependencies",
+    "domain": "projects"
+  },
+  {
+    "model": "project_resources",
+    "expected_table": "projects.project_resources",
+    "domain": "projects"
+  },
+  {
+    "model": "project_risk_entries",
+    "expected_table": "projects.project_risk_entries",
+    "domain": "projects"
+  },
+  {
+    "model": "project_progress_logs",
+    "expected_table": "projects.project_progress_logs",
+    "domain": "projects"
+  },
+  {
+    "model": "technical_specs",
+    "expected_table": "engineering.technical_specs",
+    "domain": "engineering"
+  },
+  {
+    "model": "drawings",
+    "expected_table": "engineering.drawings",
+    "domain": "engineering"
+  },
+  {
+    "model": "bom_headers",
+    "expected_table": "engineering.bom_headers",
+    "domain": "engineering"
+  },
+  {
+    "model": "bom_items",
+    "expected_table": "engineering.bom_items",
+    "domain": "engineering"
+  },
+  {
+    "model": "revision_control",
+    "expected_table": "engineering.revision_control",
+    "domain": "engineering"
+  },
+  {
+    "model": "product_configurations",
+    "expected_table": "engineering.product_configurations",
+    "domain": "engineering"
+  },
+  {
+    "model": "engineering_requests",
+    "expected_table": "engineering.engineering_requests",
+    "domain": "engineering"
+  },
+  {
+    "model": "approval_drawings",
+    "expected_table": "engineering.approval_drawings",
+    "domain": "engineering"
+  },
+  {
+    "model": "supplier_price_lists",
+    "expected_table": "procurement.supplier_price_lists",
+    "domain": "procurement"
+  },
+  {
+    "model": "purchase_requests",
+    "expected_table": "procurement.purchase_requests",
+    "domain": "procurement"
+  },
+  {
+    "model": "purchase_order_items",
+    "expected_table": "procurement.purchase_order_items",
+    "domain": "procurement"
+  },
+  {
+    "model": "goods_receipts",
+    "expected_table": "procurement.goods_receipts",
+    "domain": "procurement"
+  },
+  {
+    "model": "procurement_approvals",
+    "expected_table": "procurement.procurement_approvals",
+    "domain": "procurement"
+  },
+  {
+    "model": "items",
+    "expected_table": "inventory.items",
+    "domain": "inventory"
+  },
+  {
+    "model": "raw_materials",
+    "expected_table": "inventory.raw_materials",
+    "domain": "inventory"
+  },
+  {
+    "model": "stock_balances",
+    "expected_table": "inventory.stock_balances",
+    "domain": "inventory"
+  },
+  {
+    "model": "stock_movements",
+    "expected_table": "inventory.stock_movements",
+    "domain": "inventory"
+  },
+  {
+    "model": "reservations",
+    "expected_table": "inventory.reservations",
+    "domain": "inventory"
+  },
+  {
+    "model": "batch_lots",
+    "expected_table": "inventory.batch_lots",
+    "domain": "inventory"
+  },
+  {
+    "model": "production_orders",
+    "expected_table": "production.production_orders",
+    "domain": "production"
+  },
+  {
+    "model": "production_steps",
+    "expected_table": "production.production_steps",
+    "domain": "production"
+  },
+  {
+    "model": "work_centers",
+    "expected_table": "production.work_centers",
+    "domain": "production"
+  },
+  {
+    "model": "labor_logs",
+    "expected_table": "production.labor_logs",
+    "domain": "production"
+  },
+  {
+    "model": "machine_logs",
+    "expected_table": "production.machine_logs",
+    "domain": "production"
+  },
+  {
+    "model": "material_consumption",
+    "expected_table": "production.material_consumption",
+    "domain": "production"
+  },
+  {
+    "model": "scrap_logs",
+    "expected_table": "production.scrap_logs",
+    "domain": "production"
+  },
+  {
+    "model": "production_quality_checks",
+    "expected_table": "production.production_quality_checks",
+    "domain": "production"
+  },
+  {
+    "model": "installation_orders",
+    "expected_table": "installation.installation_orders",
+    "domain": "installation"
+  },
+  {
+    "model": "installation_tasks",
+    "expected_table": "installation.installation_tasks",
+    "domain": "installation"
+  },
+  {
+    "model": "installation_teams",
+    "expected_table": "installation.installation_teams",
+    "domain": "installation"
+  },
+  {
+    "model": "schedules",
+    "expected_table": "installation.schedules",
+    "domain": "installation"
+  },
+  {
+    "model": "site_visits",
+    "expected_table": "installation.site_visits",
+    "domain": "installation"
+  },
+  {
+    "model": "completion_reports",
+    "expected_table": "installation.completion_reports",
+    "domain": "installation"
+  },
+  {
+    "model": "handover_documents",
+    "expected_table": "installation.handover_documents",
+    "domain": "installation"
+  },
+  {
+    "model": "punch_lists",
+    "expected_table": "installation.punch_lists",
+    "domain": "installation"
+  },
+  {
+    "model": "service_tickets",
+    "expected_table": "service.service_tickets",
+    "domain": "service"
+  },
+  {
+    "model": "warranty_records",
+    "expected_table": "service.warranty_records",
+    "domain": "service"
+  },
+  {
+    "model": "service_visits",
+    "expected_table": "service.service_visits",
+    "domain": "service"
+  },
+  {
+    "model": "issue_categories",
+    "expected_table": "service.issue_categories",
+    "domain": "service"
+  },
+  {
+    "model": "resolution_logs",
+    "expected_table": "service.resolution_logs",
+    "domain": "service"
+  },
+  {
+    "model": "maintenance_plans",
+    "expected_table": "service.maintenance_plans",
+    "domain": "service"
+  },
+  {
+    "model": "service_feedback",
+    "expected_table": "service.service_feedback",
+    "domain": "service"
+  },
+  {
+    "model": "sla_rules",
+    "expected_table": "service.sla_rules",
+    "domain": "service"
+  },
+  {
+    "model": "invoice_items",
+    "expected_table": "finance.invoice_items",
+    "domain": "finance"
+  },
+  {
+    "model": "expense_categories",
+    "expected_table": "finance.expense_categories",
+    "domain": "finance"
+  },
+  {
+    "model": "profitability_snapshots",
+    "expected_table": "finance.profitability_snapshots",
+    "domain": "finance"
+  },
+  {
+    "model": "contractors",
+    "expected_table": "hr_workforce.contractors",
+    "domain": "hr_workforce"
+  },
+  {
+    "model": "teams",
+    "expected_table": "hr_workforce.teams",
+    "domain": "hr_workforce"
+  },
+  {
+    "model": "attendance_logs",
+    "expected_table": "hr_workforce.attendance_logs",
+    "domain": "hr_workforce"
+  },
+  {
+    "model": "assignments",
+    "expected_table": "hr_workforce.assignments",
+    "domain": "hr_workforce"
+  },
+  {
+    "model": "payroll_inputs",
+    "expected_table": "hr_workforce.payroll_inputs",
+    "domain": "hr_workforce"
+  },
+  {
+    "model": "performance_reviews",
+    "expected_table": "hr_workforce.performance_reviews",
+    "domain": "hr_workforce"
+  },
+  {
+    "model": "skill_matrix",
+    "expected_table": "hr_workforce.skill_matrix",
+    "domain": "hr_workforce"
+  },
+  {
+    "model": "document_links",
+    "expected_table": "documents.document_links",
+    "domain": "documents"
+  },
+  {
+    "model": "templates",
+    "expected_table": "documents.templates",
+    "domain": "documents"
+  },
+  {
+    "model": "generated_files",
+    "expected_table": "documents.generated_files",
+    "domain": "documents"
+  },
+  {
+    "model": "archive_records",
+    "expected_table": "documents.archive_records",
+    "domain": "documents"
+  },
+  {
+    "model": "dashboards",
+    "expected_table": "analytics.dashboards",
+    "domain": "analytics"
+  },
+  {
+    "model": "kpi_definitions",
+    "expected_table": "analytics.kpi_definitions",
+    "domain": "analytics"
+  },
+  {
+    "model": "reports",
+    "expected_table": "analytics.reports",
+    "domain": "analytics"
+  },
+  {
+    "model": "report_sources",
+    "expected_table": "analytics.report_sources",
+    "domain": "analytics"
+  },
+  {
+    "model": "scenario_models",
+    "expected_table": "analytics.scenario_models",
+    "domain": "analytics"
+  },
+  {
+    "model": "scorecards",
+    "expected_table": "analytics.scorecards",
+    "domain": "analytics"
+  },
+  {
+    "model": "automation_rules",
+    "expected_table": "ai_automation.automation_rules",
+    "domain": "ai_automation"
+  },
+  {
+    "model": "automation_runs",
+    "expected_table": "ai_automation.automation_runs",
+    "domain": "ai_automation"
+  },
+  {
+    "model": "ai_agents",
+    "expected_table": "ai_automation.ai_agents",
+    "domain": "ai_automation"
+  },
+  {
+    "model": "ai_actions",
+    "expected_table": "ai_automation.ai_actions",
+    "domain": "ai_automation"
+  },
+  {
+    "model": "prediction_outputs",
+    "expected_table": "ai_automation.prediction_outputs",
+    "domain": "ai_automation"
+  },
+  {
+    "model": "recommendation_logs",
+    "expected_table": "ai_automation.recommendation_logs",
+    "domain": "ai_automation"
+  },
+  {
+    "model": "prompt_templates",
+    "expected_table": "ai_automation.prompt_templates",
+    "domain": "ai_automation"
+  },
+  {
+    "model": "orchestration_flows",
+    "expected_table": "ai_automation.orchestration_flows",
+    "domain": "ai_automation"
+  },
+  {
+    "model": "users",
+    "expected_table": "governance.users",
+    "domain": "governance"
+  },
+  {
+    "model": "change_logs",
+    "expected_table": "governance.change_logs",
+    "domain": "governance"
+  },
+  {
+    "model": "system_settings",
+    "expected_table": "governance.system_settings",
+    "domain": "governance"
+  },
+  {
+    "model": "validation_rules",
+    "expected_table": "governance.validation_rules",
+    "domain": "governance"
+  },
+  {
+    "model": "data_quality_issues",
+    "expected_table": "governance.data_quality_issues",
+    "domain": "governance"
+  }
+]

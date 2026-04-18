@@ -1,0 +1,451 @@
+# Know Do ERP — Replit Agent Full Rebuild Prompt
+# טכנו-כל עוזי — פרומפט מלא לבנייה מחדש
+
+---
+
+## הוראות כלליות ל-Agent
+
+אתה בונה מערכת ERP מלאה בשם **Know Do** עבור חברת **טכנו-כל עוזי** — מפעל מסגרות ברזל, אלומיניום, נירוסטה וזכוכית.
+
+### כללי ברזל:
+- **Stack**: React + Node.js + PostgreSQL
+- **שפה**: עברית RTL בלבד בכל ה-UI
+- **Theme**: Dark Slate — רקע #0f172a, כרטיסים #1e293b, accent #38bdf8
+- **מע"מ**: תמיד 18% (מכפיל 1.18)
+- **מטבע**: ₪ — ערכים כספיים נשמרים כ-integer באגורות (agorot)
+- **TypeScript strict mode** בכל הקוד
+- **כל טבלה חייבת**: id, created_at, updated_at, created_by, is_active, notes
+- **Audit log**: כל שינוי נרשם עם user, timestamp, action, old_value, new_value
+- **Soft delete**: אף רשומה לא נמחקת — רק is_active = false
+- **כל דף חייב לעבוד**: טעינה, יצירה, עריכה, מחיקה, חיפוש, סינון, ייצוא
+- **Navigation**: סיידבר ימני קבוע עם כל הקטגוריות והתתי-קטגוריות
+
+### פאזות בנייה:
+1. **Phase 1**: DB Schema — בנה את כל הטבלאות עם כל השדות
+2. **Phase 2**: API Routes — CRUD לכל ישות
+3. **Phase 3**: UI Pages — כל הדפים עם טפסים, טבלאות, דשבורדים
+4. **Phase 4**: אינטגרציות, אוטומציות, דוחות מתקדמים
+
+### אם נתקעת על שגיאה:
+שלח: "ignore this error for now, continue to the next module"
+
+---
+
+## 1. ראשי (CORE)
+
+### 1.1 דשבורד מנהלים (/dashboard)
+סוג: Dashboard (לא ישות DB — aggregation)
+- KPI Cards: הכנסות חודשי/שנתי, הוצאות, רווח גולמי, רווח נקי, אחוז רווח
+- בריאות עסק (Health Score 0-100)
+- גרף הכנסות vs הוצאות (6 חודשים)
+- גרף תזרים מזומנים (12 חודשים)
+- פילוח הוצאות (Pie chart)
+- ביצועי מחלקות (Bar chart)
+- טופ 5 לקוחות לפי הכנסות
+- הזמנות אחרונות
+- הוראות עבודה פעילות
+- התראות דחופות
+- כפתורי פעולה מהירה: לקוח חדש, הזמנה חדשה, הצעת מחיר, פקודת עבודה
+
+### 1.2 סקירת פלטפורמה (/platform)
+סוג: Dashboard
+- ספירת ישויות: ספקים, לקוחות, הוראות עבודה, הזמנות רכש, הזמנות מכירה, הכנסות
+- KPIs: אחוז הכנת תוכניות, קצב מימוש ייצור, ממוצע גודל הזמנה, אחוז הצלחת מכירות
+- סטטוס ייצור (Bar chart)
+- פילוח עסקאות (Donut chart)
+- מעקב פעילות בזמן אמת
+- תובנות AI חכמות
+- פעולות מהירות
+- מודולים במערכת
+- סטטיסטיקות מחלקות
+
+### 1.3 צ'אט ארגוני (/org-chat)
+טבלה: org_chat_messages
+- id: UUID PK
+- channel_id: FK → org_chat_channels
+- sender_id: FK → users
+- message_type: ENUM('text','file','image','system')
+- content: TEXT
+- parent_message_id: UUID (thread)
+- is_pinned: BOOLEAN
+- read_by: JSONB
+- reactions: JSONB
+- attachments: JSONB
+- created_at, updated_at, is_active
+
+טבלה: org_chat_channels
+- id, name, description, channel_type: ENUM('general','department','project','private')
+- members: JSONB, created_by, is_archived
+
+### 1.4 עוזי AI צ'אט (/claude-chat)
+טבלה: ai_chat_sessions
+- id: UUID PK
+- user_id: FK → users
+- session_type: ENUM('development','support','analysis','automation')
+- title: VARCHAR(200)
+- messages: JSONB
+- total_tokens: INTEGER
+- model: VARCHAR(50)
+- status: ENUM('active','archived')
+- context_data: JSONB
+- created_at, updated_at
+
+### 1.5 דוח מצב החברה (/company-report)
+סוג: Dashboard/Report
+- סיכום כל ישויות: מודולים, חומרי גלם, מוצרים, ספקים, לקוחות, עובדים
+- כספים: סה"כ מכירות, סה"כ הוצאות, פקודות יומן, חשבונות במפת חשבונות
+- ייצור: הוראות עבודה (סה"כ, הושלמו, בביצוע, מתוכנן)
+- מכירות: הזמנות מכירה, ערך מכירות, הצעות מחיר, לקוחות פעילים
+- רכש וספקים
+- ספקים עיקריים + קטגוריה
+- עובדים לפי מחלקה
+- הזמנות מכירה אחרונות
+- הוראות עבודה/ייצור
+
+### 1.6 מרכז בקרה ותפעול (/control-center)
+סוג: Dashboard
+- סטטוס מערכות: DB, API, Storage, Integrations
+- לוג שגיאות אחרון
+- ביצועי מערכת
+- משתמשים מחוברים
+- תורי עבודה
+- התראות מערכת
+
+### 1.7 מרכזית התראות (/alerts)
+טבלה: alerts
+- id: UUID PK
+- user_id: FK → users
+- alert_type: ENUM('info','warning','error','critical','reminder')
+- category: ENUM('inventory','finance','production','sales','hr','system')
+- title: VARCHAR(200)
+- message: TEXT
+- source_entity: VARCHAR(100)
+- source_id: UUID
+- is_read: BOOLEAN DEFAULT false
+- is_dismissed: BOOLEAN DEFAULT false
+- action_url: VARCHAR(500)
+- priority: INTEGER (1-5)
+- expires_at: TIMESTAMP
+- created_at, updated_at
+
+---
+
+## 2. AI וטכנולוגיה
+
+### 2.1 AI Engine Hub (/ai/hub)
+סוג: Dashboard — מרכז שליטה לכל מודלי ה-AI
+
+### 2.2 Lead Scoring AI (/ai/lead-scoring)
+טבלה: ai_lead_scores
+- id, lead_id: FK → leads
+- score: DECIMAL(5,2) (0-100)
+- score_breakdown: JSONB
+- predicted_conversion_rate: DECIMAL(5,4)
+- predicted_deal_value: INTEGER (agorot)
+- confidence_level: DECIMAL(5,4)
+- model_version: VARCHAR(20)
+- scoring_date: TIMESTAMP
+- created_at
+
+### 2.3 Call NLP Analysis (/ai/call-analysis)
+טבלה: ai_call_analyses
+- id, call_id: FK → calls
+- transcript: TEXT
+- sentiment_score: DECIMAL(5,2) (-100 to 100)
+- key_phrases: JSONB
+- action_items: JSONB
+- customer_intent: ENUM('purchase','inquiry','complaint','support','other')
+- urgency_level: INTEGER (1-5)
+- summary: TEXT
+- language: VARCHAR(10)
+- duration_seconds: INTEGER
+- created_at
+
+### 2.4 Predictive Analytics (/ai/predictive)
+טבלה: ai_predictions
+- id, prediction_type: ENUM('revenue','demand','churn','inventory','cash_flow')
+- target_entity: VARCHAR(100)
+- target_id: UUID
+- predicted_value: DECIMAL(15,2)
+- confidence_interval_low: DECIMAL(15,2)
+- confidence_interval_high: DECIMAL(15,2)
+- prediction_date: DATE
+- horizon_days: INTEGER
+- model_version: VARCHAR(20)
+- actual_value: DECIMAL(15,2)
+- accuracy_score: DECIMAL(5,4)
+- created_at
+
+### 2.5 AI Chatbot Settings (/ai/chatbot-settings)
+טבלה: ai_chatbot_config
+- id, name, model, temperature, max_tokens, system_prompt, knowledge_base_ids: JSONB
+- active_channels: JSONB, response_language, auto_escalation_rules: JSONB
+- working_hours: JSONB, is_active, created_at, updated_at
+
+### 2.6 מודלי AI (/ai/models)
+טבלה: ai_models
+- id, name, model_type: ENUM('classification','regression','nlp','vision','generative')
+- provider: ENUM('openai','anthropic','local','custom')
+- version: VARCHAR(20)
+- api_endpoint: VARCHAR(500)
+- api_key_ref: VARCHAR(100)
+- parameters: JSONB
+- usage_count: INTEGER
+- total_tokens_used: BIGINT
+- monthly_cost: INTEGER (agorot)
+- is_active, created_at, updated_at
+
+### 2.7 סוכני AI (/ai/agents)
+טבלה: ai_agents
+- id, name, agent_type: ENUM('frontend','backend','qa','bug_fix','devops','code_review','ux','integrations','db','security')
+- system_prompt: TEXT
+- core_rules: JSONB
+- tasks: JSONB
+- model_id: FK → ai_models
+- execution_count: INTEGER
+- avg_execution_time: DECIMAL(10,2)
+- success_rate: DECIMAL(5,4)
+- is_active, created_at, updated_at
+
+### 2.8 תבניות פרומפט (/ai/prompt-templates)
+טבלה: ai_prompt_templates
+- id, name, category, template_text: TEXT, variables: JSONB
+- usage_count, avg_quality_score: DECIMAL(5,2), is_active, created_at, updated_at
+
+### 2.9 מפתחות API (/ai/api-keys)
+טבלה: ai_api_keys
+- id, provider, key_name, encrypted_key, usage_limit, current_usage, expires_at
+- is_active, created_at, updated_at
+
+### 2.10 שאילתות AI (/ai/queries)
+טבלה: ai_queries
+- id, user_id, model_id, prompt: TEXT, response: TEXT, tokens_used, latency_ms
+- quality_rating: INTEGER(1-5), created_at
+
+### 2.11 המלצות AI (/ai/recommendations)
+טבלה: ai_recommendations
+- id, target_entity, target_id, recommendation_type, title, description: TEXT
+- confidence: DECIMAL(5,4), priority, status: ENUM('pending','accepted','rejected','implemented')
+- impact_estimate: JSONB, created_at
+
+### 2.12 תגובות AI (/ai/responses)
+טבלה: ai_responses
+- id, query_id: FK, response_text: TEXT, response_format: ENUM('text','json','table','chart')
+- quality_score: DECIMAL(5,2), user_feedback: JSONB, created_at
+
+### 2.13 לוגים AI (/ai/logs)
+טבלה: ai_logs
+- id, event_type, model_id, user_id, request_data: JSONB, response_data: JSONB
+- tokens_in, tokens_out, cost: INTEGER(agorot), latency_ms, error: TEXT
+- created_at
+
+---
+
+## 3. לקוחות ומכירות (CRM + Sales)
+
+### 3.1 ניהול לקוחות (/crm/customers)
+טבלה: customers
+- id: UUID PK
+- customer_number: VARCHAR(20) UNIQUE (auto: C-2026-001)
+- customer_type: ENUM('individual','company','government','non_profit')
+- company_name: VARCHAR(200)
+- trade_name: VARCHAR(200)
+- tax_id: VARCHAR(20)
+- vat_number: VARCHAR(20)
+- first_name: VARCHAR(100)
+- last_name: VARCHAR(100)
+- email: VARCHAR(200)
+- phone: VARCHAR(20)
+- mobile: VARCHAR(20)
+- fax: VARCHAR(20)
+- website: VARCHAR(300)
+- billing_address_street: VARCHAR(300)
+- billing_address_city: VARCHAR(100)
+- billing_address_state: VARCHAR(100)
+- billing_address_zip: VARCHAR(20)
+- billing_address_country: VARCHAR(100) DEFAULT 'ישראל'
+- shipping_address_street: VARCHAR(300)
+- shipping_address_city: VARCHAR(100)
+- shipping_address_state: VARCHAR(100)
+- shipping_address_zip: VARCHAR(20)
+- shipping_address_country: VARCHAR(100)
+- shipping_same_as_billing: BOOLEAN DEFAULT true
+- industry: VARCHAR(100)
+- customer_group: ENUM('vip','regular','wholesale','retail','government')
+- payment_terms_id: FK → payment_terms
+- credit_limit: INTEGER (agorot)
+- current_balance: INTEGER (agorot)
+- currency: VARCHAR(3) DEFAULT 'ILS'
+- price_list_id: FK → price_lists
+- discount_percent: DECIMAL(5,2)
+- sales_rep_id: FK → employees
+- territory: VARCHAR(100)
+- source: ENUM('website','referral','cold_call','exhibition','social_media','google_ads','facebook','other')
+- lifecycle_stage: ENUM('lead','prospect','active','inactive','churned')
+- tags: JSONB
+- custom_fields: JSONB
+- notes: TEXT
+- is_active: BOOLEAN DEFAULT true
+- created_by: FK → users
+- created_at: TIMESTAMP
+- updated_at: TIMESTAMP
+
+### 3.2 אנשי קשר (/crm/contacts)
+טבלה: contacts
+- id: UUID PK
+- customer_id: FK → customers
+- first_name: VARCHAR(100)
+- last_name: VARCHAR(100)
+- title: VARCHAR(100)
+- department: VARCHAR(100)
+- email: VARCHAR(200)
+- phone: VARCHAR(20)
+- mobile: VARCHAR(20)
+- is_primary: BOOLEAN DEFAULT false
+- is_billing_contact: BOOLEAN DEFAULT false
+- is_shipping_contact: BOOLEAN DEFAULT false
+- preferred_contact_method: ENUM('email','phone','whatsapp','sms')
+- birthday: DATE
+- notes: TEXT
+- is_active, created_at, updated_at
+
+### 3.3 לידים (/crm/leads)
+טבלה: leads
+- id: UUID PK
+- lead_number: VARCHAR(20) UNIQUE
+- source: ENUM('website','referral','cold_call','exhibition','social_media','google_ads','facebook','whatsapp','phone','walk_in','other')
+- status: ENUM('new','contacted','qualified','proposal','negotiation','won','lost','disqualified')
+- first_name, last_name, company_name, email, phone, mobile
+- address_street, address_city, address_zip
+- product_interest: JSONB
+- estimated_value: INTEGER (agorot)
+- estimated_close_date: DATE
+- lead_score: DECIMAL(5,2) (0-100)
+- assigned_to: FK → employees
+- campaign_id: FK → marketing_campaigns
+- conversion_date: TIMESTAMP
+- converted_customer_id: FK → customers
+- lost_reason: TEXT
+- next_follow_up: TIMESTAMP
+- follow_up_count: INTEGER DEFAULT 0
+- tags: JSONB
+- notes: TEXT
+- is_active, created_by, created_at, updated_at
+
+### 3.4 הזמנות מכירה (/sales/orders)
+טבלה: sales_orders
+- id: UUID PK
+- order_number: VARCHAR(20) UNIQUE (auto: SO-2026-001)
+- customer_id: FK → customers
+- contact_id: FK → contacts
+- quote_id: FK → quotes
+- order_date: DATE
+- delivery_date: DATE
+- status: ENUM('draft','confirmed','in_production','ready','shipped','delivered','invoiced','cancelled')
+- priority: ENUM('low','medium','high','urgent','critical')
+- currency: VARCHAR(3) DEFAULT 'ILS'
+- exchange_rate: DECIMAL(10,6) DEFAULT 1
+- subtotal: INTEGER (agorot)
+- discount_percent: DECIMAL(5,2)
+- discount_amount: INTEGER (agorot)
+- tax_rate: DECIMAL(5,2) DEFAULT 18
+- tax_amount: INTEGER (agorot)
+- shipping_cost: INTEGER (agorot)
+- total_amount: INTEGER (agorot)
+- payment_terms_id: FK → payment_terms
+- payment_status: ENUM('unpaid','partial','paid','overdue','refunded')
+- paid_amount: INTEGER (agorot)
+- billing_address: JSONB
+- shipping_address: JSONB
+- shipping_method: VARCHAR(100)
+- sales_rep_id: FK → employees
+- project_id: FK → projects
+- internal_notes: TEXT
+- customer_notes: TEXT
+- terms_conditions: TEXT
+- approved_by: FK → users
+- approved_at: TIMESTAMP
+- is_active, created_by, created_at, updated_at
+
+טבלה: sales_order_items
+- id: UUID PK
+- sales_order_id: FK → sales_orders
+- line_number: INTEGER
+- product_id: FK → products
+- description: TEXT
+- quantity: DECIMAL(12,3)
+- unit: VARCHAR(20)
+- unit_price: INTEGER (agorot)
+- discount_percent: DECIMAL(5,2)
+- discount_amount: INTEGER (agorot)
+- tax_rate: DECIMAL(5,2) DEFAULT 18
+- line_total: INTEGER (agorot)
+- delivery_date: DATE
+- status: ENUM('pending','in_production','ready','shipped','delivered')
+- work_order_id: FK → work_orders
+- notes: TEXT
+- sort_order: INTEGER
+- created_at, updated_at
+
+### 3.5 הצעות מחיר (/sales/quotes)
+טבלה: quotes
+- id: UUID PK
+- quote_number: VARCHAR(20) UNIQUE (auto: QT-2026-001)
+- customer_id: FK → customers
+- contact_id: FK → contacts
+- lead_id: FK → leads
+- quote_date: DATE
+- valid_until: DATE
+- status: ENUM('draft','sent','viewed','accepted','rejected','expired','revised')
+- revision_number: INTEGER DEFAULT 1
+- parent_quote_id: UUID
+- currency: VARCHAR(3) DEFAULT 'ILS'
+- subtotal: INTEGER (agorot)
+- discount_percent: DECIMAL(5,2)
+- discount_amount: INTEGER (agorot)
+- tax_rate: DECIMAL(5,2) DEFAULT 18
+- tax_amount: INTEGER (agorot)
+- total_amount: INTEGER (agorot)
+- payment_terms_id: FK → payment_terms
+- delivery_terms: TEXT
+- scope_of_work: TEXT
+- exclusions: TEXT
+- terms_conditions: TEXT
+- sales_rep_id: FK → employees
+- approved_by: FK → users
+- approved_at: TIMESTAMP
+- sent_at: TIMESTAMP
+- viewed_at: TIMESTAMP
+- accepted_at: TIMESTAMP
+- rejected_reason: TEXT
+- conversion_order_id: FK → sales_orders
+- internal_notes: TEXT
+- customer_notes: TEXT
+- attachments: JSONB
+- is_active, created_by, created_at, updated_at
+
+טבלה: quote_items
+- id, quote_id: FK, line_number, product_id: FK, description: TEXT
+- quantity: DECIMAL(12,3), unit, unit_price: INTEGER(agorot)
+- cost_price: INTEGER(agorot), margin_percent: DECIMAL(5,2)
+- discount_percent, discount_amount, tax_rate, line_total: INTEGER(agorot)
+- delivery_days: INTEGER, notes, sort_order, created_at, updated_at
+
+### 3.6 חשבוניות מכירה (/sales/invoices)
+טבלה: sales_invoices
+- id: UUID PK
+- invoice_number: VARCHAR(20) UNIQUE
+- invoice_type: ENUM('invoice','credit_note','debit_note','proforma','receipt','tax_invoice')
+- customer_id: FK → customers
+- sales_order_id: FK → sales_orders
+- invoice_date: DATE
+- due_date: DATE
+- status: ENUM('draft','sent','viewed','partial','paid','overdue','cancelled','voided')
+- currency: VARCHAR(3) DEFAULT 'ILS'
+- subtotal: INTEGER (agorot)
+- discount_amount: INTEGER (agorot)
+- tax_rate: DECIMAL(5,2) DEFAULT 18
+- tax_amount: INTEGER (agorot)
+- total_amount: INTEGER (agorot)
+- paid_amount: INTEGER (agorot)
+- balance_due: I

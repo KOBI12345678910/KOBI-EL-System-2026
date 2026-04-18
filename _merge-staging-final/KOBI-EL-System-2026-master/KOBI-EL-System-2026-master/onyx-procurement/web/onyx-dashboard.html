@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ONYX · Procurement Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      background: #0b0d10;
+      color: #e6edf3;
+      font-family: 'Rubik', system-ui, -apple-system, sans-serif;
+      direction: rtl;
+      -webkit-font-smoothing: antialiased;
+    }
+    #root { min-height: 100vh; }
+    .boot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      gap: 14px;
+    }
+    .boot .logo {
+      width: 68px;
+      height: 68px;
+      border-radius: 16px;
+      background: #4a9eff;
+      color: #0b0d10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: 800;
+    }
+    .boot .title {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #e6edf3;
+    }
+    .boot .sub {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <div class="boot">
+      <div class="logo">◆</div>
+      <div class="title">ONYX PROCUREMENT</div>
+      <div class="sub">טוען דשבורד רכש...</div>
+    </div>
+  </div>
+
+  <!-- Configure API base + key before loading the app -->
+  <script>
+    // Override the API base here if backend is on a different host.
+    // window.ONYX_API_URL = "http://localhost:3100";
+    // To set the API key via the browser console, run:
+    //   localStorage.setItem("onyx_api_key", "YOUR_KEY")
+  </script>
+
+  <!-- React 18 + Babel standalone (CDN only, no npm deps) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Load and transpile onyx-dashboard.jsx on the fly -->
+  <script>
+    (async () => {
+      try {
+        const { useState, useEffect, useCallback, useMemo, useRef } = React;
+
+        const res = await fetch("./onyx-dashboard.jsx");
+        if (!res.ok) throw new Error("לא ניתן לטעון onyx-dashboard.jsx (" + res.status + ")");
+        let src = await res.text();
+
+        // Strip the top ES-module React hooks import — hooks are already in scope.
+        src = src.replace(/^\s*import\s*\{[^}]*\}\s*from\s*["']react["'];?\s*/m, "");
+
+        // Replace `export default function OnyxDashboard` with a plain declaration
+        src = src.replace(/export\s+default\s+function\s+OnyxDashboard/, "function OnyxDashboard");
+
+        // Replace any `import.meta?.env?...` references (unsupported in Babel standalone)
+        src = src.replace(/import\.meta\?\.env\?\.[A-Z_]+/g, "undefined");
+        src = src.replace(/import\.meta/g, "({})");
+
+        // Transpile JSX via Babel standalone
+        const compiled = Babel.transform(src, {
+          presets: ["env", "react"],
+        }).code;
+
+        // Execute in a scope that exposes React hooks + returns OnyxDashboard
+        const fn = new Function(
+          "React", "useState", "useEffect", "useCallback", "useMemo", "useRef",
+          compiled + "\n;return OnyxDashboard;"
+        );
+        const OnyxDashboard = fn(React, useState, useEffect, useCallback, useMemo, useRef);
+
+        const root = ReactDOM.createRoot(document.getElementById("root"));
+        root.render(React.createElement(OnyxDashboard));
+      } catch (err) {
+        console.error("Onyx dashboard boot failure:", err);
+        document.getElementById("root").innerHTML =
+          '<div class="boot"><div class="logo" style="background:#dc2626">!</div>' +
+          '<div class="title" style="color:#ef4444">שגיאה בטעינה</div>' +
+          '<div class="sub">' + (err && err.message ? err.message : String(err)) + '</div></div>';
+      }
+    })();
+  </script>
+</body>
+</html>

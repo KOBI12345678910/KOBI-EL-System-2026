@@ -1135,7 +1135,7 @@ class IsraeliSeedGenerator {
         unit_he: cat.unit,
         unit_price_nis: price,
         unit_cost_nis: cost,
-        vat_rate: 0.17,
+        vat_rate: 0.18,
         stock_qty: Math.floor(rng() * 500),
         reorder_point: Math.floor(rng() * 50) + 10,
         warehouse_bin: `A-${zeroPad(Math.floor(rng()*99)+1,2)}-${zeroPad(Math.floor(rng()*99)+1,2)}`,
@@ -1152,7 +1152,7 @@ class IsraeliSeedGenerator {
 
   /**
    * Generate invoices linking suppliers and items. Each invoice has 1–8
-   * line items, realistic subtotal, 17% VAT, total, and a חשבונית רפורמה
+   * line items, realistic subtotal, 18% VAT (from 2026-01-01; 17% before), total, and a חשבונית רפורמה
    * allocation number (7-digit government-issued reference used for
    * Israeli tax compliance since the 2024 reform).
    */
@@ -1194,7 +1194,7 @@ class IsraeliSeedGenerator {
         });
       }
       subtotal = Math.round(subtotal * 100) / 100;
-      const vat = Math.round(subtotal * 0.17 * 100) / 100;
+      const vat = Math.round(subtotal * 0.18 * 100) / 100;
       const total = Math.round((subtotal + vat) * 100) / 100;
 
       // Issue date: spread across 2025-Q4 .. 2026-Q2
@@ -1227,7 +1227,7 @@ class IsraeliSeedGenerator {
         currency: 'ILS',
         lines,
         subtotal_nis: subtotal,
-        vat_rate: 0.17,
+        vat_rate: 0.18,
         vat_amount_nis: vat,
         total_nis: total,
         allocation_number: allocation,

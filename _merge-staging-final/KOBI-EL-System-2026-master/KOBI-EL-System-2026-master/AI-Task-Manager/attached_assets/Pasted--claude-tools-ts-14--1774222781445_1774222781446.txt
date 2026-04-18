@@ -1,0 +1,613 @@
+// ════════════════════════════════════════════════════════════════════
+// claude-tools.ts — 14 כלים שנותנים לקלאוד ידיים בתוך המערכת
+// ════════════════════════════════════════════════════════════════════
+
+import * as fs   from 'fs';
+import * as path from 'path';
+import { exec }  from 'child_process';
+import { promisify } from 'util';
+import { db }    from '../db'; // ה-Drizzle instance שלך
+import { sql }   from 'drizzle-orm';
+
+const execAsync = promisify(exec);
+const ROOT      = process.cwd(); // שורש הפרויקט ב-Replit
+
+// ─── סוגי תוצאות ────────────────────────────────────────────────────
+
+export interface ToolResult {
+  ok:      boolean;
+  output:  string;
+  error?:  string;
+}
+
+// ─── Guard: מונע גישה לקבצים מסוכנים ──────────────────────────────
+
+const BLOCKED_PATHS = ['.env', '.git/config', 'node_modules'];
+const BLOCKED_CMDS  = ['rm -rf /', 'mkfs', 'dd if=', 'shutdown', ':(){:|:&};:'];
+const MAX_FILE_SIZE = 200_000; // 200KB
+
+function isSafePath(filePath: string): boolean {
+  const resolved = path.resolve(ROOT, filePath);
+  if (!resolved.startsWith(ROOT)) return false;
+  return !BLOCKED_PATHS.some(b => resolved.includes(b));
+}
+
+function isSafeCmd(cmd: string): boolean {
+  return !BLOCKED_CMDS.some(b => cmd.includes(b));
+}
+
+// ════════════════════════════════════════════════════════════════════
+// כל הכלים
+// ════════════════════════════════════════════════════════════════════
+
+export const tools = {
+
+  // ── 1. קרא קובץ ────────────────────────────────────────────────
+  async read_file({ path: filePath, start_line, end_line }: {
+    path: string; start_line?: number; end_line?: number;
+  }): Promise<ToolResult> {
+    try {
+      if (!isSafePath(filePath)) return { ok: false, output: '', error: `Blocked path: ${filePath}` };
+      const full = path.resolve(ROOT, filePath);
+      if (!fs.existsSync(full)) return { ok: false, output: '', error: `File not found: ${filePath}` };
+
+      const stat = fs.statSync(full);
+      if (stat.size > MAX_FILE_SIZE) return { ok: false, output: '', error: `File too large (${stat.size} bytes). Use search_code instead.` };
+
+      let content = fs.readFileSync(full, 'utf8');
+
+      if (start_line || end_line) {
+        const lines = content.split('\n');
+        const s = (start_line ?? 1) - 1;
+        const e = end_line ?? lines.length;
+        content = lines.slice(s, e).map((l, i) => `${s+i+1}: ${l}`).join('\n');
+      }
+
+      return { ok: true, output: content };
+    } catch (e) {
+      return { ok: false, output: '', error: (e as Error).message };
+    }
+  },
+
+  // ── 2. כתוב / צור קובץ ────────────────────────────────────────
+  async write_file({ path: filePath, content, mode }: {
+    path: string; content: string; mode?: 'overwrite' | 'append' | 'create';
+  }): Promise<ToolResult> {
+    try {
+      if (!isSafePath(filePath)) return { ok: false, output: '', error: `Blocked path: ${filePath}` };
+      const full = path.resolve(ROOT, filePath);
+
+      // צור תיקיות חסרות
+      fs.mkdirSync(path.dirname(full), { recursive: true });
+
+      if (mode === 'append') {
+        fs.appendFileSync(full, content, 'utf8');
+      } else {
+        fs.writeFileSync(full, content, 'utf8');
+      }
+
+      const lines = content.split('\n').length;
+      return { ok: true, output: `Written ${lines} lines to ${filePath}` };
+    } catch (e) {
+      return { ok: false, output: '', error: (e as Error).message };
+    }
+  },
+
+  // ── 3. רשימת קבצים ────────────────────────────────────────────
+  async list_files({ directory, pattern }: {
+    directory?: string; pattern?: string;
+  }): Promise<ToolResult> {
+    try {
+      const dir  = path.resolve(ROOT, directory ?? '.');
+      if (!dir.startsWith(ROOT)) return { ok: false, output: '', error: 'Outside project root' };
+
+      const walk = (d: string, depth = 0): string[] => {
+        if (depth > 4) return [];
+        if (!fs.existsSync(d)) return [];
+        return fs.readdirSync(d, { withFileTypes: true }).flatMap(f => {
+          if (['node_modules', '.git', 'dist', '.cache'].includes(f.name)) return [];
+          const full = path.join(d, f.name);
+          const rel  = path.relative(ROOT, full);
+          if (f.isDirectory()) return [rel + '/', ...walk(full, depth + 1)];
+          if (pattern && !rel.includes(pattern)) return [];
+          return [rel];
+        });
+      };
+
+      const files = walk(dir);
+      return { ok: true, output: files.join('\n') || '(empty directory)' };
+    } catch (e) {
+      return { ok: false, output: '', error: (e as Error).message };
+    }
+  },
+
+  // ── 4. חיפוש בקוד ─────────────────────────────────────────────
+  async search_code({ query, file_pattern, case_sensitive }: {
+    query: string; file_pattern?: string; case_sensitive?: boolean;
+  }): Promise<ToolResult> {
+    try {
+      const flag = case_sensitive ? '' : '-i';
+      const ext  = file_pattern ?? '*.{ts,tsx,js,jsx,json,sql}';
+      const cmd  = `grep -rn ${flag} --include="${ext}" "${query.replace(/"/g, '\\"')}" . 2>/dev/null | head -50`;
+      const { stdout } = await execAsync(cmd, { cwd: ROOT });
+      return { ok: true, output: stdout || 'No matches found' };
+    } catch (e) {
+      return { ok: true, output: 'No matches found' };
+    }
+  },
+
+  // ── 5. הרץ פקודת shell ────────────────────────────────────────
+  async shell_exec({ command, cwd }: {
+    command: string; cwd?: string;
+  }): Promise<ToolResult> {
+    try {
+      if (!isSafeCmd(command)) return { ok: false, output: '', error: `Blocked command: ${command}` };
+
+      const workDir = cwd ? path.resolve(ROOT, cwd) : ROOT;
+      const { stdout, stderr } = await execAsync(command, {
+        cwd: workDir,
+        timeout: 30_000,
+        env: { ...process.env, NODE_ENV: process.env.NODE_ENV ?? 'development' },
+      });
+
+      const out = [stdout, stderr].filter(Boolean).join('\n').slice(0, 5000);
+      return { ok: true, output: out || '(no output)' };
+    } catch (e: any) {
+      return {
+        ok: false,
+        output: e.stdout ?? '',
+        error: e.stderr ?? e.message,
+      };
+    }
+  },
+
+  // ── 6. שאילתת DB (קריאה) ──────────────────────────────────────
+  async db_query({ query, limit }: {
+    query: string; limit?: number;
+  }): Promise<ToolResult> {
+    try {
+      // אפשר רק SELECT
+      const clean = query.trim().toUpperCase();
+      if (!clean.startsWith('SELECT') && !clean.startsWith('WITH')) {
+        return { ok: false, output: '', error: 'db_query is read-only. Use db_mutate for writes.' };
+      }
+
+      const safeQuery = limit && !clean.includes('LIMIT')
+        ? `${query} LIMIT ${limit}`
+        : query;
+
+      const rows = await db.execute(sql.raw(safeQuery));
+      return {
+        ok: true,
+        output: JSON.stringify(rows, null, 2).slice(0, 10_000),
+      };
+    } catch (e) {
+      return { ok: false, output: '', error: (e as Error).message };
+    }
+  },
+
+  // ── 7. שינוי DB (כתיבה) ───────────────────────────────────────
+  async db_mutate({ query, confirm }: {
+    query: string; confirm: boolean;
+  }): Promise<ToolResult> {
+    try {
+      if (!confirm) return { ok: false, output: '', error: 'Set confirm: true to execute write operations' };
+
+      const clean = query.trim().toUpperCase();
+      if (clean.includes('DROP DATABASE') || clean.includes('TRUNCATE')) {
+        return { ok: false, output: '', error: 'DROP DATABASE and TRUNCATE are not allowed' };
+      }
+
+      await db.execute(sql.raw(query));
+      return { ok: true, output: `Executed: ${query.slice(0, 100)}...` };
+    } catch (e) {
+      return { ok: false, output: '', error: (e as Error).message };
+    }
+  },
+
+  // ── 8. סכמת DB ────────────────────────────────────────────────
+  async db_schema({ table }: { table?: string }): Promise<ToolResult> {
+    try {
+      const q = table
+        ? `SELECT column_name, data_type, is_nullable, column_default
+           FROM information_schema.columns
+           WHERE table_name = '${table}' AND table_schema = 'public'
+           ORDER BY ordinal_position`
+        : `SELECT table_name, table_type
+           FROM information_schema.tables
+           WHERE table_schema = 'public'
+           ORDER BY table_name`;
+
+      const rows = await db.execute(sql.raw(q));
+      return { ok: true, output: JSON.stringify(rows, null, 2) };
+    } catch (e) {
+      return { ok: false, output: '', error: (e as Error).message };
+    }
+  },
+
+  // ── 9. לוגים של השרת ─────────────────────────────────────────
+  async server_logs({ lines, filter }: {
+    lines?: number; filter?: string;
+  }): Promise<ToolResult> {
+    try {
+      const n   = lines ?? 50;
+      let   cmd = `pm2 logs --nostream --lines ${n} 2>/dev/null || tail -n ${n} logs/server.log 2>/dev/null || echo "No logs found"`;
+      if (filter) cmd = `${cmd} | grep -i "${filter}"`;
+
+      const { stdout } = await execAsync(cmd, { cwd: ROOT });
+      return { ok: true, output: stdout || 'No logs available' };
+    } catch (e) {
+      return { ok: true, output: 'Log file not found. Check your logging setup.' };
+    }
+  },
+
+  // ── 10. הפעל מחדש שרת ────────────────────────────────────────
+  async server_restart({ reason }: { reason: string }): Promise<ToolResult> {
+    try {
+      console.log(`[ClaudeAgent] Restart requested. Reason: ${reason}`);
+      // ב-Replit — touch index.ts מפעיל hot-reload
+      fs.utimesSync(path.join(ROOT, 'server/index.ts'), new Date(), new Date());
+      return { ok: true, output: `Server restart triggered. Reason: ${reason}` };
+    } catch (e) {
+      return { ok: false, output: '', error: (e as Error).message };
+    }
+  },
+
+  // ── 11. תקן באג ───────────────────────────────────────────────
+  async fix_bug({ file_path, old_code, new_code, description }: {
+    file_path: string; old_code: string; new_code: string; description: string;
+  }): Promise<ToolResult> {
+    try {
+      if (!isSafePath(file_path)) return { ok: false, output: '', error: 'Blocked path' };
+      const full    = path.resolve(ROOT, file_path);
+      const content = fs.readFileSync(full, 'utf8');
+
+      if (!content.includes(old_code)) {
+        return { ok: false, output: '', error: `Exact code not found in ${file_path}. Use read_file first to get exact content.` };
+      }
+
+      const fixed = content.replace(old_code, new_code);
+      fs.writeFileSync(full, fixed, 'utf8');
+
+      return { ok: true, output: `Fixed: ${description}\nFile: ${file_path}` };
+    } catch (e) {
+      return { ok: false, output: '', error: (e as Error).message };
+    }
+  },
+
+  // ── 12. צור מודול ERP ─────────────────────────────────────────
+  async create_module({ name, description, fields }: {
+    name: string;
+    description: string;
+    fields: Array<{ name: string; type: string; required?: boolean }>;
+  }): Promise<ToolResult> {
+    const results: string[] = [];
+
+    // DB schema (Drizzle)
+    const fieldDefs = fields.map(f => {
+      const t = f.type === 'text'    ? 'text'
+              : f.type === 'number'  ? 'numeric'
+              : f.type === 'boolean' ? 'boolean'
+              : f.type === 'date'    ? 'timestamp'
+              : 'text';
+      return `  ${f.name}: ${t}('${f.name}')${f.required ? '.notNull()' : ''}`;
+    }).join(',\n');
+
+    const schemaFile = `
+import { pgTable, uuid, text, numeric, boolean, timestamp } from 'drizzle-orm/pg-core';
+
+export const ${name} = pgTable('${name}', {
+  id: uuid('id').defaultRandom().primaryKey(),
+${fieldDefs},
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export type ${name.charAt(0).toUpperCase() + name.slice(1)} = typeof ${name}.$inferSelect;
+export type New${name.charAt(0).toUpperCase() + name.slice(1)} = typeof ${name}.$inferInsert;
+`.trim();
+
+    await tools.write_file({ path: `server/db/schema/${name}.ts`, content: schemaFile });
+    results.push(`✓ Schema: server/db/schema/${name}.ts`);
+
+    // API routes
+    const routeFile = `
+import { Router } from 'express';
+import { db } from '../db';
+import { ${name} } from '../db/schema/${name}';
+import { eq } from 'drizzle-orm';
+
+const router = Router();
+
+router.get('/', async (req, res) => {
+  try {
+    const items = await db.select().from(${name});
+    res.json({ ok: true, data: items });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: (e as Error).message });
+  }
+});
+
+router.post('/', async (req, res) => {
+  try {
+    const [item] = await db.insert(${name}).values(req.body).returning();
+    res.status(201).json({ ok: true, data: item });
+  } catch (e) {
+    res.status(400).json({ ok: false, error: (e as Error).message });
+  }
+});
+
+router.put('/:id', async (req, res) => {
+  try {
+    const [item] = await db.update(${name})
+      .set({ ...req.body, updatedAt: new Date() })
+      .where(eq(${name}.id, req.params.id))
+      .returning();
+    res.json({ ok: true, data: item });
+  } catch (e) {
+    res.status(400).json({ ok: false, error: (e as Error).message });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    await db.delete(${name}).where(eq(${name}.id, req.params.id));
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(400).json({ ok: false, error: (e as Error).message });
+  }
+});
+
+export default router;
+`.trim();
+
+    await tools.write_file({ path: `server/routes/${name}.ts`, content: routeFile });
+    results.push(`✓ Routes: server/routes/${name}.ts`);
+
+    return { ok: true, output: results.join('\n') + `\n\nNext: run npm run db:push and register routes in server/index.ts` };
+  },
+
+  // ── 13. הוסף שדה לטבלה ───────────────────────────────────────
+  async add_field({ table, field_name, field_type, nullable }: {
+    table: string; field_name: string; field_type: string; nullable?: boolean;
+  }): Promise<ToolResult> {
+    try {
+      const nullStr = nullable === false ? 'NOT NULL DEFAULT \'\'' : '';
+      const migration = `ALTER TABLE ${table} ADD COLUMN IF NOT EXISTS ${field_name} ${field_type} ${nullStr};`;
+
+      await db.execute(sql.raw(migration));
+      return { ok: true, output: `Added column ${field_name} (${field_type}) to ${table}` };
+    } catch (e) {
+      return { ok: false, output: '', error: (e as Error).message };
+    }
+  },
+
+  // ── 14. הזרמת נתונים ──────────────────────────────────────────
+  async stream_data({ source_query, target_table, transform }: {
+    source_query: string;
+    target_table: string;
+    transform?: string; // JavaScript expression: row => ({...})
+  }): Promise<ToolResult> {
+    try {
+      const rows = await db.execute(sql.raw(source_query)) as any[];
+      let transformed = rows;
+
+      if (transform) {
+        try {
+          const fn = new Function('row', `return (${transform})(row)`);
+          transformed = rows.map(row => fn(row));
+        } catch (e) {
+          return { ok: false, output: '', error: `Transform error: ${(e as Error).message}` };
+        }
+      }
+
+      if (transformed.length === 0) return { ok: true, output: 'No rows to stream' };
+
+      // Batch insert
+      const BATCH = 100;
+      let inserted = 0;
+      for (let i = 0; i < transformed.length; i += BATCH) {
+        const batch = transformed.slice(i, i + BATCH);
+        const cols  = Object.keys(batch[0]);
+        const vals  = batch.map(r =>
+          `(${cols.map(c => `'${String(r[c]).replace(/'/g, "''")}'`).join(',')})`
+        ).join(',');
+        await db.execute(sql.raw(
+          `INSERT INTO ${target_table} (${cols.join(',')}) VALUES ${vals} ON CONFLICT DO NOTHING`
+        ));
+        inserted += batch.length;
+      }
+
+      return { ok: true, output: `Streamed ${inserted} rows from query → ${target_table}` };
+    } catch (e) {
+      return { ok: false, output: '', error: (e as Error).message };
+    }
+  },
+};
+
+// ─── Tool definitions for Anthropic API ──────────────────────────────
+
+export const TOOL_DEFINITIONS = [
+  {
+    name: 'read_file',
+    description: 'Read file content from the project. Use to understand existing code before modifying.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        path:       { type: 'string', description: 'Relative path from project root' },
+        start_line: { type: 'number', description: 'First line to read (optional)' },
+        end_line:   { type: 'number', description: 'Last line to read (optional)' },
+      },
+      required: ['path'],
+    },
+  },
+  {
+    name: 'write_file',
+    description: 'Write or create a file. Always read_file first if the file exists.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        path:    { type: 'string' },
+        content: { type: 'string', description: 'Complete file content' },
+        mode:    { type: 'string', enum: ['overwrite', 'append', 'create'], default: 'overwrite' },
+      },
+      required: ['path', 'content'],
+    },
+  },
+  {
+    name: 'list_files',
+    description: 'List files in the project directory tree.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        directory: { type: 'string', description: 'Directory to list (default: project root)' },
+        pattern:   { type: 'string', description: 'Filter files containing this string' },
+      },
+    },
+  },
+  {
+    name: 'search_code',
+    description: 'Search for text/patterns across all code files. Use before writing to understand existing code.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        query:          { type: 'string', description: 'Search term or regex' },
+        file_pattern:   { type: 'string', description: 'File glob pattern (default: *.ts,*.tsx)' },
+        case_sensitive: { type: 'boolean', default: false },
+      },
+      required: ['query'],
+    },
+  },
+  {
+    name: 'shell_exec',
+    description: 'Execute shell command. Use for: npm install, npm run build, git operations, TypeScript compilation checks.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        command: { type: 'string', description: 'Shell command to run' },
+        cwd:     { type: 'string', description: 'Working directory (default: project root)' },
+      },
+      required: ['command'],
+    },
+  },
+  {
+    name: 'db_query',
+    description: 'Run a read-only SQL SELECT query on the PostgreSQL database.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'SELECT query' },
+        limit: { type: 'number', description: 'Auto-add LIMIT if not present (default: 100)' },
+      },
+      required: ['query'],
+    },
+  },
+  {
+    name: 'db_mutate',
+    description: 'Run an INSERT/UPDATE/DELETE SQL statement. Requires confirm: true.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        query:   { type: 'string' },
+        confirm: { type: 'boolean', description: 'Must be true to execute' },
+      },
+      required: ['query', 'confirm'],
+    },
+  },
+  {
+    name: 'db_schema',
+    description: 'Get database schema: all tables or columns of a specific table.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        table: { type: 'string', description: 'Table name (omit to list all tables)' },
+      },
+    },
+  },
+  {
+    name: 'server_logs',
+    description: 'Get recent server logs to diagnose errors.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        lines:  { type: 'number', description: 'Number of log lines (default: 50)' },
+        filter: { type: 'string', description: 'Filter logs containing this string' },
+      },
+    },
+  },
+  {
+    name: 'server_restart',
+    description: 'Restart the Express server (triggers hot-reload).',
+    input_schema: {
+      type: 'object',
+      properties: {
+        reason: { type: 'string', description: 'Why the restart is needed' },
+      },
+      required: ['reason'],
+    },
+  },
+  {
+    name: 'fix_bug',
+    description: 'Fix a bug by replacing exact code in a file. Read the file first to get exact content.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        file_path:   { type: 'string' },
+        old_code:    { type: 'string', description: 'Exact code to replace (must match exactly)' },
+        new_code:    { type: 'string', description: 'Replacement code' },
+        description: { type: 'string', description: 'What this fix does' },
+      },
+      required: ['file_path', 'old_code', 'new_code', 'description'],
+    },
+  },
+  {
+    name: 'create_module',
+    description: 'Create a new ERP module: Drizzle schema + Express CRUD routes.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        name:        { type: 'string', description: 'Module name (camelCase, e.g. inventoryItem)' },
+        description: { type: 'string' },
+        fields: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              name:     { type: 'string' },
+              type:     { type: 'string', enum: ['text', 'number', 'boolean', 'date'] },
+              required: { type: 'boolean' },
+            },
+          },
+        },
+      },
+      required: ['name', 'description', 'fields'],
+    },
+  },
+  {
+    name: 'add_field',
+    description: 'Add a new column to an existing database table.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        table:      { type: 'string' },
+        field_name: { type: 'string' },
+        field_type: { type: 'string', description: 'SQL type: TEXT, NUMERIC, BOOLEAN, TIMESTAMP' },
+        nullable:   { type: 'boolean', default: true },
+      },
+      required: ['table', 'field_name', 'field_type'],
+    },
+  },
+  {
+    name: 'stream_data',
+    description: 'Move data from one table/query to another table, with optional transformation.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        source_query: { type: 'string', description: 'SELECT query for source data' },
+        target_table: { type: 'string' },
+        transform:    { type: 'string', description: 'JS function: row => ({...newRow})' },
+      },
+      required: ['source_query', 'target_table'],
+    },
+  },
+] as const;

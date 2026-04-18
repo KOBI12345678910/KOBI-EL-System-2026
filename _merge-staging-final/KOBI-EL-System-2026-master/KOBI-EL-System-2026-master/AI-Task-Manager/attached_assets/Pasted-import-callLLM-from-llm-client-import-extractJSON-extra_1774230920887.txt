@@ -1,0 +1,149 @@
+import { callLLM } from "../llm/client";
+import { extractJSON, extractTextContent } from "../llm/parser";
+import { FileTool } from "./fileTool";
+import { SearchTool } from "./searchTool";
+
+export class I18nTool {
+  private fileTool: FileTool;
+  private searchTool: SearchTool;
+
+  constructor(fileTool: FileTool, searchTool: SearchTool) {
+    this.fileTool = fileTool;
+    this.searchTool = searchTool;
+  }
+
+  async extractStrings(): Promise<Map<string, string>> {
+    const strings = new Map<string, string>();
+
+    const results = await this.searchTool.searchContent(
+      /["'`]([A-Z][a-zA-Z\s,.'!?]+)["'`]/.source,
+      { filePattern: "**/*.{tsx,jsx}", maxResults: 200 }
+    );
+
+    for (const result of results) {
+      const match = result.text.match(/["'`]([A-Z][a-zA-Z\s,.'!?]{3,})["'`]/);
+      if (match) {
+        const key = this.stringToKey(match[1]);
+        strings.set(key, match[1]);
+      }
+    }
+
+    return strings;
+  }
+
+  async generateTranslations(
+    sourceStrings: Record<string, string>,
+    targetLanguages: string[]
+  ): Promise<Record<string, Record<string, string>>> {
+    const translations: Record<string, Record<string, string>> = {};
+
+    for (const lang of targetLanguages) {
+      const response = await callLLM({
+        system: `You are a professional translator. Translate all strings to ${lang}.
+Maintain the exact same keys. Ensure translations are natural and contextually appropriate.
+Respond with ONLY a JSON object mapping keys to translated strings.`,
+        messages: [
+          {
+            role: "user",
+            content: `Translate to ${lang}:\n${JSON.stringify(sourceStrings, null, 2)}`,
+          },
+        ],
+      });
+
+      const text = extractTextContent(response.content);
+      translations[lang] = extractJSON(text) || {};
+    }
+
+    return translations;
+  }
+
+  async setupI18n(languages: string[]): Promise<void> {
+    // Extract existing strings
+    const strings = await this.extractStrings();
+    const sourceStrings: Record<string, string> = {};
+    for (const [key, value] of strings) {
+      sourceStrings[key] = value;
+    }
+
+    // Generate translation files
+    this.fileTool.createFile(
+      "src/i18n/locales/en.json",
+      JSON.stringify(sourceStrings, null, 2)
+    );
+
+    const translations = await this.generateTranslations(sourceStrings, languages);
+    for (const [lang, trans] of Object.entries(translations)) {
+      this.fileTool.createFile(
+        `src/i18n/locales/${lang}.json`,
+        JSON.stringify(trans, null, 2)
+      );
+    }
+
+    // Generate i18n config
+    this.fileTool.createFile("src/i18n/index.ts", `import en from './locales/en.json';
+${languages.map((l) => `import ${l} from './locales/${l}.json';`).join("\n")}
+
+export type Locale = 'en' | ${languages.map((l) => `'${l}'`).join(" | ")};
+
+const translations: Record<Locale, Record<string, string>> = {
+  en,
+  ${languages.join(",\n  ")},
+};
+
+let currentLocale: Locale = 'en';
+
+export function setLocale(locale: Locale) {
+  currentLocale = locale;
+  document.documentElement.lang = locale;
+  document.documentElement.dir = ['ar', 'he', 'fa'].includes(locale) ? 'rtl' : 'ltr';
+}
+
+export function t(key: string, params?: Record<string, string | number>): string {
+  let text = translations[currentLocale]?.[key] || translations.en[key] || key;
+  if (params) {
+    for (const [k, v] of Object.entries(params)) {
+      text = text.replace(\`{{\${k}}}\`, String(v));
+    }
+  }
+  return text;
+}
+
+export function getLocale(): Locale { return currentLocale; }
+export function getAvailableLocales(): Locale[] { return ['en', ${languages.map((l) => `'${l}'`).join(", ")}]; }
+`);
+
+    // Generate React hook
+    this.fileTool.createFile("src/i18n/useTranslation.ts", `import { useState, useCallback, useEffect } from 'react';
+import { t, setLocale, getLocale, Locale, getAvailableLocales } from './index';
+
+export function useTranslation() {
+  const [locale, setCurrentLocale] = useState<Locale>(getLocale());
+  const [, forceUpdate] = useState(0);
+
+  const changeLocale = useCallback((newLocale: Locale) => {
+    setLocale(newLocale);
+    setCurrentLocale(newLocale);
+    forceUpdate((n) => n + 1);
+    localStorage.setItem('locale', newLocale);
+  }, []);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('locale') as Locale;
+    if (saved && getAvailableLocales().includes(saved)) {
+      changeLocale(saved);
+    }
+  }, [changeLocale]);
+
+  return { t, locale, changeLocale, availableLocales: getAvailableLocales() };
+}
+`);
+  }
+
+  private stringToKey(str: string): string {
+    return str
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, "")
+      .replace(/\s+/g, "_")
+      .slice(0, 50);
+  }
+}

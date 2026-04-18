@@ -1,0 +1,26 @@
+import { pgTable, serial, text, integer, timestamp, date, numeric, varchar } from "drizzle-orm/pg-core";
+
+export const attendanceTable = pgTable("attendance", {
+  id: serial("id").primaryKey(),
+  employeeId: integer("employee_id").notNull(),
+  date: date("date").notNull(),
+  shiftId: integer("shift_id"),
+  clockIn: timestamp("clock_in"),
+  clockOut: timestamp("clock_out"),
+  breakMinutes: integer("break_minutes").default(0),
+  totalHours: numeric("total_hours", { precision: 5, scale: 2 }),
+  overtimeHours: numeric("overtime_hours", { precision: 5, scale: 2 }).default("0"),
+  status: varchar("status", { length: 30 }).notNull().default("present"),
+  type: varchar("type", { length: 30 }).default("regular"),
+  lateMinutes: integer("late_minutes").default(0),
+  earlyLeaveMinutes: integer("early_leave_minutes").default(0),
+  notes: text("notes"),
+  approvedBy: integer("approved_by"),
+  approvedAt: timestamp("approved_at"),
+  source: varchar("source", { length: 30 }).default("manual"),
+  ipAddress: varchar("ip_address", { length: 45 }),
+  location: text("location"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at"),
+});

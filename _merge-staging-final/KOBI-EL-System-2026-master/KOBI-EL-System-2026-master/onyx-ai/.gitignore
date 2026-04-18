@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Env (NEVER commit secrets)
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+ehthumbs.db
+
+# Cache
+.cache
+.eslintcache
+.turbo
+coverage/
+
+# Credential vault (encrypted at rest but still local-only)
+vault.json
+credentials.json
+*.pem
+*.key

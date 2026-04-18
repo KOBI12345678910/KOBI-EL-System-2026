@@ -1,0 +1,24 @@
+{
+  "name": "@hitech-company/ai-bots",
+  "version": "1.0.0",
+  "description": "AI Bots System for HiTech Company 24/7",
+  "main": "core/index.ts",
+  "scripts": {
+    "bot": "npx ts-node run-one.ts",
+    "test": "npx ts-node run-one.ts CEO",
+    "ceo": "npx ts-node run-one.ts CEO",
+    "cto": "npx ts-node run-one.ts CTO",
+    "architect": "npx ts-node run-one.ts ARCHITECT"
+  },
+  "keywords": [
+    "ai",
+    "bots",
+    "automation",
+    "base44"
+  ],
+  "author": "HiTech Company",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

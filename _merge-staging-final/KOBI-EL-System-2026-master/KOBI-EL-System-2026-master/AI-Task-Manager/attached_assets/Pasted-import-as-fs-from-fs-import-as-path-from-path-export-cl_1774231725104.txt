@@ -1,0 +1,191 @@
+import * as fs from "fs";
+import * as path from "path";
+
+export class KVStore {
+  private data: Map<string, { value: any; expiresAt?: number }> = new Map();
+  private filePath: string;
+  private autoSave: boolean;
+  private saveTimer?: NodeJS.Timeout;
+
+  constructor(workspaceDir: string, options?: { autoSave?: boolean; filename?: string }) {
+    this.filePath = path.join(workspaceDir, ".agent", options?.filename || "kv-store.json");
+    this.autoSave = options?.autoSave ?? true;
+    this.load();
+
+    if (this.autoSave) {
+      this.saveTimer = setInterval(() => this.save(), 5000);
+    }
+  }
+
+  get<T = any>(key: string): T | null {
+    const entry = this.data.get(key);
+    if (!entry) return null;
+    if (entry.expiresAt && Date.now() > entry.expiresAt) {
+      this.data.delete(key);
+      return null;
+    }
+    return entry.value as T;
+  }
+
+  set(key: string, value: any, ttlSeconds?: number): void {
+    this.data.set(key, {
+      value,
+      expiresAt: ttlSeconds ? Date.now() + ttlSeconds * 1000 : undefined,
+    });
+    if (this.autoSave) this.debounceSave();
+  }
+
+  delete(key: string): boolean {
+    const deleted = this.data.delete(key);
+    if (deleted && this.autoSave) this.debounceSave();
+    return deleted;
+  }
+
+  has(key: string): boolean {
+    return this.get(key) !== null;
+  }
+
+  keys(prefix?: string): string[] {
+    this.cleanExpired();
+    const allKeys = Array.from(this.data.keys());
+    return prefix ? allKeys.filter((k) => k.startsWith(prefix)) : allKeys;
+  }
+
+  values(prefix?: string): any[] {
+    return this.keys(prefix).map((k) => this.get(k));
+  }
+
+  entries(prefix?: string): Array<[string, any]> {
+    return this.keys(prefix).map((k) => [k, this.get(k)]);
+  }
+
+  size(): number {
+    this.cleanExpired();
+    return this.data.size;
+  }
+
+  clear(prefix?: string): number {
+    if (!prefix) {
+      const count = this.data.size;
+      this.data.clear();
+      this.save();
+      return count;
+    }
+
+    let count = 0;
+    for (const key of this.keys(prefix)) {
+      this.data.delete(key);
+      count++;
+    }
+    this.save();
+    return count;
+  }
+
+  increment(key: string, amount = 1): number {
+    const current = this.get<number>(key) || 0;
+    const newVal = current + amount;
+    this.set(key, newVal);
+    return newVal;
+  }
+
+  decrement(key: string, amount = 1): number {
+    return this.increment(key, -amount);
+  }
+
+  push(key: string, value: any): number {
+    const arr = this.get<any[]>(key) || [];
+    arr.push(value);
+    this.set(key, arr);
+    return arr.length;
+  }
+
+  pop(key: string): any {
+    const arr = this.get<any[]>(key);
+    if (!arr?.length) return null;
+    const val = arr.pop();
+    this.set(key, arr);
+    return val;
+  }
+
+  // Express middleware
+  middleware() {
+    return (req: any, res: any, next: any) => {
+      req.kv = this;
+      next();
+    };
+  }
+
+  // REST API routes
+  getRoutes() {
+    const kv = this;
+    const router = require("express").Router();
+
+    router.get("/:key", (req: any, res: any) => {
+      const value = kv.get(req.params.key);
+      if (value === null) return res.status(404).json({ error: "Not found" });
+      res.json({ key: req.params.key, value });
+    });
+
+    router.put("/:key", (req: any, res: any) => {
+      kv.set(req.params.key, req.body.value, req.body.ttl);
+      res.json({ success: true });
+    });
+
+    router.delete("/:key", (req: any, res: any) => {
+      const deleted = kv.delete(req.params.key);
+      res.json({ deleted });
+    });
+
+    router.get("/", (req: any, res: any) => {
+      const prefix = req.query.prefix as string;
+      res.json({ keys: kv.keys(prefix), size: kv.size() });
+    });
+
+    return router;
+  }
+
+  private cleanExpired(): void {
+    const now = Date.now();
+    for (const [key, entry] of this.data) {
+      if (entry.expiresAt && now > entry.expiresAt) {
+        this.data.delete(key);
+      }
+    }
+  }
+
+  private save(): void {
+    const dir = path.dirname(this.filePath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+    const serialized = JSON.stringify(
+      Array.from(this.data.entries()),
+      null,
+      2
+    );
+    fs.writeFileSync(this.filePath, serialized);
+  }
+
+  private load(): void {
+    try {
+      if (fs.existsSync(this.filePath)) {
+        const data = JSON.parse(fs.readFileSync(this.filePath, "utf-8"));
+        for (const [key, entry] of data) {
+          this.data.set(key, entry);
+        }
+        this.cleanExpired();
+      }
+    } catch {}
+  }
+
+  private saveDebounceTimer?: NodeJS.Timeout;
+  private debounceSave(): void {
+    if (this.saveDebounceTimer) clearTimeout(this.saveDebounceTimer);
+    this.saveDebounceTimer = setTimeout(() => this.save(), 500);
+  }
+
+  destroy(): void {
+    if (this.saveTimer) clearInterval(this.saveTimer);
+    if (this.saveDebounceTimer) clearTimeout(this.saveDebounceTimer);
+    this.save();
+  }
+}

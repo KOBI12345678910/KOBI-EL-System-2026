@@ -1,0 +1,18 @@
+[
+  "lead",
+  "customer",
+  "supplier",
+  "quote",
+  "rfq",
+  "po",
+  "project",
+  "work_order",
+  "invoice",
+  "employee",
+  "contract",
+  "material",
+  "payment",
+  "task",
+  "document",
+  "alert"
+]

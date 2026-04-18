@@ -1,0 +1,721 @@
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.units import mm
+from reportlab.platypus import (
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
+    HRFlowable, PageBreak
+)
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.enums import TA_RIGHT, TA_CENTER
+from reportlab.platypus.flowables import Flowable
+from datetime import datetime
+
+C_GREEN  = colors.HexColor('#1D9E75')
+C_RED    = colors.HexColor('#D85A30')
+C_BLUE   = colors.HexColor('#185FA5')
+C_AMBER  = colors.HexColor('#BA7517')
+C_PURPLE = colors.HexColor('#3C3489')
+C_BG     = colors.HexColor('#F8F8F6')
+C_BORDER = colors.HexColor('#E0DED6')
+C_TEXT   = colors.HexColor('#1A1A18')
+C_MUTED  = colors.HexColor('#6B6A64')
+C_WHITE  = colors.white
+
+TYPE_COLORS = {
+    'sal':   colors.HexColor('#185FA5'),
+    'sales': colors.HexColor('#0F6E56'),
+    'prod':  colors.HexColor('#B47C10'),
+    'inst':  colors.HexColor('#993C1D'),
+}
+TYPE_LIGHT = {
+    'sal':   colors.HexColor('#E6F1FB'),
+    'sales': colors.HexColor('#E1F5EE'),
+    'prod':  colors.HexColor('#FAEEDA'),
+    'inst':  colors.HexColor('#FAECE7'),
+}
+
+W, H = A4
+
+def make_styles():
+    def s(name, **kw):
+        base = dict(fontName='Helvetica', fontSize=10, leading=14,
+                    textColor=C_TEXT, alignment=TA_RIGHT)
+        base.update(kw)
+        return ParagraphStyle(name, **base)
+    return {
+        'cover_title': s('ct', fontName='Helvetica-Bold', fontSize=28, leading=34,
+                         textColor=C_WHITE, alignment=TA_CENTER),
+        'cover_sub':   s('cs', fontSize=13, textColor=colors.HexColor('#D0EFE8'),
+                         alignment=TA_CENTER),
+        'cover_date':  s('cd', fontSize=10, textColor=colors.HexColor('#A8D8CC'),
+                         alignment=TA_CENTER),
+        'footer':      s('ft', fontSize=8, textColor=C_MUTED, alignment=TA_CENTER),
+        'note':        s('nt', fontSize=8, textColor=C_MUTED, leading=11),
+    }
+
+ST = make_styles()
+
+class SectionBanner(Flowable):
+    def __init__(self, title, subtitle, type_id, width=None):
+        super().__init__()
+        self.title = title; self.subtitle = subtitle
+        self.type_id = type_id
+        self.width = width or (W - 40*mm)
+        self.height = 44
+    def draw(self):
+        c = self.canv
+        col = TYPE_COLORS.get(self.type_id, C_BLUE)
+        c.setFillColor(col)
+        c.roundRect(0, 0, self.width, self.height, 5, fill=1, stroke=0)
+        c.setFillColor(C_WHITE)
+        c.setFont('Helvetica-Bold', 13)
+        c.drawRightString(self.width - 12, self.height - 18, self.title)
+        c.setFont('Helvetica', 9)
+        c.setFillColor(colors.HexColor('#CCEEEE'))
+        c.drawRightString(self.width - 12, self.height - 30, self.subtitle)
+
+def fmt(n): return '\u20aa' + f'{int(round(n)):,}'
+def fk(n):  return '\u20aa' + str(int(round(n/1000))) + 'K'
+def pp(n):  return ('+' if n >= 0 else '') + str(int(round(n))) + '%'
+
+WORKERS = {
+    'sal': [
+        dict(name='\u05e2\u05e0\u05ea \u05e9\u05e8\u05d5\u05df', role='CFO', dept='\u05db\u05e1\u05e4\u05d9\u05dd',
+             mgr='\u05de\u05e0\u05db"\u05dc', start='\u05d9\u05e0\u05d5\u05d0\u05e8 2022',
+             sal_total=276000, ben_total=58800, inf_total=24600, trn_total=21000, rec_total=8000,
+             dirVal=580000, indVal=120000,
+             tasks=[('\u05ea\u05e7\u05e6\u05d9\u05d1 \u05e9\u05e0\u05ea\u05d9 2026','\u05d4\u05d5\u05e9\u05dc\u05dd',96),
+                    ('\u05d3\u05d5\u05d7 Q4','\u05d4\u05d5\u05e9\u05dc\u05dd',98),
+                    ('\u05ea\u05db\u05e0\u05d5\u05df \u05de\u05e1','\u05d1\u05ea\u05d4\u05dc\u05d9\u05da',None),
+                    ('\u05d1\u05d9\u05e7\u05d5\u05e8\u05ea \u05e4\u05e0\u05d9\u05de\u05d9\u05ea','\u05de\u05de\u05ea\u05d9\u05df',None)],
+             kpis=[{'n':'\u05d3\u05d9\u05d5\u05e7 \u05ea\u05d7\u05d6\u05d9\u05ea','v':96,'b':85},
+                   {'n':'\u05e2\u05de\u05d9\u05d3\u05d4 \u05d1\u05d6\u05de\u05e0\u05d9\u05dd','v':100,'b':90},
+                   {'n':'\u05d7\u05d9\u05e1\u05db\u05d5\u05df \u05e2\u05dc\u05d5\u05d9\u05d5\u05ea','v':88,'b':75},
+                   {'n':'\u05e6\u05d9\u05d5\u05df \u05d1\u05d9\u05e7\u05d5\u05e8\u05ea','v':94,'b':80}],
+             risk_flight=15, engage=91,
+             flags=[('\u05d1\u05d9\u05e6\u05d5\u05e2\u05d9\u05dd \u05d9\u05d5\u05e6\u05d0\u05d9 \u05d3\u05d5\u05e4\u05df','pos'),
+                    ('\u05de\u05d5\u05e2\u05de\u05d3\u05ea \u05dc\u05d3\u05d9\u05e8\u05e7\u05d8\u05d5\u05e8\u05d9\u05d5\u05df','pos')]),
+        dict(name='\u05d2\u05d9\u05dc \u05de\u05e0\u05d7\u05dd', role='Software Engineer', dept='R&D',
+             mgr='\u05d0\u05d5\u05e8 \u05db\u05e5', start='\u05de\u05e8\u05e5 2023',
+             sal_total=215000, ben_total=34300, inf_total=26400, trn_total=14500, rec_total=7000,
+             dirVal=350000, indVal=95000,
+             tasks=[('Payment API v2','\u05d4\u05d5\u05e9\u05dc\u05dd',92),
+                    ('Bug fixes sprint 14','\u05d4\u05d5\u05e9\u05dc\u05dd',89),
+                    ('WebSocket module','\u05d1\u05ea\u05d4\u05dc\u05d9\u05da',None),
+                    ('DB migration v3','\u05de\u05de\u05ea\u05d9\u05df',None)],
+             kpis=[{'n':'Sprint velocity','v':88,'b':80},{'n':'Code quality','v':92,'b':82},
+                   {'n':'PR merge rate','v':95,'b':88},{'n':'Bug escape rate','v':3,'b':8,'low':True}],
+             risk_flight=22, engage=84,
+             flags=[('3 \u05e4\u05e0\u05d9\u05d5\u05ea \u05d2\u05d9\u05d5\u05e1 \u05d7\u05d9\u05e6\u05d5\u05e0\u05d9\u05d5\u05ea','warn'),
+                    ('\u05d0\u05d9\u05df \u05de\u05d7\u05dc\u05d9\u05e3 \u05d9\u05e9\u05d9\u05e8','warn')]),
+    ],
+    'sales': [
+        dict(name='\u05e8\u05de\u05d9 \u05d0\u05d1\u05d9\u05d1', role='\u05e1\u05d5\u05db\u05df \u05de\u05db\u05d9\u05e8\u05d5\u05ea Enterprise',
+             territory='\u05de\u05e8\u05db\u05d6 + \u05d9\u05e8\u05d5\u05e9\u05dc\u05d9\u05dd', start='\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2023',
+             deals=[('SaaS \u2014 LogiTech Ltd (3Y)',380000,8,30400,'\u05e1\u05d2\u05d5\u05e8'),
+                    ('Upsell \u2014 DataCo',42000,5,2100,'\u05e1\u05d2\u05d5\u05e8'),
+                    ('SaaS \u2014 BuildCorp',220000,8,17600,'\u05e1\u05d2\u05d5\u05e8'),
+                    ('RFP \u2014 GovTech',450000,8,36000,'Pipeline'),
+                    ('Renewal \u2014 RetailMax',110000,5,5500,'\u05d1\u05e1\u05d9\u05db\u05d5\u05df')],
+             pct_close=8, pct_upsell=5, retainer=0,
+             pipe_total=1820000, pipe_weighted=940000, deals_open=12, avg_days=38,
+             kpis=[{'n':'\u05d9\u05e2\u05d3 (attainment)','v':124,'b':100},
+                   {'n':'\u05e9\u05d9\u05e2\u05d5\u05e8 \u05e1\u05d2\u05d9\u05e8\u05d4','v':41,'b':28},
+                   {'n':'\u05d6\u05de\u05df \u05dc\u05e1\u05d2\u05d9\u05e8\u05d4 (\u05d9\u05de\u05d9\u05dd)','v':38,'b':60,'low':True},
+                   {'n':'\u05d2\u05d5\u05d3\u05dc \u05e2\u05e1\u05e7\u05d4 (K\u20aa)','v':310,'b':200},
+                   {'n':'\u05e9\u05d9\u05de\u05d5\u05e8 \u05dc\u05e7\u05d5\u05d7\u05d5\u05ea','v':92,'b':85}],
+             risk_flight=28, engage=78,
+             flags=[('\u05d1\u05d9\u05e6\u05d5\u05e2\u05d9 \u05de\u05db\u05d9\u05e8\u05d5\u05ea \u05d9\u05d5\u05e6\u05d0\u05d9 \u05d3\u05d5\u05e4\u05df','pos'),
+                    ('\u05d1\u05d5\u05d7\u05df \u05d4\u05e6\u05e2\u05d4 \u05e9\u05dc \u05de\u05ea\u05d7\u05e8\u05d4','danger')]),
+        dict(name='\u05e9\u05d9\u05e8 \u05e0\u05d7\u05de\u05d9\u05d0\u05e1', role='\u05e1\u05d5\u05db\u05e0\u05ea \u05de\u05db\u05d9\u05e8\u05d5\u05ea SMB',
+             territory='\u05e6\u05e4\u05d5\u05df + \u05d7\u05d9\u05e4\u05d4', start='\u05de\u05e8\u05e5 2024',
+             deals=[('SaaS \u2014 NorthTech',95000,9,8550,'\u05e1\u05d2\u05d5\u05e8'),
+                    ('Upsell \u2014 Haifa Medical',28000,6,1680,'\u05e1\u05d2\u05d5\u05e8'),
+                    ('SaaS \u2014 StartupX',55000,9,4950,'\u05e1\u05d2\u05d5\u05e8'),
+                    ('Pipeline \u2014 TechNorth',120000,9,10800,'Pipeline')],
+             pct_close=9, pct_upsell=6, retainer=6000,
+             pipe_total=680000, pipe_weighted=310000, deals_open=8, avg_days=52,
+             kpis=[{'n':'\u05d9\u05e2\u05d3 (attainment)','v':86,'b':100},
+                   {'n':'\u05e9\u05d9\u05e2\u05d5\u05e8 \u05e1\u05d2\u05d9\u05e8\u05d4','v':31,'b':28},
+                   {'n':'\u05d6\u05de\u05df \u05dc\u05e1\u05d2\u05d9\u05e8\u05d4 (\u05d9\u05de\u05d9\u05dd)','v':52,'b':60,'low':True},
+                   {'n':'\u05d2\u05d5\u05d3\u05dc \u05e2\u05e1\u05e7\u05d4 (K\u20aa)','v':88,'b':80},
+                   {'n':'\u05e9\u05d9\u05de\u05d5\u05e8 \u05dc\u05e7\u05d5\u05d7\u05d5\u05ea','v':88,'b':85}],
+             risk_flight=18, engage=82,
+             flags=[('\u05de\u05ea\u05d7\u05ea \u05dc\u05d9\u05e2\u05d3 \u2014 86%','warn'),
+                    ('pipeline \u05d3\u05dc','warn')]),
+    ],
+    'prod': [
+        dict(name="\u05de\u05d5\u05d7\u05de\u05d3 \u05d2'\u05d1\u05e8", role='\u05de\u05e4\u05e2\u05d9\u05dc \u05e7\u05d5 \u05d9\u05d9\u05e6\u05d5\u05e8',
+             line='\u05e7\u05d5 A \u2014 \u05d0\u05e1\u05de\u05d1\u05dc\u05d9', shift='\u05d1\u05d5\u05e7\u05e8',
+             rate_type='\u05dc\u05d9\u05d7\u05d9\u05d3\u05d4', rate=18.5, hours=176,
+             units_last=511, target=480, defect=1.1, rework=2.7,
+             overhead=3200, waste=1800, safety=400,
+             kpis=[{'n':'\u05d9\u05d7\u05d9\u05d3\u05d5\u05ea / \u05d7\u05d5\u05d3\u05e9','v':511,'b':480},
+                   {'n':'\u05e9\u05d9\u05e2\u05d5\u05e8 \u05e4\u05d2\u05de\u05d9\u05dd %','v':1.1,'b':3.0,'low':True},
+                   {'n':'\u05e9\u05d9\u05e2\u05d5\u05e8 Rework %','v':2.7,'b':5.0,'low':True},
+                   {'n':'\u05e2\u05de\u05d9\u05d3\u05d4 \u05d1\u05de\u05e9\u05de\u05e8\u05d5\u05ea','v':98,'b':92},
+                   {'n':'\u05e2\u05dc\u05d5\u05ea \u05dc\u05d9\u05d7\u05d9\u05d3\u05d4 (\u20aa)','v':18.5,'b':22,'low':True}],
+             risk_flight=12, engage=88,
+             flags=[('\u05d1\u05d9\u05e6\u05d5\u05e2\u05d9 \u05d9\u05d9\u05e6\u05d5\u05e8 \u05de\u05e2\u05d5\u05dc\u05d9\u05dd','pos'),
+                    ('\u05de\u05d5\u05e2\u05de\u05d3 \u05dc\u05e8\u05d0\u05e9 \u05e7\u05d5','pos')]),
+        dict(name='\u05d0\u05d9\u05e0\u05d4 \u05e4\u05d8\u05e8\u05e0\u05e7\u05d5', role='\u05d1\u05e7\u05e8\u05ea \u05d0\u05d9\u05db\u05d5\u05ea QC',
+             line='\u05e7\u05d5 B + C', shift='\u05d0\u05d7\u05d4"\u05e6',
+             rate_type='\u05e9\u05e2\u05ea\u05d9', rate=55, hours=176,
+             units_last=335, target=320, defect=2.2, rework=4.5,
+             overhead=2800, waste=0, safety=300,
+             kpis=[{'n':'\u05d1\u05d3\u05d9\u05e7\u05d5\u05ea QC / \u05d7\u05d5\u05d3\u05e9','v':335,'b':320},
+                   {'n':'\u05d3\u05d9\u05d5\u05e7 \u05d0\u05d9\u05ea\u05d5\u05e8 \u05e4\u05d2\u05de\u05d9\u05dd %','v':94,'b':88},
+                   {'n':'False positive %','v':2.2,'b':5.0,'low':True},
+                   {'n':'\u05e2\u05de\u05d9\u05d3\u05d4 \u05d1\u05de\u05e9\u05de\u05e8\u05d5\u05ea','v':96,'b':92},
+                   {'n':'\u05d6\u05de\u05df \u05d1\u05d3\u05d9\u05e7\u05d4 (\u05d3\u05e7\u05d5\u05ea)','v':12,'b':18,'low':True}],
+             risk_flight=20, engage=79,
+             flags=[('\u05d1\u05d9\u05e6\u05d5\u05e2\u05d9\u05dd \u05de\u05e2\u05dc \u05de\u05de\u05d5\u05e6\u05e2','pos'),
+                    ('\u05d1\u05d9\u05e7\u05e9\u05d4 \u05d4\u05d2\u05d3\u05dc\u05ea \u05e9\u05db\u05e8','warn')]),
+    ],
+    'inst': [
+        dict(name='\u05d9\u05d5\u05e1\u05d9 \u05d3\u05d4\u05df', role='\u05de\u05ea\u05e7\u05d9\u05df \u05d1\u05db\u05d9\u05e8',
+             region='\u05d2\u05d5\u05e9 \u05d3\u05df + \u05e9\u05e8\u05d5\u05df', vehicle='\u05e8\u05db\u05d1 \u05d7\u05d1\u05e8\u05d4',
+             rates={'std':350,'complex':650,'service':180},
+             types={'std':18,'complex':7,'service':3},
+             months_last=28, avg_hrs=3.8, km=2800, fuel=1680, veh_dep=1400, tools=300, phone=200,
+             satisfaction=4.9, callbacks=1, cb_rate=3.6,
+             kpis=[{'n':'\u05d4\u05ea\u05e7\u05e0\u05d5\u05ea / \u05d7\u05d5\u05d3\u05e9','v':28,'b':22},
+                   {'n':'\u05e9\u05d1\u05d9\u05e2\u05d5\u05ea \u05e8\u05e6\u05d5\u05df (1-5)','v':4.9,'b':4.5},
+                   {'n':'Callback rate %','v':3.6,'b':8.0,'low':True},
+                   {'n':'\u05d6\u05de\u05df \u05dc\u05d4\u05ea\u05e7\u05e0\u05d4 (\u05e9\u05e2)','v':3.8,'b':4.5,'low':True},
+                   {'n':'\u05e7"\u05de \u05dc\u05d1\u05d9\u05e7\u05d5\u05e8','v':98,'b':115,'low':True}],
+             risk_flight=18, engage=86,
+             flags=[('\u05de\u05ea\u05e7\u05d9\u05df \u05de\u05d5\u05d1\u05d9\u05dc \u2014 \u05de\u05d5\u05e2\u05de\u05d3 \u05dc\u05e7\u05d9\u05d3\u05d5\u05dd','pos'),
+                    ('\u05e0\u05d3\u05e8\u05e9 \u05e9\u05d5\u05ea\u05e3 \u05dc\u05d0\u05d6\u05d5\u05e8','warn')]),
+        dict(name='\u05d1\u05e1\u05dd \u05d7\u05d0\u05dc\u05d3', role='\u05de\u05ea\u05e7\u05d9\u05df + \u05ea\u05d7\u05d6\u05d5\u05e7\u05d4',
+             region='\u05d9\u05e8\u05d5\u05e9\u05dc\u05d9\u05dd + \u05d9\u05d4\u05d5\u05d3\u05d4 \u05e9\u05d5\u05de\u05e8\u05d5\u05df', vehicle='\u05e8\u05db\u05d1 \u05d7\u05d1\u05e8\u05d4',
+             rates={'std':350,'complex':650,'service':180},
+             types={'std':10,'complex':4,'service':4},
+             months_last=18, avg_hrs=4.6, km=3900, fuel=2340, veh_dep=1400, tools=200, phone=200,
+             satisfaction=4.7, callbacks=1, cb_rate=5.6,
+             kpis=[{'n':'\u05d4\u05ea\u05e7\u05e0\u05d5\u05ea / \u05d7\u05d5\u05d3\u05e9','v':18,'b':22},
+                   {'n':'\u05e9\u05d1\u05d9\u05e2\u05d5\u05ea \u05e8\u05e6\u05d5\u05df (1-5)','v':4.7,'b':4.5},
+                   {'n':'Callback rate %','v':5.6,'b':8.0,'low':True},
+                   {'n':'\u05d6\u05de\u05df \u05dc\u05d4\u05ea\u05e7\u05e0\u05d4 (\u05e9\u05e2)','v':4.6,'b':4.5,'low':True},
+                   {'n':'\u05e7"\u05de \u05dc\u05d1\u05d9\u05e7\u05d5\u05e8','v':217,'b':115,'low':True}],
+             risk_flight=25, engage=74,
+             flags=[('\u05de\u05e2\u05dc benchmark callbacks','warn'),
+                    ('\u05e2\u05d5\u05de\u05e1 \u05d2\u05d9\u05d0\u05d5\u05d2\u05e8\u05e4\u05d9 \u05d2\u05d1\u05d5\u05d4','warn'),
+                    ('\u05d1\u05e7\u05e9 \u05d4\u05d2\u05d3\u05dc\u05ea \u05ea\u05e2\u05e8\u05d9\u05e3','warn')]),
+    ],
+}
+
+def calc_sal(w):
+    cost = w['sal_total']+w['ben_total']+w['inf_total']+w['trn_total']+w['rec_total']
+    val  = w['dirVal']+w['indVal']
+    roi  = (val-cost)/cost*100
+    score = min(98, max(20, int(50 + roi*0.25)))
+    return dict(cost=cost, val=val, roi=roi, net=val-cost, score=score)
+
+def calc_sales(w):
+    closed = [d for d in w['deals'] if d[4]=='\u05e1\u05d2\u05d5\u05e8']
+    rev   = sum(d[1] for d in closed)
+    comm  = sum(d[3] for d in closed) + w['retainer']*12
+    roi   = (rev-comm)/comm*100 if comm else 0
+    score = min(98, max(20, int(50 + roi*0.18)))
+    return dict(rev=rev, comm=comm, roi=roi, net=rev-comm, score=score, closed=len(closed))
+
+def calc_prod(w):
+    pay = w['units_last']*w['rate'] if w['rate_type']=='\u05dc\u05d9\u05d7\u05d9\u05d3\u05d4' else w['hours']*w['rate']
+    cost = pay + w['overhead'] + w['waste'] + w['safety']
+    val  = w['units_last'] * 65
+    roi  = (val-cost)/cost*100
+    score = min(98, max(20, int(50 + roi*0.22)))
+    return dict(cost=cost, val=val, roi=roi, net=val-cost, score=score, pay=pay)
+
+def calc_inst(w):
+    r=w['rates']; t=w['types']
+    pay = t['std']*r['std'] + t['complex']*r['complex'] + t['service']*r['service']
+    cost = pay + w['fuel'] + w['veh_dep'] + w['tools'] + w['phone']
+    rev_rates = {'std':1200,'complex':2800,'service':550}
+    val = t['std']*rev_rates['std'] + t['complex']*rev_rates['complex'] + t['service']*rev_rates['service']
+    roi = (val-cost)/cost*100
+    score = min(98, max(20, int(50 + roi*0.22)))
+    return dict(cost=cost, val=val, roi=roi, net=val-cost, score=score, pay=pay)
+
+def make_doc(path):
+    return SimpleDocTemplate(
+        path, pagesize=A4,
+        rightMargin=20*mm, leftMargin=20*mm,
+        topMargin=18*mm, bottomMargin=18*mm,
+        title='ROI Report - Kobi ERP', author='Kobi ERP HR Analytics',
+    )
+
+def section_label(text):
+    return Paragraph(text, ParagraphStyle('sl', fontName='Helvetica-Bold', fontSize=9,
+                     textColor=C_MUTED, alignment=TA_RIGHT, spaceBefore=10, spaceAfter=4))
+
+def worker_header(w, tid, R):
+    bg = TYPE_LIGHT[tid]; tc = TYPE_COLORS[tid]
+    name_p = Paragraph(w['name'], ParagraphStyle('wn', fontName='Helvetica-Bold',
+                       fontSize=13, textColor=tc, alignment=TA_RIGHT))
+    role_p = Paragraph(w['role'], ParagraphStyle('wr', fontSize=9,
+                       textColor=C_MUTED, alignment=TA_RIGHT))
+    score_p = Paragraph(str(R['score'])+'/100',
+                        ParagraphStyle('sc', fontName='Helvetica-Bold', fontSize=18,
+                        textColor=tc, alignment=TA_CENTER))
+    roi_p = Paragraph(('+' if R['roi']>=0 else '')+str(int(R['roi']))+'% ROI',
+                       ParagraphStyle('roi', fontName='Helvetica-Bold', fontSize=11,
+                       textColor=C_GREEN if R['roi']>=0 else C_RED, alignment=TA_CENTER))
+    hdr = Table([[name_p, score_p], [role_p, roi_p]],
+                colWidths=[W-40*mm-70, 70])
+    hdr.setStyle(TableStyle([
+        ('BACKGROUND',(0,0),(-1,-1), bg),
+        ('TOPPADDING',(0,0),(-1,-1),8), ('BOTTOMPADDING',(0,0),(-1,-1),8),
+        ('LEFTPADDING',(0,0),(-1,-1),10), ('RIGHTPADDING',(0,0),(-1,-1),10),
+        ('ROUNDEDCORNERS',[5]),
+    ]))
+    return hdr
+
+def metric_row(metrics, tid):
+    cw = (W-40*mm)/len(metrics)
+    cells = []
+    for label, val, val_col in metrics:
+        p = Table([
+            [Paragraph(label, ParagraphStyle('ml', fontSize=8, textColor=C_MUTED, alignment=TA_RIGHT))],
+            [Paragraph(val, ParagraphStyle('mv', fontName='Helvetica-Bold', fontSize=13,
+                       textColor=val_col, alignment=TA_RIGHT))],
+        ], colWidths=[cw-12])
+        p.setStyle(TableStyle([
+            ('BACKGROUND',(0,0),(-1,-1),C_BG),
+            ('TOPPADDING',(0,0),(-1,-1),7), ('BOTTOMPADDING',(0,0),(-1,-1),7),
+            ('LEFTPADDING',(0,0),(-1,-1),8), ('RIGHTPADDING',(0,0),(-1,-1),8),
+            ('ROUNDEDCORNERS',[4]),
+        ]))
+        cells.append(p)
+    row = Table([cells], colWidths=[cw]*len(metrics))
+    row.setStyle(TableStyle([('LEFTPADDING',(0,0),(-1,-1),3),('RIGHTPADDING',(0,0),(-1,-1),3)]))
+    return row
+
+def kpi_table(kpis):
+    hdr_s = ParagraphStyle('kh', fontName='Helvetica-Bold', fontSize=8, textColor=C_WHITE, alignment=TA_RIGHT)
+    cell_s = ParagraphStyle('kc', fontSize=8, textColor=C_TEXT, alignment=TA_RIGHT)
+    rows = [[Paragraph(h, hdr_s) for h in ['\u05de\u05d3\u05d3 KPI','\u05d1\u05d9\u05e6\u05d5\u05e2','Benchmark','\u05de\u05e6\u05d1']]]
+    for k in kpis:
+        good = (k['v'] <= k['b']) if k.get('low') else (k['v'] >= k['b'])
+        vc = C_GREEN if good else C_RED
+        vd = str(k['v']) if k['v'] >= 10 else f"{k['v']:.1f}"
+        bd = str(k['b']) if k['b'] >= 10 else f"{k['b']:.1f}"
+        rows.append([
+            Paragraph(k['n'], cell_s),
+            Paragraph(vd, ParagraphStyle('kv', fontSize=8, fontName='Helvetica-Bold', textColor=vc, alignment=TA_RIGHT)),
+            Paragraph(bd, ParagraphStyle('kb', fontSize=8, textColor=C_MUTED, alignment=TA_RIGHT)),
+            Paragraph('\u05de\u05e2\u05dc' if good else '\u05de\u05ea\u05d7\u05ea',
+                      ParagraphStyle('ks', fontSize=8, fontName='Helvetica-Bold', textColor=vc, alignment=TA_RIGHT)),
+        ])
+    t = Table(rows, colWidths=[90*mm, 30*mm, 30*mm, 25*mm], repeatRows=1)
+    t.setStyle(TableStyle([
+        ('BACKGROUND',(0,0),(-1,0), colors.HexColor('#444441')),
+        ('ROWBACKGROUNDS',(0,1),(-1,-1),[C_WHITE,C_BG]),
+        ('GRID',(0,0),(-1,-1),0.3,C_BORDER),
+        ('TOPPADDING',(0,0),(-1,-1),5), ('BOTTOMPADDING',(0,0),(-1,-1),5),
+        ('LEFTPADDING',(0,0),(-1,-1),6), ('RIGHTPADDING',(0,0),(-1,-1),6),
+    ]))
+    return t
+
+def risk_section(w, tid):
+    rf = w['risk_flight']; eg = w['engage']
+    rc = C_RED if rf>=30 else C_AMBER if rf>=18 else C_GREEN
+    ec = C_GREEN if eg>=80 else C_AMBER if eg>=60 else C_RED
+    flag_rows = []
+    for txt, sev in w['flags']:
+        fc = C_GREEN if sev=='pos' else C_RED if sev=='danger' else C_AMBER
+        ico = 'V' if sev=='pos' else '!'
+        flag_rows.append([
+            Paragraph(ico, ParagraphStyle('fi', fontName='Helvetica-Bold', fontSize=9, textColor=fc, alignment=TA_CENTER)),
+            Paragraph(txt, ParagraphStyle('ft2', fontSize=9, textColor=C_TEXT, alignment=TA_RIGHT)),
+        ])
+    if not flag_rows:
+        flag_rows = [[Paragraph('', ParagraphStyle('x', fontSize=8)), Paragraph('', ParagraphStyle('x', fontSize=8))]]
+    ft = Table(flag_rows, colWidths=[12, W-40*mm-96])
+    ft.setStyle(TableStyle([('TOPPADDING',(0,0),(-1,-1),3),('BOTTOMPADDING',(0,0),(-1,-1),3),
+                             ('LEFTPADDING',(0,0),(-1,-1),2),('RIGHTPADDING',(0,0),(-1,-1),2)]))
+    rt = Table([
+        [Paragraph('\u05e1\u05d9\u05db\u05d5\u05df \u05e2\u05d6\u05d9\u05d1\u05d4',
+                   ParagraphStyle('rl', fontSize=8, textColor=C_MUTED, alignment=TA_RIGHT)),
+         Paragraph(str(rf)+'%', ParagraphStyle('rv', fontName='Helvetica-Bold', fontSize=11, textColor=rc, alignment=TA_RIGHT))],
+        [Paragraph('Engagement',
+                   ParagraphStyle('rl2', fontSize=8, textColor=C_MUTED, alignment=TA_RIGHT)),
+         Paragraph(str(eg)+'/100', ParagraphStyle('rv2', fontName='Helvetica-Bold', fontSize=11, textColor=ec, alignment=TA_RIGHT))],
+    ], colWidths=[44, 40])
+    rt.setStyle(TableStyle([('TOPPADDING',(0,0),(-1,-1),3),('BOTTOMPADDING',(0,0),(-1,-1),3),
+                             ('LEFTPADDING',(0,0),(-1,-1),2),('RIGHTPADDING',(0,0),(-1,-1),4)]))
+    combined = Table([[ft, rt]], colWidths=[W-40*mm-90, 90])
+    combined.setStyle(TableStyle([
+        ('BACKGROUND',(0,0),(-1,-1),C_BG), ('ROUNDEDCORNERS',[4]),
+        ('TOPPADDING',(0,0),(-1,-1),8), ('BOTTOMPADDING',(0,0),(-1,-1),8),
+        ('LEFTPADDING',(0,0),(-1,-1),10), ('RIGHTPADDING',(0,0),(-1,-1),10),
+    ]))
+    return combined
+
+def build_cover():
+    items = []
+    cover = Table([['']], colWidths=[W-40*mm], rowHeights=[120])
+    cover.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),C_GREEN),('ROUNDEDCORNERS',[8])]))
+    items.append(cover)
+    items.append(Spacer(1,-120))
+    for it in [Spacer(1,22),
+               Paragraph('\u05d3\u05d5\u05d7 ROI \u05db\u05d5\u05d7 \u05d0\u05d3\u05dd', ST['cover_title']),
+               Spacer(1,6),
+               Paragraph('\u05e0\u05d9\u05ea\u05d5\u05d7 \u05db\u05d3\u05d0\u05d9\u05d5\u05ea \u2014 4 \u05e1\u05d5\u05d2\u05d9 \u05e2\u05d5\u05d1\u05d3\u05d9\u05dd | Kobi ERP', ST['cover_sub']),
+               Spacer(1,8),
+               Paragraph(datetime.now().strftime('%d/%m/%Y'), ST['cover_date']),
+               Spacer(1,22)]:
+        items.append(it)
+    items.append(Spacer(1,20))
+    type_info = [
+        ('\u05e9\u05db\u05d9\u05e8\u05d9\u05dd','\u05db\u05dc \u05d4\u05de\u05d7\u05dc\u05e7\u05d5\u05ea','2 \u05e2\u05d5\u05d1\u05d3\u05d9\u05dd','sal'),
+        ('\u05e1\u05d5\u05db\u05e0\u05d9 \u05de\u05db\u05d9\u05e8\u05d5\u05ea','\u05e7\u05d1\u05dc\u05df \u05de\u05e9\u05e0\u05d4','2 \u05e1\u05d5\u05db\u05e0\u05d9\u05dd','sales'),
+        ('\u05e2\u05d5\u05d1\u05d3\u05d9 \u05d9\u05d9\u05e6\u05d5\u05e8','\u05e7\u05d1\u05dc\u05df \u05de\u05e9\u05e0\u05d4 \u00b7 \u05de\u05e4\u05e2\u05dc','2 \u05e2\u05d5\u05d1\u05d3\u05d9\u05dd','prod'),
+        ('\u05de\u05ea\u05e7\u05d9\u05e0\u05d9\u05dd','\u05e7\u05d1\u05dc\u05df \u05de\u05e9\u05e0\u05d4 \u00b7 \u05e9\u05d8\u05d7','2 \u05de\u05ea\u05e7\u05d9\u05e0\u05d9\u05dd','inst'),
+    ]
+    cells = []
+    for lbl, sub, cnt, tid in type_info:
+        col = TYPE_COLORS[tid]; bg = TYPE_LIGHT[tid]
+        ct = Table([
+            [Paragraph(lbl, ParagraphStyle('x', fontName='Helvetica-Bold', fontSize=11, textColor=col, alignment=TA_CENTER))],
+            [Paragraph(sub, ParagraphStyle('x2', fontSize=8, textColor=C_MUTED, alignment=TA_CENTER))],
+            [Paragraph(cnt, ParagraphStyle('x3', fontName='Helvetica-Bold', fontSize=9, textColor=col, alignment=TA_CENTER))],
+        ], colWidths=[(W-40*mm)/4 - 6])
+        ct.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),bg),('ROUNDEDCORNERS',[6]),
+                                 ('TOPPADDING',(0,0),(-1,-1),10),('BOTTOMPADDING',(0,0),(-1,-1),10),
+                                 ('LEFTPADDING',(0,0),(-1,-1),6),('RIGHTPADDING',(0,0),(-1,-1),6)]))
+        cells.append(ct)
+    cg = Table([cells], colWidths=[(W-40*mm)/4]*4, hAlign='RIGHT')
+    cg.setStyle(TableStyle([('LEFTPADDING',(0,0),(-1,-1),3),('RIGHTPADDING',(0,0),(-1,-1),3)]))
+    items.append(cg)
+    items.append(Spacer(1,20))
+    items.append(HRFlowable(width='100%', color=C_BORDER, thickness=0.5))
+    items.append(Spacer(1,8))
+    items.append(Paragraph('Kobi ERP \u00b7 HR Analytics \u2014 \u05d3\u05d5\u05d7 \u05d0\u05d5\u05d8\u05d5\u05de\u05d8\u05d9', ST['footer']))
+    items.append(PageBreak())
+    return items
+
+def build_summary():
+    items = []
+    items.append(Paragraph('\u05e1\u05d9\u05db\u05d5\u05dd \u05db\u05dc \u05db\u05d5\u05d7 \u05d4\u05d0\u05d3\u05dd',
+                           ParagraphStyle('sh2', fontName='Helvetica-Bold', fontSize=14,
+                           textColor=C_TEXT, alignment=TA_RIGHT, spaceAfter=10)))
+    hdr_s = ParagraphStyle('h', fontName='Helvetica-Bold', fontSize=8, textColor=C_WHITE, alignment=TA_RIGHT)
+    cell_s = ParagraphStyle('c', fontSize=8, textColor=C_TEXT, alignment=TA_RIGHT)
+    cg = ParagraphStyle('cg', fontSize=8, fontName='Helvetica-Bold', textColor=C_GREEN, alignment=TA_RIGHT)
+    cr = ParagraphStyle('cr', fontSize=8, fontName='Helvetica-Bold', textColor=C_RED, alignment=TA_RIGHT)
+    headers = ['\u05e9\u05dd','\u05ea\u05e4\u05e7\u05d9\u05d3','\u05e1\u05d5\u05d2',
+               '\u05e2\u05dc\u05d5\u05ea \u05dc\u05d7\u05d1\u05e8\u05d4','\u05e2\u05e8\u05da / \u05d4\u05db\u05e0\u05e1\u05d4',
+               '\u05e2\u05e8\u05da \u05e0\u05d8\u05d5','ROI','\u05e6\u05d9\u05d5\u05df']
+    rows = [[Paragraph(h, hdr_s) for h in headers]]
+    type_labels = {'sal':'\u05e9\u05db\u05d9\u05e8','sales':'\u05e7\u05d1\u05dc\u05df \u05de\u05db\u05d9\u05e8\u05d5\u05ea',
+                   'prod':'\u05e7\u05d1\u05dc\u05df \u05d9\u05d9\u05e6\u05d5\u05e8','inst':'\u05e7\u05d1\u05dc\u05df \u05e9\u05d8\u05d7'}
+    calcs = {'sal':calc_sal,'sales':calc_sales,'prod':calc_prod,'inst':calc_inst}
+    for tid, ws in [('sal',WORKERS['sal']),('sales',WORKERS['sales']),
+                    ('prod',WORKERS['prod']),('inst',WORKERS['inst'])]:
+        for w in ws:
+            R = calcs[tid](w)
+            nc = cg if R['net']>=0 else cr
+            rc2 = cg if R['roi']>=0 else cr
+            cost_s = fk(R['cost']) if tid!='sales' else fk(R['comm'])
+            val_s  = fk(R['val'])  if tid!='sales' else fk(R['rev'])
+            rows.append([
+                Paragraph(w['name'], cell_s),
+                Paragraph(w['role'], cell_s),
+                Paragraph(type_labels[tid], cell_s),
+                Paragraph(cost_s, cr),
+                Paragraph(val_s, cg),
+                Paragraph(('+' if R['net']>=0 else '')+fk(R['net']), nc),
+                Paragraph(pp(R['roi']), rc2),
+                Paragraph(str(R['score'])+'/100', cell_s),
+            ])
+    col_ws = [45*mm,40*mm,22*mm,22*mm,22*mm,22*mm,16*mm,16*mm]
+    tbl = Table(rows, colWidths=col_ws, repeatRows=1)
+    tbl.setStyle(TableStyle([
+        ('BACKGROUND',(0,0),(-1,0),C_GREEN),
+        ('ROWBACKGROUNDS',(0,1),(-1,-1),[C_WHITE,C_BG]),
+        ('GRID',(0,0),(-1,-1),0.3,C_BORDER),
+        ('TOPPADDING',(0,0),(-1,-1),6), ('BOTTOMPADDING',(0,0),(-1,-1),6),
+        ('LEFTPADDING',(0,0),(-1,-1),5), ('RIGHTPADDING',(0,0),(-1,-1),5),
+    ]))
+    items.append(tbl)
+    items.append(Spacer(1,6))
+    items.append(Paragraph('* \u05e2\u05dc\u05d5\u05ea \u05e9\u05db\u05d9\u05e8\u05d9\u05dd = \u05e9\u05db\u05e8+\u05d4\u05d8\u05d1\u05d5\u05ea+\u05ea\u05e9\u05ea\u05d9\u05ea+\u05d2\u05d9\u05d5\u05e1  |\u05e7\u05d1\u05dc\u05e0\u05d9\u05dd = \u05ea\u05e9\u05dc\u05d5\u05dd+\u05e2\u05dc\u05d5\u05d9\u05d5\u05ea \u05d9\u05e9\u05d9\u05e8\u05d5\u05ea',
+                           ParagraphStyle('nt', fontSize=8, textColor=C_MUTED, leading=11, alignment=TA_RIGHT)))
+    items.append(PageBreak())
+    return items
+
+def build_sal_worker(w, tid):
+    R = calc_sal(w)
+    items = [worker_header(w, tid, R), Spacer(1,6)]
+    items.append(Paragraph(f"\u05de\u05d7\u05dc\u05e7\u05d4: {w['dept']}  |  \u05de\u05e0\u05d4\u05dc: {w['mgr']}  |  \u05d4\u05d7\u05dc: {w['start']}",
+                           ParagraphStyle('meta', fontSize=9, textColor=C_MUTED, alignment=TA_RIGHT)))
+    items.append(Spacer(1,8))
+    items.append(metric_row([
+        ('\u05e2\u05dc\u05d5\u05ea \u05db\u05d5\u05dc\u05dc\u05ea', fk(R['cost']), C_RED),
+        ('\u05e2\u05e8\u05da \u05d9\u05e9\u05d9\u05e8', fk(w['dirVal']), C_GREEN),
+        ('\u05e2\u05e8\u05da \u05e2\u05e7\u05d9\u05e3', fk(w['indVal']), C_BLUE),
+        ('\u05e2\u05e8\u05da \u05e0\u05d8\u05d5', ('+' if R['net']>=0 else '')+fk(R['net']), C_GREEN if R['net']>=0 else C_RED),
+        ('ROI', pp(R['roi']), C_GREEN if R['roi']>=0 else C_RED),
+    ], tid))
+    items.append(Spacer(1,10))
+    ps = ParagraphStyle('ps', fontSize=8, textColor=C_TEXT, alignment=TA_RIGHT)
+    psr = ParagraphStyle('psr', fontSize=8, textColor=C_RED, alignment=TA_RIGHT)
+    psm = ParagraphStyle('psm', fontSize=8, textColor=C_MUTED, alignment=TA_RIGHT)
+    cost_rows = [
+        ['\u05e9\u05db\u05e8 (\u05db\u05d5\u05dc\u05dc \u05d1\u05d5\u05e0\u05d5\u05e1)', fk(w['sal_total'])],
+        ['\u05d4\u05d8\u05d1\u05d5\u05ea \u05e1\u05d5\u05e6\u05d9\u05d0\u05dc\u05d9\u05d5\u05ea', fk(w['ben_total'])],
+        ['\u05ea\u05e9\u05ea\u05d9\u05ea \u05d5\u05e8\u05d9\u05e9\u05d9\u05d5\u05e0\u05d5\u05ea', fk(w['inf_total'])],
+        ['\u05d4\u05d3\u05e8\u05db\u05d4 \u05d5\u05e4\u05d9\u05ea\u05d5\u05d7', fk(w['trn_total'])],
+        ['\u05d2\u05d9\u05d5\u05e1 + Onboarding', fk(w['rec_total'])],
+        ['\u05e1\u05d4"\u05db', fmt(R['cost'])],
+    ]
+    ci = Table([[Paragraph(r[0], psm), Paragraph(r[1], psr)] for r in cost_rows], colWidths=[55*mm,25*mm])
+    ci.setStyle(TableStyle([('ROWBACKGROUNDS',(0,0),(-1,-1),[C_WHITE,C_BG]),('GRID',(0,0),(-1,-1),0.3,C_BORDER),
+                             ('TOPPADDING',(0,0),(-1,-1),4),('BOTTOMPADDING',(0,0),(-1,-1),4),
+                             ('LEFTPADDING',(0,0),(-1,-1),5),('RIGHTPADDING',(0,0),(-1,-1),5),
+                             ('BACKGROUND',(0,5),(-1,5),C_BG)]))
+    hdr_s2 = ParagraphStyle('hs2', fontName='Helvetica-Bold', fontSize=8, textColor=C_WHITE, alignment=TA_RIGHT)
+    task_rows = [[Paragraph(h, hdr_s2) for h in ['\u05de\u05e9\u05d9\u05de\u05d4','\u05e1\u05d8\u05d0\u05d8\u05d5\u05e1','\u05e6\u05d9\u05d5\u05df']]]
+    for t in w['tasks']:
+        sc = t[1]; q = str(t[2]) if t[2] else '\u2014'
+        sc_c = C_GREEN if sc=='\u05d4\u05d5\u05e9\u05dc\u05dd' else C_BLUE if sc=='\u05d1\u05ea\u05d4\u05dc\u05d9\u05da' else C_AMBER
+        task_rows.append([Paragraph(t[0], ps),
+                          Paragraph(sc, ParagraphStyle('tst', fontSize=8, fontName='Helvetica-Bold', textColor=sc_c, alignment=TA_RIGHT)),
+                          Paragraph(q, ps)])
+    tt = Table(task_rows, colWidths=[52*mm,18*mm,12*mm], repeatRows=1)
+    tt.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),C_PURPLE),('ROWBACKGROUNDS',(0,1),(-1,-1),[C_WHITE,C_BG]),
+                             ('GRID',(0,0),(-1,-1),0.3,C_BORDER),('TOPPADDING',(0,0),(-1,-1),4),
+                             ('BOTTOMPADDING',(0,0),(-1,-1),4),('LEFTPADDING',(0,0),(-1,-1),5),
+                             ('RIGHTPADDING',(0,0),(-1,-1),5)]))
+    side = Table([[ci, tt]], colWidths=[82*mm, W-40*mm-85*mm])
+    side.setStyle(TableStyle([('LEFTPADDING',(0,0),(-1,-1),0),('RIGHTPADDING',(0,0),(-1,-1),0),
+                               ('TOPPADDING',(0,0),(-1,-1),0),('BOTTOMPADDING',(0,0),(-1,-1),0),
+                               ('RIGHTPADDING',(0,0),(0,-1),3)]))
+    items.append(side)
+    items.append(Spacer(1,8))
+    items.append(section_label('KPIs \u05de\u05d5\u05dc Benchmark'))
+    items.append(kpi_table(w['kpis']))
+    items.append(Spacer(1,8))
+    items.append(section_label('\u05e1\u05d9\u05db\u05d5\u05df \u05d5\u05e1\u05e0\u05d8\u05d9\u05de\u05e0\u05d8'))
+    items.append(risk_section(w, tid))
+    return items
+
+def build_sales_worker(w, tid):
+    R = calc_sales(w)
+    items = [worker_header(w, tid, R), Spacer(1,6)]
+    items.append(Paragraph(f"\u05d8\u05e8\u05d9\u05d8\u05d5\u05e8\u05d9\u05d4: {w['territory']}  |  \u05d4\u05d7\u05dc: {w['start']}  |  \u05e7\u05d1\u05dc\u05df \u05de\u05e9\u05e0\u05d4",
+                           ParagraphStyle('meta', fontSize=9, textColor=C_MUTED, alignment=TA_RIGHT)))
+    items.append(Spacer(1,8))
+    items.append(metric_row([
+        ('\u05e2\u05de\u05dc\u05d5\u05ea \u05e9\u05e9\u05d5\u05dc\u05de\u05d5', fk(R['comm']), C_RED),
+        ('\u05d4\u05db\u05e0\u05e1\u05d5\u05ea \u05e9\u05e0\u05d5\u05e6\u05e8\u05d5', fk(R['rev']), C_GREEN),
+        ('\u05e2\u05e8\u05da \u05e0\u05d8\u05d5', '+'+fk(R['net']) if R['net']>=0 else fk(R['net']), C_GREEN if R['net']>=0 else C_RED),
+        ('ROI', pp(R['roi']), C_GREEN if R['roi']>=0 else C_RED),
+        ('Pipeline \u05de\u05e9\u05d5\u05e7\u05dc\u05dc', fk(w['pipe_weighted']), C_PURPLE),
+    ], tid))
+    items.append(Spacer(1,8))
+    items.append(section_label('\u05e2\u05e1\u05e7\u05d0\u05d5\u05ea'))
+    hdr_s = ParagraphStyle('dh', fontName='Helvetica-Bold', fontSize=8, textColor=C_WHITE, alignment=TA_RIGHT)
+    cell_s = ParagraphStyle('dc', fontSize=8, textColor=C_TEXT, alignment=TA_RIGHT)
+    deal_rows = [[Paragraph(h, hdr_s) for h in ['\u05e2\u05e1\u05e7\u05d4 / \u05dc\u05e7\u05d5\u05d7','\u05e2\u05e8\u05da \u05d7\u05d5\u05d6\u05d4','% \u05e2\u05de\u05dc\u05d4','\u05e2\u05de\u05dc\u05d4','\u05e1\u05d8\u05d0\u05d8\u05d5\u05e1']]]
+    for d in w['deals']:
+        sc = C_GREEN if d[4]=='\u05e1\u05d2\u05d5\u05e8' else C_BLUE if d[4]=='Pipeline' else C_RED
+        deal_rows.append([Paragraph(d[0], cell_s),
+                          Paragraph(fmt(d[1]), ParagraphStyle('dv', fontSize=8, textColor=C_GREEN, alignment=TA_RIGHT)),
+                          Paragraph(str(d[2])+'%', cell_s),
+                          Paragraph(fmt(d[3]), ParagraphStyle('dc2', fontSize=8, textColor=C_RED, alignment=TA_RIGHT)),
+                          Paragraph(d[4], ParagraphStyle('ds', fontSize=8, fontName='Helvetica-Bold', textColor=sc, alignment=TA_RIGHT))])
+    dt = Table(deal_rows, colWidths=[65*mm,28*mm,16*mm,24*mm,22*mm], repeatRows=1)
+    dt.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),TYPE_COLORS[tid]),
+                             ('ROWBACKGROUNDS',(0,1),(-1,-1),[C_WHITE,C_BG]),
+                             ('GRID',(0,0),(-1,-1),0.3,C_BORDER),
+                             ('TOPPADDING',(0,0),(-1,-1),5),('BOTTOMPADDING',(0,0),(-1,-1),5),
+                             ('LEFTPADDING',(0,0),(-1,-1),5),('RIGHTPADDING',(0,0),(-1,-1),5)]))
+    items.append(dt)
+    items.append(Spacer(1,8))
+    psm = ParagraphStyle('psm2', fontSize=8, textColor=C_MUTED, alignment=TA_RIGHT)
+    pst = ParagraphStyle('pst', fontName='Helvetica-Bold', fontSize=8, textColor=TYPE_COLORS[tid], alignment=TA_RIGHT)
+    comm_rows = [('\u05e1\u05d5\u05d2 \u05d7\u05d5\u05d6\u05d4','\u05e2\u05de\u05dc\u05d4'+(' + \u05de\u05d9\u05e0\u05d9\u05de\u05d5\u05dd' if w['retainer'] else '')),
+                 ('Retainer \u05d7\u05d5\u05d3\u05e9\u05d9', fmt(w['retainer']) if w['retainer'] else '\u05d0\u05d9\u05df'),
+                 ('% \u05e2\u05de\u05dc\u05ea \u05e1\u05d2\u05d9\u05e8\u05d4', str(w['pct_close'])+'%'),
+                 ('% \u05e2\u05de\u05dc\u05ea Upsell', str(w['pct_upsell'])+'%'),
+                 ('\u05d9\u05d7\u05e1\u05d4\u05db\u05e0\u05e1\u05d4:\u05e2\u05de\u05dc\u05d4', f"{(R['rev']/R['comm']):.1f}x" if R['comm'] else '\u2014')]
+    pipe_rows = [('Pipeline \u05db\u05d5\u05dc\u05dc', fk(w['pipe_total'])),
+                 ('Pipeline \u05de\u05e9\u05d5\u05e7\u05dc\u05dc', fk(w['pipe_weighted'])),
+                 ('\u05e2\u05e1\u05e7\u05d0\u05d5\u05ea \u05e4\u05ea\u05d5\u05d7\u05d5\u05ea', str(w['deals_open'])),
+                 ('\u05d9\u05de\u05d9 \u05e1\u05d2\u05d9\u05e8\u05d4 \u05de\u05de\u05d5\u05e6\u05e2', str(w['avg_days'])+' \u05d9\u05de\u05d9\u05dd')]
+    ct2 = Table([[Paragraph(k, psm), Paragraph(v, pst)] for k,v in comm_rows], colWidths=[60*mm,40*mm])
+    ct2.setStyle(TableStyle([('ROWBACKGROUNDS',(0,0),(-1,-1),[C_WHITE,C_BG]),('GRID',(0,0),(-1,-1),0.3,C_BORDER),
+                              ('TOPPADDING',(0,0),(-1,-1),4),('BOTTOMPADDING',(0,0),(-1,-1),4),
+                              ('LEFTPADDING',(0,0),(-1,-1),6),('RIGHTPADDING',(0,0),(-1,-1),6)]))
+    psp = ParagraphStyle('psp', fontName='Helvetica-Bold', fontSize=8, textColor=C_PURPLE, alignment=TA_RIGHT)
+    pt2 = Table([[Paragraph(k, psm), Paragraph(v, psp)] for k,v in pipe_rows], colWidths=[60*mm,40*mm])
+    pt2.setStyle(TableStyle([('ROWBACKGROUNDS',(0,0),(-1,-1),[C_WHITE,C_BG]),('GRID',(0,0),(-1,-1),0.3,C_BORDER),
+                              ('TOPPADDING',(0,0),(-1,-1),4),('BOTTOMPADDING',(0,0),(-1,-1),4),
+                              ('LEFTPADDING',(0,0),(-1,-1),6),('RIGHTPADDING',(0,0),(-1,-1),6)]))
+    lbl_s = ParagraphStyle('ls', fontName='Helvetica-Bold', fontSize=8, textColor=C_MUTED, alignment=TA_RIGHT)
+    side2 = Table([[Paragraph('\u05de\u05d1\u05e0\u05d4 \u05e2\u05de\u05dc\u05d5\u05ea', lbl_s),
+                    Paragraph('Pipeline', lbl_s)],[ct2, pt2]],
+                  colWidths=[(W-40*mm)/2]*2)
+    side2.setStyle(TableStyle([('LEFTPADDING',(0,0),(-1,-1),0),('RIGHTPADDING',(0,0),(-1,-1),3),
+                                ('TOPPADDING',(0,0),(-1,-1),0),('BOTTOMPADDING',(0,0),(-1,-1),4)]))
+    items.append(side2)
+    items.append(Spacer(1,8))
+    items.append(section_label('KPIs \u05de\u05d5\u05dc Benchmark'))
+    items.append(kpi_table(w['kpis']))
+    items.append(Spacer(1,8))
+    items.append(section_label('\u05e1\u05d9\u05db\u05d5\u05df'))
+    items.append(risk_section(w, tid))
+    return items
+
+def build_prod_worker(w, tid):
+    R = calc_prod(w)
+    items = [worker_header(w, tid, R), Spacer(1,6)]
+    items.append(Paragraph(f"\u05e7\u05d5: {w['line']}  |  \u05de\u05e9\u05de\u05e8\u05ea: {w['shift']}  |  \u05e7\u05d1\u05dc\u05df \u05de\u05e9\u05e0\u05d4",
+                           ParagraphStyle('meta', fontSize=9, textColor=C_MUTED, alignment=TA_RIGHT)))
+    items.append(Spacer(1,8))
+    items.append(metric_row([
+        ('\u05ea\u05e9\u05dc\u05d5\u05dd \u05e7\u05d1\u05dc\u05df', fk(R['pay']), C_RED),
+        ('\u05e2\u05dc\u05d5\u05ea \u05db\u05d5\u05dc\u05dc\u05ea', fk(R['cost']), C_RED),
+        ('\u05e2\u05e8\u05da \u05d9\u05d9\u05e6\u05d5\u05e8', fk(R['val']), C_GREEN),
+        ('\u05e2\u05e8\u05da \u05e0\u05d8\u05d5', ('+' if R['net']>=0 else '')+fk(R['net']), C_GREEN if R['net']>=0 else C_RED),
+        ('ROI \u05d9\u05d9\u05e6\u05d5\u05e8', pp(R['roi']), C_GREEN if R['roi']>=0 else C_RED),
+    ], tid))
+    items.append(Spacer(1,8))
+    psm = ParagraphStyle('psm3', fontSize=8, textColor=C_MUTED, alignment=TA_RIGHT)
+    pst = ParagraphStyle('pst3', fontName='Helvetica-Bold', fontSize=8, textColor=TYPE_COLORS[tid], alignment=TA_RIGHT)
+    psr = ParagraphStyle('psr3', fontName='Helvetica-Bold', fontSize=8, textColor=C_RED, alignment=TA_RIGHT)
+    psg = ParagraphStyle('psg3', fontName='Helvetica-Bold', fontSize=8, textColor=C_GREEN, alignment=TA_RIGHT)
+    def mini(rows, col_val):
+        t = Table([[Paragraph(k, psm), Paragraph(v, col_val)] for k,v in rows], colWidths=[42*mm,22*mm])
+        t.setStyle(TableStyle([('ROWBACKGROUNDS',(0,0),(-1,-1),[C_WHITE,C_BG]),('GRID',(0,0),(-1,-1),0.3,C_BORDER),
+                                ('TOPPADDING',(0,0),(-1,-1),4),('BOTTOMPADDING',(0,0),(-1,-1),4),
+                                ('LEFTPADDING',(0,0),(-1,-1),5),('RIGHTPADDING',(0,0),(-1,-1),5),
+                                ('BACKGROUND',(0,len(rows)-1),(-1,len(rows)-1),C_BG)]))
+        return t
+    prod_i = [('\u05e9\u05d9\u05d8\u05ea \u05ea\u05e9\u05dc\u05d5\u05dd',w['rate_type']),
+              ('\u05ea\u05e2\u05e8\u05d9\u05e3',fmt(w['rate'])+(' / \u05d9\u05d7' if w['rate_type']=='\u05dc\u05d9\u05d7\u05d9\u05d3\u05d4' else ' / \u05e9\u05e2\u05d4')),
+              ('\u05e9\u05e2\u05d5\u05ea \u05d7\u05d5\u05d3\u05e9\u05d9\u05d5\u05ea',str(w['hours'])+'h'),
+              ('\u05d9\u05d7\u05d9\u05d3\u05d5\u05ea \u05d4\u05d7\u05d5\u05d3\u05e9',str(w['units_last'])+' \u05d9\u05d7'),
+              ('\u05d9\u05e2\u05d3 \u05d7\u05d5\u05d3\u05e9\u05d9',str(w['target'])+' \u05d9\u05d7')]
+    cost_i = [('\u05ea\u05e9\u05dc\u05d5\u05dd \u05d9\u05d9\u05e6\u05d5\u05e8',fmt(R['pay'])),
+              ('\u05ea\u05e7\u05d5\u05e8\u05d4',fmt(w['overhead'])),
+              ('\u05d1\u05d6\u05d1\u05d5\u05d6 \u05d7\u05d5\u05de\u05e8\u05d9\u05dd',fmt(w['waste'])),
+              ('\u05e6\u05d9\u05d5\u05d3 \u05de\u05d2\u05df',fmt(w['safety'])),
+              ('\u05e1\u05d4"\u05db',fmt(R['cost']))]
+    qual_i = [('\u05e9\u05d9\u05e2\u05d5\u05e8 \u05e4\u05d2\u05de\u05d9\u05dd',f"{w['defect']:.1f}%"),
+              ('\u05e9\u05d9\u05e2\u05d5\u05e8 Rework',f"{w['rework']:.1f}%"),
+              ('\u05e2\u05e8\u05da \u05d9\u05d9\u05e6\u05d5\u05e8 (65\u20aa/\u05d9\u05d7)',fmt(R['val'])),
+              ('\u05e2\u05e8\u05da \u05e0\u05d8\u05d5',('+' if R['net']>=0 else '')+fmt(R['net']))]
+    lbl_s = ParagraphStyle('ls3', fontName='Helvetica-Bold', fontSize=8, textColor=C_MUTED, alignment=TA_RIGHT)
+    three = Table([[Paragraph('\u05d9\u05d9\u05e6\u05d5\u05e8', lbl_s),
+                    Paragraph('\u05e2\u05dc\u05d5\u05d9\u05d5\u05ea', lbl_s),
+                    Paragraph('\u05d0\u05d9\u05db\u05d5\u05ea + ROI', lbl_s)],
+                   [mini(prod_i, pst), mini(cost_i, psr), mini(qual_i, psg)]],
+                  colWidths=[(W-40*mm)/3]*3)
+    three.setStyle(TableStyle([('LEFTPADDING',(0,0),(-1,-1),0),('RIGHTPADDING',(0,0),(-1,-1),3),
+                                ('TOPPADDING',(0,0),(-1,-1),0),('BOTTOMPADDING',(0,0),(-1,-1),4)]))
+    items.append(three)
+    items.append(Spacer(1,8))
+    items.append(section_label('KPIs \u05d9\u05d9\u05e6\u05d5\u05e8 \u05de\u05d5\u05dc Benchmark'))
+    items.append(kpi_table(w['kpis']))
+    items.append(Spacer(1,8))
+    items.append(section_label('\u05e1\u05d9\u05db\u05d5\u05df'))
+    items.append(risk_section(w, tid))
+    return items
+
+def build_inst_worker(w, tid):
+    R = calc_inst(w)
+    items = [worker_header(w, tid, R), Spacer(1,6)]
+    items.append(Paragraph(f"\u05d0\u05d6\u05d5\u05e8: {w['region']}  |  \u05e8\u05db\u05d1: {w['vehicle']}  |  \u05e7\u05d1\u05dc\u05df \u05de\u05e9\u05e0\u05d4",
+                           ParagraphStyle('meta', fontSize=9, textColor=C_MUTED, alignment=TA_RIGHT)))
+    items.append(Spacer(1,8))
+    items.append(metric_row([
+        ('\u05ea\u05e9\u05dc\u05d5\u05dd \u05e7\u05d1\u05dc\u05df', fk(R['pay']), C_RED),
+        ('\u05e2\u05dc\u05d5\u05ea \u05db\u05d5\u05dc\u05dc\u05ea', fk(R['cost']), C_RED),
+        ('\u05d4\u05db\u05e0\u05e1\u05d4 \u05dc\u05d7\u05d1\u05e8\u05d4', fk(R['val']), C_GREEN),
+        ('\u05e2\u05e8\u05da \u05e0\u05d8\u05d5', ('+' if R['net']>=0 else '')+fk(R['net']), C_GREEN if R['net']>=0 else C_RED),
+        ('ROI', pp(R['roi']), C_GREEN if R['roi']>=0 else C_RED),
+    ], tid))
+    items.append(Spacer(1,8))
+    r = w['rates']; t = w['types']
+    psm = ParagraphStyle('psm4', fontSize=8, textColor=C_MUTED, alignment=TA_RIGHT)
+    psr = ParagraphStyle('psr4', fontSize=8, textColor=C_RED, alignment=TA_RIGHT)
+    psg = ParagraphStyle('psg4', fontSize=8, textColor=C_GREEN, alignment=TA_RIGHT)
+    hdr_s = ParagraphStyle('hs4', fontName='Helvetica-Bold', fontSize=8, textColor=C_WHITE, alignment=TA_RIGHT)
+    inst_rows_data = [
+        ['\u05d4\u05ea\u05e7\u05e0\u05d4 \u05e8\u05d2\u05d9\u05dc\u05d4 \xd7'+str(t['std']), fmt(t['std']*r['std']), '@'+fmt(r['std'])],
+        ['\u05d4\u05ea\u05e7\u05e0\u05d4 \u05de\u05d5\u05e8\u05db\u05d1\u05ea \xd7'+str(t['complex']), fmt(t['complex']*r['complex']), '@'+fmt(r['complex'])],
+        ['\u05e9\u05d9\u05e8\u05d5\u05ea / \u05ea\u05d9\u05e7\u05d5\u05df \xd7'+str(t['service']), fmt(t['service']*r['service']), '@'+fmt(r['service'])],
+        ['\u05d3\u05dc\u05e7 ('+str(w['km'])+' \u05e7"מ)', fmt(w['fuel']), '\u05e2\u05dc\u05d5\u05ea \u05e0\u05e1\u05d9\u05e2\u05d4'],
+        ['\u05e4\u05d7\u05ea \u05e8\u05db\u05d1', fmt(w['veh_dep']), '\u05d7\u05d5\u05d3\u05e9\u05d9'],
+        ['\u05db\u05dc\u05d9\u05dd \u05d5\u05d0\u05d1\u05d9\u05d6\u05e8\u05d9\u05dd', fmt(w['tools']), ''],
+        ['\u05d8\u05dc\u05e4\u05d5\u05df', fmt(w['phone']), ''],
+    ]
+    itbl_rows = [[Paragraph(h, hdr_s) for h in ['\u05e1\u05e2\u05d9\u05e3','\u05e1\u05db\u05d5\u05dd','\u05d4\u05e2\u05e8\u05d4']]]
+    for row in inst_rows_data:
+        itbl_rows.append([Paragraph(row[0], psm), Paragraph(row[1], psr), Paragraph(row[2], psm)])
+    itbl_rows.append([Paragraph('\u05e1\u05d4"\u05db \u05e2\u05dc\u05d5\u05ea',
+                                ParagraphStyle('it', fontName='Helvetica-Bold', fontSize=8, textColor=C_TEXT, alignment=TA_RIGHT)),
+                      Paragraph(fmt(R['cost']), ParagraphStyle('itv', fontName='Helvetica-Bold', fontSize=8, textColor=C_RED, alignment=TA_RIGHT)),
+                      Paragraph('', psm)])
+    itbl_rows.append([Paragraph('\u05d4\u05db\u05e0\u05e1\u05d4 \u05dc\u05d7\u05d1\u05e8\u05d4',
+                                ParagraphStyle('it2', fontName='Helvetica-Bold', fontSize=8, textColor=C_TEXT, alignment=TA_RIGHT)),
+                      Paragraph(fmt(R['val']), ParagraphStyle('itv2', fontName='Helvetica-Bold', fontSize=8, textColor=C_GREEN, alignment=TA_RIGHT)),
+                      Paragraph('\u05de\u05d7\u05d9\u05e8\u05d9 \u05e9\u05d5\u05e7', psm)])
+    itbl = Table(itbl_rows, colWidths=[70*mm, 30*mm, 55*mm], repeatRows=1)
+    itbl.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),TYPE_COLORS[tid]),
+                               ('ROWBACKGROUNDS',(0,1),(-1,-1),[C_WHITE,C_BG]),
+                               ('GRID',(0,0),(-1,-1),0.3,C_BORDER),
+                               ('TOPPADDING',(0,0),(-1,-1),5),('BOTTOMPADDING',(0,0),(-1,-1),5),
+                               ('LEFTPADDING',(0,0),(-1,-1),5),('RIGHTPADDING',(0,0),(-1,-1),5),
+                               ('BACKGROUND',(0,len(itbl_rows)-2),(-1,-1),C_BG)]))
+    items.append(itbl)
+    items.append(Spacer(1,8))
+    items.append(metric_row([
+        ('\u05e9\u05d1\u05d9\u05e2\u05d5\u05ea \u05e8\u05e6\u05d5\u05df', str(w['satisfaction'])+'/5', C_GREEN),
+        ('Callbacks \u05d7\u05d5\u05d3\u05e9', str(w['callbacks']), C_AMBER if w['callbacks']>0 else C_GREEN),
+        ('Callback rate', str(w['cb_rate'])+'%', C_GREEN if w['cb_rate']<8 else C_RED),
+        ('\u05d6\u05de\u05df \u05d4\u05ea\u05e7\u05e0\u05d4 \u05de\u05de\u05d5\u05e6\u05e2', str(w['avg_hrs'])+'h', C_BLUE),
+        ('\u05e7"\u05de / \u05d7\u05d5\u05d3\u05e9', str(w['km']), C_AMBER),
+    ], tid))
+    items.append(Spacer(1,8))
+    items.append(section_label('KPIs \u05e9\u05d8\u05d7 \u05de\u05d5\u05dc Benchmark'))
+    items.append(kpi_table(w['kpis']))
+    items.append(Spacer(1,8))
+    items.append(section_label('\u05e1\u05d9\u05db\u05d5\u05df'))
+    items.append(risk_section(w, tid))
+    return items
+
+BUILDERS = {'sal':build_sal_worker,'sales':build_sales_worker,'prod':build_prod_worker,'inst':build_inst_worker}
+TYPE_NAMES = {
+    'sal':   '\u05e9\u05db\u05d9\u05e8\u05d9\u05dd \u2014 \u05db\u05dc \u05d4\u05de\u05d7\u05dc\u05e7\u05d5\u05ea',
+    'sales': '\u05e1\u05d5\u05db\u05e0\u05d9 \u05de\u05db\u05d9\u05e8\u05d5\u05ea \u2014 \u05e7\u05d1\u05dc\u05df \u05de\u05e9\u05e0\u05d4',
+    'prod':  '\u05e2\u05d5\u05d1\u05d3\u05d9 \u05d9\u05d9\u05e6\u05d5\u05e8 \u2014 \u05e7\u05d1\u05dc\u05df \u05de\u05e9\u05e0\u05d4',
+    'inst':  '\u05de\u05ea\u05e7\u05d9\u05e0\u05d9\u05dd \u2014 \u05e7\u05d1\u05dc\u05df \u05de\u05e9\u05e0\u05d4 \u00b7 \u05e9\u05d8\u05d7',
+}
+
+def build_pdf(out_path):
+    doc = make_doc(out_path)
+    story = []
+    story += build_cover()
+    story += build_summary()
+    for tid, ws in [('sal',WORKERS['sal']),('sales',WORKERS['sales']),
+                    ('prod',WORKERS['prod']),('inst',WORKERS['inst'])]:
+        story.append(SectionBanner(TYPE_NAMES[tid], f"{len(ws)} \u05e2\u05d5\u05d1\u05d3\u05d9\u05dd / \u05e7\u05d1\u05dc\u05e0\u05d9\u05dd", tid, W-40*mm))
+        story.append(Spacer(1,12))
+        for i, w in enumerate(ws):
+            for it in BUILDERS[tid](w, tid):
+                story.append(it)
+            if i < len(ws)-1:
+                story.append(Spacer(1,16))
+                story.append(HRFlowable(width='100%', color=C_BORDER, thickness=0.5))
+                story.append(Spacer(1,16))
+        story.append(PageBreak())
+    doc.build(story)
+    print(f'Done: {out_path}')
+
+# ── Run ───────────────────────────────────────────────────────────────────────
+build_pdf('kobi_erp_roi_report.pdf')

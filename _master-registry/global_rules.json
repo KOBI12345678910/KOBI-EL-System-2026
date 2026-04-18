@@ -1,0 +1,24 @@
+{
+  "mandatory_global_rules": [
+    "אין מודל בלי domain",
+    "אין מודל בלי model_type",
+    "אין מודל בלי primary_key",
+    "אין מודל בלי owner עסקי",
+    "אין מודל בלי owner מערכתי",
+    "אין מודל בלי קשר מוגדר לפחות לסוג אחד של מודלים אחרים",
+    "אין מודל טרנזקציוני בלי lifecycle או status",
+    "אין דף בלי links_from_pages",
+    "אין דף בלי links_to_pages",
+    "אין טופס בלי write target מוגדר",
+    "אין דוח בלי report_sources",
+    "אין KPI בלי kpi_source",
+    "אין אוטומציה בלי trigger ו-side_effects",
+    "אין שדה FK בלי relationship registry",
+    "אין page orphan",
+    "אין model orphan",
+    "אין source_of_truth כפול לאותה משמעות עסקית",
+    "אין process ללא input_models ו-output_models",
+    "אין ישות קריטית בלי audit trail",
+    "אין מודל בלי permission matrix"
+  ]
+}

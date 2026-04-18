@@ -217,6 +217,37 @@ services:
       - erp-net
 
   # ─────────────────────────────────────────────────────────────────────────
+  # VM TASK RUNNER — scheduled cron + queue worker (Node 20) :3400
+  # ─────────────────────────────────────────────────────────────────────────
+  vm-task-runner:
+    build:
+      context: ./vm-task-runner
+      dockerfile: Dockerfile
+    container_name: erp-vm-task-runner
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      VM_TASK_RUNNER_PORT: 3400
+      REDIS_URL: redis://redis:6379
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - "3400:3400"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3400/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - erp-net
+
+  # ─────────────────────────────────────────────────────────────────────────
   # NGINX — optional reverse proxy for unified :80 entry point
   #   Enable with: docker compose --profile proxy up -d
   # ─────────────────────────────────────────────────────────────────────────
@@ -239,6 +270,8 @@ services:
       onyx-ai:
         condition: service_started
       payroll-autonomous:
+        condition: service_started
+      vm-task-runner:
         condition: service_started
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/healthz"]

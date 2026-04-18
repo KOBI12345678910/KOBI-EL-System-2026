@@ -1,0 +1,11 @@
+Date,Description,Amount,Balance,Reference
+01/04/2026,Wire Transfer In - Client Payment,"12500.00","112500.00",TXN-001
+02/04/2026,Supplier Payment - Stone Works Ltd,"-3200.50","109299.50",TXN-002
+03/04/2026,Payroll - April Salaries,"-15750.00","93549.50",TXN-003
+05/04/2026,Customer Receipt - Ramat Gan Project,"45000.00","138549.50",TXN-004
+07/04/2026,Electricity Bill Payment,"-1250.75","137298.75",TXN-005
+09/04/2026,Construction Materials Purchase,"-8900.00","128398.75",TXN-006
+10/04/2026,VAT Refund from Tax Authority,"5670.25","134069.00",TXN-007
+12/04/2026,Municipal Tax Payment,"-2100.00","131969.00",TXN-008
+13/04/2026,Client Transfer - Construction Co,"22500.00","154469.00",TXN-009
+14/04/2026,Monthly Account Fee,"-45.00","154424.00",TXN-010

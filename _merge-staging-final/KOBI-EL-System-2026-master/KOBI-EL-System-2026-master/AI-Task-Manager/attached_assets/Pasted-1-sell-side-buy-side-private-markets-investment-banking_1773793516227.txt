@@ -1,0 +1,240 @@
+1) מודלי שווי וניתוח פיננסי
+
+זה הבסיס של sell-side, buy-side, private markets ו‑investment banking:
+
+DCF / FCFF:
+FCFF = EBIT*(1-T) + D&A - Capex - ΔNWC
+EV = Σ FCFF_t/(1+WACC)^t + TV/(1+WACC)^n
+
+FCFE:
+FCFE = NI + D&A - Capex - ΔNWC + Net Borrowing
+
+WACC:
+WACC = (E/V)*Re + (D/V)*Rd*(1-T)
+
+DDM / Gordon Growth:
+P0 = D1 / (r-g)
+
+Residual Income / EVA:
+RI = NI - r*BV_(t-1) ;
+Value = BV0 + PV(residual income)
+
+Relative valuation: Comparable Companies, Precedent Transactions
+
+SOTP: פירוק קונגלומרט לחלקים
+
+LBO model
+
+M&A Accretion/Dilution
+
+APV: ערך בלי מינוף + ערך מגן המס
+אלה בדיוק סוגי המודלים ש‑CFA Institute מגדירה כ‑present value, multiplier ו‑asset-based valuation.
+
+2) כל המכפילים שבאמת עובדים איתם
+
+המכפילים מתחלקים ל‑equity multiples ול‑enterprise multiples, והכלל הקריטי הוא להתאים בין המכנה למי שהמונה שייך לו: equity עם equity, enterprise עם firm. זה גם דגש מרכזי אצל Damodaran וגם אצל CFA.
+
+המכפילים המרכזיים:
+
+P/E = Price / EPS
+
+Forward P/E = Price / NTM EPS
+
+PEG = (P/E) / Growth
+
+P/B = Market Cap / Book Equity
+
+P/TBV = Price / Tangible Book
+
+P/S = Market Cap / Sales
+
+P/FCF = Equity Value / Free Cash Flow to Equity
+
+Dividend Yield = Dividend / Price
+
+EV/Sales
+
+EV/EBITDA
+
+EV/EBIT
+
+EV/NOPAT
+
+EV/FCFF
+
+Net Debt / EBITDA
+
+Interest Coverage = EBIT / Interest Expense
+
+מכפילים סקטוריאליים חשובים:
+
+בנקים: P/TBV, P/B, P/E, ROTCE/ROE
+
+ביטוח: P/B, P/E, combined ratio, ROE
+
+REITs / נדל"ן: P/FFO, EV/NOI, cap rate
+
+SaaS: EV/ARR, EV/Revenue, Rule of 40, CAC payback, NRR
+
+אנרגיה/כרייה: EV/EBITDAX, NAV, EV/boe
+
+אשראי: spread, OAS, CDS spread, leverage ratios.
+
+3) מודלי הקצאת נכסים ופקטורים
+
+זו השכבה של portfolio construction:
+
+Markowitz Mean‑Variance Optimization
+
+Efficient Frontier
+
+CAPM / Beta
+
+APT
+
+Black‑Litterman
+
+Fama‑French 3/5 factors
+
+Carhart momentum
+
+Barra / multifactor risk models
+
+Minimum Variance / Low Volatility
+
+Risk Parity
+
+Tracking Error Optimization
+
+Risk Budgeting
+
+Constraint optimization עם turnover, liquidity, sector/issuer limits, tax limits
+אלה הם אבני היסוד שעליהן נבנים הרבה portfolios מוסדיים, ופומבית רואים BlackRock, Fidelity ו‑Morgan Stanley עובדים בשפה של factors, while MSCI/Barra מספקת את אחת המתודולוגיות הרב‑פקטוריאליות המוכרות ביותר.
+
+4) מודלי סיכון
+
+בכל בית גדול יש risk engine, ובדרך כלל כמה שכבות במקביל:
+
+VaR: parametric / variance-covariance, historical simulation, Monte Carlo
+
+Expected Shortfall / CVaR
+
+Stress testing
+
+Scenario analysis
+
+Factor decomposition
+
+Beta / downside beta
+
+Tracking error
+
+Drawdown / tail risk
+
+Liquidity risk
+
+Concentration risk
+
+Counterparty risk
+
+Model risk
+
+Limit frameworks / stop-loss / scenario limits
+J.P. Morgan’s RiskMetrics היה אחד התקנים המכוננים למדידת market risk, והרגולציה הבנקאית תחת FRTB זזה מ‑VaR לכיוון Expected Shortfall. BlackRock, Morgan Stanley ו‑J.P. Morgan כולם מציגים פומבית stress/scenario/risk analytics כחלק מהמערכת שלהם.
+
+5) גידור סיכונים
+
+ה‑hedging stack של וול סטריט בדרך כלל נראה כך:
+
+Equity beta hedge: futures על S&P / Euro Stoxx / Nasdaq
+
+Sector hedge: ETFs / baskets / swaps
+
+Delta hedge
+
+Gamma hedge
+
+Vega hedge
+
+Protective puts / collars / put spreads
+
+Covered call overlay
+
+Duration hedge: Treasury futures, IRS, swaptions
+
+Key rate hedging
+
+FX hedge: forwards, options, cross-currency swaps
+
+Credit hedge: CDS single-name / CDX / iTraxx
+
+Commodity hedge: futures / options / producer hedges
+
+Pairs / market-neutral / statistical arbitrage
+
+Cross hedge עם basis risk
+Morgan Stanley מפרסמת פתרון hedged equity עם option overlay; J.P. Morgan מציגה Risk as a Service עבור vanilla ו‑exotic instruments ב‑FX; ובפלטפורמות מוסדיות רואים stress + scenario + exposure management כבסיס לקבלת החלטות גידור.
+
+6) Fixed Income, אשראי ונגזרים
+
+כאן יש שכבה כמותית עמוקה מאוד:
+
+Bond pricing / YTM / spot curve / forward curve
+
+Bootstrapping
+
+Duration / Modified Duration / Effective Duration
+
+Convexity
+
+Key Rate Duration
+
+OAS / Z-spread / asset swap spread
+
+Carry & roll-down
+
+Hazard-rate / reduced-form credit models
+
+Transition matrices
+
+Merton structural credit
+
+Black‑Scholes(-Merton)
+
+Binomial / trinomial trees
+
+Local volatility / stochastic volatility / SABR
+
+Greeks: delta, gamma, vega, theta, rho
+
+CVA / DVA / FVA / XVA
+Black‑Scholes הוא עדיין אבן יסוד בעולם האופציות; J.P. Morgan/RiskMetrics יישמה מסגרות למדידת סיכון על fixed income, equities, FX, commodities והנגזרים שלהם; ו‑BlackRock עצמה מציינת option‑adjusted calculations כחלק מה‑Aladdin stack.
+
+7) שכבת הדאטה
+
+זה החלק שפחות רואים מבחוץ אבל הוא קריטי:
+
+Market data: prices, quotes, vols, curves, spreads
+
+Fundamental data: דוחות, segments, estimates
+
+Reference data: tickers, identifiers, calendars, corporate actions
+
+Macro data
+
+News / filings / transcripts
+
+Alternative data: web, card, consumer, supply-chain, hiring, satellite, geolocation
+
+Point-in-time database
+
+Data cleaning / normalization / QA
+
+Feature engineering
+
+Backtesting / walk-forward / paper trading
+
+TCA / slippage / execution analytics
+
+Compliance / governance / audit trails
+Fidelity מדברת מפורשות על collect-clean-organize-verify, combining signals ו‑alternative data; J.P. Morgan על analytics engines ויותר מ‑50 מיליון time series; BlackRock על data frameworks שמחברים public + private markets.

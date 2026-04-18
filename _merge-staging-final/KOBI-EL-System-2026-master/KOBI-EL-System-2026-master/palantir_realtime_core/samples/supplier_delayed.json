@@ -1,0 +1,18 @@
+{
+  "tenant_id": "tenant_alpha",
+  "source_system": "procurement_api",
+  "source_record_id": "supplier_event_001",
+  "entity_type": "Supplier",
+  "entity_name": "Steel Imports Ltd",
+  "canonical_external_key": "SUPP-001",
+  "event_type": "supplier_delayed",
+  "severity": "high",
+  "properties": {
+    "status": "at_risk",
+    "delay_days": 5,
+    "reliability_score": 0.74
+  },
+  "relationships": {
+    "supplies_projects": ["obj_project_001"]
+  }
+}

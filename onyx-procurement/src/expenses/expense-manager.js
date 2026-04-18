@@ -4,7 +4,7 @@
  *
  * Full end-to-end employee expense-report backend for Techno-Kol Uzi
  * mega-ERP. Supports the eight Israeli tax-deductible categories, VAT
- * auto-split (17% default inclusive), per-diem and mileage calculators,
+ * auto-split (18% default inclusive from 2026-01-01; 17% before), per-diem and mileage calculators,
  * multi-currency normalization to ILS, duplicate detection, policy
  * violation flags, auto-categorization by description, approval workflow
  * and PDF export (pdfkit when present, plain-text fallback otherwise).
@@ -52,7 +52,7 @@
  *   CATEGORIES                      — map of category id → {he, en, tax}
  *   DEFAULT_POLICY                  — Israeli-default caps & rates (2026)
  *   STATUS                          — enum draft/submitted/approved/…
- *   VAT_STANDARD                    — 0.17
+ *   VAT_STANDARD                    — 0.18 (from 2026-01-01; 0.17 before)
  *
  *   _internal                       — exposed for the unit-test harness
  */
@@ -71,7 +71,9 @@ const crypto = require('crypto');
  *  Constants — categories, VAT, policy defaults
  * ────────────────────────────────────────────────────────────── */
 
-const VAT_STANDARD = 0.17; // 17% — Israel 2026
+const VAT_STANDARD = 0.18; // 18% — Israel, effective 2026-01-01 (was 17% until 2025-12-31)
+const VAT_STANDARD_PRIOR = 0.17; // Prior rate — retain for historical invoices / lines dated before 2026-01-01
+const VAT_EFFECTIVE_FROM = '2026-01-01';
 
 /**
  * Israeli tax-deductible expense categories.

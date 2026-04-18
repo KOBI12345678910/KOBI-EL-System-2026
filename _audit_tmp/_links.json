@@ -1,0 +1,581 @@
+{
+  "rels": [],
+  "links": [
+    {
+      "from": "lead",
+      "to": "customer"
+    },
+    {
+      "from": "lead",
+      "to": "crm_activity"
+    },
+    {
+      "from": "lead",
+      "to": "quote"
+    },
+    {
+      "from": "lead",
+      "to": "task"
+    },
+    {
+      "from": "lead",
+      "to": "message"
+    },
+    {
+      "from": "lead",
+      "to": "sales_opportunity"
+    },
+    {
+      "from": "customer",
+      "to": "lead"
+    },
+    {
+      "from": "customer",
+      "to": "quote"
+    },
+    {
+      "from": "customer",
+      "to": "contract"
+    },
+    {
+      "from": "customer",
+      "to": "project"
+    },
+    {
+      "from": "customer",
+      "to": "invoice"
+    },
+    {
+      "from": "customer",
+      "to": "payment"
+    },
+    {
+      "from": "customer",
+      "to": "collection"
+    },
+    {
+      "from": "customer",
+      "to": "customer_portal"
+    },
+    {
+      "from": "customer",
+      "to": "document"
+    },
+    {
+      "from": "customer",
+      "to": "support_ticket"
+    },
+    {
+      "from": "customer",
+      "to": "message"
+    },
+    {
+      "from": "supplier",
+      "to": "rfq"
+    },
+    {
+      "from": "supplier",
+      "to": "supplier_quote"
+    },
+    {
+      "from": "supplier",
+      "to": "po"
+    },
+    {
+      "from": "supplier",
+      "to": "supplier_invoice"
+    },
+    {
+      "from": "supplier",
+      "to": "payment"
+    },
+    {
+      "from": "supplier",
+      "to": "contract"
+    },
+    {
+      "from": "supplier",
+      "to": "return"
+    },
+    {
+      "from": "supplier",
+      "to": "warranty"
+    },
+    {
+      "from": "supplier",
+      "to": "supplier_portal"
+    },
+    {
+      "from": "supplier",
+      "to": "document"
+    },
+    {
+      "from": "supplier",
+      "to": "performance_score"
+    },
+    {
+      "from": "quote",
+      "to": "lead"
+    },
+    {
+      "from": "quote",
+      "to": "customer"
+    },
+    {
+      "from": "quote",
+      "to": "pricing"
+    },
+    {
+      "from": "quote",
+      "to": "approval"
+    },
+    {
+      "from": "quote",
+      "to": "contract"
+    },
+    {
+      "from": "quote",
+      "to": "project"
+    },
+    {
+      "from": "quote",
+      "to": "document"
+    },
+    {
+      "from": "quote",
+      "to": "tax_export"
+    },
+    {
+      "from": "rfq",
+      "to": "supplier"
+    },
+    {
+      "from": "rfq",
+      "to": "pricing"
+    },
+    {
+      "from": "rfq",
+      "to": "approval"
+    },
+    {
+      "from": "rfq",
+      "to": "supplier_quote"
+    },
+    {
+      "from": "rfq",
+      "to": "po"
+    },
+    {
+      "from": "rfq",
+      "to": "document"
+    },
+    {
+      "from": "po",
+      "to": "supplier"
+    },
+    {
+      "from": "po",
+      "to": "rfq"
+    },
+    {
+      "from": "po",
+      "to": "approval"
+    },
+    {
+      "from": "po",
+      "to": "inventory_receipt"
+    },
+    {
+      "from": "po",
+      "to": "supplier_invoice"
+    },
+    {
+      "from": "po",
+      "to": "return"
+    },
+    {
+      "from": "po",
+      "to": "warranty"
+    },
+    {
+      "from": "po",
+      "to": "project"
+    },
+    {
+      "from": "po",
+      "to": "costing"
+    },
+    {
+      "from": "project",
+      "to": "customer"
+    },
+    {
+      "from": "project",
+      "to": "quote"
+    },
+    {
+      "from": "project",
+      "to": "contract"
+    },
+    {
+      "from": "project",
+      "to": "work_order"
+    },
+    {
+      "from": "project",
+      "to": "po"
+    },
+    {
+      "from": "project",
+      "to": "inventory_reservation"
+    },
+    {
+      "from": "project",
+      "to": "material_request"
+    },
+    {
+      "from": "project",
+      "to": "expense"
+    },
+    {
+      "from": "project",
+      "to": "employee_assignment"
+    },
+    {
+      "from": "project",
+      "to": "task"
+    },
+    {
+      "from": "project",
+      "to": "logistics_order"
+    },
+    {
+      "from": "project",
+      "to": "invoice"
+    },
+    {
+      "from": "project",
+      "to": "payment"
+    },
+    {
+      "from": "project",
+      "to": "report"
+    },
+    {
+      "from": "project",
+      "to": "forecast"
+    },
+    {
+      "from": "project",
+      "to": "document"
+    },
+    {
+      "from": "project",
+      "to": "alert"
+    },
+    {
+      "from": "project",
+      "to": "audit_log"
+    },
+    {
+      "from": "work_order",
+      "to": "project"
+    },
+    {
+      "from": "work_order",
+      "to": "material_request"
+    },
+    {
+      "from": "work_order",
+      "to": "inventory_reservation"
+    },
+    {
+      "from": "work_order",
+      "to": "employee_assignment"
+    },
+    {
+      "from": "work_order",
+      "to": "attendance"
+    },
+    {
+      "from": "work_order",
+      "to": "task"
+    },
+    {
+      "from": "work_order",
+      "to": "quality_check"
+    },
+    {
+      "from": "work_order",
+      "to": "signature"
+    },
+    {
+      "from": "work_order",
+      "to": "expense"
+    },
+    {
+      "from": "invoice",
+      "to": "customer"
+    },
+    {
+      "from": "invoice",
+      "to": "supplier"
+    },
+    {
+      "from": "invoice",
+      "to": "project"
+    },
+    {
+      "from": "invoice",
+      "to": "po"
+    },
+    {
+      "from": "invoice",
+      "to": "payment"
+    },
+    {
+      "from": "invoice",
+      "to": "collection"
+    },
+    {
+      "from": "invoice",
+      "to": "vat"
+    },
+    {
+      "from": "invoice",
+      "to": "tax"
+    },
+    {
+      "from": "invoice",
+      "to": "bank_match"
+    },
+    {
+      "from": "invoice",
+      "to": "document"
+    },
+    {
+      "from": "employee",
+      "to": "hr_profile"
+    },
+    {
+      "from": "employee",
+      "to": "attendance"
+    },
+    {
+      "from": "employee",
+      "to": "payroll"
+    },
+    {
+      "from": "employee",
+      "to": "pension"
+    },
+    {
+      "from": "employee",
+      "to": "expense"
+    },
+    {
+      "from": "employee",
+      "to": "work_order"
+    },
+    {
+      "from": "employee",
+      "to": "project"
+    },
+    {
+      "from": "employee",
+      "to": "task"
+    },
+    {
+      "from": "employee",
+      "to": "employer"
+    },
+    {
+      "from": "employee",
+      "to": "document"
+    },
+    {
+      "from": "contract",
+      "to": "customer"
+    },
+    {
+      "from": "contract",
+      "to": "supplier"
+    },
+    {
+      "from": "contract",
+      "to": "quote"
+    },
+    {
+      "from": "contract",
+      "to": "project"
+    },
+    {
+      "from": "contract",
+      "to": "po"
+    },
+    {
+      "from": "contract",
+      "to": "signature"
+    },
+    {
+      "from": "contract",
+      "to": "document"
+    },
+    {
+      "from": "material",
+      "to": "supplier"
+    },
+    {
+      "from": "material",
+      "to": "inventory"
+    },
+    {
+      "from": "material",
+      "to": "warehouse"
+    },
+    {
+      "from": "material",
+      "to": "po"
+    },
+    {
+      "from": "material",
+      "to": "material_request"
+    },
+    {
+      "from": "material",
+      "to": "work_order"
+    },
+    {
+      "from": "material",
+      "to": "costing"
+    },
+    {
+      "from": "material",
+      "to": "barcode_scan"
+    },
+    {
+      "from": "payment",
+      "to": "invoice"
+    },
+    {
+      "from": "payment",
+      "to": "customer"
+    },
+    {
+      "from": "payment",
+      "to": "supplier"
+    },
+    {
+      "from": "payment",
+      "to": "bank_match"
+    },
+    {
+      "from": "payment",
+      "to": "cashflow"
+    },
+    {
+      "from": "payment",
+      "to": "gl"
+    },
+    {
+      "from": "payment",
+      "to": "vat"
+    },
+    {
+      "from": "payment",
+      "to": "tax"
+    },
+    {
+      "from": "task",
+      "to": "lead"
+    },
+    {
+      "from": "task",
+      "to": "customer"
+    },
+    {
+      "from": "task",
+      "to": "project"
+    },
+    {
+      "from": "task",
+      "to": "work_order"
+    },
+    {
+      "from": "task",
+      "to": "employee"
+    },
+    {
+      "from": "task",
+      "to": "alert"
+    },
+    {
+      "from": "task",
+      "to": "message"
+    },
+    {
+      "from": "document",
+      "to": "customer"
+    },
+    {
+      "from": "document",
+      "to": "supplier"
+    },
+    {
+      "from": "document",
+      "to": "quote"
+    },
+    {
+      "from": "document",
+      "to": "contract"
+    },
+    {
+      "from": "document",
+      "to": "po"
+    },
+    {
+      "from": "document",
+      "to": "project"
+    },
+    {
+      "from": "document",
+      "to": "invoice"
+    },
+    {
+      "from": "document",
+      "to": "employee"
+    },
+    {
+      "from": "document",
+      "to": "ocr"
+    },
+    {
+      "from": "document",
+      "to": "signature"
+    },
+    {
+      "from": "alert",
+      "to": "project"
+    },
+    {
+      "from": "alert",
+      "to": "po"
+    },
+    {
+      "from": "alert",
+      "to": "attendance"
+    },
+    {
+      "from": "alert",
+      "to": "payroll"
+    },
+    {
+      "from": "alert",
+      "to": "cashflow"
+    },
+    {
+      "from": "alert",
+      "to": "ai_insight"
+    }
+  ]
+}

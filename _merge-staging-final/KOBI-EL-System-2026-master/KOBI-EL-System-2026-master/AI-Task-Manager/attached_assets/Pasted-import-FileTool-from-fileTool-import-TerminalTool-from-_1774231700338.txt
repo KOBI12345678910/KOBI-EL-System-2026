@@ -1,0 +1,182 @@
+import { FileTool } from "./fileTool";
+import { TerminalTool } from "./terminalTool";
+import * as path from "path";
+import * as crypto from "crypto";
+
+export class UploadTool {
+  private fileTool: FileTool;
+  private terminal: TerminalTool;
+
+  constructor(fileTool: FileTool, terminal: TerminalTool) {
+    this.fileTool = fileTool;
+    this.terminal = terminal;
+  }
+
+  async setupLocalStorage(): Promise<void> {
+    this.fileTool.createFile("src/storage/index.ts", `import multer from 'multer';
+import path from 'path';
+import crypto from 'crypto';
+import fs from 'fs';
+import { Request, Response, NextFunction, Router } from 'express';
+
+const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
+const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE || '10485760'); // 10MB
+const ALLOWED_TYPES = (process.env.ALLOWED_FILE_TYPES || 'image/jpeg,image/png,image/gif,image/webp,application/pdf').split(',');
+
+// Ensure upload directory exists
+if (!fs.existsSync(UPLOAD_DIR)) {
+  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+}
+
+// Multer configuration
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const date = new Date();
+    const subDir = path.join(UPLOAD_DIR, \`\${date.getFullYear()}/\${String(date.getMonth() + 1).padStart(2, '0')}\`);
+    fs.mkdirSync(subDir, { recursive: true });
+    cb(null, subDir);
+  },
+  filename: (req, file, cb) => {
+    const hash = crypto.randomBytes(16).toString('hex');
+    const ext = path.extname(file.originalname);
+    cb(null, \`\${hash}\${ext}\`);
+  },
+});
+
+const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  if (ALLOWED_TYPES.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error(\`File type \${file.mimetype} not allowed\`));
+  }
+};
+
+export const upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: MAX_FILE_SIZE },
+});
+
+// File metadata
+export interface FileMetadata {
+  id: string;
+  originalName: string;
+  filename: string;
+  path: string;
+  url: string;
+  mimeType: string;
+  size: number;
+  uploadedAt: Date;
+  uploadedBy?: string;
+}
+
+// Serve uploaded files
+export function setupStorage(app: any) {
+  app.use('/uploads', (req: Request, res: Response, next: NextFunction) => {
+    // Optional: Add auth check here
+    next();
+  }, require('express').static(UPLOAD_DIR));
+}
+
+// Upload routes
+export const storageRouter = Router();
+
+storageRouter.post('/upload', upload.single('file'), (req: Request, res: Response) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+  
+  const metadata: FileMetadata = {
+    id: crypto.randomUUID(),
+    originalName: req.file.originalname,
+    filename: req.file.filename,
+    path: req.file.path,
+    url: '/uploads/' + path.relative(UPLOAD_DIR, req.file.path),
+    mimeType: req.file.mimetype,
+    size: req.file.size,
+    uploadedAt: new Date(),
+  };
+
+  res.json(metadata);
+});
+
+storageRouter.post('/upload/multiple', upload.array('files', 10), (req: Request, res: Response) => {
+  const files = req.files as Express.Multer.File[];
+  if (!files?.length) return res.status(400).json({ error: 'No files uploaded' });
+  
+  const metadata = files.map(file => ({
+    id: crypto.randomUUID(),
+    originalName: file.originalname,
+    filename: file.filename,
+    path: file.path,
+    url: '/uploads/' + path.relative(UPLOAD_DIR, file.path),
+    mimeType: file.mimetype,
+    size: file.size,
+    uploadedAt: new Date(),
+  }));
+
+  res.json(metadata);
+});
+
+storageRouter.delete('/upload/:filename', (req: Request, res: Response) => {
+  // Find and delete file
+  const filename = req.params.filename;
+  // TODO: Look up file path in database and delete
+  res.json({ deleted: true });
+});
+`);
+
+    await this.terminal.execute("npm install multer @types/multer", { timeout: 30000 });
+  }
+
+  async setupS3Storage(): Promise<void> {
+    await this.terminal.execute("npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner", { timeout: 30000 });
+
+    this.fileTool.createFile("src/storage/s3.ts", `import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import crypto from 'crypto';
+import path from 'path';
+
+const s3 = new S3Client({
+  region: process.env.AWS_REGION || 'us-east-1',
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+  },
+});
+
+const BUCKET = process.env.S3_BUCKET || 'my-app-uploads';
+
+export async function uploadToS3(file: {
+  buffer: Buffer;
+  originalname: string;
+  mimetype: string;
+}): Promise<{ key: string; url: string }> {
+  const ext = path.extname(file.originalname);
+  const key = \`uploads/\${new Date().toISOString().slice(0, 7)}/\${crypto.randomBytes(16).toString('hex')}\${ext}\`;
+
+  await s3.send(new PutObjectCommand({
+    Bucket: BUCKET,
+    Key: key,
+    Body: file.buffer,
+    ContentType: file.mimetype,
+  }));
+
+  return {
+    key,
+    url: \`https://\${BUCKET}.s3.amazonaws.com/\${key}\`,
+  };
+}
+
+export async function getSignedDownloadUrl(key: string, expiresIn = 3600): Promise<string> {
+  return getSignedUrl(s3, new GetObjectCommand({ Bucket: BUCKET, Key: key }), { expiresIn });
+}
+
+export async function getSignedUploadUrl(key: string, contentType: string, expiresIn = 3600): Promise<string> {
+  return getSignedUrl(s3, new PutObjectCommand({ Bucket: BUCKET, Key: key, ContentType: contentType }), { expiresIn });
+}
+
+export async function deleteFromS3(key: string): Promise<void> {
+  await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: key }));
+}
+`);
+  }
+}

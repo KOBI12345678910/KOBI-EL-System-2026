@@ -20,6 +20,7 @@ const NAV = [
   { path: '/purchasing', label: 'רכש · חומרי גלם · מוצרים', icon: '🛒', section: 'חומרים' },
   { path: '/materials', label: 'מחסן', icon: '📦', section: 'חומרים' },
   { path: '/inventory-alerts', label: 'התראות מלאי', icon: '📦', section: 'חומרים' },
+  { path: '/qr-generator', label: 'מחולל QR', icon: '📲', section: 'חומרים' },
   { path: '/employees', label: 'עובדים', icon: '👥', section: 'כוח אדם' },
   { path: '/hr-autonomy', label: 'HR אוטונומי', icon: '🤖', section: 'כוח אדם' },
   { path: '/hours', label: 'שעות וחופשות', icon: '⏱️', section: 'כוח אדם' },

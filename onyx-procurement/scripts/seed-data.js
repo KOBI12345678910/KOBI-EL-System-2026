@@ -315,7 +315,7 @@ function genPurchaseOrder(i, supplierIds, supplierNameById) {
   const supplierId = randPick(supplierIds);
   const subtotal = round2(randInt(1500, 80000) + rand());
   const deliveryFee = randBool(0.4) ? round2(randInt(50, 500)) : 0;
-  const vatRate = 0.17;
+  const vatRate = 0.18; // Israeli VAT 18% effective 2026-01-01 (was 17%)
   const vatAmount = round2((subtotal + deliveryFee) * vatRate);
   const total = round2(subtotal + deliveryFee + vatAmount);
   const status = randPick([
@@ -366,7 +366,7 @@ function genTaxInvoice(i, supplierNames) {
   const invoiceType = direction === 'input' ? 'received' : 'issued';
   const isExempt = randBool(0.10); // ~10% exempt (e.g. Eilat / export)
   const isZero   = !isExempt && randBool(0.05);
-  const vatRate  = isExempt ? 0 : (isZero ? 0 : 0.17);
+  const vatRate  = isExempt ? 0 : (isZero ? 0 : 0.18); // 18% effective 2026-01-01 (was 17%)
   const netAmount = round2(randInt(500, 45000) + rand());
   const vatAmount = round2(netAmount * vatRate);
   const grossAmount = round2(netAmount + vatAmount);

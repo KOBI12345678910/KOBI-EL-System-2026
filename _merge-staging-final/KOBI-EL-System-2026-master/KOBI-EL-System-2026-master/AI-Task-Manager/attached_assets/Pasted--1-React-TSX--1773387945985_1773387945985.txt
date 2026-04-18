@@ -1,0 +1,63 @@
+-|--------|--------|
+| 1 | כתיבת קוד React/TSX | אני יכול לתאר ולהציע קוד, אבל לא יכול לשמור קבצים ב-artifacts/erp-app/src/ |
+| 2 | עריכת דפי Pages קיימים | אין לי גישה לקבצים כמו suppliers.tsx, inventory.tsx — לא יכול לשנות UI ישירות |
+| 3 | עריכת CSS / Tailwind | לא יכול לשנות עיצוב, צבעים, layout של הממשק |
+| 4 | הוספת קומפוננטות חדשות | לא יכול ליצור component חדש ולשמור לדיסק |
+| 5 | ניהול ה-Router | לא יכול להוסיף routes ל-React Router (App.tsx) |
+| 6 | עריכת תפריט הצד (Sidebar) | ה-navigation הגרפי — לא בשליטתי הישירה |
+| 7 | Dashboard ו-Widgets | יש טבלאות system_dashboard_pages/widgets בDB אבל אין לי כלי לנהל אותן |
+| 8 | Notifications UI | יש טבלת notifications אבל אין כלי לניהולה |
+---
+⚙️ BACKEND — שרת ו-API
+| # | מה חסר | פירוט |
+|---|--------|--------|
+| 9 | יצירת API Routes חדשים | אין לי גישה לקבצי artifacts/api-server/src/routes/ |
+| 10 | עריכת Business Logic | לא יכול לשנות לוגיקה עסקית בשרת Express |
+| 11 | הגדרת Middleware | auth, validation, rate-limiting — לא בשליטתי |
+| 12 | Webhooks / Integrations | יש טבלאות integration_webhooks, integration_connections — אין כלי לנהל אותן |
+| 13 | Email / SMS שליחה | אין כלי לשליחת התראות |
+| 14 | Cron Jobs / Scheduled Tasks | לא יכול לתזמן משימות אוטומטיות בשרת |
+| 15 | File Upload Handling | ניהול קבצים שהועלו — לא בגדר הכלים שלי |
+---
+🗄️ DATABASE — ניהול סכמה
+| # | מה חסר | פירוט |
+|---|--------|--------|
+| 16 | Migrations רשמיות (Drizzle) | execute_sql יכול לשנות DB ישירות, אבל לא מעדכן את schema files בקוד |
+| 17 | יצירת טבלאות חדשות עם Drizzle | לא יכול לכתוב ב-lib/db/src/schema/ |
+| 18 | Indexes וביצועים | אמנם יכול ב-execute_sql אבל זה לא מתועד ב-ORM |
+| 19 | Stored Procedures / Triggers | אין כלי ייעודי, רק דרך execute_sql |
+| 20 | Foreign Keys בטבלאות חיצוניות | execute_sql יכול, אבל לא מסונכרן עם Drizzle ORM |
+| 21 | Full Backup & Restore | backup_database מחזיר snapshot סטטיסטי בלבד — לא dump אמיתי |
+---
+🤖 פלטפורמה — מה שיש בDB אבל אין לי כלים
+| # | טבלה קיימת | מה חסר |
+|---|------------|--------|
+| 22 | platform_automations | אין כלי ליצירת/עריכת אוטומציות |
+| 23 | platform_workflows | אין כלי לניהול workflows |
+| 24 | platform_widgets | אין כלי לניהול widgets |
+| 25 | document_templates | אין כלי לניהול תבניות מסמכים |
+| 26 | report_definitions | אין כלי ליצירת דוחות |
+| 27 | validation_rules | אין כלי לניהול חוקי ולידציה |
+| 28 | status_transitions | אין כלי לניהול מעברי סטטוס (state machine) |
+| 29 | system_menu_items | אין כלי לעריכת תפריטים |
+| 30 | bank_accounts / budgets | אין כלי לניהול כספי |
+| 31 | projects | אין כלי לניהול פרויקטים |
+| 32 | record_versions | versioning קיים בDB — אין UI או כלי לנהל |
+---
+🔐 אבטחה והרשאות
+| # | מה חסר | פירוט |
+|---|--------|--------|
+| 33 | Row-Level Security | אין כלי להגדיר גישה ברמת רשומה בודדת |
+| 34 | Field-Level Permissions | לא יכול להגדיר מי רואה איזה שדה |
+| 35 | 2FA / SSO | אין כלי לניהול אימות רב-שלבי |
+| 36 | Audit Log UI | יש record_audit_log + claude_audit_logs — אבל אין כלי לחיפוש/סינון בהם |
+| 37 | IP Whitelisting | לא בגדר הכלים |
+---
+📊 Analytics & Reports
+| # | מה חסר | פירוט |
+|---|--------|--------|
+| 38 | יצירת דוחות מובנים | report_definitions קיים אבל אין כלי |
+| 39 | גרפים ותרשימים | אין כלי ליצירת visualizations |
+| 40 | Export לאקסל/PDF | אין כלי ייעודי (אמנם יש print handler ב-actions) |
+| 41 | KPI Dashboards | אין כלי לניהול dashboard pages |
+

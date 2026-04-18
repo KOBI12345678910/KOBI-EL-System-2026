@@ -1,0 +1,978 @@
+{
+  "info": {
+    "name": "ONYX Procurement API",
+    "description": "Complete Postman collection for the ONYX Procurement System. All /api/* routes require the X-API-Key header (set the {{apiKey}} variable). /api/status and /api/health are public.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "onyx-procurement-collection-v1"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3100", "type": "string" },
+    { "key": "apiKey", "value": "REPLACE_WITH_YOUR_API_KEY", "type": "string" },
+    { "key": "supplierId", "value": "1", "type": "string" },
+    { "key": "purchaseRequestId", "value": "1", "type": "string" },
+    { "key": "rfqId", "value": "1", "type": "string" },
+    { "key": "poId", "value": "1", "type": "string" },
+    { "key": "subcontractorId", "value": "1", "type": "string" },
+    { "key": "vatPeriodId", "value": "1", "type": "string" },
+    { "key": "projectId", "value": "1", "type": "string" },
+    { "key": "customerId", "value": "1", "type": "string" },
+    { "key": "fiscalYear", "value": "2026", "type": "string" },
+    { "key": "formType", "value": "1320", "type": "string" },
+    { "key": "bankAccountId", "value": "1", "type": "string" },
+    { "key": "employerId", "value": "1", "type": "string" },
+    { "key": "employeeId", "value": "1", "type": "string" },
+    { "key": "wageSlipId", "value": "1", "type": "string" },
+    { "key": "category", "value": "cement", "type": "string" }
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      { "key": "key", "value": "X-API-Key", "type": "string" },
+      { "key": "value", "value": "{{apiKey}}", "type": "string" },
+      { "key": "in", "value": "header", "type": "string" }
+    ]
+  },
+  "item": [
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "GET /api/status",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "noauth" },
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/status", "host": ["{{baseUrl}}"], "path": ["api", "status"] }
+          }
+        },
+        {
+          "name": "GET /api/health",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "noauth" },
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/health", "host": ["{{baseUrl}}"], "path": ["api", "health"] }
+          }
+        },
+        {
+          "name": "GET /healthz",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "noauth" },
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/healthz", "host": ["{{baseUrl}}"], "path": ["healthz"] }
+          }
+        },
+        {
+          "name": "GET /livez",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "noauth" },
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/livez", "host": ["{{baseUrl}}"], "path": ["livez"] }
+          }
+        },
+        {
+          "name": "GET /readyz",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "noauth" },
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/readyz", "host": ["{{baseUrl}}"], "path": ["readyz"] }
+          }
+        },
+        {
+          "name": "GET /metrics",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "noauth" },
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/metrics", "host": ["{{baseUrl}}"], "path": ["metrics"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Suppliers",
+      "item": [
+        {
+          "name": "GET /api/suppliers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/suppliers", "host": ["{{baseUrl}}"], "path": ["api", "suppliers"] }
+          }
+        },
+        {
+          "name": "GET /api/suppliers/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/suppliers/{{supplierId}}", "host": ["{{baseUrl}}"], "path": ["api", "suppliers", "{{supplierId}}"] }
+          }
+        },
+        {
+          "name": "POST /api/suppliers",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"אבי ציוד\",\n  \"phone\": \"050-1234567\",\n  \"whatsapp\": \"972501234567\",\n  \"email\": \"avi@example.com\",\n  \"preferred_channel\": \"whatsapp\",\n  \"active\": true,\n  \"created_by\": \"admin@co.il\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/suppliers", "host": ["{{baseUrl}}"], "path": ["api", "suppliers"] }
+          }
+        },
+        {
+          "name": "PATCH /api/suppliers/:id",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"active\": false\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/suppliers/{{supplierId}}", "host": ["{{baseUrl}}"], "path": ["api", "suppliers", "{{supplierId}}"] }
+          }
+        },
+        {
+          "name": "POST /api/suppliers/:id/products",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"מסמר 4 אינץ'\",\n  \"category\": \"fasteners\",\n  \"unit\": \"kg\",\n  \"unit_price\": 12.5\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/suppliers/{{supplierId}}/products", "host": ["{{baseUrl}}"], "path": ["api", "suppliers", "{{supplierId}}", "products"] }
+          }
+        },
+        {
+          "name": "GET /api/suppliers/search/:category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/suppliers/search/{{category}}", "host": ["{{baseUrl}}"], "path": ["api", "suppliers", "search", "{{category}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Purchase Requests",
+      "item": [
+        {
+          "name": "GET /api/purchase-requests",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/purchase-requests", "host": ["{{baseUrl}}"], "path": ["api", "purchase-requests"] }
+          }
+        },
+        {
+          "name": "POST /api/purchase-requests",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requested_by\": \"kobi@co.il\",\n  \"priority\": \"high\",\n  \"notes\": \"Site: Tel-Aviv\",\n  \"items\": [\n    { \"name\": \"קמנט אפור\", \"category\": \"cement\", \"quantity\": 100, \"unit\": \"bag\", \"specs\": \"CEM II 42.5N\" }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/purchase-requests", "host": ["{{baseUrl}}"], "path": ["api", "purchase-requests"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "RFQ",
+      "item": [
+        {
+          "name": "POST /api/rfq/send",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"purchase_request_id\": {{purchaseRequestId}},\n  \"categories\": [\"cement\", \"rebar\"],\n  \"response_window_hours\": 24,\n  \"company_note\": \"אנא מחיר לפני מעמ\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/rfq/send", "host": ["{{baseUrl}}"], "path": ["api", "rfq", "send"] }
+          }
+        },
+        {
+          "name": "GET /api/rfq/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/rfq/{{rfqId}}", "host": ["{{baseUrl}}"], "path": ["api", "rfq", "{{rfqId}}"] }
+          }
+        },
+        {
+          "name": "GET /api/rfqs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/rfqs", "host": ["{{baseUrl}}"], "path": ["api", "rfqs"] }
+          }
+        },
+        {
+          "name": "POST /api/rfq/:id/decide",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price_weight\": 0.5,\n  \"delivery_weight\": 0.15,\n  \"rating_weight\": 0.2,\n  \"reliability_weight\": 0.15,\n  \"decided_by\": \"kobi\",\n  \"force\": false\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/rfq/{{rfqId}}/decide", "host": ["{{baseUrl}}"], "path": ["api", "rfq", "{{rfqId}}", "decide"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Quotes",
+      "item": [
+        {
+          "name": "POST /api/quotes",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rfq_id\": {{rfqId}},\n  \"supplier_id\": {{supplierId}},\n  \"supplier_name\": \"אבי ציוד\",\n  \"delivery_days\": 3,\n  \"delivery_fee\": 150,\n  \"free_delivery\": false,\n  \"vat_included\": false,\n  \"payment_terms\": \"שוטף+30\",\n  \"line_items\": [\n    { \"name\": \"קמנט CEM II\", \"category\": \"cement\", \"quantity\": 100, \"unit\": \"bag\", \"unit_price\": 35, \"discount_percent\": 5 }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/quotes", "host": ["{{baseUrl}}"], "path": ["api", "quotes"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Purchase Orders",
+      "item": [
+        {
+          "name": "GET /api/purchase-orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/purchase-orders", "host": ["{{baseUrl}}"], "path": ["api", "purchase-orders"] }
+          }
+        },
+        {
+          "name": "GET /api/purchase-orders/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/purchase-orders/{{poId}}", "host": ["{{baseUrl}}"], "path": ["api", "purchase-orders", "{{poId}}"] }
+          }
+        },
+        {
+          "name": "POST /api/purchase-orders/:id/approve",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approved_by\": \"kobi\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/purchase-orders/{{poId}}/approve", "host": ["{{baseUrl}}"], "path": ["api", "purchase-orders", "{{poId}}", "approve"] }
+          }
+        },
+        {
+          "name": "POST /api/purchase-orders/:id/send",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sent_by\": \"kobi\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/purchase-orders/{{poId}}/send", "host": ["{{baseUrl}}"], "path": ["api", "purchase-orders", "{{poId}}", "send"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Subcontractors",
+      "item": [
+        {
+          "name": "GET /api/subcontractors",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/subcontractors", "host": ["{{baseUrl}}"], "path": ["api", "subcontractors"] }
+          }
+        },
+        {
+          "name": "POST /api/subcontractors",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"שלמה ריצוף\",\n  \"phone\": \"050-9999999\",\n  \"quality_rating\": 9,\n  \"reliability_rating\": 8,\n  \"available\": true,\n  \"pricing\": [\n    { \"work_type\": \"tiling\", \"percentage_rate\": 18, \"price_per_sqm\": 120, \"minimum_price\": 5000 }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/subcontractors", "host": ["{{baseUrl}}"], "path": ["api", "subcontractors"] }
+          }
+        },
+        {
+          "name": "PUT /api/subcontractors/:id/pricing",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"work_type\": \"tiling\",\n  \"percentage_rate\": 20,\n  \"price_per_sqm\": 125,\n  \"minimum_price\": 5500\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/subcontractors/{{subcontractorId}}/pricing", "host": ["{{baseUrl}}"], "path": ["api", "subcontractors", "{{subcontractorId}}", "pricing"] }
+          }
+        },
+        {
+          "name": "POST /api/subcontractors/decide",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"work_type\": \"tiling\",\n  \"project_value\": 800000,\n  \"area_sqm\": 320,\n  \"project_name\": \"בית ברמת השרון\",\n  \"client_name\": \"משפחת כהן\",\n  \"price_weight\": 0.6,\n  \"quality_weight\": 0.25,\n  \"reliability_weight\": 0.15\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/subcontractors/decide", "host": ["{{baseUrl}}"], "path": ["api", "subcontractors", "decide"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "VAT",
+      "item": [
+        {
+          "name": "GET /api/vat/profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/vat/profile", "host": ["{{baseUrl}}"], "path": ["api", "vat", "profile"] }
+          }
+        },
+        {
+          "name": "PUT /api/vat/profile",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_name\": \"טכנו-כל עוזי בע\\\"מ\",\n  \"tax_id\": \"514123456\",\n  \"vat_number\": \"514123456\",\n  \"address\": \"רחוב הברזל 1, תל אביב\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/vat/profile", "host": ["{{baseUrl}}"], "path": ["api", "vat", "profile"] }
+          }
+        },
+        {
+          "name": "GET /api/vat/periods",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vat/periods?limit=24",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vat", "periods"],
+              "query": [{ "key": "limit", "value": "24" }]
+            }
+          }
+        },
+        {
+          "name": "POST /api/vat/periods",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"period_start\": \"2026-03-01\",\n  \"period_end\": \"2026-03-31\",\n  \"period_label\": \"2026-03\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/vat/periods", "host": ["{{baseUrl}}"], "path": ["api", "vat", "periods"] }
+          }
+        },
+        {
+          "name": "GET /api/vat/periods/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/vat/periods/{{vatPeriodId}}", "host": ["{{baseUrl}}"], "path": ["api", "vat", "periods", "{{vatPeriodId}}"] }
+          }
+        },
+        {
+          "name": "POST /api/vat/periods/:id/close",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": { "raw": "{{baseUrl}}/api/vat/periods/{{vatPeriodId}}/close", "host": ["{{baseUrl}}"], "path": ["api", "vat", "periods", "{{vatPeriodId}}", "close"] }
+          }
+        },
+        {
+          "name": "POST /api/vat/periods/:id/submit",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"submission_type\": \"initial\",\n  \"submission_method\": \"shamat\",\n  \"submitted_by\": \"kobi\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/vat/periods/{{vatPeriodId}}/submit", "host": ["{{baseUrl}}"], "path": ["api", "vat", "periods", "{{vatPeriodId}}", "submit"] }
+          }
+        },
+        {
+          "name": "GET /api/vat/periods/:id/pcn836",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/vat/periods/{{vatPeriodId}}/pcn836", "host": ["{{baseUrl}}"], "path": ["api", "vat", "periods", "{{vatPeriodId}}", "pcn836"] }
+          }
+        },
+        {
+          "name": "GET /api/vat/invoices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vat/invoices?direction=input&limit=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vat", "invoices"],
+              "query": [
+                { "key": "direction", "value": "input" },
+                { "key": "limit", "value": "100" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /api/vat/invoices",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"direction\": \"input\",\n  \"invoice_number\": \"A-2026-001\",\n  \"invoice_date\": \"2026-03-15\",\n  \"counterparty_name\": \"ספק כלשהו\",\n  \"counterparty_tax_id\": \"514123456\",\n  \"net_amount\": 1000,\n  \"vat_period_id\": {{vatPeriodId}},\n  \"is_asset\": false,\n  \"is_zero_rate\": false,\n  \"is_exempt\": false\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/vat/invoices", "host": ["{{baseUrl}}"], "path": ["api", "vat", "invoices"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Annual Tax",
+      "item": [
+        {
+          "name": "GET /api/projects",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/projects?status=active&fiscal_year={{fiscalYear}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "projects"],
+              "query": [
+                { "key": "status", "value": "active" },
+                { "key": "fiscal_year", "value": "{{fiscalYear}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /api/projects",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"בניית בית ברמת השרון\",\n  \"client_name\": \"משפחת כהן\",\n  \"fiscal_year\": {{fiscalYear}},\n  \"status\": \"active\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/projects", "host": ["{{baseUrl}}"], "path": ["api", "projects"] }
+          }
+        },
+        {
+          "name": "PATCH /api/projects/:id",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"completed\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/projects/{{projectId}}", "host": ["{{baseUrl}}"], "path": ["api", "projects", "{{projectId}}"] }
+          }
+        },
+        {
+          "name": "GET /api/customers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/customers", "host": ["{{baseUrl}}"], "path": ["api", "customers"] }
+          }
+        },
+        {
+          "name": "POST /api/customers",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"יצחק קבלן\",\n  \"tax_id\": \"999888777\",\n  \"active\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/customers", "host": ["{{baseUrl}}"], "path": ["api", "customers"] }
+          }
+        },
+        {
+          "name": "GET /api/customer-invoices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/customer-invoices?customer_id={{customerId}}&limit=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customer-invoices"],
+              "query": [
+                { "key": "customer_id", "value": "{{customerId}}" },
+                { "key": "limit", "value": "100" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /api/customer-invoices",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": {{customerId}},\n  \"customer_name\": \"יצחק קבלן\",\n  \"project_id\": {{projectId}},\n  \"invoice_number\": \"INV-2026-050\",\n  \"invoice_date\": \"2026-04-01\",\n  \"net_amount\": 10000,\n  \"vat_rate\": 0.17\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/customer-invoices", "host": ["{{baseUrl}}"], "path": ["api", "customer-invoices"] }
+          }
+        },
+        {
+          "name": "GET /api/customer-payments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/customer-payments?limit=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customer-payments"],
+              "query": [{ "key": "limit", "value": "100" }]
+            }
+          }
+        },
+        {
+          "name": "POST /api/customer-payments",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": {{customerId}},\n  \"customer_name\": \"יצחק קבלן\",\n  \"amount\": 10000,\n  \"payment_date\": \"2026-04-05\",\n  \"receipt_number\": \"RCP-001\",\n  \"invoice_ids\": [55, 56]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/customer-payments", "host": ["{{baseUrl}}"], "path": ["api", "customer-payments"] }
+          }
+        },
+        {
+          "name": "GET /api/fiscal-years",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/fiscal-years", "host": ["{{baseUrl}}"], "path": ["api", "fiscal-years"] }
+          }
+        },
+        {
+          "name": "POST /api/fiscal-years/:year/compute",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": { "raw": "{{baseUrl}}/api/fiscal-years/{{fiscalYear}}/compute", "host": ["{{baseUrl}}"], "path": ["api", "fiscal-years", "{{fiscalYear}}", "compute"] }
+          }
+        },
+        {
+          "name": "POST /api/annual-tax/:year/forms/:type/generate",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"taxpayer\": { \"id\": \"123456789\", \"first_name\": \"כובי\", \"last_name\": \"אלון\" },\n  \"incomeSources\": {},\n  \"deductions\": {},\n  \"credits\": {}\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/annual-tax/{{fiscalYear}}/forms/{{formType}}/generate", "host": ["{{baseUrl}}"], "path": ["api", "annual-tax", "{{fiscalYear}}", "forms", "{{formType}}", "generate"] }
+          }
+        },
+        {
+          "name": "GET /api/annual-tax/:year/forms",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/annual-tax/{{fiscalYear}}/forms", "host": ["{{baseUrl}}"], "path": ["api", "annual-tax", "{{fiscalYear}}", "forms"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bank Reconciliation",
+      "item": [
+        {
+          "name": "GET /api/bank/accounts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/bank/accounts", "host": ["{{baseUrl}}"], "path": ["api", "bank", "accounts"] }
+          }
+        },
+        {
+          "name": "POST /api/bank/accounts",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bank_name\": \"בנק הפועלים\",\n  \"account_name\": \"חשבון תפעולי\",\n  \"account_number\": \"123456\",\n  \"iban\": \"IL620108000000099999999\",\n  \"currency\": \"ILS\",\n  \"is_primary\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/bank/accounts", "host": ["{{baseUrl}}"], "path": ["api", "bank", "accounts"] }
+          }
+        },
+        {
+          "name": "PATCH /api/bank/accounts/:id",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_primary\": false\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/bank/accounts/{{bankAccountId}}", "host": ["{{baseUrl}}"], "path": ["api", "bank", "accounts", "{{bankAccountId}}"] }
+          }
+        },
+        {
+          "name": "POST /api/bank/accounts/:id/import",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"<raw CSV or OFX text here>\",\n  \"format\": \"csv\",\n  \"openingBalance\": 0\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/bank/accounts/{{bankAccountId}}/import", "host": ["{{baseUrl}}"], "path": ["api", "bank", "accounts", "{{bankAccountId}}", "import"] }
+          }
+        },
+        {
+          "name": "GET /api/bank/transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bank/transactions?account_id={{bankAccountId}}&reconciled=false&limit=200",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bank", "transactions"],
+              "query": [
+                { "key": "account_id", "value": "{{bankAccountId}}" },
+                { "key": "reconciled", "value": "false" },
+                { "key": "limit", "value": "200" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /api/bank/accounts/:id/auto-reconcile",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": { "raw": "{{baseUrl}}/api/bank/accounts/{{bankAccountId}}/auto-reconcile", "host": ["{{baseUrl}}"], "path": ["api", "bank", "accounts", "{{bankAccountId}}", "auto-reconcile"] }
+          }
+        },
+        {
+          "name": "POST /api/bank/matches",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bank_transaction_id\": 7,\n  \"target_type\": \"customer_invoice\",\n  \"target_id\": 55,\n  \"matched_amount\": 10000,\n  \"confidence\": 0.97,\n  \"match_type\": \"manual\",\n  \"match_criteria\": { \"amount_delta\": 0, \"date_delta_days\": 1 }\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/bank/matches", "host": ["{{baseUrl}}"], "path": ["api", "bank", "matches"] }
+          }
+        },
+        {
+          "name": "GET /api/bank/discrepancies",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bank/discrepancies?status=open",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bank", "discrepancies"],
+              "query": [{ "key": "status", "value": "open" }]
+            }
+          }
+        },
+        {
+          "name": "GET /api/bank/summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/bank/summary", "host": ["{{baseUrl}}"], "path": ["api", "bank", "summary"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payroll",
+      "item": [
+        {
+          "name": "GET /api/payroll/employers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/payroll/employers", "host": ["{{baseUrl}}"], "path": ["api", "payroll", "employers"] }
+          }
+        },
+        {
+          "name": "POST /api/payroll/employers",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"legal_name\": \"טכנו-כל עוזי בע\\\"מ\",\n  \"tax_id\": \"514123456\",\n  \"deductions_file_number\": \"912345\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/payroll/employers", "host": ["{{baseUrl}}"], "path": ["api", "payroll", "employers"] }
+          }
+        },
+        {
+          "name": "GET /api/payroll/employees",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/payroll/employees?employer_id={{employerId}}&active=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payroll", "employees"],
+              "query": [
+                { "key": "employer_id", "value": "{{employerId}}" },
+                { "key": "active", "value": "true" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /api/payroll/employees",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employer_id\": {{employerId}},\n  \"first_name\": \"דניאל\",\n  \"last_name\": \"כהן\",\n  \"id_number\": \"123456782\",\n  \"base_salary\": 12000,\n  \"is_active\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/payroll/employees", "host": ["{{baseUrl}}"], "path": ["api", "payroll", "employees"] }
+          }
+        },
+        {
+          "name": "PATCH /api/payroll/employees/:id",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"base_salary\": 13000\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/payroll/employees/{{employeeId}}", "host": ["{{baseUrl}}"], "path": ["api", "payroll", "employees", "{{employeeId}}"] }
+          }
+        },
+        {
+          "name": "GET /api/payroll/wage-slips",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/payroll/wage-slips?employer_id={{employerId}}&period_year={{fiscalYear}}&period_month=3",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payroll", "wage-slips"],
+              "query": [
+                { "key": "employer_id", "value": "{{employerId}}" },
+                { "key": "period_year", "value": "{{fiscalYear}}" },
+                { "key": "period_month", "value": "3" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /api/payroll/wage-slips/compute (preview)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_id\": {{employeeId}},\n  \"period\": { \"year\": {{fiscalYear}}, \"month\": 3 },\n  \"timesheet\": { \"worked_days\": 22, \"worked_hours\": 186, \"overtime_125\": 4, \"overtime_150\": 2 }\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/payroll/wage-slips/compute", "host": ["{{baseUrl}}"], "path": ["api", "payroll", "wage-slips", "compute"] }
+          }
+        },
+        {
+          "name": "POST /api/payroll/wage-slips",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_id\": {{employeeId}},\n  \"period\": { \"year\": {{fiscalYear}}, \"month\": 3 },\n  \"timesheet\": { \"worked_days\": 22, \"worked_hours\": 186 }\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/payroll/wage-slips", "host": ["{{baseUrl}}"], "path": ["api", "payroll", "wage-slips"] }
+          }
+        },
+        {
+          "name": "GET /api/payroll/wage-slips/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/payroll/wage-slips/{{wageSlipId}}", "host": ["{{baseUrl}}"], "path": ["api", "payroll", "wage-slips", "{{wageSlipId}}"] }
+          }
+        },
+        {
+          "name": "POST /api/payroll/wage-slips/:id/approve",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": { "raw": "{{baseUrl}}/api/payroll/wage-slips/{{wageSlipId}}/approve", "host": ["{{baseUrl}}"], "path": ["api", "payroll", "wage-slips", "{{wageSlipId}}", "approve"] }
+          }
+        },
+        {
+          "name": "POST /api/payroll/wage-slips/:id/issue",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": { "raw": "{{baseUrl}}/api/payroll/wage-slips/{{wageSlipId}}/issue", "host": ["{{baseUrl}}"], "path": ["api", "payroll", "wage-slips", "{{wageSlipId}}", "issue"] }
+          }
+        },
+        {
+          "name": "GET /api/payroll/wage-slips/:id/pdf",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/payroll/wage-slips/{{wageSlipId}}/pdf", "host": ["{{baseUrl}}"], "path": ["api", "payroll", "wage-slips", "{{wageSlipId}}", "pdf"] }
+          }
+        },
+        {
+          "name": "POST /api/payroll/wage-slips/:id/void",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"error in timesheet\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/payroll/wage-slips/{{wageSlipId}}/void", "host": ["{{baseUrl}}"], "path": ["api", "payroll", "wage-slips", "{{wageSlipId}}", "void"] }
+          }
+        },
+        {
+          "name": "GET /api/payroll/employees/:id/balances",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/payroll/employees/{{employeeId}}/balances", "host": ["{{baseUrl}}"], "path": ["api", "payroll", "employees", "{{employeeId}}", "balances"] }
+          }
+        },
+        {
+          "name": "POST /api/payroll/employees/:id/balances",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"snapshot_date\": \"2026-04-01\",\n  \"vacation_days_balance\": 14,\n  \"sick_days_balance\": 20,\n  \"study_fund_balance\": 5000,\n  \"severance_balance\": 12000\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/payroll/employees/{{employeeId}}/balances", "host": ["{{baseUrl}}"], "path": ["api", "payroll", "employees", "{{employeeId}}", "balances"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        {
+          "name": "GET /api/analytics/savings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/analytics/savings", "host": ["{{baseUrl}}"], "path": ["api", "analytics", "savings"] }
+          }
+        },
+        {
+          "name": "GET /api/analytics/spend-by-supplier",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/analytics/spend-by-supplier", "host": ["{{baseUrl}}"], "path": ["api", "analytics", "spend-by-supplier"] }
+          }
+        },
+        {
+          "name": "GET /api/analytics/spend-by-category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/analytics/spend-by-category", "host": ["{{baseUrl}}"], "path": ["api", "analytics", "spend-by-category"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Audit",
+      "item": [
+        {
+          "name": "GET /api/audit",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/audit?limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "audit"],
+              "query": [{ "key": "limit", "value": "50" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Webhooks",
+      "item": [
+        {
+          "name": "GET /webhook/whatsapp (verification)",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "noauth" },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/webhook/whatsapp?hub.mode=subscribe&hub.verify_token=VERIFY_TOKEN_HERE&hub.challenge=12345",
+              "host": ["{{baseUrl}}"],
+              "path": ["webhook", "whatsapp"],
+              "query": [
+                { "key": "hub.mode", "value": "subscribe" },
+                { "key": "hub.verify_token", "value": "VERIFY_TOKEN_HERE" },
+                { "key": "hub.challenge", "value": "12345" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /webhook/whatsapp (HMAC signed)",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "noauth" },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Hub-Signature-256", "value": "sha256=REPLACE_WITH_HMAC" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entry\": [\n    {\n      \"changes\": [\n        {\n          \"value\": {\n            \"messages\": [\n              { \"from\": \"972501234567\", \"type\": \"text\", \"id\": \"wamid.XYZ\", \"text\": { \"body\": \"תודה\" }, \"timestamp\": \"1744358400\" }\n            ]\n          }\n        }\n      ]\n    }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/webhook/whatsapp", "host": ["{{baseUrl}}"], "path": ["webhook", "whatsapp"] }
+          }
+        }
+      ]
+    }
+  ]
+}

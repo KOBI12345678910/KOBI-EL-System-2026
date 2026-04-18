@@ -1,0 +1,5423 @@
+{
+  "regMissing": [
+    {
+      "idx": 1,
+      "name": "lead_sources",
+      "domain": "crm",
+      "subdomain": "crm",
+      "table": "crm.lead_sources",
+      "business_meaning": "crm.lead_sources"
+    },
+    {
+      "idx": 2,
+      "name": "customers",
+      "domain": "crm",
+      "subdomain": "crm",
+      "table": "crm.customers",
+      "business_meaning": "customer_master"
+    },
+    {
+      "idx": 3,
+      "name": "contacts",
+      "domain": "crm",
+      "subdomain": "crm",
+      "table": "crm.contacts",
+      "business_meaning": "contact_master"
+    },
+    {
+      "idx": 4,
+      "name": "activities",
+      "domain": "crm",
+      "subdomain": "crm",
+      "table": "crm.activities",
+      "business_meaning": "crm.activities"
+    },
+    {
+      "idx": 5,
+      "name": "meetings",
+      "domain": "crm",
+      "subdomain": "crm",
+      "table": "crm.meetings",
+      "business_meaning": "crm.meetings"
+    },
+    {
+      "idx": 6,
+      "name": "communication_logs",
+      "domain": "crm",
+      "subdomain": "crm",
+      "table": "crm.communication_logs",
+      "business_meaning": "crm.communication_logs"
+    },
+    {
+      "idx": 7,
+      "name": "customer_segments",
+      "domain": "crm",
+      "subdomain": "crm",
+      "table": "crm.customer_segments",
+      "business_meaning": "customer_master"
+    },
+    {
+      "idx": 8,
+      "name": "opportunities",
+      "domain": "sales",
+      "subdomain": "sales",
+      "table": "sales.opportunities",
+      "business_meaning": "sales.opportunities"
+    },
+    {
+      "idx": 9,
+      "name": "quotes",
+      "domain": "sales",
+      "subdomain": "sales",
+      "table": "sales.quotes",
+      "business_meaning": "quote_master"
+    },
+    {
+      "idx": 10,
+      "name": "quote_items",
+      "domain": "sales",
+      "subdomain": "sales",
+      "table": "sales.quote_items",
+      "business_meaning": "quote_master"
+    },
+    {
+      "idx": 11,
+      "name": "pricing_rules",
+      "domain": "sales",
+      "subdomain": "sales",
+      "table": "sales.pricing_rules",
+      "business_meaning": "sales.pricing_rules"
+    },
+    {
+      "idx": 12,
+      "name": "discounts",
+      "domain": "sales",
+      "subdomain": "sales",
+      "table": "sales.discounts",
+      "business_meaning": "sales.discounts"
+    },
+    {
+      "idx": 13,
+      "name": "approvals",
+      "domain": "sales",
+      "subdomain": "sales",
+      "table": "sales.approvals",
+      "business_meaning": "sales.approvals"
+    },
+    {
+      "idx": 14,
+      "name": "sales_orders",
+      "domain": "sales",
+      "subdomain": "sales",
+      "table": "sales.sales_orders",
+      "business_meaning": "sales.sales_orders"
+    },
+    {
+      "idx": 15,
+      "name": "sales_pipeline",
+      "domain": "sales",
+      "subdomain": "sales",
+      "table": "sales.sales_pipeline",
+      "business_meaning": "sales.sales_pipeline"
+    },
+    {
+      "idx": 16,
+      "name": "projects",
+      "domain": "projects",
+      "subdomain": "projects",
+      "table": "projects.projects",
+      "business_meaning": "project_master"
+    },
+    {
+      "idx": 17,
+      "name": "project_phases",
+      "domain": "projects",
+      "subdomain": "projects",
+      "table": "projects.project_phases",
+      "business_meaning": "project_master"
+    },
+    {
+      "idx": 18,
+      "name": "project_tasks",
+      "domain": "projects",
+      "subdomain": "projects",
+      "table": "projects.project_tasks",
+      "business_meaning": "projects.project_tasks"
+    },
+    {
+      "idx": 19,
+      "name": "milestones",
+      "domain": "projects",
+      "subdomain": "projects",
+      "table": "projects.milestones",
+      "business_meaning": "project_master"
+    },
+    {
+      "idx": 20,
+      "name": "dependencies",
+      "domain": "projects",
+      "subdomain": "projects",
+      "table": "projects.dependencies",
+      "business_meaning": "projects.dependencies"
+    },
+    {
+      "idx": 21,
+      "name": "project_resources",
+      "domain": "projects",
+      "subdomain": "projects",
+      "table": "projects.project_resources",
+      "business_meaning": "projects.project_resources"
+    },
+    {
+      "idx": 22,
+      "name": "project_risk_entries",
+      "domain": "projects",
+      "subdomain": "projects",
+      "table": "projects.project_risk_entries",
+      "business_meaning": "projects.project_risk_entries"
+    },
+    {
+      "idx": 23,
+      "name": "project_progress_logs",
+      "domain": "projects",
+      "subdomain": "projects",
+      "table": "projects.project_progress_logs",
+      "business_meaning": "projects.project_progress_logs"
+    },
+    {
+      "idx": 24,
+      "name": "technical_specs",
+      "domain": "engineering",
+      "subdomain": "engineering",
+      "table": "engineering.technical_specs",
+      "business_meaning": "engineering.technical_specs"
+    },
+    {
+      "idx": 25,
+      "name": "drawings",
+      "domain": "engineering",
+      "subdomain": "engineering",
+      "table": "engineering.drawings",
+      "business_meaning": "engineering.drawings"
+    },
+    {
+      "idx": 26,
+      "name": "bom_headers",
+      "domain": "engineering",
+      "subdomain": "engineering",
+      "table": "engineering.bom_headers",
+      "business_meaning": "engineering.bom_headers"
+    },
+    {
+      "idx": 27,
+      "name": "bom_items",
+      "domain": "engineering",
+      "subdomain": "engineering",
+      "table": "engineering.bom_items",
+      "business_meaning": "engineering.bom_items"
+    },
+    {
+      "idx": 28,
+      "name": "revision_control",
+      "domain": "engineering",
+      "subdomain": "engineering",
+      "table": "engineering.revision_control",
+      "business_meaning": "engineering.revision_control"
+    },
+    {
+      "idx": 29,
+      "name": "product_configurations",
+      "domain": "engineering",
+      "subdomain": "engineering",
+      "table": "engineering.product_configurations",
+      "business_meaning": "engineering.product_configurations"
+    },
+    {
+      "idx": 30,
+      "name": "engineering_requests",
+      "domain": "engineering",
+      "subdomain": "engineering",
+      "table": "engineering.engineering_requests",
+      "business_meaning": "engineering.engineering_requests"
+    },
+    {
+      "idx": 31,
+      "name": "approval_drawings",
+      "domain": "engineering",
+      "subdomain": "engineering",
+      "table": "engineering.approval_drawings",
+      "business_meaning": "engineering.approval_drawings"
+    },
+    {
+      "idx": 34,
+      "name": "supplier_price_lists",
+      "domain": "procurement",
+      "subdomain": "procurement",
+      "table": "procurement.supplier_price_lists",
+      "business_meaning": "supplier_master"
+    },
+    {
+      "idx": 35,
+      "name": "purchase_requests",
+      "domain": "procurement",
+      "subdomain": "procurement",
+      "table": "procurement.purchase_requests",
+      "business_meaning": "procurement.purchase_requests"
+    },
+    {
+      "idx": 37,
+      "name": "purchase_order_items",
+      "domain": "procurement",
+      "subdomain": "procurement",
+      "table": "procurement.purchase_order_items",
+      "business_meaning": "procurement.purchase_order_items"
+    },
+    {
+      "idx": 38,
+      "name": "goods_receipts",
+      "domain": "procurement",
+      "subdomain": "procurement",
+      "table": "procurement.goods_receipts",
+      "business_meaning": "procurement.goods_receipts"
+    },
+    {
+      "idx": 39,
+      "name": "procurement_approvals",
+      "domain": "procurement",
+      "subdomain": "procurement",
+      "table": "procurement.procurement_approvals",
+      "business_meaning": "procurement.procurement_approvals"
+    },
+    {
+      "idx": 40,
+      "name": "items",
+      "domain": "inventory",
+      "subdomain": "inventory",
+      "table": "inventory.items",
+      "business_meaning": "inventory.items"
+    },
+    {
+      "idx": 41,
+      "name": "raw_materials",
+      "domain": "inventory",
+      "subdomain": "inventory",
+      "table": "inventory.raw_materials",
+      "business_meaning": "inventory.raw_materials"
+    },
+    {
+      "idx": 43,
+      "name": "stock_balances",
+      "domain": "inventory",
+      "subdomain": "inventory",
+      "table": "inventory.stock_balances",
+      "business_meaning": "inventory_balance"
+    },
+    {
+      "idx": 44,
+      "name": "stock_movements",
+      "domain": "inventory",
+      "subdomain": "inventory",
+      "table": "inventory.stock_movements",
+      "business_meaning": "inventory.stock_movements"
+    },
+    {
+      "idx": 45,
+      "name": "reservations",
+      "domain": "inventory",
+      "subdomain": "inventory",
+      "table": "inventory.reservations",
+      "business_meaning": "inventory.reservations"
+    },
+    {
+      "idx": 46,
+      "name": "batch_lots",
+      "domain": "inventory",
+      "subdomain": "inventory",
+      "table": "inventory.batch_lots",
+      "business_meaning": "inventory.batch_lots"
+    },
+    {
+      "idx": 48,
+      "name": "production_orders",
+      "domain": "production",
+      "subdomain": "production",
+      "table": "production.production_orders",
+      "business_meaning": "production.production_orders"
+    },
+    {
+      "idx": 49,
+      "name": "production_steps",
+      "domain": "production",
+      "subdomain": "production",
+      "table": "production.production_steps",
+      "business_meaning": "production.production_steps"
+    },
+    {
+      "idx": 50,
+      "name": "work_centers",
+      "domain": "production",
+      "subdomain": "production",
+      "table": "production.work_centers",
+      "business_meaning": "production.work_centers"
+    },
+    {
+      "idx": 51,
+      "name": "labor_logs",
+      "domain": "production",
+      "subdomain": "production",
+      "table": "production.labor_logs",
+      "business_meaning": "production.labor_logs"
+    },
+    {
+      "idx": 52,
+      "name": "machine_logs",
+      "domain": "production",
+      "subdomain": "production",
+      "table": "production.machine_logs",
+      "business_meaning": "production.machine_logs"
+    },
+    {
+      "idx": 53,
+      "name": "material_consumption",
+      "domain": "production",
+      "subdomain": "production",
+      "table": "production.material_consumption",
+      "business_meaning": "production.material_consumption"
+    },
+    {
+      "idx": 54,
+      "name": "scrap_logs",
+      "domain": "production",
+      "subdomain": "production",
+      "table": "production.scrap_logs",
+      "business_meaning": "production.scrap_logs"
+    },
+    {
+      "idx": 55,
+      "name": "production_quality_checks",
+      "domain": "production",
+      "subdomain": "production",
+      "table": "production.production_quality_checks",
+      "business_meaning": "production.production_quality_checks"
+    },
+    {
+      "idx": 56,
+      "name": "installation_orders",
+      "domain": "installation",
+      "subdomain": "installation",
+      "table": "installation.installation_orders",
+      "business_meaning": "installation.installation_orders"
+    },
+    {
+      "idx": 57,
+      "name": "installation_tasks",
+      "domain": "installation",
+      "subdomain": "installation",
+      "table": "installation.installation_tasks",
+      "business_meaning": "installation.installation_tasks"
+    },
+    {
+      "idx": 58,
+      "name": "installation_teams",
+      "domain": "installation",
+      "subdomain": "installation",
+      "table": "installation.installation_teams",
+      "business_meaning": "installation.installation_teams"
+    },
+    {
+      "idx": 59,
+      "name": "schedules",
+      "domain": "installation",
+      "subdomain": "installation",
+      "table": "installation.schedules",
+      "business_meaning": "installation.schedules"
+    },
+    {
+      "idx": 60,
+      "name": "site_visits",
+      "domain": "installation",
+      "subdomain": "installation",
+      "table": "installation.site_visits",
+      "business_meaning": "installation.site_visits"
+    },
+    {
+      "idx": 61,
+      "name": "completion_reports",
+      "domain": "installation",
+      "subdomain": "installation",
+      "table": "installation.completion_reports",
+      "business_meaning": "installation.completion_reports"
+    },
+    {
+      "idx": 62,
+      "name": "handover_documents",
+      "domain": "installation",
+      "subdomain": "installation",
+      "table": "installation.handover_documents",
+      "business_meaning": "installation.handover_documents"
+    },
+    {
+      "idx": 63,
+      "name": "punch_lists",
+      "domain": "installation",
+      "subdomain": "installation",
+      "table": "installation.punch_lists",
+      "business_meaning": "installation.punch_lists"
+    },
+    {
+      "idx": 64,
+      "name": "service_tickets",
+      "domain": "service",
+      "subdomain": "service",
+      "table": "service.service_tickets",
+      "business_meaning": "service_ticket_master"
+    },
+    {
+      "idx": 65,
+      "name": "warranty_records",
+      "domain": "service",
+      "subdomain": "service",
+      "table": "service.warranty_records",
+      "business_meaning": "service.warranty_records"
+    },
+    {
+      "idx": 66,
+      "name": "service_visits",
+      "domain": "service",
+      "subdomain": "service",
+      "table": "service.service_visits",
+      "business_meaning": "service_ticket_master"
+    },
+    {
+      "idx": 67,
+      "name": "issue_categories",
+      "domain": "service",
+      "subdomain": "service",
+      "table": "service.issue_categories",
+      "business_meaning": "service.issue_categories"
+    },
+    {
+      "idx": 68,
+      "name": "resolution_logs",
+      "domain": "service",
+      "subdomain": "service",
+      "table": "service.resolution_logs",
+      "business_meaning": "service_ticket_master"
+    },
+    {
+      "idx": 69,
+      "name": "maintenance_plans",
+      "domain": "service",
+      "subdomain": "service",
+      "table": "service.maintenance_plans",
+      "business_meaning": "service.maintenance_plans"
+    },
+    {
+      "idx": 70,
+      "name": "service_feedback",
+      "domain": "service",
+      "subdomain": "service",
+      "table": "service.service_feedback",
+      "business_meaning": "service.service_feedback"
+    },
+    {
+      "idx": 71,
+      "name": "sla_rules",
+      "domain": "service",
+      "subdomain": "service",
+      "table": "service.sla_rules",
+      "business_meaning": "service.sla_rules"
+    },
+    {
+      "idx": 73,
+      "name": "invoice_items",
+      "domain": "finance",
+      "subdomain": "finance",
+      "table": "finance.invoice_items",
+      "business_meaning": "invoice_master"
+    },
+    {
+      "idx": 77,
+      "name": "expense_categories",
+      "domain": "finance",
+      "subdomain": "finance",
+      "table": "finance.expense_categories",
+      "business_meaning": "finance.expense_categories"
+    },
+    {
+      "idx": 79,
+      "name": "profitability_snapshots",
+      "domain": "finance",
+      "subdomain": "finance",
+      "table": "finance.profitability_snapshots",
+      "business_meaning": "finance.profitability_snapshots"
+    },
+    {
+      "idx": 80,
+      "name": "employees",
+      "domain": "hr_workforce",
+      "subdomain": "hr_workforce",
+      "table": "hr_workforce.employees",
+      "business_meaning": "employee_master"
+    },
+    {
+      "idx": 81,
+      "name": "contractors",
+      "domain": "hr_workforce",
+      "subdomain": "hr_workforce",
+      "table": "hr_workforce.contractors",
+      "business_meaning": "hr_workforce.contractors"
+    },
+    {
+      "idx": 82,
+      "name": "teams",
+      "domain": "hr_workforce",
+      "subdomain": "hr_workforce",
+      "table": "hr_workforce.teams",
+      "business_meaning": "hr_workforce.teams"
+    },
+    {
+      "idx": 83,
+      "name": "attendance_logs",
+      "domain": "hr_workforce",
+      "subdomain": "hr_workforce",
+      "table": "hr_workforce.attendance_logs",
+      "business_meaning": "hr_workforce.attendance_logs"
+    },
+    {
+      "idx": 84,
+      "name": "assignments",
+      "domain": "hr_workforce",
+      "subdomain": "hr_workforce",
+      "table": "hr_workforce.assignments",
+      "business_meaning": "employee_master"
+    },
+    {
+      "idx": 85,
+      "name": "payroll_inputs",
+      "domain": "hr_workforce",
+      "subdomain": "hr_workforce",
+      "table": "hr_workforce.payroll_inputs",
+      "business_meaning": "hr_workforce.payroll_inputs"
+    },
+    {
+      "idx": 86,
+      "name": "performance_reviews",
+      "domain": "hr_workforce",
+      "subdomain": "hr_workforce",
+      "table": "hr_workforce.performance_reviews",
+      "business_meaning": "hr_workforce.performance_reviews"
+    },
+    {
+      "idx": 87,
+      "name": "skill_matrix",
+      "domain": "hr_workforce",
+      "subdomain": "hr_workforce",
+      "table": "hr_workforce.skill_matrix",
+      "business_meaning": "hr_workforce.skill_matrix"
+    },
+    {
+      "idx": 88,
+      "name": "documents",
+      "domain": "documents",
+      "subdomain": "documents",
+      "table": "documents.documents",
+      "business_meaning": "documents.documents"
+    },
+    {
+      "idx": 89,
+      "name": "document_links",
+      "domain": "documents",
+      "subdomain": "documents",
+      "table": "documents.document_links",
+      "business_meaning": "documents.document_links"
+    },
+    {
+      "idx": 90,
+      "name": "document_versions",
+      "domain": "documents",
+      "subdomain": "documents",
+      "table": "documents.document_versions",
+      "business_meaning": "documents.document_versions"
+    },
+    {
+      "idx": 91,
+      "name": "templates",
+      "domain": "documents",
+      "subdomain": "documents",
+      "table": "documents.templates",
+      "business_meaning": "documents.templates"
+    },
+    {
+      "idx": 92,
+      "name": "generated_files",
+      "domain": "documents",
+      "subdomain": "documents",
+      "table": "documents.generated_files",
+      "business_meaning": "documents.generated_files"
+    },
+    {
+      "idx": 93,
+      "name": "signatures",
+      "domain": "documents",
+      "subdomain": "documents",
+      "table": "documents.signatures",
+      "business_meaning": "documents.signatures"
+    },
+    {
+      "idx": 94,
+      "name": "attachments",
+      "domain": "documents",
+      "subdomain": "documents",
+      "table": "documents.attachments",
+      "business_meaning": "documents.attachments"
+    },
+    {
+      "idx": 95,
+      "name": "archive_records",
+      "domain": "documents",
+      "subdomain": "documents",
+      "table": "documents.archive_records",
+      "business_meaning": "documents.archive_records"
+    },
+    {
+      "idx": 96,
+      "name": "dashboards",
+      "domain": "analytics",
+      "subdomain": "analytics",
+      "table": "analytics.dashboards",
+      "business_meaning": "analytics.dashboards"
+    },
+    {
+      "idx": 98,
+      "name": "kpi_definitions",
+      "domain": "analytics",
+      "subdomain": "analytics",
+      "table": "analytics.kpi_definitions",
+      "business_meaning": "analytics.kpi_definitions"
+    },
+    {
+      "idx": 99,
+      "name": "reports",
+      "domain": "analytics",
+      "subdomain": "analytics",
+      "table": "analytics.reports",
+      "business_meaning": "analytics.reports"
+    },
+    {
+      "idx": 100,
+      "name": "report_sources",
+      "domain": "analytics",
+      "subdomain": "analytics",
+      "table": "analytics.report_sources",
+      "business_meaning": "analytics.report_sources"
+    },
+    {
+      "idx": 101,
+      "name": "forecast_models",
+      "domain": "analytics",
+      "subdomain": "analytics",
+      "table": "analytics.forecast_models",
+      "business_meaning": "analytics.forecast_models"
+    },
+    {
+      "idx": 102,
+      "name": "scenario_models",
+      "domain": "analytics",
+      "subdomain": "analytics",
+      "table": "analytics.scenario_models",
+      "business_meaning": "analytics.scenario_models"
+    },
+    {
+      "idx": 103,
+      "name": "scorecards",
+      "domain": "analytics",
+      "subdomain": "analytics",
+      "table": "analytics.scorecards",
+      "business_meaning": "analytics.scorecards"
+    },
+    {
+      "idx": 104,
+      "name": "automation_rules",
+      "domain": "ai_automation",
+      "subdomain": "ai_automation",
+      "table": "ai_automation.automation_rules",
+      "business_meaning": "ai_automation.automation_rules"
+    },
+    {
+      "idx": 105,
+      "name": "automation_runs",
+      "domain": "ai_automation",
+      "subdomain": "ai_automation",
+      "table": "ai_automation.automation_runs",
+      "business_meaning": "ai_automation.automation_runs"
+    },
+    {
+      "idx": 106,
+      "name": "ai_agents",
+      "domain": "ai_automation",
+      "subdomain": "ai_automation",
+      "table": "ai_automation.ai_agents",
+      "business_meaning": "ai_automation.ai_agents"
+    },
+    {
+      "idx": 107,
+      "name": "ai_actions",
+      "domain": "ai_automation",
+      "subdomain": "ai_automation",
+      "table": "ai_automation.ai_actions",
+      "business_meaning": "ai_automation.ai_actions"
+    },
+    {
+      "idx": 108,
+      "name": "prediction_outputs",
+      "domain": "ai_automation",
+      "subdomain": "ai_automation",
+      "table": "ai_automation.prediction_outputs",
+      "business_meaning": "ai_automation.prediction_outputs"
+    },
+    {
+      "idx": 109,
+      "name": "recommendation_logs",
+      "domain": "ai_automation",
+      "subdomain": "ai_automation",
+      "table": "ai_automation.recommendation_logs",
+      "business_meaning": "ai_automation.recommendation_logs"
+    },
+    {
+      "idx": 110,
+      "name": "prompt_templates",
+      "domain": "ai_automation",
+      "subdomain": "ai_automation",
+      "table": "ai_automation.prompt_templates",
+      "business_meaning": "ai_automation.prompt_templates"
+    },
+    {
+      "idx": 111,
+      "name": "orchestration_flows",
+      "domain": "ai_automation",
+      "subdomain": "ai_automation",
+      "table": "ai_automation.orchestration_flows",
+      "business_meaning": "ai_automation.orchestration_flows"
+    },
+    {
+      "idx": 112,
+      "name": "users",
+      "domain": "governance",
+      "subdomain": "governance",
+      "table": "governance.users",
+      "business_meaning": "governance.users"
+    },
+    {
+      "idx": 116,
+      "name": "change_logs",
+      "domain": "governance",
+      "subdomain": "governance",
+      "table": "governance.change_logs",
+      "business_meaning": "governance.change_logs"
+    },
+    {
+      "idx": 117,
+      "name": "system_settings",
+      "domain": "governance",
+      "subdomain": "governance",
+      "table": "governance.system_settings",
+      "business_meaning": "governance.system_settings"
+    },
+    {
+      "idx": 118,
+      "name": "validation_rules",
+      "domain": "governance",
+      "subdomain": "governance",
+      "table": "governance.validation_rules",
+      "business_meaning": "governance.validation_rules"
+    },
+    {
+      "idx": 119,
+      "name": "data_quality_issues",
+      "domain": "governance",
+      "subdomain": "governance",
+      "table": "governance.data_quality_issues",
+      "business_meaning": "governance.data_quality_issues"
+    }
+  ],
+  "dbMissingInRegistry": [],
+  "dupes": [
+    {
+      "name": "leads",
+      "entries": [
+        {
+          "idx": 0,
+          "name": "leads",
+          "domain": "crm",
+          "subdomain": "crm",
+          "table": "crm.leads",
+          "business_meaning": "crm.leads"
+        },
+        {
+          "idx": 138,
+          "name": "leads",
+          "domain": "sales",
+          "subdomain": "commercial",
+          "table": "commercial.leads",
+          "business_meaning": "sales.leads"
+        }
+      ]
+    },
+    {
+      "name": "customers",
+      "entries": [
+        {
+          "idx": 2,
+          "name": "customers",
+          "domain": "crm",
+          "subdomain": "crm",
+          "table": "crm.customers",
+          "business_meaning": "customer_master"
+        },
+        {
+          "idx": 135,
+          "name": "customers",
+          "domain": "sales",
+          "subdomain": "commercial",
+          "table": "commercial.customers",
+          "business_meaning": "sales.customers"
+        },
+        {
+          "idx": 307,
+          "name": "customers",
+          "domain": "governance",
+          "subdomain": "public",
+          "table": "public.customers",
+          "business_meaning": "governance.customers"
+        }
+      ]
+    },
+    {
+      "name": "opportunities",
+      "entries": [
+        {
+          "idx": 8,
+          "name": "opportunities",
+          "domain": "sales",
+          "subdomain": "sales",
+          "table": "sales.opportunities",
+          "business_meaning": "sales.opportunities"
+        },
+        {
+          "idx": 139,
+          "name": "opportunities",
+          "domain": "sales",
+          "subdomain": "commercial",
+          "table": "commercial.opportunities",
+          "business_meaning": "sales.opportunities"
+        },
+        {
+          "idx": 161,
+          "name": "opportunities",
+          "domain": "crm",
+          "subdomain": "crm",
+          "table": "crm.opportunities",
+          "business_meaning": "crm.opportunities"
+        }
+      ]
+    },
+    {
+      "name": "quotes",
+      "entries": [
+        {
+          "idx": 9,
+          "name": "quotes",
+          "domain": "sales",
+          "subdomain": "sales",
+          "table": "sales.quotes",
+          "business_meaning": "quote_master"
+        },
+        {
+          "idx": 145,
+          "name": "quotes",
+          "domain": "sales",
+          "subdomain": "commercial",
+          "table": "commercial.quotes",
+          "business_meaning": "sales.quotes"
+        }
+      ]
+    },
+    {
+      "name": "approvals",
+      "entries": [
+        {
+          "idx": 13,
+          "name": "approvals",
+          "domain": "sales",
+          "subdomain": "sales",
+          "table": "sales.approvals",
+          "business_meaning": "sales.approvals"
+        },
+        {
+          "idx": 291,
+          "name": "approvals",
+          "domain": "procurement",
+          "subdomain": "procurement",
+          "table": "procurement.approvals",
+          "business_meaning": "procurement.approvals"
+        }
+      ]
+    },
+    {
+      "name": "projects",
+      "entries": [
+        {
+          "idx": 16,
+          "name": "projects",
+          "domain": "projects",
+          "subdomain": "projects",
+          "table": "projects.projects",
+          "business_meaning": "project_master"
+        },
+        {
+          "idx": 186,
+          "name": "projects",
+          "domain": "projects",
+          "subdomain": "execution",
+          "table": "execution.projects",
+          "business_meaning": "projects.projects"
+        }
+      ]
+    },
+    {
+      "name": "project_phases",
+      "entries": [
+        {
+          "idx": 17,
+          "name": "project_phases",
+          "domain": "projects",
+          "subdomain": "projects",
+          "table": "projects.project_phases",
+          "business_meaning": "project_master"
+        },
+        {
+          "idx": 184,
+          "name": "project_phases",
+          "domain": "projects",
+          "subdomain": "execution",
+          "table": "execution.project_phases",
+          "business_meaning": "projects.project_phases"
+        }
+      ]
+    },
+    {
+      "name": "suppliers",
+      "entries": [
+        {
+          "idx": 32,
+          "name": "suppliers",
+          "domain": "procurement",
+          "subdomain": "procurement",
+          "table": "procurement.suppliers",
+          "business_meaning": "supplier_master"
+        },
+        {
+          "idx": 312,
+          "name": "suppliers",
+          "domain": "governance",
+          "subdomain": "public",
+          "table": "public.suppliers",
+          "business_meaning": "governance.suppliers"
+        }
+      ]
+    },
+    {
+      "name": "employees",
+      "entries": [
+        {
+          "idx": 80,
+          "name": "employees",
+          "domain": "hr_workforce",
+          "subdomain": "hr_workforce",
+          "table": "hr_workforce.employees",
+          "business_meaning": "employee_master"
+        },
+        {
+          "idx": 308,
+          "name": "employees",
+          "domain": "governance",
+          "subdomain": "public",
+          "table": "public.employees",
+          "business_meaning": "governance.employees"
+        },
+        {
+          "idx": 328,
+          "name": "employees",
+          "domain": "hr_workforce",
+          "subdomain": "workforce",
+          "table": "workforce.employees",
+          "business_meaning": "hr_workforce.employees"
+        }
+      ]
+    },
+    {
+      "name": "documents",
+      "entries": [
+        {
+          "idx": 88,
+          "name": "documents",
+          "domain": "documents",
+          "subdomain": "documents",
+          "table": "documents.documents",
+          "business_meaning": "documents.documents"
+        },
+        {
+          "idx": 166,
+          "name": "documents",
+          "domain": "documents",
+          "subdomain": "docs",
+          "table": "docs.documents",
+          "business_meaning": "documents.documents"
+        }
+      ]
+    },
+    {
+      "name": "document_versions",
+      "entries": [
+        {
+          "idx": 90,
+          "name": "document_versions",
+          "domain": "documents",
+          "subdomain": "documents",
+          "table": "documents.document_versions",
+          "business_meaning": "documents.document_versions"
+        },
+        {
+          "idx": 165,
+          "name": "document_versions",
+          "domain": "documents",
+          "subdomain": "docs",
+          "table": "docs.document_versions",
+          "business_meaning": "documents.document_versions"
+        }
+      ]
+    },
+    {
+      "name": "signatures",
+      "entries": [
+        {
+          "idx": 93,
+          "name": "signatures",
+          "domain": "documents",
+          "subdomain": "documents",
+          "table": "documents.signatures",
+          "business_meaning": "documents.signatures"
+        },
+        {
+          "idx": 187,
+          "name": "signatures",
+          "domain": "projects",
+          "subdomain": "execution",
+          "table": "execution.signatures",
+          "business_meaning": "projects.signatures"
+        }
+      ]
+    },
+    {
+      "name": "attachments",
+      "entries": [
+        {
+          "idx": 94,
+          "name": "attachments",
+          "domain": "documents",
+          "subdomain": "documents",
+          "table": "documents.attachments",
+          "business_meaning": "documents.attachments"
+        },
+        {
+          "idx": 162,
+          "name": "attachments",
+          "domain": "documents",
+          "subdomain": "docs",
+          "table": "docs.attachments",
+          "business_meaning": "documents.attachments"
+        }
+      ]
+    },
+    {
+      "name": "forecast_models",
+      "entries": [
+        {
+          "idx": 101,
+          "name": "forecast_models",
+          "domain": "analytics",
+          "subdomain": "analytics",
+          "table": "analytics.forecast_models",
+          "business_meaning": "analytics.forecast_models"
+        },
+        {
+          "idx": 253,
+          "name": "forecast_models",
+          "domain": "ai_automation",
+          "subdomain": "intelligence",
+          "table": "intelligence.forecast_models",
+          "business_meaning": "ai_automation.forecast_models"
+        }
+      ]
+    },
+    {
+      "name": "notifications",
+      "entries": [
+        {
+          "idx": 151,
+          "name": "notifications",
+          "domain": "crm",
+          "subdomain": "comms",
+          "table": "comms.notifications",
+          "business_meaning": "crm.notifications"
+        },
+        {
+          "idx": 279,
+          "name": "notifications",
+          "domain": "ai_automation",
+          "subdomain": "orchestration",
+          "table": "orchestration.notifications",
+          "business_meaning": "ai_automation.notifications"
+        }
+      ]
+    },
+    {
+      "name": "work_orders",
+      "entries": [
+        {
+          "idx": 195,
+          "name": "work_orders",
+          "domain": "projects",
+          "subdomain": "execution",
+          "table": "execution.work_orders",
+          "business_meaning": "projects.work_orders"
+        },
+        {
+          "idx": 277,
+          "name": "work_orders",
+          "domain": "service",
+          "subdomain": "maintenance",
+          "table": "maintenance.work_orders",
+          "business_meaning": "service.work_orders"
+        }
+      ]
+    },
+    {
+      "name": "workflow_steps",
+      "entries": [
+        {
+          "idx": 245,
+          "name": "workflow_steps",
+          "domain": "governance",
+          "subdomain": "governance",
+          "table": "governance.workflow_steps",
+          "business_meaning": "governance.workflow_steps"
+        },
+        {
+          "idx": 284,
+          "name": "workflow_steps",
+          "domain": "ai_automation",
+          "subdomain": "orchestration",
+          "table": "orchestration.workflow_steps",
+          "business_meaning": "ai_automation.workflow_steps"
+        }
+      ]
+    }
+  ],
+  "schemaMismatches": [
+    {
+      "model": "customers",
+      "registry_table": "crm.customers",
+      "db_found_at": [
+        "commercial.customers",
+        "public.customers"
+      ]
+    },
+    {
+      "model": "opportunities",
+      "registry_table": "sales.opportunities",
+      "db_found_at": [
+        "commercial.opportunities",
+        "crm.opportunities"
+      ]
+    },
+    {
+      "model": "quotes",
+      "registry_table": "sales.quotes",
+      "db_found_at": [
+        "commercial.quotes"
+      ]
+    },
+    {
+      "model": "approvals",
+      "registry_table": "sales.approvals",
+      "db_found_at": [
+        "procurement.approvals"
+      ]
+    },
+    {
+      "model": "projects",
+      "registry_table": "projects.projects",
+      "db_found_at": [
+        "execution.projects"
+      ]
+    },
+    {
+      "model": "project_phases",
+      "registry_table": "projects.project_phases",
+      "db_found_at": [
+        "execution.project_phases"
+      ]
+    },
+    {
+      "model": "employees",
+      "registry_table": "hr_workforce.employees",
+      "db_found_at": [
+        "public.employees",
+        "workforce.employees"
+      ]
+    },
+    {
+      "model": "documents",
+      "registry_table": "documents.documents",
+      "db_found_at": [
+        "docs.documents"
+      ]
+    },
+    {
+      "model": "document_versions",
+      "registry_table": "documents.document_versions",
+      "db_found_at": [
+        "docs.document_versions"
+      ]
+    },
+    {
+      "model": "signatures",
+      "registry_table": "documents.signatures",
+      "db_found_at": [
+        "execution.signatures"
+      ]
+    },
+    {
+      "model": "attachments",
+      "registry_table": "documents.attachments",
+      "db_found_at": [
+        "docs.attachments"
+      ]
+    },
+    {
+      "model": "forecast_models",
+      "registry_table": "analytics.forecast_models",
+      "db_found_at": [
+        "intelligence.forecast_models"
+      ]
+    }
+  ],
+  "regByTable": [
+    {
+      "table": "crm.leads",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 0,
+          "name": "leads",
+          "domain": "crm"
+        }
+      ]
+    },
+    {
+      "table": "crm.lead_sources",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 1,
+          "name": "lead_sources",
+          "domain": "crm"
+        }
+      ]
+    },
+    {
+      "table": "crm.customers",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 2,
+          "name": "customers",
+          "domain": "crm"
+        }
+      ]
+    },
+    {
+      "table": "crm.contacts",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 3,
+          "name": "contacts",
+          "domain": "crm"
+        }
+      ]
+    },
+    {
+      "table": "crm.activities",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 4,
+          "name": "activities",
+          "domain": "crm"
+        }
+      ]
+    },
+    {
+      "table": "crm.meetings",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 5,
+          "name": "meetings",
+          "domain": "crm"
+        }
+      ]
+    },
+    {
+      "table": "crm.communication_logs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 6,
+          "name": "communication_logs",
+          "domain": "crm"
+        }
+      ]
+    },
+    {
+      "table": "crm.customer_segments",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 7,
+          "name": "customer_segments",
+          "domain": "crm"
+        }
+      ]
+    },
+    {
+      "table": "sales.opportunities",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 8,
+          "name": "opportunities",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "sales.quotes",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 9,
+          "name": "quotes",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "sales.quote_items",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 10,
+          "name": "quote_items",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "sales.pricing_rules",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 11,
+          "name": "pricing_rules",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "sales.discounts",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 12,
+          "name": "discounts",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "sales.approvals",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 13,
+          "name": "approvals",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "sales.sales_orders",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 14,
+          "name": "sales_orders",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "sales.sales_pipeline",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 15,
+          "name": "sales_pipeline",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "projects.projects",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 16,
+          "name": "projects",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "projects.project_phases",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 17,
+          "name": "project_phases",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "projects.project_tasks",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 18,
+          "name": "project_tasks",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "projects.milestones",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 19,
+          "name": "milestones",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "projects.dependencies",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 20,
+          "name": "dependencies",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "projects.project_resources",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 21,
+          "name": "project_resources",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "projects.project_risk_entries",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 22,
+          "name": "project_risk_entries",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "projects.project_progress_logs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 23,
+          "name": "project_progress_logs",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "engineering.technical_specs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 24,
+          "name": "technical_specs",
+          "domain": "engineering"
+        }
+      ]
+    },
+    {
+      "table": "engineering.drawings",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 25,
+          "name": "drawings",
+          "domain": "engineering"
+        }
+      ]
+    },
+    {
+      "table": "engineering.bom_headers",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 26,
+          "name": "bom_headers",
+          "domain": "engineering"
+        }
+      ]
+    },
+    {
+      "table": "engineering.bom_items",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 27,
+          "name": "bom_items",
+          "domain": "engineering"
+        }
+      ]
+    },
+    {
+      "table": "engineering.revision_control",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 28,
+          "name": "revision_control",
+          "domain": "engineering"
+        }
+      ]
+    },
+    {
+      "table": "engineering.product_configurations",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 29,
+          "name": "product_configurations",
+          "domain": "engineering"
+        }
+      ]
+    },
+    {
+      "table": "engineering.engineering_requests",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 30,
+          "name": "engineering_requests",
+          "domain": "engineering"
+        }
+      ]
+    },
+    {
+      "table": "engineering.approval_drawings",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 31,
+          "name": "approval_drawings",
+          "domain": "engineering"
+        }
+      ]
+    },
+    {
+      "table": "procurement.suppliers",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 32,
+          "name": "suppliers",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "procurement.supplier_contacts",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 33,
+          "name": "supplier_contacts",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "procurement.supplier_price_lists",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 34,
+          "name": "supplier_price_lists",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "procurement.purchase_requests",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 35,
+          "name": "purchase_requests",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "procurement.purchase_orders",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 36,
+          "name": "purchase_orders",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "procurement.purchase_order_items",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 37,
+          "name": "purchase_order_items",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "procurement.goods_receipts",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 38,
+          "name": "goods_receipts",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "procurement.procurement_approvals",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 39,
+          "name": "procurement_approvals",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "inventory.items",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 40,
+          "name": "items",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "inventory.raw_materials",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 41,
+          "name": "raw_materials",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "inventory.warehouses",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 42,
+          "name": "warehouses",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "inventory.stock_balances",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 43,
+          "name": "stock_balances",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "inventory.stock_movements",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 44,
+          "name": "stock_movements",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "inventory.reservations",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 45,
+          "name": "reservations",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "inventory.batch_lots",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 46,
+          "name": "batch_lots",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "inventory.reorder_rules",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 47,
+          "name": "reorder_rules",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "production.production_orders",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 48,
+          "name": "production_orders",
+          "domain": "production"
+        }
+      ]
+    },
+    {
+      "table": "production.production_steps",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 49,
+          "name": "production_steps",
+          "domain": "production"
+        }
+      ]
+    },
+    {
+      "table": "production.work_centers",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 50,
+          "name": "work_centers",
+          "domain": "production"
+        }
+      ]
+    },
+    {
+      "table": "production.labor_logs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 51,
+          "name": "labor_logs",
+          "domain": "production"
+        }
+      ]
+    },
+    {
+      "table": "production.machine_logs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 52,
+          "name": "machine_logs",
+          "domain": "production"
+        }
+      ]
+    },
+    {
+      "table": "production.material_consumption",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 53,
+          "name": "material_consumption",
+          "domain": "production"
+        }
+      ]
+    },
+    {
+      "table": "production.scrap_logs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 54,
+          "name": "scrap_logs",
+          "domain": "production"
+        }
+      ]
+    },
+    {
+      "table": "production.production_quality_checks",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 55,
+          "name": "production_quality_checks",
+          "domain": "production"
+        }
+      ]
+    },
+    {
+      "table": "installation.installation_orders",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 56,
+          "name": "installation_orders",
+          "domain": "installation"
+        }
+      ]
+    },
+    {
+      "table": "installation.installation_tasks",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 57,
+          "name": "installation_tasks",
+          "domain": "installation"
+        }
+      ]
+    },
+    {
+      "table": "installation.installation_teams",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 58,
+          "name": "installation_teams",
+          "domain": "installation"
+        }
+      ]
+    },
+    {
+      "table": "installation.schedules",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 59,
+          "name": "schedules",
+          "domain": "installation"
+        }
+      ]
+    },
+    {
+      "table": "installation.site_visits",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 60,
+          "name": "site_visits",
+          "domain": "installation"
+        }
+      ]
+    },
+    {
+      "table": "installation.completion_reports",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 61,
+          "name": "completion_reports",
+          "domain": "installation"
+        }
+      ]
+    },
+    {
+      "table": "installation.handover_documents",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 62,
+          "name": "handover_documents",
+          "domain": "installation"
+        }
+      ]
+    },
+    {
+      "table": "installation.punch_lists",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 63,
+          "name": "punch_lists",
+          "domain": "installation"
+        }
+      ]
+    },
+    {
+      "table": "service.service_tickets",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 64,
+          "name": "service_tickets",
+          "domain": "service"
+        }
+      ]
+    },
+    {
+      "table": "service.warranty_records",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 65,
+          "name": "warranty_records",
+          "domain": "service"
+        }
+      ]
+    },
+    {
+      "table": "service.service_visits",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 66,
+          "name": "service_visits",
+          "domain": "service"
+        }
+      ]
+    },
+    {
+      "table": "service.issue_categories",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 67,
+          "name": "issue_categories",
+          "domain": "service"
+        }
+      ]
+    },
+    {
+      "table": "service.resolution_logs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 68,
+          "name": "resolution_logs",
+          "domain": "service"
+        }
+      ]
+    },
+    {
+      "table": "service.maintenance_plans",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 69,
+          "name": "maintenance_plans",
+          "domain": "service"
+        }
+      ]
+    },
+    {
+      "table": "service.service_feedback",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 70,
+          "name": "service_feedback",
+          "domain": "service"
+        }
+      ]
+    },
+    {
+      "table": "service.sla_rules",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 71,
+          "name": "sla_rules",
+          "domain": "service"
+        }
+      ]
+    },
+    {
+      "table": "finance.invoices",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 72,
+          "name": "invoices",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.invoice_items",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 73,
+          "name": "invoice_items",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.receipts",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 74,
+          "name": "receipts",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.payments",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 75,
+          "name": "payments",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.expenses",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 76,
+          "name": "expenses",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.expense_categories",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 77,
+          "name": "expense_categories",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.cashflow_entries",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 78,
+          "name": "cashflow_entries",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.profitability_snapshots",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 79,
+          "name": "profitability_snapshots",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "hr_workforce.employees",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 80,
+          "name": "employees",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "hr_workforce.contractors",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 81,
+          "name": "contractors",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "hr_workforce.teams",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 82,
+          "name": "teams",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "hr_workforce.attendance_logs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 83,
+          "name": "attendance_logs",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "hr_workforce.assignments",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 84,
+          "name": "assignments",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "hr_workforce.payroll_inputs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 85,
+          "name": "payroll_inputs",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "hr_workforce.performance_reviews",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 86,
+          "name": "performance_reviews",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "hr_workforce.skill_matrix",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 87,
+          "name": "skill_matrix",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "documents.documents",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 88,
+          "name": "documents",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "documents.document_links",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 89,
+          "name": "document_links",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "documents.document_versions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 90,
+          "name": "document_versions",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "documents.templates",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 91,
+          "name": "templates",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "documents.generated_files",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 92,
+          "name": "generated_files",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "documents.signatures",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 93,
+          "name": "signatures",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "documents.attachments",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 94,
+          "name": "attachments",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "documents.archive_records",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 95,
+          "name": "archive_records",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "analytics.dashboards",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 96,
+          "name": "dashboards",
+          "domain": "analytics"
+        }
+      ]
+    },
+    {
+      "table": "analytics.dashboard_widgets",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 97,
+          "name": "dashboard_widgets",
+          "domain": "analytics"
+        }
+      ]
+    },
+    {
+      "table": "analytics.kpi_definitions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 98,
+          "name": "kpi_definitions",
+          "domain": "analytics"
+        }
+      ]
+    },
+    {
+      "table": "analytics.reports",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 99,
+          "name": "reports",
+          "domain": "analytics"
+        }
+      ]
+    },
+    {
+      "table": "analytics.report_sources",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 100,
+          "name": "report_sources",
+          "domain": "analytics"
+        }
+      ]
+    },
+    {
+      "table": "analytics.forecast_models",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 101,
+          "name": "forecast_models",
+          "domain": "analytics"
+        }
+      ]
+    },
+    {
+      "table": "analytics.scenario_models",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 102,
+          "name": "scenario_models",
+          "domain": "analytics"
+        }
+      ]
+    },
+    {
+      "table": "analytics.scorecards",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 103,
+          "name": "scorecards",
+          "domain": "analytics"
+        }
+      ]
+    },
+    {
+      "table": "ai_automation.automation_rules",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 104,
+          "name": "automation_rules",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "ai_automation.automation_runs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 105,
+          "name": "automation_runs",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "ai_automation.ai_agents",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 106,
+          "name": "ai_agents",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "ai_automation.ai_actions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 107,
+          "name": "ai_actions",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "ai_automation.prediction_outputs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 108,
+          "name": "prediction_outputs",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "ai_automation.recommendation_logs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 109,
+          "name": "recommendation_logs",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "ai_automation.prompt_templates",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 110,
+          "name": "prompt_templates",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "ai_automation.orchestration_flows",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 111,
+          "name": "orchestration_flows",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "governance.users",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 112,
+          "name": "users",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.roles",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 113,
+          "name": "roles",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.permissions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 114,
+          "name": "permissions",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.audit_logs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 115,
+          "name": "audit_logs",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.change_logs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 116,
+          "name": "change_logs",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.system_settings",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 117,
+          "name": "system_settings",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.validation_rules",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 118,
+          "name": "validation_rules",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.data_quality_issues",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 119,
+          "name": "data_quality_issues",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "analytics.dashboard_board_widgets",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 120,
+          "name": "dashboard_board_widgets",
+          "domain": "analytics"
+        }
+      ]
+    },
+    {
+      "table": "analytics.dashboard_boards",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 121,
+          "name": "dashboard_boards",
+          "domain": "analytics"
+        }
+      ]
+    },
+    {
+      "table": "analytics.dashboard_definitions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 122,
+          "name": "dashboard_definitions",
+          "domain": "analytics"
+        }
+      ]
+    },
+    {
+      "table": "analytics.kpi_snapshots",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 123,
+          "name": "kpi_snapshots",
+          "domain": "analytics"
+        }
+      ]
+    },
+    {
+      "table": "analytics.read_model_invalidations",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 124,
+          "name": "read_model_invalidations",
+          "domain": "analytics"
+        }
+      ]
+    },
+    {
+      "table": "analytics.rm_ai_summary",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 125,
+          "name": "rm_ai_summary",
+          "domain": "analytics"
+        }
+      ]
+    },
+    {
+      "table": "analytics.rm_executive_summary",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 126,
+          "name": "rm_executive_summary",
+          "domain": "analytics"
+        }
+      ]
+    },
+    {
+      "table": "analytics.rm_finance_summary",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 127,
+          "name": "rm_finance_summary",
+          "domain": "analytics"
+        }
+      ]
+    },
+    {
+      "table": "analytics.rm_operations_summary",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 128,
+          "name": "rm_operations_summary",
+          "domain": "analytics"
+        }
+      ]
+    },
+    {
+      "table": "analytics.rm_procurement_summary",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 129,
+          "name": "rm_procurement_summary",
+          "domain": "analytics"
+        }
+      ]
+    },
+    {
+      "table": "analytics.rm_workforce_summary",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 130,
+          "name": "rm_workforce_summary",
+          "domain": "analytics"
+        }
+      ]
+    },
+    {
+      "table": "analytics.user_dashboard_boards",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 131,
+          "name": "user_dashboard_boards",
+          "domain": "analytics"
+        }
+      ]
+    },
+    {
+      "table": "commercial.crm_activities",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 132,
+          "name": "crm_activities",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "commercial.customer_contacts",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 133,
+          "name": "customer_contacts",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "commercial.customer_portal_accounts",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 134,
+          "name": "customer_portal_accounts",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "commercial.customers",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 135,
+          "name": "customers",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "commercial.lead_tag_assignments",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 136,
+          "name": "lead_tag_assignments",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "commercial.lead_tags",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 137,
+          "name": "lead_tags",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "commercial.leads",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 138,
+          "name": "leads",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "commercial.opportunities",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 139,
+          "name": "opportunities",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "commercial.pipeline_stages",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 140,
+          "name": "pipeline_stages",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "commercial.pricing_snapshots",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 141,
+          "name": "pricing_snapshots",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "commercial.quote_approval_rules",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 142,
+          "name": "quote_approval_rules",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "commercial.quote_lines",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 143,
+          "name": "quote_lines",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "commercial.quote_revisions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 144,
+          "name": "quote_revisions",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "commercial.quotes",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 145,
+          "name": "quotes",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "comms.chatbot_sessions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 146,
+          "name": "chatbot_sessions",
+          "domain": "crm"
+        }
+      ]
+    },
+    {
+      "table": "comms.comms_threads",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 147,
+          "name": "comms_threads",
+          "domain": "crm"
+        }
+      ]
+    },
+    {
+      "table": "comms.email_messages",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 148,
+          "name": "email_messages",
+          "domain": "crm"
+        }
+      ]
+    },
+    {
+      "table": "comms.help_articles",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 149,
+          "name": "help_articles",
+          "domain": "crm"
+        }
+      ]
+    },
+    {
+      "table": "comms.notification_deliveries",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 150,
+          "name": "notification_deliveries",
+          "domain": "crm"
+        }
+      ]
+    },
+    {
+      "table": "comms.notifications",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 151,
+          "name": "notifications",
+          "domain": "crm"
+        }
+      ]
+    },
+    {
+      "table": "comms.portal_sessions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 152,
+          "name": "portal_sessions",
+          "domain": "crm"
+        }
+      ]
+    },
+    {
+      "table": "comms.portal_users",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 153,
+          "name": "portal_users",
+          "domain": "crm"
+        }
+      ]
+    },
+    {
+      "table": "comms.sms_messages",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 154,
+          "name": "sms_messages",
+          "domain": "crm"
+        }
+      ]
+    },
+    {
+      "table": "comms.support_sla_tracking",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 155,
+          "name": "support_sla_tracking",
+          "domain": "crm"
+        }
+      ]
+    },
+    {
+      "table": "comms.support_tickets",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 156,
+          "name": "support_tickets",
+          "domain": "crm"
+        }
+      ]
+    },
+    {
+      "table": "comms.whatsapp_messages",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 157,
+          "name": "whatsapp_messages",
+          "domain": "crm"
+        }
+      ]
+    },
+    {
+      "table": "compliance.policies",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 158,
+          "name": "policies",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "compliance.policy_acknowledgements",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 159,
+          "name": "policy_acknowledgements",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "crm.lead_activities",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 160,
+          "name": "lead_activities",
+          "domain": "crm"
+        }
+      ]
+    },
+    {
+      "table": "crm.opportunities",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 161,
+          "name": "opportunities",
+          "domain": "crm"
+        }
+      ]
+    },
+    {
+      "table": "docs.attachments",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 162,
+          "name": "attachments",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "docs.document_classifications",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 163,
+          "name": "document_classifications",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "docs.document_signature_requests",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 164,
+          "name": "document_signature_requests",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "docs.document_versions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 165,
+          "name": "document_versions",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "docs.documents",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 166,
+          "name": "documents",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "docs.ocr_results",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 167,
+          "name": "ocr_results",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "docs.print_jobs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 168,
+          "name": "print_jobs",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "docs.scan_sessions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 169,
+          "name": "scan_sessions",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "documents.classification_runs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 170,
+          "name": "classification_runs",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "documents.document_chunks",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 171,
+          "name": "document_chunks",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "documents.document_relations",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 172,
+          "name": "document_relations",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "documents.entity_extractions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 173,
+          "name": "entity_extractions",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "documents.extraction_runs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 174,
+          "name": "extraction_runs",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "documents.knowledge_cards",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 175,
+          "name": "knowledge_cards",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "documents.ocr_runs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 176,
+          "name": "ocr_runs",
+          "domain": "documents"
+        }
+      ]
+    },
+    {
+      "table": "execution.alerts",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 177,
+          "name": "alerts",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "execution.delivery_events",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 178,
+          "name": "delivery_events",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "execution.installation_events",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 179,
+          "name": "installation_events",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "execution.logistics_orders",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 180,
+          "name": "logistics_orders",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "execution.project_blockers",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 181,
+          "name": "project_blockers",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "execution.project_cost_plans",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 182,
+          "name": "project_cost_plans",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "execution.project_milestones",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 183,
+          "name": "project_milestones",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "execution.project_phases",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 184,
+          "name": "project_phases",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "execution.project_risks",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 185,
+          "name": "project_risks",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "execution.projects",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 186,
+          "name": "projects",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "execution.signatures",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 187,
+          "name": "signatures",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "execution.task_attachments",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 188,
+          "name": "task_attachments",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "execution.task_comments",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 189,
+          "name": "task_comments",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "execution.task_dependencies",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 190,
+          "name": "task_dependencies",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "execution.tasks",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 191,
+          "name": "tasks",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "execution.work_order_qa_checklists",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 192,
+          "name": "work_order_qa_checklists",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "execution.work_order_qa_items",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 193,
+          "name": "work_order_qa_items",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "execution.work_order_tasks",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 194,
+          "name": "work_order_tasks",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "execution.work_orders",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 195,
+          "name": "work_orders",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "finance.annual_tax_reports",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 196,
+          "name": "annual_tax_reports",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.bank_files",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 197,
+          "name": "bank_files",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.bank_matches",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 198,
+          "name": "bank_matches",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.budget_entries",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 199,
+          "name": "budget_entries",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.collection_actions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 200,
+          "name": "collection_actions",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.collection_cases",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 201,
+          "name": "collection_cases",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.consolidation_entries",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 202,
+          "name": "consolidation_entries",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.costing_entries",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 203,
+          "name": "costing_entries",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.dunning_campaigns",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 204,
+          "name": "dunning_campaigns",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.dunning_steps",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 205,
+          "name": "dunning_steps",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.fx_rates",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 206,
+          "name": "fx_rates",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.gl_transactions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 207,
+          "name": "gl_transactions",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.invoice_lines",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 208,
+          "name": "invoice_lines",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.payment_allocations",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 209,
+          "name": "payment_allocations",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.reconciliation_exceptions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 210,
+          "name": "reconciliation_exceptions",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.reminder_schedules",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 211,
+          "name": "reminder_schedules",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.tax_exports",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 212,
+          "name": "tax_exports",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.tax_records",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 213,
+          "name": "tax_records",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "finance.vat_records",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 214,
+          "name": "vat_records",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "governance.alert_subscriptions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 215,
+          "name": "alert_subscriptions",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.audit_log_attachments",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 216,
+          "name": "audit_log_attachments",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.command_logs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 217,
+          "name": "command_logs",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.config_entries",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 218,
+          "name": "config_entries",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.domain_events",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 219,
+          "name": "domain_events",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.escalation_rules",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 220,
+          "name": "escalation_rules",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.event_deliveries",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 221,
+          "name": "event_deliveries",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.event_subscriptions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 222,
+          "name": "event_subscriptions",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.feature_flag_targets",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 223,
+          "name": "feature_flag_targets",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.feature_flags",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 224,
+          "name": "feature_flags",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.health_checks",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 225,
+          "name": "health_checks",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.idempotency_keys",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 226,
+          "name": "idempotency_keys",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.integration_connections",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 227,
+          "name": "integration_connections",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.integration_sync_logs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 228,
+          "name": "integration_sync_logs",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.job_executions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 229,
+          "name": "job_executions",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.object_permissions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 230,
+          "name": "object_permissions",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.queue_jobs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 231,
+          "name": "queue_jobs",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.role_permissions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 232,
+          "name": "role_permissions",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.saved_filters",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 233,
+          "name": "saved_filters",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.security_events",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 234,
+          "name": "security_events",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.sla_timers",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 235,
+          "name": "sla_timers",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.state_history",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 236,
+          "name": "state_history",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.user_preferences",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 237,
+          "name": "user_preferences",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.user_roles",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 238,
+          "name": "user_roles",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.users_profile",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 239,
+          "name": "users_profile",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.validations_log",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 240,
+          "name": "validations_log",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.webhook_deliveries",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 241,
+          "name": "webhook_deliveries",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.webhook_endpoints",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 242,
+          "name": "webhook_endpoints",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.workflow_instances",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 243,
+          "name": "workflow_instances",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.workflow_step_executions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 244,
+          "name": "workflow_step_executions",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.workflow_steps",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 245,
+          "name": "workflow_steps",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "governance.workflows",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 246,
+          "name": "workflows",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "intelligence.agent_jobs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 247,
+          "name": "agent_jobs",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "intelligence.agent_registry",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 248,
+          "name": "agent_registry",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "intelligence.ai_insights",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 249,
+          "name": "ai_insights",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "intelligence.anomaly_cases",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 250,
+          "name": "anomaly_cases",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "intelligence.anomaly_feedback",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 251,
+          "name": "anomaly_feedback",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "intelligence.decision_recommendations",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 252,
+          "name": "decision_recommendations",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "intelligence.forecast_models",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 253,
+          "name": "forecast_models",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "intelligence.model_executions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 254,
+          "name": "model_executions",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "intelligence.model_registry",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 255,
+          "name": "model_registry",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "intelligence.quality_scores",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 256,
+          "name": "quality_scores",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "intelligence.recommendation_feedback",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 257,
+          "name": "recommendation_feedback",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "intelligence.seasonality_patterns",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 258,
+          "name": "seasonality_patterns",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "intelligence.trend_signals",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 259,
+          "name": "trend_signals",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "inventory.barcode_scans",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 260,
+          "name": "barcode_scans",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "inventory.inventory",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 261,
+          "name": "inventory",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "inventory.inventory_issues",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 262,
+          "name": "inventory_issues",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "inventory.inventory_movements",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 263,
+          "name": "inventory_movements",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "inventory.inventory_receipts",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 264,
+          "name": "inventory_receipts",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "inventory.inventory_reservations",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 265,
+          "name": "inventory_reservations",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "inventory.inventory_transfers",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 266,
+          "name": "inventory_transfers",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "inventory.manufacturing_batches",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 267,
+          "name": "manufacturing_batches",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "inventory.material_categories",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 268,
+          "name": "material_categories",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "inventory.material_lots",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 269,
+          "name": "material_lots",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "inventory.material_request_lines",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 270,
+          "name": "material_request_lines",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "inventory.material_requests",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 271,
+          "name": "material_requests",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "inventory.materials",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 272,
+          "name": "materials",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "inventory.shortage_snapshots",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 273,
+          "name": "shortage_snapshots",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "inventory.stock_count_lines",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 274,
+          "name": "stock_count_lines",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "inventory.stock_counts",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 275,
+          "name": "stock_counts",
+          "domain": "inventory"
+        }
+      ]
+    },
+    {
+      "table": "maintenance.assets",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 276,
+          "name": "assets",
+          "domain": "service"
+        }
+      ]
+    },
+    {
+      "table": "maintenance.work_orders",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 277,
+          "name": "work_orders",
+          "domain": "service"
+        }
+      ]
+    },
+    {
+      "table": "orchestration.job_queue",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 278,
+          "name": "job_queue",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "orchestration.notifications",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 279,
+          "name": "notifications",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "orchestration.universal_inbox",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 280,
+          "name": "universal_inbox",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "orchestration.workflow_definitions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 281,
+          "name": "workflow_definitions",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "orchestration.workflow_runs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 282,
+          "name": "workflow_runs",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "orchestration.workflow_step_runs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 283,
+          "name": "workflow_step_runs",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "orchestration.workflow_steps",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 284,
+          "name": "workflow_steps",
+          "domain": "ai_automation"
+        }
+      ]
+    },
+    {
+      "table": "planning.capacity_calendars",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 285,
+          "name": "capacity_calendars",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "planning.capacity_slots",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 286,
+          "name": "capacity_slots",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "planning.demand_forecasts",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 287,
+          "name": "demand_forecasts",
+          "domain": "projects"
+        }
+      ]
+    },
+    {
+      "table": "pricing.calculations",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 288,
+          "name": "calculations",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "pricing.rule_sets",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 289,
+          "name": "rule_sets",
+          "domain": "sales"
+        }
+      ]
+    },
+    {
+      "table": "procurement.approval_steps",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 290,
+          "name": "approval_steps",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "procurement.approvals",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 291,
+          "name": "approvals",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "procurement.contract_milestones",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 292,
+          "name": "contract_milestones",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "procurement.contracts",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 293,
+          "name": "contracts",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "procurement.purchase_order_lines",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 294,
+          "name": "purchase_order_lines",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "procurement.returns",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 295,
+          "name": "returns",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "procurement.rfq_comparison_snapshots",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 296,
+          "name": "rfq_comparison_snapshots",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "procurement.rfq_items",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 297,
+          "name": "rfq_items",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "procurement.rfq_supplier_invites",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 298,
+          "name": "rfq_supplier_invites",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "procurement.rfqs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 299,
+          "name": "rfqs",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "procurement.supplier_invoices",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 300,
+          "name": "supplier_invoices",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "procurement.supplier_portal_accounts",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 301,
+          "name": "supplier_portal_accounts",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "procurement.supplier_quote_lines",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 302,
+          "name": "supplier_quote_lines",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "procurement.supplier_quotes",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 303,
+          "name": "supplier_quotes",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "procurement.supplier_scorecards",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 304,
+          "name": "supplier_scorecards",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "procurement.warranty_cases",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 305,
+          "name": "warranty_cases",
+          "domain": "procurement"
+        }
+      ]
+    },
+    {
+      "table": "public.app_menu",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 306,
+          "name": "app_menu",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "public.customers",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 307,
+          "name": "customers",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "public.employees",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 308,
+          "name": "employees",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "public.inventory_items",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 309,
+          "name": "inventory_items",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "public.orders",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 310,
+          "name": "orders",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "public.properties",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 311,
+          "name": "properties",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "public.suppliers",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 312,
+          "name": "suppliers",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "public.user_profiles",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 313,
+          "name": "user_profiles",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "quality.defects",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 314,
+          "name": "defects",
+          "domain": "production"
+        }
+      ]
+    },
+    {
+      "table": "quality.inspection_plans",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 315,
+          "name": "inspection_plans",
+          "domain": "production"
+        }
+      ]
+    },
+    {
+      "table": "quality.inspection_runs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 316,
+          "name": "inspection_runs",
+          "domain": "production"
+        }
+      ]
+    },
+    {
+      "table": "routing.menu_nodes",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 317,
+          "name": "menu_nodes",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "routing.route_permission_map",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 318,
+          "name": "route_permission_map",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "routing.route_registry",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 319,
+          "name": "route_registry",
+          "domain": "governance"
+        }
+      ]
+    },
+    {
+      "table": "service.ticket_comments",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 320,
+          "name": "ticket_comments",
+          "domain": "service"
+        }
+      ]
+    },
+    {
+      "table": "service.tickets",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 321,
+          "name": "tickets",
+          "domain": "service"
+        }
+      ]
+    },
+    {
+      "table": "treasury.bank_accounts",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 322,
+          "name": "bank_accounts",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "treasury.cash_forecasts",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 323,
+          "name": "cash_forecasts",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "treasury.cash_positions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 324,
+          "name": "cash_positions",
+          "domain": "finance"
+        }
+      ]
+    },
+    {
+      "table": "workforce.attendance",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 325,
+          "name": "attendance",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "workforce.employee_expenses",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 326,
+          "name": "employee_expenses",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "workforce.employee_pay_components",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 327,
+          "name": "employee_pay_components",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "workforce.employees",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 328,
+          "name": "employees",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "workforce.employers",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 329,
+          "name": "employers",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "workforce.hr_profiles",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 330,
+          "name": "hr_profiles",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "workforce.leave_requests",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 331,
+          "name": "leave_requests",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "workforce.leave_types",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 332,
+          "name": "leave_types",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "workforce.pay_components",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 333,
+          "name": "pay_components",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "workforce.payroll_entries",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 334,
+          "name": "payroll_entries",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "workforce.payroll_exceptions",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 335,
+          "name": "payroll_exceptions",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "workforce.payroll_export_batches",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 336,
+          "name": "payroll_export_batches",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "workforce.payroll_runs",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 337,
+          "name": "payroll_runs",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "workforce.pension_records",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 338,
+          "name": "pension_records",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "workforce.shifts",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 339,
+          "name": "shifts",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "workforce.wage_slips",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 340,
+          "name": "wage_slips",
+          "domain": "hr_workforce"
+        }
+      ]
+    },
+    {
+      "table": "workforce.workforce_assignments",
+      "count": 1,
+      "entries": [
+        {
+          "idx": 341,
+          "name": "workforce_assignments",
+          "domain": "hr_workforce"
+        }
+      ]
+    }
+  ],
+  "fkIn": [
+    [
+      "governance.roles",
+      4
+    ],
+    [
+      "governance.permissions",
+      2
+    ],
+    [
+      "governance.users_profile",
+      123
+    ],
+    [
+      "governance.domain_events",
+      2
+    ],
+    [
+      "governance.event_subscriptions",
+      1
+    ],
+    [
+      "governance.workflows",
+      2
+    ],
+    [
+      "governance.workflow_instances",
+      1
+    ],
+    [
+      "governance.workflow_steps",
+      1
+    ],
+    [
+      "commercial.pipeline_stages",
+      1
+    ],
+    [
+      "commercial.customers",
+      17
+    ],
+    [
+      "commercial.leads",
+      3
+    ],
+    [
+      "commercial.opportunities",
+      1
+    ],
+    [
+      "commercial.quotes",
+      5
+    ],
+    [
+      "commercial.pricing_snapshots",
+      1
+    ],
+    [
+      "procurement.suppliers",
+      19
+    ],
+    [
+      "procurement.rfqs",
+      5
+    ],
+    [
+      "procurement.supplier_quotes",
+      1
+    ],
+    [
+      "procurement.rfq_items",
+      1
+    ],
+    [
+      "procurement.contracts",
+      3
+    ],
+    [
+      "procurement.purchase_orders",
+      6
+    ],
+    [
+      "procurement.supplier_quote_lines",
+      1
+    ],
+    [
+      "execution.projects",
+      24
+    ],
+    [
+      "execution.project_phases",
+      1
+    ],
+    [
+      "execution.work_orders",
+      16
+    ],
+    [
+      "execution.tasks",
+      4
+    ],
+    [
+      "execution.logistics_orders",
+      1
+    ],
+    [
+      "inventory.material_categories",
+      2
+    ],
+    [
+      "inventory.materials",
+      13
+    ],
+    [
+      "inventory.warehouses",
+      11
+    ],
+    [
+      "procurement.purchase_order_lines",
+      1
+    ],
+    [
+      "inventory.stock_counts",
+      1
+    ],
+    [
+      "inventory.material_requests",
+      1
+    ],
+    [
+      "workforce.employers",
+      2
+    ],
+    [
+      "workforce.employees",
+      13
+    ],
+    [
+      "workforce.payroll_runs",
+      3
+    ],
+    [
+      "workforce.payroll_entries",
+      2
+    ],
+    [
+      "finance.invoices",
+      7
+    ],
+    [
+      "finance.payments",
+      3
+    ],
+    [
+      "finance.bank_files",
+      2
+    ],
+    [
+      "docs.documents",
+      16
+    ],
+    [
+      "comms.portal_users",
+      7
+    ],
+    [
+      "comms.comms_threads",
+      3
+    ],
+    [
+      "execution.alerts",
+      1
+    ],
+    [
+      "execution.project_risks",
+      1
+    ],
+    [
+      "governance.webhook_endpoints",
+      1
+    ],
+    [
+      "governance.integration_connections",
+      1
+    ],
+    [
+      "governance.feature_flags",
+      1
+    ],
+    [
+      "analytics.dashboard_definitions",
+      1
+    ],
+    [
+      "governance.queue_jobs",
+      1
+    ],
+    [
+      "governance.audit_logs",
+      1
+    ],
+    [
+      "intelligence.anomaly_cases",
+      1
+    ],
+    [
+      "commercial.lead_tags",
+      1
+    ],
+    [
+      "procurement.approvals",
+      1
+    ],
+    [
+      "inventory.material_lots",
+      1
+    ],
+    [
+      "execution.work_order_qa_checklists",
+      1
+    ],
+    [
+      "finance.dunning_campaigns",
+      1
+    ],
+    [
+      "finance.collection_cases",
+      1
+    ],
+    [
+      "workforce.pay_components",
+      1
+    ],
+    [
+      "workforce.leave_types",
+      1
+    ],
+    [
+      "intelligence.model_registry",
+      1
+    ],
+    [
+      "intelligence.decision_recommendations",
+      1
+    ],
+    [
+      "comms.notifications",
+      1
+    ],
+    [
+      "comms.support_tickets",
+      1
+    ],
+    [
+      "public.app_menu",
+      1
+    ],
+    [
+      "analytics.dashboard_boards",
+      2
+    ],
+    [
+      "analytics.dashboard_widgets",
+      1
+    ],
+    [
+      "intelligence.agent_registry",
+      1
+    ],
+    [
+      "orchestration.workflow_definitions",
+      2
+    ],
+    [
+      "orchestration.workflow_runs",
+      2
+    ],
+    [
+      "orchestration.workflow_steps",
+      1
+    ],
+    [
+      "crm.leads",
+      2
+    ],
+    [
+      "service.tickets",
+      1
+    ],
+    [
+      "quality.inspection_plans",
+      1
+    ],
+    [
+      "quality.inspection_runs",
+      1
+    ],
+    [
+      "compliance.policies",
+      1
+    ],
+    [
+      "treasury.bank_accounts",
+      2
+    ],
+    [
+      "planning.capacity_calendars",
+      1
+    ],
+    [
+      "maintenance.assets",
+      1
+    ],
+    [
+      "pricing.rule_sets",
+      1
+    ],
+    [
+      "routing.route_registry",
+      2
+    ],
+    [
+      "routing.menu_nodes",
+      1
+    ],
+    [
+      "documents.extraction_runs",
+      1
+    ],
+    [
+      "auth.users",
+      1
+    ],
+    [
+      "public.suppliers",
+      1
+    ],
+    [
+      "public.customers",
+      1
+    ]
+  ]
+}

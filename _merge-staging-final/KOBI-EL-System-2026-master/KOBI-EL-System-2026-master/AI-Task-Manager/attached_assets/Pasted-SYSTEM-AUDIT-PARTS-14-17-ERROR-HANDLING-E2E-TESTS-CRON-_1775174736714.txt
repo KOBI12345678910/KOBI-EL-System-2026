@@ -1,0 +1,13 @@
+SYSTEM AUDIT PARTS 14-17: ERROR HANDLING + E2E TESTS + CRON JOBS + FINAL CHECKLIST
+
+PART 14 ERROR HANDLING: Top-level ErrorBoundary + per-section ErrorBoundaries, show Hebrew error + "רענן את הדף" button, no stack traces to user. API errors: network->Hebrew+retry, 400->field validation, 401->redirect /login, 403->forbidden page, 404->Hebrew not found, 500->Hebrew server error. Never show: raw stack traces, English errors, "undefined"/"null"/[object Object]. Forms preserve data on error. Use safe navigation: customer?.name ?? "לקוח לא ידוע".
+
+PART 15 E2E TESTS - Run complete flow: 
+SCENARIO 1 - Customer+Quote+WO+Invoice+Payment: Login as admin -> Dashboard KPIs show real numbers -> Create customer -> Create quote with 3 line items (VAT calc real-time) -> Send quote -> Accept -> Create WO from quote (pre-filled) -> Change WO status PENDING->IN_PRODUCTION->QUALITY_CHECK->READY->DELIVERED -> Create invoice (pre-filled, sequential number) -> Record payment -> invoice PAID, customer balance=0 -> Revenue report shows payment.
+SCENARIO 2 - Employee+Shift+Attendance+Payroll: Create employee (EMP-XXX) -> Assign shift -> Clock-in terminal shows employee -> Clock-out calculates hours -> Payroll runs overtime 125%/150% -> Payslip PDF downloads.
+
+PART 16 CRON JOBS: Register crons for daily backup (02:00), payment reminders (09:00), low stock check (6h), employee alerts (08:00), daily report (18:30), morning briefing (07:00), session cleanup (03:00), notification cleanup (03:30). All in Asia/Jerusalem timezone. Log started/completed/error. Manual triggers: POST /api/admin/run-backup, run-payment-reminders, run-daily-report.
+
+PART 17 FINAL - ZERO BROKEN: Every route renders real page, every sidebar link works, every breadcrumb clickable, every back button works, every form submits, every API returns correct codes, all KPIs show real data, all money in agorot with ₪, all dates DD/MM/YYYY. 
+
+Generate final report: { pagesFixed, buttonsFixed, apiEndpointsCreated, bugsFixed, formFieldsAdded, dataFlowsFixed, systemStatus: "PRODUCTION_READY" }

@@ -1,0 +1,243 @@
+import { callLLM } from "../llm/client";
+import { fillPrompt, ERROR_FIX_PROMPT } from "../llm/prompts";
+import { extractJSON, extractTextContent } from "../llm/parser";
+import { FileTool } from "../tools/fileTool";
+import { TerminalTool } from "../tools/terminalTool";
+import { AgentMemory } from "./memory";
+
+export interface ErrorFix {
+  analysis: string;
+  fix: {
+    type: "edit_file" | "run_command" | "install_package" | "create_file";
+    details: any;
+  };
+  explanation: string;
+}
+
+export class ErrorHandler {
+  private fileTool: FileTool;
+  private terminal: TerminalTool;
+  private memory: AgentMemory;
+  private onLog: (msg: string) => void;
+
+  constructor(
+    workspaceDir: string,
+    memory: AgentMemory,
+    onLog: (msg: string) => void
+  ) {
+    this.fileTool = new FileTool(workspaceDir);
+    this.terminal = new TerminalTool(workspaceDir);
+    this.memory = memory;
+    this.onLog = onLog;
+  }
+
+  async analyzeAndFix(params: {
+    error: string;
+    command?: string;
+    filePath?: string;
+    stepDescription: string;
+    taskId: string;
+    attempt: number;
+  }): Promise<{ success: boolean; output: string }> {
+    this.onLog(`\n🔧 Error Handler (attempt ${params.attempt}):`);
+    this.onLog(`  Error: ${params.error.slice(0, 300)}`);
+
+    // Try common auto-fixes first
+    const quickFix = this.tryQuickFix(params.error);
+    if (quickFix) {
+      this.onLog(`  ⚡ Quick fix: ${quickFix.description}`);
+      const result = await this.applyQuickFix(quickFix);
+      if (result.success) return result;
+    }
+
+    // Get file content if relevant
+    let fileContent = "";
+    if (params.filePath) {
+      const readResult = this.fileTool.readFile(params.filePath);
+      if (readResult.success) fileContent = readResult.output || "";
+    }
+
+    // Ask LLM for fix
+    const context = this.memory.getProjectContext();
+    const response = await callLLM({
+      system: "You are an expert debugger. Analyze errors and provide precise fixes.",
+      messages: [
+        {
+          role: "user",
+          content: fillPrompt(ERROR_FIX_PROMPT, {
+            FILE_CONTENT: fileContent || "N/A",
+            ERROR: params.error,
+            COMMAND: params.command || "N/A",
+            CONTEXT: context,
+          }),
+        },
+      ],
+    });
+
+    const text = extractTextContent(response.content);
+    const fix = extractJSON(text) as ErrorFix | null;
+
+    if (!fix || !fix.fix) {
+      this.onLog("  ❌ Could not determine fix");
+      return { success: false, output: "No fix found" };
+    }
+
+    this.onLog(`  📋 Analysis: ${fix.analysis}`);
+    this.onLog(`  💡 Fix: ${fix.explanation}`);
+
+    // Apply the fix
+    return this.applyFix(fix, params.taskId);
+  }
+
+  private tryQuickFix(
+    error: string
+  ): { type: string; command?: string; description: string } | null {
+    const lowerError = error.toLowerCase();
+
+    // Missing module
+    if (lowerError.includes("cannot find module") || lowerError.includes("module not found")) {
+      const moduleMatch = error.match(/Cannot find module '([^']+)'/);
+      if (moduleMatch) {
+        const mod = moduleMatch[1].startsWith(".")
+          ? null
+          : moduleMatch[1].split("/")[0];
+        if (mod) {
+          return {
+            type: "install",
+            command: `npm install ${mod}`,
+            description: `Install missing module: ${mod}`,
+          };
+        }
+      }
+    }
+
+    // TypeScript errors
+    if (lowerError.includes("ts") && lowerError.includes("type")) {
+      if (lowerError.includes("@types/")) {
+        const typeMatch = error.match(/@types\/([^\s'"]+)/);
+        if (typeMatch) {
+          return {
+            type: "install",
+            command: `npm install -D @types/${typeMatch[1]}`,
+            description: `Install types: @types/${typeMatch[1]}`,
+          };
+        }
+      }
+    }
+
+    // Permission denied
+    if (lowerError.includes("permission denied") || lowerError.includes("eacces")) {
+      return {
+        type: "command",
+        command: "chmod -R 755 .",
+        description: "Fix file permissions",
+      };
+    }
+
+    // Port in use
+    if (lowerError.includes("eaddrinuse") || lowerError.includes("address already in use")) {
+      const portMatch = error.match(/port\s*:?\s*(\d+)/i) || error.match(/:(\d+)/);
+      if (portMatch) {
+        return {
+          type: "command",
+          command: `kill -9 $(lsof -t -i:${portMatch[1]}) 2>/dev/null; echo "Port freed"`,
+          description: `Kill process on port ${portMatch[1]}`,
+        };
+      }
+    }
+
+    // Node modules issues
+    if (lowerError.includes("node_modules") || lowerError.includes("peer dep")) {
+      return {
+        type: "command",
+        command: "rm -rf node_modules package-lock.json && npm install",
+        description: "Clean reinstall node_modules",
+      };
+    }
+
+    // Python venv
+    if (lowerError.includes("no module named") && lowerError.includes("python")) {
+      const modMatch = error.match(/No module named '([^']+)'/);
+      if (modMatch) {
+        return {
+          type: "command",
+          command: `pip install ${modMatch[1]}`,
+          description: `Install Python module: ${modMatch[1]}`,
+        };
+      }
+    }
+
+    return null;
+  }
+
+  private async applyQuickFix(fix: {
+    type: string;
+    command?: string;
+    description: string;
+  }): Promise<{ success: boolean; output: string }> {
+    if (fix.command) {
+      const result = await this.terminal.execute(fix.command, { timeout: 120000 });
+      return {
+        success: result.success,
+        output: result.stdout + result.stderr,
+      };
+    }
+    return { success: false, output: "No command to run" };
+  }
+
+  private async applyFix(
+    fix: ErrorFix,
+    taskId: string
+  ): Promise<{ success: boolean; output: string }> {
+    switch (fix.fix.type) {
+      case "edit_file": {
+        const result = this.fileTool.editFile(
+          fix.fix.details.path,
+          fix.fix.details.changes
+        );
+        this.memory.addError(
+          taskId,
+          0,
+          fix.analysis,
+          fix.explanation
+        );
+        return {
+          success: result.success,
+          output: result.output || result.error || "",
+        };
+      }
+      case "run_command": {
+        const result = await this.terminal.execute(fix.fix.details.command, {
+          timeout: 120000,
+        });
+        return {
+          success: result.success,
+          output: result.stdout + result.stderr,
+        };
+      }
+      case "install_package": {
+        const packages = fix.fix.details.packages || [fix.fix.details.package];
+        const result = await this.terminal.execute(
+          `npm install ${fix.fix.details.dev ? "-D" : ""} ${packages.join(" ")}`,
+          { timeout: 120000 }
+        );
+        return {
+          success: result.success,
+          output: result.stdout + result.stderr,
+        };
+      }
+      case "create_file": {
+        const result = this.fileTool.createFile(
+          fix.fix.details.path,
+          fix.fix.details.content
+        );
+        return {
+          success: result.success,
+          output: result.output || result.error || "",
+        };
+      }
+      default:
+        return { success: false, output: `Unknown fix type: ${fix.fix.type}` };
+    }
+  }
+}

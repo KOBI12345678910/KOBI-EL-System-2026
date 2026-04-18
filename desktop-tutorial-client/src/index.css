@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Heebo', sans-serif;
+  direction: rtl;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+}

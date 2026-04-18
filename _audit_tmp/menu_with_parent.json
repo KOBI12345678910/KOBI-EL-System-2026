@@ -1,0 +1,7262 @@
+[
+  {
+    "file": "00017_app_menu.sql",
+    "route": "/customers",
+    "parent": 1,
+    "order": 1
+  },
+  {
+    "file": "00017_app_menu.sql",
+    "route": "/projects",
+    "parent": 1,
+    "order": 2
+  },
+  {
+    "file": "00017_app_menu.sql",
+    "route": "/work-orders",
+    "parent": 1,
+    "order": 3
+  },
+  {
+    "file": "00017_app_menu.sql",
+    "route": "/suppliers",
+    "parent": 2,
+    "order": 1
+  },
+  {
+    "file": "00017_app_menu.sql",
+    "route": "/rfqs",
+    "parent": 2,
+    "order": 2
+  },
+  {
+    "file": "00017_app_menu.sql",
+    "route": "/pos",
+    "parent": 2,
+    "order": 3
+  },
+  {
+    "file": "00017_app_menu.sql",
+    "route": "/employees",
+    "parent": 3,
+    "order": 1
+  },
+  {
+    "file": "00017_app_menu.sql",
+    "route": "/payroll",
+    "parent": 3,
+    "order": 2
+  },
+  {
+    "file": "00017_app_menu.sql",
+    "route": "/attendance",
+    "parent": 3,
+    "order": 3
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/executive",
+    "parent": 1,
+    "order": 1
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/operations",
+    "parent": 1,
+    "order": 2
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/procurement-room",
+    "parent": 1,
+    "order": 3
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/workforce-room",
+    "parent": 1,
+    "order": 4
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/ai-room",
+    "parent": 1,
+    "order": 5
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/command-center",
+    "parent": 1,
+    "order": 6
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/kpi",
+    "parent": 1,
+    "order": 7
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/leads",
+    "parent": 2,
+    "order": 1
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/customers",
+    "parent": 2,
+    "order": 2
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/customer-360",
+    "parent": 2,
+    "order": 3
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/quotes",
+    "parent": 2,
+    "order": 4
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/contracts",
+    "parent": 2,
+    "order": 5
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/customer-portal",
+    "parent": 2,
+    "order": 6
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/crm-pipeline",
+    "parent": 2,
+    "order": 7
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/sales-funnel",
+    "parent": 2,
+    "order": 8
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/sales-leaders",
+    "parent": 2,
+    "order": 9
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/suppliers",
+    "parent": 3,
+    "order": 1
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/supplier-360",
+    "parent": 3,
+    "order": 2
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/rfq-360",
+    "parent": 3,
+    "order": 4
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/po-360",
+    "parent": 3,
+    "order": 6
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/approvals",
+    "parent": 3,
+    "order": 7
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/supplier-portal",
+    "parent": 3,
+    "order": 8
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/subcontractors",
+    "parent": 3,
+    "order": 9
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/procurement-analytics",
+    "parent": 3,
+    "order": 10
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/projects",
+    "parent": 4,
+    "order": 1
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/project-360",
+    "parent": 4,
+    "order": 2
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/work-orders",
+    "parent": 4,
+    "order": 3
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/work-order-360",
+    "parent": 4,
+    "order": 4
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/tasks",
+    "parent": 4,
+    "order": 5
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/kanban",
+    "parent": 4,
+    "order": 6
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/gantt",
+    "parent": 4,
+    "order": 7
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/production-floor",
+    "parent": 4,
+    "order": 8
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/quality-control",
+    "parent": 4,
+    "order": 9
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/installations",
+    "parent": 4,
+    "order": 10
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/materials",
+    "parent": 5,
+    "order": 1
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/warehouses",
+    "parent": 5,
+    "order": 2
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/movements",
+    "parent": 5,
+    "order": 3
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/receipts",
+    "parent": 5,
+    "order": 4
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/issues",
+    "parent": 5,
+    "order": 5
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/stock-counts",
+    "parent": 5,
+    "order": 6
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/inventory-alerts",
+    "parent": 5,
+    "order": 7
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/bom",
+    "parent": 5,
+    "order": 8
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/finance-360",
+    "parent": 6,
+    "order": 1
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/invoices",
+    "parent": 6,
+    "order": 2
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/payments",
+    "parent": 6,
+    "order": 3
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/receipts-finance",
+    "parent": 6,
+    "order": 4
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/expenses",
+    "parent": 6,
+    "order": 5
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/bank-reconciliation",
+    "parent": 6,
+    "order": 6
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/cashflow",
+    "parent": 6,
+    "order": 7
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/cashflow-forecast",
+    "parent": 6,
+    "order": 8
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/balance-sheet",
+    "parent": 6,
+    "order": 10
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/treasury",
+    "parent": 6,
+    "order": 11
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/collections",
+    "parent": 6,
+    "order": 12
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/vat-refund",
+    "parent": 7,
+    "order": 2
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/annual-tax",
+    "parent": 7,
+    "order": 3
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/form-102",
+    "parent": 7,
+    "order": 4
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/form-126",
+    "parent": 7,
+    "order": 5
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/form-1301",
+    "parent": 7,
+    "order": 6
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/form-30a",
+    "parent": 7,
+    "order": 7
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/form-6111",
+    "parent": 7,
+    "order": 8
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/betterment-tax",
+    "parent": 7,
+    "order": 9
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/tax-exports",
+    "parent": 7,
+    "order": 10
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/employees",
+    "parent": 8,
+    "order": 1
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/employee-360",
+    "parent": 8,
+    "order": 2
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/attendance",
+    "parent": 8,
+    "order": 3
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/clock-in",
+    "parent": 8,
+    "order": 4
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/leave",
+    "parent": 8,
+    "order": 5
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/payroll-compute",
+    "parent": 8,
+    "order": 6
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/wage-slips",
+    "parent": 8,
+    "order": 7
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/pension",
+    "parent": 8,
+    "order": 8
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/social-security",
+    "parent": 8,
+    "order": 9
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/benefits",
+    "parent": 8,
+    "order": 10
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/employee-expenses",
+    "parent": 8,
+    "order": 11
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/live-map",
+    "parent": 8,
+    "order": 12
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/properties",
+    "parent": 9,
+    "order": 1
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/leases",
+    "parent": 9,
+    "order": 2
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/rent-collection",
+    "parent": 9,
+    "order": 3
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/tenants",
+    "parent": 9,
+    "order": 4
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/tenant-portal",
+    "parent": 9,
+    "order": 5
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/arnona",
+    "parent": 9,
+    "order": 6
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/building-permits",
+    "parent": 9,
+    "order": 7
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/mortgage",
+    "parent": 9,
+    "order": 8
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/roi-calculator",
+    "parent": 9,
+    "order": 9
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/all-documents",
+    "parent": 10,
+    "order": 1
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/upload",
+    "parent": 10,
+    "order": 2
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/contract-generator",
+    "parent": 10,
+    "order": 3
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/esign",
+    "parent": 10,
+    "order": 4
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/ocr",
+    "parent": 10,
+    "order": 5
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/templates",
+    "parent": 10,
+    "order": 6
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/clause-library",
+    "parent": 10,
+    "order": 7
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/ai-kobi",
+    "parent": 11,
+    "order": 1
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/ai-uzi",
+    "parent": 11,
+    "order": 2
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/nlq",
+    "parent": 11,
+    "order": 3
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/recommendations",
+    "parent": 11,
+    "order": 4
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/anomalies",
+    "parent": 11,
+    "order": 5
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/revenue-forecast",
+    "parent": 11,
+    "order": 6
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/brain",
+    "parent": 11,
+    "order": 7
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/bi",
+    "parent": 11,
+    "order": 8
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/live",
+    "parent": 11,
+    "order": 9
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/formula-builder",
+    "parent": 11,
+    "order": 10
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/inbox",
+    "parent": 12,
+    "order": 1
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/notifications",
+    "parent": 12,
+    "order": 2
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/tickets",
+    "parent": 12,
+    "order": 3
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/events",
+    "parent": 12,
+    "order": 4
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/audit",
+    "parent": 12,
+    "order": 5
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/users",
+    "parent": 12,
+    "order": 6
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/roles",
+    "parent": 12,
+    "order": 7
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/feature-flags",
+    "parent": 12,
+    "order": 8
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/integrations",
+    "parent": 12,
+    "order": 9
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/webhooks",
+    "parent": 12,
+    "order": 10
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/cron",
+    "parent": 12,
+    "order": 11
+  },
+  {
+    "file": "00034_app_menu_complete.sql",
+    "route": "/settings",
+    "parent": 12,
+    "order": 12
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/executive",
+    "parent": 1,
+    "order": 1
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/operations",
+    "parent": 1,
+    "order": 2
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/procurement-room",
+    "parent": 1,
+    "order": 3
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/workforce-room",
+    "parent": 1,
+    "order": 4
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/ai-room",
+    "parent": 1,
+    "order": 5
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/command-center",
+    "parent": 1,
+    "order": 6
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/treasury-room",
+    "parent": 1,
+    "order": 7
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/quality-room",
+    "parent": 1,
+    "order": 8
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/service-room",
+    "parent": 1,
+    "order": 9
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/maintenance-room",
+    "parent": 1,
+    "order": 10
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/planning-room",
+    "parent": 1,
+    "order": 11
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/crm-room",
+    "parent": 1,
+    "order": 12
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/finance-room",
+    "parent": 1,
+    "order": 13
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/kpi",
+    "parent": 1,
+    "order": 14
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/inbox",
+    "parent": 1,
+    "order": 15
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/sales/account-assignment",
+    "parent": 2,
+    "order": 1
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/sales/commission",
+    "parent": 2,
+    "order": 2
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/sales/competitor-tracker",
+    "parent": 2,
+    "order": 3
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/sales/lead-scoring",
+    "parent": 2,
+    "order": 4
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/sales/leaderboard",
+    "parent": 2,
+    "order": 5
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/sales/opportunity-stages",
+    "parent": 2,
+    "order": 6
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/sales/playbook-engine",
+    "parent": 2,
+    "order": 7
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/sales/quote-builder",
+    "parent": 2,
+    "order": 8
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/sales/sales-forecast",
+    "parent": 2,
+    "order": 9
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/sales/target-tracker",
+    "parent": 2,
+    "order": 10
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/sales/territory-manager",
+    "parent": 2,
+    "order": 11
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/sales/upsell",
+    "parent": 2,
+    "order": 12
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/sales/win-loss",
+    "parent": 2,
+    "order": 13
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/customer/advocacy",
+    "parent": 2,
+    "order": 14
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/customer/churn-prevention",
+    "parent": 2,
+    "order": 15
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/customer/comm-log",
+    "parent": 2,
+    "order": 16
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/customer/communication-log",
+    "parent": 2,
+    "order": 17
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/customer/csat",
+    "parent": 2,
+    "order": 18
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/customer/health-score",
+    "parent": 2,
+    "order": 19
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/customer/journey-map",
+    "parent": 2,
+    "order": 20
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/customer/journey-mapper",
+    "parent": 2,
+    "order": 21
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/customer/loyalty",
+    "parent": 2,
+    "order": 22
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/customer/loyalty-points",
+    "parent": 2,
+    "order": 23
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/customer/meeting-scheduler",
+    "parent": 2,
+    "order": 24
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/customer/nps",
+    "parent": 2,
+    "order": 25
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/customer/onboarding",
+    "parent": 2,
+    "order": 26
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/customer/qbr-generator",
+    "parent": 2,
+    "order": 27
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/customer/referral",
+    "parent": 2,
+    "order": 28
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/customer/segmentation",
+    "parent": 2,
+    "order": 29
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/customer/success-plan",
+    "parent": 2,
+    "order": 30
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/customer/voc",
+    "parent": 2,
+    "order": 31
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/crm/pipeline",
+    "parent": 2,
+    "order": 32
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/customer-portal/portal-engine",
+    "parent": 2,
+    "order": 33
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/rfq/rfq-engine",
+    "parent": 3,
+    "order": 1
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/po/approval-matrix",
+    "parent": 3,
+    "order": 2
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/approvals/approval-engine",
+    "parent": 3,
+    "order": 3
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/supplier-portal/portal-engine",
+    "parent": 3,
+    "order": 4
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/projects/pm-engine",
+    "parent": 4,
+    "order": 1
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/manufacturing/bom-manager",
+    "parent": 4,
+    "order": 2
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/manufacturing/capacity-planning",
+    "parent": 4,
+    "order": 3
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/manufacturing/drawing-vc",
+    "parent": 4,
+    "order": 4
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/manufacturing/heat-treat-log",
+    "parent": 4,
+    "order": 5
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/manufacturing/heat-treatment-log",
+    "parent": 4,
+    "order": 6
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/manufacturing/material-cert",
+    "parent": 4,
+    "order": 7
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/manufacturing/oee-tracker",
+    "parent": 4,
+    "order": 8
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/manufacturing/qc-checklist",
+    "parent": 4,
+    "order": 9
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/manufacturing/routing-manager",
+    "parent": 4,
+    "order": 10
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/manufacturing/scrap-tracker",
+    "parent": 4,
+    "order": 11
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/manufacturing/tool-tracker",
+    "parent": 4,
+    "order": 12
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/manufacturing/welder-certs",
+    "parent": 4,
+    "order": 13
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/manufacturing/wo-scheduler",
+    "parent": 4,
+    "order": 14
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/quality/capa-workflow",
+    "parent": 4,
+    "order": 15
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/quality/fai",
+    "parent": 4,
+    "order": 16
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/quality/ncr-tracker",
+    "parent": 4,
+    "order": 17
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/engineering/drawing-vc",
+    "parent": 4,
+    "order": 18
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/construction/progress-billing",
+    "parent": 4,
+    "order": 19
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/logistics/route-optimizer",
+    "parent": 4,
+    "order": 20
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/returns/rma",
+    "parent": 4,
+    "order": 21
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/warranty/warranty-tracker",
+    "parent": 4,
+    "order": 22
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/pipeline/domain-model",
+    "parent": 4,
+    "order": 23
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/pipeline/entity-map",
+    "parent": 4,
+    "order": 24
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/pipeline/ontology",
+    "parent": 4,
+    "order": 25
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/pipeline/orchestrator",
+    "parent": 4,
+    "order": 26
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/pipeline/pipeline-engine",
+    "parent": 4,
+    "order": 27
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/pipeline/state-enforcement",
+    "parent": 4,
+    "order": 28
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/pipeline/state-machines",
+    "parent": 4,
+    "order": 29
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/pipeline/wiring-spec",
+    "parent": 4,
+    "order": 30
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/pipeline/workflow-flows",
+    "parent": 4,
+    "order": 31
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/inventory/optimizer",
+    "parent": 5,
+    "order": 1
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/warehouse/wms",
+    "parent": 5,
+    "order": 2
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/assets/asset-manager",
+    "parent": 5,
+    "order": 3
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/finance/aging",
+    "parent": 6,
+    "order": 1
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/finance/aging-reports",
+    "parent": 6,
+    "order": 2
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/finance/bad-debt-provision",
+    "parent": 6,
+    "order": 3
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/finance/capital-projects",
+    "parent": 6,
+    "order": 4
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/finance/cashflow-forecast",
+    "parent": 6,
+    "order": 5
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/finance/check-register",
+    "parent": 6,
+    "order": 6
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/finance/credit-limits",
+    "parent": 6,
+    "order": 7
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/finance/debt-collection",
+    "parent": 6,
+    "order": 8
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/finance/deferred-revenue",
+    "parent": 6,
+    "order": 9
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/finance/fixed-assets",
+    "parent": 6,
+    "order": 10
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/finance/fx-hedging",
+    "parent": 6,
+    "order": 11
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/finance/ic-loans",
+    "parent": 6,
+    "order": 12
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/finance/signatory-workflow",
+    "parent": 6,
+    "order": 13
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/finance/treasury",
+    "parent": 6,
+    "order": 14
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/finance/wire-approval",
+    "parent": 6,
+    "order": 15
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/finance/wire-transfer",
+    "parent": 6,
+    "order": 16
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/finance/working-capital",
+    "parent": 6,
+    "order": 17
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/bank/bank-routes",
+    "parent": 6,
+    "order": 18
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/bank/matcher",
+    "parent": 6,
+    "order": 19
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/bank/multi-format-parser",
+    "parent": 6,
+    "order": 20
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/bank/parsers",
+    "parent": 6,
+    "order": 21
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/bank/reconciliation",
+    "parent": 6,
+    "order": 22
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/bank/smart-categorizer",
+    "parent": 6,
+    "order": 23
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/bank-files/masav-exporter",
+    "parent": 6,
+    "order": 24
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/payments/check-printer",
+    "parent": 6,
+    "order": 25
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/payments/deposit-slip",
+    "parent": 6,
+    "order": 26
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/payments/payment-run",
+    "parent": 6,
+    "order": 27
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/payments/qr-payment",
+    "parent": 6,
+    "order": 28
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/invoices/invoice-pdf-generator",
+    "parent": 6,
+    "order": 29
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/receipts/receipt-pdf-generator",
+    "parent": 6,
+    "order": 30
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/collections/dunning",
+    "parent": 6,
+    "order": 31
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/expenses/expense-manager",
+    "parent": 6,
+    "order": 32
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/budget/budget-planner",
+    "parent": 6,
+    "order": 33
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/cash/petty-cash",
+    "parent": 6,
+    "order": 34
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/gl/financial-statements",
+    "parent": 6,
+    "order": 35
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/gl/journal-entry",
+    "parent": 6,
+    "order": 36
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/costing/allocation-engine",
+    "parent": 6,
+    "order": 37
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/fx/fx-engine",
+    "parent": 6,
+    "order": 38
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/intercompany/ic-engine",
+    "parent": 6,
+    "order": 39
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/consolidation/consolidator",
+    "parent": 6,
+    "order": 40
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/tax/annual-tax-routes",
+    "parent": 7,
+    "order": 1
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/tax/betterment-tax",
+    "parent": 7,
+    "order": 2
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/tax/capital-gains",
+    "parent": 7,
+    "order": 3
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/tax/dividend-withholding",
+    "parent": 7,
+    "order": 4
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/tax/form-6111",
+    "parent": 7,
+    "order": 9
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/tax/form-builders",
+    "parent": 7,
+    "order": 11
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/tax/purchase-tax",
+    "parent": 7,
+    "order": 12
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/tax/transfer-pricing",
+    "parent": 7,
+    "order": 13
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/tax/vat-refund",
+    "parent": 7,
+    "order": 14
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/vat/pcn836",
+    "parent": 7,
+    "order": 15
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/vat/vat-routes",
+    "parent": 7,
+    "order": 16
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/tax-exports/_xml-common",
+    "parent": 7,
+    "order": 17
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/tax-exports/form-102-xml",
+    "parent": 7,
+    "order": 18
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/tax-exports/form-126-xml",
+    "parent": 7,
+    "order": 19
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/tax-exports/form-1301-xml",
+    "parent": 7,
+    "order": 20
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/tax-exports/form-1320-xml",
+    "parent": 7,
+    "order": 21
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/tax-exports/form-857-xml",
+    "parent": 7,
+    "order": 22
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/tax-exports/index",
+    "parent": 7,
+    "order": 23
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/tax-exports/shv-xml",
+    "parent": 7,
+    "order": 24
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/tax-exports/vat-rashut-hamisim-xml",
+    "parent": 7,
+    "order": 25
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/hr/360-feedback",
+    "parent": 8,
+    "order": 1
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/hr/analytics",
+    "parent": 8,
+    "order": 2
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/hr/ats",
+    "parent": 8,
+    "order": 3
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/hr/bonus-calc",
+    "parent": 8,
+    "order": 4
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/hr/cert-tracker",
+    "parent": 8,
+    "order": 5
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/hr/comp-planner",
+    "parent": 8,
+    "order": 6
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/hr/feedback-collection",
+    "parent": 8,
+    "order": 7
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/hr/grievance",
+    "parent": 8,
+    "order": 8
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/hr/handbook",
+    "parent": 8,
+    "order": 9
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/hr/interview-scheduling",
+    "parent": 8,
+    "order": 10
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/hr/offboarding",
+    "parent": 8,
+    "order": 11
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/hr/okr-tracker",
+    "parent": 8,
+    "order": 12
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/hr/onboarding",
+    "parent": 8,
+    "order": 13
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/hr/options-vesting",
+    "parent": 8,
+    "order": 14
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/hr/performance-review",
+    "parent": 8,
+    "order": 15
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/hr/skills-matrix",
+    "parent": 8,
+    "order": 16
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/hr/training-catalog",
+    "parent": 8,
+    "order": 17
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/payroll/payroll-routes",
+    "parent": 8,
+    "order": 18
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/payroll/pdf-generator",
+    "parent": 8,
+    "order": 19
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/payroll/wage-slip-calculator",
+    "parent": 8,
+    "order": 20
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/pension/section-14",
+    "parent": 8,
+    "order": 21
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/pension/severance-tracker",
+    "parent": 8,
+    "order": 22
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/time/time-tracking",
+    "parent": 8,
+    "order": 23
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/realestate/arnona-tracker",
+    "parent": 9,
+    "order": 1
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/realestate/broker-fees",
+    "parent": 9,
+    "order": 2
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/realestate/building-permit",
+    "parent": 9,
+    "order": 3
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/realestate/inspection",
+    "parent": 9,
+    "order": 4
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/realestate/lease-tracker",
+    "parent": 9,
+    "order": 5
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/realestate/maintenance",
+    "parent": 9,
+    "order": 6
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/realestate/mortgage-calc",
+    "parent": 9,
+    "order": 7
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/realestate/portfolio-dashboard",
+    "parent": 9,
+    "order": 8
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/realestate/property-manager",
+    "parent": 9,
+    "order": 9
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/realestate/rent-collection",
+    "parent": 9,
+    "order": 10
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/realestate/roi-calculator",
+    "parent": 9,
+    "order": 11
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/realestate/tenant-portal",
+    "parent": 9,
+    "order": 12
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/realestate/vacancy-tracker",
+    "parent": 9,
+    "order": 13
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/realestate/valuation",
+    "parent": 9,
+    "order": 14
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/comms/broadcast",
+    "parent": 10,
+    "order": 1
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/comms/bulletin-board",
+    "parent": 10,
+    "order": 2
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/comms/call-log",
+    "parent": 10,
+    "order": 3
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/comms/call-recording",
+    "parent": 10,
+    "order": 4
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/comms/email-templates",
+    "parent": 10,
+    "order": 5
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/comms/followup-engine",
+    "parent": 10,
+    "order": 6
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/comms/internal-chat",
+    "parent": 10,
+    "order": 7
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/comms/internal-wiki",
+    "parent": 10,
+    "order": 8
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/comms/life-events",
+    "parent": 10,
+    "order": 9
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/comms/meeting-notes",
+    "parent": 10,
+    "order": 10
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/comms/polls",
+    "parent": 10,
+    "order": 11
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/comms/reminders",
+    "parent": 10,
+    "order": 12
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/comms/sms-gateway",
+    "parent": 10,
+    "order": 13
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/comms/whatsapp",
+    "parent": 10,
+    "order": 14
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/comms/whatsapp-business",
+    "parent": 10,
+    "order": 15
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/emails/email-templates",
+    "parent": 10,
+    "order": 16
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/emails/send-email",
+    "parent": 10,
+    "order": 17
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/sms/send-sms",
+    "parent": 10,
+    "order": 18
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/sms/sms-templates",
+    "parent": 10,
+    "order": 19
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/whatsapp/send-whatsapp",
+    "parent": 10,
+    "order": 20
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/whatsapp/whatsapp-templates",
+    "parent": 10,
+    "order": 21
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/whatsapp/whatsapp-webhook",
+    "parent": 10,
+    "order": 22
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/notifications/notification-history",
+    "parent": 10,
+    "order": 23
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/notifications/notification-preferences",
+    "parent": 10,
+    "order": 24
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/notifications/notification-queue",
+    "parent": 10,
+    "order": 25
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/notifications/notification-routes",
+    "parent": 10,
+    "order": 26
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/notifications/notification-service",
+    "parent": 10,
+    "order": 27
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/notifications/notification-types",
+    "parent": 10,
+    "order": 28
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/notifications/preference-manager",
+    "parent": 10,
+    "order": 29
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/chatbot/engine",
+    "parent": 10,
+    "order": 30
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/documents/clause-library",
+    "parent": 11,
+    "order": 1
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/documents/doc-diff",
+    "parent": 11,
+    "order": 2
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/documents/doc-search",
+    "parent": 11,
+    "order": 3
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/documents/doc-version-control",
+    "parent": 11,
+    "order": 4
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/documents/esign",
+    "parent": 11,
+    "order": 5
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/documents/expiry-alerts",
+    "parent": 11,
+    "order": 6
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/documents/legal-hold",
+    "parent": 11,
+    "order": 7
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/documents/metadata-manager",
+    "parent": 11,
+    "order": 8
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/documents/ocr-pipeline",
+    "parent": 11,
+    "order": 9
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/documents/pdf-form-filler",
+    "parent": 11,
+    "order": 10
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/documents/redaction",
+    "parent": 11,
+    "order": 11
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/documents/retention-policy",
+    "parent": 11,
+    "order": 12
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/documents/templates",
+    "parent": 11,
+    "order": 13
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/documents/watermark",
+    "parent": 11,
+    "order": 14
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/docs/clause-library",
+    "parent": 11,
+    "order": 15
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/docs/doc-diff",
+    "parent": 11,
+    "order": 16
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/docs/doc-expiry",
+    "parent": 11,
+    "order": 17
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/docs/doc-search",
+    "parent": 11,
+    "order": 18
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/docs/doc-version-control",
+    "parent": 11,
+    "order": 19
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/docs/esignature",
+    "parent": 11,
+    "order": 20
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/docs/legal-hold-workflow",
+    "parent": 11,
+    "order": 21
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/docs/pdf-form-filler",
+    "parent": 11,
+    "order": 22
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/docs/redaction",
+    "parent": 11,
+    "order": 23
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/docs/watermark",
+    "parent": 11,
+    "order": 24
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/contracts/contract-manager",
+    "parent": 11,
+    "order": 25
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/contracts/esign",
+    "parent": 11,
+    "order": 26
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/ocr/invoice-ocr",
+    "parent": 11,
+    "order": 27
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/printing/ipp-client",
+    "parent": 11,
+    "order": 28
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/printing/print-queue",
+    "parent": 11,
+    "order": 29
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/printing/thermal-printer",
+    "parent": 11,
+    "order": 30
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/printing/zpl-printer",
+    "parent": 11,
+    "order": 31
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/scanners/barcode-scanner",
+    "parent": 11,
+    "order": 32
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/ai/summarizer",
+    "parent": 12,
+    "order": 1
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/ml/anomaly-detector",
+    "parent": 12,
+    "order": 2
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/ml/document-classifier",
+    "parent": 12,
+    "order": 3
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/analytics/cash-flow-predictor",
+    "parent": 12,
+    "order": 4
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/analytics/churn-predictor",
+    "parent": 12,
+    "order": 5
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/analytics/productivity",
+    "parent": 12,
+    "order": 6
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/analytics/vendor-scoring",
+    "parent": 12,
+    "order": 7
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/reporting/attribution",
+    "parent": 12,
+    "order": 8
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/reporting/balance-sheet",
+    "parent": 12,
+    "order": 9
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/reporting/benchmark",
+    "parent": 12,
+    "order": 10
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/reporting/board-deck",
+    "parent": 12,
+    "order": 11
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/reporting/budget-actual",
+    "parent": 12,
+    "order": 12
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/reporting/cac-dashboard",
+    "parent": 12,
+    "order": 13
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/reporting/cashflow-waterfall",
+    "parent": 12,
+    "order": 14
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/reporting/cohort-analysis",
+    "parent": 12,
+    "order": 15
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/reporting/executive-dashboard",
+    "parent": 12,
+    "order": 16
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/reporting/funnel",
+    "parent": 12,
+    "order": 17
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/reporting/kpi-scorecard",
+    "parent": 12,
+    "order": 18
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/reporting/ltv-calculator",
+    "parent": 12,
+    "order": 19
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/reporting/pnl-drilldown",
+    "parent": 12,
+    "order": 20
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/reporting/revenue-waterfall",
+    "parent": 12,
+    "order": 21
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/reporting/variance-analyzer",
+    "parent": 12,
+    "order": 22
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/reports/cash-flow-forecast",
+    "parent": 12,
+    "order": 23
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/reports/grand-aggregator",
+    "parent": 12,
+    "order": 24
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/reports/inventory-valuation",
+    "parent": 12,
+    "order": 25
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/reports/management-dashboard-pdf",
+    "parent": 12,
+    "order": 26
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/reports/pnl-report",
+    "parent": 12,
+    "order": 27
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/reports/quarterly-tax-report",
+    "parent": 12,
+    "order": 28
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/forecasting/demand-forecaster",
+    "parent": 12,
+    "order": 29
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/search/search-engine",
+    "parent": 12,
+    "order": 30
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/kb/kb-engine",
+    "parent": 12,
+    "order": 31
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/experiments/ab-testing",
+    "parent": 12,
+    "order": 32
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/pricing/bundle",
+    "parent": 12,
+    "order": 33
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/pricing/discount-rules",
+    "parent": 12,
+    "order": 34
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/pricing/price-optimizer",
+    "parent": 12,
+    "order": 35
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/compliance/aml-screener",
+    "parent": 13,
+    "order": 1
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/compliance/conflict-of-interest",
+    "parent": 13,
+    "order": 2
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/compliance/consumer-complaints",
+    "parent": 13,
+    "order": 3
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/compliance/gift-register",
+    "parent": 13,
+    "order": 4
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/compliance/legal-hold",
+    "parent": 13,
+    "order": 5
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/compliance/pep-screener",
+    "parent": 13,
+    "order": 6
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/compliance/retention-engine",
+    "parent": 13,
+    "order": 7
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/compliance/sanctions-screener",
+    "parent": 13,
+    "order": 8
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/compliance/whistleblower",
+    "parent": 13,
+    "order": 9
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/privacy/consent-mgmt",
+    "parent": 13,
+    "order": 10
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/privacy/cookie-banner",
+    "parent": 13,
+    "order": 11
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/privacy/dsr-handler",
+    "parent": 13,
+    "order": 12
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/privacy/policy-generator",
+    "parent": 13,
+    "order": 13
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/privacy/retention-enforcer",
+    "parent": 13,
+    "order": 14
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/privacy/tos-tracker",
+    "parent": 13,
+    "order": 15
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/auth/rbac",
+    "parent": 13,
+    "order": 16
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/auth/totp",
+    "parent": 13,
+    "order": 17
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/security/dep-audit",
+    "parent": 13,
+    "order": 18
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/security/fraud-rules",
+    "parent": 13,
+    "order": 19
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/security/license-scanner",
+    "parent": 13,
+    "order": 20
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/ops/alert-manager",
+    "parent": 14,
+    "order": 1
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/ops/apm",
+    "parent": 14,
+    "order": 2
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/ops/dep-health",
+    "parent": 14,
+    "order": 3
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/ops/error-tracker",
+    "parent": 14,
+    "order": 4
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/ops/health-check",
+    "parent": 14,
+    "order": 5
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/ops/incident-mgmt",
+    "parent": 14,
+    "order": 6
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/ops/log-store",
+    "parent": 14,
+    "order": 7
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/ops/logger",
+    "parent": 14,
+    "order": 8
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/ops/master-dashboard",
+    "parent": 14,
+    "order": 9
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/ops/metrics",
+    "parent": 14,
+    "order": 10
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/ops/prom-metrics",
+    "parent": 14,
+    "order": 11
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/ops/resource-tracker",
+    "parent": 14,
+    "order": 12
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/ops/slo-tracker",
+    "parent": 14,
+    "order": 13
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/ops/status-page",
+    "parent": 14,
+    "order": 14
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/ops/synthetic-monitor",
+    "parent": 14,
+    "order": 15
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/ops/tracer",
+    "parent": 14,
+    "order": 16
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/ops/uptime-monitor",
+    "parent": 14,
+    "order": 17
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/devops/ab-router",
+    "parent": 14,
+    "order": 18
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/devops/autoscaler",
+    "parent": 14,
+    "order": 19
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/devops/blue-green",
+    "parent": 14,
+    "order": 20
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/devops/chaos-engine",
+    "parent": 14,
+    "order": 21
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/devops/ci-generator",
+    "parent": 14,
+    "order": 22
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/devops/flag-distributor",
+    "parent": 14,
+    "order": 23
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/devops/health-orchestrator",
+    "parent": 14,
+    "order": 24
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/devops/iac-generator",
+    "parent": 14,
+    "order": 25
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/devops/incident-runbook",
+    "parent": 14,
+    "order": 26
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/devops/rollback-engine",
+    "parent": 14,
+    "order": 27
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/devops/rollout-strategies",
+    "parent": 14,
+    "order": 28
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/devops/secret-rotator",
+    "parent": 14,
+    "order": 29
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/devops/service-mesh",
+    "parent": 14,
+    "order": 30
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/devops/traffic-shadow",
+    "parent": 14,
+    "order": 31
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/devops/vault-client",
+    "parent": 14,
+    "order": 32
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/resilience/circuit-breaker",
+    "parent": 14,
+    "order": 33
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/resilience/dead-letter-queue",
+    "parent": 14,
+    "order": 34
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/resilience/idempotency-key",
+    "parent": 14,
+    "order": 35
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/resilience/retry",
+    "parent": 14,
+    "order": 36
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/resilience/timeout-wrapper",
+    "parent": 14,
+    "order": 37
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/dr/dr-runner",
+    "parent": 14,
+    "order": 38
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/backup/backup-tool",
+    "parent": 14,
+    "order": 39
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/jobs/jobs-registry",
+    "parent": 14,
+    "order": 40
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/jobs/jobs-runner",
+    "parent": 14,
+    "order": 41
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/jobs/persistence",
+    "parent": 14,
+    "order": 42
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/jobs/scheduler",
+    "parent": 14,
+    "order": 43
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/queue/queue",
+    "parent": 14,
+    "order": 44
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/queue/routes",
+    "parent": 14,
+    "order": 45
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/queue/worker",
+    "parent": 14,
+    "order": 46
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/webhooks/webhook-delivery-log",
+    "parent": 14,
+    "order": 47
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/webhooks/webhook-events",
+    "parent": 14,
+    "order": 48
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/webhooks/webhook-sender",
+    "parent": 14,
+    "order": 49
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/webhooks/webhook-subscriptions",
+    "parent": 14,
+    "order": 50
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/webhooks/webhook-test-receiver",
+    "parent": 14,
+    "order": 51
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/realtime/sse-hub",
+    "parent": 14,
+    "order": 52
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/imports/csv-import",
+    "parent": 15,
+    "order": 1
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/imports/csv-import-routes",
+    "parent": 15,
+    "order": 2
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/imports/legacy-migration",
+    "parent": 15,
+    "order": 3
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/imports/pdf-invoice-parser",
+    "parent": 15,
+    "order": 4
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/exports/excel-exporter",
+    "parent": 15,
+    "order": 5
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/exports/export-routes",
+    "parent": 15,
+    "order": 6
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/graphql/schema",
+    "parent": 15,
+    "order": 7
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/flags/feature-flags",
+    "parent": 15,
+    "order": 8
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/enterprise/enterprise-routes",
+    "parent": 15,
+    "order": 9
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/users",
+    "parent": 16,
+    "order": 1
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/roles",
+    "parent": 16,
+    "order": 2
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/feature-flags",
+    "parent": 16,
+    "order": 3
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/audit",
+    "parent": 16,
+    "order": 4
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/events",
+    "parent": 16,
+    "order": 5
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/cron",
+    "parent": 16,
+    "order": 6
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/settings",
+    "parent": 16,
+    "order": 7
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/feedback",
+    "parent": 16,
+    "order": 8
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/validators/company-id",
+    "parent": 16,
+    "order": 9
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/validators/iban",
+    "parent": 16,
+    "order": 10
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/validators/phone",
+    "parent": 16,
+    "order": 11
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/validators/tax-file",
+    "parent": 16,
+    "order": 12
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/validators/teudat-zehut",
+    "parent": 16,
+    "order": 13
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/middleware/rate-limits",
+    "parent": 16,
+    "order": 14
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/config/config-manager",
+    "parent": 16,
+    "order": 15
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/cli/ansi",
+    "parent": 16,
+    "order": 16
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/cli/argparser",
+    "parent": 16,
+    "order": 17
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/cli/config",
+    "parent": 16,
+    "order": 18
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/cli/dispatcher",
+    "parent": 16,
+    "order": 19
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/cli/help",
+    "parent": 16,
+    "order": 20
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/cli/logger",
+    "parent": 16,
+    "order": 21
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/cli/prompt",
+    "parent": 16,
+    "order": 22
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/cli/registry",
+    "parent": 16,
+    "order": 23
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/deploy/manifest-generator",
+    "parent": 16,
+    "order": 24
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/wiring/domain-events",
+    "parent": 16,
+    "order": 25
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/wiring/event-bus",
+    "parent": 16,
+    "order": 26
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/wiring/global-search",
+    "parent": 16,
+    "order": 27
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/wiring/grand-consolidator",
+    "parent": 16,
+    "order": 28
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/wiring/master-aggregator",
+    "parent": 16,
+    "order": 29
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/wiring/tenant-config",
+    "parent": 16,
+    "order": 30
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/workflow/engine",
+    "parent": 16,
+    "order": 31
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/dedup/duplicate-detector",
+    "parent": 16,
+    "order": 32
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/support/ticketing",
+    "parent": 16,
+    "order": 33
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/utils/sanitize",
+    "parent": 16,
+    "order": 34
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/bl/form-102-bl",
+    "parent": 16,
+    "order": 35
+  },
+  {
+    "file": "00035_app_menu_FULL.sql",
+    "route": "/bl/health-insurance",
+    "parent": 16,
+    "order": 36
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/sales/opportunities",
+    "parent": 2,
+    "order": 40
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/sales/sales-dashboard",
+    "parent": 2,
+    "order": 41
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/sales/sales-analytics",
+    "parent": 2,
+    "order": 42
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/sales/sales-commissions",
+    "parent": 2,
+    "order": 43
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/sales/sales-forecast",
+    "parent": 2,
+    "order": 44
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/sales/sales-invoicing",
+    "parent": 2,
+    "order": 45
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/sales/sales-orders",
+    "parent": 2,
+    "order": 46
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/sales/sales-returns",
+    "parent": 2,
+    "order": 47
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/sales/sales-scoring",
+    "parent": 2,
+    "order": 48
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/sales/sales-territories",
+    "parent": 2,
+    "order": 49
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/sales/deal-room",
+    "parent": 2,
+    "order": 50
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/sales/quotations",
+    "parent": 2,
+    "order": 51
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/sales/delivery-notes",
+    "parent": 2,
+    "order": 52
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/crm/customer-360",
+    "parent": 2,
+    "order": 53
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/crm/crm-dashboard",
+    "parent": 2,
+    "order": 54
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/crm/segmentation-dashboard",
+    "parent": 2,
+    "order": 55
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/crm/territory-management",
+    "parent": 2,
+    "order": 56
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/procurement/blanket-orders",
+    "parent": 3,
+    "order": 20
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/procurement/contracts-management",
+    "parent": 3,
+    "order": 21
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/procurement/demand-planning",
+    "parent": 3,
+    "order": 22
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/procurement/goods-receiving",
+    "parent": 3,
+    "order": 23
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/procurement/landed-cost",
+    "parent": 3,
+    "order": 24
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/procurement/make-vs-buy",
+    "parent": 3,
+    "order": 25
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/procurement/market-price-tracking",
+    "parent": 3,
+    "order": 26
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/procurement/po-approval-workflow",
+    "parent": 3,
+    "order": 27
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/procurement/procurement-analytics",
+    "parent": 3,
+    "order": 28
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/procurement/procurement-automation",
+    "parent": 3,
+    "order": 29
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/procurement/procurement-budgets",
+    "parent": 3,
+    "order": 30
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/procurement/procurement-command-center",
+    "parent": 3,
+    "order": 31
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/procurement/purchase-requisitions",
+    "parent": 3,
+    "order": 32
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/procurement/rfq-management",
+    "parent": 3,
+    "order": 33
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/procurement/spend-analysis",
+    "parent": 3,
+    "order": 34
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/procurement/subcontractor-management",
+    "parent": 3,
+    "order": 35
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/procurement/three-way-matching",
+    "parent": 3,
+    "order": 36
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/procurement/vendor-evaluation",
+    "parent": 3,
+    "order": 37
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/projects/change-orders-page",
+    "parent": 4,
+    "order": 40
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/projects/gantt-chart-page",
+    "parent": 4,
+    "order": 42
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/projects/portfolio-dashboard-page",
+    "parent": 4,
+    "order": 43
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/projects/project-360",
+    "parent": 4,
+    "order": 44
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/projects/project-ai-insights",
+    "parent": 4,
+    "order": 45
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/projects/project-budget-page",
+    "parent": 4,
+    "order": 46
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/projects/project-execution",
+    "parent": 4,
+    "order": 47
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/projects/project-finance-hub",
+    "parent": 4,
+    "order": 48
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/projects/project-installation-hub",
+    "parent": 4,
+    "order": 49
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/projects/project-procurement-hub",
+    "parent": 4,
+    "order": 50
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/projects/project-profitability",
+    "parent": 4,
+    "order": 51
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/projects/projects-command-center",
+    "parent": 4,
+    "order": 52
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/projects/projects-dashboard",
+    "parent": 4,
+    "order": 53
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/projects/resource-planning",
+    "parent": 4,
+    "order": 54
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/projects/risk-register",
+    "parent": 4,
+    "order": 55
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/production/mes-system",
+    "parent": 4,
+    "order": 60
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/production/mrp-planning",
+    "parent": 4,
+    "order": 61
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/production/oee-dashboard",
+    "parent": 4,
+    "order": 62
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/production/production-command-center",
+    "parent": 4,
+    "order": 63
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/production/production-kanban",
+    "parent": 4,
+    "order": 64
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/production/production-planning",
+    "parent": 4,
+    "order": 65
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/production/shop-floor-control",
+    "parent": 4,
+    "order": 66
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/production/smart-factory-dashboard",
+    "parent": 4,
+    "order": 67
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/production/work-orders-list",
+    "parent": 4,
+    "order": 68
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/inventory/cycle-counts",
+    "parent": 5,
+    "order": 20
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/inventory/damaged-quarantine",
+    "parent": 5,
+    "order": 21
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/inventory/expiry-alerts",
+    "parent": 5,
+    "order": 22
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/inventory/inventory-command-center",
+    "parent": 5,
+    "order": 23
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/inventory/inventory-dashboard",
+    "parent": 5,
+    "order": 24
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/inventory/reorder-intelligence",
+    "parent": 5,
+    "order": 25
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/inventory/reservations-allocations",
+    "parent": 5,
+    "order": 26
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/inventory/stock-valuation-aging",
+    "parent": 5,
+    "order": 27
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/inventory/vmi-management",
+    "parent": 5,
+    "order": 28
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/inventory/warehouse-locations",
+    "parent": 5,
+    "order": 29
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/inventory/wms-barcode",
+    "parent": 5,
+    "order": 30
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/inventory/wms-cross-docking",
+    "parent": 5,
+    "order": 31
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/inventory/wms-cycle-counting",
+    "parent": 5,
+    "order": 32
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/inventory/wms-lot-traceability",
+    "parent": 5,
+    "order": 33
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/inventory/wms-pick-pack-ship",
+    "parent": 5,
+    "order": 34
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/inventory/wms-putaway-rules",
+    "parent": 5,
+    "order": 35
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/inventory/wms-stock-inquiry",
+    "parent": 5,
+    "order": 36
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/inventory/wms-transfer-orders",
+    "parent": 5,
+    "order": 37
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/finance/aging-report",
+    "parent": 6,
+    "order": 22
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/finance/annual-report",
+    "parent": 6,
+    "order": 23
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/finance/bank-accounts",
+    "parent": 6,
+    "order": 24
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/finance/budget-vs-actual",
+    "parent": 6,
+    "order": 25
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/finance/chart-of-accounts",
+    "parent": 6,
+    "order": 26
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/finance/checks-management",
+    "parent": 6,
+    "order": 27
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/finance/collections-dashboard",
+    "parent": 6,
+    "order": 28
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/finance/cost-centers",
+    "parent": 6,
+    "order": 29
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/finance/credit-management",
+    "parent": 6,
+    "order": 30
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/finance/customer-profitability",
+    "parent": 6,
+    "order": 31
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/finance/depreciation-schedule",
+    "parent": 6,
+    "order": 32
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/finance/fixed-assets",
+    "parent": 6,
+    "order": 33
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/finance/journal-transactions",
+    "parent": 6,
+    "order": 35
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/finance/payment-runs",
+    "parent": 6,
+    "order": 36
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/finance/trial-balance",
+    "parent": 6,
+    "order": 37
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/finance/withholding-tax",
+    "parent": 6,
+    "order": 38
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/finance/finance-control-center",
+    "parent": 6,
+    "order": 39
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/hr/ats-recruitment",
+    "parent": 8,
+    "order": 30
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/hr/attendance",
+    "parent": 8,
+    "order": 31
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/hr/candidates",
+    "parent": 8,
+    "order": 32
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/hr/departments",
+    "parent": 8,
+    "order": 33
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/hr/employee-card",
+    "parent": 8,
+    "order": 34
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/hr/employee-documents",
+    "parent": 8,
+    "order": 35
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/hr/employee-equipment",
+    "parent": 8,
+    "order": 36
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/hr/employees-list",
+    "parent": 8,
+    "order": 38
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/hr/hr-command-center",
+    "parent": 8,
+    "order": 39
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/hr/hr-dashboard",
+    "parent": 8,
+    "order": 40
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/hr/org-chart",
+    "parent": 8,
+    "order": 41
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/hr/shifts",
+    "parent": 8,
+    "order": 42
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/hr/talent-management",
+    "parent": 8,
+    "order": 43
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/hr/workforce-planning",
+    "parent": 8,
+    "order": 44
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/documents/approval-workflows",
+    "parent": 10,
+    "order": 40
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/documents/archive-files",
+    "parent": 10,
+    "order": 41
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/documents/digital-archive",
+    "parent": 10,
+    "order": 42
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/documents/digital-signatures",
+    "parent": 10,
+    "order": 43
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/documents/dms-command-center",
+    "parent": 10,
+    "order": 44
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/documents/dms-repository",
+    "parent": 10,
+    "order": 45
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/documents/document-alerts",
+    "parent": 10,
+    "order": 46
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/documents/document-analytics",
+    "parent": 10,
+    "order": 47
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/documents/document-audit-trail",
+    "parent": 10,
+    "order": 48
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/documents/document-categories",
+    "parent": 10,
+    "order": 49
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/documents/entity-linked-documents",
+    "parent": 10,
+    "order": 50
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/documents/templates-library",
+    "parent": 10,
+    "order": 51
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/ai-engine/ai-admin-settings",
+    "parent": 11,
+    "order": 40
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/ai-engine/ai-anomaly-detection",
+    "parent": 11,
+    "order": 41
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/ai-engine/ai-audit-log",
+    "parent": 11,
+    "order": 42
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/ai-engine/ai-automated-reports",
+    "parent": 11,
+    "order": 43
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/ai-engine/ai-customer-service-pro",
+    "parent": 11,
+    "order": 44
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/ai-engine/ai-engine-hub",
+    "parent": 11,
+    "order": 45
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/ai-engine/ai-executive-insights",
+    "parent": 11,
+    "order": 46
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/ai-engine/ai-follow-up",
+    "parent": 11,
+    "order": 47
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/ai-engine/ai-lead-scoring-pro",
+    "parent": 11,
+    "order": 48
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/ai-engine/ai-procurement-optimizer",
+    "parent": 11,
+    "order": 49
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/ai-engine/ai-production-insights",
+    "parent": 11,
+    "order": 50
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/ai-engine/ai-quotation-assistant",
+    "parent": 11,
+    "order": 51
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/ai-engine/ai-recommendation-engine",
+    "parent": 11,
+    "order": 52
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/ai-engine/ai-sales-assistant",
+    "parent": 11,
+    "order": 53
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/ai-engine/nl-query",
+    "parent": 11,
+    "order": 54
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/ai-engine/predictive-analytics",
+    "parent": 11,
+    "order": 55
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/ai-engine/sentiment-analysis",
+    "parent": 11,
+    "order": 56
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/reports/bi-dashboard",
+    "parent": 11,
+    "order": 57
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/command-center/OperationsControlRoom",
+    "parent": 11,
+    "order": 60
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/command-center/ProcurementControlRoom",
+    "parent": 11,
+    "order": 61
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/command-center/WorkforceControlRoom",
+    "parent": 11,
+    "order": 62
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/command-center/decision-queue",
+    "parent": 11,
+    "order": 63
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/command-center/execution-log",
+    "parent": 11,
+    "order": 64
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/command-center/live-event-stream",
+    "parent": 11,
+    "order": 65
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/command-center/profit-intelligence",
+    "parent": 11,
+    "order": 66
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/palantir/object-explorer",
+    "parent": 11,
+    "order": 67
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/palantir/ontology-manager",
+    "parent": 11,
+    "order": 68
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/palantir/link-analysis-graph",
+    "parent": 11,
+    "order": 69
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/ehs/ehs-dashboard",
+    "parent": 12,
+    "order": 30
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/ehs/environmental-permits",
+    "parent": 12,
+    "order": 31
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/ehs/hazardous-materials",
+    "parent": 12,
+    "order": 32
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/ehs/safety-incidents",
+    "parent": 12,
+    "order": 33
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/security/gdpr-center",
+    "parent": 12,
+    "order": 34
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/security/data-retention",
+    "parent": 12,
+    "order": 35
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/security/security-dashboard",
+    "parent": 12,
+    "order": 36
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/security/compliance-reports",
+    "parent": 12,
+    "order": 37
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/logistics/fleet-management",
+    "parent": 13,
+    "order": 60
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/logistics/fleet-command-center",
+    "parent": 13,
+    "order": 61
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/logistics/route-planning",
+    "parent": 13,
+    "order": 62
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/logistics/driver-management",
+    "parent": 13,
+    "order": 63
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/logistics/shipment-tracking-live",
+    "parent": 13,
+    "order": 64
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/logistics/vehicle-maintenance",
+    "parent": 13,
+    "order": 65
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/operations/oee-dashboard",
+    "parent": 13,
+    "order": 66
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/operations/operations-command-center",
+    "parent": 13,
+    "order": 67
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/operations/shift-handover",
+    "parent": 13,
+    "order": 68
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/operations/kpi-monitor",
+    "parent": 13,
+    "order": 69
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/operations/downtime-tracking",
+    "parent": 13,
+    "order": 70
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/operations/workflow-monitor",
+    "parent": 13,
+    "order": 71
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/integrations/api-gateway",
+    "parent": 14,
+    "order": 20
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/integrations/credentials-vault",
+    "parent": 14,
+    "order": 21
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/integrations/event-bus",
+    "parent": 14,
+    "order": 22
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/integrations/external-connectors",
+    "parent": 14,
+    "order": 23
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/integrations/integration-dashboard",
+    "parent": 14,
+    "order": 24
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/integrations/mcp-hub",
+    "parent": 14,
+    "order": 25
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/integrations/sync-jobs",
+    "parent": 14,
+    "order": 26
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/integrations/webhook-gateway",
+    "parent": 14,
+    "order": 27
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/governance",
+    "parent": 15,
+    "order": 40
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/system/model-catalog",
+    "parent": 15,
+    "order": 41
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/system/permissions-matrix",
+    "parent": 15,
+    "order": 42
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/system/roles-list",
+    "parent": 15,
+    "order": 43
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/system/users-list",
+    "parent": 15,
+    "order": 44
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/system/access-audit-view",
+    "parent": 15,
+    "order": 45
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/system/approval-policy-management",
+    "parent": 15,
+    "order": 46
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/system/data-scope-management",
+    "parent": 15,
+    "order": 47
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/platform/master-data",
+    "parent": 15,
+    "order": 48
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/platform/recycle-bin",
+    "parent": 15,
+    "order": 49
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/platform/sla-dashboard",
+    "parent": 15,
+    "order": 50
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/platform/workflow-engine",
+    "parent": 15,
+    "order": 51
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/platform/approval-chains",
+    "parent": 15,
+    "order": 52
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/tenders/tenders-management",
+    "parent": 3,
+    "order": 40
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/tenders/tender-dashboard",
+    "parent": 3,
+    "order": 41
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/tenders/tender-submissions",
+    "parent": 3,
+    "order": 42
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/tenders/tender-evaluation",
+    "parent": 3,
+    "order": 43
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/tenders/tender-pricing",
+    "parent": 3,
+    "order": 44
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/tenders/tender-documents",
+    "parent": 3,
+    "order": 45
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/tenders/bid-analysis",
+    "parent": 3,
+    "order": 46
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/tenders/tenders-command-center",
+    "parent": 3,
+    "order": 47
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/quality/quality-dashboard",
+    "parent": 4,
+    "order": 80
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/quality/capa",
+    "parent": 4,
+    "order": 81
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/quality/complaints",
+    "parent": 4,
+    "order": 82
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/quality/internal-audit",
+    "parent": 4,
+    "order": 83
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/quality/iso-management",
+    "parent": 4,
+    "order": 84
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/quality/material-certs",
+    "parent": 4,
+    "order": 85
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/quality/quality-management-system",
+    "parent": 4,
+    "order": 86
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/quality/spc",
+    "parent": 4,
+    "order": 87
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/quality/supplier-quality",
+    "parent": 4,
+    "order": 88
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/quality/testing-lab",
+    "parent": 4,
+    "order": 89
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/support/tickets",
+    "parent": 15,
+    "order": 60
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/support/sla-tracking",
+    "parent": 15,
+    "order": 61
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/support/support-command-center",
+    "parent": 15,
+    "order": 62
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/service/service-command-center",
+    "parent": 15,
+    "order": 63
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/service/service-contracts",
+    "parent": 15,
+    "order": 64
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/service/service-warranty",
+    "parent": 15,
+    "order": 65
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/service/technician-management",
+    "parent": 15,
+    "order": 66
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/service/spare-parts",
+    "parent": 15,
+    "order": 67
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/strategy/balanced-scorecard-page",
+    "parent": 11,
+    "order": 80
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/strategy/business-plan-page",
+    "parent": 11,
+    "order": 81
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/strategy/competitive-analysis-page",
+    "parent": 11,
+    "order": 82
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/strategy/goals-page",
+    "parent": 11,
+    "order": 83
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/strategy/market-analysis",
+    "parent": 11,
+    "order": 84
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/strategy/okrs",
+    "parent": 11,
+    "order": 85
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/strategy/swot-page",
+    "parent": 11,
+    "order": 86
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/supply-chain/supply-chain-dashboard",
+    "parent": 3,
+    "order": 60
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/supply-chain/bom-command-center",
+    "parent": 3,
+    "order": 61
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/supply-chain/bom-where-used",
+    "parent": 3,
+    "order": 62
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/supply-chain/edi-dashboard",
+    "parent": 3,
+    "order": 64
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/supply-chain/engineering-change-orders",
+    "parent": 3,
+    "order": 65
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/supply-chain/lead-time-management",
+    "parent": 3,
+    "order": 66
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/portal/contractor-portal",
+    "parent": 3,
+    "order": 70
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/portal/employee-portal",
+    "parent": 8,
+    "order": 70
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/reports/reports-hub",
+    "parent": 11,
+    "order": 90
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/reports/kpi-dashboard",
+    "parent": 11,
+    "order": 91
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/reports/financial-reports",
+    "parent": 11,
+    "order": 92
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/reports/operational-reports",
+    "parent": 11,
+    "order": 93
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/reports/risk-analysis",
+    "parent": 11,
+    "order": 94
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/installation/installation-command-center",
+    "parent": 4,
+    "order": 95
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/installation/installation-dashboard",
+    "parent": 4,
+    "order": 96
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/installation/installation-execution",
+    "parent": 4,
+    "order": 97
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/installation/installation-teams",
+    "parent": 4,
+    "order": 98
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/installation/installation-scheduling",
+    "parent": 4,
+    "order": 99
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/installation/measurements-surveys",
+    "parent": 4,
+    "order": 100
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/installation/site-readiness",
+    "parent": 4,
+    "order": 101
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/fabrication/cutting-lists",
+    "parent": 4,
+    "order": 110
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/fabrication/assembly-orders",
+    "parent": 4,
+    "order": 111
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/fabrication/coating-orders",
+    "parent": 4,
+    "order": 112
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/fabrication/glazing-orders",
+    "parent": 4,
+    "order": 113
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/fabrication/packing-lists",
+    "parent": 4,
+    "order": 115
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/fabrication/transport-orders",
+    "parent": 4,
+    "order": 116
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/fabrication/welding-orders",
+    "parent": 4,
+    "order": 117
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/fabrication/workflow-tracker",
+    "parent": 4,
+    "order": 118
+  },
+  {
+    "file": "00036_remove_realestate_and_add_missing.sql",
+    "route": "/fabrication/service-tickets",
+    "parent": 4,
+    "order": 119
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/crm/agent-control-dashboard",
+    "parent": 2,
+    "order": 700
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/crm/behavioral-analytics",
+    "parent": 2,
+    "order": 701
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/crm/communication-intelligence",
+    "parent": 2,
+    "order": 702
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/crm/crm-communications-hub",
+    "parent": 2,
+    "order": 703
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/crm/decision-engine",
+    "parent": 2,
+    "order": 704
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/crm/intelligence-engine",
+    "parent": 2,
+    "order": 705
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/crm/nurture-sequences",
+    "parent": 2,
+    "order": 706
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/crm/pipeline-financial",
+    "parent": 2,
+    "order": 707
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/crm/predictive-forecasting",
+    "parent": 2,
+    "order": 708
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/crm/relationship-graph",
+    "parent": 2,
+    "order": 709
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/sales/quote360",
+    "parent": 2,
+    "order": 710
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/competitor-analysis",
+    "parent": 3,
+    "order": 800
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/delivery-documents",
+    "parent": 3,
+    "order": 801
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/documents-signatures",
+    "parent": 3,
+    "order": 802
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/inventory-sync",
+    "parent": 3,
+    "order": 803
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/logistics-tracking",
+    "parent": 3,
+    "order": 804
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/po-approvals",
+    "parent": 3,
+    "order": 805
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/price-management",
+    "parent": 3,
+    "order": 806
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/procurement-alerts",
+    "parent": 3,
+    "order": 807
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/procurement-compliance",
+    "parent": 3,
+    "order": 808
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/procurement-exceptions",
+    "parent": 3,
+    "order": 809
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/procurement-profit-impact",
+    "parent": 3,
+    "order": 810
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/procurement-settings",
+    "parent": 3,
+    "order": 811
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/procurement-simulation",
+    "parent": 3,
+    "order": 812
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/products/product-bom",
+    "parent": 3,
+    "order": 813
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/products/product-costing",
+    "parent": 3,
+    "order": 814
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/products/products-dashboard",
+    "parent": 3,
+    "order": 815
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/products/products-list",
+    "parent": 3,
+    "order": 816
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/profitability-dashboard",
+    "parent": 3,
+    "order": 817
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/purchase-orders",
+    "parent": 3,
+    "order": 818
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/quality-control",
+    "parent": 3,
+    "order": 819
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/raw-materials/cost-analysis",
+    "parent": 3,
+    "order": 820
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/raw-materials/raw-material-stock",
+    "parent": 3,
+    "order": 821
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/raw-materials/raw-materials-dashboard",
+    "parent": 3,
+    "order": 822
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/raw-materials/raw-materials-list",
+    "parent": 3,
+    "order": 823
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/raw-materials/scrap-waste",
+    "parent": 3,
+    "order": 824
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/raw-materials/weight-calculator",
+    "parent": 3,
+    "order": 825
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/risk-hedging",
+    "parent": 3,
+    "order": 826
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/supplier-dependency",
+    "parent": 3,
+    "order": 827
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/supplier-management",
+    "parent": 3,
+    "order": 828
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/supplier-portal",
+    "parent": 3,
+    "order": 829
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/supplier-returns",
+    "parent": 3,
+    "order": 830
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/procurement/vendor-negotiation",
+    "parent": 3,
+    "order": 831
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/projects/customer-project-portal-page",
+    "parent": 4,
+    "order": 900
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/projects/project-alerts",
+    "parent": 4,
+    "order": 901
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/projects/project-documents-page",
+    "parent": 4,
+    "order": 902
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/projects/project-events-audit",
+    "parent": 4,
+    "order": 903
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/projects/project-portal-page",
+    "parent": 4,
+    "order": 904
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/projects/project-production-tracking",
+    "parent": 4,
+    "order": 905
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/projects/project-settings",
+    "parent": 4,
+    "order": 906
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/projects/project-templates-page",
+    "parent": 4,
+    "order": 907
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/projects/project-workflow",
+    "parent": 4,
+    "order": 908
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/projects/risk-dashboard-page",
+    "parent": 4,
+    "order": 909
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/assets/assets-dashboard",
+    "parent": 5,
+    "order": 1000
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/assets/equipment-insurance",
+    "parent": 5,
+    "order": 1001
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/assets/leasing",
+    "parent": 5,
+    "order": 1002
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/assets/tools-dies",
+    "parent": 5,
+    "order": 1003
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/inventory/inventory-alerts",
+    "parent": 5,
+    "order": 1004
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/inventory/inventory-ultra-dashboard",
+    "parent": 5,
+    "order": 1005
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/inventory/stock-items-management",
+    "parent": 5,
+    "order": 1006
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/inventory/vmi-supplier-portal",
+    "parent": 5,
+    "order": 1007
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/inventory/warehouses-management",
+    "parent": 5,
+    "order": 1008
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/inventory/wms-analytics",
+    "parent": 5,
+    "order": 1009
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/inventory/wms-consignment",
+    "parent": 5,
+    "order": 1010
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/inventory/wms-expiry-dashboard",
+    "parent": 5,
+    "order": 1011
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/inventory/wms-kits",
+    "parent": 5,
+    "order": 1012
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/inventory/wms-location-hierarchy",
+    "parent": 5,
+    "order": 1013
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/inventory/wms-valuation",
+    "parent": 5,
+    "order": 1014
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/finance/accounting-export",
+    "parent": 6,
+    "order": 1100
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/finance/contractor-payment-decision-model",
+    "parent": 6,
+    "order": 1101
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/finance/fin-control-center",
+    "parent": 6,
+    "order": 1102
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/finance/finance-alerts",
+    "parent": 6,
+    "order": 1103
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/finance/finance-fixed-assets",
+    "parent": 6,
+    "order": 1104
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/finance/financial-analytics",
+    "parent": 6,
+    "order": 1105
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/finance/institutional/financial-statements",
+    "parent": 6,
+    "order": 1106
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/finance/institutional/monte-carlo-engine",
+    "parent": 6,
+    "order": 1107
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/finance/institutional/ratio-dashboard",
+    "parent": 6,
+    "order": 1108
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/finance/institutional/risk-dashboard",
+    "parent": 6,
+    "order": 1109
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/finance/institutional/treasury-dashboard",
+    "parent": 6,
+    "order": 1110
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/finance/israeli-integrations",
+    "parent": 6,
+    "order": 1111
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/finance/masav-management",
+    "parent": 6,
+    "order": 1112
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/finance/payables-dashboard",
+    "parent": 6,
+    "order": 1113
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/finance/payment-operations",
+    "parent": 6,
+    "order": 1114
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/finance/profitability-feedback-loop",
+    "parent": 6,
+    "order": 1115
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/hr/compliance-dashboard",
+    "parent": 8,
+    "order": 1300
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/hr/disciplinary-incidents",
+    "parent": 8,
+    "order": 1301
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/hr/employment-history",
+    "parent": 8,
+    "order": 1302
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/hr/feedback-360",
+    "parent": 8,
+    "order": 1303
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/hr/hr-alerts",
+    "parent": 8,
+    "order": 1304
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/hr/hr-analytics",
+    "parent": 8,
+    "order": 1305
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/hr/hr-settings",
+    "parent": 8,
+    "order": 1306
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/hr/labor-cost-allocation",
+    "parent": 8,
+    "order": 1307
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/hr/offboarding-retirement",
+    "parent": 8,
+    "order": 1308
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/hr/payroll-engine",
+    "parent": 8,
+    "order": 1309
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/hr/training-management",
+    "parent": 8,
+    "order": 1310
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/workforce/employee360",
+    "parent": 8,
+    "order": 1311
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/customer-service/complaints",
+    "parent": 9,
+    "order": 1400
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/customer-service/rma",
+    "parent": 9,
+    "order": 1401
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/customer-service/service-dashboard",
+    "parent": 9,
+    "order": 1402
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/customer-service/warranty-management",
+    "parent": 9,
+    "order": 1403
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/contracts/contract-ai-analysis",
+    "parent": 10,
+    "order": 1500
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/contracts/contract-analytics-dashboard",
+    "parent": 10,
+    "order": 1501
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/contracts/contract-risk-scoring",
+    "parent": 10,
+    "order": 1502
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/contracts/contract-templates",
+    "parent": 10,
+    "order": 1503
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/contracts/contracts-dashboard",
+    "parent": 10,
+    "order": 1504
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/contracts/contracts-management",
+    "parent": 10,
+    "order": 1505
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/contracts/nda-agreements",
+    "parent": 10,
+    "order": 1506
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/contracts/service-agreements",
+    "parent": 10,
+    "order": 1507
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/documents/bulk-operations",
+    "parent": 10,
+    "order": 1508
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/documents/document-control",
+    "parent": 10,
+    "order": 1509
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/documents/document-permissions",
+    "parent": 10,
+    "order": 1510
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/documents/document-registry",
+    "parent": 10,
+    "order": 1511
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/documents/document-search",
+    "parent": 10,
+    "order": 1512
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/documents/document-settings",
+    "parent": 10,
+    "order": 1513
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/documents/incoming-documents",
+    "parent": 10,
+    "order": 1514
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/documents/module-documents",
+    "parent": 10,
+    "order": 1515
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/documents/ocr-processing",
+    "parent": 10,
+    "order": 1516
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/documents/outgoing-documents",
+    "parent": 10,
+    "order": 1517
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/documents/retention-compliance",
+    "parent": 10,
+    "order": 1518
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/documents/version-control",
+    "parent": 10,
+    "order": 1519
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/advanced/anomaly-detection",
+    "parent": 11,
+    "order": 1600
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/advanced/digital-twin-factory",
+    "parent": 11,
+    "order": 1601
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/advanced/graph-analytics",
+    "parent": 11,
+    "order": 1602
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/advanced/nl-query-assistant",
+    "parent": 11,
+    "order": 1603
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/advanced/predictive-forecasting",
+    "parent": 11,
+    "order": 1604
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/ai-engine/ai-customer-service",
+    "parent": 11,
+    "order": 1605
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/ai-engine/bash44-agent-config",
+    "parent": 11,
+    "order": 1606
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/ai-engine/bash44-agent-runs",
+    "parent": 11,
+    "order": 1607
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/ai-engine/bash44-alerts-center",
+    "parent": 11,
+    "order": 1608
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/ai-engine/bash44-approval-queue",
+    "parent": 11,
+    "order": 1609
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/ai-engine/bash44-control-center",
+    "parent": 11,
+    "order": 1610
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/ai-engine/bash44-executive-brief",
+    "parent": 11,
+    "order": 1611
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/ai-engine/bash44-knowledge-contexts",
+    "parent": 11,
+    "order": 1612
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/ai-engine/bash44-recommendations",
+    "parent": 11,
+    "order": 1613
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/ai-engine/employee-chatbot",
+    "parent": 11,
+    "order": 1614
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/ai-engine/kobi-prompts",
+    "parent": 11,
+    "order": 1615
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/ai-engine/ml-training-pipeline",
+    "parent": 11,
+    "order": 1616
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/bi/bi-hub",
+    "parent": 11,
+    "order": 1617
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/bi/comparative-analytics",
+    "parent": 11,
+    "order": 1618
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/bi/custom-dashboards",
+    "parent": 11,
+    "order": 1619
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/bi/data-explorer",
+    "parent": 11,
+    "order": 1620
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/bi/scheduled-reports",
+    "parent": 11,
+    "order": 1621
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/builder/business-rules-builder",
+    "parent": 11,
+    "order": 1622
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/builder/scheduled-tasks",
+    "parent": 11,
+    "order": 1623
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/builder/visual-workflow-designer",
+    "parent": 11,
+    "order": 1624
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/builder/webhook-management",
+    "parent": 11,
+    "order": 1625
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/command-center/causal-impact-viewer",
+    "parent": 11,
+    "order": 1626
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/command-center/command-center",
+    "parent": 11,
+    "order": 1627
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/command-center/operations-control-room",
+    "parent": 11,
+    "order": 1628
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/command-center/procurement-control-room",
+    "parent": 11,
+    "order": 1629
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/command-center/workforce-control-room",
+    "parent": 11,
+    "order": 1630
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/reports/bi-financial-statements",
+    "parent": 11,
+    "order": 1631
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/reports/bi-hr-analytics",
+    "parent": 11,
+    "order": 1632
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/reports/bi-inventory-analytics",
+    "parent": 11,
+    "order": 1633
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/reports/bi-production-analytics",
+    "parent": 11,
+    "order": 1634
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/reports/bi-sales-analytics",
+    "parent": 11,
+    "order": 1635
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/reports/financial/report-customer-aging",
+    "parent": 11,
+    "order": 1636
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/reports/financial/report-executive-summary",
+    "parent": 11,
+    "order": 1637
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/reports/financial/report-fiscal",
+    "parent": 11,
+    "order": 1638
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/reports/financial/report-invoice-analysis",
+    "parent": 11,
+    "order": 1639
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/reports/financial/report-vat",
+    "parent": 11,
+    "order": 1640
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/reports/financial/report-vendor-aging",
+    "parent": 11,
+    "order": 1641
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/security/backup-dr",
+    "parent": 12,
+    "order": 1700
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/security/encryption-management",
+    "parent": 12,
+    "order": 1701
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/security/tabs/api-keys-security",
+    "parent": 12,
+    "order": 1702
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/security/tabs/cors-management",
+    "parent": 12,
+    "order": 1703
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/security/tabs/geo-blocking",
+    "parent": 12,
+    "order": 1704
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/security/tabs/ip-management",
+    "parent": 12,
+    "order": 1705
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/security/tabs/rate-limit-config",
+    "parent": 12,
+    "order": 1706
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/security/tabs/vulnerability-tracker",
+    "parent": 12,
+    "order": 1707
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/security/tabs/webhook-secrets",
+    "parent": 12,
+    "order": 1708
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/api-hub",
+    "parent": 14,
+    "order": 1900
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/integrations/auth-tokens",
+    "parent": 14,
+    "order": 1901
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/integrations/integration-alerts",
+    "parent": 14,
+    "order": 1902
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/integrations/integration-audit",
+    "parent": 14,
+    "order": 1903
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/integrations/integration-settings",
+    "parent": 14,
+    "order": 1904
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/integrations/payload-validation",
+    "parent": 14,
+    "order": 1905
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/integrations/rate-limits",
+    "parent": 14,
+    "order": 1906
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/integrations/retries-dlq",
+    "parent": 14,
+    "order": 1907
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/integrations/transformation-engine",
+    "parent": 14,
+    "order": 1908
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/data-fabric/data-fabric-overview",
+    "parent": 15,
+    "order": 2000
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/data-fabric/data-products",
+    "parent": 15,
+    "order": 2001
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/data-fabric/data-quality-dashboard",
+    "parent": 15,
+    "order": 2002
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/data-fabric/identity-resolution",
+    "parent": 15,
+    "order": 2003
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/data-fabric/lineage-graph",
+    "parent": 15,
+    "order": 2004
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/data-migration",
+    "parent": 15,
+    "order": 2005
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/data-platform/canonical-explorer",
+    "parent": 15,
+    "order": 2006
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/data-platform/platform-observatory",
+    "parent": 15,
+    "order": 2007
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/data-platform/quarantine-browser",
+    "parent": 15,
+    "order": 2008
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/ehs/annual-safety-report",
+    "parent": 15,
+    "order": 2009
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/ehs/emergency-preparedness",
+    "parent": 15,
+    "order": 2010
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/ehs/energy-management",
+    "parent": 15,
+    "order": 2011
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/ehs/israeli-regulatory",
+    "parent": 15,
+    "order": 2012
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/ehs/ppe-management",
+    "parent": 15,
+    "order": 2013
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/ehs/risk-assessment",
+    "parent": 15,
+    "order": 2014
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/ehs/safety-inspections",
+    "parent": 15,
+    "order": 2015
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/ehs/safety-training-certs",
+    "parent": 15,
+    "order": 2016
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/ehs/waste-management",
+    "parent": 15,
+    "order": 2017
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/ehs/work-permits",
+    "parent": 15,
+    "order": 2018
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/engineering/design-reviews",
+    "parent": 15,
+    "order": 2019
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/engineering/drawing-management",
+    "parent": 15,
+    "order": 2020
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/engineering/engineering-alerts",
+    "parent": 15,
+    "order": 2021
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/engineering/engineering-analytics",
+    "parent": 15,
+    "order": 2022
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/engineering/engineering-calculations",
+    "parent": 15,
+    "order": 2023
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/engineering/engineering-command-center",
+    "parent": 15,
+    "order": 2024
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/engineering/engineering-documents",
+    "parent": 15,
+    "order": 2025
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/engineering/engineering-office",
+    "parent": 15,
+    "order": 2026
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/engineering/engineering-projects",
+    "parent": 15,
+    "order": 2027
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/engineering/engineering-settings",
+    "parent": 15,
+    "order": 2028
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/engineering/engineering-standards",
+    "parent": 15,
+    "order": 2029
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/engineering/material-specifications",
+    "parent": 15,
+    "order": 2030
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/engineering/product-catalog",
+    "parent": 15,
+    "order": 2031
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/engineering/prototype-testing",
+    "parent": 15,
+    "order": 2032
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/executive/bi-command-center",
+    "parent": 15,
+    "order": 2033
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/executive/executive-command-center",
+    "parent": 15,
+    "order": 2034
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/executive/executive-scorecard",
+    "parent": 15,
+    "order": 2035
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fabrication/fab-accessories",
+    "parent": 15,
+    "order": 2036
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fabrication/fab-assembly-orders",
+    "parent": 15,
+    "order": 2037
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fabrication/fab-coating-orders",
+    "parent": 15,
+    "order": 2038
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fabrication/fab-cutting-lists",
+    "parent": 15,
+    "order": 2039
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fabrication/fab-finishes-colors",
+    "parent": 15,
+    "order": 2040
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fabrication/fab-glass-catalog",
+    "parent": 15,
+    "order": 2041
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fabrication/fab-glazing-orders",
+    "parent": 15,
+    "order": 2042
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fabrication/fab-installation-orders",
+    "parent": 15,
+    "order": 2043
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fabrication/fab-packing-lists",
+    "parent": 15,
+    "order": 2044
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fabrication/fab-profiles",
+    "parent": 15,
+    "order": 2045
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fabrication/fab-service-tickets",
+    "parent": 15,
+    "order": 2046
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fabrication/fab-systems",
+    "parent": 15,
+    "order": 2047
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fabrication/fab-transport-orders",
+    "parent": 15,
+    "order": 2048
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fabrication/fab-welding-orders",
+    "parent": 15,
+    "order": 2049
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fabrication/fab-workflow-tracker",
+    "parent": 15,
+    "order": 2050
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fin/fin-accounting",
+    "parent": 15,
+    "order": 2051
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fin/fin-credit-clearing",
+    "parent": 15,
+    "order": 2052
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fin/fin-dashboard",
+    "parent": 15,
+    "order": 2053
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fin/fin-document-create",
+    "parent": 15,
+    "order": 2054
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fin/fin-document-details",
+    "parent": 15,
+    "order": 2055
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fin/fin-documents-list",
+    "parent": 15,
+    "order": 2056
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fin/fin-recurring",
+    "parent": 15,
+    "order": 2057
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/fin/fin-standing-orders",
+    "parent": 15,
+    "order": 2058
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/import/containers-packages",
+    "parent": 15,
+    "order": 2059
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/import/customs-clearance",
+    "parent": 15,
+    "order": 2060
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/import/foreign-suppliers",
+    "parent": 15,
+    "order": 2061
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/import/import-analytics",
+    "parent": 15,
+    "order": 2062
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/import/import-approvals",
+    "parent": 15,
+    "order": 2063
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/import/import-dashboard",
+    "parent": 15,
+    "order": 2064
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/import/import-documents",
+    "parent": 15,
+    "order": 2065
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/import/import-purchase-orders",
+    "parent": 15,
+    "order": 2066
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/import/import-receiving",
+    "parent": 15,
+    "order": 2067
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/import/import-risk-alerts",
+    "parent": 15,
+    "order": 2068
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/import/import-settings",
+    "parent": 15,
+    "order": 2069
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/import/import-shipments",
+    "parent": 15,
+    "order": 2070
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/import/import-tracking",
+    "parent": 15,
+    "order": 2071
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/import/landed-cost-calculator",
+    "parent": 15,
+    "order": 2072
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/import/shipping-forwarders",
+    "parent": 15,
+    "order": 2073
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/installation/customer-handover",
+    "parent": 15,
+    "order": 2074
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/installation/equipment-tools",
+    "parent": 15,
+    "order": 2075
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/installation/field-exceptions",
+    "parent": 15,
+    "order": 2076
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/installation/installation-alerts",
+    "parent": 15,
+    "order": 2077
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/installation/installation-cost-tracking",
+    "parent": 15,
+    "order": 2078
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/installation/installation-documents",
+    "parent": 15,
+    "order": 2079
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/installation/installation-management",
+    "parent": 15,
+    "order": 2080
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/installation/installation-orders",
+    "parent": 15,
+    "order": 2081
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/installation/installation-profitability",
+    "parent": 15,
+    "order": 2082
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/installation/installation-progress",
+    "parent": 15,
+    "order": 2083
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/installation/installation-quality-control",
+    "parent": 15,
+    "order": 2084
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/installation/installation-settings",
+    "parent": 15,
+    "order": 2085
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/installation/installer-profiles",
+    "parent": 15,
+    "order": 2086
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/installation/loading-dispatch",
+    "parent": 15,
+    "order": 2087
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/installation/return-service-calls",
+    "parent": 15,
+    "order": 2088
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/installations/gps-map",
+    "parent": 15,
+    "order": 2089
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/integration-hub",
+    "parent": 15,
+    "order": 2090
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/knowledge/faq-management",
+    "parent": 15,
+    "order": 2091
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/knowledge/knowledge-base",
+    "parent": 15,
+    "order": 2092
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/knowledge/knowledge-command-center",
+    "parent": 15,
+    "order": 2093
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/knowledge/lessons-learned",
+    "parent": 15,
+    "order": 2094
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/knowledge/sop-procedures",
+    "parent": 15,
+    "order": 2095
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/logistics/barcode-rfid",
+    "parent": 15,
+    "order": 2096
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/logistics/cross-border",
+    "parent": 15,
+    "order": 2097
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/logistics/customer-tracking-portal",
+    "parent": 15,
+    "order": 2098
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/logistics/delivery-cost-analysis",
+    "parent": 15,
+    "order": 2099
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/logistics/delivery-scheduling",
+    "parent": 15,
+    "order": 2100
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/logistics/fleet-alerts",
+    "parent": 15,
+    "order": 2101
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/logistics/fleet-delivery",
+    "parent": 15,
+    "order": 2102
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/logistics/freight",
+    "parent": 15,
+    "order": 2103
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/logistics/freight-audit",
+    "parent": 15,
+    "order": 2104
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/logistics/fuel-management",
+    "parent": 15,
+    "order": 2105
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/logistics/loading-dock",
+    "parent": 15,
+    "order": 2106
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/logistics/logistics-dashboard",
+    "parent": 15,
+    "order": 2107
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/logistics/packaging",
+    "parent": 15,
+    "order": 2108
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/logistics/proof-of-delivery",
+    "parent": 15,
+    "order": 2109
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/logistics/reverse-logistics",
+    "parent": 15,
+    "order": 2110
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/logistics/vehicle-registry",
+    "parent": 15,
+    "order": 2111
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/notification-settings/delivery-dashboard",
+    "parent": 15,
+    "order": 2112
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/notification-settings/email-templates",
+    "parent": 15,
+    "order": 2113
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/operations/cost-per-unit",
+    "parent": 15,
+    "order": 2114
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/palantir/actions-studio",
+    "parent": 15,
+    "order": 2115
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/palantir/aip-agent-studio",
+    "parent": 15,
+    "order": 2116
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/palantir/code-workspace",
+    "parent": 15,
+    "order": 2117
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/palantir/dossier-page",
+    "parent": 15,
+    "order": 2118
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/palantir/map-geospatial",
+    "parent": 15,
+    "order": 2119
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/palantir/pipeline-builder",
+    "parent": 15,
+    "order": 2120
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/palantir/timeline-analysis",
+    "parent": 15,
+    "order": 2121
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/platform/notifications-center",
+    "parent": 15,
+    "order": 2122
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/platform/security-audit",
+    "parent": 15,
+    "order": 2123
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/portal/customer-portal-login",
+    "parent": 15,
+    "order": 2124
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/pricing/actual-vs-estimated",
+    "parent": 15,
+    "order": 2125
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/pricing/labor-operations-cost",
+    "parent": 15,
+    "order": 2126
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/pricing/landed-cost-source",
+    "parent": 15,
+    "order": 2127
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/pricing/material-price-pull",
+    "parent": 15,
+    "order": 2128
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/pricing/pricing-approvals",
+    "parent": 15,
+    "order": 2129
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/pricing/pricing-cost-builder",
+    "parent": 15,
+    "order": 2130
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/pricing/pricing-cost-calculator",
+    "parent": 15,
+    "order": 2131
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/pricing/pricing-dashboard",
+    "parent": 15,
+    "order": 2132
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/pricing/pricing-price-lists",
+    "parent": 15,
+    "order": 2133
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/pricing/pricing-requests-list",
+    "parent": 15,
+    "order": 2134
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/pricing/pricing-versions",
+    "parent": 15,
+    "order": 2135
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/pricing/project-pricing-details",
+    "parent": 15,
+    "order": 2136
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/pricing/recommended-price",
+    "parent": 15,
+    "order": 2137
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/pricing/risk-margin-target",
+    "parent": 15,
+    "order": 2138
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/pricing/stock-vs-buy-decision",
+    "parent": 15,
+    "order": 2139
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/pricing/supplier-comparison-project",
+    "parent": 15,
+    "order": 2140
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/product-dev/product-certifications",
+    "parent": 15,
+    "order": 2141
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/product-dev/product-design",
+    "parent": 15,
+    "order": 2142
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/product-dev/product-dev-command-center",
+    "parent": 15,
+    "order": 2143
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/product-dev/product-launches",
+    "parent": 15,
+    "order": 2144
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/production/assembly-jobs",
+    "parent": 15,
+    "order": 2145
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/production/cut-jobs",
+    "parent": 15,
+    "order": 2146
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/production/finishing-jobs",
+    "parent": 15,
+    "order": 2147
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/production/labor-control",
+    "parent": 15,
+    "order": 2148
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/production/labor-time-tracking",
+    "parent": 15,
+    "order": 2149
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/production/maintenance-downtime",
+    "parent": 15,
+    "order": 2150
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/production/master-production-schedule",
+    "parent": 15,
+    "order": 2151
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/production/material-issuance",
+    "parent": 15,
+    "order": 2152
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/production/production-alerts",
+    "parent": 15,
+    "order": 2153
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/production/production-analytics",
+    "parent": 15,
+    "order": 2154
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/production/production-cost-tracking",
+    "parent": 15,
+    "order": 2155
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/production/production-exceptions",
+    "parent": 15,
+    "order": 2156
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/production/production-orders",
+    "parent": 15,
+    "order": 2157
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/production/quality-defects-rework",
+    "parent": 15,
+    "order": 2158
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/production/shortages-page",
+    "parent": 15,
+    "order": 2159
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/production/welding-jobs",
+    "parent": 15,
+    "order": 2160
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/production/work-stations",
+    "parent": 15,
+    "order": 2161
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/quality/calibration",
+    "parent": 15,
+    "order": 2162
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/quality/document-control",
+    "parent": 15,
+    "order": 2163
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/quality/test-certificates",
+    "parent": 15,
+    "order": 2164
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/safety/safety-procedures",
+    "parent": 15,
+    "order": 2165
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/safety/safety-training",
+    "parent": 15,
+    "order": 2166
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/service/service-analytics",
+    "parent": 15,
+    "order": 2167
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/service/service-cases",
+    "parent": 15,
+    "order": 2168
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/service/service-cost-tracking",
+    "parent": 15,
+    "order": 2169
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/settings/api-connection-hub",
+    "parent": 15,
+    "order": 2170
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/settings/api-keys",
+    "parent": 15,
+    "order": 2171
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/settings/israeli-integrations",
+    "parent": 15,
+    "order": 2172
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/settings/sections/mfa-settings",
+    "parent": 15,
+    "order": 2173
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/settings/sections/session-management",
+    "parent": 15,
+    "order": 2174
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/settings/sections/sso-settings",
+    "parent": 15,
+    "order": 2175
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/supplier-mgmt/supplier-development",
+    "parent": 15,
+    "order": 2176
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/supplier-mgmt/supplier-portal-dashboard",
+    "parent": 15,
+    "order": 2177
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/supplier-mgmt/supplier-scorecards",
+    "parent": 15,
+    "order": 2178
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/supplier-mgmt/supplier360",
+    "parent": 15,
+    "order": 2179
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/supplier-mgmt/supply-chain-risk",
+    "parent": 15,
+    "order": 2180
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/supplier-mgmt/vendor-compliance",
+    "parent": 15,
+    "order": 2181
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/supply-chain/bom-comparison",
+    "parent": 15,
+    "order": 2182
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/supply-chain/bom-cost-rollup",
+    "parent": 15,
+    "order": 2183
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/supply-chain/bom-templates",
+    "parent": 15,
+    "order": 2184
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/supply-chain/bom-versions",
+    "parent": 15,
+    "order": 2185
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/supply-chain/edi-admin",
+    "parent": 15,
+    "order": 2186
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/supply-chain/supply-chain-alerts",
+    "parent": 15,
+    "order": 2187
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/supply-chain/supply-chain-analytics",
+    "parent": 15,
+    "order": 2188
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/supply-chain/supply-chain-command-center",
+    "parent": 15,
+    "order": 2189
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/supply-chain/supply-chain-settings",
+    "parent": 15,
+    "order": 2190
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/supply-chain/supply-chain-visibility",
+    "parent": 15,
+    "order": 2191
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/support/support-dashboard",
+    "parent": 15,
+    "order": 2192
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/system/role-card",
+    "parent": 15,
+    "order": 2193
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/system/user-card",
+    "parent": 15,
+    "order": 2194
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/system/user-permission-override",
+    "parent": 15,
+    "order": 2195
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/system/user-role-assignment",
+    "parent": 15,
+    "order": 2196
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/tenders/tender-alerts",
+    "parent": 15,
+    "order": 2197
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/tenders/tender-analytics",
+    "parent": 15,
+    "order": 2198
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/tenders/tender-competitors",
+    "parent": 15,
+    "order": 2199
+  },
+  {
+    "file": "00038_merged_sources_menu_additions.sql",
+    "route": "/tenders/tender-timeline",
+    "parent": 15,
+    "order": 2200
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/executive/daily-profit-monitor",
+    "parent": 1,
+    "order": 900
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/executive/fraud-detection",
+    "parent": 1,
+    "order": 901
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/executive/risk-management",
+    "parent": 1,
+    "order": 902
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/reports/esg-sustainability",
+    "parent": 1,
+    "order": 903
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/reports/metric-dictionary",
+    "parent": 1,
+    "order": 904
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/crm/agent-performance",
+    "parent": 2,
+    "order": 910
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/crm/call-analysis",
+    "parent": 2,
+    "order": 911
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/crm/contract-intelligence",
+    "parent": 2,
+    "order": 912
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/crm/customer-experience",
+    "parent": 2,
+    "order": 913
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/crm/whatsapp-hub",
+    "parent": 2,
+    "order": 914
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/marketing/social-marketing",
+    "parent": 2,
+    "order": 915
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/procurement/vmi-consignment",
+    "parent": 3,
+    "order": 921
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/installations/installation-scheduler",
+    "parent": 4,
+    "order": 927
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/production/bom-builder",
+    "parent": 4,
+    "order": 928
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/production/cpq-configurator",
+    "parent": 4,
+    "order": 929
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/production/cut-nesting",
+    "parent": 4,
+    "order": 930
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/production/dispatch-planning",
+    "parent": 4,
+    "order": 931
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/production/engineering-change",
+    "parent": 4,
+    "order": 932
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/production/iot-sensor-hub",
+    "parent": 4,
+    "order": 933
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/production/measurement-comparison",
+    "parent": 4,
+    "order": 934
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/production/safety-incidents",
+    "parent": 4,
+    "order": 935
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/production/scrap-tracker",
+    "parent": 4,
+    "order": 936
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/production/supply-chain-traceability",
+    "parent": 4,
+    "order": 937
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/production/supply-chain-workflow",
+    "parent": 4,
+    "order": 938
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/production/tool-equipment",
+    "parent": 4,
+    "order": 939
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/projects/variation-orders",
+    "parent": 4,
+    "order": 940
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/inventory/raw-material-catalog",
+    "parent": 5,
+    "order": 946
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/inventory/remnant-management",
+    "parent": 5,
+    "order": 947
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/finance/ap-ar-control",
+    "parent": 6,
+    "order": 953
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/finance/cashflow-management",
+    "parent": 6,
+    "order": 954
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/finance/financial-statements",
+    "parent": 6,
+    "order": 955
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/finance/intercompany",
+    "parent": 6,
+    "order": 956
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/finance/project-cost-calculator",
+    "parent": 6,
+    "order": 957
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/finance/revenue-recognition",
+    "parent": 6,
+    "order": 958
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/finance/three-way-match",
+    "parent": 6,
+    "order": 959
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/hr/employee-value-analysis",
+    "parent": 8,
+    "order": 965
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/hr/performance-okr",
+    "parent": 8,
+    "order": 966
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/hr/shift-scheduling",
+    "parent": 8,
+    "order": 967
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/hr/smart-payroll",
+    "parent": 8,
+    "order": 968
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/mobile/field-operations",
+    "parent": 9,
+    "order": 974
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/support/warranty-management",
+    "parent": 9,
+    "order": 975
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/documents/document-templates",
+    "parent": 10,
+    "order": 981
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/ai-engine/agent-orchestration",
+    "parent": 11,
+    "order": 987
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/ai-engine/ai-agents-dashboard",
+    "parent": 11,
+    "order": 988
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/ai-engine/digital-twin",
+    "parent": 11,
+    "order": 989
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/ai-engine/document-intelligence",
+    "parent": 11,
+    "order": 990
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/ai-engine/knowledge-graph",
+    "parent": 11,
+    "order": 991
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/ai-engine/optimization-lab",
+    "parent": 11,
+    "order": 992
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/ai-engine/process-mining",
+    "parent": 11,
+    "order": 993
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/strategy/competitor-intelligence",
+    "parent": 11,
+    "order": 994
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/portal/customer-portal",
+    "parent": 14,
+    "order": 1000
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/import/import-management",
+    "parent": 15,
+    "order": 1007
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/settings/department-manager",
+    "parent": 15,
+    "order": 1008
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/settings/duplicate-resolution",
+    "parent": 15,
+    "order": 1009
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/settings/feature-flags",
+    "parent": 15,
+    "order": 1010
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/settings/import-staging",
+    "parent": 15,
+    "order": 1011
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/settings/intelligent-notifications",
+    "parent": 15,
+    "order": 1012
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/settings/multi-site",
+    "parent": 15,
+    "order": 1013
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/settings/realtime-collaboration",
+    "parent": 15,
+    "order": 1014
+  },
+  {
+    "file": "00039_final_merge_menu_additions.sql",
+    "route": "/settings/sla-management",
+    "parent": 15,
+    "order": 1015
+  }
+]

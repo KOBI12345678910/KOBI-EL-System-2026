@@ -1,0 +1,242 @@
+{
+  "crm": {
+    "name_he": "CRM",
+    "description": "ניהול ישויות לקוח, לידים, אנשי קשר, אינטראקציות ותקשורת",
+    "owner": "sales_manager",
+    "expected_model_groups": [
+      "leads",
+      "lead_sources",
+      "customers",
+      "contacts",
+      "activities",
+      "meetings",
+      "communication_logs",
+      "customer_segments"
+    ],
+    "actual_model_count": 22
+  },
+  "sales": {
+    "name_he": "מכירות",
+    "description": "ניהול הצעות מחיר, הזדמנויות, מחירונים, אישורים והמרות",
+    "owner": "sales_manager",
+    "expected_model_groups": [
+      "opportunities",
+      "quotes",
+      "quote_items",
+      "pricing_rules",
+      "discounts",
+      "approvals",
+      "sales_orders",
+      "sales_pipeline"
+    ],
+    "actual_model_count": 24
+  },
+  "projects": {
+    "name_he": "פרויקטים",
+    "description": "ניהול פרויקטים, שלבים, משימות, לוחות זמנים",
+    "owner": "operations_manager",
+    "expected_model_groups": [
+      "projects",
+      "project_phases",
+      "project_tasks",
+      "milestones",
+      "dependencies",
+      "project_resources",
+      "project_risk_entries",
+      "project_progress_logs"
+    ],
+    "actual_model_count": 30
+  },
+  "engineering": {
+    "name_he": "הנדסה",
+    "description": "מפרטים, BOM, גרסאות, שרטוטים, תכנון טכני",
+    "owner": "engineer",
+    "expected_model_groups": [
+      "technical_specs",
+      "drawings",
+      "bom_headers",
+      "bom_items",
+      "revision_control",
+      "product_configurations",
+      "engineering_requests",
+      "approval_drawings"
+    ],
+    "actual_model_count": 8
+  },
+  "procurement": {
+    "name_he": "רכש",
+    "description": "ספקים, בקשות רכש, הצעות, הזמנות, אספקות",
+    "owner": "procurement_manager",
+    "expected_model_groups": [
+      "suppliers",
+      "supplier_contacts",
+      "supplier_price_lists",
+      "purchase_requests",
+      "purchase_orders",
+      "purchase_order_items",
+      "goods_receipts",
+      "procurement_approvals"
+    ],
+    "actual_model_count": 24
+  },
+  "inventory": {
+    "name_he": "מלאי",
+    "description": "חומרי גלם, פריטים, מחסנים, תנועות, זמינות",
+    "owner": "warehouse_manager",
+    "expected_model_groups": [
+      "items",
+      "raw_materials",
+      "warehouses",
+      "stock_balances",
+      "stock_movements",
+      "reservations",
+      "batch_lots",
+      "reorder_rules"
+    ],
+    "actual_model_count": 24
+  },
+  "production": {
+    "name_he": "ייצור",
+    "description": "פקודות ייצור, תחנות עבודה, שלבים, ביצוע",
+    "owner": "production_manager",
+    "expected_model_groups": [
+      "production_orders",
+      "production_steps",
+      "work_centers",
+      "labor_logs",
+      "machine_logs",
+      "material_consumption",
+      "scrap_logs",
+      "production_quality_checks"
+    ],
+    "actual_model_count": 11
+  },
+  "installation": {
+    "name_he": "התקנות",
+    "description": "תיאומים, יציאות לשטח, צוותים, מסירות",
+    "owner": "installation_manager",
+    "expected_model_groups": [
+      "installation_orders",
+      "installation_tasks",
+      "installation_teams",
+      "schedules",
+      "site_visits",
+      "completion_reports",
+      "handover_documents",
+      "punch_lists"
+    ],
+    "actual_model_count": 8
+  },
+  "service": {
+    "name_he": "שירות",
+    "description": "קריאות שירות, אחריות, תחזוקה, SLA",
+    "owner": "service_manager",
+    "expected_model_groups": [
+      "service_tickets",
+      "warranty_records",
+      "service_visits",
+      "issue_categories",
+      "resolution_logs",
+      "maintenance_plans",
+      "service_feedback",
+      "sla_rules"
+    ],
+    "actual_model_count": 12
+  },
+  "finance": {
+    "name_he": "פיננסים",
+    "description": "חשבוניות, קבלות, גביה, הוצאות, רווחיות",
+    "owner": "finance_manager",
+    "expected_model_groups": [
+      "invoices",
+      "invoice_items",
+      "receipts",
+      "payments",
+      "expenses",
+      "expense_categories",
+      "cashflow_entries",
+      "profitability_snapshots"
+    ],
+    "actual_model_count": 30
+  },
+  "hr_workforce": {
+    "name_he": "כוח אדם",
+    "description": "עובדים, קבלנים, צוותים, נוכחות, תגמולים",
+    "owner": "hr_manager",
+    "expected_model_groups": [
+      "employees",
+      "contractors",
+      "teams",
+      "attendance_logs",
+      "assignments",
+      "payroll_inputs",
+      "performance_reviews",
+      "skill_matrix"
+    ],
+    "actual_model_count": 25
+  },
+  "documents": {
+    "name_he": "מסמכים",
+    "description": "קבצים, מסמכים, תבניות, גרסאות, אישורים",
+    "owner": "operations_manager",
+    "expected_model_groups": [
+      "documents",
+      "document_links",
+      "document_versions",
+      "templates",
+      "generated_files",
+      "signatures",
+      "attachments",
+      "archive_records"
+    ],
+    "actual_model_count": 23
+  },
+  "analytics": {
+    "name_he": "אנליטיקה",
+    "description": "מדדים, דוחות, KPI, תחזיות, בקרה",
+    "owner": "analyst",
+    "expected_model_groups": [
+      "dashboards",
+      "dashboard_widgets",
+      "kpi_definitions",
+      "reports",
+      "report_sources",
+      "forecast_models",
+      "scenario_models",
+      "scorecards"
+    ],
+    "actual_model_count": 20
+  },
+  "ai_automation": {
+    "name_he": "AI ואוטומציה",
+    "description": "טריגרים, סוכנים, אוטומציות, חיזויים, המלצות",
+    "owner": "ai_operator",
+    "expected_model_groups": [
+      "automation_rules",
+      "automation_runs",
+      "ai_agents",
+      "ai_actions",
+      "prediction_outputs",
+      "recommendation_logs",
+      "prompt_templates",
+      "orchestration_flows"
+    ],
+    "actual_model_count": 28
+  },
+  "governance": {
+    "name_he": "ממשל מערכת",
+    "description": "הרשאות, audit, לוגים, הגדרות, שלמות מערכת",
+    "owner": "admin",
+    "expected_model_groups": [
+      "users",
+      "roles",
+      "permissions",
+      "audit_logs",
+      "change_logs",
+      "system_settings",
+      "validation_rules",
+      "data_quality_issues"
+    ],
+    "actual_model_count": 53
+  }
+}

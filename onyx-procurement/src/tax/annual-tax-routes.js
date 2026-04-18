@@ -116,7 +116,7 @@ function registerAnnualTaxRoutes(app, { supabase, audit, requirePermission }) {
   app.post('/api/customer-invoices', requirePermission('invoices:create'), async (req, res) => {
     const body = { ...req.body };
     if (!body.vat_amount && body.net_amount) {
-      const rate = body.vat_rate || 0.17;
+      const rate = body.vat_rate || 0.18; // Israeli VAT default — 18% from 2026-01-01 (was 17%)
       body.vat_amount = Math.round(body.net_amount * rate * 100) / 100;
       body.gross_amount = body.gross_amount || (Number(body.net_amount) + Number(body.vat_amount));
       body.vat_rate = rate;

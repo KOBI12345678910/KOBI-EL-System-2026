@@ -1,0 +1,416 @@
+import { callLLM } from "../llm/client";
+import { extractJSON, extractTextContent } from "../llm/parser";
+import { FileTool } from "../tools/fileTool";
+import { SearchTool } from "../tools/searchTool";
+import { TerminalTool } from "../tools/terminalTool";
+import { ErrorHandler } from "../agent/errorHandler";
+import { AgentMemory } from "../agent/memory";
+import { SnapshotTool } from "../tools/snapshotTool";
+import { LogViewerTool } from "../tools/logViewerTool";
+
+export interface DiagnosticReport {
+  id: string;
+  problem: string;
+  severity: "critical" | "high" | "medium" | "low";
+  rootCause: string;
+  affectedFiles: string[];
+  errorChain: Array<{
+    file: string;
+    line?: number;
+    error: string;
+    type: "syntax" | "runtime" | "logic" | "dependency" | "config" | "data" | "network" | "permission";
+  }>;
+  fixes: Array<{
+    description: string;
+    file: string;
+    type: "edit" | "create" | "delete" | "command" | "config";
+    applied: boolean;
+    details: any;
+  }>;
+  status: "diagnosing" | "fixing" | "verifying" | "resolved" | "unresolved";
+  duration: number;
+}
+
+export class DiagnosticFlow {
+  private fileTool: FileTool;
+  private searchTool: SearchTool;
+  private terminal: TerminalTool;
+  private errorHandler: ErrorHandler;
+  private snapshotTool: SnapshotTool;
+  private logViewer: LogViewerTool;
+  private memory: AgentMemory;
+  private onLog: (msg: string) => void;
+
+  constructor(workspaceDir: string, onLog: (msg: string) => void) {
+    this.onLog = onLog;
+    this.fileTool = new FileTool(workspaceDir);
+    this.searchTool = new SearchTool(workspaceDir);
+    this.terminal = new TerminalTool(workspaceDir);
+    this.memory = new AgentMemory(workspaceDir);
+    this.errorHandler = new ErrorHandler(workspaceDir, this.memory, onLog);
+    this.snapshotTool = new SnapshotTool(workspaceDir, this.terminal);
+    this.logViewer = new LogViewerTool(workspaceDir);
+  }
+
+  /**
+   * FULL DIAGNOSTIC FLOW:
+   * 
+   * 1. Collect symptoms (error messages, logs, behavior)
+   * 2. Analyze environment (versions, configs, deps)
+   * 3. Trace error chain (find root cause)
+   * 4. Generate fixes
+   * 5. Create backup snapshot
+   * 6. Apply fixes one by one
+   * 7. Verify each fix
+   * 8. Rollback if worse
+   * 9. Run full verification
+   */
+  async diagnoseAndFix(problem: string): Promise<DiagnosticReport> {
+    const startTime = Date.now();
+    const report: DiagnosticReport = {
+      id: `diag_${Date.now()}`,
+      problem,
+      severity: "medium",
+      rootCause: "",
+      affectedFiles: [],
+      errorChain: [],
+      fixes: [],
+      status: "diagnosing",
+      duration: 0,
+    };
+
+    this.onLog(`\n🔬 DIAGNOSTIC FLOW: ${problem.slice(0, 80)}`);
+
+    // ====== STEP 1: COLLECT SYMPTOMS ======
+    this.onLog("\n📋 Step 1: Collecting symptoms...");
+
+    const symptoms: string[] = [];
+
+    // Check build
+    const buildResult = await this.terminal.execute("npm run build 2>&1 | tail -50", { timeout: 60000 });
+    if (!buildResult.success) symptoms.push(`BUILD ERROR:\n${buildResult.stderr || buildResult.stdout}`);
+
+    // Check TypeScript
+    const tsResult = await this.terminal.execute("npx tsc --noEmit 2>&1 | head -30", { timeout: 30000 });
+    if (!tsResult.success) symptoms.push(`TS ERROR:\n${tsResult.stdout}`);
+
+    // Check for server errors in logs
+    const recentLogs = this.logViewer.query({ level: ["error", "fatal"], limit: 20 });
+    if (recentLogs.length > 0) {
+      symptoms.push(`RECENT ERRORS:\n${recentLogs.map((l) => `${l.timestamp.toISOString()} ${l.message}`).join("\n")}`);
+    }
+
+    // Check if server responds
+    const serverCheck = await this.terminal.execute(
+      'curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 2>/dev/null || echo "NO_SERVER"',
+      { timeout: 5000 }
+    );
+    if (serverCheck.stdout.includes("NO_SERVER") || serverCheck.stdout === "000") {
+      symptoms.push("SERVER: Not running or not responding");
+    } else if (parseInt(serverCheck.stdout) >= 500) {
+      symptoms.push(`SERVER: Returning ${serverCheck.stdout}`);
+    }
+
+    // Check dependencies
+    const depsCheck = await this.terminal.execute("npm ls --depth=0 2>&1 | grep -E 'MISSING|ERR|WARN' | head -10", { timeout: 15000 });
+    if (depsCheck.stdout.trim()) symptoms.push(`DEPS:\n${depsCheck.stdout}`);
+
+    // Check disk/memory
+    const diskCheck = await this.terminal.execute("df -h / | tail -1 | awk '{print $5}'", { timeout: 3000 });
+    const memCheck = await this.terminal.execute("free -m 2>/dev/null | awk 'NR==2{print $3/$2*100}' || echo '0'", { timeout: 3000 });
+
+    this.onLog(`  Found ${symptoms.length} symptoms`);
+
+    // ====== STEP 2: AI ANALYSIS ======
+    this.onLog("\n🧠 Step 2: AI analyzing root cause...");
+
+    const projectContext = this.memory.getProjectContext();
+
+    const analysisResponse = await callLLM({
+      system: `You are an expert software debugger. Analyze the symptoms and find the root cause.
+
+Respond with JSON:
+{
+  "severity": "critical|high|medium|low",
+  "rootCause": "detailed explanation of what's wrong",
+  "errorChain": [
+    { "file": "path", "line": null, "error": "description", "type": "syntax|runtime|logic|dependency|config|data|network|permission" }
+  ],
+  "affectedFiles": ["list of files involved"],
+  "fixes": [
+    {
+      "order": 1,
+      "description": "what to do",
+      "type": "edit|create|delete|command|config",
+      "file": "path (if applicable)",
+      "details": {
+        // For edit: { search: "find this", replace: "with this" }
+        // For command: { command: "run this" }
+        // For create: { content: "file content" }
+        // For config: { key: "value" }
+      },
+      "risk": "low|medium|high"
+    }
+  ],
+  "verificationSteps": ["how to verify fix worked"]
+}`,
+      messages: [{
+        role: "user",
+        content: `Problem: ${problem}
+
+Project Context:
+${projectContext}
+
+Symptoms:
+${symptoms.join("\n\n---\n\n")}`,
+      }],
+      maxTokens: 4096,
+    });
+
+    const analysis = extractJSON(extractTextContent(analysisResponse.content));
+    if (!analysis) {
+      report.status = "unresolved";
+      report.rootCause = "Could not analyze the problem";
+      report.duration = Date.now() - startTime;
+      return report;
+    }
+
+    report.severity = analysis.severity;
+    report.rootCause = analysis.rootCause;
+    report.errorChain = analysis.errorChain || [];
+    report.affectedFiles = analysis.affectedFiles || [];
+
+    this.onLog(`  Root cause: ${report.rootCause.slice(0, 100)}`);
+    this.onLog(`  Severity: ${report.severity}`);
+    this.onLog(`  Fixes planned: ${analysis.fixes?.length || 0}`);
+
+    // ====== STEP 3: BACKUP ======
+    this.onLog("\n💾 Step 3: Creating backup...");
+    await this.snapshotTool.create(`pre-fix-${report.id.slice(0, 8)}`, `Before fixing: ${problem.slice(0, 100)}`);
+
+    // ====== STEP 4: APPLY FIXES ======
+    report.status = "fixing";
+    this.onLog("\n🔧 Step 4: Applying fixes...");
+
+    for (const fix of analysis.fixes || []) {
+      this.onLog(`\n  Fix ${fix.order}: ${fix.description}`);
+
+      try {
+        switch (fix.type) {
+          case "edit": {
+            if (fix.file && fix.details?.search && fix.details?.replace !== undefined) {
+              const content = this.fileTool.readFile(fix.file);
+              if (content.success && (content.output || "").includes(fix.details.search)) {
+                const newContent = (content.output || "").replace(fix.details.search, fix.details.replace);
+                this.fileTool.createFile(fix.file, newContent);
+                this.onLog(`    ✅ Edited ${fix.file}`);
+              } else {
+                // Fallback: use AI to edit
+                const editResponse = await callLLM({
+                  system: "Apply the described edit to this file. Respond with ONLY the complete new file content.",
+                  messages: [{
+                    role: "user",
+                    content: `File ${fix.file}:\n\`\`\`\n${content.output}\n\`\`\`\n\nEdit: ${fix.description}`,
+                  }],
+                  maxTokens: 8192,
+                });
+                let edited = extractTextContent(editResponse.content);
+                edited = edited.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+                this.fileTool.createFile(fix.file, edited);
+                this.onLog(`    ✅ AI-edited ${fix.file}`);
+              }
+            }
+            break;
+          }
+          case "command": {
+            if (fix.details?.command) {
+              const result = await this.terminal.execute(fix.details.command, { timeout: 60000 });
+              this.onLog(`    ${result.success ? "✅" : "⚠️"} ${fix.details.command}`);
+            }
+            break;
+          }
+          case "create": {
+            if (fix.file && fix.details?.content) {
+              this.fileTool.createFile(fix.file, fix.details.content);
+              this.onLog(`    ✅ Created ${fix.file}`);
+            }
+            break;
+          }
+          case "delete": {
+            if (fix.file) {
+              this.fileTool.deleteFile(fix.file);
+              this.onLog(`    ✅ Deleted ${fix.file}`);
+            }
+            break;
+          }
+          case "config": {
+            if (fix.file && fix.details) {
+              const content = this.fileTool.readFile(fix.file);
+              if (content.success) {
+                try {
+                  const config = JSON.parse(content.output || "{}");
+                  Object.assign(config, fix.details);
+                  this.fileTool.createFile(fix.file, JSON.stringify(config, null, 2));
+                  this.onLog(`    ✅ Updated config ${fix.file}`);
+                } catch {
+                  this.onLog(`    ⚠️ Could not parse config ${fix.file}`);
+                }
+              }
+            }
+            break;
+          }
+        }
+
+        report.fixes.push({ ...fix, applied: true });
+      } catch (err: any) {
+        this.onLog(`    ❌ Fix failed: ${err.message}`);
+        report.fixes.push({ ...fix, applied: false });
+      }
+    }
+
+    // ====== STEP 5: VERIFY ======
+    report.status = "verifying";
+    this.onLog("\n✅ Step 5: Verifying fixes...");
+
+    let verified = true;
+
+    // Re-check build
+    const verifyBuild = await this.terminal.execute("npm run build 2>&1 | tail -5", { timeout: 60000 });
+    if (!verifyBuild.success) {
+      this.onLog("  ❌ Build still failing");
+      verified = false;
+    } else {
+      this.onLog("  ✅ Build passes");
+    }
+
+    // Re-check TypeScript
+    const verifyTs = await this.terminal.execute("npx tsc --noEmit 2>&1 | grep 'error' | wc -l", { timeout: 30000 });
+    const tsErrors = parseInt(verifyTs.stdout.trim()) || 0;
+    if (tsErrors > 0) {
+      this.onLog(`  ⚠️ ${tsErrors} TypeScript errors remain`);
+      verified = false;
+    } else {
+      this.onLog("  ✅ TypeScript clean");
+    }
+
+    // Re-check server
+    const verifyServer = await this.terminal.execute(
+      'curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 2>/dev/null || echo "NO_SERVER"',
+      { timeout: 5000 }
+    );
+    if (verifyServer.stdout === "200" || verifyServer.stdout === "304") {
+      this.onLog("  ✅ Server responding");
+    }
+
+    // Run custom verification steps
+    for (const step of analysis.verificationSteps || []) {
+      this.onLog(`  Verifying: ${step}`);
+    }
+
+    // ====== STEP 6: ROLLBACK IF WORSE ======
+    if (!verified) {
+      this.onLog("\n⚠️ Some issues remain. Check if situation is worse...");
+      // If critical new errors were introduced, rollback
+      const newBuildResult = await this.terminal.execute("npm run build 2>&1 | grep -c 'error' || echo '0'", { timeout: 30000 });
+      const newErrors = parseInt(newBuildResult.stdout.trim()) || 0;
+
+      if (newErrors > 10 && symptoms.length < 3) {
+        this.onLog("  🔄 Situation worse — rolling back...");
+        const snapshots = this.snapshotTool.list();
+        if (snapshots.length > 0) {
+          await this.snapshotTool.restore(snapshots[0].id);
+          report.status = "unresolved";
+        }
+      }
+    }
+
+    report.status = verified ? "resolved" : "unresolved";
+    report.duration = Date.now() - startTime;
+
+    this.onLog(`\n${"═".repeat(60)}`);
+    this.onLog(`${report.status === "resolved" ? "✅" : "⚠️"} DIAGNOSTIC ${report.status.toUpperCase()} (${(report.duration / 1000).toFixed(1)}s)`);
+    this.onLog(`${"═".repeat(60)}\n`);
+
+    return report;
+  }
+
+  /**
+   * Quick fix — specific error message
+   */
+  async quickFix(errorMessage: string): Promise<{ fixed: boolean; output: string }> {
+    this.onLog(`⚡ Quick fix: ${errorMessage.slice(0, 80)}`);
+
+    const result = await this.errorHandler.analyzeAndFix({
+      error: errorMessage,
+      stepDescription: "Quick fix",
+      taskId: `qf_${Date.now()}`,
+      attempt: 1,
+    });
+
+    return { fixed: result.success, output: result.output };
+  }
+
+  /**
+   * Server crash recovery
+   */
+  async recoverServer(): Promise<{ recovered: boolean; url?: string; output: string }> {
+    this.onLog("\n🏥 SERVER RECOVERY FLOW");
+
+    // Step 1: Kill all stuck processes
+    this.onLog("  1. Killing stuck processes...");
+    await this.terminal.execute("kill -9 $(lsof -t -i:3000 -i:3001 -i:5173 -i:8000) 2>/dev/null");
+    await new Promise((r) => setTimeout(r, 2000));
+
+    // Step 2: Check for common issues
+    this.onLog("  2. Checking dependencies...");
+    const npmCheck = await this.terminal.execute("npm ls --depth=0 2>&1 | grep 'MISSING' | wc -l", { timeout: 15000 });
+    if (parseInt(npmCheck.stdout.trim()) > 0) {
+      this.onLog("  → Reinstalling dependencies...");
+      await this.terminal.execute("npm install", { timeout: 120000 });
+    }
+
+    // Step 3: Check for env issues
+    this.onLog("  3. Checking environment...");
+    const envCheck = await this.terminal.execute("node -e 'console.log(\"OK\")'", { timeout: 5000 });
+    if (!envCheck.success) {
+      this.onLog("  → Node.js issue detected");
+      return { recovered: false, output: "Node.js environment broken" };
+    }
+
+    // Step 4: Try to start server
+    this.onLog("  4. Starting server...");
+    await this.terminal.startBackground("recovery-server", "npm run dev", {
+      env: { PORT: "3000" },
+      onOutput: (data) => {
+        if (data.includes("Error") || data.includes("error")) {
+          this.onLog(`  ⚠️ ${data.trim()}`);
+        }
+      },
+    });
+
+    // Step 5: Wait and check
+    this.onLog("  5. Waiting for server...");
+    await new Promise((r) => setTimeout(r, 8000));
+
+    const healthCheck = await this.terminal.execute(
+      'curl -s -o /dev/null -w "%{http_code}" http://localhost:3000',
+      { timeout: 5000 }
+    );
+
+    const status = parseInt(healthCheck.stdout.trim());
+    const recovered = status >= 200 && status < 500;
+
+    if (recovered) {
+      this.onLog("  ✅ Server recovered!");
+    } else {
+      this.onLog("  ❌ Server still not responding, running diagnostics...");
+      await this.diagnoseAndFix("Server won't start - automatic recovery failed");
+    }
+
+    return {
+      recovered,
+      url: recovered ? "http://localhost:3000" : undefined,
+      output: `Server status: HTTP ${status || "N/A"}`,
+    };
+  }
+}

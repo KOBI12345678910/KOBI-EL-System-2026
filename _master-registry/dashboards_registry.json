@@ -1,0 +1,162 @@
+[
+  {
+    "id": "DSH-0001",
+    "name": "dashboard_executive",
+    "name_he": "דשבורד מנכ״ל",
+    "domain": "governance",
+    "widgets": [
+      "revenue",
+      "profit",
+      "cash",
+      "projects_active",
+      "sla_breaches"
+    ],
+    "sources": [
+      "finance.cashflow_entries",
+      "projects.projects"
+    ]
+  },
+  {
+    "id": "DSH-0002",
+    "name": "dashboard_operations",
+    "name_he": "דשבורד תפעול",
+    "domain": "projects",
+    "widgets": [
+      "wo_open",
+      "attendance_today",
+      "alerts",
+      "production_orders"
+    ],
+    "sources": [
+      "projects.project_tasks",
+      "hr_workforce.attendance_logs",
+      "production.production_orders"
+    ]
+  },
+  {
+    "id": "DSH-0003",
+    "name": "dashboard_procurement",
+    "name_he": "דשבורד רכש",
+    "domain": "procurement",
+    "widgets": [
+      "rfqs_open",
+      "pos_pending",
+      "savings"
+    ],
+    "sources": [
+      "procurement.purchase_requests",
+      "procurement.purchase_orders"
+    ]
+  },
+  {
+    "id": "DSH-0004",
+    "name": "dashboard_workforce",
+    "name_he": "דשבורד כח אדם",
+    "domain": "hr_workforce",
+    "widgets": [
+      "employees_active",
+      "attendance_rate",
+      "payroll_run"
+    ],
+    "sources": [
+      "hr_workforce.employees",
+      "hr_workforce.attendance_logs",
+      "hr_workforce.payroll_inputs"
+    ]
+  },
+  {
+    "id": "DSH-0005",
+    "name": "dashboard_ai",
+    "name_he": "דשבורד AI",
+    "domain": "ai_automation",
+    "widgets": [
+      "automation_runs",
+      "insights",
+      "anomalies"
+    ],
+    "sources": [
+      "ai_automation.automation_runs",
+      "ai_automation.prediction_outputs"
+    ]
+  },
+  {
+    "id": "DSH-0006",
+    "name": "dashboard_finance",
+    "name_he": "דשבורד פיננסי",
+    "domain": "finance",
+    "widgets": [
+      "ar_aging",
+      "ap_aging",
+      "vat",
+      "bank_balances"
+    ],
+    "sources": [
+      "finance.invoices",
+      "finance.payments",
+      "finance.cashflow_entries"
+    ]
+  },
+  {
+    "id": "DSH-0007",
+    "name": "dashboard_service",
+    "name_he": "דשבורד שירות",
+    "domain": "service",
+    "widgets": [
+      "open_tickets",
+      "sla_breaches",
+      "csat"
+    ],
+    "sources": [
+      "service.service_tickets",
+      "service.sla_rules",
+      "service.service_feedback"
+    ]
+  },
+  {
+    "id": "DSH-0008",
+    "name": "dashboard_projects",
+    "name_he": "דשבורד פרויקטים",
+    "domain": "projects",
+    "widgets": [
+      "projects_by_status",
+      "overdue",
+      "upcoming_milestones"
+    ],
+    "sources": [
+      "projects.projects",
+      "projects.milestones"
+    ]
+  },
+  {
+    "id": "DSH-0009",
+    "name": "dashboard_production",
+    "name_he": "דשבורד ייצור",
+    "domain": "production",
+    "widgets": [
+      "oee",
+      "scrap_rate",
+      "wo_in_progress"
+    ],
+    "sources": [
+      "production.production_orders",
+      "production.scrap_logs",
+      "production.work_centers"
+    ]
+  },
+  {
+    "id": "DSH-0010",
+    "name": "dashboard_sales",
+    "name_he": "דשבורד מכירות",
+    "domain": "sales",
+    "widgets": [
+      "pipeline",
+      "win_rate",
+      "quota_attainment"
+    ],
+    "sources": [
+      "sales.opportunities",
+      "sales.quotes",
+      "sales.sales_pipeline"
+    ]
+  }
+]

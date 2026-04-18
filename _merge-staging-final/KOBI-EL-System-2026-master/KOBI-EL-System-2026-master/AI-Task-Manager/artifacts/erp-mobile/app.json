@@ -1,0 +1,79 @@
+{
+  "expo": {
+    "name": "ERP Mobile",
+    "slug": "erp-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "erp-mobile",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1B4332"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "האפליקציה משתמשת במיקום שלך כדי לעקוב אחר שעות עבודה ומסלולי שטח",
+        "NSLocationWhenInUseUsageDescription": "האפליקציה משתמשת במיקום שלך כדי לעקוב אחר שעות עבודה",
+        "NSSpeechRecognitionUsageDescription": "האפליקציה משתמשת בזיהוי קולי כדי לקבל פקודות בעברית",
+        "NSMicrophoneUsageDescription": "האפליקציה משתמשת במיקרופון לזיהוי פקודות קוליות בעברית",
+        "UIBackgroundModes": ["location", "fetch"]
+      }
+    },
+    "android": {
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION",
+        "RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/images/icon.png"
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "origin": "https://replit.com/"
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to scan barcodes for goods receipt"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "האפליקציה משתמשת במיקום שלך כדי לעקוב אחר שעות עבודה ומסלולי שטח",
+          "locationWhenInUsePermission": "האפליקציה משתמשת במיקום שלך כדי לעקוב אחר שעות עבודה",
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ],
+      "expo-font",
+      "expo-web-browser",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "האפליקציה משתמשת במיקרופון לזיהוי פקודות קוליות בעברית",
+          "speechRecognitionPermission": "האפליקציה משתמשת בזיהוי קולי כדי לקבל פקודות בעברית"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "supportsRTL": true
+    }
+  }
+}

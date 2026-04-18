@@ -1,0 +1,217 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "generated_at": "2026-04-11",
+    "description": "Bilingual (HE/EN) explanatory tooltips for complex financial & regulatory concepts in Onyx Procurement",
+    "tooltip_count": 42,
+    "notes": "Tooltips are longer than labels — they teach, not just name. Use line breaks judiciously."
+  },
+
+  "tooltips": {
+    "payroll_concepts": {
+      "tax_credit_points": {
+        "he": "נקודות זיכוי הן נקודות שמופחתות מהמס שלך. כל תושב זכאי ל-2.25 נקודות בסיס. נקודות נוספות ניתנות עבור ילדים, בן/בת זוג שאינם עובדים, ועוד. ערך נקודה ב-2026 הוא כ-242 ש\"ח לחודש.",
+        "en": "Tax credit points reduce your income tax. Every resident gets 2.25 base points. Extras for children, non-working spouse, etc. In 2026, each point is worth ~242 NIS/month.",
+        "ctx": "Help tooltip on Form 101 / payroll setup"
+      },
+      "progressive_tax_brackets": {
+        "he": "מדרגות המס בישראל הן פרוגרסיביות — ככל שההכנסה גבוהה יותר, שיעור המס על הטווח הנוסף עולה. ב-2026: 10% עד 7,010, 14% עד 10,060, 20% עד 16,150, 31% עד 22,440, 35% עד 46,690, 47% עד 60,130, 50% מעל.",
+        "en": "Israeli tax brackets are progressive — higher income is taxed at higher rates on each additional tier. 2026 brackets (NIS/month): 10% to 7,010, 14% to 10,060, 20% to 16,150, 31% to 22,440, 35% to 46,690, 47% to 60,130, 50% above.",
+        "ctx": "Tooltip on payslip tax lines"
+      },
+      "bituach_leumi_ceilings": {
+        "he": "ביטוח לאומי פועל לפי מדרגות. על חלק השכר עד 60% מהשכר הממוצע (כ-7,522 ש\"ח) עובד משלם 0.4%, ועל החלק מעל זה ועד התקרה של 49,030 ש\"ח — 7%. מעסיק משלם 3.55% ו-7.6% בהתאמה.",
+        "en": "National Insurance has tiered rates. Employee pays 0.4% on wages up to 60% of average wage (~7,522 NIS), and 7% on the portion above up to the 49,030 NIS ceiling. Employer pays 3.55% and 7.6% respectively.",
+        "ctx": "Tooltip on BL deduction line"
+      },
+      "pension_section_14": {
+        "he": "פנסיה לפי סעיף 14 — המעסיק מעביר 6%–6.5% לקרן פנסיה + 8.33% פיצויים. תחת סעיף 14 להסכם, ההפקדה לפיצויים בקרן פוטרת את המעסיק מחבות פיצויים נוספת בעזיבה.",
+        "en": "Section 14 pension — employer contributes 6%–6.5% to pension fund + 8.33% to severance. Under Section 14, severance deposits in the fund release employer from further severance liability at termination.",
+        "ctx": "Tooltip on pension setup"
+      },
+      "keren_hishtalmut_benefit": {
+        "he": "קרן השתלמות היא חיסכון לטווח של 6 שנים עם הטבות מס משמעותיות. המעסיק מפקיד 7.5% והעובד 2.5% מהשכר. הכספים פטורים ממס עד תקרה, ואחרי 6 שנים ניתן למשוך ללא מס.",
+        "en": "Keren Hishtalmut is a 6-year savings plan with major tax benefits. Employer contributes 7.5%, employee 2.5%. Funds are tax-exempt up to the ceiling, and after 6 years can be withdrawn tax-free.",
+        "ctx": "Tooltip on Keren line in payslip"
+      },
+      "severance_8_33": {
+        "he": "8.33% הוא היחס בין חודש פיצויים אחד ל-12 חודשי עבודה (1/12). המעסיק מפריש סכום זה לקרן הפנסיה מדי חודש כדי לצבור פיצויים עתידיים.",
+        "en": "8.33% is the ratio of one month of severance to 12 months of work (1/12). Employer deposits this amount monthly into the pension fund to accrue future severance.",
+        "ctx": "Tooltip on severance provision"
+      },
+      "overtime_125_vs_150": {
+        "he": "ה-125% הוא השיעור המוכפל עבור השעתיים הראשונות של שעות נוספות ביום. החל מהשעה השלישית ואילך השיעור עולה ל-150%. השעה השלישית ואילך בימי שבת/מנוחה מתומחרת 200%.",
+        "en": "125% is the multiplier for the first two overtime hours per day. From the third hour onwards it rises to 150%. Hours from the third onward on rest days are priced at 200%.",
+        "ctx": "Tooltip on overtime codes in payslip"
+      },
+      "miluim_refund": {
+        "he": "שירות מילואים מזכה את המעסיק בהחזר מלא מביטוח לאומי עבור ימי השירות. על המעסיק להמשיך לשלם לעובד כרגיל ואז לבקש החזר מהמוסד לביטוח לאומי תוך 12 חודשים.",
+        "en": "Reserve duty entitles the employer to a full reimbursement from National Insurance for service days. Employer must continue paying the employee as usual and then claim refund from Bituach Leumi within 12 months.",
+        "ctx": "Tooltip on miluim line"
+      },
+      "ytd_tax_reconciliation": {
+        "he": "מס מצטבר (YTD) — המערכת מחשבת את המס באמצעות צבירה שנתית: מס שנתי משוער על הצפי השנתי, חלקי התקופה. זה מנטרל חודשי שיא. אם העובד מקבל בונוס חד-פעמי, המס מתפרס על שאר השנה.",
+        "en": "YTD tax is computed on an annual-accrual basis: estimated annual tax on projected year, divided by period. This smooths spikes. If an employee gets a one-time bonus, the tax is spread over the rest of the year.",
+        "ctx": "Tooltip on YTD column in payslip"
+      }
+    },
+
+    "vat_concepts": {
+      "vat_18_percent": {
+        "he": "שיעור המע\"מ בישראל עלה ל-18% מ-1 בינואר 2025 (מ-17% קודם). כל חשבונית שהונפקה מ-1.1.2025 ואילך חייבת לשאת את השיעור החדש.",
+        "en": "Israel VAT rate increased to 18% from Jan 1, 2025 (previously 17%). Every invoice issued from 1.1.2025 onwards must carry the new rate.",
+        "ctx": "Tooltip on VAT rate field"
+      },
+      "pcn_836_explanation": {
+        "he": "PCN 836 הוא פורמט קובץ מובנה המשמש לדיווח חודשי/דו-חודשי של כל פרטי המע\"מ לרשות המיסים. כולל כל חשבוניות העסקאות והתשומות לפי תבנית קבועה.",
+        "en": "PCN 836 is a structured file format for monthly/bi-monthly reporting of all VAT details to the Tax Authority. Includes all sale and purchase invoices in a fixed template.",
+        "ctx": "Tooltip on PCN button"
+      },
+      "allocation_number_required": {
+        "he": "מספר הקצאה הוא מנגנון חדש (מ-2024) — חשבוניות מעל סף מסוים מחייבות קבלת מספר הקצאה מרשות המיסים לפני הונפקת החשבונית. ללא המספר, הקונה לא יוכל לקזז תשומות.",
+        "en": "Allocation number is a new mechanism (from 2024) — invoices above a threshold require getting an allocation number from the Tax Authority before the invoice is issued. Without it, the buyer cannot deduct input VAT.",
+        "ctx": "Tooltip on allocation field"
+      },
+      "zero_vs_exempt": {
+        "he": "מע\"מ אפס (0%) ופטור ממע\"מ אינם זהים: עסקה בשיעור אפס עדיין 'בהיקף המע\"מ', והמוכר יכול לנכות תשומות. עסקה פטורה אינה בהיקף המע\"מ כלל, והמוכר לא יכול לנכות תשומות הקשורות אליה.",
+        "en": "Zero-rated VAT (0%) and VAT-exempt are not the same: a zero-rated transaction is still 'within the VAT scope' and the seller can deduct input VAT. An exempt transaction is outside VAT scope entirely — seller cannot deduct related inputs.",
+        "ctx": "Tooltip on VAT rate selector"
+      },
+      "osek_patur_vs_murshe": {
+        "he": "עוסק פטור — עסק קטן עם מחזור מתחת לסף שנתי (כ-120,000 ש\"ח). לא גובה מע\"מ ולא מגיש דוחות מע\"מ. עוסק מורשה — עסק מעל הסף, גובה מע\"מ ומגיש דוחות.",
+        "en": "Osek Patur (exempt dealer) — small business below annual threshold (~120,000 NIS). Does not charge VAT and does not file VAT returns. Osek Murshe (registered) — above threshold, charges VAT and files returns.",
+        "ctx": "Tooltip on business type selector"
+      }
+    },
+
+    "bank_concepts": {
+      "bank_reconciliation_explained": {
+        "he": "התאמת בנק היא תהליך שבו משווים את הרישום הפנימי של העסק (ספר חשבונות) עם דף החשבון של הבנק. המטרה: לוודא שכל תנועה רשומה בשני הצדדים, ולזהות שגיאות, פערים או הונאות.",
+        "en": "Bank reconciliation is the process of comparing internal business records (ledger) to the bank's statement. Goal: verify every transaction is recorded on both sides, and detect errors, gaps, or fraud.",
+        "ctx": "Tooltip on bank recon page"
+      },
+      "zahav_vs_masav": {
+        "he": "זה\"ב — מערכת סליקה בזמן אמת של בנק ישראל, העברות גדולות מבוצעות מיידית. מס\"ב — מרכז סליקה בנקאי, משמש להעברות באצוות (שכר, תשלומים לספקים) ומבוצע במחזורי קבועים.",
+        "en": "Zahav — Bank of Israel's real-time gross settlement system; large transfers are executed immediately. MASAV — Israeli banking clearing house for batch transfers (payroll, supplier payments); runs on fixed cycles.",
+        "ctx": "Tooltip on transfer type selector"
+      },
+      "direct_debit_setup": {
+        "he": "הוראת קבע היא הרשאה שנותן לקוח לעסק לחייב את חשבון הבנק שלו באופן אוטומטי במועדים קבועים. ניתן להגדיר סכום קבוע או סכום משתנה (לפי חשבון). הלקוח יכול לבטל בכל עת.",
+        "en": "Direct debit is an authorization the customer gives to a business to charge their bank account automatically at fixed dates. Can be fixed or variable amount (per invoice). Customer can cancel at any time.",
+        "ctx": "Tooltip on standing order setup"
+      },
+      "index_linked_loans": {
+        "he": "הלוואה צמודת מדד (מחיר לצרכן) — הקרן מוצמדת למדד המחירים לצרכן. אם המדד עולה ב-3%, הקרן (וההחזרים) עולים ב-3%. זה מגן על המלווה מפני אינפלציה.",
+        "en": "Index-linked loan (to CPI) — the principal is linked to the Consumer Price Index. If CPI rises 3%, the principal (and payments) rise 3%. This protects the lender from inflation.",
+        "ctx": "Tooltip on loan type"
+      }
+    },
+
+    "annual_tax_concepts": {
+      "form_6111_explained": {
+        "he": "טופס 6111 הוא טופס מובנה שמאחד את מאזן ורווח והפסד של העסק לפורמט קבוע. כל עסק המגיש דוח שנתי צריך להגיש אותו בצירוף לדוח. הטופס מקל על רשות המיסים לנתח נתונים.",
+        "en": "Form 6111 is a structured form that consolidates the business balance sheet and P&L into a fixed format. Every business filing an annual return must submit it alongside. It helps the Tax Authority analyze data.",
+        "ctx": "Tooltip on Form 6111 generation"
+      },
+      "advance_tax_mechanism": {
+        "he": "מקדמות מס הכנסה — תשלומים חודשיים שהעסק משלם לרשות המיסים על חשבון המס השנתי הסופי. החישוב מבוסס על שיעור (אחוז) ממחזור העסק. בסוף השנה מתחשבנים סופית.",
+        "en": "Income Tax Advance — monthly payments the business pays to the Tax Authority on account of the final annual tax. Computed as a rate (percentage) of turnover. Final reconciliation happens at year-end.",
+        "ctx": "Tooltip on advance payment line"
+      },
+      "loss_carryforward_rules": {
+        "he": "הפסד מועבר — אם העסק דיווח על הפסד בשנה מסוימת, ההפסד יכול לשמש להפחתת רווחים (ומס) בשנים הבאות. בישראל אין מגבלת שנים להעברת הפסדים מעסק עיקרי.",
+        "en": "Loss carryforward — if the business reported a loss in a given year, the loss can offset profits (and tax) in future years. In Israel, there is no year limit on carrying forward losses from a main business.",
+        "ctx": "Tooltip on loss carryforward field"
+      },
+      "depreciation_rates": {
+        "he": "שיעורי פחת נקבעים בתקנות מס הכנסה. לדוגמה: מחשבים 33%, ריהוט 7%–15%, רכבים 15%, בניינים 2%–4%. שימוש בשיעור לא נכון יכול להוביל להחלטת שומה.",
+        "en": "Depreciation rates are set by Income Tax regulations. Examples: computers 33%, furniture 7%–15%, vehicles 15%, buildings 2%–4%. Using the wrong rate can lead to an assessment.",
+        "ctx": "Tooltip on depreciation field"
+      },
+      "corporate_vs_individual_deadline": {
+        "he": "מועד הגשת דוח שנתי: יחיד — 31 במאי לשנת המס הקודמת. חברה — 5 חודשים מסיום שנת המס (כלומר 31 במאי לשנת מס המסתיימת ב-31 בדצמבר). ניתן לבקש הארכה.",
+        "en": "Annual return deadlines: individual — May 31 for the prior tax year. Company — 5 months after tax year end (i.e., May 31 for a year ending Dec 31). Extensions available upon request.",
+        "ctx": "Tooltip on filing deadline"
+      }
+    },
+
+    "procurement_concepts": {
+      "three_way_match_explained": {
+        "he": "התאמה תלת-כיוונית — בקרת תשלום ספקים שבודקת שלושה מסמכים: הזמנת רכש (PO), תעודת קבלה (GRN), וחשבונית הספק. רק אם הסכומים, הכמויות והמחירים זהים — התשלום מאושר.",
+        "en": "Three-way match — a supplier payment control that checks three documents: purchase order (PO), goods receipt note (GRN), and supplier invoice. Payment is approved only if amounts, quantities, and prices match.",
+        "ctx": "Tooltip on 3-way match status"
+      },
+      "rfq_vs_rfp": {
+        "he": "RFQ (בקשה להצעת מחיר) — שאלות טכניות מוגדרות, התחרות על המחיר. RFP (בקשה להצעה) — רחב יותר, כולל שיקולים טכניים ועסקיים, מתאים לפתרונות מורכבים. RFI (בקשה למידע) — לאיסוף מידע ראשוני.",
+        "en": "RFQ (Request for Quotation) — well-defined technical specs, competition is on price. RFP (Request for Proposal) — broader, includes technical and commercial criteria, suitable for complex solutions. RFI (Request for Information) — for initial information gathering.",
+        "ctx": "Tooltip on RFx selector"
+      },
+      "shotef_plus_30_explained": {
+        "he": "שוטף + 30 — תשלום בסוף החודש שבו הוצאה החשבונית + 30 יום נוספים. דוגמה: חשבונית מ-15 במרץ תשולם ב-30 באפריל. זהו תנאי נפוץ מאוד בישראל.",
+        "en": "Shotef + 30 — payment at the end of the invoice month + 30 more days. Example: invoice from March 15 is paid on April 30. Very common term in Israel.",
+        "ctx": "Tooltip on payment terms"
+      },
+      "supplier_onboarding_checklist": {
+        "he": "קליטת ספק כוללת: איסוף פרטי החברה (ח.פ., כתובת, איש קשר, חשבון בנק), וידוא תעודת עוסק מורשה, קבלת אישור ניכוי מס במקור, בדיקת ציות (AML/KYC), ואישור של מנהל רכש.",
+        "en": "Supplier onboarding includes: collecting company details (business number, address, contact, bank account), verifying VAT registration, obtaining withholding tax certificate, compliance check (AML/KYC), and procurement manager approval.",
+        "ctx": "Tooltip on supplier onboarding"
+      },
+      "withholding_certificate": {
+        "he": "אישור ניכוי מס במקור — מסמך שמוציאה רשות המיסים שמאשר שהספק מדווח ומשלם מסים כחוק. ללא האישור, המעסיק/הקונה חייב לנכות מס במקור בשיעור גבוה (עד 47%) מהתשלום.",
+        "en": "Withholding certificate — a document issued by the Tax Authority confirming the supplier reports and pays taxes lawfully. Without it, the employer/buyer must withhold at the highest rate (up to 47%) from the payment.",
+        "ctx": "Tooltip on supplier certificate"
+      }
+    },
+
+    "compliance_concepts": {
+      "audit_trail_importance": {
+        "he": "מסלול ביקורת הוא רישום בלתי ניתן לשינוי של כל פעולה במערכת: מי, מה, מתי, ומאיפה. זה חובה חוקית לצרכי מס, פרטיות, ובקרת SOX. ללא מסלול ביקורת, המערכת אינה עומדת בדרישות רגולציה.",
+        "en": "Audit trail is an immutable record of every system action: who, what, when, and from where. Legally required for tax, privacy, and SOX controls. Without an audit trail, the system fails regulatory requirements.",
+        "ctx": "Tooltip on audit log page"
+      },
+      "segregation_of_duties": {
+        "he": "הפרדת תפקידים (SOD) — עקרון שלפיו עובד אחד לא יכול לבצע את כל שלבי העסקה. לדוגמה, מי שיוצר חשבונית לספק לא יכול גם לאשר אותה לתשלום. זה מגן מהונאות ושגיאות.",
+        "en": "Segregation of duties (SOD) — principle that a single employee cannot perform all stages of a transaction. For example, whoever creates a supplier invoice cannot also approve it for payment. This protects against fraud and errors.",
+        "ctx": "Tooltip on SOD warning"
+      },
+      "data_retention_7_years": {
+        "he": "חובת שמירת נתונים לצרכי מס בישראל היא 7 שנים לפחות (סעיף 130 לפקודת מס הכנסה). זה כולל חשבוניות, ספרי חשבונות, תלושי שכר, דפי חשבון, ועוד. שמירה פחותה יכולה להוביל לקנסות.",
+        "en": "Israeli data retention obligation for tax purposes is at least 7 years (Section 130 of Income Tax Ordinance). Includes invoices, ledgers, payslips, bank statements, and more. Shorter retention can lead to fines.",
+        "ctx": "Tooltip on retention policy"
+      },
+      "privacy_tikun_13": {
+        "he": "תיקון 13 לחוק הגנת הפרטיות — נכנס לתוקף ב-2025. מחייב מינוי ממונה הגנת פרטיות, רישום מאגרי מידע, ודוחות פגיעה. עונשים משמעותיים על עסקים שלא עומדים.",
+        "en": "Amendment 13 to the Privacy Protection Law — effective 2025. Requires appointing a Data Protection Officer, registering databases, and breach reports. Significant penalties for non-compliant businesses.",
+        "ctx": "Tooltip on privacy settings"
+      },
+      "kyc_procedure": {
+        "he": "הכר את הלקוח (KYC) — תהליך חובה לאימות זהות לקוחות וספקים, הכולל איסוף תעודות זהות, אישורי יסוד, ובדיקת רשימות סנקציות. נדרש בעסקים פיננסיים ובמקרים רבים גם בעסקים רגילים מעל סף מסוים.",
+        "en": "Know Your Customer (KYC) — mandatory process to verify customer and supplier identities, including collecting IDs, incorporation documents, and sanctions screening. Required for financial businesses and often for regular businesses above a threshold.",
+        "ctx": "Tooltip on KYC step"
+      },
+      "sox_controls": {
+        "he": "בקרות SOX (Sarbanes-Oxley) — מסגרת בקרה פנימית למניעת הונאות בדיווח כספי. רלוונטית לחברות הנסחרות בבורסות האמריקאיות (גם ישראליות). כוללת תיעוד תהליכים, בקרת גישה, וסקירות תקופתיות.",
+        "en": "SOX (Sarbanes-Oxley) controls — internal control framework preventing financial reporting fraud. Relevant for companies listed on U.S. exchanges (including Israeli ones). Includes process documentation, access controls, and periodic reviews.",
+        "ctx": "Tooltip on SOX compliance"
+      }
+    },
+
+    "ui_concepts": {
+      "soft_delete": {
+        "he": "מחיקה רכה — הרשומה לא נמחקת פיזית אלא מסומנת כמבוטלת. ניתן לשחזר אותה מאוחר יותר. זה חשוב לביקורת, לשחזור בטעות, ולחובות שמירת מידע.",
+        "en": "Soft delete — the record is not physically deleted but marked as inactive. Can be restored later. Important for auditing, recovering from mistakes, and data retention obligations.",
+        "ctx": "Tooltip on delete button"
+      },
+      "optimistic_locking": {
+        "he": "נעילה אופטימית — מנגנון שמונע עדכונים מקבילים מתנגשים. אם משתמש אחר עדכן את הרשומה בינתיים, תקבל הודעה לרענן לפני שמירת השינויים שלך.",
+        "en": "Optimistic locking — a mechanism preventing conflicting parallel updates. If another user updated the record in the meantime, you'll be asked to refresh before saving your changes.",
+        "ctx": "Tooltip on concurrent edit warning"
+      },
+      "rtl_bidi": {
+        "he": "ממשק דו-כיווני (BiDi) — התמיכה במערכת כוללת תצוגה נכונה של טקסט עברי (ימין לשמאל) ואנגלי (שמאל לימין) באותה שורה. סכומים כספיים תמיד LTR.",
+        "en": "BiDi interface — the system supports correct display of Hebrew (RTL) and English (LTR) text on the same line. Monetary amounts are always displayed LTR.",
+        "ctx": "Tooltip on language switcher"
+      }
+    }
+  }
+}

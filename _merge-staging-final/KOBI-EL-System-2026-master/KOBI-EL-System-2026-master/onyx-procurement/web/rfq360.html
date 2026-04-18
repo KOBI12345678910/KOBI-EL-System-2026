@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RFQ 360 — Techno-Kol Uzi ERP 2026</title>
+  <style>
+    :root{--bg-0:#05070a;--bg-1:#0a0e14;--bg-2:#111720;--bg-3:#1a2230;--border:#1f2a3a;--border-hi:#2a3a52;--text-0:#e6ecf5;--text-1:#a8b4c8;--text-2:#6b7a90;--accent:#3a8dde;--accent-hi:#5aa8ff;--ok:#2bd48b;--warn:#f2b84d;--err:#ef5350;--purple:#a78bfa;--orange:#f97316;--font:'Segoe UI','Heebo','Assistant',system-ui,sans-serif;--mono:'Consolas','Menlo',monospace}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg-0);color:var(--text-0);font-family:var(--font);min-height:100vh;background-image:radial-gradient(ellipse at top,rgba(58,141,222,.04),transparent 60%)}
+    .container{max-width:1200px;margin:0 auto;padding:24px}
+
+    .top-nav{display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap;gap:10px}
+    .nav-links{display:flex;gap:8px}
+    .back-link{color:var(--accent-hi);text-decoration:none;font-size:13px;padding:6px 14px;border:1px solid var(--border);border-radius:6px;background:var(--bg-2);transition:all .15s}
+    .back-link:hover{background:var(--bg-3);border-color:var(--accent)}
+
+    .header-card{background:linear-gradient(135deg,var(--bg-2),var(--bg-1));border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px;position:relative;overflow:hidden}
+    .header-card::before{content:'';position:absolute;top:0;left:0;width:200px;height:200px;background:radial-gradient(circle,rgba(249,115,22,.05),transparent 70%);pointer-events:none}
+    .header-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px}
+    .header-title{display:flex;align-items:center;gap:14px}
+    .header-icon{font-size:36px}
+    .header-name{font-size:24px;font-weight:700;line-height:1.2}
+    .header-sub{font-size:13px;color:var(--text-2);margin-top:2px}
+    .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:16px;font-size:12px;font-weight:600}
+    .badge-draft{background:rgba(107,122,144,.1);color:var(--text-2);border:1px solid rgba(107,122,144,.25)}
+    .badge-sent{background:rgba(58,141,222,.1);color:var(--accent-hi);border:1px solid rgba(58,141,222,.25)}
+    .badge-pending{background:rgba(242,184,77,.1);color:var(--warn);border:1px solid rgba(242,184,77,.25)}
+    .badge-approved{background:rgba(43,212,139,.1);color:var(--ok);border:1px solid rgba(43,212,139,.25)}
+    .badge-rejected{background:rgba(239,83,80,.1);color:var(--err);border:1px solid rgba(239,83,80,.25)}
+    .badge-quotes{background:rgba(249,115,22,.1);color:var(--orange);border:1px solid rgba(249,115,22,.25)}
+    .badge-converted{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.25)}
+    .badges{display:flex;gap:8px;flex-wrap:wrap}
+    .header-fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:18px}
+    .hf{font-size:12px}.hf .lbl{color:var(--text-2);margin-bottom:2px}.hf .val{color:var(--text-0);font-weight:600;font-size:14px}
+
+    .nba{background:linear-gradient(135deg,rgba(43,212,139,.06),rgba(249,115,22,.04));border:1px solid rgba(43,212,139,.2);border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .nba-label{font-size:13px;color:var(--ok);font-weight:600}.nba-text{font-size:13px;color:var(--text-1)}
+
+    .action-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);font-family:var(--font);transition:all .15s;background:var(--bg-2);color:var(--text-1)}
+    .btn:hover{background:var(--bg-3);color:var(--text-0)}
+    .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn-primary:hover{background:var(--accent-hi)}
+    .btn-success{background:rgba(43,212,139,.12);color:var(--ok);border-color:rgba(43,212,139,.3)}.btn-success:hover{background:rgba(43,212,139,.2)}
+    .btn-danger{background:rgba(239,83,80,.08);color:var(--err);border-color:rgba(239,83,80,.25)}.btn-danger:hover{background:rgba(239,83,80,.15)}
+    .btn-purple{background:rgba(167,139,250,.1);color:var(--purple);border-color:rgba(167,139,250,.25)}.btn-purple:hover{background:rgba(167,139,250,.18)}
+    .btn-orange{background:rgba(249,115,22,.1);color:var(--orange);border-color:rgba(249,115,22,.25)}.btn-orange:hover{background:rgba(249,115,22,.18)}
+    .btn .ic{font-size:16px}
+
+    .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:20px}
+    .card{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:16px}
+    .card-title{font-size:12px;color:var(--text-2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+    .card-value{font-size:22px;font-weight:700;font-family:var(--mono)}
+    .card-sub{font-size:12px;color:var(--text-2);margin-top:4px}
+    .card-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(31,42,58,.5);font-size:13px}
+    .card-row:last-child{border-bottom:none}
+    .card-row .label{color:var(--text-2)}.card-row .value{color:var(--text-0);font-weight:600;font-family:var(--mono)}
+    .card-highlight{border-color:var(--orange);background:linear-gradient(135deg,rgba(249,115,22,.04),var(--bg-2))}
+
+    .timeline-bar{display:flex;align-items:center;gap:0;overflow-x:auto;padding:12px 0;margin-bottom:20px}
+    .tl-step{display:flex;flex-direction:column;align-items:center;min-width:70px}
+    .tl-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid var(--border);color:var(--text-2);background:var(--bg-2)}
+    .tl-dot.done{background:var(--ok);color:#fff;border-color:var(--ok)}
+    .tl-dot.current{background:var(--orange);color:#fff;border-color:var(--orange);box-shadow:0 0 12px rgba(249,115,22,.35)}
+    .tl-line{width:32px;height:2px;background:var(--border);flex-shrink:0;margin-bottom:18px}
+    .tl-line.done{background:var(--ok)}
+    .tl-label{font-size:10px;color:var(--text-2);text-align:center;margin-top:5px;max-width:72px}
+
+    .tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px;overflow-x:auto}
+    .tab{padding:10px 18px;font-size:13px;font-weight:500;color:var(--text-2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .15s}
+    .tab:hover{color:var(--text-0)}.tab.active{color:var(--accent-hi);border-bottom-color:var(--accent)}
+    .tab-panel{display:none}.tab-panel.active{display:block}
+
+    .tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:8px}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th{background:var(--bg-3);color:var(--text-2);font-weight:600;padding:10px 14px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--border)}
+    td{padding:10px 14px;border-bottom:1px solid rgba(31,42,58,.4);color:var(--text-1)}
+    tr:hover td{background:rgba(58,141,222,.03)}
+    tr.best td{background:rgba(43,212,139,.05)}
+
+    .section{margin-bottom:24px}
+    .section-title{font-size:15px;font-weight:600;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+    .empty{text-align:center;padding:40px;color:var(--text-2);font-size:14px}
+    .empty-icon{font-size:32px;margin-bottom:8px}
+
+    .skeleton{background:linear-gradient(90deg,var(--bg-3) 25%,var(--bg-2) 50%,var(--bg-3) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .skel-line{height:14px;margin-bottom:8px;width:80%}
+    .skel-block{height:60px;margin-bottom:12px}
+
+    .ai-card{background:linear-gradient(135deg,rgba(167,139,250,.06),rgba(58,141,222,.04));border:1px solid rgba(167,139,250,.2);border-radius:10px;padding:16px}
+    .ai-title{font-size:13px;color:var(--purple);font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+    .ai-text{font-size:13px;color:var(--text-1);line-height:1.6}
+
+    /* COMPARISON BARS */
+    .cmp-bar{position:relative;height:22px;background:var(--bg-3);border-radius:4px;overflow:hidden;margin:4px 0}
+    .cmp-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-inline-start:8px;font-size:11px;font-weight:600;color:#fff}
+    .cmp-best{background:var(--ok)}.cmp-mid{background:var(--warn)}.cmp-worst{background:var(--err)}
+
+    .supplier-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;margin:2px}
+    .chip-invited{background:rgba(58,141,222,.1);color:var(--accent-hi);border:1px solid rgba(58,141,222,.2)}
+    .chip-responded{background:rgba(43,212,139,.1);color:var(--ok);border:1px solid rgba(43,212,139,.2)}
+    .chip-declined{background:rgba(239,83,80,.1);color:var(--err);border:1px solid rgba(239,83,80,.2)}
+
+    @media(max-width:768px){.cards-grid{grid-template-columns:1fr 1fr}.header-fields{grid-template-columns:1fr 1fr}}
+    @media(max-width:480px){.cards-grid{grid-template-columns:1fr}.header-fields{grid-template-columns:1fr}.action-bar{flex-direction:column}.btn{width:100%;justify-content:center}}
+  </style>
+</head>
+<body>
+<div class="container">
+  <nav class="top-nav">
+    <div class="nav-links">
+      <a href="index.html" class="back-link">בית</a>
+      <a href="pipeline-dashboard.html" class="back-link">Pipeline</a>
+      <a href="entity360.html?type=rfq" class="back-link">Entity 360</a>
+    </div>
+    <div style="font-size:12px;color:var(--text-2)">RFQ360 · Techno-Kol Uzi ERP 2026</div>
+  </nav>
+
+  <div id="loading">
+    <div class="skeleton skel-block" style="height:120px"></div>
+    <div class="skeleton skel-block" style="height:50px;width:60%"></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:16px">
+      <div class="skeleton skel-block"></div><div class="skeleton skel-block"></div>
+      <div class="skeleton skel-block"></div><div class="skeleton skel-block"></div>
+    </div>
+    <div class="skeleton skel-block" style="height:200px;margin-top:16px"></div>
+  </div>
+
+  <div id="main-content" style="display:none">
+    <div class="header-card" id="rfq-header"></div>
+    <div class="timeline-bar" id="status-timeline"></div>
+    <div class="nba" id="nba"></div>
+    <div class="action-bar" id="primary-actions"></div>
+    <div class="action-bar" id="secondary-actions"></div>
+    <div class="cards-grid" id="summary-cards"></div>
+    <div class="tabs" id="tabs"></div>
+    <div id="tab-panels"></div>
+  </div>
+
+  <div id="error-state" style="display:none">
+    <div class="card" style="text-align:center;padding:60px 20px">
+      <div style="font-size:48px;margin-bottom:16px">&#x26A0;</div>
+      <div style="font-size:18px;font-weight:600;margin-bottom:8px">שגיאה בטעינת בקשת הצעת מחיר</div>
+      <div style="color:var(--text-2);margin-bottom:20px" id="error-msg"></div>
+      <button class="btn btn-primary" onclick="loadRFQ()">נסה שנית</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var API = '';
+var rfqId = new URLSearchParams(window.location.search).get('id') || 'RFQ-2026-0018';
+
+var mockRFQ = {
+  rfq_number: 'RFQ-2026-0018',
+  project_name: 'פרויקט מגדלי השקמה — חשמל',
+  project_id: 'PRJ-2026-0005',
+  state: 'quotes_received',
+  approval_status: 'pending',
+  created_at: '2026-03-20',
+  deadline: '2026-04-05',
+  buyer: 'מיכל אברהם',
+  category: 'חשמל — כבלים ולוחות',
+  items: [
+    { num:1, desc:'כבל חשמל NYY 5x16mm', qty:800, unit:'מטר', spec:'IEC 60502-1' },
+    { num:2, desc:'לוח חשמל משנה 160A', qty:6, unit:'יחידה', spec:'תקן ישראלי 61439' },
+    { num:3, desc:'ברקרים 3P 63A', qty:24, unit:'יחידה', spec:'10kA' },
+    { num:4, desc:'פס צבירה נחושת', qty:12, unit:'מטר', spec:'30x10mm' }
+  ],
+  suppliers: [
+    { name:'חשמל-טק בע"מ', status:'responded', invited:'2026-03-20', responded:'2026-03-28', total:142000, delivery_days:14, quality_score:92 },
+    { name:'אלקטרו-פלוס', status:'responded', invited:'2026-03-20', responded:'2026-03-30', total:138500, delivery_days:21, quality_score:85 },
+    { name:'כבלי הצפון', status:'responded', invited:'2026-03-20', responded:'2026-03-29', total:155000, delivery_days:10, quality_score:95 },
+    { name:'מערכות מתח', status:'invited', invited:'2026-03-20', responded:null, total:null, delivery_days:null, quality_score:null },
+    { name:'ברקום חשמל', status:'declined', invited:'2026-03-20', responded:'2026-03-22', total:null, delivery_days:null, quality_score:null }
+  ],
+  audit: [
+    { date:'2026-03-20 08:00', user:'מיכל אברהם', action:'יצירת RFQ', detail:'נוצרה מפרויקט PRJ-2026-0005' },
+    { date:'2026-03-20 09:30', user:'מיכל אברהם', action:'שליחה לספקים', detail:'5 ספקים הוזמנו' },
+    { date:'2026-03-22 11:00', user:'ברקום חשמל', action:'דחיית השתתפות', detail:'ספק סירב להשתתף' },
+    { date:'2026-03-28 14:00', user:'חשמל-טק בע"מ', action:'הגשת הצעה', detail:'סכום: 142,000' },
+    { date:'2026-03-29 10:00', user:'כבלי הצפון', action:'הגשת הצעה', detail:'סכום: 155,000' },
+    { date:'2026-03-30 16:00', user:'אלקטרו-פלוס', action:'הגשת הצעה', detail:'סכום: 138,500' }
+  ]
+};
+
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function fmt(n){ return Number(n).toLocaleString('he-IL'); }
+function fmtCur(n){ return '\u20AA' + fmt(n); }
+
+var STATES = ['draft','sent','quotes_received','comparison','approved','converted_to_po','cancelled'];
+var STATE_LABELS = {draft:'טיוטה',sent:'נשלח לספקים',quotes_received:'הצעות התקבלו',comparison:'השוואה',approved:'מאושר',converted_to_po:'הומר ל-PO',cancelled:'בוטל'};
+var STATE_BADGES = {draft:'badge-draft',sent:'badge-sent',quotes_received:'badge-quotes',comparison:'badge-pending',approved:'badge-approved',converted_to_po:'badge-converted',cancelled:'badge-rejected'};
+
+function renderHeader(r){
+  var stBadge = STATE_BADGES[r.state] || 'badge-draft';
+  var apBadge = r.approval_status === 'approved' ? 'badge-approved' : r.approval_status === 'rejected' ? 'badge-rejected' : 'badge-pending';
+  document.getElementById('rfq-header').innerHTML =
+    '<div class="header-top"><div class="header-title"><span class="header-icon">&#x1F4E8;</span>' +
+    '<div><div class="header-name">' + esc(r.rfq_number) + '</div>' +
+    '<div class="header-sub">&#x1F4C1; ' + esc(r.project_name) + ' &middot; ' + esc(r.buyer) + '</div></div></div>' +
+    '<div class="badges"><span class="badge ' + stBadge + '">' + esc(STATE_LABELS[r.state]||r.state) + '</span>' +
+    '<span class="badge ' + apBadge + '">&#x2705; ' + esc(r.approval_status) + '</span></div></div>' +
+    '<div class="header-fields">' +
+      '<div class="hf"><div class="lbl">תאריך יצירה</div><div class="val">' + esc(r.created_at) + '</div></div>' +
+      '<div class="hf"><div class="lbl">מועד אחרון</div><div class="val">' + esc(r.deadline) + '</div></div>' +
+      '<div class="hf"><div class="lbl">קטגוריה</div><div class="val">' + esc(r.category) + '</div></div>' +
+      '<div class="hf"><div class="lbl">פרויקט</div><div class="val">' + esc(r.project_name) + '</div></div>' +
+      '<div class="hf"><div class="lbl">ספקים שהוזמנו</div><div class="val">' + r.suppliers.length + '</div></div>' +
+      '<div class="hf"><div class="lbl">הצעות שהתקבלו</div><div class="val" style="color:var(--ok)">' + r.suppliers.filter(function(s){return s.status==='responded'}).length + '</div></div>' +
+    '</div>';
+}
+
+function renderTimeline(r){
+  var el = document.getElementById('status-timeline');
+  var ci = STATES.indexOf(r.state); if(ci<0) ci=0;
+  var html = '';
+  STATES.forEach(function(s,i){
+    if(i>0) html += '<div class="tl-line' + (i<=ci?' done':'') + '"></div>';
+    var cls = i<ci?'tl-dot done':i===ci?'tl-dot current':'tl-dot';
+    html += '<div class="tl-step"><div class="' + cls + '">' + (i+1) + '</div><div class="tl-label">' + esc(STATE_LABELS[s]) + '</div></div>';
+  });
+  el.innerHTML = html;
+}
+
+function renderNBA(r){
+  var el = document.getElementById('nba');
+  var msg='',action='',label='';
+  if(r.state==='draft'){ msg='ה-RFQ בטיוטה. שלח לספקים לקבלת הצעות.'; action='send'; label='&#x1F4E8; שלח לספקים'; }
+  else if(r.state==='quotes_received'){ msg='התקבלו הצעות מספקים. בצע השוואה כדי לבחור את ההצעה הטובה ביותר.'; action='compare'; label='&#x1F4CA; השווה הצעות'; }
+  else if(r.state==='approved'){ msg='ה-RFQ מאושר! המר להזמנת רכש (PO).'; action='convert_po'; label='&#x1F6D2; המר ל-PO'; }
+  else { msg='בדוק את הסטטוס ובצע את הפעולה המתאימה.'; }
+  el.innerHTML = '<span class="nba-label">&#x1F4A1; הפעולה הבאה:</span><span class="nba-text">' + esc(msg) + '</span>' +
+    (action ? '<button class="btn btn-success" onclick="doAction(\'' + action + '\')">' + label + '</button>' : '');
+}
+
+function renderActions(r){
+  var p = document.getElementById('primary-actions');
+  var s = document.getElementById('secondary-actions');
+  var ph='', sh='';
+  if(r.state==='draft') ph += '<button class="btn btn-primary" onclick="doAction(\'send\')"><span class="ic">&#x1F4E8;</span>שלח לספקים</button>';
+  if(r.state==='quotes_received') ph += '<button class="btn btn-orange" onclick="doAction(\'compare\')"><span class="ic">&#x1F4CA;</span>השווה הצעות</button>';
+  if(r.approval_status==='pending') {
+    ph += '<button class="btn btn-success" onclick="doAction(\'approve\')"><span class="ic">&#x2714;</span>אשר</button>';
+    ph += '<button class="btn btn-danger" onclick="doAction(\'reject\')"><span class="ic">&#x274C;</span>דחה</button>';
+  }
+  if(r.state==='approved') ph += '<button class="btn btn-purple" onclick="doAction(\'convert_po\')"><span class="ic">&#x1F6D2;</span>המר ל-PO</button>';
+  sh += '<button class="btn" onclick="doAction(\'add_supplier\')"><span class="ic">&#x1F3ED;</span>הוסף ספק</button>';
+  sh += '<button class="btn" onclick="doAction(\'export\')"><span class="ic">&#x1F4C4;</span>ייצוא</button>';
+  sh += '<button class="btn" onclick="doAction(\'attach\')"><span class="ic">&#x1F4CE;</span>צרף מסמך</button>';
+  p.innerHTML = ph; s.innerHTML = sh;
+}
+
+function renderCards(r){
+  var responded = r.suppliers.filter(function(s){return s.status==='responded'});
+  var invited = r.suppliers.filter(function(s){return s.status==='invited'});
+  var declined = r.suppliers.filter(function(s){return s.status==='declined'});
+  var prices = responded.map(function(s){return s.total}).filter(Boolean);
+  var minPrice = prices.length ? Math.min.apply(null,prices) : 0;
+  var maxPrice = prices.length ? Math.max.apply(null,prices) : 0;
+  var savings = maxPrice > 0 ? Math.round((maxPrice - minPrice) / maxPrice * 100) : 0;
+
+  document.getElementById('summary-cards').innerHTML =
+    '<div class="card"><div class="card-title">&#x1F4C5; פרטי RFQ</div>' +
+      '<div class="card-row"><span class="label">יצירה</span><span class="value">' + esc(r.created_at) + '</span></div>' +
+      '<div class="card-row"><span class="label">מועד אחרון</span><span class="value">' + esc(r.deadline) + '</span></div>' +
+      '<div class="card-row"><span class="label">פרויקט</span><span class="value">' + esc(r.project_id) + '</span></div>' +
+    '</div>' +
+    '<div class="card card-highlight"><div class="card-title">&#x1F3ED; תגובות ספקים</div>' +
+      '<div class="card-row"><span class="label">הוזמנו</span><span class="value">' + r.suppliers.length + '</span></div>' +
+      '<div class="card-row"><span class="label">הגיבו</span><span class="value" style="color:var(--ok)">' + responded.length + '</span></div>' +
+      '<div class="card-row"><span class="label">ממתינים</span><span class="value" style="color:var(--warn)">' + invited.length + '</span></div>' +
+      '<div class="card-row"><span class="label">סירבו</span><span class="value" style="color:var(--err)">' + declined.length + '</span></div>' +
+      '<div style="margin-top:8px;height:6px;background:var(--bg-3);border-radius:3px;overflow:hidden"><div style="height:100%;width:' + Math.round(responded.length/r.suppliers.length*100) + '%;background:var(--ok);border-radius:3px"></div></div>' +
+    '</div>' +
+    '<div class="card"><div class="card-title">&#x1F4CA; סטטוס השוואה</div>' +
+      '<div class="card-value">' + (responded.length>=2 ? '&#x2705; ניתן להשוות' : '&#x23F3; ממתין') + '</div>' +
+      '<div class="card-sub">' + responded.length + ' הצעות זמינות להשוואה</div>' +
+      (minPrice > 0 ? '<div class="card-row" style="margin-top:8px"><span class="label">טווח מחירים</span><span class="value">' + fmtCur(minPrice) + ' — ' + fmtCur(maxPrice) + '</span></div>' : '') +
+    '</div>' +
+    '<div class="ai-card"><div class="ai-title">&#x1F916; חיסכון AI</div>' +
+      '<div class="ai-text">חיסכון פוטנציאלי: <strong style="color:var(--ok)">' + savings + '% (' + fmtCur(maxPrice-minPrice) + ')</strong><br>' +
+      'ההצעה הטובה ביותר מבחינת מחיר: <strong>' + (responded.length ? esc(responded.sort(function(a,b){return a.total-b.total})[0].name) : '—') + '</strong></div></div>';
+}
+
+var TAB_DEFS = [
+  {id:'overview',label:'סקירה'},{id:'items',label:'פריטים מבוקשים'},{id:'suppliers',label:'ספקים'},
+  {id:'quotes',label:'הצעות ספקים'},{id:'comparison',label:'השוואה'},{id:'approvals',label:'אישורים'},
+  {id:'documents',label:'מסמכים'},{id:'ai',label:'תובנות AI'},{id:'audit',label:'יומן ביקורת'}
+];
+
+function renderTabs(){
+  var te=document.getElementById('tabs'),pe=document.getElementById('tab-panels');
+  te.innerHTML='';pe.innerHTML='';
+  TAB_DEFS.forEach(function(t,i){
+    te.innerHTML+='<div class="tab'+(i===0?' active':'')+'" data-tab="'+t.id+'" onclick="switchTab(\''+t.id+'\')">'+esc(t.label)+'</div>';
+    pe.innerHTML+='<div class="tab-panel'+(i===0?' active':'')+'" id="panel-'+t.id+'"></div>';
+  });
+}
+function switchTab(id){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.getAttribute('data-tab')===id)});
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.toggle('active',p.id==='panel-'+id)});
+}
+
+function renderTabContent(r){
+  // OVERVIEW
+  document.getElementById('panel-overview').innerHTML =
+    '<div class="section"><div class="section-title">סקירת RFQ</div>' +
+    '<div class="card"><p style="color:var(--text-1);line-height:1.8;font-size:14px">' +
+    'בקשת הצעת מחיר <strong>' + esc(r.rfq_number) + '</strong> עבור פרויקט <strong>' + esc(r.project_name) + '</strong>. ' +
+    'כוללת ' + r.items.length + ' פריטים, נשלחה ל-' + r.suppliers.length + ' ספקים. ' +
+    'התקבלו ' + r.suppliers.filter(function(s){return s.status==='responded'}).length + ' הצעות.</p></div></div>' +
+    '<div class="section"><div class="section-title">ספקים</div><div style="display:flex;flex-wrap:wrap;gap:6px">' +
+    r.suppliers.map(function(s){
+      var cls = s.status==='responded'?'chip-responded':s.status==='declined'?'chip-declined':'chip-invited';
+      return '<span class="supplier-chip '+cls+'">' + esc(s.name) + ' (' + (s.status==='responded'?'הגיב':s.status==='declined'?'סירב':'ממתין') + ')</span>';
+    }).join('') + '</div></div>';
+
+  // ITEMS
+  var itemsHtml = '<div class="section"><div class="section-title">פריטים מבוקשים (' + r.items.length + ')</div><div class="tbl-wrap"><table>' +
+    '<thead><tr><th>#</th><th>תיאור</th><th>כמות</th><th>יחידה</th><th>מפרט</th></tr></thead><tbody>';
+  r.items.forEach(function(it){
+    itemsHtml += '<tr><td>'+it.num+'</td><td>'+esc(it.desc)+'</td><td style="font-family:var(--mono)">'+fmt(it.qty)+'</td><td>'+esc(it.unit)+'</td><td style="color:var(--text-2)">'+esc(it.spec)+'</td></tr>';
+  });
+  itemsHtml += '</tbody></table></div></div>';
+  document.getElementById('panel-items').innerHTML = itemsHtml;
+
+  // SUPPLIERS
+  var suppHtml = '<div class="section"><div class="section-title">ספקים שהוזמנו</div><div class="tbl-wrap"><table>' +
+    '<thead><tr><th>ספק</th><th>סטטוס</th><th>הוזמן</th><th>הגיב</th><th>סכום</th><th>ימי אספקה</th><th>ציון איכות</th></tr></thead><tbody>';
+  r.suppliers.forEach(function(s){
+    var stBadge = s.status==='responded'?'badge-approved':s.status==='declined'?'badge-rejected':'badge-pending';
+    var stLabel = s.status==='responded'?'הגיב':s.status==='declined'?'סירב':'ממתין';
+    suppHtml += '<tr><td><strong>'+esc(s.name)+'</strong></td><td><span class="badge '+stBadge+'">'+stLabel+'</span></td>' +
+      '<td>'+esc(s.invited)+'</td><td>'+(s.responded||'—')+'</td>' +
+      '<td style="font-family:var(--mono)">'+(s.total?fmtCur(s.total):'—')+'</td>' +
+      '<td style="font-family:var(--mono)">'+(s.delivery_days!=null?s.delivery_days+' ימים':'—')+'</td>' +
+      '<td>'+(s.quality_score!=null?'<span style="color:var(--ok)">'+s.quality_score+'/100</span>':'—')+'</td></tr>';
+  });
+  suppHtml += '</tbody></table></div></div>';
+  document.getElementById('panel-suppliers').innerHTML = suppHtml;
+
+  // SUPPLIER QUOTES TABLE
+  var responded = r.suppliers.filter(function(s){return s.status==='responded'}).sort(function(a,b){return a.total-b.total});
+  var qHtml = '<div class="section"><div class="section-title">הצעות שהתקבלו</div>';
+  if(responded.length === 0){
+    qHtml += '<div class="empty"><div class="empty-icon">&#x1F4E8;</div>טרם התקבלו הצעות מספקים</div>';
+  } else {
+    qHtml += '<div class="tbl-wrap"><table><thead><tr><th>ספק</th><th>סכום</th><th>ימי אספקה</th><th>ציון איכות</th><th>דירוג</th></tr></thead><tbody>';
+    responded.forEach(function(s,i){
+      var rank = i===0?'&#x1F947; מומלץ':i===1?'&#x1F948; שני':'&#x1F949; שלישי';
+      qHtml += '<tr'+(i===0?' class="best"':'')+'><td><strong>'+esc(s.name)+'</strong></td>' +
+        '<td style="font-family:var(--mono);font-weight:700'+(i===0?';color:var(--ok)':'')+'">' + fmtCur(s.total) + '</td>' +
+        '<td style="font-family:var(--mono)">' + s.delivery_days + ' ימים</td>' +
+        '<td>' + s.quality_score + '/100</td><td>' + rank + '</td></tr>';
+    });
+    qHtml += '</tbody></table></div>';
+  }
+  qHtml += '</div>';
+  document.getElementById('panel-quotes').innerHTML = qHtml;
+
+  // COMPARISON
+  var cmpHtml = '<div class="section"><div class="section-title">מטריצת השוואה</div>';
+  if(responded.length < 2){
+    cmpHtml += '<div class="empty"><div class="empty-icon">&#x1F4CA;</div>נדרשות לפחות 2 הצעות להשוואה</div>';
+  } else {
+    var maxP = Math.max.apply(null,responded.map(function(s){return s.total}));
+    var maxD = Math.max.apply(null,responded.map(function(s){return s.delivery_days}));
+    // Price comparison
+    cmpHtml += '<div class="card" style="margin-bottom:14px"><div class="card-title">&#x1F4B0; השוואת מחירים</div>';
+    responded.forEach(function(s,i){
+      var pct = Math.round(s.total/maxP*100);
+      var cls = i===0?'cmp-best':i===responded.length-1?'cmp-worst':'cmp-mid';
+      cmpHtml += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><span style="width:120px;font-size:12px;color:var(--text-1)">'+esc(s.name)+'</span>' +
+        '<div style="flex:1"><div class="cmp-bar"><div class="cmp-fill '+cls+'" style="width:'+pct+'%">'+fmtCur(s.total)+'</div></div></div></div>';
+    });
+    cmpHtml += '</div>';
+    // Delivery comparison
+    cmpHtml += '<div class="card" style="margin-bottom:14px"><div class="card-title">&#x1F69A; השוואת זמני אספקה</div>';
+    responded.forEach(function(s){
+      var pct = Math.round(s.delivery_days/maxD*100);
+      var cls = s.delivery_days<=14?'cmp-best':s.delivery_days<=18?'cmp-mid':'cmp-worst';
+      cmpHtml += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><span style="width:120px;font-size:12px;color:var(--text-1)">'+esc(s.name)+'</span>' +
+        '<div style="flex:1"><div class="cmp-bar"><div class="cmp-fill '+cls+'" style="width:'+pct+'%">'+s.delivery_days+' ימים</div></div></div></div>';
+    });
+    cmpHtml += '</div>';
+    // Quality comparison
+    cmpHtml += '<div class="card"><div class="card-title">&#x2B50; השוואת איכות</div>';
+    responded.forEach(function(s){
+      var cls = s.quality_score>=90?'cmp-best':s.quality_score>=80?'cmp-mid':'cmp-worst';
+      cmpHtml += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><span style="width:120px;font-size:12px;color:var(--text-1)">'+esc(s.name)+'</span>' +
+        '<div style="flex:1"><div class="cmp-bar"><div class="cmp-fill '+cls+'" style="width:'+s.quality_score+'%">'+s.quality_score+'/100</div></div></div></div>';
+    });
+    cmpHtml += '</div>';
+  }
+  cmpHtml += '</div>';
+  document.getElementById('panel-comparison').innerHTML = cmpHtml;
+
+  // APPROVALS
+  document.getElementById('panel-approvals').innerHTML =
+    '<div class="section"><div class="section-title">אישורים</div>' +
+    '<div class="card"><div class="empty"><div class="empty-icon">&#x2705;</div>תהליך אישור טרם התחיל.<br>' +
+    '<span style="color:var(--text-2)">לאחר בחירת ספק, ייפתח מסלול אישורים.</span></div></div></div>';
+
+  // DOCUMENTS
+  document.getElementById('panel-documents').innerHTML =
+    '<div class="section"><div class="section-title">מסמכים</div>' +
+    '<div class="empty"><div class="empty-icon">&#x1F4C2;</div>אין מסמכים מצורפים.<br>' +
+    '<button class="btn btn-primary" style="margin-top:12px" onclick="doAction(\'attach\')">&#x1F4CE; צרף מסמך</button></div></div>';
+
+  // AI
+  document.getElementById('panel-ai').innerHTML =
+    '<div class="section"><div class="section-title">תובנות AI</div>' +
+    '<div class="cards-grid">' +
+      '<div class="ai-card"><div class="ai-title">&#x1F4B0; ניתוח חיסכון</div><div class="ai-text">הפער בין ההצעה הגבוהה לנמוכה: <strong style="color:var(--ok)">' + fmtCur(155000-138500) + '</strong> (10.6%). מומלץ לנהל מו"מ עם אלקטרו-פלוס לשיפור תנאי אספקה.</div></div>' +
+      '<div class="ai-card"><div class="ai-title">&#x1F3ED; דירוג ספקים</div><div class="ai-text">ציון משוקלל (50% מחיר, 30% איכות, 20% אספקה):<br><strong>1. אלקטרו-פלוס — 87</strong><br>2. חשמל-טק — 84<br>3. כבלי הצפון — 81</div></div>' +
+      '<div class="ai-card"><div class="ai-title">&#x1F4C8; מגמת שוק</div><div class="ai-text">מחירי כבלים עלו ב-4% ברבעון האחרון. מומלץ לסגור מהר לנעילת מחיר.</div></div>' +
+      '<div class="ai-card"><div class="ai-title">&#x26A0; סיכונים</div><div class="ai-text">ספק מערכות מתח טרם הגיב (5 ימים). שקול להגדיל את מאגר הספקים לקטגוריה זו.</div></div>' +
+    '</div></div>';
+
+  // AUDIT
+  var auditHtml = '<div class="section"><div class="section-title">יומן ביקורת</div><div class="tbl-wrap"><table>' +
+    '<thead><tr><th>תאריך</th><th>משתמש/ספק</th><th>פעולה</th><th>פרטים</th></tr></thead><tbody>';
+  r.audit.forEach(function(a){
+    auditHtml += '<tr><td style="font-family:var(--mono);white-space:nowrap">'+esc(a.date)+'</td><td>'+esc(a.user)+'</td><td><strong>'+esc(a.action)+'</strong></td><td style="color:var(--text-2)">'+esc(a.detail)+'</td></tr>';
+  });
+  auditHtml += '</tbody></table></div></div>';
+  document.getElementById('panel-audit').innerHTML = auditHtml;
+}
+
+function doAction(actionId){
+  var labels = {send:'שלח לספקים',compare:'השווה הצעות',approve:'אשר',reject:'דחה',convert_po:'המר ל-PO',add_supplier:'הוסף ספק',export:'ייצוא',attach:'צרף מסמך'};
+  if(confirm('לבצע פעולה: '+(labels[actionId]||actionId)+'?')){
+    alert('פעולה "' + (labels[actionId]||actionId) + '" נשלחה ל-Workflow Engine.\n\nPOST /api/orchestrator/execute\n{ action: "'+actionId+'", entity: "rfq", id: "'+mockRFQ.rfq_number+'" }');
+  }
+}
+function navigate(url){ window.location.href = url; }
+
+async function loadRFQ(){
+  document.getElementById('loading').style.display='block';
+  document.getElementById('main-content').style.display='none';
+  document.getElementById('error-state').style.display='none';
+  try {
+    var r;
+    try { var res = await fetch(API+'/api/rfqs/'+encodeURIComponent(rfqId)); if(!res.ok) throw new Error('HTTP '+res.status); r=(await res.json()).rfq; } catch(e){ r=mockRFQ; }
+    renderHeader(r); renderTimeline(r); renderNBA(r); renderActions(r); renderCards(r); renderTabs(); renderTabContent(r);
+    document.getElementById('loading').style.display='none';
+    document.getElementById('main-content').style.display='block';
+    document.title = r.rfq_number + ' — RFQ360';
+  } catch(err){
+    document.getElementById('loading').style.display='none';
+    document.getElementById('error-state').style.display='block';
+    document.getElementById('error-msg').textContent = err.message;
+  }
+}
+
+loadRFQ();
+</script>
+</body>
+</html>

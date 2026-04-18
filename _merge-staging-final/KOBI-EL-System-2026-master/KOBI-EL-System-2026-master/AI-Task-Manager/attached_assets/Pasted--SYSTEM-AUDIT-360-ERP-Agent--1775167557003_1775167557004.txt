@@ -1,0 +1,1450 @@
+# 🔍 SYSTEM AUDIT 360° — ERP מפעל מסגרות
+# פרומפט מקיף לריפלייט Agent — בדיקה ותיקון מלא של כל המערכת
+
+---
+
+## ⚠️ הוראות לריפלייט Agent לפני הכל
+
+```
+You are performing a complete 360° system audit and fix for a production ERP system
+for a 200-employee metal fabrication factory in Israel.
+
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / PostgreSQL / TailwindCSS
+UI: Hebrew RTL, dark slate theme, agorot (integer) for all monetary values, 18% VAT
+
+Your job is NOT to build new features.
+Your job is to audit every existing page, block, form, button, route, and data flow —
+find EVERYTHING that is broken, missing, incomplete, or not connected —
+and FIX all of it so the system works like SAP: complete, connected, zero broken links.
+
+Work methodically through each category below. Do not skip any section.
+After each fix, confirm it is working before moving to the next.
+```
+
+---
+
+## 📋 PART 1: PAGE INVENTORY AUDIT
+### בדיקת מלאי דפים — האם כל דף קיים ובנוי
+
+```
+Audit Task: PAGE INVENTORY CHECK
+
+Go through every route defined in the React Router configuration.
+For EACH route, verify:
+
+1. The component FILE actually exists (not just a route definition)
+2. The component RENDERS without crashing (no blank white screen)
+3. The page has a proper LAYOUT (sidebar, header, breadcrumb)
+4. The page is NOT showing a placeholder like "Coming Soon", "TODO", or empty div
+5. The page loads DATA from the API (not hardcoded dummy data)
+6. The page has correct HEBREW title in the browser tab and page header
+
+REQUIRED PAGES — verify each exists and is complete:
+
+AUTH PAGES:
+□ /login — LoginPage
+□ /forgot-password — ForgotPasswordPage  
+□ /reset-password/:token — ResetPasswordPage
+
+DASHBOARD:
+□ / (dashboard) — DashboardPage with real KPI data
+
+EMPLOYEES MODULE:
+□ /employees — EmployeesListPage
+□ /employees/new — CreateEmployeePage
+□ /employees/:id — EmployeeDetailPage
+□ /employees/:id/edit — EditEmployeePage
+□ /employees/:id/documents — EmployeeDocumentsPage
+□ /employees/:id/attendance — EmployeeAttendancePage
+□ /employees/:id/shifts — EmployeeShiftsPage
+□ /employees/:id/payslips — EmployeePayslipsPage
+□ /employees/:id/performance — EmployeePerformancePage
+□ /onboarding — OnboardingListPage (employees in onboarding)
+
+SHIFTS & ATTENDANCE:
+□ /shifts — ShiftsWeeklyPage
+□ /shifts/new — CreateShiftPage
+□ /attendance — AttendanceDashboardPage
+□ /attendance/clock-in — ClockInTerminalPage (tablet view)
+□ /attendance/:employeeId/:month — MonthlyAttendancePage
+
+WORK ORDERS:
+□ /work-orders — WorkOrdersListPage
+□ /work-orders/new — CreateWorkOrderPage
+□ /work-orders/:id — WorkOrderDetailPage
+□ /work-orders/:id/edit — EditWorkOrderPage
+□ /work-orders/kanban — KanbanBoardPage
+□ /work-orders/:id/photos — WorkOrderPhotosPage
+
+CUSTOMERS:
+□ /customers — CustomersListPage
+□ /customers/new — CreateCustomerPage
+□ /customers/:id — CustomerDetailPage
+□ /customers/:id/edit — EditCustomerPage
+□ /customers/:id/history — CustomerHistoryPage
+
+QUOTES:
+□ /quotes — QuotesListPage
+□ /quotes/new — CreateQuotePage
+□ /quotes/:id — QuoteDetailPage
+□ /quotes/:id/edit — EditQuotePage
+
+INVOICES:
+□ /invoices — InvoicesListPage
+□ /invoices/new — CreateInvoicePage
+□ /invoices/:id — InvoiceDetailPage
+□ /invoices/:id/payments — InvoicePaymentsPage
+
+PAYMENTS:
+□ /payments — PaymentsListPage
+□ /payments/new — RecordPaymentPage
+
+INVENTORY:
+□ /inventory — InventoryCatalogPage
+□ /inventory/new — CreateInventoryItemPage
+□ /inventory/:id — InventoryItemDetailPage
+□ /inventory/:id/edit — EditInventoryItemPage
+□ /inventory/:id/history — InventoryMovementHistoryPage
+□ /inventory/warehouse — WarehouseMapPage
+□ /inventory/stock-count — StockCountPage
+□ /inventory/low-stock — LowStockAlertsPage
+
+PURCHASE ORDERS:
+□ /purchase-orders — PurchaseOrdersListPage
+□ /purchase-orders/new — CreatePurchaseOrderPage
+□ /purchase-orders/:id — PurchaseOrderDetailPage
+
+SUPPLIERS:
+□ /suppliers — SuppliersListPage
+□ /suppliers/new — CreateSupplierPage
+□ /suppliers/:id — SupplierDetailPage
+
+PAYROLL:
+□ /payroll — PayrollMonthlyPage
+□ /payroll/run — RunPayrollPage
+□ /payroll/export — PayrollExportPage
+
+REPORTS:
+□ /reports — ReportsHomePage
+□ /reports/revenue — RevenueReportPage
+□ /reports/production — ProductionReportPage
+□ /reports/attendance — AttendanceReportPage
+□ /reports/payroll — PayrollReportPage
+□ /reports/inventory — InventoryReportPage
+□ /reports/profitability — ProfitabilityReportPage
+□ /reports/sales — SalesReportPage
+
+SETTINGS:
+□ /settings — SettingsHomePage
+□ /settings/company — CompanySettingsPage
+□ /settings/users — UserManagementPage
+□ /settings/users/new — CreateUserPage
+□ /settings/users/:id — EditUserPage
+□ /settings/roles — RolesPermissionsPage
+□ /settings/notifications — NotificationSettingsPage
+□ /settings/integrations — IntegrationsPage
+□ /settings/billing — BillingSettingsPage
+□ /settings/ip-allowlist — IPAllowlistPage
+□ /settings/backup — BackupSettingsPage
+
+PROFILE:
+□ /profile — MyProfilePage
+□ /profile/security — SecuritySettingsPage
+□ /profile/2fa — TwoFactorSetupPage
+
+SPECIAL:
+□ /403 — ForbiddenPage (proper Hebrew message + back button)
+□ /404 — NotFoundPage (proper Hebrew message + navigation)
+□ /500 — ServerErrorPage (proper Hebrew message)
+□ /maintenance — MaintenancePage
+
+ACTION REQUIRED:
+For every missing page: CREATE it with proper layout, Hebrew title, 
+loading state, and real API connection.
+For every broken page: FIX the errors so it renders correctly.
+For every placeholder page: COMPLETE it with real functionality.
+```
+
+---
+
+## 📋 PART 2: NAVIGATION & ROUTING AUDIT
+### בדיקת ניווט — כל לינק, כפתור, breadcrumb
+
+```
+Audit Task: NAVIGATION COMPLETENESS CHECK
+
+1. SIDEBAR NAVIGATION:
+   Check every sidebar item:
+   □ Each item has correct route path
+   □ Active state highlights when on that route
+   □ Sub-menus expand/collapse correctly
+   □ Role-based visibility works (employee does NOT see admin items)
+   □ On mobile: sidebar collapses to hamburger menu
+   □ All icons render (no broken icon references)
+
+2. BREADCRUMBS:
+   Verify breadcrumbs on EVERY page:
+   □ Dashboard > עובדים > יוסי כהן > עריכה
+   □ Dashboard > הזמנות עבודה > WO-001 > תמונות
+   □ Dashboard > לקוחות > כהן בע"מ > היסטוריה
+   (All breadcrumb items must be clickable links, not just text)
+
+3. "BACK" NAVIGATION:
+   Every detail page must have:
+   □ Back button that returns to the correct list page
+   □ Browser back button works (no broken history)
+   □ After CREATE: redirects to detail page of new record
+   □ After DELETE: redirects to list page
+
+4. BROKEN LINKS SCAN:
+   Search codebase for these patterns and fix each one:
+   □ href="#" — placeholder link (must be replaced with real route)
+   □ onClick={() => {}} — empty click handler  
+   □ onClick={console.log} — debug click handler
+   □ to="/todo" or to="/coming-soon" — placeholder routes
+   □ navigate('/') — wrong redirect after action
+
+5. ACTION BUTTON NAVIGATION:
+   Every action button must navigate to correct destination:
+   □ "צור עובד חדש" → /employees/new
+   □ "צור הזמנת עבודה" → /work-orders/new  
+   □ "צור הצעת מחיר" → /quotes/new
+   □ Employee row click → /employees/:id
+   □ Work order card click → /work-orders/:id
+   □ "אשר הצעה" → creates work order → /work-orders/:newId
+   □ "צור חשבונית" → /invoices/new?fromWorkOrder=:id
+
+FIX ALL navigation issues found. Zero broken links allowed.
+```
+
+---
+
+## 📋 PART 3: FORM FIELDS AUDIT
+### בדיקת שדות טפסים — שלמות וולידציה
+
+```
+Audit Task: FORM FIELDS COMPLETENESS
+
+For EVERY form in the system, verify ALL required fields exist with correct validation.
+
+=== EMPLOYEE CREATE/EDIT FORM ===
+Required fields (all must have red asterisk + Hebrew label):
+□ שם מלא* (text, min 2 chars, max 100)
+□ מספר עובד (auto-generated, display only)
+□ תעודת זהות* (text, exactly 9 digits, Israeli ID validation checksum)
+□ תאריך לידה* (date, must be 18+ years old)
+□ טלפון* (Israeli format: 05X-XXXXXXX or 0X-XXXXXXX)
+□ טלפון חירום (optional, same format)
+□ כתובת* (text)
+□ עיר* (select or text)
+□ מחלקה* (select from departments list — must be populated)
+□ תפקיד* (text)
+□ סוג העסקה* (select: משרה מלאה / משרה חלקית / קבלן)
+□ תאריך תחילת עבודה* (date)
+□ תאריך סיום חוזה (date, optional, must be after start date)
+□ שכר ברוטו* (number in ₪, converts to agorot internally)
+□ 4 ספרות אחרונות חשבון בנק (4 digits only)
+□ סטטוס* (select: פעיל / לא פעיל / בחופשה)
+□ הערות (textarea, optional)
+
+Validation rules to CHECK exist:
+□ ID number: Luhn-style Israeli checksum validation
+□ Phone: regex /^0[0-9]{1,2}-?[0-9]{7}$/
+□ Start date cannot be in the future
+□ End date must be after start date
+□ Salary must be positive number
+□ Department dropdown populated from /api/departments
+□ On submit: all required fields highlighted if empty
+□ API error messages displayed in Hebrew under correct field
+
+=== CREATE WORK ORDER FORM ===
+Required fields:
+□ לקוח* (search autocomplete — must search /api/customers as user types)
+□ סוג מוצר* (select: מעקה / שער / גדר / פרגולה / חלון / דלת / מותאם אישית)
+□ תיאור העבודה* (textarea, min 10 chars)
+□ כמות* (number, positive)
+□ מידות (text, optional but shown)
+□ סוג חומר* (select: ברזל / אלומיניום / משולב)
+□ עדיפות* (select: דחוף / רגיל / נמוך — default: רגיל)
+□ תאריך יעד* (date, cannot be in the past)
+□ עובד אחראי (select from /api/employees — optional)
+□ שעות מוערכות (number, optional)
+□ כתובת ביצוע (text, optional)
+□ הערות (textarea, optional)
+
+After submission:
+□ Order number auto-generated (WO-YYYY-NNN)
+□ Status set to PENDING
+□ Redirects to /work-orders/:newId
+□ New order appears in kanban PENDING column immediately
+
+=== CREATE QUOTE FORM ===
+Required fields:
+□ לקוח* (search autocomplete from customers)
+□ שורות פריטים* (at least 1 line item required):
+  - תיאור* (text)
+  - כמות* (number)
+  - יחידה* (select: מטר / יחידה / שעה / ק"ג)
+  - מחיר יחידה* (number in ₪)
+  - הנחה % (number 0-100, default 0)
+  - סה"כ (calculated, read-only)
+□ Add line item button works
+□ Remove line item button works (minimum 1 remains)
+□ סה"כ לפני מע"מ (calculated)
+□ מע"מ 18% (calculated)
+□ סה"כ כולל מע"מ (calculated, highlighted)
+□ תקף עד* (date, default: today + 30 days)
+□ תנאי תשלום* (select: מזומן / 30 יום / 45 יום / 60 יום)
+□ הערות (textarea, optional)
+
+Calculations must UPDATE IN REAL TIME as user types prices/quantities.
+
+=== CREATE INVOICE FORM ===
+□ Same structure as quote PLUS:
+□ מספר חשבונית (auto-generated sequential, read-only)
+□ תאריך הנפקה* (date, default today)
+□ תאריך לתשלום* (date, calculated from terms)
+□ הצעת מחיר מקורית (optional link to source quote)
+□ הזמנת עבודה (optional link to source work order)
+
+=== RECORD PAYMENT FORM ===
+□ חשבונית* (search/select from open invoices — shows customer + amount)
+□ סכום* (number, cannot exceed remaining balance, shows remaining balance)
+□ אמצעי תשלום* (select: מזומן / העברה בנקאית / צ'ק / כרטיס אשראי)
+□ תאריך תשלום* (date, default today)
+□ מספר אסמכתא (text, optional — check number / transfer ID)
+□ הערות (textarea, optional)
+□ After submit: invoice status updates, customer balance updates
+
+=== CREATE INVENTORY ITEM FORM ===
+□ שם פריט* (Hebrew text)
+□ קוד פריט (auto-generated RM-XXX, show only)
+□ קטגוריה* (select from categories)
+□ יחידת מידה* (select: מטר / ק"ג / יחידה / קופסה / ליטר)
+□ כמות במלאי* (number, can be 0)
+□ כמות מינימום* (number, must be > 0)
+□ כמות להזמנה (number, optional)
+□ מחיר לרכישה (₪ per unit, optional)
+□ ספק עיקרי (select from suppliers, optional)
+□ מיקום במחסן (text: e.g., A-3-2, optional)
+□ ברקוד (text, optional)
+□ הערות (textarea, optional)
+
+=== CREATE CUSTOMER FORM ===
+□ שם איש קשר / שם חברה* (text)
+□ שם חברה (optional if individual)
+□ ח.פ. / ע.מ. / ת.ז. (text, 9 digits — required for invoicing)
+□ טלפון* (Israeli format)
+□ טלפון WhatsApp (optional, default same as phone)
+□ אימייל (optional, but recommended)
+□ כתובת* (text)
+□ עיר* (text)
+□ דרגת לקוח* (select: A-VIP / B-רגיל / C-חדש — default C)
+□ תנאי תשלום* (select: מזומן / 30 / 45 / 60 — default 30)
+□ הערות (textarea, optional)
+
+=== CREATE SHIFT FORM ===
+□ עובד* (select/search from active employees)
+□ סוג משמרת* (select: בוקר 06-14 / צהריים 14-22 / לילה 22-06 / מותאם)
+□ תאריך* (date picker)
+□ שעת התחלה* (time, auto-filled from type but editable)
+□ שעת סיום* (time, auto-filled from type but editable)
+□ חזרה שבועית toggle (if on: shows end date for repeat)
+□ הערות (textarea, optional)
+Validation: Cannot overlap with existing shift for same employee
+
+=== PURCHASE ORDER FORM ===
+□ ספק* (select from suppliers, shows lead time + rating)
+□ שורות פריטים* (at least 1):
+  - פריט מלאי* (search from inventory catalog)
+  - כמות* (number)
+  - מחיר ליחידה* (₪, pre-filled from last purchase price)
+  - סה"כ (calculated)
+□ סה"כ + מע"מ (calculated)
+□ תאריך אספקה צפוי* (auto-calculated: today + supplier.lead_time_days)
+□ הערות לספק (textarea, optional)
+
+FIX all form issues found. Every required field must show validation on submit.
+```
+
+---
+
+## 📋 PART 4: DATA SYNCHRONIZATION AUDIT
+### בדיקת סינכרון נתונים — כל בלוק שתלוי בבלוק אחר
+
+```
+Audit Task: DATA SYNC & DEPENDENCIES CHECK
+
+These are the critical data flows that MUST be synchronized.
+Check EACH flow end-to-end and fix any broken link.
+
+=== FLOW 1: QUOTE → WORK ORDER → INVOICE → PAYMENT ===
+
+Step 1: Quote created
+□ Quote saved to DB with status DRAFT
+□ Quote appears in /quotes list immediately
+□ Customer's quote count updates on customer profile
+□ Quote total calculates correctly in agorot
+
+Step 2: Quote sent to customer  
+□ Status changes to SENT
+□ sent_at timestamp recorded
+□ WhatsApp/email triggered (or manual option)
+□ Customer card shows "הצעה נשלחה" badge
+
+Step 3: Quote accepted
+□ Status changes to ACCEPTED
+□ "צור הזמנת עבודה" button appears (was hidden before)
+□ Clicking it opens work order form PRE-FILLED with quote data:
+  - Customer auto-filled from quote
+  - Product type auto-filled
+  - Description auto-filled
+  - Amount auto-filled
+
+Step 4: Work order created from quote
+□ work_order.source_quote_id = quote.id
+□ Quote page shows link to work order: "הזמנת עבודה: WO-001"
+□ Work order page shows link back to quote: "מבוסס על: QT-001"
+
+Step 5: Work order delivered
+□ Status = DELIVERED
+□ "צור חשבונית" button appears
+□ Clicking opens invoice form PRE-FILLED:
+  - Customer from work order
+  - Amount from quote/work order
+  - Work order linked
+
+Step 6: Invoice issued
+□ Invoice number sequential (no gaps!)
+□ Invoice appears in customer balance
+□ Customer open_balance_agorot increases
+□ Invoice visible in /invoices list
+
+Step 7: Payment recorded
+□ Payment amount deducted from invoice balance
+□ If payment = full amount: invoice status = PAID
+□ If partial: status = PARTIALLY_PAID
+□ Customer open_balance_agorot decreases
+□ Payment appears in /payments list
+
+VERIFY: After full flow, customer balance should be ZERO.
+
+=== FLOW 2: EMPLOYEE → SHIFT → ATTENDANCE → PAYROLL ===
+
+Step 1: Employee created
+□ Employee appears in /employees list
+□ Employee selectable in shift assignment dropdown
+□ Employee selectable in work order assignment
+□ Employee gets login credentials
+
+Step 2: Shift assigned
+□ Shift appears in /shifts weekly view
+□ Employee can see their shift in MyShiftsPage
+□ SMS/email sent to employee (if enabled)
+
+Step 3: Attendance recorded
+□ Clock-in creates attendance record
+□ Real-time dashboard shows employee as PRESENT
+□ Clock-out calculates hours_worked
+□ Late arrival flagged if clock_in > shift_start + 10min
+
+Step 4: Monthly payroll run
+□ All attendance records for month aggregated
+□ Regular hours, overtime 125%, overtime 150% calculated separately
+□ Payslip generated with correct amounts in agorot
+□ Payroll status = PAID after approval
+
+VERIFY: Employee's payslip matches their attendance hours.
+
+=== FLOW 3: INVENTORY → WORK ORDER → PURCHASE ORDER ===
+
+Step 1: Work order created with product type
+□ BOM auto-loads for product type
+□ Available vs needed quantities shown per material
+□ Red warning if insufficient stock
+
+Step 2: Work order starts (status → IN_PRODUCTION)
+□ Materials reserved from inventory
+□ Inventory shows reserved amounts
+□ Available = in_stock - reserved
+
+Step 3: Work order completed
+□ Reserved materials deducted from actual inventory
+□ inventory_movements record created (type: OUT)
+□ Moving average cost updated
+
+Step 4: If stock falls below minimum
+□ Alert created in notification table
+□ Procurement manager notified (in-app + email)
+□ Auto-draft purchase order created (if configured)
+
+Step 5: Purchase order received
+□ inventory_movements record created (type: IN)
+□ Inventory quantity increases
+□ Moving average cost recalculated
+□ Low stock alert resolved
+
+VERIFY: Inventory quantity changes match all movements.
+
+=== FLOW 4: CUSTOMER → FINANCIAL SUMMARY ===
+
+The following must ALWAYS be in sync on customer profile:
+□ Total revenue = sum of all PAID invoices
+□ Open balance = sum of (invoice totals - payments received)
+□ Quote count = number of quotes for this customer
+□ Work order count = number of work orders
+□ Last activity date = most recent of: quote/invoice/payment/work-order
+
+Check that these UPDATE IMMEDIATELY when:
+- New invoice created → open_balance increases
+- Payment recorded → open_balance decreases
+- Invoice marked as cancelled → open_balance adjusts
+
+=== FLOW 5: DASHBOARD KPIs ===
+
+Dashboard cards must show REAL data, not hardcoded values:
+□ "הכנסות החודש" = sum of payments received this calendar month
+□ "עבודות פעילות" = count of work orders where status IN (PENDING, IN_PRODUCTION, QUALITY_CHECK)
+□ "עובדים נוכחים" = count of today's attendance where clock_out IS NULL
+□ "מלאי נמוך" = count of inventory items where quantity <= min_quantity
+
+Charts must show REAL data:
+□ Revenue bar chart = actual monthly totals from DB
+□ Work order status donut = actual counts from DB
+
+VERIFY: Change a value in DB → dashboard refreshes to show updated value (within 5 min auto-refresh or manual refresh).
+
+FIX all broken data flows found.
+```
+
+---
+
+## 📋 PART 5: BUTTONS & ACTIONS AUDIT
+### בדיקת כפתורים — כל כפתור פועל
+
+```
+Audit Task: ALL BUTTONS & ACTIONS
+
+Search for ANY button, link, or action element that:
+- Does nothing when clicked (missing onClick or empty handler)
+- Shows an error when clicked
+- Navigates to wrong page
+- Doesn't update the UI after API call completes
+
+=== CRUD ACTION BUTTONS — verify for EVERY entity ===
+
+For each entity (employees, work-orders, customers, quotes, invoices, 
+inventory, suppliers, purchase-orders, shifts):
+
+LIST PAGE buttons:
+□ "הוסף [entity] חדש" → navigates to /[entity]/new
+□ Row click → navigates to /[entity]/:id
+□ Search input → filters list in real-time (debounced 300ms)
+□ Filter dropdowns → filter list by selected value
+□ Sort column headers → sort list ascending/descending
+□ Pagination: Previous / Next / page numbers → loads correct page
+□ "ייצא ל-Excel" → downloads file (not error, not blank)
+□ "מחק" (if visible) → shows confirmation modal, then soft-deletes
+
+DETAIL PAGE buttons:
+□ "ערוך" → navigates to /[entity]/:id/edit
+□ "מחק" → confirmation modal → soft delete → redirect to list
+□ "חזור לרשימה" → navigates to list page
+□ Any tab → shows correct tab content (not blank)
+
+EDIT PAGE buttons:
+□ "שמור שינויים" → saves to API → shows success toast → stays on page or redirects
+□ "בטל" → navigates back WITHOUT saving
+□ Field changes → form is "dirty" (unsaved changes warning if navigating away)
+
+=== SPECIAL ACTION BUTTONS ===
+
+Work Order:
+□ "שנה סטטוס → בייצור" → status updates → kanban card moves
+□ "שנה סטטוס → בדיקת איכות" → works
+□ "שנה סטטוס → מוכן למסירה" → works
+□ "שנה סטטוס → נמסר" → "צור חשבונית" button appears
+□ "הוסף עובד לעבודה" → modal opens → employee assigned → shown in list
+□ "דווח שעות" → modal opens → hours saved → total updates
+□ "הוסף תמונה" → file picker opens → photo uploads → appears in gallery
+□ "הדפס QR" → print dialog opens with QR code
+□ "הוסף הערה" → saves note → appears in feed instantly
+
+Quote:
+□ "הוסף שורה" → adds empty line item row
+□ "הסר שורה" → removes row (min 1 remains)
+□ "שלח ללקוח (WhatsApp)" → sends WhatsApp → shows sent confirmation
+□ "שלח ללקוח (Email)" → sends email → shows sent confirmation
+□ "הורד PDF" → downloads Hebrew PDF
+□ "אשר הזמנה" → converts to work order → shows new WO link
+□ "דחה" → asks for reason → status = REJECTED
+
+Invoice:
+□ "הורד PDF" → downloads Hebrew invoice PDF
+□ "שלח ללקוח" → sends email with PDF attached
+□ "רשום תשלום" → payment modal opens → payment recorded → balance updates
+□ "בטל חשבונית" → creates credit note (does NOT delete)
+
+Inventory:
+□ "עדכן כמות" → inline edit → saves to DB
+□ "הוסף תנועה" → modal → movement recorded → quantity updates
+□ "צור הזמנת רכש" (from low-stock item) → pre-fills PO form
+
+Attendance:
+□ "כניסה" (clock in terminal) → validates employee ID → records clock-in
+□ "יציאה" (clock out terminal) → records clock-out → shows hours worked
+□ "תיקון ידני" (manager) → modal → saves manual override with reason
+
+Dashboard:
+□ Each KPI card → navigates to relevant detail page when clicked
+□ "רענן נתונים" → fetches fresh data from API
+
+FIX every broken button/action found.
+```
+
+---
+
+## 📋 PART 6: API ENDPOINTS AUDIT
+### בדיקת API — כל endpoint קיים ועובד
+
+```
+Audit Task: API ENDPOINTS COMPLETENESS
+
+For EVERY API endpoint, verify:
+1. The route is defined in Express router
+2. The controller function exists
+3. The Prisma query is correct
+4. Auth middleware is applied
+5. Returns correct HTTP status codes
+6. Returns Hebrew error messages
+7. No 500 errors on valid input
+
+=== EMPLOYEES API ===
+□ GET    /api/employees               — list, pagination, search, filter
+□ GET    /api/employees/:id           — full profile including all related data
+□ POST   /api/employees               — create with validation
+□ PUT    /api/employees/:id           — update
+□ DELETE /api/employees/:id           — soft delete
+□ GET    /api/employees/:id/attendance?month=&year=
+□ GET    /api/employees/:id/shifts?week=
+□ GET    /api/employees/:id/payslips
+□ GET    /api/employees/:id/documents
+□ POST   /api/employees/:id/documents — upload file
+□ GET    /api/employees/:id/performance
+□ POST   /api/employees/:id/performance — create review
+
+=== SHIFTS API ===
+□ GET    /api/shifts?week=&department=
+□ POST   /api/shifts               — create shift
+□ PUT    /api/shifts/:id           — update
+□ DELETE /api/shifts/:id           — cancel
+□ POST   /api/shifts/bulk          — bulk assign
+
+=== ATTENDANCE API ===
+□ POST   /api/attendance/clock-in
+□ POST   /api/attendance/clock-out
+□ GET    /api/attendance/today      — real-time present/absent
+□ GET    /api/attendance/:employeeId?month=&year=
+□ POST   /api/attendance/manual    — manager override
+
+=== WORK ORDERS API ===
+□ GET    /api/work-orders           — list with all filters
+□ GET    /api/work-orders/:id       — full details
+□ POST   /api/work-orders           — create
+□ PUT    /api/work-orders/:id       — update
+□ PUT    /api/work-orders/:id/status — change status (validates transition)
+□ DELETE /api/work-orders/:id       — soft delete
+□ GET    /api/work-orders/:id/history
+□ GET    /api/work-orders/stats     — counts by status for dashboard
+□ POST   /api/work-orders/:id/assign — assign employee
+□ DELETE /api/work-orders/:id/assign/:employeeId
+□ POST   /api/work-orders/:id/log-hours
+□ POST   /api/work-orders/:id/notes
+□ GET    /api/work-orders/:id/notes
+□ POST   /api/work-orders/:id/photos
+□ GET    /api/work-orders/:id/photos
+□ GET    /api/work-orders/:id/qr    — returns QR code image
+
+=== CUSTOMERS API ===
+□ GET    /api/customers             — list with search
+□ GET    /api/customers/:id         — full profile
+□ POST   /api/customers             — create
+□ PUT    /api/customers/:id         — update
+□ DELETE /api/customers/:id         — soft delete
+□ GET    /api/customers/:id/summary  — financial summary
+□ GET    /api/customers/:id/timeline — merged transaction history
+□ GET    /api/customers/top         — top 10 by revenue
+□ GET    /api/customers/debtors     — with open balance
+
+=== QUOTES API ===
+□ GET    /api/quotes                — list with status filter
+□ GET    /api/quotes/:id            — full quote with line items
+□ POST   /api/quotes                — create
+□ PUT    /api/quotes/:id            — update (only DRAFT)
+□ DELETE /api/quotes/:id            — soft delete
+□ PUT    /api/quotes/:id/status     — send/accept/reject/expire
+□ GET    /api/quotes/:id/pdf        — generate PDF
+□ POST   /api/quotes/:id/send       — send to customer
+□ POST   /api/quotes/:id/convert    — convert to work order
+
+=== INVOICES API ===
+□ GET    /api/invoices              — list
+□ GET    /api/invoices/:id          — full invoice
+□ POST   /api/invoices              — create (sequential number!)
+□ PUT    /api/invoices/:id          — update (only DRAFT)
+□ POST   /api/invoices/:id/cancel   — cancel (creates credit note)
+□ GET    /api/invoices/:id/pdf      — generate Hebrew PDF
+□ POST   /api/invoices/:id/send     — email to customer
+
+=== PAYMENTS API ===
+□ GET    /api/payments              — list
+□ POST   /api/payments              — record payment
+□ GET    /api/payments/aging        — aging report data
+
+=== INVENTORY API ===
+□ GET    /api/inventory             — list with category filter
+□ GET    /api/inventory/:id         — item details
+□ POST   /api/inventory             — create item
+□ PUT    /api/inventory/:id         — update
+□ DELETE /api/inventory/:id         — soft delete
+□ GET    /api/inventory/low-stock   — below minimum
+□ POST   /api/inventory/:id/movement — record movement
+□ GET    /api/inventory/:id/history — movement history
+□ POST   /api/inventory/adjust      — manual adjustment (manager)
+□ GET    /api/inventory/export      — Excel download
+
+=== SUPPLIERS API ===
+□ GET    /api/suppliers
+□ GET    /api/suppliers/:id
+□ POST   /api/suppliers
+□ PUT    /api/suppliers/:id
+□ DELETE /api/suppliers/:id
+□ GET    /api/suppliers/:id/orders
+
+=== PURCHASE ORDERS API ===
+□ GET    /api/purchase-orders
+□ GET    /api/purchase-orders/:id
+□ POST   /api/purchase-orders
+□ PUT    /api/purchase-orders/:id
+□ PUT    /api/purchase-orders/:id/status
+□ POST   /api/purchase-orders/:id/receive — receive goods
+
+=== PAYROLL API ===
+□ GET    /api/payroll/:employeeId/:month/:year
+□ POST   /api/payroll/run-month     — run for all employees
+□ GET    /api/payroll/payslip/:id   — PDF download
+□ GET    /api/payroll/summary/:month
+□ GET    /api/payroll/export/:month/:year
+
+=== REPORTS API ===
+□ GET    /api/reports/revenue/monthly/:year
+□ GET    /api/reports/revenue/quarterly/:quarter/:year
+□ GET    /api/reports/production/daily?date=
+□ GET    /api/reports/attendance/:month/:year
+□ GET    /api/reports/payroll/:month/:year
+□ GET    /api/reports/inventory/:month/:year
+□ GET    /api/reports/profitability?from=&to=
+□ GET    /api/reports/sales/:month/:year
+
+=== DASHBOARD API ===
+□ GET    /api/dashboard             — all KPIs in one call
+□ GET    /api/dashboard/revenue-chart?year=
+□ GET    /api/dashboard/work-order-stats
+
+=== AUTH API ===
+□ POST   /api/auth/login
+□ POST   /api/auth/refresh
+□ POST   /api/auth/logout
+□ GET    /api/auth/me
+□ POST   /api/auth/forgot-password
+□ POST   /api/auth/reset-password
+□ POST   /api/auth/verify-2fa
+□ POST   /api/auth/setup-2fa
+
+=== SETTINGS API ===
+□ GET    /api/settings              — system settings
+□ PUT    /api/settings              — update settings (admin only)
+□ GET    /api/users                 — user management
+□ POST   /api/users                 — create user
+□ PUT    /api/users/:id             — update user
+□ PUT    /api/users/:id/role        — change role
+□ DELETE /api/users/:id             — deactivate
+
+=== NOTIFICATIONS API ===
+□ GET    /api/notifications         — user's notifications
+□ PUT    /api/notifications/:id/read
+□ PUT    /api/notifications/read-all
+□ GET    /api/notifications/stream  — SSE endpoint
+
+CREATE any missing endpoint. FIX any broken endpoint. 
+Every endpoint must return proper error codes and Hebrew messages.
+```
+
+---
+
+## 📋 PART 7: COMPONENT BLOCKS AUDIT
+### בדיקת בלוקי UI — כל רכיב עובד
+
+```
+Audit Task: UI COMPONENT BLOCKS CHECK
+
+=== DATA TABLE COMPONENT ===
+The main DataTable used across all list pages must support:
+□ Columns configuration: label, field, sortable, width
+□ Sorting: click header → ascending → click again → descending
+□ Search: real-time filter as user types (300ms debounce)
+□ Filters: dropdown filters apply AND combine with search
+□ Pagination: page size options (10, 25, 50, 100)
+□ Loading state: skeleton rows while fetching
+□ Empty state: Hebrew message "לא נמצאו רשומות" with illustration
+□ Error state: "שגיאה בטעינת הנתונים. נסה שוב" with retry button
+□ Row click: navigates to detail page
+□ Responsive: on mobile → card view instead of table
+
+FIX any DataTable issue. All 15+ list pages use this component.
+
+=== FORM COMPONENTS ===
+All form inputs must have:
+□ FormInput — label + input + error message + required asterisk
+□ FormSelect — label + select + options from API + error
+□ FormDatePicker — label + date input + validation + Hebrew format DD/MM/YYYY
+□ FormTimePicker — label + time input (HH:MM)
+□ FormTextarea — label + textarea + char counter (if max set)
+□ FormCurrencyInput — label + ₪ prefix + number input + converts to agorot
+□ FormPhoneInput — label + Israeli phone validation + format helper
+□ FormSearchSelect — label + search-as-you-type + select from results
+□ FormFileUpload — label + drag-drop + file type restriction + size limit
+□ FormToggle — label + on/off toggle
+□ FormCheckbox — label + checkbox
+
+Each component:
+□ Shows red border on validation error
+□ Shows Hebrew error message below field
+□ Clears error when user starts typing
+□ Works in RTL layout
+
+=== MODAL COMPONENT ===
+Every modal/dialog must:
+□ Center on screen
+□ Backdrop click = close (unless isDismissable=false)
+□ ESC key = close
+□ Has clear title in Hebrew
+□ Has close X button (top-right in LTR = top-left in RTL)
+□ Scrolls if content is long (not truncated)
+□ Submit button triggers loading state (disabled + spinner)
+□ Error displayed inside modal (not outside)
+
+FIX: Check all confirm-delete modals — they must:
+□ Show entity name being deleted
+□ Require explicit click on red "מחק" button
+□ Cancel button closes modal without action
+□ After delete: modal closes + list refreshes
+
+=== STATUS BADGE COMPONENT ===
+Work order statuses must have consistent colors everywhere:
+□ ממתין לייצור → gray
+□ בייצור → blue  
+□ בדיקת איכות → amber/yellow
+□ מוכן למסירה → teal/green
+□ נמסר → dark green
+□ מבוטל → red
+
+Quote statuses:
+□ טיוטה → gray
+□ נשלח → blue
+□ אושר → green
+□ נדחה → red
+□ פג תוקף → orange
+
+Invoice statuses:
+□ טיוטה → gray
+□ הונפקה → blue
+□ שולמה חלקית → amber
+□ שולמה → green
+□ באיחור → red
+□ בוטלה → gray+strikethrough
+
+Employee statuses:
+□ פעיל → green
+□ לא פעיל → gray
+□ בחופשה → blue
+
+Verify status badges are CONSISTENT across list pages, detail pages, 
+Kanban cards, and everywhere else they appear.
+
+=== NOTIFICATION BELL ===
+□ Shows unread count badge (red circle with number)
+□ Opens dropdown with last 10 notifications
+□ Each notification: icon by type + title + time ago
+□ Click notification → navigates to action_url
+□ "סמן הכל כנקרא" button works
+□ Count badge disappears when all read
+□ SSE connection keeps it live (no page refresh needed)
+□ Toast popup for new critical notifications
+
+=== LOADING SKELETONS ===
+Every page must show skeleton (not blank) while loading:
+□ Dashboard → 4 KPI card skeletons + 2 chart skeletons
+□ List pages → table skeleton with 10 rows
+□ Detail pages → header skeleton + tab content skeleton
+□ Kanban → 4 column skeletons with 3 card skeletons each
+
+=== TOAST NOTIFICATIONS ===
+After every action, show appropriate toast:
+□ Create success: "העובד נוצר בהצלחה" (green, 3s)
+□ Update success: "הפרטים עודכנו בהצלחה" (green, 3s)
+□ Delete success: "הרשומה נמחקה" (green, 3s)
+□ Send success: "הודעה נשלחה בהצלחה" (green, 3s)
+□ Validation error: "אנא תקן את השגיאות בטופס" (red, 5s)
+□ Network error: "שגיאת רשת. בדוק חיבור לאינטרנט." (red, 5s, persistent)
+□ Server error: "שגיאת שרת. נסה שוב." (red, 5s)
+
+Toast must appear in top-right corner (in RTL = top-left), stack when multiple.
+
+FIX all component issues found.
+```
+
+---
+
+## 📋 PART 8: DATABASE INTEGRITY AUDIT
+### בדיקת שלמות מסד הנתונים
+
+```
+Audit Task: DATABASE INTEGRITY CHECK
+
+Run these checks and fix any issues:
+
+=== SCHEMA COMPLETENESS ===
+Verify every table has:
+□ id (UUID, primary key, auto-generated)
+□ created_at (timestamp with timezone, default now())
+□ updated_at (timestamp with timezone, auto-updated on change)
+□ deleted_at (timestamp with timezone, nullable — for soft delete)
+
+Verify every foreign key has:
+□ Proper ON DELETE behavior defined (RESTRICT or SET NULL, never CASCADE for critical data)
+□ An index on the FK column
+
+=== CRITICAL CONSTRAINTS ===
+□ invoice_number is UNIQUE + auto-incremented from sequence (no gaps)
+□ employee.id_number is UNIQUE
+□ user.email is UNIQUE
+□ work_order.order_number is UNIQUE
+□ quote.quote_number is UNIQUE
+□ purchase_order.po_number is UNIQUE
+
+=== ORPHAN DATA ===
+Run these queries and fix results:
+□ work_orders WHERE customer_id NOT IN (SELECT id FROM customers) — should be 0
+□ quotes WHERE customer_id NOT IN (SELECT id FROM customers) — should be 0
+□ invoices WHERE customer_id NOT IN (SELECT id FROM customers) — should be 0
+□ payments WHERE invoice_id NOT IN (SELECT id FROM invoices) — should be 0
+□ attendance WHERE employee_id NOT IN (SELECT id FROM employees) — should be 0
+□ shifts WHERE employee_id NOT IN (SELECT id FROM employees) — should be 0
+
+=== CALCULATED FIELDS ACCURACY ===
+□ customer.open_balance_agorot = SUM(invoice.total_agorot) - SUM(payment.amount_agorot) for each customer
+□ Run reconciliation: SELECT customer_id, calculated_balance, stored_balance FROM customers WHERE they differ
+□ Fix any discrepancy
+
+=== MISSING SEED DATA ===
+Verify these exist in DB:
+□ At least 1 ADMIN user in users table
+□ All 8 departments in departments table
+□ System settings row exists in system_settings table
+□ Default notification templates exist
+
+FIX all database issues found.
+```
+
+---
+
+## 📋 PART 9: SECURITY & AUTH AUDIT
+### בדיקת אבטחה ואימות
+
+```
+Audit Task: SECURITY AUDIT
+
+=== ROUTE PROTECTION ===
+Every protected route (non-login pages) must:
+□ Return 401 if no auth token
+□ Return 401 if expired token
+□ Return 401 if invalid token
+□ Return 403 if token valid but role insufficient
+
+Test these role restrictions:
+□ Employee cannot access /api/employees (list all — only own profile)
+□ Employee cannot access /api/payroll (any)
+□ Employee cannot access /api/invoices
+□ Employee cannot access /api/settings
+□ Shift supervisor cannot access /api/users
+□ Manager cannot access /api/settings/users (admin only)
+
+Frontend route protection:
+□ Navigating to /settings as EMPLOYEE → redirects to /403
+□ Navigating to /payroll as EMPLOYEE → redirects to /403
+□ 403 page shows: Hebrew message + "חזור לדף הראשי" button
+
+=== API INPUT VALIDATION ===
+Test each critical endpoint with bad data:
+□ POST /api/employees with id_number="abc" → 400 with Hebrew error
+□ POST /api/invoices with negative total → 400
+□ POST /api/attendance/clock-out when not clocked in → 400 with "לא נמצאה כניסה פתוחה"
+□ PUT /api/work-orders/:id/status with invalid transition → 400 with "מעבר סטטוס לא חוקי"
+
+=== SESSION SECURITY ===
+□ After logout: old refresh token rejected
+□ After password change: all sessions invalidated
+□ Tokens not visible in React DevTools (stored in httpOnly cookie, not localStorage)
+□ Console.log does not print sensitive data (tokens, passwords, ID numbers)
+
+FIX all security issues found.
+```
+
+---
+
+## 📋 PART 10: PERFORMANCE & UX AUDIT
+### בדיקת ביצועים וחווית משתמש
+
+```
+Audit Task: PERFORMANCE & UX CHECK
+
+=== API RESPONSE TIMES ===
+Every API call must complete within:
+□ Simple list: < 500ms
+□ Complex report: < 3000ms
+□ File upload: < 10000ms (with progress indicator)
+
+Check for N+1 query problems:
+□ Employee list: should be 1 SQL query (with joins), not 200 queries
+□ Work order list with customer names: 1 query with join
+□ Dashboard KPIs: maximum 5 queries total (use Promise.all)
+
+FIX slow queries by adding includes/joins to Prisma queries.
+
+=== LOADING STATES ===
+□ Every button that triggers API call shows loading spinner while pending
+□ Button is disabled while loading (prevents double-submit)
+□ Form submit button: "שומר..." while pending, "שמור" when done
+□ List pages: refresh button shows spinner while fetching
+
+=== ERROR RECOVERY ===
+□ If API call fails: error shown in Hebrew, retry button available
+□ If network drops: form data NOT lost (preserved in state)
+□ If page crashes: ErrorBoundary shows Hebrew error, back button works
+
+=== EMPTY STATES ===
+Every list page when empty must show:
+□ Meaningful illustration or icon
+□ Hebrew message explaining why empty
+□ Call-to-action button (e.g., "הוסף עובד ראשון")
+
+Examples:
+□ No work orders: "אין הזמנות עבודה פעילות. לחץ כאן ליצירת הזמנה חדשה"
+□ No customers: "אין לקוחות. הוסף את הלקוח הראשון שלך"
+□ No inventory: "המלאי ריק. הוסף פריטים למלאי"
+
+=== MOBILE RESPONSIVENESS ===
+Test these pages on 375px width (iPhone):
+□ Login page: form fits screen, no horizontal scroll
+□ Dashboard: KPI cards stack vertically
+□ Work orders list: table becomes card view
+□ Clock-in terminal: large buttons, easy to tap
+□ Work order detail: tabs accessible, content readable
+
+FIX all performance and UX issues found.
+```
+
+---
+
+## 📋 PART 11: INTEGRATION AUDIT
+### בדיקת אינטגרציות חיצוניות
+
+```
+Audit Task: EXTERNAL INTEGRATIONS CHECK
+
+=== WHATSAPP BUSINESS API ===
+□ ENV var WHATSAPP_API_TOKEN is set
+□ ENV var WHATSAPP_PHONE_ID is set
+□ Test send: POST /api/test/whatsapp → message arrives on test phone
+□ Quote send button → WhatsApp message sent with quote details
+□ Payment reminder → WhatsApp sent to correct phone
+
+If WhatsApp fails: fallback to email silently (log error but don't crash)
+
+=== GMAIL API ===
+□ ENV vars: GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN
+□ Test send: POST /api/test/email → email arrives in inbox
+□ Invoice email → sent with Hebrew HTML + PDF attached
+□ Quote email → sent with PDF
+
+=== SUPABASE STORAGE ===
+□ ENV vars: SUPABASE_URL, SUPABASE_SERVICE_KEY
+□ File upload: work order photo → stored in Supabase → URL saved to DB
+□ File download: signed URL works and file accessible
+□ Backup: /api/admin/backup → uploads .sql.gz to "erp-backups" bucket
+
+=== ENVIRONMENT VARIABLES ===
+Run validation: node -e "require('./src/config/env')" 
+□ No missing required variables
+□ Clear error message if any are missing
+□ .env.example has all variables listed
+
+FIX any integration issues. If an integration is not configured,
+show a clear setup message in Settings > Integrations page.
+```
+
+---
+
+## 📋 PART 12: PRINT & EXPORT AUDIT
+### בדיקת הדפסה וייצוא
+
+```
+Audit Task: PRINT & EXPORT CHECK
+
+=== PDF GENERATION ===
+Test each PDF:
+□ Quote PDF: Hebrew RTL, company logo placeholder, all line items, VAT calculation
+□ Invoice PDF: Hebrew RTL, sequential number, all required Israeli tax fields
+□ Payslip PDF: all deductions, gross/net, employee details
+□ Work order label: QR code visible, order details readable
+
+Each PDF must:
+□ Download when "הורד PDF" button clicked
+□ Not be blank or corrupted
+□ Be A4 size
+□ Have company name "טכנו כל עוזי" in header
+□ Have correct date in Hebrew format (DD/MM/YYYY)
+□ Page numbers if multi-page
+
+=== EXCEL EXPORT ===
+Test each Excel export:
+□ Inventory export: Hebrew column headers, RTL direction, all items
+□ Payroll export: all employees, correct calculations
+□ Attendance report: all days of month, Hebrew day names
+□ Revenue report: correct monthly totals
+
+Each Excel must:
+□ Download when export button clicked (not error)
+□ Open without errors in LibreOffice/Excel
+□ Have Hebrew headers
+□ Numbers are actual numbers (not text)
+□ Dates are formatted DD/MM/YYYY
+
+=== PRINT STYLES ===
+Test print layout for:
+□ Invoice: hides navigation/buttons, shows full invoice, footer with totals
+□ Quote: same
+□ Work order: large text, QR code prominent
+□ Report pages: chart prints correctly
+
+FIX all PDF/export issues found.
+```
+
+---
+
+## 📋 PART 13: RTL & HEBREW AUDIT
+### בדיקת עברית ו-RTL
+
+```
+Audit Task: HEBREW & RTL COMPLETENESS
+
+=== TEXT IN HEBREW ===
+Search for any English user-facing text and translate to Hebrew:
+□ All button labels
+□ All form field labels
+□ All placeholder text
+□ All error messages
+□ All success messages
+□ All empty state messages
+□ All confirmation dialog text
+□ All table column headers
+□ All navigation items
+□ All page titles
+□ All tooltip text
+
+=== RTL LAYOUT ===
+Check these RTL-specific issues:
+□ Text flows right to left
+□ Form labels are right-aligned
+□ Table columns flow right to left (for Hebrew tables)
+□ Icons: directional icons (arrows, chevrons) are flipped
+□ Sidebar is on the RIGHT side (or left, but consistent)
+□ Breadcrumbs: separator arrow points left (→ in LTR = ← in RTL)
+□ Scrollbars appear on left side in scrollable areas
+□ Modals: close button is top-LEFT (not top-right as in LTR)
+□ Toast notifications: appear top-LEFT or top-RIGHT (consistent)
+
+=== HEBREW NUMBER FORMAT ===
+All currency amounts must show: ₪1,234.56 (not $1,234.56 or 1234.56)
+All dates must show: 15/01/2024 (not 01/15/2024 or 2024-01-15)
+All times must show: 14:30 (24-hour format, Israeli standard)
+Phone numbers: 050-123-4567 (formatted)
+
+=== MISSING HEBREW CONTENT ===
+Check these specific pages for Hebrew completeness:
+□ /login — all labels in Hebrew
+□ /dashboard — all KPI labels in Hebrew
+□ /employees — all column headers in Hebrew
+□ /work-orders/kanban — column titles and card content in Hebrew
+□ All report pages — chart labels and axis titles in Hebrew
+□ All settings pages — all options in Hebrew
+
+FIX all Hebrew/RTL issues found.
+```
+
+---
+
+## 📋 PART 14: ERROR HANDLING AUDIT
+### בדיקת טיפול בשגיאות
+
+```
+Audit Task: ERROR HANDLING COMPLETENESS
+
+=== FRONTEND ERROR BOUNDARIES ===
+□ App has top-level ErrorBoundary (catches React crashes)
+□ Each major section has its own ErrorBoundary
+□ ErrorBoundary shows: Hebrew error message + "רענן את הדף" button
+□ ErrorBoundary does NOT show stack trace to user (only in console)
+
+=== API ERROR HANDLING ===
+Every API call in React must handle:
+□ Network error (fetch failed) → Hebrew message + retry
+□ 400 Bad Request → show field-level validation errors
+□ 401 Unauthorized → redirect to /login
+□ 403 Forbidden → show /403 page or Hebrew inline message
+□ 404 Not Found → show Hebrew "הרשומה לא נמצאה" message
+□ 500 Server Error → Hebrew "שגיאת שרת" + retry button
+
+NEVER show:
+□ Raw error stack traces to users
+□ English error messages to users
+□ "undefined" or "null" in UI
+□ [object Object] in UI
+
+=== FORM ERROR HANDLING ===
+□ On submit failure: form shows which fields have errors
+□ Error message appears BELOW the problematic field
+□ Red border on field with error
+□ Form does NOT clear on error (user data preserved)
+□ After fixing error and resubmitting: errors clear
+
+=== NULL/UNDEFINED DATA ===
+Search for places where missing data could crash UI:
+□ customer.name → use customer?.name ?? 'לקוח לא ידוע'
+□ employee.department?.name → safe navigation
+□ invoice.total_agorot / 100 → ensure total_agorot is not null
+□ All optional fields rendered with fallback values
+□ Empty arrays handled: [] → show empty state, not crash
+
+FIX all error handling issues found.
+```
+
+---
+
+## 📋 PART 15: FINAL INTEGRATION TEST
+### בדיקת אינטגרציה סופית — מהתחלה לסוף
+
+```
+Audit Task: END-TO-END SYSTEM TEST
+
+Run this complete flow and verify EVERY step works:
+
+SCENARIO: "לקוח חדש, הצעה, עבודה, חשבונית, תשלום"
+
+1. LOGIN as admin
+   □ /login page loads
+   □ Enter credentials → JWT stored → redirect to /
+
+2. DASHBOARD
+   □ All KPI cards show numbers (not 0 or NaN)
+   □ Charts render (not blank)
+
+3. CREATE CUSTOMER
+   □ Navigate to /customers/new
+   □ Fill all required fields
+   □ Submit → created → redirect to /customers/:id
+   □ Customer appears in /customers list
+
+4. CREATE QUOTE
+   □ Navigate to /quotes/new
+   □ Select the customer just created
+   □ Add 3 line items with prices
+   □ Totals calculate in real-time with 18% VAT
+   □ Save → /quotes/:id shows all data correctly
+
+5. SEND QUOTE
+   □ Click "שלח ללקוח" → status becomes SENT
+   □ Customer page shows quote in history
+
+6. ACCEPT QUOTE
+   □ Click "אשר הזמנה" → "צור הזמנת עבודה" button appears
+   □ Click it → work order form pre-filled
+   □ Submit → /work-orders/:id
+
+7. WORK ORDER PROGRESS
+   □ Change status: PENDING → IN_PRODUCTION
+   □ Kanban card moves to "בייצור" column
+   □ Change status: IN_PRODUCTION → QUALITY_CHECK
+   □ Change status: QUALITY_CHECK → READY
+   □ Change status: READY → DELIVERED
+   □ "צור חשבונית" button appears
+
+8. CREATE INVOICE
+   □ Click "צור חשבונית" → invoice form pre-filled
+   □ Invoice number is next in sequence
+   □ Submit → /invoices/:id
+   □ Customer open_balance_agorot increased
+
+9. RECORD PAYMENT
+   □ Click "רשום תשלום"
+   □ Enter full amount
+   □ Submit → invoice status = PAID
+   □ Customer open_balance_agorot = 0
+
+10. VERIFY REPORTING
+    □ Revenue report shows this payment in current month
+    □ Customer history shows all 5 events in timeline
+
+---
+
+SCENARIO: "עובד חדש, משמרת, נוכחות, שכר"
+
+1. CREATE EMPLOYEE
+   □ /employees/new → fill all fields → submit
+   □ Employee number auto-generated (EMP-XXX)
+
+2. ASSIGN SHIFT
+   □ /shifts → assign new employee to tomorrow morning shift
+   □ Shift appears in weekly view
+
+3. CLOCK IN
+   □ /attendance/clock-in (tablet view)
+   □ Enter employee number → shows photo + name
+   □ Click "כניסה" → clock-in recorded
+   □ /attendance today view shows employee as PRESENT
+
+4. CLOCK OUT
+   □ /attendance/clock-in terminal
+   □ Enter employee number → shows "כבר נכנס" + hours so far
+   □ Click "יציאה" → clock-out recorded, hours_worked calculated
+
+5. MONTHLY PAYROLL
+   □ /payroll → select month
+   □ Employee appears with correct hours
+   □ Overtime calculated if hours > 182
+   □ Click "אשר ושלם" → payslip generated
+   □ Download payslip PDF → opens correctly
+
+---
+
+ALL STEPS ABOVE MUST PASS WITHOUT ERRORS.
+If any step fails, fix it before marking audit complete.
+```
+
+---
+
+## 📋 PART 16: CRON JOBS & BACKGROUND TASKS AUDIT
+### בדיקת משימות רקע
+
+```
+Audit Task: BACKGROUND TASKS CHECK
+
+=== VERIFY CRON JOBS ARE REGISTERED ===
+Check that these crons are registered on server startup:
+□ Daily backup: 02:00 — runs pg_dump + uploads to Supabase
+□ Payment reminders: 09:00 — sends WhatsApp/email to debtors
+□ Low stock check: every 6 hours — creates alerts if needed
+□ Employee alerts: 08:00 — birthdays, contract expirations, document expiry
+□ Daily report: 18:30 — sends EOD summary to manager
+□ Morning briefing: 07:00 — sends today's plan to manager
+□ Session cleanup: 03:00 — removes expired refresh tokens
+□ Notification cleanup: 03:30 — removes 90-day old read notifications
+
+=== CRON LOG ===
+□ Each cron logs "started", "completed", "error" with timestamp
+□ Errors do NOT crash the server
+□ Cron runs at Israel time (Asia/Jerusalem timezone)
+
+=== MANUAL TRIGGER ===
+Admin should be able to manually trigger each cron:
+□ POST /api/admin/run-backup
+□ POST /api/admin/run-payment-reminders
+□ POST /api/admin/run-daily-report
+
+Each returns: { success: true, result: "..." }
+
+FIX any cron issues found.
+```
+
+---
+
+## 📋 PART 17: FINAL CHECKLIST
+### רשימת ביקורת סופית
+
+```
+FINAL VERIFICATION CHECKLIST
+
+Before marking audit complete, verify ALL of these:
+
+ZERO BROKEN PAGES:
+□ Every route renders a real page (not blank, not "coming soon")
+□ No page throws a JavaScript error in the browser console
+□ No page shows "undefined" or "null" to the user
+□ Every 404 leads to the custom 404 page (not browser default)
+□ Every error leads to the custom error page
+
+ZERO BROKEN NAVIGATION:
+□ Every sidebar link works
+□ Every breadcrumb is clickable
+□ Every "back" button works
+□ Every action button redirects correctly
+□ No href="#" placeholders remain
+
+ZERO BROKEN FORMS:
+□ Every form submits successfully with valid data
+□ Every form shows errors with invalid data
+□ Every required field is enforced
+□ Every form is in Hebrew RTL
+
+ZERO BROKEN DATA:
+□ Every list page loads data from API
+□ Every detail page loads complete data
+□ Every dashboard KPI shows real number
+□ All financial calculations correct (agorot, 18% VAT)
+□ All dates in DD/MM/YYYY format
+□ All currency in ₪ format
+
+ZERO BROKEN API:
+□ Every frontend API call has a matching backend route
+□ Every API route returns correct HTTP status codes
+□ Every API route validates input
+□ Every API route requires authentication
+□ No API returns 500 on valid input
+
+SYSTEM BEHAVES LIKE SAP:
+□ Complete audit trail for all changes
+□ No orphan data
+□ No data inconsistencies
+□ All modules connected to each other
+□ Financial data reconciles correctly
+□ User permissions enforced everywhere
+
+REPORT COMPLETION:
+After finishing the audit, generate a report:
+{
+  "pagesFixed": number,
+  "buttonsFixed": number,
+  "apiEndpointsCreated": number,
+  "bugsFixed": number,
+  "formFieldsAdded": number,
+  "dataFlowsFixed": number,
+  "systemStatus": "PRODUCTION_READY"
+}
+```
+
+---
+
+*🎯 זהו פרומפט בדיקה ותיקון מלא של 360° — העתק ל-Replit Agent וקבל מערכת נקייה כמו SAP*
+*📋 הפרומפט מכסה: 60+ דפים | 200+ כפתורים | 80+ API endpoints | כל הסינכרונים | כל הטפסים*
+*🚀 לאחר הרצת הפרומפט: המערכת תהיה מוכנה לייצור מלא*

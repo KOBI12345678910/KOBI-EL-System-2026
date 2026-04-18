@@ -1,0 +1,81 @@
+{
+  "principle": "לכל משמעות עסקית קריטית יש מקור אמת אחד בלבד",
+  "controlled_business_meanings": {
+    "customer_master": {
+      "primary_source": "crm.customers",
+      "derived": [
+        "crm.customer_segments"
+      ]
+    },
+    "contact_master": {
+      "primary_source": "crm.contacts",
+      "derived": []
+    },
+    "project_master": {
+      "primary_source": "projects.projects",
+      "derived": [
+        "projects.project_phases",
+        "projects.milestones"
+      ]
+    },
+    "quote_master": {
+      "primary_source": "sales.quotes",
+      "derived": [
+        "sales.quote_items"
+      ]
+    },
+    "supplier_master": {
+      "primary_source": "procurement.suppliers",
+      "derived": [
+        "procurement.supplier_contacts",
+        "procurement.supplier_price_lists"
+      ]
+    },
+    "inventory_balance": {
+      "primary_source": "inventory.stock_balances",
+      "derived": [
+        "inventory.reorder_rules"
+      ]
+    },
+    "invoice_master": {
+      "primary_source": "finance.invoices",
+      "derived": [
+        "finance.invoice_items"
+      ]
+    },
+    "payment_master": {
+      "primary_source": "finance.payments",
+      "derived": [
+        "finance.cashflow_entries"
+      ]
+    },
+    "service_ticket_master": {
+      "primary_source": "service.service_tickets",
+      "derived": [
+        "service.service_visits",
+        "service.resolution_logs"
+      ]
+    },
+    "employee_master": {
+      "primary_source": "hr_workforce.employees",
+      "derived": [
+        "hr_workforce.assignments"
+      ]
+    },
+    "permissions_master": {
+      "primary_source": "governance.permissions",
+      "derived": [
+        "governance.roles"
+      ]
+    }
+  },
+  "anti_duplication_rules": [
+    "אין customer master בשני דומיינים",
+    "אין supplier master כפול",
+    "אין project header נוסף מחוץ ל-projects domain",
+    "אין stock balance מקור בשני מודלים שונים",
+    "אין invoice total logic משוכפל",
+    "אין status definition שונה לאותה ישות בלי lifecycle policy רשמית",
+    "אין fields שונים עם אותה משמעות עסקית ללא mapping"
+  ]
+}

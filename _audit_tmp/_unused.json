@@ -1,0 +1,417 @@
+[
+  {
+    "model": "lead_sources",
+    "registry_table": "crm.lead_sources",
+    "domain": "crm"
+  },
+  {
+    "model": "meetings",
+    "registry_table": "crm.meetings",
+    "domain": "crm"
+  },
+  {
+    "model": "communication_logs",
+    "registry_table": "crm.communication_logs",
+    "domain": "crm"
+  },
+  {
+    "model": "customer_segments",
+    "registry_table": "crm.customer_segments",
+    "domain": "crm"
+  },
+  {
+    "model": "quote_items",
+    "registry_table": "sales.quote_items",
+    "domain": "sales"
+  },
+  {
+    "model": "pricing_rules",
+    "registry_table": "sales.pricing_rules",
+    "domain": "sales"
+  },
+  {
+    "model": "discounts",
+    "registry_table": "sales.discounts",
+    "domain": "sales"
+  },
+  {
+    "model": "sales_orders",
+    "registry_table": "sales.sales_orders",
+    "domain": "sales"
+  },
+  {
+    "model": "sales_pipeline",
+    "registry_table": "sales.sales_pipeline",
+    "domain": "sales"
+  },
+  {
+    "model": "project_phases",
+    "registry_table": "projects.project_phases",
+    "domain": "projects"
+  },
+  {
+    "model": "project_tasks",
+    "registry_table": "projects.project_tasks",
+    "domain": "projects"
+  },
+  {
+    "model": "project_resources",
+    "registry_table": "projects.project_resources",
+    "domain": "projects"
+  },
+  {
+    "model": "project_risk_entries",
+    "registry_table": "projects.project_risk_entries",
+    "domain": "projects"
+  },
+  {
+    "model": "project_progress_logs",
+    "registry_table": "projects.project_progress_logs",
+    "domain": "projects"
+  },
+  {
+    "model": "technical_specs",
+    "registry_table": "engineering.technical_specs",
+    "domain": "engineering"
+  },
+  {
+    "model": "bom_headers",
+    "registry_table": "engineering.bom_headers",
+    "domain": "engineering"
+  },
+  {
+    "model": "bom_items",
+    "registry_table": "engineering.bom_items",
+    "domain": "engineering"
+  },
+  {
+    "model": "revision_control",
+    "registry_table": "engineering.revision_control",
+    "domain": "engineering"
+  },
+  {
+    "model": "product_configurations",
+    "registry_table": "engineering.product_configurations",
+    "domain": "engineering"
+  },
+  {
+    "model": "engineering_requests",
+    "registry_table": "engineering.engineering_requests",
+    "domain": "engineering"
+  },
+  {
+    "model": "approval_drawings",
+    "registry_table": "engineering.approval_drawings",
+    "domain": "engineering"
+  },
+  {
+    "model": "supplier_price_lists",
+    "registry_table": "procurement.supplier_price_lists",
+    "domain": "procurement"
+  },
+  {
+    "model": "purchase_requests",
+    "registry_table": "procurement.purchase_requests",
+    "domain": "procurement"
+  },
+  {
+    "model": "purchase_order_items",
+    "registry_table": "procurement.purchase_order_items",
+    "domain": "procurement"
+  },
+  {
+    "model": "goods_receipts",
+    "registry_table": "procurement.goods_receipts",
+    "domain": "procurement"
+  },
+  {
+    "model": "procurement_approvals",
+    "registry_table": "procurement.procurement_approvals",
+    "domain": "procurement"
+  },
+  {
+    "model": "stock_balances",
+    "registry_table": "inventory.stock_balances",
+    "domain": "inventory"
+  },
+  {
+    "model": "stock_movements",
+    "registry_table": "inventory.stock_movements",
+    "domain": "inventory"
+  },
+  {
+    "model": "reservations",
+    "registry_table": "inventory.reservations",
+    "domain": "inventory"
+  },
+  {
+    "model": "batch_lots",
+    "registry_table": "inventory.batch_lots",
+    "domain": "inventory"
+  },
+  {
+    "model": "production_orders",
+    "registry_table": "production.production_orders",
+    "domain": "production"
+  },
+  {
+    "model": "production_steps",
+    "registry_table": "production.production_steps",
+    "domain": "production"
+  },
+  {
+    "model": "work_centers",
+    "registry_table": "production.work_centers",
+    "domain": "production"
+  },
+  {
+    "model": "labor_logs",
+    "registry_table": "production.labor_logs",
+    "domain": "production"
+  },
+  {
+    "model": "machine_logs",
+    "registry_table": "production.machine_logs",
+    "domain": "production"
+  },
+  {
+    "model": "material_consumption",
+    "registry_table": "production.material_consumption",
+    "domain": "production"
+  },
+  {
+    "model": "scrap_logs",
+    "registry_table": "production.scrap_logs",
+    "domain": "production"
+  },
+  {
+    "model": "production_quality_checks",
+    "registry_table": "production.production_quality_checks",
+    "domain": "production"
+  },
+  {
+    "model": "installation_orders",
+    "registry_table": "installation.installation_orders",
+    "domain": "installation"
+  },
+  {
+    "model": "installation_tasks",
+    "registry_table": "installation.installation_tasks",
+    "domain": "installation"
+  },
+  {
+    "model": "installation_teams",
+    "registry_table": "installation.installation_teams",
+    "domain": "installation"
+  },
+  {
+    "model": "site_visits",
+    "registry_table": "installation.site_visits",
+    "domain": "installation"
+  },
+  {
+    "model": "completion_reports",
+    "registry_table": "installation.completion_reports",
+    "domain": "installation"
+  },
+  {
+    "model": "handover_documents",
+    "registry_table": "installation.handover_documents",
+    "domain": "installation"
+  },
+  {
+    "model": "punch_lists",
+    "registry_table": "installation.punch_lists",
+    "domain": "installation"
+  },
+  {
+    "model": "service_tickets",
+    "registry_table": "service.service_tickets",
+    "domain": "service"
+  },
+  {
+    "model": "warranty_records",
+    "registry_table": "service.warranty_records",
+    "domain": "service"
+  },
+  {
+    "model": "service_visits",
+    "registry_table": "service.service_visits",
+    "domain": "service"
+  },
+  {
+    "model": "issue_categories",
+    "registry_table": "service.issue_categories",
+    "domain": "service"
+  },
+  {
+    "model": "resolution_logs",
+    "registry_table": "service.resolution_logs",
+    "domain": "service"
+  },
+  {
+    "model": "maintenance_plans",
+    "registry_table": "service.maintenance_plans",
+    "domain": "service"
+  },
+  {
+    "model": "service_feedback",
+    "registry_table": "service.service_feedback",
+    "domain": "service"
+  },
+  {
+    "model": "sla_rules",
+    "registry_table": "service.sla_rules",
+    "domain": "service"
+  },
+  {
+    "model": "invoice_items",
+    "registry_table": "finance.invoice_items",
+    "domain": "finance"
+  },
+  {
+    "model": "expense_categories",
+    "registry_table": "finance.expense_categories",
+    "domain": "finance"
+  },
+  {
+    "model": "profitability_snapshots",
+    "registry_table": "finance.profitability_snapshots",
+    "domain": "finance"
+  },
+  {
+    "model": "attendance_logs",
+    "registry_table": "hr_workforce.attendance_logs",
+    "domain": "hr_workforce"
+  },
+  {
+    "model": "assignments",
+    "registry_table": "hr_workforce.assignments",
+    "domain": "hr_workforce"
+  },
+  {
+    "model": "payroll_inputs",
+    "registry_table": "hr_workforce.payroll_inputs",
+    "domain": "hr_workforce"
+  },
+  {
+    "model": "performance_reviews",
+    "registry_table": "hr_workforce.performance_reviews",
+    "domain": "hr_workforce"
+  },
+  {
+    "model": "skill_matrix",
+    "registry_table": "hr_workforce.skill_matrix",
+    "domain": "hr_workforce"
+  },
+  {
+    "model": "document_links",
+    "registry_table": "documents.document_links",
+    "domain": "documents"
+  },
+  {
+    "model": "document_versions",
+    "registry_table": "documents.document_versions",
+    "domain": "documents"
+  },
+  {
+    "model": "generated_files",
+    "registry_table": "documents.generated_files",
+    "domain": "documents"
+  },
+  {
+    "model": "archive_records",
+    "registry_table": "documents.archive_records",
+    "domain": "documents"
+  },
+  {
+    "model": "dashboards",
+    "registry_table": "analytics.dashboards",
+    "domain": "analytics"
+  },
+  {
+    "model": "kpi_definitions",
+    "registry_table": "analytics.kpi_definitions",
+    "domain": "analytics"
+  },
+  {
+    "model": "report_sources",
+    "registry_table": "analytics.report_sources",
+    "domain": "analytics"
+  },
+  {
+    "model": "forecast_models",
+    "registry_table": "analytics.forecast_models",
+    "domain": "analytics"
+  },
+  {
+    "model": "scenario_models",
+    "registry_table": "analytics.scenario_models",
+    "domain": "analytics"
+  },
+  {
+    "model": "scorecards",
+    "registry_table": "analytics.scorecards",
+    "domain": "analytics"
+  },
+  {
+    "model": "automation_rules",
+    "registry_table": "ai_automation.automation_rules",
+    "domain": "ai_automation"
+  },
+  {
+    "model": "automation_runs",
+    "registry_table": "ai_automation.automation_runs",
+    "domain": "ai_automation"
+  },
+  {
+    "model": "ai_agents",
+    "registry_table": "ai_automation.ai_agents",
+    "domain": "ai_automation"
+  },
+  {
+    "model": "ai_actions",
+    "registry_table": "ai_automation.ai_actions",
+    "domain": "ai_automation"
+  },
+  {
+    "model": "prediction_outputs",
+    "registry_table": "ai_automation.prediction_outputs",
+    "domain": "ai_automation"
+  },
+  {
+    "model": "recommendation_logs",
+    "registry_table": "ai_automation.recommendation_logs",
+    "domain": "ai_automation"
+  },
+  {
+    "model": "prompt_templates",
+    "registry_table": "ai_automation.prompt_templates",
+    "domain": "ai_automation"
+  },
+  {
+    "model": "orchestration_flows",
+    "registry_table": "ai_automation.orchestration_flows",
+    "domain": "ai_automation"
+  },
+  {
+    "model": "change_logs",
+    "registry_table": "governance.change_logs",
+    "domain": "governance"
+  },
+  {
+    "model": "system_settings",
+    "registry_table": "governance.system_settings",
+    "domain": "governance"
+  },
+  {
+    "model": "validation_rules",
+    "registry_table": "governance.validation_rules",
+    "domain": "governance"
+  },
+  {
+    "model": "data_quality_issues",
+    "registry_table": "governance.data_quality_issues",
+    "domain": "governance"
+  }
+]

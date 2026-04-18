@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS customer_invoices (
   project_id            INTEGER REFERENCES projects(id),
   description           TEXT,
   net_amount            NUMERIC(14,2) NOT NULL,
-  vat_rate              NUMERIC(5,4) NOT NULL DEFAULT 0.17,
+  vat_rate              NUMERIC(5,4) NOT NULL DEFAULT 0.18,  -- Israeli VAT 18% effective 2026-01-01 (was 0.17)
   vat_amount            NUMERIC(14,2) NOT NULL,
   gross_amount          NUMERIC(14,2) NOT NULL,
   currency              TEXT NOT NULL DEFAULT 'ILS',

@@ -1,0 +1,163 @@
+// ════════════════════════════════════════════════════════════════════
+// claude-agent.ts — הלולאה הראשית: Anthropic API + tool execution
+// ════════════════════════════════════════════════════════════════════
+
+import Anthropic from '@anthropic-ai/sdk';
+import { tools, TOOL_DEFINITIONS, ToolResult } from './claude-tools';
+import { KIMI_MASTER_IDENTITY } from './claude-identity'; // הקובץ שבנינו קודם
+
+export interface AgentMessage {
+  role:    'user' | 'assistant';
+  content: string;
+}
+
+export interface AgentEvent {
+  type:    'text' | 'tool_start' | 'tool_result' | 'done' | 'error';
+  content: string;
+  tool?:   string;
+  input?:  Record<string, unknown>;
+}
+
+export type StreamCallback = (event: AgentEvent) => void;
+
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY ?? '',
+});
+
+// ─── System prompt ────────────────────────────────────────────────
+
+const SYSTEM_PROMPT = `
+${KIMI_MASTER_IDENTITY}
+
+## YOUR TOOLS
+
+You have 14 tools that give you real capabilities inside the system:
+
+FILESYSTEM: read_file, write_file, list_files, search_code
+EXECUTION:  shell_exec (npm, git, tsc)
+DATABASE:   db_query (read), db_mutate (write), db_schema, add_field, stream_data
+SYSTEM:     server_logs, server_restart
+BUILDER:    fix_bug, create_module
+
+## HOW TO USE TOOLS
+
+ALWAYS explore before acting:
+1. list_files — understand project structure
+2. read_file — read relevant files before modifying
+3. search_code — find existing implementations
+4. Then write/fix/build
+
+When writing code: write_file with COMPLETE content (not partial).
+When fixing bugs: read_file first → fix_bug with exact match → shell_exec "npx tsc --noEmit" to verify.
+When building features: create_module → register in server/index.ts → shell_exec "npm run db:push".
+
+## RESPONSE STYLE
+
+- Explain what you're doing in Hebrew BEFORE each tool call
+- After tool results, explain what you found/did
+- If something fails, diagnose why and try an alternative
+- End every session with a summary of what was done + what's next
+`.trim();
+
+// ─── Main agent function ──────────────────────────────────────────
+
+export async function runAgent(
+  history:  AgentMessage[],
+  userMsg:  string,
+  onEvent:  StreamCallback,
+  maxRounds = 15,
+): Promise<string> {
+
+  const messages: Anthropic.MessageParam[] = [
+    ...history.map(m => ({ role: m.role, content: m.content })),
+    { role: 'user', content: userMsg },
+  ];
+
+  let finalText = '';
+
+  for (let round = 0; round < maxRounds; round++) {
+    let response: Anthropic.Message;
+
+    try {
+      response = await anthropic.messages.create({
+        model:      'claude-sonnet-4-5',
+        max_tokens:  8192,
+        system:      SYSTEM_PROMPT,
+        tools:       TOOL_DEFINITIONS as any,
+        messages,
+      });
+    } catch (e) {
+      const msg = (e as Error).message;
+      onEvent({ type: 'error', content: `API error: ${msg}` });
+      throw e;
+    }
+
+    // ── Process response blocks ─────────────────────────────────
+
+    const toolUses: Anthropic.ToolUseBlock[] = [];
+
+    for (const block of response.content) {
+      if (block.type === 'text') {
+        finalText = block.text;
+        onEvent({ type: 'text', content: block.text });
+      }
+      if (block.type === 'tool_use') {
+        toolUses.push(block);
+      }
+    }
+
+    // ── Done — no tool calls ────────────────────────────────────
+
+    if (response.stop_reason === 'end_turn' || toolUses.length === 0) {
+      onEvent({ type: 'done', content: finalText });
+      break;
+    }
+
+    // ── Execute tools ───────────────────────────────────────────
+
+    messages.push({ role: 'assistant', content: response.content });
+
+    const toolResults: Anthropic.ToolResultBlockParam[] = [];
+
+    for (const toolUse of toolUses) {
+      onEvent({
+        type:    'tool_start',
+        content: `Running: ${toolUse.name}`,
+        tool:    toolUse.name,
+        input:   toolUse.input as Record<string, unknown>,
+      });
+
+      let result: ToolResult;
+      try {
+        const fn = (tools as any)[toolUse.name];
+        if (!fn) {
+          result = { ok: false, output: '', error: `Unknown tool: ${toolUse.name}` };
+        } else {
+          result = await fn(toolUse.input);
+        }
+      } catch (e) {
+        result = { ok: false, output: '', error: (e as Error).message };
+      }
+
+      const resultText = result.ok
+        ? result.output
+        : `ERROR: ${result.error}\n${result.output}`;
+
+      onEvent({
+        type:    'tool_result',
+        content: resultText.slice(0, 2000), // truncate for display
+        tool:    toolUse.name,
+      });
+
+      toolResults.push({
+        type:        'tool_result',
+        tool_use_id: toolUse.id,
+        content:     resultText,
+      });
+    }
+
+    messages.push({ role: 'user', content: toolResults });
+  }
+
+  return finalText;
+}

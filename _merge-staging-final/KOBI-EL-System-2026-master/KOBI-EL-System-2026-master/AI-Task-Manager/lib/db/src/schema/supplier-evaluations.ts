@@ -1,0 +1,32 @@
+import { pgTable, serial, text, numeric, timestamp, integer, date } from "drizzle-orm/pg-core";
+import { suppliersTable } from "./suppliers";
+
+export const supplierEvaluationsTable = pgTable("supplier_evaluations", {
+  id: serial("id").primaryKey(),
+  supplierId: integer("supplier_id").notNull().references(() => suppliersTable.id),
+  evaluationDate: date("evaluation_date").notNull().defaultNow(),
+  evaluator: text("evaluator"),
+  periodStart: date("period_start"),
+  periodEnd: date("period_end"),
+  deliveryScore: numeric("delivery_score").notNull().default("0"),
+  qualityScore: numeric("quality_score").notNull().default("0"),
+  pricingScore: numeric("pricing_score").notNull().default("0"),
+  serviceScore: numeric("service_score").notNull().default("0"),
+  reliabilityScore: numeric("reliability_score").notNull().default("0"),
+  overallScore: numeric("overall_score").notNull().default("0"),
+  deliveryNotes: text("delivery_notes"),
+  qualityNotes: text("quality_notes"),
+  pricingNotes: text("pricing_notes"),
+  serviceNotes: text("service_notes"),
+  reliabilityNotes: text("reliability_notes"),
+  generalNotes: text("general_notes"),
+  totalOrders: integer("total_orders").default(0),
+  onTimeDeliveries: integer("on_time_deliveries").default(0),
+  qualityRejections: integer("quality_rejections").default(0),
+  priceCompliancePct: numeric("price_compliance_pct").default("0"),
+  responseTimeAvg: numeric("response_time_avg").default("0"),
+  recommendation: text("recommendation").default("ממשיך"),
+  status: text("status").notNull().default("active"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});

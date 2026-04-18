@@ -198,8 +198,9 @@ try {
 }
 
 // ═══ TAX CONFIG ═══
-// Israel VAT rate — 17% (2026). Override via .env if reform changes rate mid-year.
-const VAT_RATE = parseFloat(process.env.VAT_RATE) || 0.17;
+// Israel VAT rate — 18% effective 2026-01-01 (was 17% until 2025-12-31).
+// Override via .env if reform changes rate mid-year.
+const VAT_RATE = parseFloat(process.env.VAT_RATE) || 0.18;
 
 // ═══ WHATSAPP CONFIG ═══
 const WA_TOKEN = process.env.WHATSAPP_TOKEN;

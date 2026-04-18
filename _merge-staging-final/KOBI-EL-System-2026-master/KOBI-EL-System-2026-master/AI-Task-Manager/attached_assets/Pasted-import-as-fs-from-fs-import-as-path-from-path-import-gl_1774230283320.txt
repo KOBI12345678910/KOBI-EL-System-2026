@@ -1,0 +1,136 @@
+import * as fs from "fs";
+import * as path from "path";
+import { glob } from "glob";
+
+export interface SearchResult {
+  file: string;
+  line: number;
+  column: number;
+  text: string;
+  context: string[];
+}
+
+export class SearchTool {
+  private workspaceDir: string;
+
+  constructor(workspaceDir: string) {
+    this.workspaceDir = workspaceDir;
+  }
+
+  async searchContent(
+    query: string,
+    options?: {
+      filePattern?: string;
+      caseSensitive?: boolean;
+      maxResults?: number;
+      contextLines?: number;
+    }
+  ): Promise<SearchResult[]> {
+    const results: SearchResult[] = [];
+    const maxResults = options?.maxResults || 50;
+    const contextLines = options?.contextLines || 2;
+    const pattern = options?.filePattern || "**/*";
+    const flags = options?.caseSensitive ? "g" : "gi";
+    const regex = new RegExp(this.escapeRegex(query), flags);
+
+    const ignore = ["**/node_modules/**", "**/dist/**", "**/.git/**", "**/build/**", "**/__pycache__/**"];
+
+    const files = await glob(pattern, {
+      cwd: this.workspaceDir,
+      nodir: true,
+      ignore,
+      absolute: false,
+    });
+
+    for (const file of files) {
+      if (results.length >= maxResults) break;
+
+      try {
+        const fullPath = path.join(this.workspaceDir, file);
+        const stat = fs.statSync(fullPath);
+        if (stat.size > 1024 * 1024) continue; // Skip files > 1MB
+
+        const content = fs.readFileSync(fullPath, "utf-8");
+        const lines = content.split("\n");
+
+        for (let i = 0; i < lines.length; i++) {
+          if (results.length >= maxResults) break;
+
+          const match = regex.exec(lines[i]);
+          if (match) {
+            const contextStart = Math.max(0, i - contextLines);
+            const contextEnd = Math.min(lines.length - 1, i + contextLines);
+            const context = lines.slice(contextStart, contextEnd + 1);
+
+            results.push({
+              file,
+              line: i + 1,
+              column: match.index + 1,
+              text: lines[i].trim(),
+              context,
+            });
+            regex.lastIndex = 0;
+          }
+        }
+      } catch {}
+    }
+
+    return results;
+  }
+
+  async searchFiles(
+    namePattern: string,
+    options?: { maxResults?: number }
+  ): Promise<string[]> {
+    const maxResults = options?.maxResults || 50;
+    const ignore = ["**/node_modules/**", "**/dist/**", "**/.git/**"];
+
+    const files = await glob(`**/*${namePattern}*`, {
+      cwd: this.workspaceDir,
+      nodir: true,
+      ignore,
+      absolute: false,
+    });
+
+    return files.slice(0, maxResults);
+  }
+
+  async findAndReplace(
+    searchText: string,
+    replaceText: string,
+    options?: { filePattern?: string; dryRun?: boolean }
+  ): Promise<{ file: string; replacements: number }[]> {
+    const results: { file: string; replacements: number }[] = [];
+    const pattern = options?.filePattern || "**/*";
+    const ignore = ["**/node_modules/**", "**/dist/**", "**/.git/**"];
+
+    const files = await glob(pattern, {
+      cwd: this.workspaceDir,
+      nodir: true,
+      ignore,
+      absolute: false,
+    });
+
+    for (const file of files) {
+      try {
+        const fullPath = path.join(this.workspaceDir, file);
+        const content = fs.readFileSync(fullPath, "utf-8");
+        const newContent = content.split(searchText).join(replaceText);
+        const count = (content.split(searchText).length - 1);
+
+        if (count > 0) {
+          if (!options?.dryRun) {
+            fs.writeFileSync(fullPath, newContent, "utf-8");
+          }
+          results.push({ file, replacements: count });
+        }
+      } catch {}
+    }
+
+    return results;
+  }
+
+  private escapeRegex(str: string): string {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+}

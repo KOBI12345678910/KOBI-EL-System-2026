@@ -1,0 +1,32 @@
+[
+  [
+    "/receipts",
+    6,
+    "finance - receipts are financial docs"
+  ],
+  [
+    "/all-documents",
+    10,
+    "should be under documents"
+  ],
+  [
+    "/audit",
+    12,
+    "audit log → compliance"
+  ],
+  [
+    "/integrations",
+    14,
+    "integrations"
+  ],
+  [
+    "/webhooks",
+    14,
+    "integrations/webhooks"
+  ],
+  [
+    "/cron",
+    13,
+    "ops/infra"
+  ]
+]

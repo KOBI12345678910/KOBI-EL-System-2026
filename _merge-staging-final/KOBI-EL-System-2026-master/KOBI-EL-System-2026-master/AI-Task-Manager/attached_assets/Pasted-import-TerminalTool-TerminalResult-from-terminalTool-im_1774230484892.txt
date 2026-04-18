@@ -1,0 +1,219 @@
+import { TerminalTool, TerminalResult } from "./terminalTool";
+import { BrowserTool } from "./browserTool";
+import * as fs from "fs";
+import * as path from "path";
+
+export interface PreviewInfo {
+  url: string;
+  port: number;
+  pid?: number;
+  framework: string;
+  status: "starting" | "running" | "stopped" | "error";
+}
+
+export class PreviewTool {
+  private terminal: TerminalTool;
+  private browser: BrowserTool;
+  private workspaceDir: string;
+  private previews: Map<string, PreviewInfo> = new Map();
+
+  constructor(workspaceDir: string, terminal: TerminalTool, browser: BrowserTool) {
+    this.workspaceDir = workspaceDir;
+    this.terminal = terminal;
+    this.browser = browser;
+  }
+
+  async startDevServer(options?: {
+    port?: number;
+    command?: string;
+    id?: string;
+  }): Promise<PreviewInfo> {
+    const port = options?.port || await this.findFreePort();
+    const id = options?.id || "dev-server";
+    const command = options?.command || this.detectDevCommand(port);
+
+    // Kill existing
+    await this.stopServer(id);
+
+    const info: PreviewInfo = {
+      url: `http://localhost:${port}`,
+      port,
+      framework: this.detectFramework(),
+      status: "starting",
+    };
+
+    this.previews.set(id, info);
+
+    const result = await this.terminal.startBackground(id, command, {
+      env: { PORT: String(port) },
+      onOutput: (data, stream) => {
+        // Detect when server is ready
+        if (
+          data.includes("ready") ||
+          data.includes("listening") ||
+          data.includes("started") ||
+          data.includes(`localhost:${port}`) ||
+          data.includes(`0.0.0.0:${port}`)
+        ) {
+          info.status = "running";
+        }
+        if (stream === "stderr" && data.includes("Error")) {
+          info.status = "error";
+        }
+      },
+    });
+
+    info.pid = result.pid;
+
+    // Wait for server to be ready
+    const ready = await this.browser.waitForServer(
+      `http://localhost:${port}`,
+      30000,
+      500
+    );
+
+    if (ready) {
+      info.status = "running";
+    } else {
+      info.status = "error";
+    }
+
+    return info;
+  }
+
+  async stopServer(id = "dev-server"): Promise<boolean> {
+    const info = this.previews.get(id);
+    if (info) {
+      info.status = "stopped";
+      this.previews.delete(id);
+    }
+    return this.terminal.stopBackground(id);
+  }
+
+  async stopAll(): Promise<void> {
+    for (const [id] of this.previews) {
+      await this.stopServer(id);
+    }
+  }
+
+  async restartServer(id = "dev-server"): Promise<PreviewInfo | null> {
+    const existing = this.previews.get(id);
+    if (!existing) return null;
+
+    await this.stopServer(id);
+    return this.startDevServer({
+      port: existing.port,
+      id,
+    });
+  }
+
+  async checkHealth(id = "dev-server"): Promise<{
+    alive: boolean;
+    status: number;
+    responseTime: number;
+  }> {
+    const info = this.previews.get(id);
+    if (!info) return { alive: false, status: 0, responseTime: 0 };
+
+    const start = Date.now();
+    const result = await this.browser.checkUrl(info.url);
+    return {
+      alive: result.ok,
+      status: result.status,
+      responseTime: Date.now() - start,
+    };
+  }
+
+  async testEndpoints(baseUrl: string, endpoints: Array<{
+    method: string;
+    path: string;
+    body?: any;
+    expectedStatus?: number;
+  }>): Promise<Array<{ path: string; status: number; ok: boolean; time: number; body?: string }>> {
+    const results = [];
+
+    for (const ep of endpoints) {
+      const url = `${baseUrl}${ep.path}`;
+      const start = Date.now();
+
+      const curlCmd = ep.method === "GET"
+        ? `curl -s -w "\\n%{http_code}" "${url}"`
+        : `curl -s -w "\\n%{http_code}" -X ${ep.method} -H "Content-Type: application/json" ${ep.body ? `-d '${JSON.stringify(ep.body)}'` : ""} "${url}"`;
+
+      const result = await this.terminal.execute(curlCmd, { timeout: 10000 });
+      const lines = result.stdout.split("\n");
+      const statusCode = parseInt(lines.pop() || "0");
+      const body = lines.join("\n");
+
+      results.push({
+        path: ep.path,
+        status: statusCode,
+        ok: ep.expectedStatus ? statusCode === ep.expectedStatus : statusCode >= 200 && statusCode < 400,
+        time: Date.now() - start,
+        body: body.slice(0, 500),
+      });
+    }
+
+    return results;
+  }
+
+  getPreview(id = "dev-server"): PreviewInfo | undefined {
+    return this.previews.get(id);
+  }
+
+  getAllPreviews(): Map<string, PreviewInfo> {
+    return this.previews;
+  }
+
+  private detectDevCommand(port: number): string {
+    const hasFile = (f: string) => fs.existsSync(path.join(this.workspaceDir, f));
+
+    if (hasFile("next.config.js") || hasFile("next.config.mjs") || hasFile("next.config.ts"))
+      return `npx next dev -p ${port}`;
+    if (hasFile("vite.config.ts") || hasFile("vite.config.js"))
+      return `npx vite --port ${port} --host`;
+    if (hasFile("angular.json"))
+      return `npx ng serve --port ${port}`;
+    if (hasFile("nuxt.config.ts") || hasFile("nuxt.config.js"))
+      return `npx nuxi dev --port ${port}`;
+    if (hasFile("svelte.config.js"))
+      return `npx vite dev --port ${port}`;
+
+    try {
+      const pkg = JSON.parse(fs.readFileSync(path.join(this.workspaceDir, "package.json"), "utf-8"));
+      if (pkg.scripts?.dev) return `PORT=${port} npm run dev`;
+      if (pkg.scripts?.start) return `PORT=${port} npm start`;
+    } catch {}
+
+    if (hasFile("requirements.txt")) {
+      if (hasFile("manage.py")) return `python manage.py runserver 0.0.0.0:${port}`;
+      return `python -m http.server ${port}`;
+    }
+
+    if (hasFile("main.go")) return `go run . --port ${port}`;
+
+    return `npx serve -l ${port} .`;
+  }
+
+  private detectFramework(): string {
+    const hasFile = (f: string) => fs.existsSync(path.join(this.workspaceDir, f));
+    if (hasFile("next.config.js") || hasFile("next.config.mjs")) return "nextjs";
+    if (hasFile("vite.config.ts")) return "vite";
+    if (hasFile("angular.json")) return "angular";
+    if (hasFile("nuxt.config.ts")) return "nuxt";
+    if (hasFile("svelte.config.js")) return "svelte";
+    if (hasFile("manage.py")) return "django";
+    return "unknown";
+  }
+
+  private async findFreePort(start = 3000): Promise<number> {
+    for (let port = start; port < start + 100; port++) {
+      const result = await this.terminal.execute(
+        `lsof -ti:${port} 2>/dev/null || echo "free"`,
+        { timeout: 3000 }
+      );
+      if (result.stdout.trim() === "free") return port;
+    }
+    return start + Math.floor(Math.random() * 1000);
+  }
+}

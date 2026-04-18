@@ -1,0 +1,117 @@
+יש בעיית הבנה חמורה שצריך לתקן עכשיו.
+
+הכיוון שבנית כרגע אינו הכיוון שביקשתי.
+
+מה שבנית נראה כמו מערכת ניהול ל-Claude / AI Console / AI Operations Dashboard:
+- ספקי AI
+- מודלים
+- מפתחות API
+- יומני שימוש
+- שאלות ותשובות
+- המלצות
+- תוכניות פרומפט
+
+זה לא מה שביקשתי.
+
+אני לא ביקשתי כרגע לבנות מערכת ניהול AI.
+אני לא ביקשתי כרגע דשבורד ספקי AI.
+אני לא ביקשתי כרגע מסכי usage של Claude.
+
+מה שביקשתי הוא משהו אחר לגמרי:
+
+אני רוצה לבנות Universal Builder Platform עבור כל מערכת ה-ERP.
+
+כלומר:
+מערכת פנימית שבאמצעותה נוכל לבנות ידנית מתוך המערכת עצמה:
+- מודולים
+- ישויות
+- שדות
+- קשרים
+- טפסים
+- תצוגות רשימה
+- כרטיסי ישות
+- קטגוריות
+- סטטוסים
+- כפתורים
+- פעולות
+- הרשאות
+- תפריטים
+- דשבורדים
+- workflows
+- automations
+- templates
+
+כשאני אומר "מודולים", אני לא מתכוון למודלי AI או ספקי API.
+
+אני מתכוון למודולים של בניית המערכת עצמה.
+
+דוגמאות למודולי ה-Builder שאני כן מתכוון אליהם:
+1. Core Metadata Module
+2. Runtime Engine
+3. Module Builder
+4. Entity Builder
+5. Field Builder
+6. Relation Builder
+7. Form Builder
+8. View Builder
+9. Detail Page Builder
+10. Categories Builder
+11. Status Builder
+12. Buttons Builder
+13. Actions Builder
+14. Validation Builder
+15. Permissions Builder
+16. Menu Builder
+17. Dashboard Builder
+18. Widget Builder
+19. Workflow Builder
+20. Automation Builder
+21. Template Builder
+22. Document Builder
+23. Report Builder
+24. Integration Builder
+25. AI Builder בעתיד
+26. Draft / Publish / Versioning
+
+אלה המודולים שאני רוצה.
+
+אני לא רוצה כרגע מערכת שנועדה לנהל את Claude.
+אני רוצה מערכת שנועדה לבנות את כל ה-ERP.
+
+ההבחנה היא:
+
+Builder Modules =
+מודולים שבונים את המערכת עצמה.
+
+AI / API Infrastructure =
+תשתית טכנית תומכת.
+
+כרגע אני רוצה להתמקד רק ב-Builder Modules.
+
+לכן:
+1. עצור את הכיוון הנוכחי של AI management console.
+2. אל תוסיף עוד מסכים של ספקי AI / usage / prompts / recommendations.
+3. חזור לארכיטקטורה של Builder Platform.
+4. תן לי עכשיו תכנון מחדש רק עבור Builder Modules.
+
+אני רוצה עכשיו שתענה רק על הדברים הבאים:
+
+1. מהי הארכיטקטורה הנכונה של Universal Builder Platform
+2. מהם כל מודולי הבנייה של המערכת
+3. למה כל מודול קיים
+4. מה חייב להיות בתוך כל מודול
+5. אילו טבלאות metadata צריך
+6. אילו מסכים צריך
+7. אילו כפתורים ופעולות צריך
+8. מה נבנה בפאזה 1 בלבד
+
+חשוב:
+אל תענה לי כרגע על:
+- Claude provider dashboard
+- AI usage
+- model monitoring
+- API key pages
+- prompts center
+- שאלות / תשובות / recommendations
+
+רק אחרי שנסיים את Builder Platform, נדבר על Claude layer.

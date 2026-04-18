@@ -1,0 +1,1815 @@
+openapi: 3.0.3
+info:
+  title: ONYX Procurement API
+  description: |
+    API for the ONYX Procurement System — covers procurement (suppliers,
+    RFQ, quotes, POs, subcontractors), VAT (PCN836), annual tax forms,
+    bank reconciliation, payroll/wage slips, and WhatsApp webhooks.
+  version: 1.0.0
+  contact:
+    name: Techno-Kol Ops
+servers:
+  - url: http://localhost:3100
+    description: Local development
+  - url: https://api.onyx.example.com
+    description: Production placeholder
+tags:
+  - name: System
+  - name: Suppliers
+  - name: Purchase Requests
+  - name: RFQ
+  - name: Quotes
+  - name: Purchase Orders
+  - name: Subcontractors
+  - name: VAT
+  - name: Annual Tax
+  - name: Bank Reconciliation
+  - name: Payroll
+  - name: Analytics
+  - name: Audit
+  - name: Webhooks
+security:
+  - ApiKeyAuth: []
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+    Supplier:
+      type: object
+      additionalProperties: true
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        phone: { type: string }
+        whatsapp: { type: string }
+        email: { type: string }
+        preferred_channel: { type: string, enum: [whatsapp, sms, email] }
+        active: { type: boolean }
+        overall_score: { type: number }
+        risk_score: { type: number }
+    Product:
+      type: object
+      additionalProperties: true
+      properties:
+        id: { type: integer }
+        supplier_id: { type: integer }
+        name: { type: string }
+        category: { type: string }
+        unit: { type: string }
+        unit_price: { type: number }
+    PurchaseRequestItem:
+      type: object
+      properties:
+        name: { type: string }
+        category: { type: string }
+        quantity: { type: number }
+        unit: { type: string }
+        specs: { type: string }
+    PurchaseRequest:
+      type: object
+      additionalProperties: true
+      properties:
+        id: { type: integer }
+        requested_by: { type: string }
+        priority: { type: string }
+        status: { type: string }
+    RFQ:
+      type: object
+      additionalProperties: true
+    Quote:
+      type: object
+      additionalProperties: true
+    PurchaseOrder:
+      type: object
+      additionalProperties: true
+    Subcontractor:
+      type: object
+      additionalProperties: true
+    VatProfile:
+      type: object
+      additionalProperties: true
+    VatPeriod:
+      type: object
+      additionalProperties: true
+      properties:
+        id: { type: integer }
+        period_start: { type: string, format: date }
+        period_end: { type: string, format: date }
+        period_label: { type: string }
+        status: { type: string, enum: [open, closing, submitted] }
+    TaxInvoice:
+      type: object
+      additionalProperties: true
+      properties:
+        id: { type: integer }
+        direction: { type: string, enum: [input, output] }
+        invoice_number: { type: string }
+        invoice_date: { type: string, format: date }
+        net_amount: { type: number }
+        vat_amount: { type: number }
+        gross_amount: { type: number }
+        is_asset: { type: boolean }
+        is_zero_rate: { type: boolean }
+        is_exempt: { type: boolean }
+    Project:
+      type: object
+      additionalProperties: true
+    Customer:
+      type: object
+      additionalProperties: true
+    CustomerInvoice:
+      type: object
+      additionalProperties: true
+    CustomerPayment:
+      type: object
+      additionalProperties: true
+      properties:
+        id: { type: integer }
+        customer_id: { type: integer }
+        amount: { type: number }
+        payment_date: { type: string, format: date }
+        receipt_number: { type: string }
+        invoice_ids:
+          type: array
+          items: { type: integer }
+    FiscalYear:
+      type: object
+      additionalProperties: true
+    AnnualTaxReport:
+      type: object
+      additionalProperties: true
+    BankAccount:
+      type: object
+      additionalProperties: true
+    BankStatement:
+      type: object
+      additionalProperties: true
+    BankTransaction:
+      type: object
+      additionalProperties: true
+    ReconciliationMatch:
+      type: object
+      additionalProperties: true
+    Employer:
+      type: object
+      additionalProperties: true
+    Employee:
+      type: object
+      additionalProperties: true
+    WageSlip:
+      type: object
+      additionalProperties: true
+    EmployeeBalance:
+      type: object
+      additionalProperties: true
+  responses:
+    Unauthorized:
+      description: Missing or invalid API key
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    BadRequest:
+      description: Invalid request payload or parameters
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Conflict:
+      description: State conflict (already decided/closed/etc.)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+
+paths:
+  /api/status:
+    get:
+      tags: [System]
+      summary: Engine status (public)
+      security: []
+      responses:
+        "200":
+          description: Operational status + dashboard snapshot
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /api/health:
+    get:
+      tags: [System]
+      summary: Liveness probe (public)
+      security: []
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+                  uptime: { type: number }
+                  timestamp: { type: string, format: date-time }
+  /healthz:
+    get:
+      tags: [System]
+      summary: K8s liveness + metadata (public)
+      security: []
+      responses:
+        "200":
+          description: Always 200
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /livez:
+    get:
+      tags: [System]
+      summary: K8s pure liveness (public)
+      security: []
+      responses:
+        "200":
+          description: Always 200
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  alive: { type: boolean }
+  /readyz:
+    get:
+      tags: [System]
+      summary: K8s readiness probe (public) — pings Supabase
+      security: []
+      responses:
+        "200":
+          description: Service ready
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "503":
+          description: Database timed out or errored
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /metrics:
+    get:
+      tags: [System]
+      summary: Prometheus metrics exposition (public)
+      security: []
+      responses:
+        "200":
+          description: Metrics in Prometheus text format
+          content:
+            text/plain:
+              schema: { type: string }
+
+  /api/suppliers:
+    get:
+      tags: [Suppliers]
+      summary: List suppliers
+      responses:
+        "200":
+          description: List of suppliers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  suppliers:
+                    type: array
+                    items: { $ref: "#/components/schemas/Supplier" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    post:
+      tags: [Suppliers]
+      summary: Create supplier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Supplier" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  supplier: { $ref: "#/components/schemas/Supplier" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /api/suppliers/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      tags: [Suppliers]
+      summary: Get supplier + products + price history
+      responses:
+        "200":
+          description: Supplier detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  supplier: { $ref: "#/components/schemas/Supplier" }
+                  products:
+                    type: array
+                    items: { $ref: "#/components/schemas/Product" }
+                  priceHistory: { type: array, items: { type: object } }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [Suppliers]
+      summary: Update supplier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Supplier" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  supplier: { $ref: "#/components/schemas/Supplier" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+  /api/suppliers/{id}/products:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    post:
+      tags: [Suppliers]
+      summary: Add a product to a supplier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Product" }
+      responses:
+        "201":
+          description: Product created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  product: { $ref: "#/components/schemas/Product" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+  /api/suppliers/search/{category}:
+    parameters:
+      - in: path
+        name: category
+        required: true
+        schema: { type: string }
+    get:
+      tags: [Suppliers]
+      summary: Find active suppliers by product category
+      responses:
+        "200":
+          description: Matching suppliers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  suppliers:
+                    type: array
+                    items: { $ref: "#/components/schemas/Supplier" }
+
+  /api/purchase-requests:
+    get:
+      tags: [Purchase Requests]
+      summary: List purchase requests
+      responses:
+        "200":
+          description: All purchase requests with joined items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requests:
+                    type: array
+                    items: { $ref: "#/components/schemas/PurchaseRequest" }
+    post:
+      tags: [Purchase Requests]
+      summary: Create purchase request with items
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/PurchaseRequest"
+                - type: object
+                  properties:
+                    items:
+                      type: array
+                      items: { $ref: "#/components/schemas/PurchaseRequestItem" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  request: { $ref: "#/components/schemas/PurchaseRequest" }
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/PurchaseRequestItem" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/rfq/send:
+    post:
+      tags: [RFQ]
+      summary: Fan out an RFQ to suppliers via WhatsApp/SMS
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [purchase_request_id]
+              properties:
+                purchase_request_id: { type: integer }
+                categories:
+                  type: array
+                  items: { type: string }
+                response_window_hours: { type: integer, default: 24 }
+                company_note: { type: string }
+      responses:
+        "201":
+          description: RFQ dispatched
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /api/rfq/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      tags: [RFQ]
+      summary: Get RFQ with recipients and quotes
+      responses:
+        "200":
+          description: RFQ detail
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /api/rfq/{id}/decide:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    post:
+      tags: [RFQ]
+      summary: Run scoring and pick a winner (creates a PO)
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price_weight: { type: number }
+                delivery_weight: { type: number }
+                rating_weight: { type: number }
+                reliability_weight: { type: number }
+                decided_by: { type: string }
+                force: { type: boolean }
+      responses:
+        "200":
+          description: Winner and scoring result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /api/rfqs:
+    get:
+      tags: [RFQ]
+      summary: List RFQs (summary view)
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rfqs: { type: array, items: { $ref: "#/components/schemas/RFQ" } }
+
+  /api/quotes:
+    post:
+      tags: [Quotes]
+      summary: Record a quote from a supplier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Quote" }
+      responses:
+        "201":
+          description: Quote created (with recomputed VAT)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  quote: { $ref: "#/components/schemas/Quote" }
+                  message: { type: string }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/purchase-orders:
+    get:
+      tags: [Purchase Orders]
+      summary: List POs
+      responses:
+        "200":
+          description: All POs with line items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders: { type: array, items: { $ref: "#/components/schemas/PurchaseOrder" } }
+  /api/purchase-orders/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      tags: [Purchase Orders]
+      summary: Get one PO
+      responses:
+        "200":
+          description: PO detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order: { $ref: "#/components/schemas/PurchaseOrder" }
+  /api/purchase-orders/{id}/approve:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    post:
+      tags: [Purchase Orders]
+      summary: Approve a PO
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                approved_by: { type: string }
+      responses:
+        "200":
+          description: Approved
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /api/purchase-orders/{id}/send:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    post:
+      tags: [Purchase Orders]
+      summary: Send the PO to the supplier via WhatsApp
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sent_by: { type: string }
+      responses:
+        "200":
+          description: Sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "404": { $ref: "#/components/responses/NotFound" }
+        "502":
+          description: WhatsApp transmission failed (PO marked send_failed)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /api/subcontractors:
+    get:
+      tags: [Subcontractors]
+      summary: List subcontractors
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subcontractors:
+                    type: array
+                    items: { $ref: "#/components/schemas/Subcontractor" }
+    post:
+      tags: [Subcontractors]
+      summary: Create subcontractor with optional pricing rows
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Subcontractor" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subcontractor: { $ref: "#/components/schemas/Subcontractor" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+  /api/subcontractors/{id}/pricing:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    put:
+      tags: [Subcontractors]
+      summary: Upsert pricing for a work type
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [work_type]
+              properties:
+                work_type: { type: string }
+                percentage_rate: { type: number }
+                price_per_sqm: { type: number }
+                minimum_price: { type: number }
+      responses:
+        "200":
+          description: Pricing row upserted
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /api/subcontractors/decide:
+    post:
+      tags: [Subcontractors]
+      summary: Pick best subcontractor (% vs per-sqm)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [work_type, project_value, area_sqm]
+              properties:
+                work_type: { type: string }
+                project_value: { type: number }
+                area_sqm: { type: number }
+                project_name: { type: string }
+                client_name: { type: string }
+                price_weight: { type: number }
+                quality_weight: { type: number }
+                reliability_weight: { type: number }
+      responses:
+        "200":
+          description: Winner with reasoning
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/vat/profile:
+    get:
+      tags: [VAT]
+      summary: Get the company tax profile
+      responses:
+        "200":
+          description: Profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile: { $ref: "#/components/schemas/VatProfile" }
+    put:
+      tags: [VAT]
+      summary: Upsert the tax profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/VatProfile" }
+      responses:
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile: { $ref: "#/components/schemas/VatProfile" }
+  /api/vat/periods:
+    get:
+      tags: [VAT]
+      summary: List VAT periods
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, default: 24 }
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  periods:
+                    type: array
+                    items: { $ref: "#/components/schemas/VatPeriod" }
+    post:
+      tags: [VAT]
+      summary: Open a new period
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/VatPeriod" }
+      responses:
+        "201":
+          description: Period created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  period: { $ref: "#/components/schemas/VatPeriod" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+  /api/vat/periods/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      tags: [VAT]
+      summary: Period detail with computed totals
+      responses:
+        "200":
+          description: Period + live-computed totals
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "404": { $ref: "#/components/responses/NotFound" }
+  /api/vat/periods/{id}/close:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    post:
+      tags: [VAT]
+      summary: Compute and lock a period
+      responses:
+        "200":
+          description: Closed
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /api/vat/periods/{id}/submit:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    post:
+      tags: [VAT]
+      summary: Build PCN836 file and record the submission
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                submission_type: { type: string, default: initial }
+                submission_method: { type: string, default: shamat }
+                submitted_by: { type: string }
+      responses:
+        "201":
+          description: Submission recorded + file archived
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "412":
+          description: Company tax profile not configured
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "422":
+          description: PCN836 validation failed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /api/vat/periods/{id}/pcn836:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      tags: [VAT]
+      summary: Download PCN836 file (windows-1255 binary)
+      responses:
+        "200":
+          description: File stream
+          content:
+            text/plain:
+              schema: { type: string, format: binary }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "410":
+          description: File referenced but missing from archive
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /api/vat/invoices:
+    get:
+      tags: [VAT]
+      summary: List tax invoices
+      parameters:
+        - in: query
+          name: direction
+          schema: { type: string, enum: [input, output] }
+        - in: query
+          name: period_id
+          schema: { type: string }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 100 }
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invoices:
+                    type: array
+                    items: { $ref: "#/components/schemas/TaxInvoice" }
+    post:
+      tags: [VAT]
+      summary: Record a tax invoice (auto-computes VAT if missing)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TaxInvoice" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invoice: { $ref: "#/components/schemas/TaxInvoice" }
+
+  /api/projects:
+    get:
+      tags: [Annual Tax]
+      summary: List projects
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: fiscal_year
+          schema: { type: integer }
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  projects:
+                    type: array
+                    items: { $ref: "#/components/schemas/Project" }
+    post:
+      tags: [Annual Tax]
+      summary: Create a project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Project" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  project: { $ref: "#/components/schemas/Project" }
+  /api/projects/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    patch:
+      tags: [Annual Tax]
+      summary: Update a project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Project" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  project: { $ref: "#/components/schemas/Project" }
+  /api/customers:
+    get:
+      tags: [Annual Tax]
+      summary: List active customers
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customers:
+                    type: array
+                    items: { $ref: "#/components/schemas/Customer" }
+    post:
+      tags: [Annual Tax]
+      summary: Create customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Customer" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customer: { $ref: "#/components/schemas/Customer" }
+  /api/customer-invoices:
+    get:
+      tags: [Annual Tax]
+      summary: List customer invoices
+      parameters:
+        - in: query
+          name: customer_id
+          schema: { type: string }
+        - in: query
+          name: project_id
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 100 }
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invoices:
+                    type: array
+                    items: { $ref: "#/components/schemas/CustomerInvoice" }
+    post:
+      tags: [Annual Tax]
+      summary: Create a customer invoice (auto VAT)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CustomerInvoice" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invoice: { $ref: "#/components/schemas/CustomerInvoice" }
+  /api/customer-payments:
+    get:
+      tags: [Annual Tax]
+      summary: List customer payments
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, default: 100 }
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payments:
+                    type: array
+                    items: { $ref: "#/components/schemas/CustomerPayment" }
+    post:
+      tags: [Annual Tax]
+      summary: Record a customer payment (optionally apply to invoices)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CustomerPayment" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payment: { $ref: "#/components/schemas/CustomerPayment" }
+  /api/fiscal-years:
+    get:
+      tags: [Annual Tax]
+      summary: List fiscal years
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fiscal_years:
+                    type: array
+                    items: { $ref: "#/components/schemas/FiscalYear" }
+  /api/fiscal-years/{year}/compute:
+    parameters:
+      - in: path
+        name: year
+        required: true
+        schema: { type: integer }
+    post:
+      tags: [Annual Tax]
+      summary: Compute revenue/COGS/profit for the year
+      responses:
+        "200":
+          description: Fiscal year upserted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fiscal_year: { $ref: "#/components/schemas/FiscalYear" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+  /api/annual-tax/{year}/forms/{type}/generate:
+    parameters:
+      - in: path
+        name: year
+        required: true
+        schema: { type: integer }
+      - in: path
+        name: type
+        required: true
+        schema: { type: string, enum: ["1320", "1301", "6111", "30a"] }
+    post:
+      tags: [Annual Tax]
+      summary: Generate an annual tax form
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Report generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  report: { $ref: "#/components/schemas/AnnualTaxReport" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "412":
+          description: Profile or fiscal year missing
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /api/annual-tax/{year}/forms:
+    parameters:
+      - in: path
+        name: year
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Annual Tax]
+      summary: List annual tax reports for the year
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reports:
+                    type: array
+                    items: { $ref: "#/components/schemas/AnnualTaxReport" }
+
+  /api/bank/accounts:
+    get:
+      tags: [Bank Reconciliation]
+      summary: List bank accounts
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accounts:
+                    type: array
+                    items: { $ref: "#/components/schemas/BankAccount" }
+    post:
+      tags: [Bank Reconciliation]
+      summary: Create bank account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BankAccount" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  account: { $ref: "#/components/schemas/BankAccount" }
+  /api/bank/accounts/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    patch:
+      tags: [Bank Reconciliation]
+      summary: Update account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BankAccount" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  account: { $ref: "#/components/schemas/BankAccount" }
+  /api/bank/accounts/{id}/import:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    post:
+      tags: [Bank Reconciliation]
+      summary: Import a bank statement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content: { type: string }
+                format: { type: string }
+                openingBalance: { type: number }
+      responses:
+        "201":
+          description: Statement imported
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "422":
+          description: Parse failed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /api/bank/transactions:
+    get:
+      tags: [Bank Reconciliation]
+      summary: List transactions
+      parameters:
+        - in: query
+          name: account_id
+          schema: { type: string }
+        - in: query
+          name: reconciled
+          schema: { type: string, enum: ["true", "false"] }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 200 }
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transactions:
+                    type: array
+                    items: { $ref: "#/components/schemas/BankTransaction" }
+  /api/bank/accounts/{id}/auto-reconcile:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    post:
+      tags: [Bank Reconciliation]
+      summary: Suggest matches for unreconciled transactions (read-only)
+      responses:
+        "200":
+          description: Suggestions
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /api/bank/matches:
+    post:
+      tags: [Bank Reconciliation]
+      summary: Commit a reconciliation match
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ReconciliationMatch" }
+      responses:
+        "201":
+          description: Match created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  match: { $ref: "#/components/schemas/ReconciliationMatch" }
+  /api/bank/discrepancies:
+    get:
+      tags: [Bank Reconciliation]
+      summary: List discrepancies
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string }
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /api/bank/summary:
+    get:
+      tags: [Bank Reconciliation]
+      summary: Dashboard summary from v_unreconciled_summary
+      responses:
+        "200":
+          description: Summary
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+
+  /api/payroll/employers:
+    get:
+      tags: [Payroll]
+      summary: List employers
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  employers:
+                    type: array
+                    items: { $ref: "#/components/schemas/Employer" }
+    post:
+      tags: [Payroll]
+      summary: Create employer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Employer" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  employer: { $ref: "#/components/schemas/Employer" }
+  /api/payroll/employees:
+    get:
+      tags: [Payroll]
+      summary: List employees
+      parameters:
+        - in: query
+          name: employer_id
+          schema: { type: string }
+        - in: query
+          name: active
+          schema: { type: string, enum: ["true"] }
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  employees:
+                    type: array
+                    items: { $ref: "#/components/schemas/Employee" }
+    post:
+      tags: [Payroll]
+      summary: Create employee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Employee" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  employee: { $ref: "#/components/schemas/Employee" }
+  /api/payroll/employees/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    patch:
+      tags: [Payroll]
+      summary: Update employee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Employee" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  employee: { $ref: "#/components/schemas/Employee" }
+  /api/payroll/wage-slips:
+    get:
+      tags: [Payroll]
+      summary: List wage slips
+      parameters:
+        - in: query
+          name: employer_id
+          schema: { type: string }
+        - in: query
+          name: employee_id
+          schema: { type: string }
+        - in: query
+          name: period_year
+          schema: { type: integer }
+        - in: query
+          name: period_month
+          schema: { type: integer }
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 200 }
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  wage_slips:
+                    type: array
+                    items: { $ref: "#/components/schemas/WageSlip" }
+    post:
+      tags: [Payroll]
+      summary: Compute and persist a wage slip
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [employee_id, period]
+              properties:
+                employee_id: { type: integer }
+                period:
+                  type: object
+                  properties:
+                    year: { type: integer }
+                    month: { type: integer }
+                timesheet:
+                  type: object
+                  additionalProperties: true
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  wage_slip: { $ref: "#/components/schemas/WageSlip" }
+        "409":
+          description: Duplicate wage slip for this period
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /api/payroll/wage-slips/compute:
+    post:
+      tags: [Payroll]
+      summary: Preview a wage slip (no persistence)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [employee_id]
+              properties:
+                employee_id: { type: integer }
+                period:
+                  type: object
+                  additionalProperties: true
+                timesheet:
+                  type: object
+                  additionalProperties: true
+      responses:
+        "200":
+          description: Preview computed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  wage_slip: { $ref: "#/components/schemas/WageSlip" }
+                  preview: { type: boolean }
+  /api/payroll/wage-slips/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      tags: [Payroll]
+      summary: Get one wage slip
+      responses:
+        "200":
+          description: Detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  wage_slip: { $ref: "#/components/schemas/WageSlip" }
+  /api/payroll/wage-slips/{id}/approve:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    post:
+      tags: [Payroll]
+      summary: Approve a wage slip
+      responses:
+        "200":
+          description: Approved
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "409": { $ref: "#/components/responses/Conflict" }
+  /api/payroll/wage-slips/{id}/issue:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    post:
+      tags: [Payroll]
+      summary: Generate PDF and mark issued
+      responses:
+        "200":
+          description: PDF generated
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /api/payroll/wage-slips/{id}/pdf:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      tags: [Payroll]
+      summary: Download wage slip PDF
+      responses:
+        "200":
+          description: PDF stream
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /api/payroll/wage-slips/{id}/void:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    post:
+      tags: [Payroll]
+      summary: Void a wage slip
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason: { type: string }
+      responses:
+        "200":
+          description: Voided
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /api/payroll/employees/{id}/balances:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      tags: [Payroll]
+      summary: Latest balance snapshot
+      responses:
+        "200":
+          description: Balances
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  balances: { $ref: "#/components/schemas/EmployeeBalance" }
+    post:
+      tags: [Payroll]
+      summary: Upsert balance snapshot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EmployeeBalance" }
+      responses:
+        "200":
+          description: Upserted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  balances: { $ref: "#/components/schemas/EmployeeBalance" }
+
+  /api/analytics/savings:
+    get:
+      tags: [Analytics]
+      summary: Total savings across procurement + subcontractor decisions
+      responses:
+        "200":
+          description: Totals
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /api/analytics/spend-by-supplier:
+    get:
+      tags: [Analytics]
+      summary: Spend grouped by supplier
+      responses:
+        "200":
+          description: List
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /api/analytics/spend-by-category:
+    get:
+      tags: [Analytics]
+      summary: Spend grouped by PO line category
+      responses:
+        "200":
+          description: Totals by category
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+
+  /api/audit:
+    get:
+      tags: [Audit]
+      summary: Read recent audit log entries
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50 }
+      responses:
+        "200":
+          description: Entries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  entries:
+                    type: array
+                    items: { type: object, additionalProperties: true }
+
+  /webhook/whatsapp:
+    get:
+      tags: [Webhooks]
+      summary: WhatsApp Business verification handshake
+      security: []
+      parameters:
+        - in: query
+          name: hub.mode
+          schema: { type: string }
+        - in: query
+          name: hub.verify_token
+          schema: { type: string }
+        - in: query
+          name: hub.challenge
+          schema: { type: string }
+      responses:
+        "200":
+          description: Challenge echoed
+        "403":
+          description: Token mismatch
+    post:
+      tags: [Webhooks]
+      summary: Inbound WhatsApp messages (HMAC-SHA256 verified)
+      security: []
+      parameters:
+        - in: header
+          name: X-Hub-Signature-256
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Acknowledged
+        "401":
+          description: Invalid signature
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }

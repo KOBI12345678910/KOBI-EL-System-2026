@@ -1,0 +1,93 @@
+# ONYX Procurement — DR Playbook
+# Agent-X95 — Data restore from backup archive (integrates with X-94 / Agent-02)
+#
+# Rule of the system: לא מוחקים, רק משדרגים ומגדלים.
+# The restore flow upserts by primary key — existing rows are UPGRADED,
+# never truncated. Truncation requires explicit manual approval.
+
+id: data-restore
+name_he: "שחזור נתונים מגיבוי"
+name_en: "Data restore from backup archive"
+description_he: "משחזר טבלאות מגיבוי יומי ל-Supabase (משתלב עם סוכן-X94 של גיבויים)"
+description_en: "Restores tables from a daily backup archive into Supabase (integrates with Agent-X94 backups)"
+rto_minutes: 120
+rpo_minutes: 1440
+
+steps:
+  - id: locate-archive
+    description_he: "איתור ארכיון הגיבוי המתאים"
+    description_en: "Locate the correct backup archive"
+    type: manual
+    timeout_seconds: 600
+
+  - id: verify-checksums-dry
+    description_he: "ריצה יבשה של סקריפט השחזור לאימות checksums"
+    description_en: "Dry run of restore script to verify SHA-256 checksums"
+    type: command
+    command: "echo 'node scripts/backup-restore.js --from=backups/latest.tar.gz'"
+    timeout_seconds: 600
+
+  - id: confirm-target-url
+    description_he: "אימות שה-SUPABASE_URL הוא אכן היעד הרצוי"
+    description_en: "Confirm SUPABASE_URL is actually the intended target"
+    type: manual
+    timeout_seconds: 300
+
+  - id: stage-restore
+    description_he: "הטענה לסביבת staging תחילה"
+    description_en: "Stage the restore into a staging project first"
+    type: command
+    command: "echo 'SUPABASE_URL=$STAGING_URL node scripts/backup-restore.js --from=backups/latest.tar.gz --apply --yes'"
+    timeout_seconds: 1800
+    compensating:
+      description_he: "ניקוי סביבת ה-staging"
+      description_en: "Wipe the staging project"
+      type: manual
+
+  - id: validate-staging
+    description_he: "אימות תוצאות השחזור ב-staging"
+    description_en: "Validate restore results in staging"
+    type: verify
+    verifier: staging-row-counts
+    timeout_seconds: 120
+
+  - id: approve-production
+    description_he: "אישור מפורש להפעלה על פרודקשן"
+    description_en: "Explicit approval to apply to production"
+    type: manual
+    timeout_seconds: 1800
+    destructive: true
+
+  - id: restore-production
+    description_he: "שחזור לפרודקשן (upsert בלבד, ללא מחיקה)"
+    description_en: "Restore to production (upsert only, no delete)"
+    type: command
+    command: "echo 'node scripts/backup-restore.js --from=backups/latest.tar.gz --apply --yes --i-know-its-prod'"
+    timeout_seconds: 3600
+    destructive: true
+    compensating:
+      description_he: "שחזור מהגיבוי הקודם להחזרת מצב הנתונים"
+      description_en: "Restore from previous backup to revert data state"
+      type: manual
+
+  - id: post-restore-smoke
+    description_he: "בדיקת עשן לאחר השחזור"
+    description_en: "Post-restore smoke test"
+    type: http
+    url: "http://localhost:3100/api/health/ready"
+    method: GET
+    expectedStatus: 200
+    timeout_seconds: 60
+
+  - id: row-count-diff
+    description_he: "השוואת ספירת שורות מול ה-manifest"
+    description_en: "Compare row counts against backup manifest"
+    type: verify
+    verifier: manifest-row-counts-match
+    timeout_seconds: 120
+
+  - id: notify-completion
+    description_he: "דיווח סיום שחזור לבעלי עניין"
+    description_en: "Notify stakeholders of restore completion"
+    type: manual
+    timeout_seconds: 300

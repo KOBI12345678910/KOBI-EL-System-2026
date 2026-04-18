@@ -1,0 +1,67 @@
+modules = ["nodejs-24", "node", "javascript", "postgresql-16"]
+
+[[artifacts]]
+id = "artifacts/api-server"
+
+[[artifacts]]
+id = "artifacts/mockup-sandbox"
+
+[deployment]
+router = "application"
+deploymentTarget = "autoscale"
+
+[deployment.postBuild]
+args = ["pnpm", "store", "prune"]
+env = { "CI" = "true" }
+
+[workflows]
+runButton = "Project"
+
+[agent]
+stack = "PNPM_WORKSPACE"
+expertMode = true
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 20000
+
+[nix]
+channel = "stable-25_05"
+packages = ["zip"]
+
+[userenv]
+
+[userenv.shared]
+KIMI_API_URL = "https://api.moonshot.ai/v1"
+CREDENTIAL_ENCRYPTION_KEY = "ROTATE_ME_run_openssl_rand_hex_32"
+APP_SECRET_KEY = "ROTATE_ME_run_openssl_rand_hex_32"
+JWT_SECRET = "ROTATE_ME_run_openssl_rand_hex_64"
+N8N_WEBHOOK_URL = "https://your-n8n-instance.com/webhook/erp"
+
+[[ports]]
+localPort = 8080
+externalPort = 8080
+
+[[ports]]
+localPort = 8081
+externalPort = 8081
+
+[[ports]]
+localPort = 8082
+externalPort = 3001
+
+[[ports]]
+localPort = 8083
+externalPort = 3003
+
+[[ports]]
+localPort = 20384
+externalPort = 3000
+
+[[ports]]
+localPort = 23023
+externalPort = 80
+
+[[ports]]
+localPort = 23024
+externalPort = 3002

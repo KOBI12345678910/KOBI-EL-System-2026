@@ -1,0 +1,2 @@
+techno-kol-erp.tar.gz filter=lfs diff=lfs merge=lfs -text
+AI-Task-Manager.zip filter=lfs diff=lfs merge=lfs -text

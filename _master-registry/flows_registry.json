@@ -1,0 +1,528 @@
+[
+  {
+    "flow_id": "FLW-0001",
+    "flow_name": "lead_to_customer_to_quote_to_project",
+    "flow_name_he": "ליד → לקוח → הצעה → פרויקט",
+    "domain": "sales",
+    "trigger_type": "event",
+    "description": "ליד נכנס, הופך ללקוח, נפתחת הצעת מחיר, ההצעה מאושרת ונפתח פרויקט",
+    "input_models": [
+      "crm.leads"
+    ],
+    "output_models": [
+      "projects.projects"
+    ],
+    "steps": [
+      {
+        "step_id": "S01",
+        "step_name": "capture_lead",
+        "step_type": "create_record",
+        "target_models": [
+          "crm.leads"
+        ]
+      },
+      {
+        "step_id": "S02",
+        "step_name": "qualify_lead",
+        "step_type": "update_record",
+        "target_models": [
+          "crm.leads"
+        ]
+      },
+      {
+        "step_id": "S03",
+        "step_name": "convert_to_customer",
+        "step_type": "create_record",
+        "target_models": [
+          "crm.customers"
+        ]
+      },
+      {
+        "step_id": "S04",
+        "step_name": "create_opportunity",
+        "step_type": "create_record",
+        "target_models": [
+          "sales.opportunities"
+        ]
+      },
+      {
+        "step_id": "S05",
+        "step_name": "create_quote",
+        "step_type": "create_record",
+        "target_models": [
+          "sales.quotes"
+        ]
+      },
+      {
+        "step_id": "S06",
+        "step_name": "approve_quote",
+        "step_type": "approval",
+        "target_models": [
+          "sales.quotes"
+        ]
+      },
+      {
+        "step_id": "S07",
+        "step_name": "create_project",
+        "step_type": "create_record",
+        "target_models": [
+          "projects.projects"
+        ]
+      }
+    ],
+    "kpis_affected": [
+      "conversion_rate",
+      "avg_deal_size",
+      "sales_cycle_days"
+    ],
+    "audit_required": true
+  },
+  {
+    "flow_id": "FLW-0002",
+    "flow_name": "project_to_engineering_to_procurement_to_inventory_to_production",
+    "flow_name_he": "פרויקט → הנדסה → רכש → מלאי → ייצור",
+    "domain": "projects",
+    "trigger_type": "event",
+    "description": "פרויקט עובר תכנון הנדסי, רכש, קבלת חומרים, ייצור וצריכת מלאי",
+    "input_models": [
+      "projects.projects"
+    ],
+    "output_models": [
+      "production.production_orders",
+      "inventory.stock_movements"
+    ],
+    "steps": [
+      {
+        "step_id": "S01",
+        "step_name": "plan_engineering",
+        "step_type": "create_record",
+        "target_models": [
+          "engineering.engineering_requests"
+        ]
+      },
+      {
+        "step_id": "S02",
+        "step_name": "create_bom",
+        "step_type": "create_record",
+        "target_models": [
+          "engineering.bom_headers",
+          "engineering.bom_items"
+        ]
+      },
+      {
+        "step_id": "S03",
+        "step_name": "create_pr",
+        "step_type": "create_record",
+        "target_models": [
+          "procurement.purchase_requests"
+        ]
+      },
+      {
+        "step_id": "S04",
+        "step_name": "create_po",
+        "step_type": "create_record",
+        "target_models": [
+          "procurement.purchase_orders"
+        ]
+      },
+      {
+        "step_id": "S05",
+        "step_name": "receive_goods",
+        "step_type": "create_inventory_movement",
+        "target_models": [
+          "inventory.stock_movements",
+          "procurement.goods_receipts"
+        ]
+      },
+      {
+        "step_id": "S06",
+        "step_name": "release_production",
+        "step_type": "create_record",
+        "target_models": [
+          "production.production_orders"
+        ]
+      },
+      {
+        "step_id": "S07",
+        "step_name": "consume_materials",
+        "step_type": "create_inventory_movement",
+        "target_models": [
+          "production.material_consumption"
+        ]
+      },
+      {
+        "step_id": "S08",
+        "step_name": "qc",
+        "step_type": "approval",
+        "target_models": [
+          "production.production_quality_checks"
+        ]
+      }
+    ],
+    "kpis_affected": [
+      "on_time_delivery",
+      "material_variance",
+      "scrap_rate"
+    ],
+    "audit_required": true
+  },
+  {
+    "flow_id": "FLW-0003",
+    "flow_name": "project_to_installation_to_service",
+    "flow_name_he": "פרויקט → התקנה → שירות",
+    "domain": "installation",
+    "trigger_type": "event",
+    "description": "פרויקט מוכן, יוצא להתקנה, נסגר למסירה ובהמשך לשירות אם צריך",
+    "input_models": [
+      "projects.projects"
+    ],
+    "output_models": [
+      "service.service_tickets"
+    ],
+    "steps": [
+      {
+        "step_id": "S01",
+        "step_name": "schedule_install",
+        "step_type": "create_record",
+        "target_models": [
+          "installation.installation_orders",
+          "installation.schedules"
+        ]
+      },
+      {
+        "step_id": "S02",
+        "step_name": "assign_team",
+        "step_type": "update_record",
+        "target_models": [
+          "installation.installation_teams"
+        ]
+      },
+      {
+        "step_id": "S03",
+        "step_name": "site_visit",
+        "step_type": "create_record",
+        "target_models": [
+          "installation.site_visits"
+        ]
+      },
+      {
+        "step_id": "S04",
+        "step_name": "complete",
+        "step_type": "create_record",
+        "target_models": [
+          "installation.completion_reports"
+        ]
+      },
+      {
+        "step_id": "S05",
+        "step_name": "handover",
+        "step_type": "generate_document",
+        "target_models": [
+          "installation.handover_documents"
+        ]
+      },
+      {
+        "step_id": "S06",
+        "step_name": "warranty_active",
+        "step_type": "create_record",
+        "target_models": [
+          "service.warranty_records"
+        ]
+      },
+      {
+        "step_id": "S07",
+        "step_name": "future_service",
+        "step_type": "create_record",
+        "target_models": [
+          "service.service_tickets"
+        ]
+      }
+    ],
+    "audit_required": true
+  },
+  {
+    "flow_id": "FLW-0004",
+    "flow_name": "quote_to_invoice_to_payment_to_profitability",
+    "flow_name_he": "הצעה → חשבונית → תשלום → רווחיות",
+    "domain": "finance",
+    "trigger_type": "event",
+    "description": "מהצעת מחיר לחשבונית, גביה וניתוח רווחיות",
+    "input_models": [
+      "sales.quotes",
+      "projects.projects"
+    ],
+    "output_models": [
+      "finance.profitability_snapshots"
+    ],
+    "steps": [
+      {
+        "step_id": "S01",
+        "step_name": "issue_invoice",
+        "step_type": "create_record",
+        "target_models": [
+          "finance.invoices",
+          "finance.invoice_items"
+        ]
+      },
+      {
+        "step_id": "S02",
+        "step_name": "track_receivable",
+        "step_type": "update_record",
+        "target_models": [
+          "finance.invoices"
+        ]
+      },
+      {
+        "step_id": "S03",
+        "step_name": "collect_payment",
+        "step_type": "create_financial_entry",
+        "target_models": [
+          "finance.receipts",
+          "finance.payments"
+        ]
+      },
+      {
+        "step_id": "S04",
+        "step_name": "post_cashflow",
+        "step_type": "create_financial_entry",
+        "target_models": [
+          "finance.cashflow_entries"
+        ]
+      },
+      {
+        "step_id": "S05",
+        "step_name": "compute_profit",
+        "step_type": "calculation",
+        "target_models": [
+          "finance.profitability_snapshots"
+        ]
+      }
+    ],
+    "kpis_affected": [
+      "dso",
+      "gross_margin",
+      "net_profit"
+    ],
+    "audit_required": true
+  },
+  {
+    "flow_id": "FLW-0005",
+    "flow_name": "procure_to_pay",
+    "flow_name_he": "רכש → תשלום",
+    "domain": "procurement",
+    "trigger_type": "event",
+    "input_models": [
+      "procurement.purchase_requests"
+    ],
+    "output_models": [
+      "finance.payments"
+    ],
+    "steps": [
+      {
+        "step_id": "S01",
+        "step_name": "create_pr",
+        "step_type": "create_record",
+        "target_models": [
+          "procurement.purchase_requests"
+        ]
+      },
+      {
+        "step_id": "S02",
+        "step_name": "approve_pr",
+        "step_type": "approval",
+        "target_models": [
+          "procurement.procurement_approvals"
+        ]
+      },
+      {
+        "step_id": "S03",
+        "step_name": "create_po",
+        "step_type": "create_record",
+        "target_models": [
+          "procurement.purchase_orders"
+        ]
+      },
+      {
+        "step_id": "S04",
+        "step_name": "receive_goods",
+        "step_type": "create_record",
+        "target_models": [
+          "procurement.goods_receipts"
+        ]
+      },
+      {
+        "step_id": "S05",
+        "step_name": "match_invoice",
+        "step_type": "create_record",
+        "target_models": [
+          "finance.invoices"
+        ]
+      },
+      {
+        "step_id": "S06",
+        "step_name": "pay_supplier",
+        "step_type": "create_financial_entry",
+        "target_models": [
+          "finance.payments"
+        ]
+      }
+    ]
+  },
+  {
+    "flow_id": "FLW-0006",
+    "flow_name": "hire_to_retire",
+    "flow_name_he": "קליטה → יציאה",
+    "domain": "hr_workforce",
+    "trigger_type": "manual",
+    "input_models": [
+      "hr_workforce.employees"
+    ],
+    "output_models": [
+      "hr_workforce.payroll_inputs"
+    ],
+    "steps": [
+      {
+        "step_id": "S01",
+        "step_name": "onboard",
+        "step_type": "create_record",
+        "target_models": [
+          "hr_workforce.employees"
+        ]
+      },
+      {
+        "step_id": "S02",
+        "step_name": "assign_team",
+        "step_type": "create_record",
+        "target_models": [
+          "hr_workforce.assignments"
+        ]
+      },
+      {
+        "step_id": "S03",
+        "step_name": "track_attendance",
+        "step_type": "create_record",
+        "target_models": [
+          "hr_workforce.attendance_logs"
+        ]
+      },
+      {
+        "step_id": "S04",
+        "step_name": "run_payroll",
+        "step_type": "calculation",
+        "target_models": [
+          "hr_workforce.payroll_inputs"
+        ]
+      },
+      {
+        "step_id": "S05",
+        "step_name": "performance_review",
+        "step_type": "create_record",
+        "target_models": [
+          "hr_workforce.performance_reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "flow_id": "FLW-0007",
+    "flow_name": "service_ticket_lifecycle",
+    "flow_name_he": "מחזור חיי טיקט",
+    "domain": "service",
+    "trigger_type": "event",
+    "input_models": [
+      "service.service_tickets"
+    ],
+    "output_models": [
+      "service.resolution_logs"
+    ],
+    "steps": [
+      {
+        "step_id": "S01",
+        "step_name": "open",
+        "step_type": "create_record",
+        "target_models": [
+          "service.service_tickets"
+        ]
+      },
+      {
+        "step_id": "S02",
+        "step_name": "assign",
+        "step_type": "update_record",
+        "target_models": [
+          "service.service_tickets"
+        ]
+      },
+      {
+        "step_id": "S03",
+        "step_name": "visit",
+        "step_type": "create_record",
+        "target_models": [
+          "service.service_visits"
+        ]
+      },
+      {
+        "step_id": "S04",
+        "step_name": "resolve",
+        "step_type": "create_record",
+        "target_models": [
+          "service.resolution_logs"
+        ]
+      },
+      {
+        "step_id": "S05",
+        "step_name": "close",
+        "step_type": "update_record",
+        "target_models": [
+          "service.service_tickets"
+        ]
+      }
+    ]
+  },
+  {
+    "flow_id": "FLW-0008",
+    "flow_name": "ai_automation_run",
+    "flow_name_he": "ריצת AI",
+    "domain": "ai_automation",
+    "trigger_type": "scheduled",
+    "input_models": [
+      "ai_automation.automation_rules"
+    ],
+    "output_models": [
+      "ai_automation.recommendation_logs"
+    ],
+    "steps": [
+      {
+        "step_id": "S01",
+        "step_name": "trigger",
+        "step_type": "create_record",
+        "target_models": [
+          "ai_automation.automation_runs"
+        ]
+      },
+      {
+        "step_id": "S02",
+        "step_name": "predict",
+        "step_type": "ai_action",
+        "target_models": [
+          "ai_automation.prediction_outputs"
+        ]
+      },
+      {
+        "step_id": "S03",
+        "step_name": "recommend",
+        "step_type": "ai_action",
+        "target_models": [
+          "ai_automation.recommendation_logs"
+        ]
+      },
+      {
+        "step_id": "S04",
+        "step_name": "notify",
+        "step_type": "send_notification",
+        "target_models": [
+          "orchestration.notifications"
+        ]
+      }
+    ]
+  }
+]

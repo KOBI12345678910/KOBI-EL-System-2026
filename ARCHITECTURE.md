@@ -214,7 +214,7 @@ Deployment: Supabase cloud, Postgres 15+, TLS only, rotating anon key + service-
 
 1. Monthly cron or user click: `POST /api/vat/periods` with `{period_start, period_end, period_label:"2026-03"}`.
 2. Server inserts `vat_periods` row (status `open`). `v_current_vat_period` view computes totals from `tax_invoices` where `vat_period_id = :id`.
-3. During the period, every incoming invoice lands in `tax_invoices` (direction input/output, with `vat_rate=0.17`, `allocation_number` for 2024 Invoice Reform, linked back via `source_type`/`source_id` to `purchase_orders` or `customer_invoices`).
+3. During the period, every incoming invoice lands in `tax_invoices` (direction input/output, with `vat_rate=0.18` for 2026 and onward — `0.17` for historical invoices issued before 2026-01-01; `allocation_number` for 2024 Invoice Reform, linked back via `source_type`/`source_id` to `purchase_orders` or `customer_invoices`).
 4. `POST /api/vat/periods/:id/close` → period status → `closing`, computed totals (`taxable_sales`, `vat_on_sales`, `taxable_purchases`, `vat_on_purchases`, `net_vat_payable`) locked onto the row, `locked_at` stamped.
 5. `POST /api/vat/periods/:id/submit` → `src/vat/pcn836.js::buildPcn836File({companyProfile, period, inputInvoices, outputInvoices, submission})`:
    - Generates fixed-width PCN836 lines per Israel Tax Authority spec.

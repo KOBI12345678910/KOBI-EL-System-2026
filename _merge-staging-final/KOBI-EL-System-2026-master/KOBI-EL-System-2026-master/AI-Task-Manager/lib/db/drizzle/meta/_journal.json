@@ -1,0 +1,97 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1773368940114,
+      "tag": "0000_motionless_bishop",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773367892878,
+      "tag": "0002_harsh_mentallo",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1773383400000,
+      "tag": "0003_workflow_execution_logs",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1773588000000,
+      "tag": "0004_notification_system",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1773588000001,
+      "tag": "0005_project_analyses",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1773588000002,
+      "tag": "0006_entity_builders",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1773888000000,
+      "tag": "0007_integration_messages",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1773888000001,
+      "tag": "0008_chat_system",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1773998000000,
+      "tag": "0008_finance_accounting_expansion",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1774000000000,
+      "tag": "0009_documents_module",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1742169600000,
+      "tag": "0011_chat_channels_icon",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1742256000000,
+      "tag": "0012_sms_telegram_routing",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1742342400000,
+      "tag": "0013_notification_quiet_hours",
+      "breakpoints": true
+    }
+  ]
+}

@@ -792,7 +792,7 @@ Response 200: `{ "invoices": [ ... ] }`
 
 ### `POST /api/vat/invoices`
 
-**HE:** קליטת חשבונית מס. אם לא סופק vat_amount המערכת מחשבת לפי `VAT_RATE` (ברירת מחדל 17%).
+**HE:** קליטת חשבונית מס. אם לא סופק vat_amount המערכת מחשבת לפי `VAT_RATE` (ברירת מחדל 18% מ-1.1.2026; 17% לפני כן).
 **EN:** Record a tax invoice. If `vat_amount` is not supplied and the invoice is neither exempt nor zero-rated, the server auto-computes `vat_amount` / `gross_amount` from `net_amount` using `VAT_RATE`.
 
 Auth: required.
@@ -900,7 +900,7 @@ Request body:
   "invoice_number": "INV-2026-050",
   "invoice_date": "2026-04-01",
   "net_amount": 10000,
-  "vat_rate": 0.17
+  "vat_rate": 0.18
 }
 ```
 

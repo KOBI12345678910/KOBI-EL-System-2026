@@ -317,7 +317,7 @@ export default function ExpenseSubmit(props) {
       amount: Number(draft.amount),
       currency: draft.currency || 'ILS',
       vendor: draft.vendor || null,
-      vat_rate: Number(draft.vat_rate != null ? draft.vat_rate : 0.17),
+      vat_rate: Number(draft.vat_rate != null ? draft.vat_rate : 0.18),
       has_tax_invoice: !!draft.has_tax_invoice,
       mileage: draft.mileage && draft.mileage.km ? draft.mileage : null,
       abroad: !!draft.abroad,
@@ -391,7 +391,7 @@ export default function ExpenseSubmit(props) {
         amount: Number(draft.amount || 0),
         currency: draft.currency || 'ILS',
         vendor: draft.vendor || null,
-        vat_rate: 0.17,
+        vat_rate: 0.18,
         receipt_ref: draft.receipt_ref,
       });
       const { extracted, confidence } = api.runOcr(rep.id, tmp.id);
@@ -659,7 +659,8 @@ export default function ExpenseSubmit(props) {
               onChange={(e) => setDraft({ ...draft, vat_rate: Number(e.target.value) })}
               style={st.input}
             >
-              <option value="0.17">17%</option>
+              <option value="0.18">18%</option>
+              <option value="0.17">17% (עד 2025-12-31)</option>
               <option value="0">0% / פטור</option>
             </select>
           </label>
@@ -929,7 +930,7 @@ function makeBlankLine() {
     amount: '',
     currency: 'ILS',
     vendor: '',
-    vat_rate: 0.17,
+    vat_rate: 0.18,
     has_tax_invoice: false,
     receipt_ref: null,
     mileage: null,

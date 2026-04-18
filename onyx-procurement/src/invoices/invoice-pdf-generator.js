@@ -19,7 +19,7 @@
  *   6.  Invoice date + value date (מועד החיוב / מועד הערך).
  *   7.  Line-item breakdown: description, qty, unit, unit price, line total.
  *   8.  Subtotal before VAT (סה"כ לפני מע"מ).
- *   9.  VAT breakdown by rate — 17% standard, 0% zero-rated, exempt.
+ *   9.  VAT breakdown by rate — 18% standard (from 2026-01-01; 17% for historical invoices), 0% zero-rated, exempt.
  *  10.  Gross total (סה"כ לתשלום / כולל מע"מ).
  *  11.  Document type — one of:
  *         - tax_invoice            חשבונית מס
@@ -30,7 +30,7 @@
  *  13.  Digital signature placeholder — if seller_public_key / signature
  *       are supplied the block prints them, otherwise a visible placeholder
  *       frame is drawn so the slip is obviously unsigned.
- *  14.  VAT tier table — standard 17%, zero 0%, exempt.
+ *  14.  VAT tier table — standard 18% (17% for pre-2026 invoices), zero 0%, exempt.
  *  15.  Regulatory footer — declares "עוסק רשום ברשות המיסים לפי
  *       רפורמת חשבונית ישראל 2024" (registered with tax authority under
  *       the 2024 invoice reform).
@@ -117,7 +117,10 @@ const PAYMENT_METHODS = {
   standing_order:{ he: 'הוראת קבע',    en: 'Standing Order' },
 };
 
-const VAT_STANDARD_RATE = 0.17;
+// VAT rates — standard 18% effective 2026-01-01 (prior rate 17% retained for historical invoices)
+const VAT_STANDARD_RATE = 0.18;
+const VAT_STANDARD_RATE_PRIOR = 0.17;
+const VAT_EFFECTIVE_FROM = '2026-01-01';
 
 const LEGAL_DECLARATION_HE =
   'עוסק רשום ברשות המיסים לפי רפורמת חשבונית ישראל 2024 — ' +

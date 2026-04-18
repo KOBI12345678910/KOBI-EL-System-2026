@@ -1,0 +1,136 @@
+import { TerminalTool } from "./terminalTool";
+import { FileTool } from "./fileTool";
+
+export class AudioTool {
+  private terminal: TerminalTool;
+  private fileTool: FileTool;
+
+  constructor(terminal: TerminalTool, fileTool: FileTool) {
+    this.terminal = terminal;
+    this.fileTool = fileTool;
+  }
+
+  async setupAudioCapabilities(): Promise<void> {
+    this.fileTool.createFile("src/services/audio.ts", `import OpenAI from 'openai';
+import fs from 'fs';
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// ===== TRANSCRIPTION (Speech-to-Text) =====
+export async function transcribeAudio(
+  filePath: string,
+  options?: { language?: string; prompt?: string }
+): Promise<{ text: string; duration?: number; segments?: any[] }> {
+  const file = fs.createReadStream(filePath);
+
+  const transcription = await openai.audio.transcriptions.create({
+    model: 'gpt-4o-transcribe',
+    file,
+    language: options?.language,
+    prompt: options?.prompt,
+    response_format: 'verbose_json',
+  });
+
+  return {
+    text: transcription.text,
+    duration: (transcription as any).duration,
+    segments: (transcription as any).segments,
+  };
+}
+
+// ===== TEXT-TO-SPEECH =====
+export async function textToSpeech(
+  text: string,
+  outputPath: string,
+  options?: {
+    voice?: 'alloy' | 'ash' | 'coral' | 'echo' | 'fable' | 'onyx' | 'nova' | 'sage' | 'shimmer';
+    speed?: number;
+    format?: 'mp3' | 'opus' | 'aac' | 'flac' | 'wav';
+  }
+): Promise<string> {
+  const response = await openai.audio.speech.create({
+    model: 'gpt-4o-audio',
+    voice: options?.voice || 'nova',
+    input: text,
+    speed: options?.speed || 1.0,
+    response_format: options?.format || 'mp3',
+  });
+
+  const buffer = Buffer.from(await response.arrayBuffer());
+  fs.writeFileSync(outputPath, buffer);
+  return outputPath;
+}
+
+// ===== VOICE ASSISTANT =====
+export async function voiceChat(
+  audioFilePath: string,
+  systemPrompt?: string
+): Promise<{ text: string; audioResponse?: string }> {
+  // 1. Transcribe user audio
+  const transcription = await transcribeAudio(audioFilePath);
+
+  // 2. Get AI response
+  const chatResponse = await openai.chat.completions.create({
+    model: 'gpt-4o',
+    messages: [
+      { role: 'system', content: systemPrompt || 'You are a helpful assistant. Respond concisely.' },
+      { role: 'user', content: transcription.text },
+    ],
+  });
+
+  const responseText = chatResponse.choices[0]?.message?.content || '';
+
+  // 3. Convert response to audio
+  const audioPath = audioFilePath.replace(/\\.[^.]+$/, '-response.mp3');
+  await textToSpeech(responseText, audioPath);
+
+  return { text: responseText, audioResponse: audioPath };
+}
+`);
+
+    // Express routes
+    this.fileTool.createFile("src/routes/audio.ts", `import { Router, Request, Response } from 'express';
+import multer from 'multer';
+import { transcribeAudio, textToSpeech, voiceChat } from '../services/audio';
+import path from 'path';
+
+const upload = multer({ dest: '/tmp/audio/' });
+export const audioRouter = Router();
+
+audioRouter.post('/transcribe', upload.single('audio'), async (req: Request, res: Response) => {
+  if (!req.file) return res.status(400).json({ error: 'No audio file' });
+  try {
+    const result = await transcribeAudio(req.file.path, {
+      language: req.body.language,
+      prompt: req.body.prompt,
+    });
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+audioRouter.post('/tts', async (req: Request, res: Response) => {
+  const { text, voice, speed, format } = req.body;
+  if (!text) return res.status(400).json({ error: 'Missing text' });
+  try {
+    const outputPath = path.join('/tmp/audio', 'tts-' + Date.now() + '.' + (format || 'mp3'));
+    await textToSpeech(text, outputPath, { voice, speed, format });
+    res.sendFile(outputPath);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+audioRouter.post('/voice-chat', upload.single('audio'), async (req: Request, res: Response) => {
+  if (!req.file) return res.status(400).json({ error: 'No audio file' });
+  try {
+    const result = await voiceChat(req.file.path, req.body.systemPrompt);
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+`);
+  }
+}

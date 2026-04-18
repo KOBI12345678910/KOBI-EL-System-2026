@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quote 360 — Techno-Kol Uzi ERP 2026</title>
+  <style>
+    :root{--bg-0:#05070a;--bg-1:#0a0e14;--bg-2:#111720;--bg-3:#1a2230;--border:#1f2a3a;--border-hi:#2a3a52;--text-0:#e6ecf5;--text-1:#a8b4c8;--text-2:#6b7a90;--accent:#3a8dde;--accent-hi:#5aa8ff;--ok:#2bd48b;--warn:#f2b84d;--err:#ef5350;--purple:#a78bfa;--font:'Segoe UI','Heebo','Assistant',system-ui,sans-serif;--mono:'Consolas','Menlo',monospace}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg-0);color:var(--text-0);font-family:var(--font);min-height:100vh;background-image:radial-gradient(ellipse at top,rgba(58,141,222,.04),transparent 60%)}
+    .container{max-width:1200px;margin:0 auto;padding:24px}
+
+    /* NAV */
+    .top-nav{display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap;gap:10px}
+    .nav-links{display:flex;gap:8px}
+    .back-link{color:var(--accent-hi);text-decoration:none;font-size:13px;padding:6px 14px;border:1px solid var(--border);border-radius:6px;background:var(--bg-2);transition:all .15s}
+    .back-link:hover{background:var(--bg-3);border-color:var(--accent)}
+
+    /* HEADER CARD */
+    .header-card{background:linear-gradient(135deg,var(--bg-2),var(--bg-1));border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px;position:relative;overflow:hidden}
+    .header-card::before{content:'';position:absolute;top:0;right:0;width:200px;height:200px;background:radial-gradient(circle,rgba(58,141,222,.06),transparent 70%);pointer-events:none}
+    .header-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px}
+    .header-title{display:flex;align-items:center;gap:14px}
+    .header-icon{font-size:36px}
+    .header-name{font-size:24px;font-weight:700;line-height:1.2}
+    .header-sub{font-size:13px;color:var(--text-2);margin-top:2px}
+    .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:16px;font-size:12px;font-weight:600}
+    .badge-state{background:rgba(43,212,139,.08);color:var(--ok);border:1px solid rgba(43,212,139,.25)}
+    .badge-draft{background:rgba(107,122,144,.1);color:var(--text-2);border:1px solid rgba(107,122,144,.25)}
+    .badge-sent{background:rgba(58,141,222,.1);color:var(--accent-hi);border:1px solid rgba(58,141,222,.25)}
+    .badge-pending{background:rgba(242,184,77,.1);color:var(--warn);border:1px solid rgba(242,184,77,.25)}
+    .badge-approved{background:rgba(43,212,139,.1);color:var(--ok);border:1px solid rgba(43,212,139,.25)}
+    .badge-rejected{background:rgba(239,83,80,.1);color:var(--err);border:1px solid rgba(239,83,80,.25)}
+    .badge-converted{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.25)}
+    .badges{display:flex;gap:8px;flex-wrap:wrap}
+    .header-fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:18px}
+    .hf{font-size:12px}.hf .lbl{color:var(--text-2);margin-bottom:2px}.hf .val{color:var(--text-0);font-weight:600;font-size:14px}
+
+    /* NEXT BEST ACTION */
+    .nba{background:linear-gradient(135deg,rgba(43,212,139,.06),rgba(58,141,222,.04));border:1px solid rgba(43,212,139,.2);border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .nba-label{font-size:13px;color:var(--ok);font-weight:600}
+    .nba-text{font-size:13px;color:var(--text-1)}
+
+    /* ACTION BARS */
+    .action-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);font-family:var(--font);transition:all .15s;background:var(--bg-2);color:var(--text-1)}
+    .btn:hover{background:var(--bg-3);color:var(--text-0)}
+    .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn-primary:hover{background:var(--accent-hi)}
+    .btn-success{background:rgba(43,212,139,.12);color:var(--ok);border-color:rgba(43,212,139,.3)}.btn-success:hover{background:rgba(43,212,139,.2)}
+    .btn-danger{background:rgba(239,83,80,.08);color:var(--err);border-color:rgba(239,83,80,.25)}.btn-danger:hover{background:rgba(239,83,80,.15)}
+    .btn-purple{background:rgba(167,139,250,.1);color:var(--purple);border-color:rgba(167,139,250,.25)}.btn-purple:hover{background:rgba(167,139,250,.18)}
+    .btn .ic{font-size:16px}
+
+    /* SUMMARY CARDS */
+    .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:20px}
+    .card{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:16px}
+    .card-title{font-size:12px;color:var(--text-2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+    .card-value{font-size:22px;font-weight:700;font-family:var(--mono)}
+    .card-sub{font-size:12px;color:var(--text-2);margin-top:4px}
+    .card-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(31,42,58,.5);font-size:13px}
+    .card-row:last-child{border-bottom:none}
+    .card-row .label{color:var(--text-2)}.card-row .value{color:var(--text-0);font-weight:600;font-family:var(--mono)}
+    .card-highlight{border-color:var(--accent);background:linear-gradient(135deg,rgba(58,141,222,.05),var(--bg-2))}
+
+    /* STATUS TIMELINE */
+    .timeline-bar{display:flex;align-items:center;gap:0;overflow-x:auto;padding:12px 0;margin-bottom:20px}
+    .tl-step{display:flex;flex-direction:column;align-items:center;min-width:70px}
+    .tl-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid var(--border);color:var(--text-2);background:var(--bg-2);transition:all .2s}
+    .tl-dot.done{background:var(--ok);color:#fff;border-color:var(--ok)}
+    .tl-dot.current{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 0 12px rgba(58,141,222,.35)}
+    .tl-line{width:32px;height:2px;background:var(--border);flex-shrink:0;margin-bottom:18px}
+    .tl-line.done{background:var(--ok)}
+    .tl-label{font-size:10px;color:var(--text-2);text-align:center;margin-top:5px;max-width:72px}
+
+    /* TABS */
+    .tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px;overflow-x:auto}
+    .tab{padding:10px 18px;font-size:13px;font-weight:500;color:var(--text-2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .15s}
+    .tab:hover{color:var(--text-0)}.tab.active{color:var(--accent-hi);border-bottom-color:var(--accent)}
+    .tab-panel{display:none}.tab-panel.active{display:block}
+
+    /* TABLES */
+    .tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:8px}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th{background:var(--bg-3);color:var(--text-2);font-weight:600;padding:10px 14px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--border)}
+    td{padding:10px 14px;border-bottom:1px solid rgba(31,42,58,.4);color:var(--text-1)}
+    tr:hover td{background:rgba(58,141,222,.03)}
+
+    /* SECTION */
+    .section{margin-bottom:24px}
+    .section-title{font-size:15px;font-weight:600;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+    /* EMPTY STATE */
+    .empty{text-align:center;padding:40px;color:var(--text-2);font-size:14px}
+    .empty-icon{font-size:32px;margin-bottom:8px}
+
+    /* SKELETON LOADING */
+    .skeleton{background:linear-gradient(90deg,var(--bg-3) 25%,var(--bg-2) 50%,var(--bg-3) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .skel-line{height:14px;margin-bottom:8px;width:80%}
+    .skel-block{height:60px;margin-bottom:12px}
+
+    /* APPROVAL TIMELINE */
+    .approval-tl{position:relative;padding-right:24px}
+    .approval-item{position:relative;padding-bottom:20px;padding-right:28px;border-right:2px solid var(--border)}
+    .approval-item:last-child{border-right:none}
+    .approval-dot{position:absolute;right:-7px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--border)}
+    .approval-dot.approved{background:var(--ok)}
+    .approval-dot.rejected{background:var(--err)}
+    .approval-dot.pending{background:var(--warn)}
+    .approval-info{font-size:13px;color:var(--text-1)}.approval-date{font-size:11px;color:var(--text-2);margin-top:2px}
+
+    /* AI CARD */
+    .ai-card{background:linear-gradient(135deg,rgba(167,139,250,.06),rgba(58,141,222,.04));border:1px solid rgba(167,139,250,.2);border-radius:10px;padding:16px}
+    .ai-title{font-size:13px;color:var(--purple);font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+    .ai-text{font-size:13px;color:var(--text-1);line-height:1.6}
+
+    /* RESPONSIVE */
+    @media(max-width:768px){.cards-grid{grid-template-columns:1fr 1fr}.header-fields{grid-template-columns:1fr 1fr}}
+    @media(max-width:480px){.cards-grid{grid-template-columns:1fr}.header-fields{grid-template-columns:1fr}.action-bar{flex-direction:column}.btn{width:100%;justify-content:center}}
+  </style>
+</head>
+<body>
+<div class="container">
+  <!-- NAV -->
+  <nav class="top-nav">
+    <div class="nav-links">
+      <a href="index.html" class="back-link">בית</a>
+      <a href="pipeline-dashboard.html" class="back-link">Pipeline</a>
+      <a href="entity360.html?type=quote" class="back-link">Entity 360</a>
+    </div>
+    <div style="font-size:12px;color:var(--text-2)">Quote360 · Techno-Kol Uzi ERP 2026</div>
+  </nav>
+
+  <!-- LOADING STATE -->
+  <div id="loading">
+    <div class="skeleton skel-block" style="height:120px"></div>
+    <div class="skeleton skel-block" style="height:50px;width:60%"></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:16px">
+      <div class="skeleton skel-block"></div>
+      <div class="skeleton skel-block"></div>
+      <div class="skeleton skel-block"></div>
+      <div class="skeleton skel-block"></div>
+    </div>
+    <div class="skeleton skel-line" style="margin-top:20px"></div>
+    <div class="skeleton skel-line" style="width:60%"></div>
+    <div class="skeleton skel-block" style="height:200px;margin-top:12px"></div>
+  </div>
+
+  <!-- MAIN CONTENT (hidden until loaded) -->
+  <div id="main-content" style="display:none">
+
+    <!-- HEADER -->
+    <div class="header-card" id="quote-header"></div>
+
+    <!-- STATUS TIMELINE -->
+    <div class="timeline-bar" id="status-timeline"></div>
+
+    <!-- NEXT BEST ACTION -->
+    <div class="nba" id="nba"></div>
+
+    <!-- PRIMARY ACTIONS -->
+    <div class="action-bar" id="primary-actions"></div>
+
+    <!-- SECONDARY ACTIONS -->
+    <div class="action-bar" id="secondary-actions"></div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="cards-grid" id="summary-cards"></div>
+
+    <!-- TABS -->
+    <div class="tabs" id="tabs"></div>
+
+    <!-- TAB PANELS -->
+    <div id="tab-panels"></div>
+  </div>
+
+  <!-- ERROR STATE -->
+  <div id="error-state" style="display:none">
+    <div class="card" style="text-align:center;padding:60px 20px">
+      <div style="font-size:48px;margin-bottom:16px">&#x26A0;</div>
+      <div style="font-size:18px;font-weight:600;margin-bottom:8px">שגיאה בטעינת הצעת מחיר</div>
+      <div style="color:var(--text-2);margin-bottom:20px" id="error-msg"></div>
+      <button class="btn btn-primary" onclick="loadQuote()">נסה שנית</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var API = '';
+var quoteId = new URLSearchParams(window.location.search).get('id') || 'QT-2026-0042';
+
+/* ═══ MOCK DATA ═══ */
+var mockQuote = {
+  quote_number: 'QT-2026-0042',
+  customer_name: 'אלקטרו-מערכות בע"מ',
+  customer_id: 'CUST-1012',
+  state: 'sent',
+  approval_status: 'pending',
+  created_at: '2026-03-15',
+  valid_until: '2026-04-15',
+  salesperson: 'דוד כהן',
+  project_ref: null,
+  converted: false,
+  subtotal: 185000,
+  discount_pct: 8,
+  discount_amount: 14800,
+  vat_rate: 17,
+  vat_amount: 28934,
+  grand_total: 199134,
+  margin_pct: 32.5,
+  margin_amount: 60125,
+  currency: 'ILS',
+  lines: [
+    { num:1, sku:'MAT-4410', desc:'כבל חשמל תלת-פאזי 16mm', qty:500, unit:'מטר', price:120, total:60000 },
+    { num:2, sku:'MAT-4422', desc:'לוח חשמל ראשי 400A', qty:2, unit:'יחידה', price:28000, total:56000 },
+    { num:3, sku:'SRV-1001', desc:'עבודות התקנה חשמלאיות', qty:120, unit:'שעה', price:350, total:42000 },
+    { num:4, sku:'MAT-4455', desc:'אביזרי חיבור ומסופים', qty:1, unit:'ערכה', price:15000, total:15000 },
+    { num:5, sku:'SRV-1010', desc:'בדיקות ואישורים חח"י', qty:1, unit:'פאושלי', price:12000, total:12000 }
+  ],
+  approvals: [
+    { step:'מנהל מכירות', approver:'יוסי לוי', status:'approved', date:'2026-03-16', note:'מאושר — מחיר סביר' },
+    { step:'סמנכ"ל כספים', approver:'רונית שמש', status:'pending', date:null, note:null }
+  ],
+  audit: [
+    { date:'2026-03-15 09:22', user:'דוד כהן', action:'יצירת הצעת מחיר', detail:'נוצרה מ-Lead LID-0088' },
+    { date:'2026-03-15 14:10', user:'דוד כהן', action:'עדכון שורות', detail:'נוספו 5 שורות' },
+    { date:'2026-03-16 08:30', user:'יוסי לוי', action:'אישור שלב 1', detail:'מנהל מכירות אישר' },
+    { date:'2026-03-16 10:00', user:'דוד כהן', action:'שליחה ללקוח', detail:'נשלח ב-PDF למייל' }
+  ]
+};
+
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function fmt(n){ return Number(n).toLocaleString('he-IL'); }
+function fmtCur(n){ return '\u20AA' + fmt(n); }
+
+/* ═══ STATUS MAPPING ═══ */
+var STATES = ['draft','sent','pending_approval','approved','converted','expired','cancelled'];
+var STATE_LABELS = {draft:'טיוטה',sent:'נשלח',pending_approval:'ממתין לאישור',approved:'מאושר',converted:'הומר לפרויקט',expired:'פג תוקף',cancelled:'בוטל'};
+var STATE_BADGES = {draft:'badge-draft',sent:'badge-sent',pending_approval:'badge-pending',approved:'badge-approved',converted:'badge-converted',rejected:'badge-rejected',expired:'badge-rejected',cancelled:'badge-rejected'};
+var APPROVAL_BADGES = {pending:'badge-pending',approved:'badge-approved',rejected:'badge-rejected'};
+
+/* ═══ RENDER HEADER ═══ */
+function renderHeader(q){
+  var stBadge = STATE_BADGES[q.state] || 'badge-state';
+  var apBadge = APPROVAL_BADGES[q.approval_status] || 'badge-draft';
+  document.getElementById('quote-header').innerHTML =
+    '<div class="header-top">' +
+      '<div class="header-title"><span class="header-icon">&#x1F4CB;</span>' +
+      '<div><div class="header-name">' + esc(q.quote_number) + '</div>' +
+      '<div class="header-sub">&#x1F464; ' + esc(q.customer_name) + ' &middot; ' + esc(q.salesperson) + '</div></div></div>' +
+      '<div class="badges">' +
+        '<span class="badge ' + stBadge + '">' + esc(STATE_LABELS[q.state]||q.state) + '</span>' +
+        '<span class="badge ' + apBadge + '">&#x2705; ' + esc(q.approval_status) + '</span>' +
+      '</div>' +
+    '</div>' +
+    '<div class="header-fields">' +
+      '<div class="hf"><div class="lbl">תאריך יצירה</div><div class="val">' + esc(q.created_at) + '</div></div>' +
+      '<div class="hf"><div class="lbl">תקף עד</div><div class="val">' + esc(q.valid_until) + '</div></div>' +
+      '<div class="hf"><div class="lbl">לקוח</div><div class="val">' + esc(q.customer_name) + '</div></div>' +
+      '<div class="hf"><div class="lbl">סה"כ</div><div class="val">' + fmtCur(q.grand_total) + '</div></div>' +
+      '<div class="hf"><div class="lbl">מרווח</div><div class="val" style="color:var(--ok)">' + q.margin_pct + '%</div></div>' +
+      '<div class="hf"><div class="lbl">הומר לפרויקט</div><div class="val">' + (q.converted ? 'כן' : 'לא') + '</div></div>' +
+    '</div>';
+}
+
+/* ═══ STATUS TIMELINE ═══ */
+function renderTimeline(q){
+  var el = document.getElementById('status-timeline');
+  var currentIdx = STATES.indexOf(q.state);
+  if(currentIdx<0) currentIdx = 0;
+  var html = '';
+  STATES.forEach(function(s,i){
+    if(i > 0) html += '<div class="tl-line' + (i <= currentIdx ? ' done' : '') + '"></div>';
+    var cls = i < currentIdx ? 'tl-dot done' : (i === currentIdx ? 'tl-dot current' : 'tl-dot');
+    html += '<div class="tl-step"><div class="' + cls + '">' + (i+1) + '</div>' +
+      '<div class="tl-label">' + esc(STATE_LABELS[s]) + '</div></div>';
+  });
+  el.innerHTML = html;
+}
+
+/* ═══ NEXT BEST ACTION ═══ */
+function renderNBA(q){
+  var el = document.getElementById('nba');
+  var msg = '', action = '', actionLabel = '';
+  if(q.state === 'draft'){
+    msg = 'ההצעה בטיוטה. שלח ללקוח לקבלת משוב.';
+    action = 'send'; actionLabel = '&#x1F4E8; שלח ללקוח';
+  } else if(q.state === 'sent' && q.approval_status !== 'approved'){
+    msg = 'ההצעה נשלחה. בקש אישור מהנהלה כדי להתקדם.';
+    action = 'request_approval'; actionLabel = '&#x2705; בקש אישור';
+  } else if(q.approval_status === 'approved' && !q.converted){
+    msg = 'ההצעה מאושרת! המר לפרויקט כדי להתחיל בביצוע.';
+    action = 'convert'; actionLabel = '&#x1F680; המר לפרויקט';
+  } else if(q.converted){
+    msg = 'ההצעה הומרה לפרויקט. עקוב אחרי ההתקדמות ב-Project360.';
+    action = ''; actionLabel = '';
+  } else {
+    msg = 'בדוק את הסטטוס ובצע את הפעולה המתאימה.';
+    action = ''; actionLabel = '';
+  }
+  el.innerHTML = '<span class="nba-label">&#x1F4A1; הפעולה הבאה:</span>' +
+    '<span class="nba-text">' + esc(msg) + '</span>' +
+    (action ? '<button class="btn btn-success" onclick="doAction(\'' + action + '\')">' + actionLabel + '</button>' : '');
+}
+
+/* ═══ ACTION BARS ═══ */
+function renderActions(q){
+  var primary = document.getElementById('primary-actions');
+  var secondary = document.getElementById('secondary-actions');
+  var p = '', s = '';
+  if(q.state === 'draft'){
+    p += '<button class="btn btn-primary" onclick="doAction(\'send\')"><span class="ic">&#x1F4E8;</span>שלח ללקוח</button>';
+  }
+  if(q.state === 'sent'){
+    p += '<button class="btn btn-primary" onclick="doAction(\'request_approval\')"><span class="ic">&#x2705;</span>בקש אישור</button>';
+  }
+  if(q.approval_status === 'approved' && !q.converted){
+    p += '<button class="btn btn-purple" onclick="doAction(\'convert\')"><span class="ic">&#x1F680;</span>המר לפרויקט</button>';
+  }
+  if(q.approval_status === 'pending'){
+    p += '<button class="btn btn-success" onclick="doAction(\'approve\')"><span class="ic">&#x2714;</span>אשר</button>';
+    p += '<button class="btn btn-danger" onclick="doAction(\'reject\')"><span class="ic">&#x274C;</span>דחה</button>';
+  }
+  s += '<button class="btn" onclick="doAction(\'export_pdf\')"><span class="ic">&#x1F4C4;</span>ייצוא PDF</button>';
+  s += '<button class="btn" onclick="doAction(\'duplicate\')"><span class="ic">&#x1F4CB;</span>שכפל</button>';
+  s += '<button class="btn" onclick="doAction(\'edit\')"><span class="ic">&#x270F;</span>ערוך</button>';
+  s += '<button class="btn" onclick="doAction(\'attach\')"><span class="ic">&#x1F4CE;</span>צרף מסמך</button>';
+  primary.innerHTML = p;
+  secondary.innerHTML = s;
+}
+
+/* ═══ SUMMARY CARDS ═══ */
+function renderCards(q){
+  document.getElementById('summary-cards').innerHTML =
+    '<div class="card card-highlight"><div class="card-title">&#x1F4B0; סיכום כספי</div>' +
+      '<div class="card-row"><span class="label">סכום ביניים</span><span class="value">' + fmtCur(q.subtotal) + '</span></div>' +
+      '<div class="card-row"><span class="label">הנחה (' + q.discount_pct + '%)</span><span class="value" style="color:var(--err)">-' + fmtCur(q.discount_amount) + '</span></div>' +
+      '<div class="card-row"><span class="label">מע"מ (' + q.vat_rate + '%)</span><span class="value">' + fmtCur(q.vat_amount) + '</span></div>' +
+      '<div class="card-row" style="border-top:1px solid var(--border);padding-top:8px"><span class="label" style="font-weight:700;color:var(--text-0)">סה"כ</span><span class="value" style="font-size:18px;color:var(--accent-hi)">' + fmtCur(q.grand_total) + '</span></div>' +
+    '</div>' +
+    '<div class="card"><div class="card-title">&#x1F4C8; מרווח</div>' +
+      '<div class="card-value" style="color:var(--ok)">' + q.margin_pct + '%</div>' +
+      '<div class="card-sub">' + fmtCur(q.margin_amount) + ' רווח גולמי</div>' +
+      '<div style="margin-top:10px;height:6px;background:var(--bg-3);border-radius:3px;overflow:hidden"><div style="height:100%;width:' + q.margin_pct + '%;background:var(--ok);border-radius:3px"></div></div>' +
+    '</div>' +
+    '<div class="card"><div class="card-title">&#x1F4C5; תוקף</div>' +
+      '<div class="card-row"><span class="label">נוצר</span><span class="value">' + esc(q.created_at) + '</span></div>' +
+      '<div class="card-row"><span class="label">תקף עד</span><span class="value">' + esc(q.valid_until) + '</span></div>' +
+      '<div class="card-row"><span class="label">ימים נותרים</span><span class="value" id="days-left">—</span></div>' +
+    '</div>' +
+    '<div class="card"><div class="card-title">&#x1F504; המרה</div>' +
+      '<div class="card-value">' + (q.converted ? '&#x2705; הומר' : '&#x23F3; ממתין') + '</div>' +
+      '<div class="card-sub">' + (q.project_ref ? 'פרויקט: ' + esc(q.project_ref) : 'טרם הומר לפרויקט') + '</div>' +
+    '</div>' +
+    '<div class="ai-card"><div class="ai-title">&#x1F916; תובנות AI</div>' +
+      '<div class="ai-text">סיכויי סגירה: <strong style="color:var(--ok)">78%</strong> — מבוסס על היסטוריית לקוח דומה. ' +
+      'מומלץ להציע הנחה נוספת של 2% לסגירה מהירה. ערך חיים משוער של לקוח: ' + fmtCur(450000) + '</div></div>';
+  // calc days left
+  var now = new Date(), end = new Date(q.valid_until);
+  var diff = Math.ceil((end - now) / (1000*60*60*24));
+  var dlEl = document.getElementById('days-left');
+  if(dlEl){
+    dlEl.textContent = diff > 0 ? diff + ' ימים' : 'פג תוקף!';
+    dlEl.style.color = diff > 7 ? 'var(--ok)' : diff > 0 ? 'var(--warn)' : 'var(--err)';
+  }
+}
+
+/* ═══ TABS ═══ */
+var TAB_DEFS = [
+  { id:'overview', label:'סקירה' },
+  { id:'lines', label:'שורות' },
+  { id:'pricing', label:'תמחור' },
+  { id:'tax', label:'מיסים' },
+  { id:'approvals', label:'אישורים' },
+  { id:'documents', label:'מסמכים' },
+  { id:'customer', label:'קשר ללקוח' },
+  { id:'conversion', label:'המרה לפרויקט' },
+  { id:'ai', label:'תובנות AI' },
+  { id:'audit', label:'יומן ביקורת' }
+];
+
+function renderTabs(){
+  var tabsEl = document.getElementById('tabs');
+  var panelsEl = document.getElementById('tab-panels');
+  tabsEl.innerHTML = '';
+  panelsEl.innerHTML = '';
+  TAB_DEFS.forEach(function(t,i){
+    tabsEl.innerHTML += '<div class="tab' + (i===0?' active':'') + '" data-tab="' + t.id + '" onclick="switchTab(\'' + t.id + '\')">' + esc(t.label) + '</div>';
+    panelsEl.innerHTML += '<div class="tab-panel' + (i===0?' active':'') + '" id="panel-' + t.id + '"></div>';
+  });
+}
+
+function switchTab(id){
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('active', t.getAttribute('data-tab')===id); });
+  document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.toggle('active', p.id==='panel-'+id); });
+}
+
+/* ═══ TAB CONTENT ═══ */
+function renderTabContent(q){
+  // OVERVIEW
+  document.getElementById('panel-overview').innerHTML =
+    '<div class="section"><div class="section-title">סקירת הצעת מחיר</div>' +
+    '<div class="card"><p style="color:var(--text-1);line-height:1.8;font-size:14px">' +
+    'הצעת מחיר <strong>' + esc(q.quote_number) + '</strong> עבור <strong>' + esc(q.customer_name) + '</strong>. ' +
+    'הצעה זו כוללת ' + q.lines.length + ' שורות פריטים/שירותים בסכום כולל של <strong>' + fmtCur(q.grand_total) + '</strong> כולל מע"מ. ' +
+    'מרווח רווח גולמי: <strong style="color:var(--ok)">' + q.margin_pct + '%</strong>. ' +
+    'ההצעה תקפה עד ' + esc(q.valid_until) + '.</p></div></div>' +
+    '<div class="section"><div class="section-title">ישויות קשורות</div>' +
+    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">' +
+      '<div class="card" style="cursor:pointer" onclick="navigate(\'entity360.html?type=customer&id=' + q.customer_id + '\')"><div style="display:flex;align-items:center;gap:10px">&#x1F464;<div><div style="font-size:13px;font-weight:600">' + esc(q.customer_name) + '</div><div style="font-size:11px;color:var(--text-2)">לקוח</div></div></div></div>' +
+      (q.project_ref ? '<div class="card" style="cursor:pointer" onclick="navigate(\'entity360.html?type=project\')"><div style="display:flex;align-items:center;gap:10px">&#x1F4C1;<div><div style="font-size:13px;font-weight:600">' + esc(q.project_ref) + '</div><div style="font-size:11px;color:var(--text-2)">פרויקט</div></div></div></div>' : '') +
+    '</div></div>';
+
+  // LINE ITEMS
+  var linesHtml = '<div class="section"><div class="section-title">שורות הצעת מחיר (' + q.lines.length + ')</div><div class="tbl-wrap"><table>' +
+    '<thead><tr><th>#</th><th>מק"ט</th><th>תיאור</th><th>כמות</th><th>יחידה</th><th>מחיר יח\'</th><th>סה"כ</th></tr></thead><tbody>';
+  q.lines.forEach(function(l){
+    linesHtml += '<tr><td>' + l.num + '</td><td style="font-family:var(--mono)">' + esc(l.sku) + '</td><td>' + esc(l.desc) + '</td>' +
+      '<td style="font-family:var(--mono)">' + fmt(l.qty) + '</td><td>' + esc(l.unit) + '</td>' +
+      '<td style="font-family:var(--mono)">' + fmtCur(l.price) + '</td><td style="font-family:var(--mono);font-weight:600">' + fmtCur(l.total) + '</td></tr>';
+  });
+  linesHtml += '</tbody></table></div></div>';
+  document.getElementById('panel-lines').innerHTML = linesHtml;
+
+  // PRICING
+  document.getElementById('panel-pricing').innerHTML =
+    '<div class="section"><div class="section-title">תמונת תמחור</div>' +
+    '<div class="cards-grid">' +
+      '<div class="card"><div class="card-title">סכום ביניים</div><div class="card-value">' + fmtCur(q.subtotal) + '</div></div>' +
+      '<div class="card"><div class="card-title">הנחה</div><div class="card-value" style="color:var(--err)">' + q.discount_pct + '% (-' + fmtCur(q.discount_amount) + ')</div></div>' +
+      '<div class="card"><div class="card-title">אחרי הנחה</div><div class="card-value">' + fmtCur(q.subtotal - q.discount_amount) + '</div></div>' +
+      '<div class="card"><div class="card-title">מרווח</div><div class="card-value" style="color:var(--ok)">' + q.margin_pct + '% (' + fmtCur(q.margin_amount) + ')</div></div>' +
+    '</div>' +
+    '<div class="ai-card" style="margin-top:16px"><div class="ai-title">&#x1F916; המלצת AI לתמחור</div>' +
+    '<div class="ai-text">בהתבסס על 47 הצעות דומות בשנה האחרונה, המחיר הממוצע לפרויקט מסוג זה הוא ' + fmtCur(210000) + '. ' +
+    'ההצעה שלך נמוכה ב-5% מהממוצע, מה שמגדיל סיכויי סגירה. הנחה של 8% היא בתוך הטווח המקובל (5-12%).</div></div></div>';
+
+  // TAX
+  document.getElementById('panel-tax').innerHTML =
+    '<div class="section"><div class="section-title">פירוט מע"מ</div>' +
+    '<div class="tbl-wrap"><table><thead><tr><th>בסיס חישוב</th><th>שיעור מע"מ</th><th>סכום מע"מ</th><th>סה"כ כולל</th></tr></thead>' +
+    '<tbody><tr><td style="font-family:var(--mono)">' + fmtCur(q.subtotal - q.discount_amount) + '</td>' +
+    '<td>' + q.vat_rate + '%</td>' +
+    '<td style="font-family:var(--mono)">' + fmtCur(q.vat_amount) + '</td>' +
+    '<td style="font-family:var(--mono);font-weight:700">' + fmtCur(q.grand_total) + '</td></tr></tbody></table></div></div>';
+
+  // APPROVALS
+  var appHtml = '<div class="section"><div class="section-title">מסלול אישורים</div><div class="approval-tl">';
+  q.approvals.forEach(function(a){
+    var dotCls = a.status === 'approved' ? 'approved' : a.status === 'rejected' ? 'rejected' : 'pending';
+    var statusText = a.status === 'approved' ? '&#x2705; אושר' : a.status === 'rejected' ? '&#x274C; נדחה' : '&#x23F3; ממתין';
+    appHtml += '<div class="approval-item"><div class="approval-dot ' + dotCls + '"></div>' +
+      '<div class="approval-info"><strong>' + esc(a.step) + '</strong> — ' + esc(a.approver) + ' ' + statusText + '</div>' +
+      '<div class="approval-date">' + (a.date ? esc(a.date) : 'ממתין') + (a.note ? ' &middot; ' + esc(a.note) : '') + '</div></div>';
+  });
+  appHtml += '</div></div>';
+  document.getElementById('panel-approvals').innerHTML = appHtml;
+
+  // DOCUMENTS
+  document.getElementById('panel-documents').innerHTML =
+    '<div class="section"><div class="section-title">מסמכים מצורפים</div>' +
+    '<div class="empty"><div class="empty-icon">&#x1F4C2;</div>אין מסמכים מצורפים עדיין.<br>' +
+    '<button class="btn btn-primary" style="margin-top:12px" onclick="doAction(\'attach\')">&#x1F4CE; צרף מסמך</button></div></div>';
+
+  // CUSTOMER LINK
+  document.getElementById('panel-customer').innerHTML =
+    '<div class="section"><div class="section-title">קשר ללקוח</div>' +
+    '<div class="card"><div class="card-row"><span class="label">שם לקוח</span><span class="value">' + esc(q.customer_name) + '</span></div>' +
+    '<div class="card-row"><span class="label">מזהה</span><span class="value" style="font-family:var(--mono)">' + esc(q.customer_id) + '</span></div>' +
+    '<div class="card-row"><span class="label">איש מכירות</span><span class="value">' + esc(q.salesperson) + '</span></div></div>' +
+    '<button class="btn btn-primary" style="margin-top:12px" onclick="navigate(\'entity360.html?type=customer&id=' + q.customer_id + '\')">&#x1F464; פתח Customer360</button></div>';
+
+  // CONVERSION
+  document.getElementById('panel-conversion').innerHTML =
+    '<div class="section"><div class="section-title">המרה לפרויקט</div>' +
+    (q.converted ?
+      '<div class="card" style="border-color:var(--ok)"><div style="display:flex;align-items:center;gap:12px">&#x2705;<div><div style="font-weight:700">הומר לפרויקט</div><div style="color:var(--text-2);font-size:13px">פרויקט: ' + esc(q.project_ref) + '</div></div></div></div>' :
+      '<div class="card"><div class="empty"><div class="empty-icon">&#x1F504;</div>ההצעה טרם הומרה לפרויקט.' +
+      (q.approval_status === 'approved' ? '<br><button class="btn btn-purple" style="margin-top:12px" onclick="doAction(\'convert\')">&#x1F680; המר לפרויקט עכשיו</button>' : '<br><span style="color:var(--warn)">יש לקבל אישור לפני המרה.</span>') +
+      '</div></div>') +
+    '</div>';
+
+  // AI
+  document.getElementById('panel-ai').innerHTML =
+    '<div class="section"><div class="section-title">תובנות AI</div>' +
+    '<div class="cards-grid">' +
+      '<div class="ai-card"><div class="ai-title">&#x1F3AF; סיכויי סגירה</div><div class="ai-text"><span style="font-size:28px;font-weight:700;color:var(--ok)">78%</span><br>מבוסס על 12 פרמטרים: גודל עסקה, היסטוריית לקוח, עונתיות, ומתחרים.</div></div>' +
+      '<div class="ai-card"><div class="ai-title">&#x1F4B0; המלצת מחיר</div><div class="ai-text">המחיר התחרותי ביותר: <strong>' + fmtCur(195000) + '</strong>. הנחה מקסימלית מומלצת: <strong>12%</strong>.</div></div>' +
+      '<div class="ai-card"><div class="ai-title">&#x23F1; תזמון</div><div class="ai-text">לקוחות דומים סוגרים תוך <strong>8-12 ימים</strong> ממועד השליחה. מומלץ לבצע follow-up ב-5 ימים.</div></div>' +
+      '<div class="ai-card"><div class="ai-title">&#x1F4CA; ניתוח מתחרים</div><div class="ai-text">זוהו 3 מתחרים עיקריים בקטגוריה זו. ההצעה שלך תחרותית מבחינת מחיר, אך נחותה בזמני אספקה.</div></div>' +
+    '</div></div>';
+
+  // AUDIT LOG
+  var auditHtml = '<div class="section"><div class="section-title">יומן ביקורת</div><div class="tbl-wrap"><table>' +
+    '<thead><tr><th>תאריך</th><th>משתמש</th><th>פעולה</th><th>פרטים</th></tr></thead><tbody>';
+  q.audit.forEach(function(a){
+    auditHtml += '<tr><td style="font-family:var(--mono);white-space:nowrap">' + esc(a.date) + '</td>' +
+      '<td>' + esc(a.user) + '</td><td><strong>' + esc(a.action) + '</strong></td><td style="color:var(--text-2)">' + esc(a.detail) + '</td></tr>';
+  });
+  auditHtml += '</tbody></table></div></div>';
+  document.getElementById('panel-audit').innerHTML = auditHtml;
+}
+
+/* ═══ ACTIONS ═══ */
+function doAction(actionId){
+  var labels = {send:'שלח ללקוח',request_approval:'בקש אישור',approve:'אשר הצעה',reject:'דחה הצעה',convert:'המר לפרויקט',export_pdf:'ייצוא PDF',duplicate:'שכפל',edit:'ערוך',attach:'צרף מסמך'};
+  if(confirm('לבצע פעולה: ' + (labels[actionId]||actionId) + '?')){
+    alert('פעולה "' + (labels[actionId]||actionId) + '" נשלחה ל-Workflow Engine.\n\nPOST /api/orchestrator/execute\n{ action: "' + actionId + '", entity: "quote", id: "' + mockQuote.quote_number + '" }');
+  }
+}
+function navigate(url){ window.location.href = url; }
+
+/* ═══ LOAD ═══ */
+async function loadQuote(){
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('main-content').style.display = 'none';
+  document.getElementById('error-state').style.display = 'none';
+  try {
+    // Try API first, fall back to mock
+    var q;
+    try {
+      var res = await fetch(API + '/api/quotes/' + encodeURIComponent(quoteId));
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      q = (await res.json()).quote;
+    } catch(e) {
+      q = mockQuote;
+    }
+    renderHeader(q);
+    renderTimeline(q);
+    renderNBA(q);
+    renderActions(q);
+    renderCards(q);
+    renderTabs();
+    renderTabContent(q);
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    document.title = q.quote_number + ' — Quote360';
+  } catch(err) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error-state').style.display = 'block';
+    document.getElementById('error-msg').textContent = err.message;
+  }
+}
+
+loadQuote();
+</script>
+</body>
+</html>

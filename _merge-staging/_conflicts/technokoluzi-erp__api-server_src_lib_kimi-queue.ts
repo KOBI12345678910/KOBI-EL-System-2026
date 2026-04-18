@@ -1,0 +1,127 @@
+import EventEmitter from "events";
+
+export interface QueueTask {
+  id: string;
+  systemPrompt: string;
+  userMessage: string;
+  priority: "high" | "normal" | "low";
+  createdAt: number;
+  attempts: number;
+  maxAttempts: number;
+  resolve: (result: string) => void;
+  reject: (err: unknown) => void;
+  model?: string;
+  temperature?: number;
+}
+
+export class KimiQueue extends EventEmitter {
+  private queues = {
+    high: [] as QueueTask[],
+    normal: [] as QueueTask[],
+    low: [] as QueueTask[],
+  };
+  private running = false;
+  private paused = false;
+  private executor: ((task: QueueTask) => Promise<string>) | null = null;
+
+  setExecutor(fn: (task: QueueTask) => Promise<string>) {
+    this.executor = fn;
+    this.process();
+  }
+
+  enqueue(opts: {
+    systemPrompt: string;
+    userMessage: string;
+    priority?: "high" | "normal" | "low";
+    maxAttempts?: number;
+    model?: string;
+    temperature?: number;
+  }): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const task: QueueTask = {
+        id: `task_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        systemPrompt: opts.systemPrompt,
+        userMessage: opts.userMessage,
+        priority: opts.priority ?? "normal",
+        createdAt: Date.now(),
+        attempts: 0,
+        maxAttempts: opts.maxAttempts ?? 3,
+        resolve,
+        reject,
+        model: opts.model,
+        temperature: opts.temperature,
+      };
+      this.queues[task.priority].push(task);
+      this.emit("enqueued", task.id);
+      this.process();
+    });
+  }
+
+  private next(): QueueTask | undefined {
+    return (
+      this.queues.high.shift() ??
+      this.queues.normal.shift() ??
+      this.queues.low.shift()
+    );
+  }
+
+  private async process() {
+    if (this.running || this.paused || !this.executor) return;
+    const task = this.next();
+    if (!task) return;
+
+    this.running = true;
+    task.attempts++;
+    this.emit("started", task.id, task.attempts);
+
+    try {
+      const result = await this.executor(task);
+      task.resolve(result);
+      this.emit("completed", task.id);
+    } catch (err) {
+      if (task.attempts < task.maxAttempts) {
+        const delay = 1000 * Math.pow(2, task.attempts - 1);
+        this.emit("retry", task.id, task.attempts, delay);
+        setTimeout(() => {
+          this.queues[task.priority].unshift(task);
+          this.running = false;
+          this.process();
+        }, delay);
+        return;
+      }
+      task.reject(err);
+      this.emit("failed", task.id, err);
+    }
+
+    this.running = false;
+    this.process();
+  }
+
+  pause() {
+    this.paused = true;
+    this.emit("paused");
+  }
+  resume() {
+    this.paused = false;
+    this.emit("resumed");
+    this.process();
+  }
+  size() {
+    return (
+      this.queues.high.length +
+      this.queues.normal.length +
+      this.queues.low.length
+    );
+  }
+
+  stats() {
+    return {
+      high: this.queues.high.length,
+      normal: this.queues.normal.length,
+      low: this.queues.low.length,
+      total: this.size(),
+      running: this.running,
+      paused: this.paused,
+    };
+  }
+}

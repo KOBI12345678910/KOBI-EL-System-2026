@@ -1,0 +1,37 @@
+{
+  "name": "nexus-autonomous-engine",
+  "version": "1.0.0",
+  "description": "NEXUS Autonomous Engine — AI-driven business operator for Techno-Kol Uzi + Elkayam Real Estate",
+  "main": "nexus-engine.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node nexus-engine.js",
+    "start:with-api": "node nexus-with-api.js",
+    "test": "node test/smoke-test.js",
+    "check": "node --check nexus-engine.js",
+    "check:all": "node --check nexus-engine.js && node --check modules/google-ads-optimizer.js && node --check modules/competitor-intel.js && node --check modules/seo-content-generator.js && node --check modules/lead-scorer.js && node --check modules/cashflow-forecaster.js && node --check modules/market-trend-analyzer.js && node --check modules/multi-language-translator.js && node --check modules/calendar-orchestrator.js && node --check modules/document-extractor.js && node --check modules/crisis-response-planner.js && node --check api/http-server.js && node --check bridge/python-platform-bridge.js",
+    "example:basic": "node examples/01-basic-run.js",
+    "example:custom-module": "node examples/02-add-custom-module.js",
+    "example:bridge": "node examples/03-bridge-to-python.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0"
+  },
+  "keywords": [
+    "autonomous",
+    "ai",
+    "claude",
+    "palantir",
+    "enterprise",
+    "ontology",
+    "decision-engine",
+    "techno-kol-uzi",
+    "elkayam-real-estate"
+  ],
+  "author": "Kobi Elkayam",
+  "license": "UNLICENSED",
+  "private": true
+}

@@ -1,0 +1,144 @@
+      <Suspense fallback={<PageLoader />}>
+        <Switch>
+          <Route path="/" component={KPIDashboard} />
+          <Route path="/platform" component={Dashboard} />
+          <Route path="/builder" component={BuilderDashboard} />
+          <Route path="/builder/modules" component={BuilderDashboard} />
+          <Route path="/builder/module/:id/versions" component={ModuleVersionHistory} />
+          <Route path="/builder/module/:id" component={ModuleEditor} />
+          <Route path="/builder/entity/:id" component={EntityEditor} />
+          <Route path="/builder/data/:entityId" component={DynamicDataView} />
+          <Route path="/module/:entityId" component={ModuleView} />
+          <Route path="/builder/entities" component={() => <BuilderSection section="entities" />} />
+          <Route path="/builder/fields" component={() => <BuilderSection section="fields" />} />
+          <Route path="/builder/relations" component={() => <BuilderSection section="relations" />} />
+          <Route path="/builder/forms" component={FormBuilderPage} />
+          <Route path="/builder/views" component={ViewBuilderPage} />
+          <Route path="/builder/details" component={DetailPageBuilderPage} />
+          <Route path="/builder/categories" component={() => <BuilderSection section="categories" />} />
+          <Route path="/builder/statuses" component={() => <BuilderSection section="statuses" />} />
+          <Route path="/builder/buttons" component={ButtonsBuilderPage} />
+          <Route path="/builder/actions" component={() => <BuilderSection section="actions" />} />
+          <Route path="/builder/validations" component={() => <BuilderSection section="validations" />} />
+          <Route path="/builder/permissions" component={PermissionsBuilderPage} />
+          <Route path="/builder/menus" component={MenuBuilderPage} />
+          <Route path="/builder/dashboards" component={DashboardBuilderPage} />
+          <Route path="/builder/widgets" component={WidgetBuilderPage} />
+          <Route path="/builder/workflows" component={WorkflowBuilderPage} />
+          <Route path="/builder/automations" component={AutomationBuilderPage} />
+          <Route path="/builder/automation-dashboard" component={AutomationDashboardPage} />
+          <Route path="/builder/templates" component={TemplateBuilderPage} />
+          <Route path="/builder/tools" component={ToolBuilderPage} />
+          <Route path="/builder/contexts" component={ContextBuilderPage} />
+          <Route path="/builder/publish" component={VersioningBuilderPage} />
+          <Route path="/menu-builder" component={MenuBuilderPage} />
+          <Route path="/audit-log" component={AuditLogPage} />
+          <Route path="/report-builder" component={ReportBuilderPage} />
+          <Route path="/document-builder" component={DocumentBuilderPage} />
+          <Route path="/integration-builder" component={IntegrationBuilderPage} />
+          <Route path="/ai-builder" component={AiBuilderPage} />
+          <Route path="/suppliers" component={SuppliersPage} />
+          <Route path="/suppliers/:id" component={SupplierCardPage} />
+          <Route path="/procurement-dashboard" component={ProcurementDashboardPage} />
+          <Route path="/import-dashboard" component={ImportDashboardPage} />
+          <Route path="/purchase-orders" component={PurchaseOrdersPage} />
+          <Route path="/goods-receipt" component={GoodsReceiptPage} />
+          <Route path="/purchase-requests" component={PurchaseRequestsPage} />
+          <Route path="/purchase-approvals" component={PurchaseApprovalsPage} />
+          <Route path="/price-quotes" component={PriceQuotesPage} />
+          <Route path="/inventory-management" component={InventoryManagementPage} />
+          <Route path="/finance/cost-centers" component={CostCentersPage} />
+          <Route path="/finance/invoices" component={InvoicesPage} />
+          <Route path="/finance/credit-notes" component={CreditNotesPage} />
+          <Route path="/finance/aging-report" component={AgingReportPage} />
+          <Route path="/finance/chart-of-accounts" component={ChartOfAccountsPage} />
+          <Route path="/finance/petty-cash" component={PettyCashPage} />
+          <Route path="/finance/expense-claims" component={ExpenseClaimsPage} />
+          <Route path="/finance/payment-runs" component={PaymentRunsPage} />
+          <Route path="/finance/withholding-tax" component={WithholdingTaxPage} />
+          <Route path="/finance/general-ledger" component={GeneralLedgerPage} />
+          <Route path="/finance/expense-reports" component={ExpenseReportsPage} />
+          <Route path="/finance/fixed-assets" component={FinanceFixedAssetsPage} />
+          <Route path="/finance/financial-reports" component={FinancialReportsPage} />
+          <Route path="/production/quality-control" component={QualityControlPage} />
+          <Route path="/production/work-orders" component={WorkOrdersPage} />
+          <Route path="/production/maintenance" component={MaintenanceManagementPage} />
+          <Route path="/assets" component={AssetManagementPage} />
+          <Route path="/document-control" component={DocumentControlPage} />
+          <Route path="/safety" component={SafetyManagementPage} />
+          <Route path="/supplier-evaluations" component={SupplierEvaluationsPage} />
+          <Route path="/purchase-returns" component={PurchaseReturnsPage} />
+          <Route path="/supplier-contracts" component={SupplierContractsPage} />
+          <Route path="/budget-tracking" component={BudgetTrackingPage} />
+          <Route path="/import-orders" component={ImportOrdersPage} />
+          <Route path="/customs-clearance" component={CustomsClearancePage} />
+          <Route path="/shipment-tracking" component={ShipmentTrackingPage} />
+          <Route path="/foreign-suppliers" component={ForeignSuppliersPage} />
+          <Route path="/letters-of-credit" component={LettersOfCreditPage} />
+          <Route path="/import-cost-calculator" component={ImportCostCalculatorPage} />
+          <Route path="/compliance-certificates" component={ComplianceCertificatesPage} />
+          <Route path="/exchange-rates" component={ExchangeRatesPage} />
+          <Route path="/procurement-ai" component={ProcurementAIPage} />
+          <Route path="/project-analyses" component={ProjectAnalysesPage} />
+          <Route path="/project-analysis/:id" component={ProjectAnalysisDetailPage} />
+          <Route path="/claude-chat" component={ClaudeChatPage} />
+          <Route path="/ai-settings" component={AISettingsPage} />
+          <Route path="/permissions" component={PermissionsPage} />
+          <Route path="/governance" component={GovernancePage} />
+          <Route path="/finance" component={FinanceDashboard} />
+          <Route path="/finance/balance-sheet" component={BalanceSheetPage} />
+          <Route path="/finance/projects">{() => { const [, setLocation] = useLocation(); useEffect(() => { setLocation("/project-analyses"); }, []); return null; }}</Route>
+          <Route path="/finance/income" component={IncomePage} />
+          <Route path="/finance/credit-card-processing" component={CreditCardProcessingPage} />
+          <Route path="/finance/accounting-portal" component={AccountingPortalPage} />
+          <Route path="/finance/reports" component={ReportsPage} />
+          <Route path="/finance/income-expenses-report" component={IncomeExpensesReportPage} />
+          <Route path="/finance/accounting-settings" component={AccountingSettingsPage} />
+          <Route path="/finance/settings" component={AccountingSettingsPage} />
+          <Route path="/finance/standing-orders" component={StandingOrdersPage} />
+          <Route path="/finance/journal-entries" component={JournalEntriesPage} />
+          <Route path="/finance/bank-reconciliation" component={BankReconciliationPage} />
+          <Route path="/finance/cash-flow" component={CashFlowPage} />
+          <Route path="/finance/tax-management" component={TaxManagementPage} />
+          <Route path="/hr" component={HRDashboard} />
+          <Route path="/hr/employees" component={EmployeesListPage} />
+          <Route path="/hr/employees/:id" component={EmployeePortfolio} />
+          <Route path="/hr/payroll" component={PayrollPage} />
+          <Route path="/hr/employee-value" component={EmployeeValuePage} />
+          <Route path="/hr/attendance" component={AttendancePage} />
+          <Route path="/hr/shifts" component={ShiftsPage} />
+          <Route path="/hr/contractors" component={ContractorPaymentsPage} />
+          <Route path="/hr/leave-management" component={LeaveManagementPage} />
+          <Route path="/hr/training" component={TrainingPage} />
+          <Route path="/hr/recruitment" component={RecruitmentPage} />
+          <Route path="/hr/performance-reviews" component={PerformanceReviewsPage} />
+          <Route path="/hr/org-chart" component={OrgChartPage} />
+          <Route path="/hr/benefits" component={BenefitsPage} />
+          <Route path="/ai/api-keys" component={ApiKeysPage} />
+          <Route path="/ai/models" component={ModelsPage} />
+          <Route path="/ai/providers" component={ProvidersPage} />
+          <Route path="/ai/queries" component={QueriesPage} />
+          <Route path="/ai/recommendations" component={RecommendationsPage} />
+          <Route path="/ai/responses" component={ResponsesPage} />
+          <Route path="/ai/usage-logs" component={UsageLogsPage} />
+          <Route path="/ai/prompt-templates" component={PromptTemplatesPage} />
+          <Route path="/crm" component={CrmDashboard} />
+          <Route path="/crm/field-agents" component={FieldAgentsPage} />
+          <Route path="/crm/leads" component={LeadsManagement} />
+          <Route path="/crm/pricing" component={DynamicPricingPage} />
+          <Route path="/crm/collections" component={CollectionsPage} />
+          <Route path="/crm/profitability" component={DailyProfitabilityPage} />
+          <Route path="/notifications" component={NotificationsPage} />
+          <Route path="/notification-preferences" component={NotificationPreferencesPage} />
+          <Route path="/crm/contractor-decision" component={ContractorDecisionPage} />
+          <Route path="/meetings" component={MeetingsCalendarPage} />
+          <Route path="/reports" component={ReportsHub} />
+          <Route path="/reports/financial" component={FinancialReports} />
+          <Route path="/reports/risks" component={RiskAnalysis} />
+          <Route path="/reports/kpis" component={KPIDashboard} />
+          <Route path="/reports/funnel" component={FunnelAnalysis} />
+          <Route path="/reports/operational" component={OperationalReports} />
+          <Route path="/settings" component={SettingsHub} />
+          <Route component={NotFound} />
+        </Switch>
+      </Suspense>

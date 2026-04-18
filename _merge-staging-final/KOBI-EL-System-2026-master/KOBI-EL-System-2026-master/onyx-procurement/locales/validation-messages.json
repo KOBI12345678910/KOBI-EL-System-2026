@@ -1,0 +1,377 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "generated_at": "2026-04-11",
+    "description": "Bilingual (HE/EN) field-level validation messages for Onyx Procurement forms",
+    "message_count": 68,
+    "notes": "Interpolation placeholders use {param} syntax"
+  },
+
+  "validation": {
+    "common": {
+      "REQUIRED": {
+        "he": "שדה חובה.",
+        "en": "This field is required.",
+        "ctx": "Generic required field"
+      },
+      "REQUIRED_NAMED": {
+        "he": "{field} הוא שדה חובה.",
+        "en": "{field} is required.",
+        "ctx": "Required field with dynamic name"
+      },
+      "MIN_LENGTH": {
+        "he": "חייב להכיל לפחות {n} תווים.",
+        "en": "Must be at least {n} characters.",
+        "ctx": "Text minimum length"
+      },
+      "MAX_LENGTH": {
+        "he": "לא יעלה על {n} תווים.",
+        "en": "Must not exceed {n} characters.",
+        "ctx": "Text maximum length"
+      },
+      "EXACT_LENGTH": {
+        "he": "חייב להכיל בדיוק {n} תווים.",
+        "en": "Must be exactly {n} characters.",
+        "ctx": "Exact length requirement"
+      },
+      "MIN_VALUE": {
+        "he": "הערך חייב להיות לפחות {n}.",
+        "en": "Value must be at least {n}.",
+        "ctx": "Numeric minimum"
+      },
+      "MAX_VALUE": {
+        "he": "הערך לא יעלה על {n}.",
+        "en": "Value must not exceed {n}.",
+        "ctx": "Numeric maximum"
+      },
+      "BETWEEN": {
+        "he": "הערך חייב להיות בין {min} ל-{max}.",
+        "en": "Value must be between {min} and {max}.",
+        "ctx": "Numeric range"
+      },
+      "ONLY_DIGITS": {
+        "he": "השדה חייב להכיל ספרות בלבד.",
+        "en": "Field must contain digits only.",
+        "ctx": "Numeric-only input"
+      },
+      "ONLY_LETTERS": {
+        "he": "השדה חייב להכיל אותיות בלבד.",
+        "en": "Field must contain letters only.",
+        "ctx": "Alpha-only input"
+      },
+      "ALPHANUMERIC": {
+        "he": "אותיות וספרות בלבד.",
+        "en": "Alphanumeric characters only.",
+        "ctx": "Alphanumeric constraint"
+      },
+      "NO_SPECIAL_CHARS": {
+        "he": "אין להשתמש בתווים מיוחדים.",
+        "en": "Special characters are not allowed.",
+        "ctx": "Safe text constraint"
+      }
+    },
+
+    "email": {
+      "INVALID_EMAIL": {
+        "he": "כתובת דוא\"ל לא תקינה.",
+        "en": "Invalid email address.",
+        "ctx": "Email format"
+      },
+      "EMAIL_ALREADY_EXISTS": {
+        "he": "כתובת דוא\"ל זו כבר רשומה במערכת.",
+        "en": "This email is already registered.",
+        "ctx": "Duplicate email"
+      },
+      "EMAILS_DO_NOT_MATCH": {
+        "he": "כתובות הדוא\"ל אינן זהות.",
+        "en": "Email addresses do not match.",
+        "ctx": "Confirmation field mismatch"
+      }
+    },
+
+    "phone": {
+      "INVALID_PHONE": {
+        "he": "מספר טלפון לא תקין.",
+        "en": "Invalid phone number.",
+        "ctx": "General phone format"
+      },
+      "INVALID_ISRAELI_MOBILE": {
+        "he": "מספר נייד ישראלי לא תקין (05X-XXXXXXX).",
+        "en": "Invalid Israeli mobile number (05X-XXXXXXX).",
+        "ctx": "Israeli cell phone format"
+      },
+      "INVALID_LANDLINE": {
+        "he": "מספר טלפון קווי לא תקין.",
+        "en": "Invalid landline number.",
+        "ctx": "Landline format"
+      }
+    },
+
+    "password": {
+      "PASSWORD_TOO_SHORT": {
+        "he": "הסיסמה חייבת להיות באורך של 12 תווים לפחות.",
+        "en": "Password must be at least 12 characters long.",
+        "ctx": "Min password length"
+      },
+      "PASSWORD_TOO_WEAK": {
+        "he": "הסיסמה חלשה מדי.",
+        "en": "Password is too weak.",
+        "ctx": "Weak password score"
+      },
+      "PASSWORD_NEEDS_UPPERCASE": {
+        "he": "הסיסמה חייבת לכלול אות גדולה.",
+        "en": "Password must contain an uppercase letter.",
+        "ctx": "Complexity rule"
+      },
+      "PASSWORD_NEEDS_LOWERCASE": {
+        "he": "הסיסמה חייבת לכלול אות קטנה.",
+        "en": "Password must contain a lowercase letter.",
+        "ctx": "Complexity rule"
+      },
+      "PASSWORD_NEEDS_DIGIT": {
+        "he": "הסיסמה חייבת לכלול ספרה.",
+        "en": "Password must contain a digit.",
+        "ctx": "Complexity rule"
+      },
+      "PASSWORD_NEEDS_SYMBOL": {
+        "he": "הסיסמה חייבת לכלול תו מיוחד.",
+        "en": "Password must contain a special character.",
+        "ctx": "Complexity rule"
+      },
+      "PASSWORDS_DO_NOT_MATCH": {
+        "he": "הסיסמאות אינן זהות.",
+        "en": "Passwords do not match.",
+        "ctx": "Confirmation mismatch"
+      },
+      "PASSWORD_CONTAINS_USERNAME": {
+        "he": "הסיסמה לא יכולה להכיל את שם המשתמש.",
+        "en": "Password cannot contain your username.",
+        "ctx": "Password/username similarity"
+      }
+    },
+
+    "israeli_id": {
+      "INVALID_ID_NUMBER": {
+        "he": "תעודת זהות ישראלית לא תקינה.",
+        "en": "Invalid Israeli ID number.",
+        "ctx": "Teudat Zehut checksum failed"
+      },
+      "ID_NUMBER_MUST_BE_9_DIGITS": {
+        "he": "תעודת זהות חייבת להיות בת 9 ספרות.",
+        "en": "ID number must be 9 digits.",
+        "ctx": "Israeli ID length"
+      },
+      "INVALID_BUSINESS_NUMBER": {
+        "he": "מספר חברה / עוסק מורשה לא תקין.",
+        "en": "Invalid Israeli business number.",
+        "ctx": "Business ID validation"
+      },
+      "INVALID_PASSPORT": {
+        "he": "מספר דרכון לא תקין.",
+        "en": "Invalid passport number.",
+        "ctx": "Passport format"
+      }
+    },
+
+    "dates": {
+      "INVALID_DATE": {
+        "he": "תאריך לא תקין.",
+        "en": "Invalid date.",
+        "ctx": "Bad date format"
+      },
+      "DATE_IN_FUTURE": {
+        "he": "התאריך חייב להיות בעתיד.",
+        "en": "Date must be in the future.",
+        "ctx": "Forward-looking constraint"
+      },
+      "DATE_IN_PAST": {
+        "he": "התאריך חייב להיות בעבר.",
+        "en": "Date must be in the past.",
+        "ctx": "Backward-looking constraint"
+      },
+      "DATE_NOT_IN_FUTURE": {
+        "he": "התאריך לא יכול להיות בעתיד.",
+        "en": "Date cannot be in the future.",
+        "ctx": "No future dates"
+      },
+      "DATE_NOT_IN_PAST": {
+        "he": "התאריך לא יכול להיות בעבר.",
+        "en": "Date cannot be in the past.",
+        "ctx": "No past dates"
+      },
+      "END_DATE_BEFORE_START": {
+        "he": "תאריך סיום חייב להיות אחרי תאריך התחלה.",
+        "en": "End date must be after start date.",
+        "ctx": "Date range order"
+      },
+      "DATE_OUT_OF_RANGE": {
+        "he": "התאריך מחוץ לטווח המותר.",
+        "en": "Date is out of allowed range.",
+        "ctx": "Range constraint"
+      },
+      "DATE_IN_CLOSED_PERIOD": {
+        "he": "התאריך נמצא בתקופה סגורה ולא ניתן לעריכה.",
+        "en": "Date falls in a closed period and cannot be edited.",
+        "ctx": "Accounting period lock"
+      }
+    },
+
+    "money": {
+      "INVALID_AMOUNT": {
+        "he": "סכום לא תקין.",
+        "en": "Invalid amount.",
+        "ctx": "Money format"
+      },
+      "AMOUNT_MUST_BE_POSITIVE": {
+        "he": "הסכום חייב להיות גדול מאפס.",
+        "en": "Amount must be greater than zero.",
+        "ctx": "Positive only"
+      },
+      "AMOUNT_NEGATIVE_NOT_ALLOWED": {
+        "he": "לא ניתן להזין סכום שלילי.",
+        "en": "Negative amounts are not allowed.",
+        "ctx": "Non-negative constraint"
+      },
+      "AMOUNT_EXCEEDS_LIMIT": {
+        "he": "הסכום חורג מהמגבלה של {limit}.",
+        "en": "Amount exceeds limit of {limit}.",
+        "ctx": "Upper bound"
+      },
+      "TOO_MANY_DECIMALS": {
+        "he": "לא יותר מ-{n} ספרות אחרי הנקודה העשרונית.",
+        "en": "No more than {n} decimal places.",
+        "ctx": "Decimal precision"
+      },
+      "CURRENCY_MISMATCH": {
+        "he": "המטבע אינו תואם את מטבע החשבון.",
+        "en": "Currency does not match account currency.",
+        "ctx": "Multi-currency mismatch"
+      }
+    },
+
+    "bank": {
+      "INVALID_BANK_CODE": {
+        "he": "קוד בנק לא תקין.",
+        "en": "Invalid bank code.",
+        "ctx": "Israeli bank code check"
+      },
+      "INVALID_BRANCH_CODE": {
+        "he": "קוד סניף לא תקין.",
+        "en": "Invalid branch code.",
+        "ctx": "Branch code check"
+      },
+      "INVALID_ACCOUNT_NUMBER": {
+        "he": "מספר חשבון לא תקין.",
+        "en": "Invalid account number.",
+        "ctx": "Account number format"
+      },
+      "INVALID_IBAN": {
+        "he": "IBAN לא תקין.",
+        "en": "Invalid IBAN format.",
+        "ctx": "IBAN checksum"
+      },
+      "INVALID_SWIFT": {
+        "he": "קוד SWIFT לא תקין.",
+        "en": "Invalid SWIFT code.",
+        "ctx": "BIC format"
+      }
+    },
+
+    "tax": {
+      "INVALID_VAT_RATE": {
+        "he": "שיעור מע\"מ חייב להיות בין 0 ל-100.",
+        "en": "VAT rate must be between 0 and 100.",
+        "ctx": "VAT range"
+      },
+      "VAT_SUM_MISMATCH": {
+        "he": "סכום המע\"מ אינו תואם את החישוב האוטומטי.",
+        "en": "VAT amount does not match calculated amount.",
+        "ctx": "Auto-calc vs entered"
+      },
+      "INVALID_TAX_YEAR": {
+        "he": "שנת מס לא תקינה.",
+        "en": "Invalid tax year.",
+        "ctx": "Year out of range"
+      },
+      "INVALID_ALLOCATION_NUMBER": {
+        "he": "מספר הקצאה לא תקין.",
+        "en": "Invalid allocation number.",
+        "ctx": "Allocation format check"
+      }
+    },
+
+    "files": {
+      "FILE_REQUIRED": {
+        "he": "נדרש לצרף קובץ.",
+        "en": "A file is required.",
+        "ctx": "File upload required"
+      },
+      "FILE_TOO_LARGE": {
+        "he": "הקובץ גדול מהמותר ({max}).",
+        "en": "File is larger than allowed ({max}).",
+        "ctx": "Upload size limit"
+      },
+      "FILE_TOO_SMALL": {
+        "he": "הקובץ קטן מהנדרש ({min}).",
+        "en": "File is smaller than required ({min}).",
+        "ctx": "Upload minimum size"
+      },
+      "INVALID_FILE_TYPE": {
+        "he": "סוג קובץ לא נתמך. מותר: {types}.",
+        "en": "Unsupported file type. Allowed: {types}.",
+        "ctx": "MIME type whitelist"
+      },
+      "TOO_MANY_FILES": {
+        "he": "ניתן להעלות עד {n} קבצים.",
+        "en": "You can upload up to {n} files.",
+        "ctx": "Batch upload limit"
+      }
+    },
+
+    "selection": {
+      "MUST_SELECT_OPTION": {
+        "he": "יש לבחור אפשרות.",
+        "en": "Please select an option.",
+        "ctx": "Dropdown required"
+      },
+      "MUST_SELECT_AT_LEAST_ONE": {
+        "he": "יש לבחור לפחות אפשרות אחת.",
+        "en": "Select at least one option.",
+        "ctx": "Multi-select minimum"
+      },
+      "TOO_MANY_SELECTED": {
+        "he": "ניתן לבחור עד {n} אפשרויות.",
+        "en": "You can select up to {n} options.",
+        "ctx": "Multi-select maximum"
+      },
+      "MUST_ACCEPT_TERMS": {
+        "he": "יש לאשר את התנאים כדי להמשיך.",
+        "en": "You must accept the terms to continue.",
+        "ctx": "T&C checkbox"
+      }
+    },
+
+    "business_logic": {
+      "DUPLICATE_VALUE": {
+        "he": "ערך זה כבר קיים.",
+        "en": "This value already exists.",
+        "ctx": "Unique constraint"
+      },
+      "REFERENCE_NOT_FOUND": {
+        "he": "ההפניה לא נמצאה במערכת.",
+        "en": "Referenced record not found.",
+        "ctx": "FK lookup failed"
+      },
+      "VALUE_OUT_OF_RANGE": {
+        "he": "הערך מחוץ לטווח החוקי.",
+        "en": "Value is out of legal range.",
+        "ctx": "Business rule range"
+      },
+      "CONFLICTING_VALUES": {
+        "he": "שדות אלה סותרים זה את זה.",
+        "en": "These fields conflict with each other.",
+        "ctx": "Cross-field validation"
+      }
+    }
+  }
+}

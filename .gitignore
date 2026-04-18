@@ -36,3 +36,5 @@ database/upload-report.md
 **/logs/migrations/
 onyx-procurement/backups/
 onyx-procurement/data/payroll/*.json
+_audit-clones/
+_external-backups/

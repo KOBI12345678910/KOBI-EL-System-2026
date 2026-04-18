@@ -59,7 +59,9 @@ const path = require('path');
 // ═══════════════════════════════════════════════════════════════
 
 const CONSTANTS_2026 = {
-  VAT_STANDARD_RATE: 0.17,                    // 17%
+  VAT_STANDARD_RATE: 0.18,                    // 18% effective 2026-01-01 (was 17%)
+  VAT_STANDARD_RATE_PRIOR: 0.17,              // Prior rate — retained for historical invoices
+  VAT_EFFECTIVE_FROM: '2026-01-01',
   CORPORATE_TAX_RATE: 0.23,                   // 23%
 
   // Withholding codes used by רשות המסים (partial list — extend as needed).

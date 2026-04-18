@@ -1,0 +1,230 @@
+import * as fs from "fs";
+import * as path from "path";
+import { callLLM } from "../llm/client";
+import { extractJSON, extractTextContent } from "../llm/parser";
+
+export interface ProjectInsight {
+  patterns: string[];
+  conventions: Record<string, string>;
+  techStack: string[];
+  codeStyle: Record<string, string>;
+  commonErrors: string[];
+  performanceHotspots: string[];
+  lastUpdated: Date;
+}
+
+export interface TaskHistory {
+  taskId: string;
+  task: string;
+  success: boolean;
+  stepsCount: number;
+  errorsCount: number;
+  duration: number;
+  fixesApplied: string[];
+  timestamp: Date;
+}
+
+export class SmartContextTool {
+  private workspaceDir: string;
+  private insightsFile: string;
+  private historyFile: string;
+  private insights: ProjectInsight;
+  private taskHistory: TaskHistory[] = [];
+
+  constructor(workspaceDir: string) {
+    this.workspaceDir = workspaceDir;
+    this.insightsFile = path.join(workspaceDir, ".agent/insights.json");
+    this.historyFile = path.join(workspaceDir, ".agent/history.json");
+
+    this.insights = this.loadInsights();
+    this.taskHistory = this.loadHistory();
+  }
+
+  private loadInsights(): ProjectInsight {
+    try {
+      if (fs.existsSync(this.insightsFile)) {
+        return JSON.parse(fs.readFileSync(this.insightsFile, "utf-8"));
+      }
+    } catch {}
+    return {
+      patterns: [],
+      conventions: {},
+      techStack: [],
+      codeStyle: {},
+      commonErrors: [],
+      performanceHotspots: [],
+      lastUpdated: new Date(),
+    };
+  }
+
+  private loadHistory(): TaskHistory[] {
+    try {
+      if (fs.existsSync(this.historyFile)) {
+        return JSON.parse(fs.readFileSync(this.historyFile, "utf-8"));
+      }
+    } catch {}
+    return [];
+  }
+
+  private save(): void {
+    const dir = path.dirname(this.insightsFile);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+    fs.writeFileSync(this.insightsFile, JSON.stringify(this.insights, null, 2));
+    fs.writeFileSync(this.historyFile, JSON.stringify(this.taskHistory.slice(-200), null, 2));
+  }
+
+  recordTask(task: TaskHistory): void {
+    this.taskHistory.push(task);
+
+    // Learn from errors
+    if (task.fixesApplied.length > 0) {
+      for (const fix of task.fixesApplied) {
+        if (!this.insights.commonErrors.includes(fix)) {
+          this.insights.commonErrors.push(fix);
+          if (this.insights.commonErrors.length > 50) {
+            this.insights.commonErrors = this.insights.commonErrors.slice(-50);
+          }
+        }
+      }
+    }
+
+    this.insights.lastUpdated = new Date();
+    this.save();
+  }
+
+  async analyzeProject(): Promise<ProjectInsight> {
+    // Scan project to understand patterns
+    const fileList: string[] = [];
+    const scan = (dir: string, depth = 0) => {
+      if (depth > 4) return;
+      try {
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          if (["node_modules", ".git", "dist", ".next", ".agent"].includes(entry.name)) continue;
+          const full = path.join(dir, entry.name);
+          if (entry.isFile()) fileList.push(path.relative(this.workspaceDir, full));
+          else if (entry.isDirectory()) scan(full, depth + 1);
+        }
+      } catch {}
+    };
+    scan(this.workspaceDir);
+
+    // Read sample files for analysis
+    const sampleFiles: Record<string, string> = {};
+    const codeFiles = fileList.filter((f) =>
+      /\.(ts|tsx|js|jsx|py|go|rs)$/.test(f)
+    ).slice(0, 15);
+
+    for (const file of codeFiles) {
+      try {
+        const content = fs.readFileSync(path.join(this.workspaceDir, file), "utf-8");
+        sampleFiles[file] = content.slice(0, 2000);
+      } catch {}
+    }
+
+    const response = await callLLM({
+      system: `Analyze this project and extract insights. Respond with JSON:
+{
+  "patterns": ["design patterns used"],
+  "conventions": { "naming": "", "fileStructure": "", "imports": "" },
+  "techStack": ["list of technologies"],
+  "codeStyle": { "indentation": "", "quotes": "", "semicolons": "" },
+  "commonErrors": ["likely error patterns"],
+  "performanceHotspots": ["potential performance issues"]
+}`,
+      messages: [{
+        role: "user",
+        content: `Project files:\n${fileList.join("\n")}\n\nSample code:\n${Object.entries(sampleFiles)
+          .map(([f, c]) => `--- ${f} ---\n${c}`)
+          .join("\n\n")}`,
+      }],
+    });
+
+    const analysis = extractJSON(extractTextContent(response.content));
+    if (analysis) {
+      this.insights = { ...analysis, lastUpdated: new Date() };
+      this.save();
+    }
+
+    return this.insights;
+  }
+
+  getContextForTask(task: string): string {
+    let context = "";
+
+    // Include project insights
+    if (this.insights.techStack.length > 0) {
+      context += `Tech Stack: ${this.insights.techStack.join(", ")}\n`;
+    }
+    if (Object.keys(this.insights.conventions).length > 0) {
+      context += `Conventions: ${JSON.stringify(this.insights.conventions)}\n`;
+    }
+    if (this.insights.patterns.length > 0) {
+      context += `Patterns: ${this.insights.patterns.join(", ")}\n`;
+    }
+
+    // Include relevant task history
+    const relevantHistory = this.taskHistory
+      .filter((h) => {
+        const taskWords = task.toLowerCase().split(/\s+/);
+        return taskWords.some((w) => h.task.toLowerCase().includes(w));
+      })
+      .slice(-5);
+
+    if (relevantHistory.length > 0) {
+      context += `\nRelevant past tasks:\n`;
+      for (const h of relevantHistory) {
+        context += `- "${h.task}" → ${h.success ? "Success" : "Failed"} (${h.errorsCount} errors, ${h.duration}ms)\n`;
+        if (h.fixesApplied.length > 0) {
+          context += `  Fixes needed: ${h.fixesApplied.join(", ")}\n`;
+        }
+      }
+    }
+
+    // Include common error patterns
+    if (this.insights.commonErrors.length > 0) {
+      context += `\nCommon errors to watch for:\n${this.insights.commonErrors.slice(-10).join("\n")}\n`;
+    }
+
+    return context;
+  }
+
+  getSuccessRate(): number {
+    if (this.taskHistory.length === 0) return 0;
+    const successes = this.taskHistory.filter((t) => t.success).length;
+    return Math.round((successes / this.taskHistory.length) * 100);
+  }
+
+  getMostCommonErrors(): Array<{ error: string; count: number }> {
+    const errorCounts = new Map<string, number>();
+    for (const task of this.taskHistory) {
+      for (const fix of task.fixesApplied) {
+        errorCounts.set(fix, (errorCounts.get(fix) || 0) + 1);
+      }
+    }
+    return Array.from(errorCounts.entries())
+      .map(([error, count]) => ({ error, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 20);
+  }
+
+  getStats(): {
+    totalTasks: number;
+    successRate: number;
+    avgDuration: number;
+    avgErrors: number;
+    mostCommonErrors: string[];
+  } {
+    const total = this.taskHistory.length;
+    if (total === 0) return { totalTasks: 0, successRate: 0, avgDuration: 0, avgErrors: 0, mostCommonErrors: [] };
+
+    return {
+      totalTasks: total,
+      successRate: this.getSuccessRate(),
+      avgDuration: Math.round(this.taskHistory.reduce((s, t) => s + t.duration, 0) / total),
+      avgErrors: Math.round(this.taskHistory.reduce((s, t) => s + t.errorsCount, 0) / total * 10) / 10,
+      mostCommonErrors: this.getMostCommonErrors().slice(0, 5).map((e) => e.error),
+    };
+  }
+}

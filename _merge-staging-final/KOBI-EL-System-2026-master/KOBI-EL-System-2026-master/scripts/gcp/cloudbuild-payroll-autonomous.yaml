@@ -1,0 +1,50 @@
+# Cloud Build — payroll-autonomous
+# Builds Vite React SPA + nginx, deploys to Cloud Run.
+
+steps:
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - '${_IMAGE}:${SHORT_SHA}'
+      - -t
+      - '${_IMAGE}:latest'
+      - -f
+      - docker/payroll-autonomous.Dockerfile
+      - payroll-autonomous
+
+  - id: push-sha
+    name: gcr.io/cloud-builders/docker
+    args: [push, '${_IMAGE}:${SHORT_SHA}']
+  - id: push-latest
+    name: gcr.io/cloud-builders/docker
+    args: [push, '${_IMAGE}:latest']
+
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - payroll-autonomous
+      - --image=${_IMAGE}:${SHORT_SHA}
+      - --region=${_REGION}
+      - --platform=managed
+      - --allow-unauthenticated
+      - --port=80
+      - --memory=256Mi
+      - --cpu=1
+      - --min-instances=0
+      - --max-instances=3
+      - --timeout=60s
+
+substitutions:
+  _REGION: me-west1
+  _IMAGE: me-west1-docker.pkg.dev/${PROJECT_ID}/bash44/payroll-autonomous
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  dynamic_substitutions: true
+
+timeout: 900s

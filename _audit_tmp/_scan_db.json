@@ -1,0 +1,2344 @@
+{
+  "tables": [
+    "analytics.dashboard_board_widgets",
+    "analytics.dashboard_boards",
+    "analytics.dashboard_definitions",
+    "analytics.dashboard_widgets",
+    "analytics.kpi_snapshots",
+    "analytics.read_model_invalidations",
+    "analytics.rm_ai_summary",
+    "analytics.rm_executive_summary",
+    "analytics.rm_finance_summary",
+    "analytics.rm_operations_summary",
+    "analytics.rm_procurement_summary",
+    "analytics.rm_workforce_summary",
+    "analytics.user_dashboard_boards",
+    "commercial.crm_activities",
+    "commercial.customer_contacts",
+    "commercial.customer_portal_accounts",
+    "commercial.customers",
+    "commercial.lead_tag_assignments",
+    "commercial.lead_tags",
+    "commercial.leads",
+    "commercial.opportunities",
+    "commercial.pipeline_stages",
+    "commercial.pricing_snapshots",
+    "commercial.quote_approval_rules",
+    "commercial.quote_lines",
+    "commercial.quote_revisions",
+    "commercial.quotes",
+    "comms.chatbot_sessions",
+    "comms.comms_threads",
+    "comms.email_messages",
+    "comms.help_articles",
+    "comms.notification_deliveries",
+    "comms.notifications",
+    "comms.portal_sessions",
+    "comms.portal_users",
+    "comms.sms_messages",
+    "comms.support_sla_tracking",
+    "comms.support_tickets",
+    "comms.whatsapp_messages",
+    "compliance.policies",
+    "compliance.policy_acknowledgements",
+    "crm.lead_activities",
+    "crm.leads",
+    "crm.opportunities",
+    "docs.attachments",
+    "docs.document_classifications",
+    "docs.document_signature_requests",
+    "docs.document_versions",
+    "docs.documents",
+    "docs.ocr_results",
+    "docs.print_jobs",
+    "docs.scan_sessions",
+    "documents.classification_runs",
+    "documents.document_chunks",
+    "documents.document_relations",
+    "documents.entity_extractions",
+    "documents.extraction_runs",
+    "documents.knowledge_cards",
+    "documents.ocr_runs",
+    "execution.alerts",
+    "execution.delivery_events",
+    "execution.installation_events",
+    "execution.logistics_orders",
+    "execution.project_blockers",
+    "execution.project_cost_plans",
+    "execution.project_milestones",
+    "execution.project_phases",
+    "execution.project_risks",
+    "execution.projects",
+    "execution.signatures",
+    "execution.task_attachments",
+    "execution.task_comments",
+    "execution.task_dependencies",
+    "execution.tasks",
+    "execution.work_order_qa_checklists",
+    "execution.work_order_qa_items",
+    "execution.work_order_tasks",
+    "execution.work_orders",
+    "finance.annual_tax_reports",
+    "finance.bank_files",
+    "finance.bank_matches",
+    "finance.budget_entries",
+    "finance.cashflow_entries",
+    "finance.collection_actions",
+    "finance.collection_cases",
+    "finance.consolidation_entries",
+    "finance.costing_entries",
+    "finance.dunning_campaigns",
+    "finance.dunning_steps",
+    "finance.expenses",
+    "finance.fx_rates",
+    "finance.gl_transactions",
+    "finance.invoice_lines",
+    "finance.invoices",
+    "finance.payment_allocations",
+    "finance.payments",
+    "finance.receipts",
+    "finance.reconciliation_exceptions",
+    "finance.reminder_schedules",
+    "finance.tax_exports",
+    "finance.tax_records",
+    "finance.vat_records",
+    "governance.alert_subscriptions",
+    "governance.audit_log_attachments",
+    "governance.audit_logs",
+    "governance.command_logs",
+    "governance.config_entries",
+    "governance.domain_events",
+    "governance.escalation_rules",
+    "governance.event_deliveries",
+    "governance.event_subscriptions",
+    "governance.feature_flag_targets",
+    "governance.feature_flags",
+    "governance.health_checks",
+    "governance.idempotency_keys",
+    "governance.integration_connections",
+    "governance.integration_sync_logs",
+    "governance.job_executions",
+    "governance.object_permissions",
+    "governance.permissions",
+    "governance.queue_jobs",
+    "governance.role_permissions",
+    "governance.roles",
+    "governance.saved_filters",
+    "governance.security_events",
+    "governance.sla_timers",
+    "governance.state_history",
+    "governance.user_preferences",
+    "governance.user_roles",
+    "governance.users_profile",
+    "governance.validations_log",
+    "governance.webhook_deliveries",
+    "governance.webhook_endpoints",
+    "governance.workflow_instances",
+    "governance.workflow_step_executions",
+    "governance.workflow_steps",
+    "governance.workflows",
+    "intelligence.agent_jobs",
+    "intelligence.agent_registry",
+    "intelligence.ai_insights",
+    "intelligence.anomaly_cases",
+    "intelligence.anomaly_feedback",
+    "intelligence.decision_recommendations",
+    "intelligence.forecast_models",
+    "intelligence.model_executions",
+    "intelligence.model_registry",
+    "intelligence.quality_scores",
+    "intelligence.recommendation_feedback",
+    "intelligence.seasonality_patterns",
+    "intelligence.trend_signals",
+    "inventory.barcode_scans",
+    "inventory.inventory",
+    "inventory.inventory_issues",
+    "inventory.inventory_movements",
+    "inventory.inventory_receipts",
+    "inventory.inventory_reservations",
+    "inventory.inventory_transfers",
+    "inventory.manufacturing_batches",
+    "inventory.material_categories",
+    "inventory.material_lots",
+    "inventory.material_request_lines",
+    "inventory.material_requests",
+    "inventory.materials",
+    "inventory.reorder_rules",
+    "inventory.shortage_snapshots",
+    "inventory.stock_count_lines",
+    "inventory.stock_counts",
+    "inventory.warehouses",
+    "maintenance.assets",
+    "maintenance.work_orders",
+    "orchestration.job_queue",
+    "orchestration.notifications",
+    "orchestration.universal_inbox",
+    "orchestration.workflow_definitions",
+    "orchestration.workflow_runs",
+    "orchestration.workflow_step_runs",
+    "orchestration.workflow_steps",
+    "planning.capacity_calendars",
+    "planning.capacity_slots",
+    "planning.demand_forecasts",
+    "pricing.calculations",
+    "pricing.rule_sets",
+    "procurement.approval_steps",
+    "procurement.approvals",
+    "procurement.contract_milestones",
+    "procurement.contracts",
+    "procurement.purchase_order_lines",
+    "procurement.purchase_orders",
+    "procurement.returns",
+    "procurement.rfq_comparison_snapshots",
+    "procurement.rfq_items",
+    "procurement.rfq_supplier_invites",
+    "procurement.rfqs",
+    "procurement.supplier_contacts",
+    "procurement.supplier_invoices",
+    "procurement.supplier_portal_accounts",
+    "procurement.supplier_quote_lines",
+    "procurement.supplier_quotes",
+    "procurement.supplier_scorecards",
+    "procurement.suppliers",
+    "procurement.warranty_cases",
+    "public.app_menu",
+    "public.customers",
+    "public.employees",
+    "public.inventory_items",
+    "public.orders",
+    "public.properties",
+    "public.suppliers",
+    "public.user_profiles",
+    "quality.defects",
+    "quality.inspection_plans",
+    "quality.inspection_runs",
+    "routing.menu_nodes",
+    "routing.route_permission_map",
+    "routing.route_registry",
+    "service.ticket_comments",
+    "service.tickets",
+    "treasury.bank_accounts",
+    "treasury.cash_forecasts",
+    "treasury.cash_positions",
+    "workforce.attendance",
+    "workforce.employee_expenses",
+    "workforce.employee_pay_components",
+    "workforce.employees",
+    "workforce.employers",
+    "workforce.hr_profiles",
+    "workforce.leave_requests",
+    "workforce.leave_types",
+    "workforce.pay_components",
+    "workforce.payroll_entries",
+    "workforce.payroll_exceptions",
+    "workforce.payroll_export_batches",
+    "workforce.payroll_runs",
+    "workforce.pension_records",
+    "workforce.shifts",
+    "workforce.wage_slips",
+    "workforce.workforce_assignments"
+  ],
+  "views": [
+    "analytics.mv_customer_health",
+    "analytics.mv_executive_summary",
+    "analytics.mv_project_health",
+    "analytics.mv_supplier_performance",
+    "analytics.v_ai_agent_health",
+    "analytics.v_ai_recommendation_queue",
+    "analytics.v_ai_summary",
+    "analytics.v_command_center_summary",
+    "analytics.v_crm_summary",
+    "analytics.v_document_intelligence_summary",
+    "analytics.v_executive_summary",
+    "analytics.v_finance_summary",
+    "analytics.v_inventory_summary",
+    "analytics.v_operations_summary",
+    "analytics.v_service_summary",
+    "analytics.v_treasury_summary",
+    "analytics.v_workforce_summary"
+  ],
+  "funcs": [
+    "analytics.get_advanced_ai_agent_console_fast",
+    "analytics.get_ai_control_room_fast",
+    "analytics.get_command_center_fast",
+    "analytics.get_crm_control_room_fast",
+    "analytics.get_customer_360_fast",
+    "analytics.get_dashboard_board",
+    "analytics.get_dashboard_widget_data",
+    "analytics.get_document_intelligence_center_fast",
+    "analytics.get_executive_control_tower",
+    "analytics.get_finance_control_room_fast",
+    "analytics.get_finance_control_room_full",
+    "analytics.get_notification_center_fast",
+    "analytics.get_operations_control_room_fast",
+    "analytics.get_procurement_control_room_fast",
+    "analytics.get_service_control_room_fast",
+    "analytics.get_treasury_control_room_fast",
+    "analytics.get_universal_inbox_fast",
+    "analytics.get_workforce_control_room_fast",
+    "analytics.get_workforce_control_room_full",
+    "analytics.invalidate_read_model_rpc",
+    "analytics.refresh_all_materialized_views",
+    "analytics.refresh_executive_summary_snapshot",
+    "analytics.rpc_ai_control_room",
+    "analytics.rpc_executive_control_tower",
+    "analytics.rpc_finance_control_room",
+    "analytics.rpc_operations_control_room",
+    "analytics.rpc_procurement_control_room",
+    "analytics.rpc_refresh_all_read_models",
+    "analytics.rpc_workforce_control_room",
+    "commercial.approve_quote",
+    "commercial.get_customer_360",
+    "commercial.get_customer_360_full",
+    "commercial.rpc_approve_quote",
+    "commercial.rpc_get_customer_360",
+    "commercial.rpc_get_quote_360",
+    "commercial.rpc_list_customers",
+    "commercial.trg_recalc_quote_totals",
+    "execution.acknowledge_alert_rpc",
+    "execution.create_task_comment_rpc",
+    "execution.get_project_360",
+    "execution.get_project_360_full",
+    "execution.get_work_order_360_full",
+    "execution.rpc_change_project_state",
+    "execution.rpc_complete_work_order",
+    "execution.rpc_get_project_360",
+    "execution.rpc_get_work_order_360",
+    "execution.rpc_list_projects",
+    "execution.rpc_list_work_orders",
+    "execution.rpc_start_work_order",
+    "execution.trg_calc_risk_score",
+    "execution.trg_recalc_project_cost",
+    "finance.mark_overdue_invoices",
+    "finance.rpc_get_finance_360",
+    "finance.rpc_issue_invoice",
+    "finance.rpc_register_payment",
+    "finance.trg_recalc_invoice_totals",
+    "governance._safe_set_search_path",
+    "governance.can_read_compliance",
+    "governance.can_read_crm",
+    "governance.can_read_customer",
+    "governance.can_read_document",
+    "governance.can_read_document_intelligence",
+    "governance.can_read_employee",
+    "governance.can_read_invoice",
+    "governance.can_read_maintenance",
+    "governance.can_read_parent_entity",
+    "governance.can_read_planning",
+    "governance.can_read_po",
+    "governance.can_read_pricing",
+    "governance.can_read_project",
+    "governance.can_read_quality",
+    "governance.can_read_quote",
+    "governance.can_read_rfq",
+    "governance.can_read_routing_admin",
+    "governance.can_read_service",
+    "governance.can_read_supplier",
+    "governance.can_read_treasury",
+    "governance.can_read_work_order",
+    "governance.can_write_customer",
+    "governance.can_write_employee",
+    "governance.can_write_parent_entity",
+    "governance.can_write_project",
+    "governance.can_write_supplier",
+    "governance.current_auth_user_id",
+    "governance.current_portal_user_id",
+    "governance.current_user_has_any_permission",
+    "governance.current_user_has_any_role",
+    "governance.current_user_has_object_permission",
+    "governance.current_user_has_permission",
+    "governance.current_user_has_role",
+    "governance.current_user_is_admin",
+    "governance.current_user_is_executive",
+    "governance.current_user_is_finance",
+    "governance.current_user_is_inventory",
+    "governance.current_user_is_ops",
+    "governance.current_user_is_payroll_hr",
+    "governance.current_user_is_procurement",
+    "governance.current_user_is_sales",
+    "governance.current_user_profile_id",
+    "governance.generate_public_id",
+    "governance.get_my_permissions",
+    "governance.get_my_profile",
+    "governance.get_my_roles",
+    "governance.mark_breached_sla_timers",
+    "governance.rpc_emit_domain_event",
+    "governance.rpc_write_audit",
+    "governance.rpc_write_state_change",
+    "governance.set_updated_at",
+    "intelligence.get_formula_builder_fast",
+    "intelligence.rpc_acknowledge_insight",
+    "intelligence.rpc_convert_anomaly_to_alert",
+    "orchestration.get_workflow_run_360",
+    "procurement.get_supplier_360_full",
+    "procurement.rpc_approve_po",
+    "procurement.rpc_approve_rfq",
+    "procurement.rpc_get_po_360",
+    "procurement.rpc_get_rfq_360",
+    "procurement.rpc_get_supplier_360",
+    "procurement.rpc_list_suppliers",
+    "procurement.rpc_request_po_approval",
+    "procurement.trg_recalc_po_totals",
+    "routing.get_sync_status",
+    "routing.run_full_route_menu_permission_sync",
+    "workforce.get_employee_360",
+    "workforce.rpc_approve_attendance",
+    "workforce.rpc_approve_payroll_run",
+    "workforce.rpc_get_employee_360",
+    "workforce.trg_calc_attendance_hours"
+  ],
+  "fks": [
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.roles"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.permissions"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.roles"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.domain_events"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.event_subscriptions"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.workflows"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.workflows"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.workflow_instances"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.workflow_steps"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "commercial.pipeline_stages"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "commercial.customers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "commercial.leads"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "commercial.customers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "commercial.customers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "commercial.leads"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "commercial.opportunities"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "commercial.quotes"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "commercial.quotes"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "commercial.pricing_snapshots"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.suppliers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.rfqs"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.rfqs"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.suppliers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.rfqs"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.suppliers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.supplier_quotes"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.rfq_items"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "commercial.customers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.suppliers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "commercial.quotes"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.suppliers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.rfqs"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.contracts"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.purchase_orders"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.supplier_quote_lines"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.suppliers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.purchase_orders"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.suppliers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.purchase_orders"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.suppliers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "commercial.customers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.purchase_orders"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "commercial.customers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "commercial.quotes"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.contracts"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.project_phases"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.work_orders"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.tasks"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.tasks"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.work_orders"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.work_orders"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.logistics_orders"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.work_orders"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "inventory.material_categories"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "inventory.material_categories"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.suppliers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "inventory.materials"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "inventory.warehouses"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.purchase_orders"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.purchase_order_lines"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "inventory.materials"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "inventory.warehouses"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.work_orders"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "inventory.materials"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "inventory.warehouses"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "inventory.materials"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "inventory.warehouses"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "inventory.warehouses"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "inventory.materials"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "inventory.warehouses"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.work_orders"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "inventory.warehouses"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "inventory.stock_counts"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "inventory.materials"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.work_orders"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "inventory.material_requests"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "inventory.materials"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "inventory.materials"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "inventory.warehouses"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.work_orders"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "workforce.employers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "workforce.employees"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "workforce.employees"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.work_orders"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "workforce.employees"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.work_orders"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "workforce.employers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "workforce.payroll_runs"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "workforce.employees"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "workforce.payroll_entries"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "workforce.employees"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "workforce.payroll_entries"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "workforce.employees"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "workforce.employees"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "workforce.employees"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.work_orders"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "commercial.customers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.suppliers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.purchase_orders"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "finance.invoices"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "commercial.customers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "finance.invoices"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "commercial.customers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.suppliers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "finance.invoices"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "finance.invoices"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "finance.payments"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "finance.bank_files"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.work_orders"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "inventory.materials"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "workforce.employees"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "finance.invoices"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "commercial.customers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.suppliers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "workforce.employees"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "docs.documents"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "docs.documents"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "docs.documents"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "docs.documents"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "commercial.customers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.suppliers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "commercial.customers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "comms.portal_users"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.suppliers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "comms.portal_users"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "comms.portal_users"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "comms.comms_threads"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "comms.comms_threads"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "comms.comms_threads"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "comms.portal_users"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "commercial.customers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "procurement.suppliers"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "comms.portal_users"
+    },
+    {
+      "file": "00000_master_schema.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "commercial.customers"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "procurement.suppliers"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "execution.alerts"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "execution.project_risks"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "execution.tasks"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "execution.tasks"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "docs.documents"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.webhook_endpoints"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.domain_events"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.integration_connections"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.feature_flags"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "analytics.dashboard_definitions"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "procurement.rfqs"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "procurement.suppliers"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "finance.bank_files"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "finance.payments"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "finance.payments"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "finance.invoices"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "workforce.payroll_runs"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "workforce.payroll_runs"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "workforce.employees"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "docs.documents"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "docs.documents"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "comms.portal_users"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.queue_jobs"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.audit_logs"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "docs.documents"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "intelligence.anomaly_cases"
+    },
+    {
+      "file": "00010_enterprise_expansion_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "commercial.leads"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "commercial.lead_tags"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "commercial.quotes"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "procurement.approvals"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "procurement.suppliers"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "procurement.contracts"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "inventory.materials"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "inventory.warehouses"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "inventory.materials"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "inventory.warehouses"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "inventory.material_lots"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "inventory.materials"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "procurement.suppliers"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "inventory.materials"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "inventory.warehouses"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "execution.work_orders"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "execution.work_order_qa_checklists"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "finance.dunning_campaigns"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "finance.collection_cases"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "commercial.customers"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "finance.invoices"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "workforce.employees"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "workforce.pay_components"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "workforce.employees"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "workforce.leave_types"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "intelligence.model_registry"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "intelligence.decision_recommendations"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "comms.portal_users"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "comms.notifications"
+    },
+    {
+      "file": "00011_enterprise_expansion_30_more_tables.sql",
+      "to": "comms.support_tickets"
+    },
+    {
+      "file": "00017_app_menu.sql",
+      "to": "public.app_menu"
+    },
+    {
+      "file": "00019_security_rls_core.sql",
+      "to": "governance.roles"
+    },
+    {
+      "file": "00019_security_rls_core.sql",
+      "to": "governance.permissions"
+    },
+    {
+      "file": "00019_security_rls_core.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00019_security_rls_core.sql",
+      "to": "governance.roles"
+    },
+    {
+      "file": "00019_security_rls_core.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00021_dashboard_tables.sql",
+      "to": "analytics.dashboard_boards"
+    },
+    {
+      "file": "00021_dashboard_tables.sql",
+      "to": "analytics.dashboard_widgets"
+    },
+    {
+      "file": "00021_dashboard_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00021_dashboard_tables.sql",
+      "to": "analytics.dashboard_boards"
+    },
+    {
+      "file": "00023_ai_agent_registry_and_views.sql",
+      "to": "intelligence.agent_registry"
+    },
+    {
+      "file": "00024_orchestration_tables.sql",
+      "to": "orchestration.workflow_definitions"
+    },
+    {
+      "file": "00024_orchestration_tables.sql",
+      "to": "orchestration.workflow_definitions"
+    },
+    {
+      "file": "00024_orchestration_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00024_orchestration_tables.sql",
+      "to": "orchestration.workflow_runs"
+    },
+    {
+      "file": "00024_orchestration_tables.sql",
+      "to": "orchestration.workflow_steps"
+    },
+    {
+      "file": "00024_orchestration_tables.sql",
+      "to": "orchestration.workflow_runs"
+    },
+    {
+      "file": "00024_orchestration_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "crm.leads"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "crm.leads"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "commercial.customers"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "commercial.customers"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "execution.work_orders"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "service.tickets"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "quality.inspection_plans"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "execution.work_orders"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "quality.inspection_runs"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "execution.projects"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "execution.work_orders"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "compliance.policies"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "treasury.bank_accounts"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "treasury.bank_accounts"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "planning.capacity_calendars"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "maintenance.assets"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "governance.users_profile"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "pricing.rule_sets"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "routing.route_registry"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "routing.menu_nodes"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "routing.route_registry"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "docs.documents"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "docs.documents"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "docs.documents"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "docs.documents"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "docs.documents"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "documents.extraction_runs"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "docs.documents"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "docs.documents"
+    },
+    {
+      "file": "00027_enterprise_30_tables.sql",
+      "to": "docs.documents"
+    },
+    {
+      "file": "20260417000000_initial_schema.sql",
+      "to": "auth.users"
+    },
+    {
+      "file": "20260417000000_initial_schema.sql",
+      "to": "public.suppliers"
+    },
+    {
+      "file": "20260417000000_initial_schema.sql",
+      "to": "public.customers"
+    }
+  ],
+  "dropped": [],
+  "perFile": {
+    "00000_master_schema.sql": {
+      "tables_created": [
+        "governance.users_profile",
+        "governance.roles",
+        "governance.permissions",
+        "governance.role_permissions",
+        "governance.user_roles",
+        "governance.object_permissions",
+        "governance.audit_logs",
+        "governance.state_history",
+        "governance.domain_events",
+        "governance.event_subscriptions",
+        "governance.event_deliveries",
+        "governance.workflows",
+        "governance.workflow_instances",
+        "governance.workflow_steps",
+        "governance.workflow_step_executions",
+        "governance.validations_log",
+        "governance.feature_flags",
+        "governance.config_entries",
+        "governance.queue_jobs",
+        "governance.health_checks",
+        "commercial.pipeline_stages",
+        "commercial.customers",
+        "commercial.leads",
+        "commercial.crm_activities",
+        "commercial.opportunities",
+        "commercial.quotes",
+        "commercial.quote_lines",
+        "commercial.pricing_snapshots",
+        "procurement.suppliers",
+        "procurement.rfqs",
+        "procurement.rfq_items",
+        "procurement.rfq_supplier_invites",
+        "procurement.supplier_quotes",
+        "procurement.supplier_quote_lines",
+        "procurement.approvals",
+        "procurement.contracts",
+        "procurement.purchase_orders",
+        "procurement.purchase_order_lines",
+        "procurement.supplier_invoices",
+        "procurement.returns",
+        "procurement.warranty_cases",
+        "execution.projects",
+        "execution.project_phases",
+        "execution.project_milestones",
+        "execution.work_orders",
+        "execution.work_order_tasks",
+        "execution.tasks",
+        "execution.task_dependencies",
+        "execution.logistics_orders",
+        "execution.delivery_events",
+        "execution.installation_events",
+        "execution.signatures",
+        "execution.alerts",
+        "inventory.material_categories",
+        "inventory.materials",
+        "inventory.warehouses",
+        "inventory.inventory",
+        "inventory.inventory_receipts",
+        "inventory.inventory_issues",
+        "inventory.inventory_transfers",
+        "inventory.inventory_reservations",
+        "inventory.stock_counts",
+        "inventory.stock_count_lines",
+        "inventory.material_requests",
+        "inventory.material_request_lines",
+        "inventory.barcode_scans",
+        "inventory.manufacturing_batches",
+        "workforce.employers",
+        "workforce.employees",
+        "workforce.hr_profiles",
+        "workforce.workforce_assignments",
+        "workforce.attendance",
+        "workforce.payroll_runs",
+        "workforce.payroll_entries",
+        "workforce.wage_slips",
+        "workforce.pension_records",
+        "workforce.employee_expenses",
+        "workforce.shifts",
+        "finance.invoices",
+        "finance.invoice_lines",
+        "finance.receipts",
+        "finance.payments",
+        "finance.gl_transactions",
+        "finance.vat_records",
+        "finance.tax_records",
+        "finance.tax_exports",
+        "finance.bank_files",
+        "finance.bank_matches",
+        "finance.cashflow_entries",
+        "finance.budget_entries",
+        "finance.costing_entries",
+        "finance.fx_rates",
+        "finance.consolidation_entries",
+        "finance.collection_cases",
+        "finance.expenses",
+        "finance.annual_tax_reports",
+        "docs.documents",
+        "docs.document_classifications",
+        "docs.ocr_results",
+        "docs.attachments",
+        "docs.print_jobs",
+        "docs.scan_sessions",
+        "comms.portal_users",
+        "commercial.customer_portal_accounts",
+        "procurement.supplier_portal_accounts",
+        "comms.notifications",
+        "comms.comms_threads",
+        "comms.email_messages",
+        "comms.sms_messages",
+        "comms.whatsapp_messages",
+        "comms.chatbot_sessions",
+        "comms.support_tickets",
+        "comms.help_articles",
+        "intelligence.ai_insights",
+        "intelligence.anomaly_cases",
+        "intelligence.forecast_models",
+        "intelligence.quality_scores",
+        "intelligence.trend_signals",
+        "intelligence.seasonality_patterns",
+        "intelligence.decision_recommendations",
+        "analytics.rm_executive_summary",
+        "analytics.rm_operations_summary",
+        "analytics.rm_procurement_summary",
+        "analytics.rm_finance_summary",
+        "analytics.rm_workforce_summary",
+        "analytics.rm_ai_summary"
+      ],
+      "tables_dropped": []
+    },
+    "00001_rls_helpers_and_policies.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00002_secure_rpc_functions.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00003_action_rpcs_and_state_machines.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00004_rls_helper_functions_v2.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00005_rls_policies.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00006_read_models_and_360_rpcs.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00007_performance_indexes.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00008_idempotency_table.sql": {
+      "tables_created": [
+        "governance.idempotency_keys"
+      ],
+      "tables_dropped": []
+    },
+    "00009_seed_roles_permissions.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00010_enterprise_expansion_30_tables.sql": {
+      "tables_created": [
+        "commercial.customer_contacts",
+        "procurement.supplier_contacts",
+        "execution.project_risks",
+        "execution.project_blockers",
+        "execution.task_comments",
+        "execution.task_attachments",
+        "governance.webhook_endpoints",
+        "governance.webhook_deliveries",
+        "governance.integration_connections",
+        "governance.integration_sync_logs",
+        "governance.feature_flag_targets",
+        "governance.user_preferences",
+        "governance.saved_filters",
+        "analytics.dashboard_definitions",
+        "analytics.dashboard_widgets",
+        "analytics.kpi_snapshots",
+        "procurement.rfq_comparison_snapshots",
+        "finance.reconciliation_exceptions",
+        "finance.payment_allocations",
+        "workforce.payroll_export_batches",
+        "workforce.payroll_exceptions",
+        "docs.document_signature_requests",
+        "docs.document_versions",
+        "comms.portal_sessions",
+        "governance.escalation_rules",
+        "governance.alert_subscriptions",
+        "governance.sla_timers",
+        "governance.job_executions",
+        "governance.audit_log_attachments",
+        "intelligence.anomaly_feedback"
+      ],
+      "tables_dropped": []
+    },
+    "00011_enterprise_expansion_30_more_tables.sql": {
+      "tables_created": [
+        "commercial.lead_tags",
+        "commercial.lead_tag_assignments",
+        "commercial.quote_revisions",
+        "commercial.quote_approval_rules",
+        "procurement.approval_steps",
+        "procurement.supplier_scorecards",
+        "procurement.contract_milestones",
+        "inventory.material_lots",
+        "inventory.inventory_movements",
+        "inventory.reorder_rules",
+        "inventory.shortage_snapshots",
+        "execution.project_cost_plans",
+        "execution.work_order_qa_checklists",
+        "execution.work_order_qa_items",
+        "finance.dunning_campaigns",
+        "finance.dunning_steps",
+        "finance.collection_actions",
+        "finance.reminder_schedules",
+        "workforce.pay_components",
+        "workforce.employee_pay_components",
+        "workforce.leave_types",
+        "workforce.leave_requests",
+        "intelligence.model_registry",
+        "intelligence.model_executions",
+        "intelligence.recommendation_feedback",
+        "analytics.read_model_invalidations",
+        "governance.command_logs",
+        "governance.security_events",
+        "comms.notification_deliveries",
+        "comms.support_sla_tracking"
+      ],
+      "tables_dropped": []
+    },
+    "00012_rpc_functions_core_block.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00013_seed_role_permission_mapping.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00014_rls_policies_expansion_tables.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00015_read_model_views.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00016_trigger_functions_computed_fields.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00017_app_menu.sql": {
+      "tables_created": [
+        "public.app_menu"
+      ],
+      "tables_dropped": []
+    },
+    "00018_rpc_control_rooms_and_360.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00019_security_rls_core.sql": {
+      "tables_created": [
+        "governance.roles",
+        "governance.permissions",
+        "governance.role_permissions",
+        "governance.user_roles"
+      ],
+      "tables_dropped": []
+    },
+    "00020_get_my_permissions_rpc.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00021_dashboard_tables.sql": {
+      "tables_created": [
+        "analytics.dashboard_boards",
+        "analytics.dashboard_widgets",
+        "analytics.dashboard_board_widgets",
+        "analytics.user_dashboard_boards"
+      ],
+      "tables_dropped": []
+    },
+    "00022_dashboard_rpcs.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00023_ai_agent_registry_and_views.sql": {
+      "tables_created": [
+        "intelligence.agent_registry",
+        "intelligence.agent_jobs"
+      ],
+      "tables_dropped": []
+    },
+    "00024_orchestration_tables.sql": {
+      "tables_created": [
+        "orchestration.workflow_definitions",
+        "orchestration.workflow_steps",
+        "orchestration.workflow_runs",
+        "orchestration.workflow_step_runs",
+        "orchestration.job_queue",
+        "orchestration.universal_inbox",
+        "orchestration.notifications"
+      ],
+      "tables_dropped": []
+    },
+    "00025_command_center_rpcs.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00026_control_room_rpcs.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00027_enterprise_30_tables.sql": {
+      "tables_created": [
+        "crm.leads",
+        "crm.lead_activities",
+        "crm.opportunities",
+        "service.tickets",
+        "service.ticket_comments",
+        "quality.inspection_plans",
+        "quality.inspection_runs",
+        "quality.defects",
+        "compliance.policies",
+        "compliance.policy_acknowledgements",
+        "treasury.bank_accounts",
+        "treasury.cash_positions",
+        "treasury.cash_forecasts",
+        "planning.capacity_calendars",
+        "planning.capacity_slots",
+        "planning.demand_forecasts",
+        "maintenance.assets",
+        "maintenance.work_orders",
+        "pricing.rule_sets",
+        "pricing.calculations",
+        "routing.route_registry",
+        "routing.menu_nodes",
+        "routing.route_permission_map",
+        "documents.ocr_runs",
+        "documents.classification_runs",
+        "documents.extraction_runs",
+        "documents.document_chunks",
+        "documents.entity_extractions",
+        "documents.document_relations",
+        "documents.knowledge_cards"
+      ],
+      "tables_dropped": []
+    },
+    "00028_routing_and_ai_rpcs.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00029_enterprise_30_tables_rls.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00030_enterprise_seed_data.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00031_analytics_views_and_rpcs.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00032_treasury_and_extra_routes.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00033_demo_seed_2026_04.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00034_app_menu_complete.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00035_app_menu_FULL.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00036_remove_realestate_and_add_missing.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00037_vat_rate_18_percent.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00038_merged_sources_menu_additions.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00039_final_merge_menu_additions.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "00040_system_360_fixes.sql": {
+      "tables_created": [],
+      "tables_dropped": []
+    },
+    "20260417000000_initial_schema.sql": {
+      "tables_created": [
+        "public.user_profiles",
+        "public.customers",
+        "public.suppliers",
+        "public.inventory_items",
+        "public.orders",
+        "public.employees",
+        "public.properties"
+      ],
+      "tables_dropped": []
+    }
+  }
+}

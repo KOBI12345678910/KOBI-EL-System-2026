@@ -92,7 +92,8 @@
 //  1. Constants
 // ════════════════════════════════════════════════════════════════
 
-const VAT_RATE_STANDARD = 0.17;             // מע"מ ישראל — 17 %
+const VAT_RATE_STANDARD = 0.18;             // מע"מ ישראל — 18 % (מ-2026-01-01; לפני כן 17%)
+const VAT_RATE_PRIOR = 0.17;                // retained so OCR can still match legacy invoices
 const VAT_ROUNDING_TOLERANCE = 0.02;        // 2 agorot per line
 const DEFAULT_CURRENCY = 'ILS';
 

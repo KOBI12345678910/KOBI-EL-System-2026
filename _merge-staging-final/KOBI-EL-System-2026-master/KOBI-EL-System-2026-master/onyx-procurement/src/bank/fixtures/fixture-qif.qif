@@ -1,0 +1,41 @@
+!Type:Bank
+D04/01/2026
+T12500.00
+NREF001
+PTechno Kol Uzi Wire In
+MCustomer wire transfer
+LIncome:Sales
+CX
+^
+D04/02/2026
+T-3200.50
+NREF002
+PStone Works Ltd
+MSupplier payment — stone slabs
+LExpenses:Materials
+CX
+^
+D04/03/2026
+T-15750.00
+NREF003
+PApril Salaries
+MPayroll batch
+LExpenses:Salaries
+CX
+^
+D04/10/2026
+T5670.25
+NREF007
+PTax Authority
+MVAT refund
+LIncome:Tax
+CX
+^
+D04/14/2026
+T-45.00
+NREF010
+PBank Fees
+MMonthly account fee
+LExpenses:Bank Fees
+CX
+^

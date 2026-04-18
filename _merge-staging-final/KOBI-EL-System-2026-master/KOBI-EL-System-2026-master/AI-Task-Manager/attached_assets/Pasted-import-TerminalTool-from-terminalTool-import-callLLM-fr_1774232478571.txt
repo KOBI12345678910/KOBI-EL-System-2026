@@ -1,0 +1,320 @@
+import { TerminalTool } from "./terminalTool";
+import { callLLM } from "../llm/client";
+import { extractJSON, extractTextContent } from "../llm/parser";
+
+export interface BrowserTestResult {
+  url: string;
+  passed: number;
+  failed: number;
+  issues: Array<{
+    type: "broken_link" | "js_error" | "form_error" | "visual_bug" | "a11y" | "performance" | "api_error" | "missing_element";
+    severity: "critical" | "high" | "medium" | "low";
+    description: string;
+    element?: string;
+    screenshot?: string;
+  }>;
+  pages: Array<{
+    url: string;
+    status: number;
+    loadTime: number;
+    jsErrors: string[];
+    consoleLogs: string[];
+  }>;
+  summary: string;
+  duration: number;
+}
+
+export class BrowserTestTool {
+  private terminal: TerminalTool;
+  private onLog: (msg: string) => void;
+
+  constructor(terminal: TerminalTool, onLog: (msg: string) => void) {
+    this.terminal = terminal;
+    this.onLog = onLog;
+  }
+
+  async ensurePlaywright(): Promise<boolean> {
+    const check = await this.terminal.execute("npx playwright --version 2>/dev/null", { timeout: 5000 });
+    if (!check.success) {
+      this.onLog("  Installing Playwright...");
+      await this.terminal.execute("npm install -D @playwright/test && npx playwright install chromium", { timeout: 180000 });
+    }
+    return true;
+  }
+
+  /**
+   * Full browser test — like Replit Agent 3's app testing:
+   * Opens browser, navigates, clicks buttons, fills forms, checks APIs
+   */
+  async testApp(baseUrl: string, options?: {
+    depth?: number;
+    testForms?: boolean;
+    testLinks?: boolean;
+    testAPI?: boolean;
+    screenshots?: boolean;
+  }): Promise<BrowserTestResult> {
+    const startTime = Date.now();
+    await this.ensurePlaywright();
+
+    this.onLog(`\n🌐 Browser testing: ${baseUrl}`);
+
+    const depth = options?.depth || 2;
+    const result: BrowserTestResult = {
+      url: baseUrl,
+      passed: 0,
+      failed: 0,
+      issues: [],
+      pages: [],
+      summary: "",
+      duration: 0,
+    };
+
+    // Generate test script
+    const testScript = `
+const { chromium } = require('@playwright/test');
+
+(async () => {
+  const browser = await chromium.launch({ headless: true });
+  const context = await browser.newContext({
+    viewport: { width: 1280, height: 720 },
+    userAgent: 'KobiAgent-BrowserTest/1.0'
+  });
+  const page = await context.newPage();
+  
+  const results = {
+    pages: [],
+    jsErrors: [],
+    consoleLogs: [],
+    networkErrors: [],
+    elements: { buttons: 0, links: 0, forms: 0, images: 0, inputs: 0 }
+  };
+
+  // Capture console errors
+  page.on('console', msg => {
+    if (msg.type() === 'error') results.jsErrors.push(msg.text());
+    results.consoleLogs.push('[' + msg.type() + '] ' + msg.text());
+  });
+
+  // Capture network failures
+  page.on('requestfailed', req => {
+    results.networkErrors.push(req.url() + ' - ' + (req.failure()?.errorText || 'unknown'));
+  });
+
+  // Test main page
+  const visited = new Set();
+  const toVisit = ['${baseUrl}'];
+  let depth = 0;
+  const maxDepth = ${depth};
+  const maxPages = 10;
+
+  while (toVisit.length > 0 && visited.size < maxPages && depth < maxDepth) {
+    const url = toVisit.shift();
+    if (!url || visited.has(url)) continue;
+    visited.add(url);
+
+    try {
+      const startNav = Date.now();
+      const response = await page.goto(url, { waitUntil: 'networkidle', timeout: 15000 });
+      const loadTime = Date.now() - startNav;
+      const status = response?.status() || 0;
+
+      results.pages.push({ url, status, loadTime, jsErrors: [...results.jsErrors] });
+      results.jsErrors = [];
+
+      // Count elements
+      results.elements.buttons += await page.locator('button').count();
+      results.elements.links += await page.locator('a[href]').count();
+      results.elements.forms += await page.locator('form').count();
+      results.elements.images += await page.locator('img').count();
+      results.elements.inputs += await page.locator('input, select, textarea').count();
+
+      ${options?.screenshots ? `
+      await page.screenshot({ path: '/tmp/test-screenshot-' + visited.size + '.png', fullPage: true });
+      ` : ""}
+
+      // Find more pages to visit
+      const links = await page.locator('a[href]').all();
+      for (const link of links) {
+        const href = await link.getAttribute('href');
+        if (href && href.startsWith('/') && !href.startsWith('//')) {
+          toVisit.push('${baseUrl}' + href);
+        }
+      }
+
+      ${options?.testForms ? `
+      // Test forms
+      const forms = await page.locator('form').all();
+      for (const form of forms) {
+        const inputs = await form.locator('input:not([type=hidden]):not([type=submit])').all();
+        for (const input of inputs) {
+          const type = await input.getAttribute('type') || 'text';
+          try {
+            if (type === 'email') await input.fill('test@example.com');
+            else if (type === 'password') await input.fill('TestPass123!');
+            else if (type === 'number') await input.fill('42');
+            else await input.fill('Test input');
+          } catch {}
+        }
+        
+        // Try submit
+        const submitBtn = await form.locator('button[type=submit], input[type=submit]').first();
+        if (submitBtn) {
+          try { await submitBtn.click({ timeout: 3000 }); } catch {}
+        }
+      }
+      ` : ""}
+
+      ${options?.testLinks ? `
+      // Test for broken links
+      const allLinks = await page.locator('a[href]').all();
+      for (const link of allLinks.slice(0, 20)) {
+        const href = await link.getAttribute('href');
+        if (href && (href.startsWith('http') || href.startsWith('/'))) {
+          try {
+            const fullUrl = href.startsWith('/') ? '${baseUrl}' + href : href;
+            const resp = await page.request.head(fullUrl, { timeout: 5000 });
+            if (resp.status() >= 400) {
+              results.networkErrors.push('Broken link: ' + fullUrl + ' (' + resp.status() + ')');
+            }
+          } catch {}
+        }
+      }
+      ` : ""}
+
+      // Click interactive elements
+      const buttons = await page.locator('button:visible').all();
+      for (const btn of buttons.slice(0, 5)) {
+        try {
+          const text = await btn.textContent();
+          if (text && !text.toLowerCase().includes('delete') && !text.toLowerCase().includes('logout')) {
+            await btn.click({ timeout: 2000 });
+            await page.waitForTimeout(500);
+          }
+        } catch {}
+      }
+
+    } catch (err) {
+      results.pages.push({ url, status: 0, loadTime: 0, jsErrors: [err.message] });
+    }
+
+    depth++;
+  }
+
+  await browser.close();
+  console.log(JSON.stringify(results));
+})();
+`;
+
+    const scriptPath = "/tmp/browser-test.js";
+    await this.terminal.execute(`cat > ${scriptPath} << 'ENDSCRIPT'\n${testScript}\nENDSCRIPT`);
+
+    const testExec = await this.terminal.execute(`node ${scriptPath}`, { timeout: 120000 });
+
+    // Parse results
+    try {
+      const data = JSON.parse(testExec.stdout.trim());
+
+      result.pages = data.pages || [];
+
+      // Analyze issues
+      for (const page of data.pages) {
+        if (page.status >= 400) {
+          result.issues.push({
+            type: "broken_link",
+            severity: page.status >= 500 ? "critical" : "high",
+            description: `Page ${page.url} returned ${page.status}`,
+          });
+          result.failed++;
+        } else {
+          result.passed++;
+        }
+
+        for (const err of page.jsErrors || []) {
+          result.issues.push({
+            type: "js_error",
+            severity: "high",
+            description: err,
+          });
+        }
+
+        if (page.loadTime > 5000) {
+          result.issues.push({
+            type: "performance",
+            severity: "medium",
+            description: `Page ${page.url} loaded in ${page.loadTime}ms (slow)`,
+          });
+        }
+      }
+
+      for (const netErr of data.networkErrors || []) {
+        result.issues.push({
+          type: "broken_link",
+          severity: "medium",
+          description: netErr,
+        });
+      }
+
+    } catch {
+      result.issues.push({
+        type: "js_error",
+        severity: "critical",
+        description: `Test execution failed: ${testExec.stderr || testExec.stdout}`,
+      });
+    }
+
+    // AI analysis of results
+    if (result.issues.length > 0) {
+      this.onLog(`  Found ${result.issues.length} issues, analyzing...`);
+
+      const analysisResponse = await callLLM({
+        system: "Analyze browser test results and provide fix recommendations. Be specific. Respond with JSON: { suggestions: [{ issue, fix, file, priority }] }",
+        messages: [{
+          role: "user",
+          content: `Test results for ${baseUrl}:\n${JSON.stringify(result.issues.slice(0, 20), null, 2)}`,
+        }],
+      });
+
+      const analysis = extractJSON(extractTextContent(analysisResponse.content));
+      if (analysis?.suggestions) {
+        result.summary = `Found ${result.issues.length} issues. Top fixes:\n` +
+          analysis.suggestions.slice(0, 5).map((s: any) => `• ${s.fix}`).join("\n");
+      }
+    }
+
+    result.duration = Date.now() - startTime;
+    result.summary = result.summary || `Tested ${result.pages.length} pages: ${result.passed} passed, ${result.failed} failed, ${result.issues.length} issues`;
+
+    this.onLog(`  ${result.summary}`);
+    return result;
+  }
+
+  /**
+   * Periodic testing loop — like Replit Agent 3
+   */
+  async startPeriodicTesting(
+    baseUrl: string,
+    intervalMs = 60000,
+    onResult: (result: BrowserTestResult) => void
+  ): Promise<{ stop: () => void }> {
+    let running = true;
+
+    const loop = async () => {
+      while (running) {
+        try {
+          const result = await this.testApp(baseUrl, {
+            depth: 1,
+            testForms: true,
+            testLinks: true,
+          });
+          onResult(result);
+        } catch (err: any) {
+          this.onLog(`  Browser test error: ${err.message}`);
+        }
+        await new Promise((r) => setTimeout(r, intervalMs));
+      }
+    };
+
+    loop();
+    return { stop: () => { running = false; } };
+  }
+}

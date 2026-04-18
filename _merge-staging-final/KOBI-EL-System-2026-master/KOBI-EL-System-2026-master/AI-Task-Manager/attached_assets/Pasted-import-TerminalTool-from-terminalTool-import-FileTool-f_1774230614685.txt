@@ -1,0 +1,230 @@
+import { TerminalTool } from "./terminalTool";
+import { FileTool } from "./fileTool";
+import { SearchTool } from "./searchTool";
+import * as fs from "fs";
+import * as path from "path";
+
+export interface DepInfo {
+  name: string;
+  version: string;
+  latest?: string;
+  outdated: boolean;
+  vulnerable: boolean;
+  type: "prod" | "dev";
+  size?: string;
+}
+
+export interface ImportInfo {
+  file: string;
+  imports: Array<{ module: string; isLocal: boolean; names: string[] }>;
+  exports: string[];
+}
+
+export class DependencyTool {
+  private terminal: TerminalTool;
+  private fileTool: FileTool;
+  private searchTool: SearchTool;
+  private workspaceDir: string;
+
+  constructor(
+    workspaceDir: string,
+    terminal: TerminalTool,
+    fileTool: FileTool,
+    searchTool: SearchTool
+  ) {
+    this.workspaceDir = workspaceDir;
+    this.terminal = terminal;
+    this.fileTool = fileTool;
+    this.searchTool = searchTool;
+  }
+
+  async checkOutdated(): Promise<DepInfo[]> {
+    const result = await this.terminal.execute("npm outdated --json 2>/dev/null", {
+      timeout: 30000,
+    });
+
+    const deps: DepInfo[] = [];
+
+    try {
+      const data = JSON.parse(result.stdout);
+      for (const [name, info] of Object.entries(data) as any[]) {
+        deps.push({
+          name,
+          version: info.current || "unknown",
+          latest: info.latest,
+          outdated: info.current !== info.latest,
+          vulnerable: false,
+          type: info.type === "devDependencies" ? "dev" : "prod",
+        });
+      }
+    } catch {}
+
+    return deps;
+  }
+
+  async checkVulnerabilities(): Promise<{
+    total: number;
+    critical: number;
+    high: number;
+    moderate: number;
+    low: number;
+    details: Array<{ name: string; severity: string; title: string; url: string }>;
+  }> {
+    const result = await this.terminal.execute("npm audit --json 2>/dev/null", {
+      timeout: 30000,
+    });
+
+    try {
+      const data = JSON.parse(result.stdout);
+      const vuln = data.metadata?.vulnerabilities || {};
+      const details: Array<{ name: string; severity: string; title: string; url: string }> = [];
+
+      if (data.vulnerabilities) {
+        for (const [name, info] of Object.entries(data.vulnerabilities) as any[]) {
+          details.push({
+            name,
+            severity: info.severity || "unknown",
+            title: info.via?.[0]?.title || "Unknown vulnerability",
+            url: info.via?.[0]?.url || "",
+          });
+        }
+      }
+
+      return {
+        total: vuln.total || 0,
+        critical: vuln.critical || 0,
+        high: vuln.high || 0,
+        moderate: vuln.moderate || 0,
+        low: vuln.low || 0,
+        details,
+      };
+    } catch {
+      return { total: 0, critical: 0, high: 0, moderate: 0, low: 0, details: [] };
+    }
+  }
+
+  async fixVulnerabilities(): Promise<string> {
+    const result = await this.terminal.execute("npm audit fix", { timeout: 60000 });
+    return result.stdout + result.stderr;
+  }
+
+  async analyzeImports(targetFile?: string): Promise<ImportInfo[]> {
+    const files = targetFile
+      ? [targetFile]
+      : (await this.searchTool.searchFiles("*.ts")).concat(
+          await this.searchTool.searchFiles("*.tsx"),
+          await this.searchTool.searchFiles("*.js"),
+          await this.searchTool.searchFiles("*.jsx")
+        );
+
+    const results: ImportInfo[] = [];
+
+    for (const file of files.slice(0, 100)) {
+      const content = this.fileTool.readFile(file);
+      if (!content.success) continue;
+
+      const imports: Array<{ module: string; isLocal: boolean; names: string[] }> = [];
+      const exports: string[] = [];
+
+      // Parse imports
+      const importRegex = /import\s+(?:(?:{([^}]+)}\s+from|(\w+)\s+from|(\*\s+as\s+\w+)\s+from)\s+)?['"]([^'"]+)['"]/g;
+      let match;
+      while ((match = importRegex.exec(content.output || "")) !== null) {
+        const names = match[1]
+          ? match[1].split(",").map((n) => n.trim())
+          : match[2]
+          ? [match[2]]
+          : match[3]
+          ? [match[3]]
+          : [];
+        const module = match[4];
+        imports.push({
+          module,
+          isLocal: module.startsWith(".") || module.startsWith("/"),
+          names,
+        });
+      }
+
+      // Parse require()
+      const requireRegex = /(?:const|let|var)\s+(?:{([^}]+)}|(\w+))\s*=\s*require\(['"]([^'"]+)['"]\)/g;
+      while ((match = requireRegex.exec(content.output || "")) !== null) {
+        const names = match[1]
+          ? match[1].split(",").map((n) => n.trim())
+          : match[2]
+          ? [match[2]]
+          : [];
+        imports.push({
+          module: match[3],
+          isLocal: match[3].startsWith("."),
+          names,
+        });
+      }
+
+      // Parse exports
+      const exportRegex = /export\s+(?:default\s+)?(?:(?:function|class|const|let|var|interface|type|enum)\s+)?(\w+)/g;
+      while ((match = exportRegex.exec(content.output || "")) !== null) {
+        exports.push(match[1]);
+      }
+
+      if (imports.length > 0 || exports.length > 0) {
+        results.push({ file, imports, exports });
+      }
+    }
+
+    return results;
+  }
+
+  async findUnusedDependencies(): Promise<string[]> {
+    const unused: string[] = [];
+
+    try {
+      const pkg = JSON.parse(
+        fs.readFileSync(path.join(this.workspaceDir, "package.json"), "utf-8")
+      );
+
+      const deps = Object.keys(pkg.dependencies || {});
+
+      for (const dep of deps) {
+        const searchResult = await this.searchTool.searchContent(dep, {
+          filePattern: "**/*.{ts,tsx,js,jsx}",
+          maxResults: 1,
+        });
+
+        if (searchResult.length === 0) {
+          unused.push(dep);
+        }
+      }
+    } catch {}
+
+    return unused;
+  }
+
+  async findCircularDeps(): Promise<Array<{ cycle: string[] }>> {
+    const result = await this.terminal.execute(
+      "npx madge --circular --extensions ts,tsx,js,jsx src/ 2>/dev/null",
+      { timeout: 30000 }
+    );
+
+    const cycles: Array<{ cycle: string[] }> = [];
+    const lines = result.stdout.split("\n").filter(Boolean);
+
+    for (const line of lines) {
+      if (line.includes("->") || line.includes("→")) {
+        const parts = line.split(/->|→/).map((p) => p.trim());
+        if (parts.length > 1) {
+          cycles.push({ cycle: parts });
+        }
+      }
+    }
+
+    return cycles;
+  }
+
+  async updateDependency(name: string, version?: string): Promise<string> {
+    const target = version ? `${name}@${version}` : `${name}@latest`;
+    const result = await this.terminal.execute(`npm install ${target}`, {
+      timeout: 60000,
+    });
+    return result.stdout + result.stderr;
+  }
+}

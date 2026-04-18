@@ -1,0 +1,703 @@
+builder_project_name: "Universal ERP Builder Platform"
+
+project_goal:
+  description: >
+    אנחנו בונים בתוך המערכת מנוע פלטפורמה אוניברסלי, שמאפשר לנו לבנות
+    ידנית אינסוף מודולים, ישויות, מסכים, שדות, כפתורים, סטטוסים, קטגוריות,
+    workflows, dashboards והרשאות, בלי צורך לכתוב קוד מחדש לכל שינוי.
+  critical_principle: >
+    ה-Builder הוא לא feature קטן ולא מודול עזר.
+    הוא שכבת Core Platform של כל המערכת.
+  target:
+    - "לבנות פעם אחת מנוע בנייה"
+    - "להשתמש בו לבניית כל המערכת העתידית"
+    - "להיות AI-ready בעתיד"
+    - "להיות metadata-driven ולא hardcoded"
+
+core_understanding_required:
+  message_to_agent: >
+    לפני שאתה מתחיל לבנות, אני רוצה שתבין שאנחנו לא בונים ERP רגיל,
+    אלא בונים ERP Platform Builder.
+    המערכת צריכה להיות מסוגלת לייצר בעתיד אינסוף מודולים ומבנים,
+    ולכן הארכיטקטורה חייבת להיות גנרית, רחבה, מודולרית ו-extensible.
+
+builder_modules:
+  - module_name: "Core Metadata Engine"
+    hebrew_name: "מנוע מטא-דאטה מרכזי"
+    why_needed: >
+      זה הלב של כל ה-Builder. בלי זה אין דרך לייצג מודולים, ישויות, שדות,
+      טפסים, מסכים וכפתורים בצורה דינמית.
+    what_it_controls:
+      - "הגדרות מודולים"
+      - "הגדרות ישויות"
+      - "הגדרות שדות"
+      - "הגדרות מסכים"
+      - "הגדרות כפתורים"
+      - "הגדרות קטגוריות"
+      - "הגדרות סטטוסים"
+      - "הגדרות הרשאות"
+      - "הגדרות workflows"
+      - "הגדרות widgets"
+    required_tables:
+      - "system_modules"
+      - "system_entities"
+      - "system_fields"
+      - "system_relations"
+      - "system_forms"
+      - "system_form_sections"
+      - "system_form_fields"
+      - "system_views"
+      - "system_view_columns"
+      - "system_detail_pages"
+      - "system_detail_sections"
+      - "system_buttons"
+      - "system_actions"
+      - "system_categories"
+      - "system_status_sets"
+      - "system_status_values"
+      - "system_permissions"
+      - "system_menu_items"
+      - "system_dashboard_pages"
+      - "system_dashboard_widgets"
+      - "system_workflows"
+      - "system_workflow_steps"
+      - "system_validations"
+      - "system_templates"
+      - "system_versions"
+      - "system_publish_logs"
+    must_have:
+      - "כל רכיב ב-Builder נשמר בטבלאות מטא-דאטה"
+      - "אין hardcode למודול מסוים"
+      - "כל ההגדרות ניתנות להרחבה"
+      - "תמיכה ב-draft/published"
+      - "תמיכה ב-audit trail"
+    screens_needed:
+      - "Metadata overview"
+      - "System configuration explorer"
+      - "Internal dependencies viewer"
+
+  - module_name: "Module Builder"
+    hebrew_name: "בונה מודולים"
+    why_needed: >
+      זה השלב הראשון בבנייה. כל דבר חדש במערכת מתחיל ממודול.
+      מודול הוא מעטפת עסקית/מערכתית שמחזיקה ישויות, מסכים ותפריטים.
+    what_is_a_module: >
+      מודול הוא תחום במערכת, למשל ספקים, רכש, עובדים, מלאי, פרויקטים,
+      כספים, ייצור, מסמכים.
+    fields_required:
+      - "module_name_he"
+      - "module_name_en"
+      - "module_key"
+      - "description"
+      - "category"
+      - "icon"
+      - "color"
+      - "sort_order"
+      - "is_active"
+      - "is_system_module"
+      - "show_in_sidebar"
+      - "show_in_dashboard"
+      - "permissions_scope"
+      - "notes"
+    screens_needed:
+      - "רשימת מודולים"
+      - "יצירת מודול"
+      - "עריכת מודול"
+      - "כרטיס מודול"
+      - "בחירת סדר בתפריט"
+    actions_needed:
+      - "create module"
+      - "edit module"
+      - "activate/deactivate module"
+      - "archive module"
+      - "reorder module"
+    validations:
+      - "module_key חייב להיות ייחודי"
+      - "שם מודול חובה"
+      - "סדר חייב להיות מספרי"
+    phase_priority: "P1"
+
+  - module_name: "Entity Builder"
+    hebrew_name: "בונה ישויות / טבלאות"
+    why_needed: >
+      כל מודול מורכב מישויות. ישות היא אובייקט מערכת שמקביל בדרך כלל לטבלה.
+      לדוגמה: ספק, חומר גלם, בקשת רכש, עובד, פרויקט.
+    what_is_an_entity: >
+      ישות היא אובייקט עסקי או מערכתי שניתן לנהל עבורו נתונים, שדות,
+      טפסים, תצוגות, סטטוסים והרשאות.
+    entity_types:
+      - "master"
+      - "transaction"
+      - "child"
+      - "reference"
+      - "log"
+      - "system"
+      - "document"
+      - "analytics"
+    fields_required:
+      - "entity_name_he"
+      - "entity_name_en"
+      - "entity_key"
+      - "module_id"
+      - "entity_type"
+      - "description"
+      - "table_name"
+      - "primary_display_field"
+      - "has_status"
+      - "has_categories"
+      - "has_attachments"
+      - "has_notes"
+      - "has_owner"
+      - "has_numbering"
+      - "has_created_updated"
+      - "has_soft_delete"
+      - "has_audit"
+      - "is_active"
+    screens_needed:
+      - "רשימת ישויות"
+      - "יצירת ישות"
+      - "עריכת ישות"
+      - "כרטיס ישות"
+      - "תצוגת dependencies"
+    actions_needed:
+      - "create entity"
+      - "edit entity"
+      - "activate/deactivate entity"
+      - "assign entity to module"
+    validations:
+      - "entity_key ייחודי"
+      - "table_name ייחודי"
+      - "module_id חובה"
+    phase_priority: "P1"
+
+  - module_name: "Field Builder"
+    hebrew_name: "בונה שדות"
+    why_needed: >
+      זה המנוע הכי חשוב אחרי ישויות. דרכו אנחנו מגדירים מה המידע שנשמר
+      בתוך כל ישות ואיך הוא יוצג, ייבדק ויתנהג.
+    field_types_core:
+      - "text"
+      - "textarea"
+      - "rich_text"
+      - "number"
+      - "decimal"
+      - "currency"
+      - "percentage"
+      - "date"
+      - "datetime"
+      - "time"
+      - "boolean"
+      - "dropdown"
+      - "multi_select"
+      - "radio"
+      - "checkbox"
+      - "file"
+      - "image"
+      - "email"
+      - "phone"
+      - "url"
+      - "address"
+      - "relation"
+      - "status"
+      - "category"
+      - "tags"
+      - "formula"
+      - "json"
+    field_config_required:
+      - "field_name_he"
+      - "field_name_en"
+      - "field_key"
+      - "entity_id"
+      - "field_type"
+      - "description"
+      - "placeholder"
+      - "default_value"
+      - "is_required"
+      - "is_unique"
+      - "is_searchable"
+      - "is_filterable"
+      - "is_sortable"
+      - "show_in_list"
+      - "show_in_form"
+      - "show_in_detail"
+      - "is_read_only"
+      - "is_system_field"
+      - "is_calculated"
+      - "formula_expression"
+      - "min_value"
+      - "max_value"
+      - "max_length"
+      - "options_json"
+      - "display_order"
+      - "section_key"
+      - "tab_key"
+    relation_extra_config:
+      - "related_entity_id"
+      - "relation_display_field"
+      - "relation_type"
+    screens_needed:
+      - "רשימת שדות לפי ישות"
+      - "יצירת שדה"
+      - "עריכת שדה"
+      - "כרטיס שדה"
+      - "preview לשדה"
+    actions_needed:
+      - "create field"
+      - "edit field"
+      - "reorder fields"
+      - "activate/deactivate field"
+      - "clone field"
+    validations:
+      - "field_key ייחודי בתוך entity"
+      - "formula נבדקת תחבירית"
+      - "relation מחייב related_entity_id"
+    phase_priority: "P1"
+
+  - module_name: "Relations Builder"
+    hebrew_name: "בונה קשרים"
+    why_needed: >
+      בלי קשרים אין ERP אמיתי. המערכת חייבת לדעת לקשר בין ספקים לחומרים,
+      פרויקטים להזמנות, עובדים למשימות, לקוחות להצעות מחיר.
+    relation_types:
+      - "one_to_one"
+      - "one_to_many"
+      - "many_to_one"
+      - "many_to_many"
+    fields_required:
+      - "source_entity_id"
+      - "target_entity_id"
+      - "relation_name"
+      - "relation_key"
+      - "relation_type"
+      - "source_display_mode"
+      - "target_display_mode"
+      - "is_required"
+      - "show_in_form"
+      - "show_in_detail"
+      - "show_as_related_list"
+      - "cascade_rules"
+      - "notes"
+    screens_needed:
+      - "רשימת קשרים"
+      - "יצירת קשר"
+      - "עריכת קשר"
+      - "graph view of entity relations"
+    actions_needed:
+      - "create relation"
+      - "edit relation"
+      - "disable relation"
+    phase_priority: "P2"
+
+  - module_name: "Form Builder"
+    hebrew_name: "בונה טפסים"
+    why_needed: >
+      כל ישות צריכה טפסי יצירה ועריכה. הטופס חייב להיות דינמי ולא hardcoded.
+    what_it_builds:
+      - "create form"
+      - "edit form"
+      - "read-only form"
+      - "wizard form"
+      - "modal form"
+      - "drawer form"
+    form_structure:
+      - "form_header"
+      - "tabs"
+      - "sections"
+      - "field_order"
+      - "field_width"
+      - "help_text"
+      - "validation_messages"
+      - "conditional_visibility"
+    tables_needed:
+      - "system_forms"
+      - "system_form_sections"
+      - "system_form_fields"
+    screens_needed:
+      - "רשימת טפסים"
+      - "Form builder canvas"
+      - "section manager"
+      - "preview"
+    actions_needed:
+      - "create form"
+      - "edit form layout"
+      - "assign fields to form"
+      - "save draft"
+      - "publish form"
+    phase_priority: "P2"
+
+  - module_name: "List View Builder"
+    hebrew_name: "בונה רשימות / טבלאות"
+    why_needed: >
+      כל מודול צריך תצוגות ניהול רשומות. זה המסך הכי שימושי ביומיום.
+    what_it_builds:
+      - "table view"
+      - "compact list"
+      - "board list in future"
+      - "filtered management view"
+    fields_required:
+      - "view_name"
+      - "entity_id"
+      - "default_sort"
+      - "default_filters"
+      - "page_size"
+      - "visible_columns"
+      - "search_fields"
+      - "quick_actions"
+      - "bulk_actions"
+    tables_needed:
+      - "system_views"
+      - "system_view_columns"
+    screens_needed:
+      - "רשימת views"
+      - "builder לעמודות"
+      - "preview"
+    actions_needed:
+      - "add column"
+      - "reorder columns"
+      - "set filterable/searchable"
+      - "publish view"
+    phase_priority: "P2"
+
+  - module_name: "Detail Page Builder"
+    hebrew_name: "בונה כרטיסי ישות"
+    why_needed: >
+      כרטיס ישות הוא המסך המלא של רשומה אחת. בלי זה אין חוויית ERP מסודרת.
+    what_it_builds:
+      - "header"
+      - "tabs"
+      - "sections"
+      - "related lists"
+      - "documents block"
+      - "notes block"
+      - "audit block"
+      - "buttons area"
+    tables_needed:
+      - "system_detail_pages"
+      - "system_detail_sections"
+    screens_needed:
+      - "רשימת detail pages"
+      - "detail page designer"
+      - "preview"
+    phase_priority: "P2"
+
+  - module_name: "Categories Builder"
+    hebrew_name: "בונה קטגוריות"
+    why_needed: >
+      הרבה ישויות צריכות קטלוגים וקטגוריות. זה צריך להיות אוניברסלי לכל המערכת.
+    examples:
+      - "קטגוריות ספקים"
+      - "קטגוריות חומרים"
+      - "קטגוריות פרויקטים"
+      - "קטגוריות עובדים"
+      - "קטגוריות מסמכים"
+    fields_required:
+      - "category_set_name"
+      - "entity_id"
+      - "category_name"
+      - "category_code"
+      - "parent_category_id"
+      - "color"
+      - "sort_order"
+      - "is_active"
+    screens_needed:
+      - "רשימת sets של קטגוריות"
+      - "ניהול ערכי קטגוריות"
+      - "tree view"
+    phase_priority: "P3"
+
+  - module_name: "Status Builder"
+    hebrew_name: "בונה סטטוסים"
+    why_needed: >
+      ERP צריך שכבת סטטוסים חכמה. זה לא יכול להיות שדה טקסט רגיל.
+    fields_required:
+      - "status_set_name"
+      - "entity_id"
+      - "status_name"
+      - "status_code"
+      - "color"
+      - "sort_order"
+      - "is_default"
+      - "is_final"
+      - "allowed_transitions"
+      - "requires_permission"
+    screens_needed:
+      - "רשימת status sets"
+      - "ניהול ערכי סטטוס"
+      - "מעברי סטטוס"
+    phase_priority: "P3"
+
+  - module_name: "Buttons & Actions Builder"
+    hebrew_name: "בונה כפתורים ופעולות"
+    why_needed: >
+      זה אחד המודולים הכי קריטיים. אתה רוצה שכל כפתור במערכת יהיה דינמי וניתן לניהול.
+    button_locations:
+      - "page_header"
+      - "row_action"
+      - "bulk_action"
+      - "detail_header"
+      - "form_footer"
+      - "widget_action"
+    action_types:
+      - "create"
+      - "save"
+      - "edit"
+      - "delete"
+      - "approve"
+      - "reject"
+      - "duplicate"
+      - "export"
+      - "print"
+      - "send"
+      - "submit"
+      - "archive"
+      - "change_status"
+      - "open_modal"
+      - "open_drawer"
+      - "run_workflow"
+      - "run_automation"
+      - "custom"
+    fields_required:
+      - "button_name_he"
+      - "button_name_en"
+      - "button_key"
+      - "entity_id"
+      - "screen_type"
+      - "location"
+      - "icon"
+      - "color"
+      - "action_type"
+      - "action_config_json"
+      - "visibility_rules"
+      - "permission_scope"
+      - "sort_order"
+      - "is_active"
+    screens_needed:
+      - "רשימת כפתורים"
+      - "יצירת כפתור"
+      - "עריכת פעולה"
+      - "preview on screen"
+    phase_priority: "P3"
+
+  - module_name: "Permissions Builder"
+    hebrew_name: "בונה הרשאות"
+    why_needed: >
+      בלי שכבת הרשאות, ה-Builder מסוכן. חייבים לשלוט מי רואה, יוצר, עורך ומוחק.
+    permission_levels:
+      - "view"
+      - "create"
+      - "edit"
+      - "delete"
+      - "approve"
+      - "export"
+      - "manage"
+    scope_dimensions:
+      - "role"
+      - "module"
+      - "entity"
+      - "screen"
+      - "action"
+      - "button"
+      - "field"
+    screens_needed:
+      - "permissions matrix"
+      - "role permissions editor"
+      - "entity permissions"
+    phase_priority: "P4"
+
+  - module_name: "Menu Builder"
+    hebrew_name: "בונה תפריטים"
+    why_needed: >
+      אם המערכת אמורה להיות אינסופית, צריך גם תפריט דינמי ולא קשיח.
+    fields_required:
+      - "menu_item_name"
+      - "module_id"
+      - "parent_menu_item_id"
+      - "icon"
+      - "sort_order"
+      - "visibility_role_scope"
+      - "is_hidden"
+      - "route_key"
+    screens_needed:
+      - "menu tree editor"
+      - "reorder menu"
+      - "role visibility preview"
+    phase_priority: "P4"
+
+  - module_name: "Dashboard & Widget Builder"
+    hebrew_name: "בונה דשבורדים ווידג'טים"
+    why_needed: >
+      מנהלים צריכים יכולת לבנות דשבורדים חדשים בלי קוד.
+    widget_types:
+      - "kpi"
+      - "count"
+      - "sum"
+      - "avg"
+      - "table"
+      - "line_chart"
+      - "bar_chart"
+      - "pie_chart"
+      - "status_summary"
+      - "alerts"
+      - "recent_activity"
+    fields_required:
+      - "widget_name"
+      - "widget_type"
+      - "data_source"
+      - "filters_json"
+      - "layout_position"
+      - "size"
+      - "icon"
+      - "color"
+      - "refresh_mode"
+      - "permission_scope"
+    screens_needed:
+      - "dashboard page builder"
+      - "widget library"
+      - "widget config"
+      - "preview"
+    phase_priority: "P4"
+
+  - module_name: "Workflow Builder"
+    hebrew_name: "בונה תהליכים"
+    why_needed: >
+      בהמשך המערכת צריכה לתמוך באישורים, מעברים, טריגרים ותהליכים.
+    scope:
+      - "status change flows"
+      - "approval flows"
+      - "assignment flows"
+      - "timed flows"
+      - "conditional flows"
+    tables_needed:
+      - "system_workflows"
+      - "system_workflow_steps"
+    screens_needed:
+      - "workflow list"
+      - "workflow designer"
+      - "transition rules"
+    phase_priority: "P5"
+
+  - module_name: "Automation Builder"
+    hebrew_name: "בונה אוטומציות"
+    why_needed: >
+      המערכת חייבת להיות מוכנה לאוטומציות עתידיות, גם אם לא בונים הכול עכשיו.
+    trigger_types:
+      - "on_create"
+      - "on_update"
+      - "on_delete"
+      - "on_status_change"
+      - "on_schedule"
+      - "on_threshold"
+    action_types:
+      - "update_field"
+      - "create_record"
+      - "send_alert"
+      - "create_task"
+      - "change_status"
+      - "call_integration"
+      - "call_ai_future"
+    phase_priority: "P5"
+
+  - module_name: "Template Builder"
+    hebrew_name: "בונה תבניות"
+    why_needed: >
+      אם רוצים אינסוף מודולים, חייבים templates כדי לשכפל מבנים מהר.
+    templates_for:
+      - "module"
+      - "entity"
+      - "form"
+      - "list_view"
+      - "detail_page"
+      - "dashboard"
+      - "status_set"
+      - "button_set"
+    phase_priority: "P5"
+
+  - module_name: "Versioning & Publish Manager"
+    hebrew_name: "ניהול גרסאות ופרסום"
+    why_needed: >
+      במערכת עצומה כזאת חייבים draft/publish/version כדי לא לשבור דברים.
+    states:
+      - "draft"
+      - "published"
+      - "archived"
+    capabilities:
+      - "save draft"
+      - "preview before publish"
+      - "publish"
+      - "rollback future-ready"
+      - "version history"
+    phase_priority: "P5"
+
+phases:
+  P1:
+    goal: "לבנות את ה-Core שאי אפשר בלעדיו"
+    includes:
+      - "Core Metadata Engine"
+      - "Module Builder"
+      - "Entity Builder"
+      - "Field Builder"
+    reason: >
+      בלי ארבעת אלה אין דרך להתחיל לבנות משהו ידני בכלל.
+  P2:
+    goal: "לאפשר יצירת מסכים אמיתיים"
+    includes:
+      - "Relations Builder"
+      - "Form Builder"
+      - "List View Builder"
+      - "Detail Page Builder"
+  P3:
+    goal: "להפוך את זה למערכת שימושית באמת"
+    includes:
+      - "Categories Builder"
+      - "Status Builder"
+      - "Buttons & Actions Builder"
+  P4:
+    goal: "שליטה מערכתית מלאה"
+    includes:
+      - "Permissions Builder"
+      - "Menu Builder"
+      - "Dashboard & Widget Builder"
+  P5:
+    goal: "הכנה לפלטפורמה אינסופית"
+    includes:
+      - "Workflow Builder"
+      - "Automation Builder"
+      - "Template Builder"
+      - "Versioning & Publish Manager"
+
+non_negotiable_requirements:
+  - "הכל בעברית RTL"
+  - "כל ההגדרות נשמרות למסד נתונים"
+  - "אין hardcode למודול מסוים"
+  - "ה-Builder תקף לכל המערכת"
+  - "לא לשבור מודולים קיימים"
+  - "כל שלב נבנה ונבדק בנפרד"
+  - "כל שלב דורש אישור לפני המשך"
+
+what_i_want_now:
+  immediate_scope:
+    - "P1 בלבד"
+  deliverables:
+    - "DB schema מלא של Core Metadata Engine"
+    - "Module Builder עובד"
+    - "Entity Builder בסיסי עובד"
+    - "Field Builder בסיסי עובד"
+  do_not_build_yet:
+    - "Workflow engine מלא"
+    - "Automation engine מלא"
+    - "AI integration"
+    - "Templates מתקדמים"
+    - "Version rollback מתקדם"
+
+mandatory_response_format:
+  - "מה נבנה"
+  - "מה נבדק"
+  - "מה תקין"
+  - "מה עדיין לא נבנה"
+  - "אילו טבלאות / מסכים / קבצים נוצרו"
+  - "האם הנתונים נשמרים באמת למסד הנתונים"
+  - "האם נבדק CRUD מלא"
+  - "האם נבדק RTL מלא"
+  - "האם נבדק שאין שגיאות build / console / database"
+  - "האם הארכיטקטורה גנרית ותקפה לכל המערכת"
+  - "האם השלב הושלם במלואו"

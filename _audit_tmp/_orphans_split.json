@@ -1,0 +1,770 @@
+{
+  "orphansWithReg": [
+    {
+      "table": "analytics.dashboard_board_widgets",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "analytics.kpi_snapshots",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "analytics.read_model_invalidations",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "analytics.rm_ai_summary",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "analytics.rm_executive_summary",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "analytics.rm_finance_summary",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "analytics.rm_operations_summary",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "analytics.rm_procurement_summary",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "analytics.rm_workforce_summary",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "analytics.user_dashboard_boards",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "commercial.crm_activities",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "commercial.customer_contacts",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "commercial.customer_portal_accounts",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "commercial.lead_tag_assignments",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "commercial.quote_approval_rules",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "commercial.quote_lines",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "commercial.quote_revisions",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "comms.chatbot_sessions",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "comms.email_messages",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "comms.help_articles",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "comms.notification_deliveries",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "comms.portal_sessions",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "comms.sms_messages",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "comms.support_sla_tracking",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "comms.whatsapp_messages",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "compliance.policy_acknowledgements",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "crm.lead_activities",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "crm.opportunities",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "docs.attachments",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "docs.document_classifications",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "docs.document_signature_requests",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "docs.document_versions",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "docs.ocr_results",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "docs.print_jobs",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "docs.scan_sessions",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "documents.classification_runs",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "documents.document_chunks",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "documents.document_relations",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "documents.entity_extractions",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "documents.knowledge_cards",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "documents.ocr_runs",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "execution.delivery_events",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "execution.installation_events",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "execution.project_blockers",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "execution.project_cost_plans",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "execution.project_milestones",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "execution.signatures",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "execution.task_attachments",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "execution.task_comments",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "execution.task_dependencies",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "execution.work_order_qa_items",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "execution.work_order_tasks",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "finance.annual_tax_reports",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "finance.bank_matches",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "finance.budget_entries",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "finance.cashflow_entries",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "finance.collection_actions",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "finance.consolidation_entries",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "finance.costing_entries",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "finance.dunning_steps",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "finance.expenses",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "finance.fx_rates",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "finance.gl_transactions",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "finance.invoice_lines",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "finance.payment_allocations",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "finance.receipts",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "finance.reconciliation_exceptions",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "finance.reminder_schedules",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "finance.tax_exports",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "finance.tax_records",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "finance.vat_records",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "governance.alert_subscriptions",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "governance.audit_log_attachments",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "governance.command_logs",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "governance.config_entries",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "governance.escalation_rules",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "governance.event_deliveries",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "governance.feature_flag_targets",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "governance.health_checks",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "governance.idempotency_keys",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "governance.integration_sync_logs",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "governance.job_executions",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "governance.object_permissions",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "governance.role_permissions",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "governance.saved_filters",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "governance.security_events",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "governance.sla_timers",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "governance.state_history",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "governance.user_preferences",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "governance.user_roles",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "governance.validations_log",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "governance.webhook_deliveries",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "governance.workflow_step_executions",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "intelligence.agent_jobs",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "intelligence.ai_insights",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "intelligence.anomaly_feedback",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "intelligence.forecast_models",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "intelligence.model_executions",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "intelligence.quality_scores",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "intelligence.recommendation_feedback",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "intelligence.seasonality_patterns",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "intelligence.trend_signals",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "inventory.barcode_scans",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "inventory.inventory",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "inventory.inventory_issues",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "inventory.inventory_movements",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "inventory.inventory_receipts",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "inventory.inventory_reservations",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "inventory.inventory_transfers",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "inventory.manufacturing_batches",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "inventory.material_request_lines",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "inventory.reorder_rules",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "inventory.shortage_snapshots",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "inventory.stock_count_lines",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "maintenance.work_orders",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "orchestration.job_queue",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "orchestration.notifications",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "orchestration.universal_inbox",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "orchestration.workflow_step_runs",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "planning.capacity_slots",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "planning.demand_forecasts",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "pricing.calculations",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "procurement.approval_steps",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "procurement.contract_milestones",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "procurement.returns",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "procurement.rfq_comparison_snapshots",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "procurement.rfq_supplier_invites",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "procurement.supplier_contacts",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "procurement.supplier_invoices",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "procurement.supplier_portal_accounts",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "procurement.supplier_scorecards",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "procurement.warranty_cases",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "public.employees",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "public.inventory_items",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "public.orders",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "public.properties",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "public.user_profiles",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "quality.defects",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "routing.route_permission_map",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "service.ticket_comments",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "treasury.cash_forecasts",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "treasury.cash_positions",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "workforce.attendance",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "workforce.employee_expenses",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "workforce.employee_pay_components",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "workforce.hr_profiles",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "workforce.leave_requests",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "workforce.payroll_exceptions",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "workforce.payroll_export_batches",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "workforce.pension_records",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "workforce.shifts",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "workforce.wage_slips",
+      "fk_in": 0,
+      "used_in_api": false
+    },
+    {
+      "table": "workforce.workforce_assignments",
+      "fk_in": 0,
+      "used_in_api": false
+    }
+  ],
+  "orphansNoReg": []
+}

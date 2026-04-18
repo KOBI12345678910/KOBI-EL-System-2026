@@ -1,0 +1,297 @@
+sh
+
+python var_model_factory.py 2>&1
+Output
+
+================================================================================
+  VALUE AT RISK (VaR) MODEL - TECHNO-KOL UZI 2026
+  מודל ערך בסיכון (VaR) - טכנו-כל עוזי
+  מפעל מסגרות ברזל / אלומיניום / נירוסטה / זכוכית
+================================================================================
+
+  Running 50,000 scenarios across 8 risk categories...
+
+  Simulating market risk...
+  Simulating operational risk...
+  Simulating credit risk...
+  Simulating demand risk...
+  Simulating forex risk...
+
+================================================================================
+  VaR RESULTS - TOTAL PORTFOLIO
+  תוצאות VaR - סך כל הסיכונים
+================================================================================
+
+  Confidence      VaR (Annual)         VaR (Monthly)        Meaning
+  ───────────────────────────────────────────────────────────────────────────
+  90.0%           ₪2.77M               ₪799.6K              In 10.0% of years, loss exceeds this
+  95.0%           ₪3.33M               ₪961.3K              In 5.0% of years, loss exceeds this
+  99.0%           ₪4.41M               ₪1.27M               In 1.0% of years, loss exceeds this
+  99.5%           ₪4.87M               ₪1.41M               In 0.5% of years, loss exceeds this
+  99.9%           ₪5.74M               ₪1.66M               In 0.1% of years, loss exceeds this
+
+  ───────────────────────────────────────────────────────────────────────────
+  Expected Shortfall (CVaR / Conditional VaR):
+  CVaR 95%:       ₪4.01M
+  CVaR 99%:       ₪5.00M
+
+  Maximum Loss:    ₪7.26M
+  Average Loss:    ₪1.37M
+  Median Loss:     ₪1.07M
+
+================================================================================
+  VaR DECOMPOSITION BY RISK CATEGORY
+  פירוק VaR לפי קטגוריית סיכון
+================================================================================
+
+  Category                            Mean Loss       VaR 95%         VaR 99%         Max             % of Total
+  ───────────────────────────────────────────────────────────────────────────────────────────────
+  Market Risk (חומרי גלם)             ₪323.6K         ₪1.09M          ₪1.65M          ₪3.62M           23.6%
+  Operational Risk (תפעולי)           ₪249.1K         ₪373.4K         ₪440.2K         ₪641.3K          18.2%
+  Credit Risk (אשראי)                 ₪157.1K         ₪458.2K         ₪719.6K         ₪1.42M           11.5%
+  Demand Risk (ביקוש)                 ₪607.2K         ₪2.47M          ₪3.50M          ₪6.12M           44.4%
+  FX Risk (מט"ח)                      ₪32.0K          ₪131.4K         ₪186.6K         ₪336.2K           2.3%
+  ───────────────────────────────────────────────────────────────────────────────────────────────
+  TOTAL                               ₪1.37M          ₪3.33M          ₪4.41M          ₪7.26M          100.0%
+
+================================================================================
+  VaR BY INDIVIDUAL RISK FACTOR
+  VaR לפי גורם סיכון בודד
+================================================================================
+
+  Risk Factor                    Mean         VaR 95%      VaR 99%      Max          Freq>10K
+  ─────────────────────────────────────────────────────────────────────────────────────
+  ירידת ביקוש                    ₪607.2K      ₪2.47M       ₪3.50M       ₪6.12M        50.2%
+  חובות אבודים                   ₪117.6K      ₪417.7K      ₪677.6K      ₪1.39M        81.8%
+  מחיר אלומיניום                 ₪110.3K      ₪524.7K      ₪861.1K      ₪1.98M        42.8%
+  מחיר זכוכית                    ₪92.1K       ₪419.1K      ₪646.8K      ₪1.41M        44.4%
+  שיבוש ספקים                    ₪72.0K       ₪133.6K      ₪165.7K      ₪261.3K       99.0%
+  מחיר נירוסטה                   ₪70.7K       ₪333.6K      ₪528.7K      ₪1.64M        42.5%
+  פגמי איכות / עבודה חוזרת       ₪64.1K       ₪108.9K      ₪132.5K      ₪215.8K       99.7%
+  תקלות ציוד                     ₪60.1K       ₪122.4K      ₪155.3K      ₪243.7K       96.0%
+  מחיר ברזל                      ₪50.5K       ₪234.5K      ₪369.0K      ₪884.2K       41.7%
+  עלות מימון                     ₪39.5K       ₪68.3K       ₪80.2K       ₪111.7K       95.3%
+  תאונות עבודה                   ₪37.6K       ₪106.7K      ₪149.7K      ₪309.0K       74.9%
+  סיכון מט"ח                     ₪32.0K       ₪131.4K      ₪186.6K      ₪336.2K       45.3%
+  קנסות ורגולציה                 ₪15.3K       ₪71.2K       ₪126.6K      ₪336.0K       35.8%
+
+================================================================================
+  100 DETAILED VaR SCENARIOS
+  100 תרחישים מפורטים לחישוב
+================================================================================
+
+#     Total Loss      Market       Operational  Credit       Demand       FX         Percentile   Risk Level
+---------------------------------------------------------------------------------------------------------
+1     ₪256.4K         ₪0           ₪173.7K      ₪76.9K       ₪0           ₪5.8K      P1          MINIMAL
+2     ₪288.7K         ₪0           ₪231.4K      ₪57.3K       ₪0           ₪0         P2          MINIMAL
+3     ₪311.3K         ₪58.6K       ₪171.5K      ₪62.6K       ₪0           ₪18.6K     P3          MINIMAL
+4     ₪330.3K         ₪6.0K        ₪183.2K      ₪131.3K      ₪0           ₪9.8K      P4          MINIMAL
+5     ₪348.6K         ₪0           ₪220.8K      ₪123.4K      ₪0           ₪4.4K      P5          MINIMAL
+6     ₪364.3K         ₪0           ₪282.0K      ₪32.7K       ₪0           ₪49.6K     P6          MINIMAL
+7     ₪379.1K         ₪0           ₪203.4K      ₪175.7K      ₪0           ₪0         P7          MINIMAL
+8     ₪393.4K         ₪0           ₪342.3K      ₪51.1K       ₪0           ₪0         P8          MINIMAL
+9     ₪407.6K         ₪0           ₪329.2K      ₪34.1K       ₪0           ₪44.4K     P9          MINIMAL
+10    ₪421.4K         ₪137.7K      ₪182.3K      ₪101.4K      ₪0           ₪0         P10         MINIMAL
+11    ₪434.8K         ₪108.1K      ₪163.0K      ₪52.7K       ₪0           ₪111.1K    P11         MINIMAL
+12    ₪448.3K         ₪165.9K      ₪212.8K      ₪46.9K       ₪0           ₪22.6K     P12         MINIMAL
+13    ₪460.7K         ₪138.7K      ₪259.9K      ₪29.7K       ₪0           ₪32.3K     P13         MINIMAL
+14    ₪472.6K         ₪217.1K      ₪181.6K      ₪73.8K       ₪0           ₪0         P14         MINIMAL
+15    ₪486.7K         ₪208.9K      ₪211.5K      ₪49.9K       ₪0           ₪16.4K     P15         MINIMAL
+16    ₪500.4K         ₪111.5K      ₪282.3K      ₪106.6K      ₪0           ₪0         P16         MINIMAL
+17    ₪513.5K         ₪138.8K      ₪341.3K      ₪33.4K       ₪0           ₪0         P17         MINIMAL
+18    ₪527.2K         ₪0           ₪250.4K      ₪224.4K      ₪0           ₪52.4K     P18         MINIMAL
+19    ₪541.7K         ₪207.1K      ₪221.3K      ₪107.2K      ₪6.1K        ₪0         P19         MINIMAL
+20    ₪555.0K         ₪82.7K       ₪235.3K      ₪172.9K      ₪0           ₪64.2K     P20         MINIMAL
+21    ₪569.0K         ₪354.7K      ₪117.6K      ₪96.8K       ₪0           ₪0         P21         MINIMAL
+22    ₪583.0K         ₪40.8K       ₪174.3K      ₪114.3K      ₪253.6K      ₪0         P22         MINIMAL
+23    ₪596.4K         ₪84.1K       ₪202.6K      ₪206.9K      ₪0           ₪102.7K    P23         MINIMAL
+24    ₪610.4K         ₪0           ₪257.4K      ₪271.0K      ₪6.0K        ₪76.0K     P24         MINIMAL
+25    ₪623.8K         ₪39.3K       ₪280.2K      ₪304.2K      ₪0           ₪0         P25         MINIMAL
+26    ₪638.4K         ₪60.2K       ₪348.6K      ₪195.8K      ₪0           ₪33.8K     P26         MINIMAL
+27    ₪653.7K         ₪309.6K      ₪280.9K      ₪63.2K       ₪0           ₪0         P27         MINIMAL
+28    ₪668.8K         ₪424.4K      ₪222.1K      ₪22.3K       ₪0           ₪0         P28         MINIMAL
+29    ₪683.0K         ₪304.9K      ₪176.5K      ₪106.4K      ₪0           ₪95.2K     P29         MINIMAL
+30    ₪698.5K         ₪0           ₪253.1K      ₪381.2K      ₪0           ₪64.2K     P30         MINIMAL
+31    ₪714.0K         ₪193.8K      ₪376.5K      ₪96.9K       ₪0           ₪46.9K     P31         MINIMAL
+32    ₪729.8K         ₪0           ₪139.9K      ₪53.3K       ₪536.6K      ₪0         P32         MINIMAL
+33    ₪747.2K         ₪306.9K      ₪280.9K      ₪72.4K       ₪0           ₪87.0K     P33         MINIMAL
+34    ₪762.9K         ₪474.7K      ₪213.6K      ₪74.6K       ₪0           ₪0         P34         MINIMAL
+35    ₪780.1K         ₪503.2K      ₪217.6K      ₪59.3K       ₪0           ₪0         P35         MINIMAL
+36    ₪797.2K         ₪496.2K      ₪279.4K      ₪21.5K       ₪0           ₪0         P36         MINIMAL
+37    ₪814.4K         ₪314.4K      ₪160.9K      ₪224.5K      ₪0           ₪114.7K    P37         MINIMAL
+38    ₪833.4K         ₪298.6K      ₪253.6K      ₪270.2K      ₪0           ₪10.9K     P38         MINIMAL
+39    ₪850.3K         ₪24.9K       ₪179.7K      ₪31.5K       ₪601.4K      ₪12.8K     P39         MINIMAL
+40    ₪869.0K         ₪577.1K      ₪221.7K      ₪70.3K       ₪0           ₪0         P40         MINIMAL
+41    ₪888.1K         ₪589.1K      ₪229.6K      ₪18.1K       ₪0           ₪51.3K     P41         MINIMAL
+42    ₪907.3K         ₪0           ₪254.8K      ₪65.9K       ₪586.5K      ₪0         P42         MINIMAL
+43    ₪927.2K         ₪499.2K      ₪378.1K      ₪48.4K       ₪0           ₪1.5K      P43         MINIMAL
+44    ₪947.6K         ₪544.6K      ₪181.2K      ₪41.2K       ₪0           ₪180.7K    P44         MINIMAL
+45    ₪968.4K         ₪270.3K      ₪281.8K      ₪416.4K      ₪0           ₪0         P45         MINIMAL
+46    ₪988.2K         ₪401.4K      ₪290.6K      ₪296.3K      ₪0           ₪0         P46         MINIMAL
+47    ₪1.01M          ₪506.6K      ₪205.7K      ₪235.2K      ₪0           ₪60.0K     P47         MINIMAL
+48    ₪1.03M          ₪214.7K      ₪353.1K      ₪35.1K       ₪323.0K      ₪103.5K    P48         MINIMAL
+49    ₪1.05M          ₪618.4K      ₪117.8K      ₪169.5K      ₪0           ₪145.4K    P49         MINIMAL
+50    ₪1.07M          ₪444.4K      ₪169.8K      ₪432.3K      ₪0           ₪27.6K     P50         LOW
+51    ₪1.09M          ₪0           ₪100.1K      ₪287.3K      ₪707.4K      ₪0         P51         LOW
+52    ₪1.12M          ₪564.8K      ₪251.0K      ₪276.8K      ₪0           ₪26.7K     P52         LOW
+53    ₪1.14M          ₪91.5K       ₪345.6K      ₪84.6K       ₪602.8K      ₪20.2K     P53         LOW
+54    ₪1.17M          ₪757.7K      ₪369.4K      ₪41.2K       ₪0           ₪0         P54         LOW
+55    ₪1.20M          ₪556.9K      ₪431.4K      ₪136.9K      ₪0           ₪69.9K     P55         LOW
+56    ₪1.22M          ₪197.4K      ₪330.8K      ₪110.7K      ₪581.4K      ₪0         P56         LOW
+57    ₪1.25M          ₪260.4K      ₪272.0K      ₪157.2K      ₪539.6K      ₪18.5K     P57         LOW
+58    ₪1.28M          ₪416.0K      ₪233.6K      ₪128.4K      ₪495.6K      ₪1.7K      P58         LOW
+59    ₪1.30M          ₪850.4K      ₪172.0K      ₪166.1K      ₪0           ₪114.4K    P59         LOW
+60    ₪1.33M          ₪684.7K      ₪162.0K      ₪123.7K      ₪362.1K      ₪0         P60         LOW
+61    ₪1.36M          ₪0           ₪241.2K      ₪302.1K      ₪818.7K      ₪0         P61         LOW
+62    ₪1.39M          ₪402.8K      ₪176.9K      ₪71.1K       ₪741.4K      ₪0         P62         LOW
+63    ₪1.42M          ₪1.20M       ₪163.7K      ₪57.1K       ₪0           ₪0         P63         LOW
+64    ₪1.45M          ₪833.1K      ₪242.0K      ₪268.6K      ₪0           ₪110.4K    P64         LOW
+65    ₪1.49M          ₪665.5K      ₪176.2K      ₪212.7K      ₪432.3K      ₪0         P65         LOW
+66    ₪1.52M          ₪0           ₪266.5K      ₪290.5K      ₪963.7K      ₪0         P66         LOW
+67    ₪1.56M          ₪911         ₪137.0K      ₪652.5K      ₪658.6K      ₪107.6K    P67         LOW
+68    ₪1.59M          ₪203.1K      ₪280.8K      ₪115.2K      ₪991.0K      ₪0         P68         LOW
+69    ₪1.63M          ₪898.3K      ₪271.2K      ₪456.5K      ₪0           ₪0         P69         LOW
+70    ₪1.67M          ₪355.9K      ₪291.8K      ₪46.8K       ₪949.3K      ₪21.3K     P70         LOW
+71    ₪1.70M          ₪1.14M       ₪278.5K      ₪224.6K      ₪0           ₪65.0K     P71         LOW
+72    ₪1.74M          ₪539.9K      ₪94.2K       ₪153.0K      ₪956.4K      ₪0         P72         LOW
+73    ₪1.78M          ₪193.9K      ₪220.9K      ₪236.3K      ₪1.03M       ₪107.1K    P73         LOW
+74    ₪1.83M          ₪1.11M       ₪349.9K      ₪313.6K      ₪57.4K       ₪0         P74         LOW
+75    ₪1.87M          ₪0           ₪227.1K      ₪79.7K       ₪1.56M       ₪0         P75         MODERATE
+76    ₪1.91M          ₪413.3K      ₪302.5K      ₪83.1K       ₪1.06M       ₪53.1K     P76         MODERATE
+77    ₪1.96M          ₪312.9K      ₪152.8K      ₪48.6K       ₪1.44M       ₪0         P77         MODERATE
+78    ₪2.01M          ₪492.8K      ₪244.1K      ₪58.7K       ₪1.15M       ₪61.9K     P78         MODERATE
+79    ₪2.06M          ₪60.7K       ₪224.1K      ₪80.7K       ₪1.68M       ₪11.4K     P79         MODERATE
+80    ₪2.11M          ₪1.12M       ₪268.3K      ₪144.8K      ₪554.0K      ₪28.0K     P80         MODERATE
+81    ₪2.17M          ₪0           ₪270.5K      ₪43.5K       ₪1.85M       ₪2.3K      P81         MODERATE
+82    ₪2.22M          ₪1.03M       ₪263.6K      ₪131.2K      ₪738.6K      ₪55.3K     P82         MODERATE
+83    ₪2.27M          ₪820.4K      ₪202.4K      ₪59.1K       ₪1.19M       ₪0         P83         MODERATE
+84    ₪2.34M          ₪57.7K       ₪220.6K      ₪75.8K       ₪1.96M       ₪17.5K     P84         MODERATE
+85    ₪2.40M          ₪200.7K      ₪275.0K      ₪89.9K       ₪1.83M       ₪0         P85         MODERATE
+86    ₪2.46M          ₪494.2K      ₪147.0K      ₪234.8K      ₪1.58M       ₪0         P86         MODERATE
+87    ₪2.53M          ₪1.85M       ₪132.7K      ₪355.4K      ₪188.4K      ₪0         P87         MODERATE
+88    ₪2.60M          ₪0           ₪261.6K      ₪80.5K       ₪2.20M       ₪57.3K     P88         MODERATE
+89    ₪2.68M          ₪996.5K      ₪185.4K      ₪68.6K       ₪1.43M       ₪0         P89         MODERATE
+90    ₪2.77M          ₪396.8K      ₪324.4K      ₪48.0K       ₪2.00M       ₪0         P90         HIGH
+91    ₪2.87M          ₪754.2K      ₪208.6K      ₪41.2K       ₪1.86M       ₪0         P91         HIGH
+92    ₪2.96M          ₪102.8K      ₪183.4K      ₪61.8K       ₪2.61M       ₪2.0K      P92         HIGH
+93    ₪3.07M          ₪566.6K      ₪320.0K      ₪225.3K      ₪1.93M       ₪25.5K     P93         HIGH
+94    ₪3.19M          ₪152.8K      ₪281.8K      ₪55.9K       ₪2.62M       ₪82.1K     P94         HIGH
+95    ₪3.33M          ₪0           ₪171.2K      ₪155.7K      ₪2.89M       ₪116.2K    P95         VERY HIGH
+96    ₪3.50M          ₪896.7K      ₪262.9K      ₪512.8K      ₪1.79M       ₪38.3K     P96         VERY HIGH
+97    ₪3.71M          ₪167.9K      ₪225.8K      ₪135.5K      ₪3.18M       ₪0         P97         VERY HIGH
+98    ₪3.99M          ₪569.6K      ₪223.8K      ₪142.5K      ₪2.92M       ₪128.9K    P98         VERY HIGH
+99    ₪4.41M          ₪824.8K      ₪272.3K      ₪808.4K      ₪2.40M       ₪107.3K    P99         EXTREME
+100   ₪7.26M          ₪2.99M       ₪249.8K      ₪47.6K       ₪3.97M       ₪11.0K     P100        EXTREME
+
+================================================================================
+  STRESS TEST SCENARIOS - תרחישי קיצון
+================================================================================
+
+  Scenario                                 Est. Loss       % Revenue    Survivable?
+  ────────────────────────────────────────────────────────────────────────────────
+  Black Swan - מיתון עולמי                 ₪4.15M             84.3%     CRITICAL - may not survive
+    משבר כלכלי עולמי, ירידת ביקוש חדה, עליית חומרי גלם
+  Supply Chain Crisis - משבר שרשרת אספקה   ₪2.63M             53.4%     DANGEROUS - threatens viability
+    שיבוש עולמי בשרשרת אספקה, מחסור בחומרי גלם
+  War Scenario - מלחמה                     ₪4.90M             99.7%     CRITICAL - may not survive
+    מצב חירום ביטחוני, השבתת מפעל, עובדים במילואים
+  Hyperinflation - אינפלציה גבוהה          ₪3.08M             62.6%     CRITICAL - may not survive
+    אינפלציה דו-ספרתית, עליית מחירים מהירה
+  Major Client Loss - אובדן לקוח מרכזי     ₪3.10M             63.1%     CRITICAL - may not survive
+    אובדן 2-3 לקוחות גדולים, חוב אבוד גדול
+  Equipment Catastrophe - אסון ציוד        ₪3.04M             61.7%     CRITICAL - may not survive
+    שריפה במפעל, נזק לציוד, השבתה ממושכת
+  Tech Disruption - שיבוש טכנולוגי         ₪2.78M             56.5%     DANGEROUS - threatens viability
+    טכנולוגיה חדשה מייתרת שיטות ייצור קיימות
+  Perfect Storm - כל הסיכונים יחד          ₪4.11M             83.5%     CRITICAL - may not survive
+    כל גורמי הסיכון מתממשים בו-זמנית
+  Regulatory Crackdown - חקיקה מחמירה      ₪2.14M             43.6%     DANGEROUS - threatens viability
+    רגולציה חדשה מחייבת השקעות גדולות
+  Normal Bad Year - שנה רעה רגילה          ₪2.05M             41.7%     DANGEROUS - threatens viability
+    כל הגורמים גרועים ב-50% מהממוצע
+
+================================================================================
+  AI-POWERED VaR RECOMMENDATIONS
+  המלצות AI מבוססות ניתוח VaR
+================================================================================
+
+  🔴 RECOMMENDATION #1 [CRITICAL]
+  Title:   Capital Reserve Requirement
+  Finding: CVaR 95% = ₪4.01M. The factory needs this amount as minimum emergency fund.
+  Action:  Maintain cash reserve of at least ₪4.01M (81% of annual revenue)
+  עברית:   יש לשמור קרן חירום של לפחות ₪4.01M - זה הסכום שצריך לכסות 95% מתרחישי ההפסד
+
+  🔴 RECOMMENDATION #2 [CRITICAL]
+  Title:   Highest Risk Category: Demand Risk (ביקוש)
+  Finding: This category contributes 44% of total risk
+  Action:  Focus risk mitigation efforts on this category first
+  עברית:   הקטגוריה Demand Risk (ביקוש) מהווה את הסיכון הגדול ביותר - יש להתמקד בה
+
+  🟡 RECOMMENDATION #3 [HIGH]
+  Title:   Revenue Diversification Critical
+  Finding: Demand risk VaR 95% = ₪2.47M - highly volatile
+  Action:  Diversify into maintenance contracts, recurring revenue, and export markets
+  עברית:   יש לגוון לחוזי תחזוקה, הכנסה חוזרת, ושווקי ייצוא
+
+  🟡 RECOMMENDATION #4 [HIGH]
+  Title:   Insurance Coverage Gap Analysis
+  Finding: Operational risk VaR 99% = ₪440.2K. Ensure insurance covers this level.
+  Action:  Review insurance policies - need minimum coverage of ₪440.2K for operational events
+  עברית:   לבדוק שפוליסות הביטוח מכסות לפחות ₪440.2K באירועים תפעוליים
+
+  🟢 RECOMMENDATION #5 [MEDIUM]
+  Title:   Material Price Hedging
+  Finding: Material price risk VaR 95% = ₪1.09M
+  Action:  Lock in prices with 3-6 month supply contracts with key suppliers
+  עברית:   לנעול מחירים עם חוזי אספקה ל-3-6 חודשים עם ספקים מרכזיים
+
+  🟢 RECOMMENDATION #6 [MEDIUM]
+  Title:   Credit Risk Management
+  Finding: Credit risk (bad debt + financing) averages ₪157.1K/year
+  Action:  Implement credit checks, require deposits >30% for new clients, use factoring
+  עברית:   לבצע בדיקות אשראי, לדרוש מקדמה 30% מלקוחות חדשים, להשתמש בפקטורינג
+
+  🟢 RECOMMENDATION #7 [MEDIUM]
+  Title:   Tail Risk Awareness
+  Finding: Probability of loss exceeding 50% of revenue: 13.99%
+  Action:  Develop business continuity plan for extreme scenarios, consider stop-loss triggers
+  עברית:   לפתח תוכנית המשכיות עסקית לתרחישי קיצון. הסתברות 14.0% להפסד חמור
+
+================================================================================
+  STATISTICAL SUMMARY
+================================================================================
+
+  VaR Summary:
+  ─────────────────────────────────────────────
+  VaR 90%:      ₪2.77M
+  VaR 95%:      ₪3.33M
+  VaR 99%:      ₪4.41M
+  VaR 99.9%:    ₪5.74M
+  CVaR 95%:     ₪4.01M
+  CVaR 99%:     ₪5.00M
+
+  Loss Distribution:
+  ─────────────────────────────────────────────
+  Mean Loss:    ₪1.37M (27.8% of revenue)
+  Median Loss:  ₪1.07M
+  Std Dev:      ₪969.9K
+  Skewness:     1.32
+  Kurtosis:     4.71
+
+  Capital Adequacy:
+  ─────────────────────────────────────────────
+  Min Reserve (VaR 95%):     ₪3.33M (68% of revenue)
+  Recommended (CVaR 95%):    ₪4.01M (81% of revenue)
+  Max Exposure (VaR 99.9%):  ₪5.74M (117% of revenue)
+
+  Scenarios: 50,000 | Date: 2026-03-18 02:37
+
+================================================================================
+  END OF VaR MODEL
+================================================================================
+
+Update todo list
+
+Result
+Done
+Now let me copy the code

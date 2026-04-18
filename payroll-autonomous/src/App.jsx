@@ -45,6 +45,7 @@ const DashboardWidgetsBoard = lazy(() => import('./features/dashboard/DashboardW
 const CRMControlRoom = lazy(() => import('./components/CRMControlRoom'));
 const ServiceControlRoom = lazy(() => import('./components/ServiceControlRoom'));
 const TreasuryControlRoom = lazy(() => import('./components/TreasuryControlRoom'));
+const QRCodeGenerator = lazy(() => import('./components/QRCodeGenerator'));
 const QualityControlRoom = lazy(() => import('./components/QualityControlRoom'));
 const MaintenanceControlRoom = lazy(() => import('./components/MaintenanceControlRoom'));
 const PlanningControlRoom = lazy(() => import('./components/PlanningControlRoom'));
@@ -182,6 +183,7 @@ const NAV_GROUPS = [
     { id: 'inventory-alerts', label: '📦 התראות מלאי' },
     { id: 'doc-upload', label: '📁 העלאת מסמכים' },
     { id: 'contract-gen', label: '📝 יצירת חוזים' },
+    { id: 'qr-generator', label: '📲 מחולל QR' },
   ]},
   { label: 'עוזרי AI', items: [
     { id: 'ai-kobi', label: '👑 עוזר קובי' },
@@ -1260,6 +1262,7 @@ export default function App() {
       case 'doc-intelligence': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Document Intelligence...</div>}><DocumentIntelligenceCenter /></Suspense>;
       case 'doc-upload': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading...</div>}><DocumentUpload /></Suspense>;
       case 'contract-gen': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading...</div>}><ContractGenerator /></Suspense>;
+      case 'qr-generator': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>טוען מחולל QR...</div>}><QRCodeGenerator /></Suspense>;
       case 'route-sync': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Route Sync...</div>}><RouteMenuPermissionSyncConsole /></Suspense>;
       case 'mobile-exec': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading Mobile Executive...</div>}><MobileExecutiveShell /></Suspense>;
       case 'crm-control': return <Suspense fallback={<div style={{padding:20,color:'#8b96a5'}}>Loading CRM Control Room...</div>}><CRMControlRoom /></Suspense>;

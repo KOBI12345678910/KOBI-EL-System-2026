@@ -1,0 +1,383 @@
+import { callLLM } from "../llm/client";
+import { extractJSON, extractTextContent } from "../llm/parser";
+import { FileTool } from "./fileTool";
+import { SearchTool } from "./searchTool";
+import { TerminalTool } from "./terminalTool";
+
+export class APIGenTool {
+  private fileTool: FileTool;
+  private searchTool: SearchTool;
+  private terminal: TerminalTool;
+
+  constructor(fileTool: FileTool, searchTool: SearchTool, terminal: TerminalTool) {
+    this.fileTool = fileTool;
+    this.searchTool = searchTool;
+    this.terminal = terminal;
+  }
+
+  // ===== OpenAPI / Swagger =====
+
+  async generateOpenAPISpec(): Promise<string> {
+    const routeFiles = await this.searchTool.searchFiles("*.ts");
+    const routes = routeFiles.filter(
+      (f) => f.includes("route") || f.includes("router") || f.includes("controller")
+    );
+
+    let routeCode = "";
+    for (const file of routes.slice(0, 15)) {
+      const content = this.fileTool.readFile(file);
+      if (content.success) routeCode += `\n// ${file}\n${content.output}\n`;
+    }
+
+    const response = await callLLM({
+      system: `You are an API documentation expert. Generate a complete OpenAPI 3.0 specification in YAML.
+Include all endpoints, request/response schemas, authentication, error responses.
+Respond with ONLY the YAML content.`,
+      messages: [{ role: "user", content: `Generate OpenAPI spec from:\n${routeCode}` }],
+      maxTokens: 8192,
+    });
+
+    let spec = extractTextContent(response.content);
+    spec = spec.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    this.fileTool.createFile("docs/openapi.yaml", spec);
+
+    return spec;
+  }
+
+  async setupSwaggerUI(): Promise<void> {
+    await this.terminal.execute("npm install swagger-ui-express yamljs @types/swagger-ui-express", {
+      timeout: 30000,
+    });
+
+    this.fileTool.createFile("src/swagger.ts", `import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
+import path from 'path';
+import { Express } from 'express';
+
+export function setupSwagger(app: Express) {
+  const swaggerDoc = YAML.load(path.join(__dirname, '../docs/openapi.yaml'));
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'API Documentation',
+  }));
+  console.log('Swagger UI available at /api-docs');
+}
+`);
+  }
+
+  // ===== GraphQL =====
+
+  async generateGraphQLSchema(): Promise<string> {
+    const schemaFiles = await this.searchTool.searchFiles("schema.*");
+    const modelFiles = await this.searchTool.searchFiles("*.ts");
+    const models = modelFiles.filter(
+      (f) => f.includes("model") || f.includes("schema") || f.includes("entity")
+    );
+
+    let modelCode = "";
+    for (const file of models.slice(0, 10)) {
+      const content = this.fileTool.readFile(file);
+      if (content.success) modelCode += `\n// ${file}\n${content.output}\n`;
+    }
+
+    const response = await callLLM({
+      system: `Generate a complete GraphQL schema with:
+- Types for all models
+- Queries (list with pagination, get by ID, search)
+- Mutations (create, update, delete)
+- Subscriptions for real-time updates
+- Input types with validation
+- Custom scalars (DateTime, JSON)
+- Proper connections for pagination (Relay-style)
+Respond with ONLY the GraphQL schema.`,
+      messages: [{ role: "user", content: `Generate GraphQL schema from:\n${modelCode}` }],
+      maxTokens: 8192,
+    });
+
+    let gqlSchema = extractTextContent(response.content);
+    gqlSchema = gqlSchema.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    this.fileTool.createFile("src/graphql/schema.graphql", gqlSchema);
+
+    return gqlSchema;
+  }
+
+  async setupGraphQLServer(): Promise<void> {
+    await this.terminal.execute(
+      "npm install @apollo/server graphql graphql-tag",
+      { timeout: 30000 }
+    );
+
+    this.fileTool.createFile("src/graphql/index.ts", `import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import { Express } from 'express';
+import { resolvers } from './resolvers';
+
+const typeDefs = readFileSync(join(__dirname, 'schema.graphql'), 'utf-8');
+
+export async function setupGraphQL(app: Express) {
+  const server = new ApolloServer({ typeDefs, resolvers });
+  await server.start();
+  
+  app.use('/graphql', expressMiddleware(server, {
+    context: async ({ req }) => ({
+      user: (req as any).user,
+      token: req.headers.authorization,
+    }),
+  }));
+
+  console.log('GraphQL available at /graphql');
+}
+`);
+
+    this.fileTool.createFile("src/graphql/resolvers.ts", `export const resolvers = {
+  Query: {
+    // TODO: Add query resolvers
+    health: () => ({ status: 'ok', timestamp: new Date().toISOString() }),
+  },
+  Mutation: {
+    // TODO: Add mutation resolvers
+  },
+  Subscription: {
+    // TODO: Add subscription resolvers
+  },
+};
+`);
+  }
+
+  // ===== WebSocket Server Generation =====
+
+  async generateWebSocketServer(events: Array<{
+    name: string;
+    direction: "client-to-server" | "server-to-client" | "bidirectional";
+    payload: Record<string, string>;
+    description: string;
+  }>): Promise<string> {
+    const response = await callLLM({
+      system: `Generate a production-ready WebSocket server using the 'ws' library with TypeScript.
+Include: event typing, room support, authentication, heartbeat, reconnection, message validation, error handling.
+Respond with ONLY TypeScript code.`,
+      messages: [{
+        role: "user",
+        content: `Generate WebSocket server for these events:\n${JSON.stringify(events, null, 2)}`,
+      }],
+      maxTokens: 4096,
+    });
+
+    let code = extractTextContent(response.content);
+    code = code.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    this.fileTool.createFile("src/ws/server.ts", code);
+
+    // Generate client SDK
+    const clientResponse = await callLLM({
+      system: "Generate a TypeScript WebSocket client SDK for the browser. Include auto-reconnection, event typing, heartbeat. Respond with ONLY code.",
+      messages: [{
+        role: "user",
+        content: `Generate client for events:\n${JSON.stringify(events, null, 2)}`,
+      }],
+    });
+
+    let clientCode = extractTextContent(clientResponse.content);
+    clientCode = clientCode.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    this.fileTool.createFile("src/ws/client.ts", clientCode);
+
+    return code;
+  }
+
+  // ===== API Mock Server =====
+
+  async generateMockServer(specFile?: string): Promise<void> {
+    let spec = "";
+
+    if (specFile) {
+      const content = this.fileTool.readFile(specFile);
+      if (content.success) spec = content.output || "";
+    } else {
+      spec = await this.generateOpenAPISpec();
+    }
+
+    const response = await callLLM({
+      system: `Generate a mock API server that returns realistic fake data matching the OpenAPI spec.
+Use Express.js with TypeScript. Use faker.js for data generation.
+Include: all endpoints, realistic response data, simulated delays, error simulation, CORS.
+Respond with ONLY TypeScript code.`,
+      messages: [{ role: "user", content: `Generate mock server for:\n${spec.slice(0, 4000)}` }],
+      maxTokens: 4096,
+    });
+
+    let code = extractTextContent(response.content);
+    code = code.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+
+    this.fileTool.createFile("src/mock/server.ts", code);
+
+    // Add script to package.json
+    const pkg = this.fileTool.readFile("package.json");
+    if (pkg.success) {
+      try {
+        const parsed = JSON.parse(pkg.output || "{}");
+        parsed.scripts = parsed.scripts || {};
+        parsed.scripts["mock"] = "tsx src/mock/server.ts";
+        this.fileTool.createFile("package.json", JSON.stringify(parsed, null, 2));
+      } catch {}
+    }
+  }
+
+  // ===== Webhook Manager =====
+
+  async generateWebhookSystem(): Promise<void> {
+    this.fileTool.createFile("src/webhooks/manager.ts", `import crypto from 'crypto';
+
+export interface WebhookConfig {
+  id: string;
+  url: string;
+  secret: string;
+  events: string[];
+  active: boolean;
+  createdAt: Date;
+  failCount: number;
+  lastDelivery?: Date;
+}
+
+export interface WebhookDelivery {
+  id: string;
+  webhookId: string;
+  event: string;
+  payload: any;
+  response?: { status: number; body: string };
+  success: boolean;
+  timestamp: Date;
+  duration: number;
+}
+
+export class WebhookManager {
+  private webhooks: Map<string, WebhookConfig> = new Map();
+  private deliveries: WebhookDelivery[] = [];
+  private maxRetries = 3;
+  private retryDelays = [1000, 5000, 30000]; // ms
+
+  register(url: string, events: string[]): WebhookConfig {
+    const id = \`wh_\${Date.now()}\`;
+    const config: WebhookConfig = {
+      id,
+      url,
+      secret: crypto.randomBytes(32).toString('hex'),
+      events,
+      active: true,
+      createdAt: new Date(),
+      failCount: 0,
+    };
+    this.webhooks.set(id, config);
+    return config;
+  }
+
+  async dispatch(event: string, payload: any): Promise<WebhookDelivery[]> {
+    const results: WebhookDelivery[] = [];
+
+    for (const [, webhook] of this.webhooks) {
+      if (!webhook.active || !webhook.events.includes(event)) continue;
+
+      const delivery = await this.deliver(webhook, event, payload);
+      results.push(delivery);
+
+      if (!delivery.success) {
+        webhook.failCount++;
+        if (webhook.failCount >= 10) {
+          webhook.active = false; // Disable after 10 failures
+        }
+        // Schedule retries
+        this.scheduleRetry(webhook, event, payload, 0);
+      } else {
+        webhook.failCount = 0;
+        webhook.lastDelivery = new Date();
+      }
+    }
+
+    return results;
+  }
+
+  private async deliver(
+    webhook: WebhookConfig,
+    event: string,
+    payload: any
+  ): Promise<WebhookDelivery> {
+    const deliveryId = \`del_\${Date.now()}\`;
+    const body = JSON.stringify({ event, data: payload, timestamp: new Date() });
+    const signature = crypto
+      .createHmac('sha256', webhook.secret)
+      .update(body)
+      .digest('hex');
+
+    const startTime = Date.now();
+
+    try {
+      const response = await fetch(webhook.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Webhook-Signature': \`sha256=\${signature}\`,
+          'X-Webhook-Event': event,
+          'X-Webhook-Delivery': deliveryId,
+        },
+        body,
+        signal: AbortSignal.timeout(10000),
+      });
+
+      const responseBody = await response.text();
+
+      const delivery: WebhookDelivery = {
+        id: deliveryId,
+        webhookId: webhook.id,
+        event,
+        payload,
+        response: { status: response.status, body: responseBody.slice(0, 500) },
+        success: response.ok,
+        timestamp: new Date(),
+        duration: Date.now() - startTime,
+      };
+
+      this.deliveries.push(delivery);
+      return delivery;
+    } catch (err: any) {
+      const delivery: WebhookDelivery = {
+        id: deliveryId,
+        webhookId: webhook.id,
+        event,
+        payload,
+        success: false,
+        timestamp: new Date(),
+        duration: Date.now() - startTime,
+      };
+      this.deliveries.push(delivery);
+      return delivery;
+    }
+  }
+
+  private scheduleRetry(webhook: WebhookConfig, event: string, payload: any, attempt: number): void {
+    if (attempt >= this.maxRetries) return;
+    setTimeout(() => this.deliver(webhook, event, payload), this.retryDelays[attempt]);
+  }
+
+  getWebhooks(): WebhookConfig[] {
+    return Array.from(this.webhooks.values());
+  }
+
+  getDeliveries(webhookId?: string, limit = 50): WebhookDelivery[] {
+    let results = this.deliveries;
+    if (webhookId) results = results.filter((d) => d.webhookId === webhookId);
+    return results.slice(-limit);
+  }
+
+  remove(id: string): boolean {
+    return this.webhooks.delete(id);
+  }
+
+  toggle(id: string): boolean {
+    const wh = this.webhooks.get(id);
+    if (wh) { wh.active = !wh.active; return true; }
+    return false;
+  }
+}
+`);
+  }
+}

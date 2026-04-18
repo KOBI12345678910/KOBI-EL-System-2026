@@ -1,0 +1,20 @@
+[merge] scanning 9 sources ...
+  [scan] technokoluzi-erp @ C:\Users\kobi\Projects\techno-kol-uzi-2026\_merge-staging\technokoluzi-erp\technokoluzi-erp
+  [scan] AI-Task-Manager @ C:\Users\kobi\Projects\techno-kol-uzi-2026\AI-Task-Manager
+  [scan] Location-Finder @ C:\Users\kobi\Projects\techno-kol-uzi-2026\_merge-staging\Location-Finder\Location-Finder
+  [scan] GPS-Connect @ C:\Users\kobi\Projects\techno-kol-uzi-2026\_merge-staging\GPS-Connect\GPS-Connect
+  [scan] Invoice-Ledger @ C:\Users\kobi\Projects\techno-kol-uzi-2026\_merge-staging\Invoice-Ledger\Invoice-Ledger
+  [scan] erp-upload @ C:\Users\kobi\Projects\techno-kol-uzi-2026\_merge-staging\erp-upload
+    ... hashed 5000
+  [scan] files-2 @ C:\Users\kobi\Projects\techno-kol-uzi-2026\_merge-staging\files-2
+  [scan] files-4 @ C:\Users\kobi\Projects\techno-kol-uzi-2026\_merge-staging\files-4
+  [scan] files-5 @ C:\Users\kobi\Projects\techno-kol-uzi-2026\_merge-staging\files-5
+[merge] hashed 5990 files, 4226 unique, 1764 duplicates eliminated
+[merge] scanning destination for existing files ...
+[merge] destination has 3442 hashed files
+[merge] wrote report: C:\Users\kobi\Projects\techno-kol-uzi-2026\_merge-staging\_report.json
+[merge] plan counts: {'CODE-NEW': 1750, 'CODE-EXISTING': 32, 'CODE-CONFLICT': 2240, 'CONFIG': 80, 'ASSET': 21, 'DOCS': 48, 'BINARY-SKIP': 55}
+[merge] copied: {'CODE-NEW': 1727, 'CONFIG': 80, 'ASSET': 21, 'DOCS': 38, 'CODE-CONFLICT-ARCHIVED': 2240}
+[merge] scanning for new entities ...
+[merge] entities: pages=564 routes=100 migs=0 schema=222
+[merge] DONE. Summary -> C:\Users\kobi\Projects\techno-kol-uzi-2026\_merge-staging\_summary.json

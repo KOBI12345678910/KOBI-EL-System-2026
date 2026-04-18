@@ -1,0 +1,245 @@
+import { WebSocket, WebSocketServer } from "ws";
+import { TerminalTool } from "../tools/terminalTool";
+import { FileTool } from "../tools/fileTool";
+import { WatcherTool } from "../tools/watcherTool";
+import { LogViewerTool } from "../tools/logViewerTool";
+
+export interface RealtimeEvent {
+  type: string;
+  channel: string;
+  data: any;
+  timestamp: Date;
+  source: string;
+}
+
+export interface RealtimeChannel {
+  name: string;
+  subscribers: Set<string>;
+  lastEvent?: RealtimeEvent;
+  eventCount: number;
+}
+
+export class RealtimeFlow {
+  private wss: WebSocketServer;
+  private clients: Map<string, { ws: WebSocket; channels: Set<string>; userId?: string }> = new Map();
+  private channels: Map<string, RealtimeChannel> = new Map();
+  private watcher: WatcherTool;
+  private logViewer: LogViewerTool;
+  private terminal: TerminalTool;
+  private onLog: (msg: string) => void;
+  private eventHistory: RealtimeEvent[] = [];
+  private maxHistory = 1000;
+
+  constructor(
+    server: any,
+    workspaceDir: string,
+    terminal: TerminalTool,
+    onLog: (msg: string) => void
+  ) {
+    this.terminal = terminal;
+    this.onLog = onLog;
+    this.watcher = new WatcherTool(workspaceDir);
+    this.logViewer = new LogViewerTool(workspaceDir);
+
+    this.wss = new WebSocketServer({ server, path: "/realtime" });
+    this.setupWebSocket();
+    this.setupSystemChannels(workspaceDir);
+  }
+
+  private setupWebSocket() {
+    this.wss.on("connection", (ws: WebSocket) => {
+      const clientId = `client_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+
+      this.clients.set(clientId, { ws, channels: new Set() });
+
+      ws.send(JSON.stringify({
+        type: "connected",
+        clientId,
+        availableChannels: Array.from(this.channels.keys()),
+      }));
+
+      ws.on("message", (data: Buffer) => {
+        try {
+          const msg = JSON.parse(data.toString());
+          this.handleClientMessage(clientId, msg);
+        } catch {}
+      });
+
+      ws.on("close", () => {
+        const client = this.clients.get(clientId);
+        if (client) {
+          for (const channel of client.channels) {
+            this.channels.get(channel)?.subscribers.delete(clientId);
+          }
+        }
+        this.clients.delete(clientId);
+      });
+    });
+  }
+
+  private handleClientMessage(clientId: string, msg: any) {
+    const client = this.clients.get(clientId);
+    if (!client) return;
+
+    switch (msg.type) {
+      case "subscribe": {
+        const channel = msg.channel;
+        if (!this.channels.has(channel)) {
+          this.channels.set(channel, { name: channel, subscribers: new Set(), eventCount: 0 });
+        }
+        this.channels.get(channel)!.subscribers.add(clientId);
+        client.channels.add(channel);
+        
+        // Send recent history for this channel
+        const history = this.eventHistory.filter((e) => e.channel === channel).slice(-20);
+        if (history.length > 0) {
+          client.ws.send(JSON.stringify({ type: "history", channel, events: history }));
+        }
+        break;
+      }
+      case "unsubscribe": {
+        this.channels.get(msg.channel)?.subscribers.delete(clientId);
+        client.channels.delete(msg.channel);
+        break;
+      }
+      case "publish": {
+        this.publish(msg.channel, msg.data, `user:${clientId}`);
+        break;
+      }
+    }
+  }
+
+  // ===== PUBLISH EVENT =====
+  publish(channel: string, data: any, source = "system"): void {
+    const event: RealtimeEvent = {
+      type: "event",
+      channel,
+      data,
+      timestamp: new Date(),
+      source,
+    };
+
+    // Store in history
+    this.eventHistory.push(event);
+    if (this.eventHistory.length > this.maxHistory) {
+      this.eventHistory = this.eventHistory.slice(-this.maxHistory);
+    }
+
+    // Update channel
+    const ch = this.channels.get(channel);
+    if (ch) {
+      ch.lastEvent = event;
+      ch.eventCount++;
+
+      // Send to subscribers
+      const msg = JSON.stringify(event);
+      for (const subscriberId of ch.subscribers) {
+        const client = this.clients.get(subscriberId);
+        if (client && client.ws.readyState === WebSocket.OPEN) {
+          try { client.ws.send(msg); } catch {}
+        }
+      }
+    }
+  }
+
+  // ===== SETUP SYSTEM CHANNELS =====
+  private setupSystemChannels(workspaceDir: string) {
+    // Channel: file-changes
+    this.channels.set("file-changes", { name: "file-changes", subscribers: new Set(), eventCount: 0 });
+    this.watcher.watch("realtime-files", ["**/*"], (event, filePath) => {
+      this.publish("file-changes", {
+        event,
+        file: filePath,
+        timestamp: new Date(),
+      });
+    }, { ignored: ["**/node_modules/**", "**/.git/**"] });
+
+    // Channel: build-status
+    this.channels.set("build-status", { name: "build-status", subscribers: new Set(), eventCount: 0 });
+
+    // Channel: server-health
+    this.channels.set("server-health", { name: "server-health", subscribers: new Set(), eventCount: 0 });
+    setInterval(async () => {
+      const result = await this.terminal.execute(
+        'curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 2>/dev/null || echo "0"',
+        { timeout: 3000 }
+      );
+      this.publish("server-health", {
+        status: parseInt(result.stdout.trim()) || 0,
+        timestamp: new Date(),
+      });
+    }, 10000);
+
+    // Channel: logs
+    this.channels.set("logs", { name: "logs", subscribers: new Set(), eventCount: 0 });
+    this.logViewer.startWatching((log) => {
+      this.publish("logs", log);
+    });
+
+    // Channel: system-metrics
+    this.channels.set("system-metrics", { name: "system-metrics", subscribers: new Set(), eventCount: 0 });
+    setInterval(async () => {
+      const cpuResult = await this.terminal.execute("top -bn1 | grep 'Cpu' | awk '{print $2}'", { timeout: 3000 });
+      const memResult = await this.terminal.execute("free -m | awk 'NR==2{printf \"%.1f\", $3/$2*100}'", { timeout: 3000 });
+
+      this.publish("system-metrics", {
+        cpu: parseFloat(cpuResult.stdout) || 0,
+        memory: parseFloat(memResult.stdout) || 0,
+        timestamp: new Date(),
+      });
+    }, 15000);
+
+    // Channel: agent-status
+    this.channels.set("agent-status", { name: "agent-status", subscribers: new Set(), eventCount: 0 });
+
+    // Channel: errors
+    this.channels.set("errors", { name: "errors", subscribers: new Set(), eventCount: 0 });
+
+    this.onLog("📡 Real-time channels initialized: " + Array.from(this.channels.keys()).join(", "));
+  }
+
+  // ===== AGENT STATUS UPDATES =====
+  publishAgentStatus(status: {
+    taskId: string;
+    phase: string;
+    progress: number;
+    message: string;
+  }) {
+    this.publish("agent-status", status, "agent");
+  }
+
+  publishError(error: { message: string; file?: string; severity: string }) {
+    this.publish("errors", error, "system");
+  }
+
+  publishBuildStatus(status: { phase: string; success: boolean; output?: string }) {
+    this.publish("build-status", status, "build");
+  }
+
+  // ===== HELPERS =====
+  getChannels(): Array<{ name: string; subscribers: number; eventCount: number }> {
+    return Array.from(this.channels.values()).map((ch) => ({
+      name: ch.name,
+      subscribers: ch.subscribers.size,
+      eventCount: ch.eventCount,
+    }));
+  }
+
+  getEventHistory(channel?: string, limit = 50): RealtimeEvent[] {
+    let events = this.eventHistory;
+    if (channel) events = events.filter((e) => e.channel === channel);
+    return events.slice(-limit);
+  }
+
+  getClientCount(): number {
+    return this.clients.size;
+  }
+
+  cleanup() {
+    this.watcher.unwatchAll();
+    this.logViewer.stopWatching();
+    for (const [, client] of this.clients) {
+      client.ws.close();
+    }
+  }
+}

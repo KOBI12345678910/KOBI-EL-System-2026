@@ -1,0 +1,13 @@
+{
+  "model_orphan_definition": "מודל שאין לו parent, child, linked model, page binding או flow binding",
+  "page_orphan_definition": "דף שאין לו links_from_pages או links_to_pages או primary_model",
+  "flow_orphan_definition": "flow ללא input_models או output_models או trigger ברור",
+  "prevention_rules": [
+    "כל מודל חייב להופיע לפחות באחד: page / flow / report / dashboard / automation",
+    "כל page חייב להיות מקושר לפחות לדף אחד שממנו מגיעים ולדף אחד שאליו ממשיכים",
+    "כל FK חייב להופיע גם ב-relationship registry",
+    "כל מודל transactional חייב להופיע לפחות ב-flow אחד",
+    "כל מודל core חייב להופיע לפחות ב-detail page אחד",
+    "כל dashboard widget חייב להוביל ל-drilldown page"
+  ]
+}

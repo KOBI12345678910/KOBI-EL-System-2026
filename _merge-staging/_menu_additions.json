@@ -1,0 +1,1550 @@
+{
+  "אינטגרציות": [
+    {
+      "route": "/api-hub",
+      "label": "Api Hub"
+    },
+    {
+      "route": "/integrations/auth-tokens",
+      "label": "Auth Tokens"
+    },
+    {
+      "route": "/integrations/integration-alerts",
+      "label": "Integration Alerts"
+    },
+    {
+      "route": "/integrations/integration-audit",
+      "label": "Integration Audit"
+    },
+    {
+      "route": "/integrations/integration-settings",
+      "label": "Integration Settings"
+    },
+    {
+      "route": "/integrations/payload-validation",
+      "label": "Payload Validation"
+    },
+    {
+      "route": "/integrations/rate-limits",
+      "label": "Rate Limits"
+    },
+    {
+      "route": "/integrations/retries-dlq",
+      "label": "Retries Dlq"
+    },
+    {
+      "route": "/integrations/transformation-engine",
+      "label": "Transformation Engine"
+    }
+  ],
+  "מערכת וניהול": [
+    {
+      "route": "/data-migration",
+      "label": "Data Migration"
+    },
+    {
+      "route": "/integration-hub",
+      "label": "Integration Hub"
+    },
+    {
+      "route": "/data-fabric/data-fabric-overview",
+      "label": "Data Fabric Overview"
+    },
+    {
+      "route": "/data-fabric/data-products",
+      "label": "Data Products"
+    },
+    {
+      "route": "/data-fabric/data-quality-dashboard",
+      "label": "Data Quality Dashboard"
+    },
+    {
+      "route": "/data-fabric/identity-resolution",
+      "label": "Identity Resolution"
+    },
+    {
+      "route": "/data-fabric/lineage-graph",
+      "label": "Lineage Graph"
+    },
+    {
+      "route": "/data-platform/canonical-explorer",
+      "label": "Canonical Explorer"
+    },
+    {
+      "route": "/data-platform/platform-observatory",
+      "label": "Platform Observatory"
+    },
+    {
+      "route": "/data-platform/quarantine-browser",
+      "label": "Quarantine Browser"
+    },
+    {
+      "route": "/ehs/annual-safety-report",
+      "label": "Annual Safety Report"
+    },
+    {
+      "route": "/ehs/emergency-preparedness",
+      "label": "Emergency Preparedness"
+    },
+    {
+      "route": "/ehs/energy-management",
+      "label": "Energy Management"
+    },
+    {
+      "route": "/ehs/israeli-regulatory",
+      "label": "Israeli Regulatory"
+    },
+    {
+      "route": "/ehs/ppe-management",
+      "label": "Ppe Management"
+    },
+    {
+      "route": "/ehs/risk-assessment",
+      "label": "Risk Assessment"
+    },
+    {
+      "route": "/ehs/safety-inspections",
+      "label": "Safety Inspections"
+    },
+    {
+      "route": "/ehs/safety-training-certs",
+      "label": "Safety Training Certs"
+    },
+    {
+      "route": "/ehs/waste-management",
+      "label": "Waste Management"
+    },
+    {
+      "route": "/ehs/work-permits",
+      "label": "Work Permits"
+    },
+    {
+      "route": "/engineering/design-reviews",
+      "label": "Design Reviews"
+    },
+    {
+      "route": "/engineering/drawing-management",
+      "label": "Drawing Management"
+    },
+    {
+      "route": "/engineering/engineering-alerts",
+      "label": "Engineering Alerts"
+    },
+    {
+      "route": "/engineering/engineering-analytics",
+      "label": "Engineering Analytics"
+    },
+    {
+      "route": "/engineering/engineering-calculations",
+      "label": "Engineering Calculations"
+    },
+    {
+      "route": "/engineering/engineering-command-center",
+      "label": "Engineering Command Center"
+    },
+    {
+      "route": "/engineering/engineering-documents",
+      "label": "Engineering Documents"
+    },
+    {
+      "route": "/engineering/engineering-office",
+      "label": "Engineering Office"
+    },
+    {
+      "route": "/engineering/engineering-projects",
+      "label": "Engineering Projects"
+    },
+    {
+      "route": "/engineering/engineering-settings",
+      "label": "Engineering Settings"
+    },
+    {
+      "route": "/engineering/engineering-standards",
+      "label": "Engineering Standards"
+    },
+    {
+      "route": "/engineering/material-specifications",
+      "label": "Material Specifications"
+    },
+    {
+      "route": "/engineering/product-catalog",
+      "label": "Product Catalog"
+    },
+    {
+      "route": "/engineering/prototype-testing",
+      "label": "Prototype Testing"
+    },
+    {
+      "route": "/executive/bi-command-center",
+      "label": "Bi Command Center"
+    },
+    {
+      "route": "/executive/executive-command-center",
+      "label": "Executive Command Center"
+    },
+    {
+      "route": "/executive/executive-scorecard",
+      "label": "Executive Scorecard"
+    },
+    {
+      "route": "/fabrication/fab-accessories",
+      "label": "Fab Accessories"
+    },
+    {
+      "route": "/fabrication/fab-assembly-orders",
+      "label": "Fab Assembly Orders"
+    },
+    {
+      "route": "/fabrication/fab-coating-orders",
+      "label": "Fab Coating Orders"
+    },
+    {
+      "route": "/fabrication/fab-cutting-lists",
+      "label": "Fab Cutting Lists"
+    },
+    {
+      "route": "/fabrication/fab-finishes-colors",
+      "label": "Fab Finishes Colors"
+    },
+    {
+      "route": "/fabrication/fab-glass-catalog",
+      "label": "Fab Glass Catalog"
+    },
+    {
+      "route": "/fabrication/fab-glazing-orders",
+      "label": "Fab Glazing Orders"
+    },
+    {
+      "route": "/fabrication/fab-installation-orders",
+      "label": "Fab Installation Orders"
+    },
+    {
+      "route": "/fabrication/fab-packing-lists",
+      "label": "Fab Packing Lists"
+    },
+    {
+      "route": "/fabrication/fab-profiles",
+      "label": "Fab Profiles"
+    },
+    {
+      "route": "/fabrication/fab-service-tickets",
+      "label": "Fab Service Tickets"
+    },
+    {
+      "route": "/fabrication/fab-systems",
+      "label": "Fab Systems"
+    },
+    {
+      "route": "/fabrication/fab-transport-orders",
+      "label": "Fab Transport Orders"
+    },
+    {
+      "route": "/fabrication/fab-welding-orders",
+      "label": "Fab Welding Orders"
+    },
+    {
+      "route": "/fabrication/fab-workflow-tracker",
+      "label": "Fab Workflow Tracker"
+    },
+    {
+      "route": "/fin/fin-accounting",
+      "label": "Fin Accounting"
+    },
+    {
+      "route": "/fin/fin-credit-clearing",
+      "label": "Fin Credit Clearing"
+    },
+    {
+      "route": "/fin/fin-dashboard",
+      "label": "Fin Dashboard"
+    },
+    {
+      "route": "/fin/fin-document-create",
+      "label": "Fin Document Create"
+    },
+    {
+      "route": "/fin/fin-document-details",
+      "label": "Fin Document Details"
+    },
+    {
+      "route": "/fin/fin-documents-list",
+      "label": "Fin Documents List"
+    },
+    {
+      "route": "/fin/fin-recurring",
+      "label": "Fin Recurring"
+    },
+    {
+      "route": "/fin/fin-standing-orders",
+      "label": "Fin Standing Orders"
+    },
+    {
+      "route": "/import/containers-packages",
+      "label": "Containers Packages"
+    },
+    {
+      "route": "/import/customs-clearance",
+      "label": "Customs Clearance"
+    },
+    {
+      "route": "/import/foreign-suppliers",
+      "label": "Foreign Suppliers"
+    },
+    {
+      "route": "/import/import-analytics",
+      "label": "Import Analytics"
+    },
+    {
+      "route": "/import/import-approvals",
+      "label": "Import Approvals"
+    },
+    {
+      "route": "/import/import-dashboard",
+      "label": "Import Dashboard"
+    },
+    {
+      "route": "/import/import-documents",
+      "label": "Import Documents"
+    },
+    {
+      "route": "/import/import-purchase-orders",
+      "label": "Import Purchase Orders"
+    },
+    {
+      "route": "/import/import-receiving",
+      "label": "Import Receiving"
+    },
+    {
+      "route": "/import/import-risk-alerts",
+      "label": "Import Risk Alerts"
+    },
+    {
+      "route": "/import/import-settings",
+      "label": "Import Settings"
+    },
+    {
+      "route": "/import/import-shipments",
+      "label": "Import Shipments"
+    },
+    {
+      "route": "/import/import-tracking",
+      "label": "Import Tracking"
+    },
+    {
+      "route": "/import/landed-cost-calculator",
+      "label": "Landed Cost Calculator"
+    },
+    {
+      "route": "/import/shipping-forwarders",
+      "label": "Shipping Forwarders"
+    },
+    {
+      "route": "/installation/customer-handover",
+      "label": "Customer Handover"
+    },
+    {
+      "route": "/installation/equipment-tools",
+      "label": "Equipment Tools"
+    },
+    {
+      "route": "/installation/field-exceptions",
+      "label": "Field Exceptions"
+    },
+    {
+      "route": "/installation/installation-alerts",
+      "label": "Installation Alerts"
+    },
+    {
+      "route": "/installation/installation-cost-tracking",
+      "label": "Installation Cost Tracking"
+    },
+    {
+      "route": "/installation/installation-documents",
+      "label": "Installation Documents"
+    },
+    {
+      "route": "/installation/installation-management",
+      "label": "Installation Management"
+    },
+    {
+      "route": "/installation/installation-orders",
+      "label": "Installation Orders"
+    },
+    {
+      "route": "/installation/installation-profitability",
+      "label": "Installation Profitability"
+    },
+    {
+      "route": "/installation/installation-progress",
+      "label": "Installation Progress"
+    },
+    {
+      "route": "/installation/installation-quality-control",
+      "label": "Installation Quality Control"
+    },
+    {
+      "route": "/installation/installation-settings",
+      "label": "Installation Settings"
+    },
+    {
+      "route": "/installation/installer-profiles",
+      "label": "Installer Profiles"
+    },
+    {
+      "route": "/installation/loading-dispatch",
+      "label": "Loading Dispatch"
+    },
+    {
+      "route": "/installation/return-service-calls",
+      "label": "Return Service Calls"
+    },
+    {
+      "route": "/installations/gps-map",
+      "label": "Gps Map"
+    },
+    {
+      "route": "/knowledge/faq-management",
+      "label": "Faq Management"
+    },
+    {
+      "route": "/knowledge/knowledge-base",
+      "label": "Knowledge Base"
+    },
+    {
+      "route": "/knowledge/knowledge-command-center",
+      "label": "Knowledge Command Center"
+    },
+    {
+      "route": "/knowledge/lessons-learned",
+      "label": "Lessons Learned"
+    },
+    {
+      "route": "/knowledge/sop-procedures",
+      "label": "Sop Procedures"
+    },
+    {
+      "route": "/logistics/barcode-rfid",
+      "label": "Barcode Rfid"
+    },
+    {
+      "route": "/logistics/cross-border",
+      "label": "Cross Border"
+    },
+    {
+      "route": "/logistics/customer-tracking-portal",
+      "label": "Customer Tracking Portal"
+    },
+    {
+      "route": "/logistics/delivery-cost-analysis",
+      "label": "Delivery Cost Analysis"
+    },
+    {
+      "route": "/logistics/delivery-scheduling",
+      "label": "Delivery Scheduling"
+    },
+    {
+      "route": "/logistics/fleet-alerts",
+      "label": "Fleet Alerts"
+    },
+    {
+      "route": "/logistics/fleet-delivery",
+      "label": "Fleet Delivery"
+    },
+    {
+      "route": "/logistics/freight-audit",
+      "label": "Freight Audit"
+    },
+    {
+      "route": "/logistics/freight",
+      "label": "Freight"
+    },
+    {
+      "route": "/logistics/fuel-management",
+      "label": "Fuel Management"
+    },
+    {
+      "route": "/logistics/loading-dock",
+      "label": "Loading Dock"
+    },
+    {
+      "route": "/logistics/logistics-dashboard",
+      "label": "Logistics Dashboard"
+    },
+    {
+      "route": "/logistics/packaging",
+      "label": "Packaging"
+    },
+    {
+      "route": "/logistics/proof-of-delivery",
+      "label": "Proof Of Delivery"
+    },
+    {
+      "route": "/logistics/reverse-logistics",
+      "label": "Reverse Logistics"
+    },
+    {
+      "route": "/logistics/vehicle-registry",
+      "label": "Vehicle Registry"
+    },
+    {
+      "route": "/notification-settings/delivery-dashboard",
+      "label": "Delivery Dashboard"
+    },
+    {
+      "route": "/notification-settings/email-templates",
+      "label": "Email Templates"
+    },
+    {
+      "route": "/operations/cost-per-unit",
+      "label": "Cost Per Unit"
+    },
+    {
+      "route": "/palantir/actions-studio",
+      "label": "Actions Studio"
+    },
+    {
+      "route": "/palantir/aip-agent-studio",
+      "label": "Aip Agent Studio"
+    },
+    {
+      "route": "/palantir/code-workspace",
+      "label": "Code Workspace"
+    },
+    {
+      "route": "/palantir/dossier-page",
+      "label": "Dossier Page"
+    },
+    {
+      "route": "/palantir/map-geospatial",
+      "label": "Map Geospatial"
+    },
+    {
+      "route": "/palantir/pipeline-builder",
+      "label": "Pipeline Builder"
+    },
+    {
+      "route": "/palantir/timeline-analysis",
+      "label": "Timeline Analysis"
+    },
+    {
+      "route": "/platform/notifications-center",
+      "label": "Notifications Center"
+    },
+    {
+      "route": "/platform/security-audit",
+      "label": "Security Audit"
+    },
+    {
+      "route": "/portal/customer-portal-login",
+      "label": "Customer Portal Login"
+    },
+    {
+      "route": "/pricing/actual-vs-estimated",
+      "label": "Actual Vs Estimated"
+    },
+    {
+      "route": "/pricing/labor-operations-cost",
+      "label": "Labor Operations Cost"
+    },
+    {
+      "route": "/pricing/landed-cost-source",
+      "label": "Landed Cost Source"
+    },
+    {
+      "route": "/pricing/material-price-pull",
+      "label": "Material Price Pull"
+    },
+    {
+      "route": "/pricing/pricing-approvals",
+      "label": "Pricing Approvals"
+    },
+    {
+      "route": "/pricing/pricing-cost-builder",
+      "label": "Pricing Cost Builder"
+    },
+    {
+      "route": "/pricing/pricing-cost-calculator",
+      "label": "Pricing Cost Calculator"
+    },
+    {
+      "route": "/pricing/pricing-dashboard",
+      "label": "Pricing Dashboard"
+    },
+    {
+      "route": "/pricing/pricing-price-lists",
+      "label": "Pricing Price Lists"
+    },
+    {
+      "route": "/pricing/pricing-requests-list",
+      "label": "Pricing Requests List"
+    },
+    {
+      "route": "/pricing/pricing-versions",
+      "label": "Pricing Versions"
+    },
+    {
+      "route": "/pricing/project-pricing-details",
+      "label": "Project Pricing Details"
+    },
+    {
+      "route": "/pricing/recommended-price",
+      "label": "Recommended Price"
+    },
+    {
+      "route": "/pricing/risk-margin-target",
+      "label": "Risk Margin Target"
+    },
+    {
+      "route": "/pricing/stock-vs-buy-decision",
+      "label": "Stock Vs Buy Decision"
+    },
+    {
+      "route": "/pricing/supplier-comparison-project",
+      "label": "Supplier Comparison Project"
+    },
+    {
+      "route": "/product-dev/product-certifications",
+      "label": "Product Certifications"
+    },
+    {
+      "route": "/product-dev/product-design",
+      "label": "Product Design"
+    },
+    {
+      "route": "/product-dev/product-dev-command-center",
+      "label": "Product Dev Command Center"
+    },
+    {
+      "route": "/product-dev/product-launches",
+      "label": "Product Launches"
+    },
+    {
+      "route": "/production/assembly-jobs",
+      "label": "Assembly Jobs"
+    },
+    {
+      "route": "/production/cut-jobs",
+      "label": "Cut Jobs"
+    },
+    {
+      "route": "/production/finishing-jobs",
+      "label": "Finishing Jobs"
+    },
+    {
+      "route": "/production/labor-control",
+      "label": "Labor Control"
+    },
+    {
+      "route": "/production/labor-time-tracking",
+      "label": "Labor Time Tracking"
+    },
+    {
+      "route": "/production/maintenance-downtime",
+      "label": "Maintenance Downtime"
+    },
+    {
+      "route": "/production/master-production-schedule",
+      "label": "Master Production Schedule"
+    },
+    {
+      "route": "/production/material-issuance",
+      "label": "Material Issuance"
+    },
+    {
+      "route": "/production/production-alerts",
+      "label": "Production Alerts"
+    },
+    {
+      "route": "/production/production-analytics",
+      "label": "Production Analytics"
+    },
+    {
+      "route": "/production/production-cost-tracking",
+      "label": "Production Cost Tracking"
+    },
+    {
+      "route": "/production/production-exceptions",
+      "label": "Production Exceptions"
+    },
+    {
+      "route": "/production/production-orders",
+      "label": "Production Orders"
+    },
+    {
+      "route": "/production/quality-defects-rework",
+      "label": "Quality Defects Rework"
+    },
+    {
+      "route": "/production/shortages-page",
+      "label": "Shortages Page"
+    },
+    {
+      "route": "/production/welding-jobs",
+      "label": "Welding Jobs"
+    },
+    {
+      "route": "/production/work-stations",
+      "label": "Work Stations"
+    },
+    {
+      "route": "/quality/calibration",
+      "label": "Calibration"
+    },
+    {
+      "route": "/quality/document-control",
+      "label": "Document Control"
+    },
+    {
+      "route": "/quality/test-certificates",
+      "label": "Test Certificates"
+    },
+    {
+      "route": "/safety/safety-procedures",
+      "label": "Safety Procedures"
+    },
+    {
+      "route": "/safety/safety-training",
+      "label": "Safety Training"
+    },
+    {
+      "route": "/service/service-analytics",
+      "label": "Service Analytics"
+    },
+    {
+      "route": "/service/service-cases",
+      "label": "Service Cases"
+    },
+    {
+      "route": "/service/service-cost-tracking",
+      "label": "Service Cost Tracking"
+    },
+    {
+      "route": "/settings/api-connection-hub",
+      "label": "Api Connection Hub"
+    },
+    {
+      "route": "/settings/api-keys",
+      "label": "Api Keys"
+    },
+    {
+      "route": "/settings/israeli-integrations",
+      "label": "Israeli Integrations"
+    },
+    {
+      "route": "/settings/sections/mfa-settings",
+      "label": "Mfa Settings"
+    },
+    {
+      "route": "/settings/sections/session-management",
+      "label": "Session Management"
+    },
+    {
+      "route": "/settings/sections/sso-settings",
+      "label": "Sso Settings"
+    },
+    {
+      "route": "/supplier-mgmt/supplier-development",
+      "label": "Supplier Development"
+    },
+    {
+      "route": "/supplier-mgmt/supplier-portal-dashboard",
+      "label": "Supplier Portal Dashboard"
+    },
+    {
+      "route": "/supplier-mgmt/supplier-scorecards",
+      "label": "Supplier Scorecards"
+    },
+    {
+      "route": "/supplier-mgmt/supplier360",
+      "label": "Supplier360"
+    },
+    {
+      "route": "/supplier-mgmt/supply-chain-risk",
+      "label": "Supply Chain Risk"
+    },
+    {
+      "route": "/supplier-mgmt/vendor-compliance",
+      "label": "Vendor Compliance"
+    },
+    {
+      "route": "/supply-chain/bom-comparison",
+      "label": "Bom Comparison"
+    },
+    {
+      "route": "/supply-chain/bom-cost-rollup",
+      "label": "Bom Cost Rollup"
+    },
+    {
+      "route": "/supply-chain/bom-templates",
+      "label": "Bom Templates"
+    },
+    {
+      "route": "/supply-chain/bom-versions",
+      "label": "Bom Versions"
+    },
+    {
+      "route": "/supply-chain/edi-admin",
+      "label": "Edi Admin"
+    },
+    {
+      "route": "/supply-chain/supply-chain-alerts",
+      "label": "Supply Chain Alerts"
+    },
+    {
+      "route": "/supply-chain/supply-chain-analytics",
+      "label": "Supply Chain Analytics"
+    },
+    {
+      "route": "/supply-chain/supply-chain-command-center",
+      "label": "Supply Chain Command Center"
+    },
+    {
+      "route": "/supply-chain/supply-chain-settings",
+      "label": "Supply Chain Settings"
+    },
+    {
+      "route": "/supply-chain/supply-chain-visibility",
+      "label": "Supply Chain Visibility"
+    },
+    {
+      "route": "/support/support-dashboard",
+      "label": "Support Dashboard"
+    },
+    {
+      "route": "/system/role-card",
+      "label": "Role Card"
+    },
+    {
+      "route": "/system/user-card",
+      "label": "User Card"
+    },
+    {
+      "route": "/system/user-permission-override",
+      "label": "User Permission Override"
+    },
+    {
+      "route": "/system/user-role-assignment",
+      "label": "User Role Assignment"
+    },
+    {
+      "route": "/tenders/tender-alerts",
+      "label": "Tender Alerts"
+    },
+    {
+      "route": "/tenders/tender-analytics",
+      "label": "Tender Analytics"
+    },
+    {
+      "route": "/tenders/tender-competitors",
+      "label": "Tender Competitors"
+    },
+    {
+      "route": "/tenders/tender-timeline",
+      "label": "Tender Timeline"
+    }
+  ],
+  "AI & אינטליגנציה": [
+    {
+      "route": "/advanced/anomaly-detection",
+      "label": "Anomaly Detection"
+    },
+    {
+      "route": "/advanced/digital-twin-factory",
+      "label": "Digital Twin Factory"
+    },
+    {
+      "route": "/advanced/graph-analytics",
+      "label": "Graph Analytics"
+    },
+    {
+      "route": "/advanced/nl-query-assistant",
+      "label": "Nl Query Assistant"
+    },
+    {
+      "route": "/advanced/predictive-forecasting",
+      "label": "Predictive Forecasting"
+    },
+    {
+      "route": "/ai-engine/ai-customer-service",
+      "label": "Ai Customer Service"
+    },
+    {
+      "route": "/ai-engine/bash44-agent-config",
+      "label": "Bash44 Agent Config"
+    },
+    {
+      "route": "/ai-engine/bash44-agent-runs",
+      "label": "Bash44 Agent Runs"
+    },
+    {
+      "route": "/ai-engine/bash44-alerts-center",
+      "label": "Bash44 Alerts Center"
+    },
+    {
+      "route": "/ai-engine/bash44-approval-queue",
+      "label": "Bash44 Approval Queue"
+    },
+    {
+      "route": "/ai-engine/bash44-control-center",
+      "label": "Bash44 Control Center"
+    },
+    {
+      "route": "/ai-engine/bash44-executive-brief",
+      "label": "Bash44 Executive Brief"
+    },
+    {
+      "route": "/ai-engine/bash44-knowledge-contexts",
+      "label": "Bash44 Knowledge Contexts"
+    },
+    {
+      "route": "/ai-engine/bash44-recommendations",
+      "label": "Bash44 Recommendations"
+    },
+    {
+      "route": "/ai-engine/employee-chatbot",
+      "label": "Employee Chatbot"
+    },
+    {
+      "route": "/ai-engine/kobi-prompts",
+      "label": "Kobi Prompts"
+    },
+    {
+      "route": "/ai-engine/ml-training-pipeline",
+      "label": "Ml Training Pipeline"
+    },
+    {
+      "route": "/bi/bi-hub",
+      "label": "Bi Hub"
+    },
+    {
+      "route": "/bi/comparative-analytics",
+      "label": "Comparative Analytics"
+    },
+    {
+      "route": "/bi/custom-dashboards",
+      "label": "Custom Dashboards"
+    },
+    {
+      "route": "/bi/data-explorer",
+      "label": "Data Explorer"
+    },
+    {
+      "route": "/bi/scheduled-reports",
+      "label": "Scheduled Reports"
+    },
+    {
+      "route": "/builder/business-rules-builder",
+      "label": "Business Rules Builder"
+    },
+    {
+      "route": "/builder/scheduled-tasks",
+      "label": "Scheduled Tasks"
+    },
+    {
+      "route": "/builder/visual-workflow-designer",
+      "label": "Visual Workflow Designer"
+    },
+    {
+      "route": "/builder/webhook-management",
+      "label": "Webhook Management"
+    },
+    {
+      "route": "/command-center/causal-impact-viewer",
+      "label": "Causal Impact Viewer"
+    },
+    {
+      "route": "/command-center/command-center",
+      "label": "Command Center"
+    },
+    {
+      "route": "/command-center/operations-control-room",
+      "label": "Operations Control Room"
+    },
+    {
+      "route": "/command-center/procurement-control-room",
+      "label": "Procurement Control Room"
+    },
+    {
+      "route": "/command-center/workforce-control-room",
+      "label": "Workforce Control Room"
+    },
+    {
+      "route": "/reports/bi-financial-statements",
+      "label": "Bi Financial Statements"
+    },
+    {
+      "route": "/reports/bi-hr-analytics",
+      "label": "Bi Hr Analytics"
+    },
+    {
+      "route": "/reports/bi-inventory-analytics",
+      "label": "Bi Inventory Analytics"
+    },
+    {
+      "route": "/reports/bi-production-analytics",
+      "label": "Bi Production Analytics"
+    },
+    {
+      "route": "/reports/bi-sales-analytics",
+      "label": "Bi Sales Analytics"
+    },
+    {
+      "route": "/reports/financial/report-customer-aging",
+      "label": "Report Customer Aging"
+    },
+    {
+      "route": "/reports/financial/report-executive-summary",
+      "label": "Report Executive Summary"
+    },
+    {
+      "route": "/reports/financial/report-fiscal",
+      "label": "Report Fiscal"
+    },
+    {
+      "route": "/reports/financial/report-invoice-analysis",
+      "label": "Report Invoice Analysis"
+    },
+    {
+      "route": "/reports/financial/report-vat",
+      "label": "Report Vat"
+    },
+    {
+      "route": "/reports/financial/report-vendor-aging",
+      "label": "Report Vendor Aging"
+    }
+  ],
+  "מלאי ומחסן": [
+    {
+      "route": "/assets/assets-dashboard",
+      "label": "Assets Dashboard"
+    },
+    {
+      "route": "/assets/equipment-insurance",
+      "label": "Equipment Insurance"
+    },
+    {
+      "route": "/assets/leasing",
+      "label": "Leasing"
+    },
+    {
+      "route": "/assets/tools-dies",
+      "label": "Tools Dies"
+    },
+    {
+      "route": "/inventory/inventory-alerts",
+      "label": "Inventory Alerts"
+    },
+    {
+      "route": "/inventory/inventory-ultra-dashboard",
+      "label": "Inventory Ultra Dashboard"
+    },
+    {
+      "route": "/inventory/stock-items-management",
+      "label": "Stock Items Management"
+    },
+    {
+      "route": "/inventory/vmi-supplier-portal",
+      "label": "Vmi Supplier Portal"
+    },
+    {
+      "route": "/inventory/warehouses-management",
+      "label": "Warehouses Management"
+    },
+    {
+      "route": "/inventory/wms-analytics",
+      "label": "Wms Analytics"
+    },
+    {
+      "route": "/inventory/wms-consignment",
+      "label": "Wms Consignment"
+    },
+    {
+      "route": "/inventory/wms-expiry-dashboard",
+      "label": "Wms Expiry Dashboard"
+    },
+    {
+      "route": "/inventory/wms-kits",
+      "label": "Wms Kits"
+    },
+    {
+      "route": "/inventory/wms-location-hierarchy",
+      "label": "Wms Location Hierarchy"
+    },
+    {
+      "route": "/inventory/wms-valuation",
+      "label": "Wms Valuation"
+    }
+  ],
+  "מסמכים": [
+    {
+      "route": "/contracts/contract-ai-analysis",
+      "label": "Contract Ai Analysis"
+    },
+    {
+      "route": "/contracts/contract-analytics-dashboard",
+      "label": "Contract Analytics Dashboard"
+    },
+    {
+      "route": "/contracts/contract-risk-scoring",
+      "label": "Contract Risk Scoring"
+    },
+    {
+      "route": "/contracts/contract-templates",
+      "label": "Contract Templates"
+    },
+    {
+      "route": "/contracts/contracts-dashboard",
+      "label": "Contracts Dashboard"
+    },
+    {
+      "route": "/contracts/contracts-management",
+      "label": "Contracts Management"
+    },
+    {
+      "route": "/contracts/nda-agreements",
+      "label": "Nda Agreements"
+    },
+    {
+      "route": "/contracts/service-agreements",
+      "label": "Service Agreements"
+    },
+    {
+      "route": "/documents/bulk-operations",
+      "label": "Bulk Operations"
+    },
+    {
+      "route": "/documents/document-control",
+      "label": "Document Control"
+    },
+    {
+      "route": "/documents/document-permissions",
+      "label": "Document Permissions"
+    },
+    {
+      "route": "/documents/document-registry",
+      "label": "Document Registry"
+    },
+    {
+      "route": "/documents/document-search",
+      "label": "Document Search"
+    },
+    {
+      "route": "/documents/document-settings",
+      "label": "Document Settings"
+    },
+    {
+      "route": "/documents/incoming-documents",
+      "label": "Incoming Documents"
+    },
+    {
+      "route": "/documents/module-documents",
+      "label": "Module Documents"
+    },
+    {
+      "route": "/documents/ocr-processing",
+      "label": "Ocr Processing"
+    },
+    {
+      "route": "/documents/outgoing-documents",
+      "label": "Outgoing Documents"
+    },
+    {
+      "route": "/documents/retention-compliance",
+      "label": "Retention Compliance"
+    },
+    {
+      "route": "/documents/version-control",
+      "label": "Version Control"
+    }
+  ],
+  "מכירות ולקוחות": [
+    {
+      "route": "/crm/agent-control-dashboard",
+      "label": "Agent Control Dashboard"
+    },
+    {
+      "route": "/crm/behavioral-analytics",
+      "label": "Behavioral Analytics"
+    },
+    {
+      "route": "/crm/communication-intelligence",
+      "label": "Communication Intelligence"
+    },
+    {
+      "route": "/crm/crm-communications-hub",
+      "label": "Crm Communications Hub"
+    },
+    {
+      "route": "/crm/decision-engine",
+      "label": "Decision Engine"
+    },
+    {
+      "route": "/crm/intelligence-engine",
+      "label": "Intelligence Engine"
+    },
+    {
+      "route": "/crm/nurture-sequences",
+      "label": "Nurture Sequences"
+    },
+    {
+      "route": "/crm/pipeline-financial",
+      "label": "Pipeline Financial"
+    },
+    {
+      "route": "/crm/predictive-forecasting",
+      "label": "Predictive Forecasting"
+    },
+    {
+      "route": "/crm/relationship-graph",
+      "label": "Relationship Graph"
+    },
+    {
+      "route": "/sales/quote360",
+      "label": "Quote360"
+    }
+  ],
+  "תקשורת": [
+    {
+      "route": "/customer-service/complaints",
+      "label": "Complaints"
+    },
+    {
+      "route": "/customer-service/rma",
+      "label": "Rma"
+    },
+    {
+      "route": "/customer-service/service-dashboard",
+      "label": "Service Dashboard"
+    },
+    {
+      "route": "/customer-service/warranty-management",
+      "label": "Warranty Management"
+    }
+  ],
+  "כספים וחשבונאות": [
+    {
+      "route": "/finance/accounting-export",
+      "label": "Accounting Export"
+    },
+    {
+      "route": "/finance/contractor-payment-decision-model",
+      "label": "Contractor Payment Decision Model"
+    },
+    {
+      "route": "/finance/fin-control-center",
+      "label": "Fin Control Center"
+    },
+    {
+      "route": "/finance/finance-alerts",
+      "label": "Finance Alerts"
+    },
+    {
+      "route": "/finance/finance-fixed-assets",
+      "label": "Finance Fixed Assets"
+    },
+    {
+      "route": "/finance/financial-analytics",
+      "label": "Financial Analytics"
+    },
+    {
+      "route": "/finance/israeli-integrations",
+      "label": "Israeli Integrations"
+    },
+    {
+      "route": "/finance/masav-management",
+      "label": "Masav Management"
+    },
+    {
+      "route": "/finance/payables-dashboard",
+      "label": "Payables Dashboard"
+    },
+    {
+      "route": "/finance/payment-operations",
+      "label": "Payment Operations"
+    },
+    {
+      "route": "/finance/profitability-feedback-loop",
+      "label": "Profitability Feedback Loop"
+    },
+    {
+      "route": "/finance/institutional/financial-statements",
+      "label": "Financial Statements"
+    },
+    {
+      "route": "/finance/institutional/monte-carlo-engine",
+      "label": "Monte Carlo Engine"
+    },
+    {
+      "route": "/finance/institutional/ratio-dashboard",
+      "label": "Ratio Dashboard"
+    },
+    {
+      "route": "/finance/institutional/risk-dashboard",
+      "label": "Risk Dashboard"
+    },
+    {
+      "route": "/finance/institutional/treasury-dashboard",
+      "label": "Treasury Dashboard"
+    }
+  ],
+  "כוח אדם ושכר": [
+    {
+      "route": "/hr/compliance-dashboard",
+      "label": "Compliance Dashboard"
+    },
+    {
+      "route": "/hr/disciplinary-incidents",
+      "label": "Disciplinary Incidents"
+    },
+    {
+      "route": "/hr/employment-history",
+      "label": "Employment History"
+    },
+    {
+      "route": "/hr/feedback-360",
+      "label": "Feedback 360"
+    },
+    {
+      "route": "/hr/hr-alerts",
+      "label": "Hr Alerts"
+    },
+    {
+      "route": "/hr/hr-analytics",
+      "label": "Hr Analytics"
+    },
+    {
+      "route": "/hr/hr-settings",
+      "label": "Hr Settings"
+    },
+    {
+      "route": "/hr/labor-cost-allocation",
+      "label": "Labor Cost Allocation"
+    },
+    {
+      "route": "/hr/offboarding-retirement",
+      "label": "Offboarding Retirement"
+    },
+    {
+      "route": "/hr/payroll-engine",
+      "label": "Payroll Engine"
+    },
+    {
+      "route": "/hr/training-management",
+      "label": "Training Management"
+    },
+    {
+      "route": "/workforce/employee360",
+      "label": "Employee360"
+    }
+  ],
+  "רכש וספקים": [
+    {
+      "route": "/procurement/competitor-analysis",
+      "label": "Competitor Analysis"
+    },
+    {
+      "route": "/procurement/delivery-documents",
+      "label": "Delivery Documents"
+    },
+    {
+      "route": "/procurement/documents-signatures",
+      "label": "Documents Signatures"
+    },
+    {
+      "route": "/procurement/inventory-sync",
+      "label": "Inventory Sync"
+    },
+    {
+      "route": "/procurement/logistics-tracking",
+      "label": "Logistics Tracking"
+    },
+    {
+      "route": "/procurement/po-approvals",
+      "label": "Po Approvals"
+    },
+    {
+      "route": "/procurement/price-management",
+      "label": "Price Management"
+    },
+    {
+      "route": "/procurement/procurement-alerts",
+      "label": "Procurement Alerts"
+    },
+    {
+      "route": "/procurement/procurement-compliance",
+      "label": "Procurement Compliance"
+    },
+    {
+      "route": "/procurement/procurement-exceptions",
+      "label": "Procurement Exceptions"
+    },
+    {
+      "route": "/procurement/procurement-profit-impact",
+      "label": "Procurement Profit Impact"
+    },
+    {
+      "route": "/procurement/procurement-settings",
+      "label": "Procurement Settings"
+    },
+    {
+      "route": "/procurement/procurement-simulation",
+      "label": "Procurement Simulation"
+    },
+    {
+      "route": "/procurement/profitability-dashboard",
+      "label": "Profitability Dashboard"
+    },
+    {
+      "route": "/procurement/purchase-orders",
+      "label": "Purchase Orders"
+    },
+    {
+      "route": "/procurement/quality-control",
+      "label": "Quality Control"
+    },
+    {
+      "route": "/procurement/risk-hedging",
+      "label": "Risk Hedging"
+    },
+    {
+      "route": "/procurement/supplier-dependency",
+      "label": "Supplier Dependency"
+    },
+    {
+      "route": "/procurement/supplier-management",
+      "label": "Supplier Management"
+    },
+    {
+      "route": "/procurement/supplier-portal",
+      "label": "Supplier Portal"
+    },
+    {
+      "route": "/procurement/supplier-returns",
+      "label": "Supplier Returns"
+    },
+    {
+      "route": "/procurement/vendor-negotiation",
+      "label": "Vendor Negotiation"
+    },
+    {
+      "route": "/procurement/products/product-bom",
+      "label": "Product Bom"
+    },
+    {
+      "route": "/procurement/products/product-costing",
+      "label": "Product Costing"
+    },
+    {
+      "route": "/procurement/products/products-dashboard",
+      "label": "Products Dashboard"
+    },
+    {
+      "route": "/procurement/products/products-list",
+      "label": "Products List"
+    },
+    {
+      "route": "/procurement/raw-materials/cost-analysis",
+      "label": "Cost Analysis"
+    },
+    {
+      "route": "/procurement/raw-materials/raw-material-stock",
+      "label": "Raw Material Stock"
+    },
+    {
+      "route": "/procurement/raw-materials/raw-materials-dashboard",
+      "label": "Raw Materials Dashboard"
+    },
+    {
+      "route": "/procurement/raw-materials/raw-materials-list",
+      "label": "Raw Materials List"
+    },
+    {
+      "route": "/procurement/raw-materials/scrap-waste",
+      "label": "Scrap Waste"
+    },
+    {
+      "route": "/procurement/raw-materials/weight-calculator",
+      "label": "Weight Calculator"
+    }
+  ],
+  "פרויקטים": [
+    {
+      "route": "/projects/customer-project-portal-page",
+      "label": "Customer Project Portal Page"
+    },
+    {
+      "route": "/projects/project-alerts",
+      "label": "Project Alerts"
+    },
+    {
+      "route": "/projects/project-documents-page",
+      "label": "Project Documents Page"
+    },
+    {
+      "route": "/projects/project-events-audit",
+      "label": "Project Events Audit"
+    },
+    {
+      "route": "/projects/project-portal-page",
+      "label": "Project Portal Page"
+    },
+    {
+      "route": "/projects/project-production-tracking",
+      "label": "Project Production Tracking"
+    },
+    {
+      "route": "/projects/project-settings",
+      "label": "Project Settings"
+    },
+    {
+      "route": "/projects/project-templates-page",
+      "label": "Project Templates Page"
+    },
+    {
+      "route": "/projects/project-workflow",
+      "label": "Project Workflow"
+    },
+    {
+      "route": "/projects/risk-dashboard-page",
+      "label": "Risk Dashboard Page"
+    }
+  ],
+  "רגולציה וציות": [
+    {
+      "route": "/security/backup-dr",
+      "label": "Backup Dr"
+    },
+    {
+      "route": "/security/encryption-management",
+      "label": "Encryption Management"
+    },
+    {
+      "route": "/security/tabs/api-keys-security",
+      "label": "Api Keys Security"
+    },
+    {
+      "route": "/security/tabs/cors-management",
+      "label": "Cors Management"
+    },
+    {
+      "route": "/security/tabs/geo-blocking",
+      "label": "Geo Blocking"
+    },
+    {
+      "route": "/security/tabs/ip-management",
+      "label": "Ip Management"
+    },
+    {
+      "route": "/security/tabs/rate-limit-config",
+      "label": "Rate Limit Config"
+    },
+    {
+      "route": "/security/tabs/vulnerability-tracker",
+      "label": "Vulnerability Tracker"
+    },
+    {
+      "route": "/security/tabs/webhook-secrets",
+      "label": "Webhook Secrets"
+    }
+  ]
+}

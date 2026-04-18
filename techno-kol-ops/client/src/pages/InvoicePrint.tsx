@@ -219,7 +219,7 @@ export function InvoicePrint() {
                 <td style={{ padding: '8px 16px', textAlign: 'left', fontSize: 13, fontWeight: 600 }}>{fmtMoney(invoice.subtotal)}</td>
               </tr>
               <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                <td style={{ padding: '8px 16px', color: '#666', fontSize: 13 }}>מע"מ 17%:</td>
+                <td style={{ padding: '8px 16px', color: '#666', fontSize: 13 }}>מע"מ 18%:</td>
                 <td style={{ padding: '8px 16px', textAlign: 'left', fontSize: 13 }}>{fmtMoney(invoice.vat)}</td>
               </tr>
               <tr style={{ background: '#1a365d', color: '#fff' }}>

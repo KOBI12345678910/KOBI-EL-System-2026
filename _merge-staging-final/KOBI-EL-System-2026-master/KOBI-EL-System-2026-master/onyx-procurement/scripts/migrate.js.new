@@ -1,0 +1,551 @@
+#!/usr/bin/env node
+/**
+ * ONYX PROCUREMENT — Migration runner (v2)
+ * Wave 1.5 — B-14 hardened
+ *
+ * Usage:
+ *   node scripts/migrate.js                      # apply all pending migrations
+ *   node scripts/migrate.js --status             # show which migrations applied
+ *   node scripts/migrate.js --dry-run            # parse + plan, but don't execute
+ *   node scripts/migrate.js --down               # roll back the most recent migration
+ *   node scripts/migrate.js --down --to 003      # roll back everything after 003
+ *   node scripts/migrate.js --force 005          # re-run migration 005 even if already applied
+ *   node scripts/migrate.js --json               # structured JSON output (for CI)
+ *
+ * Backends (auto-selected):
+ *   1. Direct Postgres via `pg` library if SUPABASE_DB_URL is set.
+ *      (preferred — supports transactions around the whole migration
+ *      and gives line-accurate error reporting)
+ *   2. Fallback: @supabase/supabase-js RPC to `public.pg_execute(sql)`
+ *      (requires migration 000-bootstrap-pg-execute.sql to have run)
+ *
+ * Bootstrap logic:
+ *   - If schema_migrations does not exist, the first migration (000)
+ *     creates it. The runner catches the "relation does not exist"
+ *     error (SQLSTATE 42P01 / Supabase code 42P01) and treats it as
+ *     an empty applied-set, then applies 000 to self-bootstrap.
+ */
+
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+require('dotenv').config();
+
+// ─────────────────────────────────────────────────────────────
+// Arg parsing
+// ─────────────────────────────────────────────────────────────
+
+const args = process.argv.slice(2);
+
+function getFlagValue(name) {
+  const i = args.indexOf(name);
+  if (i === -1) return null;
+  const next = args[i + 1];
+  if (!next || next.startsWith('--')) return true; // boolean form
+  return next;
+}
+
+const DRY_RUN     = args.includes('--dry-run');
+const STATUS_ONLY = args.includes('--status');
+const DOWN        = args.includes('--down') || args.includes('--rollback');
+const JSON_OUT    = args.includes('--json');
+const FORCE_VER   = (() => {
+  const v = getFlagValue('--force');
+  return typeof v === 'string' ? v : null;
+})();
+const DOWN_TO     = (() => {
+  const v = getFlagValue('--to');
+  return typeof v === 'string' ? v : null;
+})();
+
+const MIGRATIONS_DIR = path.join(__dirname, '..', 'supabase', 'migrations');
+
+// ─────────────────────────────────────────────────────────────
+// Output helpers — human vs JSON
+// ─────────────────────────────────────────────────────────────
+
+const events = [];
+
+function emit(type, payload) {
+  const event = { ts: new Date().toISOString(), type, ...payload };
+  events.push(event);
+  if (JSON_OUT) return; // buffered, flushed at end
+  switch (type) {
+    case 'banner':
+      console.log('');
+      console.log('================================================');
+      console.log('  ONYX PROCUREMENT  -  Migration Runner (v2)');
+      console.log('================================================');
+      console.log('');
+      break;
+    case 'info':    console.log(payload.msg); break;
+    case 'warn':    console.warn('WARN: ' + payload.msg); break;
+    case 'error':   console.error('ERROR: ' + payload.msg); break;
+    case 'plan':
+      console.log('Plan (' + payload.action + '):');
+      for (const m of payload.items) console.log('  - ' + m.version + '  ' + m.name);
+      console.log('');
+      break;
+    case 'apply-start':
+      console.log('>> Applying ' + payload.version + ': ' + payload.name + '  [checksum: ' + payload.checksum + ']');
+      break;
+    case 'apply-ok':
+      console.log('   OK in ' + payload.elapsed_ms + 'ms');
+      break;
+    case 'apply-fail':
+      console.error('   FAILED: ' + payload.error);
+      if (payload.failing_statement) {
+        console.error('   Failing statement (first 400 chars):');
+        console.error('   | ' + payload.failing_statement.slice(0, 400).replace(/\n/g, '\n   | '));
+      }
+      break;
+    case 'status-row': {
+      const mark = payload.applied ? '[x]' : '[ ]';
+      const when = payload.applied_at ? new Date(payload.applied_at).toISOString().slice(0, 10) : '';
+      const drift = payload.checksum_mismatch ? '  !! CHECKSUM DRIFT' : '';
+      console.log('  ' + mark + ' ' + payload.version + '  ' + payload.name.padEnd(45) + '  ' + when + drift);
+      break;
+    }
+    case 'done':
+      console.log('');
+      console.log(payload.msg);
+      console.log('');
+      break;
+  }
+}
+
+function flushJsonIfNeeded(exitCode) {
+  if (!JSON_OUT) return;
+  process.stdout.write(JSON.stringify({
+    runner: 'onyx-migrate-v2',
+    exit_code: exitCode,
+    events,
+  }, null, 2) + '\n');
+}
+
+// ─────────────────────────────────────────────────────────────
+// Migration file discovery
+// ─────────────────────────────────────────────────────────────
+
+function parseMigrationFile(file) {
+  // Matches 000-bootstrap.sql / 001_name.sql — but NOT 003-name.down.sql
+  const match = file.match(/^(\d{3,})[-_](.+)\.sql$/);
+  if (!match) return null;
+  if (match[2].endsWith('.down')) return null; // down files are siblings
+  return { version: match[1], name: match[2], file };
+}
+
+function findDownFile(version, upName) {
+  const candidates = [
+    `${version}-${upName}.down.sql`,
+    `${version}_${upName}.down.sql`,
+    `${version}-${upName}-down.sql`,
+    `${version}_${upName}_down.sql`,
+    `${version}-rollback.sql`,
+    `${version}_rollback.sql`,
+  ];
+  for (const c of candidates) {
+    const p = path.join(MIGRATIONS_DIR, c);
+    if (fs.existsSync(p)) return c;
+  }
+  return null;
+}
+
+function checksum(content) {
+  return crypto.createHash('sha256').update(content).digest('hex').slice(0, 16);
+}
+
+// ─────────────────────────────────────────────────────────────
+// Backend abstraction — pg client OR supabase RPC
+// ─────────────────────────────────────────────────────────────
+
+class PgBackend {
+  constructor(connectionString) {
+    // Lazy require so users without pg installed can still use the RPC path.
+    const { Client } = require('pg');
+    this.client = new Client({ connectionString });
+    this.name = 'pg';
+  }
+  async connect() {
+    await this.client.connect();
+  }
+  async query(sql, params) {
+    return this.client.query(sql, params);
+  }
+  async executeMigration(sql) {
+    // Wrap in a single transaction so partial failures roll back cleanly.
+    await this.client.query('BEGIN');
+    try {
+      await this.client.query(sql);
+      await this.client.query('COMMIT');
+    } catch (err) {
+      await this.client.query('ROLLBACK').catch(() => {});
+      throw err;
+    }
+  }
+  async getAppliedMigrations() {
+    try {
+      const res = await this.client.query(
+        'SELECT version, name, applied_at, checksum FROM public.schema_migrations ORDER BY version'
+      );
+      return res.rows;
+    } catch (err) {
+      if (err.code === '42P01') return []; // relation does not exist
+      throw err;
+    }
+  }
+  async recordApplied({ version, name, checksum: cs, execution_ms }) {
+    await this.client.query(
+      `INSERT INTO public.schema_migrations (version, name, checksum, execution_ms)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (version) DO UPDATE
+         SET name = EXCLUDED.name,
+             checksum = EXCLUDED.checksum,
+             execution_ms = EXCLUDED.execution_ms,
+             applied_at = NOW(),
+             rolled_back = FALSE`,
+      [version, name, cs, execution_ms]
+    );
+  }
+  async markRolledBack(version) {
+    await this.client.query(
+      'UPDATE public.schema_migrations SET rolled_back = TRUE WHERE version = $1',
+      [version]
+    );
+  }
+  async deleteMigrationRow(version) {
+    await this.client.query('DELETE FROM public.schema_migrations WHERE version = $1', [version]);
+  }
+  async close() {
+    await this.client.end().catch(() => {});
+  }
+}
+
+class SupabaseBackend {
+  constructor(url, key) {
+    const { createClient } = require('@supabase/supabase-js');
+    this.supabase = createClient(url, key, { auth: { persistSession: false } });
+    this.name = 'supabase-rpc';
+  }
+  async connect() { /* no-op */ }
+  async query() { throw new Error('query() not supported on SupabaseBackend'); }
+  async executeMigration(sql) {
+    const { error } = await this.supabase.rpc('pg_execute', { sql });
+    if (error) {
+      const err = new Error(error.message || JSON.stringify(error));
+      err.code = error.code;
+      err.details = error.details;
+      err.hint = error.hint;
+      throw err;
+    }
+  }
+  async getAppliedMigrations() {
+    const { data, error } = await this.supabase
+      .from('schema_migrations')
+      .select('version, name, applied_at, checksum');
+    if (error && error.code === '42P01') return [];
+    if (error) throw new Error('schema_migrations query failed: ' + error.message);
+    return data || [];
+  }
+  async recordApplied({ version, name, checksum: cs, execution_ms }) {
+    // We can't write directly without RLS bypass, so use pg_execute.
+    const esc = (s) => s.replace(/'/g, "''");
+    const sql = `
+      INSERT INTO public.schema_migrations (version, name, checksum, execution_ms)
+      VALUES ('${esc(version)}', '${esc(name)}', '${esc(cs)}', ${parseInt(execution_ms, 10)})
+      ON CONFLICT (version) DO UPDATE
+        SET name = EXCLUDED.name,
+            checksum = EXCLUDED.checksum,
+            execution_ms = EXCLUDED.execution_ms,
+            applied_at = NOW(),
+            rolled_back = FALSE;
+    `;
+    await this.executeMigration(sql);
+  }
+  async markRolledBack(version) {
+    const esc = (s) => s.replace(/'/g, "''");
+    await this.executeMigration(
+      `UPDATE public.schema_migrations SET rolled_back = TRUE WHERE version = '${esc(version)}';`
+    );
+  }
+  async deleteMigrationRow(version) {
+    const esc = (s) => s.replace(/'/g, "''");
+    await this.executeMigration(
+      `DELETE FROM public.schema_migrations WHERE version = '${esc(version)}';`
+    );
+  }
+  async close() { /* no-op */ }
+}
+
+function pickBackend() {
+  if (process.env.SUPABASE_DB_URL) {
+    try {
+      require.resolve('pg');
+      return new PgBackend(process.env.SUPABASE_DB_URL);
+    } catch (_) {
+      emit('warn', { msg: 'SUPABASE_DB_URL is set but `pg` package is not installed — falling back to supabase-js RPC' });
+    }
+  }
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    emit('error', { msg: 'Missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY (or set SUPABASE_DB_URL and install `pg`)' });
+    flushJsonIfNeeded(1);
+    process.exit(1);
+  }
+  return new SupabaseBackend(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
+// ─────────────────────────────────────────────────────────────
+// Error dissection — try to point at the failing statement
+// ─────────────────────────────────────────────────────────────
+
+function splitStatements(sql) {
+  // Naive splitter — good enough for DDL. Respects $$...$$ dollar quoting.
+  const out = [];
+  let buf = '';
+  let inDollar = false;
+  let dollarTag = '';
+  for (let i = 0; i < sql.length; i++) {
+    const ch = sql[i];
+    if (!inDollar && ch === '$') {
+      const m = sql.slice(i).match(/^\$([A-Za-z0-9_]*)\$/);
+      if (m) { inDollar = true; dollarTag = m[0]; buf += dollarTag; i += dollarTag.length - 1; continue; }
+    } else if (inDollar && ch === '$') {
+      if (sql.slice(i, i + dollarTag.length) === dollarTag) {
+        buf += dollarTag; i += dollarTag.length - 1; inDollar = false; dollarTag = ''; continue;
+      }
+    }
+    if (!inDollar && ch === ';') { buf += ';'; out.push(buf); buf = ''; continue; }
+    buf += ch;
+  }
+  if (buf.trim()) out.push(buf);
+  return out.map(s => s.trim()).filter(s => s.length > 0);
+}
+
+function locateFailingStatement(err, sql) {
+  // `pg` provides err.position — a 1-based char offset into the submitted SQL.
+  if (err && err.position) {
+    const pos = parseInt(err.position, 10);
+    if (!Number.isNaN(pos)) {
+      // Find the statement containing that position.
+      const statements = splitStatements(sql);
+      let acc = 0;
+      for (const stmt of statements) {
+        const idx = sql.indexOf(stmt, acc);
+        if (idx === -1) continue;
+        if (pos >= idx && pos <= idx + stmt.length) return stmt;
+        acc = idx + stmt.length;
+      }
+    }
+  }
+  // Fallback: return first statement as best-effort context
+  const statements = splitStatements(sql);
+  return statements[0] || null;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Main
+// ─────────────────────────────────────────────────────────────
+
+async function main() {
+  emit('banner', {});
+
+  if (!fs.existsSync(MIGRATIONS_DIR)) {
+    emit('error', { msg: 'Migrations directory not found: ' + MIGRATIONS_DIR });
+    flushJsonIfNeeded(1);
+    process.exit(1);
+  }
+
+  const files = fs.readdirSync(MIGRATIONS_DIR)
+    .filter(f => f.endsWith('.sql'))
+    .sort();
+
+  const migrations = files.map(parseMigrationFile).filter(Boolean);
+  emit('info', { msg: 'Found ' + migrations.length + ' migration files' });
+
+  const backend = pickBackend();
+  emit('info', { msg: 'Backend: ' + backend.name });
+
+  try {
+    await backend.connect();
+  } catch (err) {
+    emit('error', { msg: 'Backend connect failed: ' + err.message });
+    flushJsonIfNeeded(1);
+    process.exit(1);
+  }
+
+  let applied = [];
+  try {
+    applied = await backend.getAppliedMigrations();
+  } catch (err) {
+    emit('warn', { msg: 'Could not query schema_migrations: ' + err.message + ' — assuming empty' });
+  }
+  const appliedMap = new Map(applied.map(m => [m.version, m]));
+
+  // ── STATUS ────────────────────────────────────────────────
+  if (STATUS_ONLY) {
+    for (const m of migrations) {
+      const row = appliedMap.get(m.version);
+      let mismatch = false;
+      if (row && row.checksum) {
+        const diskSql = fs.readFileSync(path.join(MIGRATIONS_DIR, m.file), 'utf8');
+        mismatch = checksum(diskSql) !== row.checksum;
+      }
+      emit('status-row', {
+        version: m.version,
+        name: m.name,
+        applied: !!row,
+        applied_at: row?.applied_at || null,
+        checksum_mismatch: mismatch,
+      });
+    }
+    await backend.close();
+    flushJsonIfNeeded(0);
+    process.exit(0);
+  }
+
+  // ── DOWN / ROLLBACK ───────────────────────────────────────
+  if (DOWN) {
+    // Determine which versions to roll back:
+    // Without --to: only the single most-recent applied.
+    // With --to X: every applied version with version > X (lexical).
+    const appliedSorted = [...appliedMap.keys()].sort();
+    let toRollback;
+    if (DOWN_TO) {
+      toRollback = appliedSorted.filter(v => v > DOWN_TO).reverse();
+    } else {
+      toRollback = appliedSorted.slice(-1).reverse();
+    }
+
+    if (toRollback.length === 0) {
+      emit('info', { msg: 'Nothing to roll back' });
+      await backend.close();
+      flushJsonIfNeeded(0);
+      process.exit(0);
+    }
+
+    const plan = toRollback.map(v => {
+      const up = migrations.find(m => m.version === v);
+      const down = up ? findDownFile(up.version, up.name) : null;
+      return { version: v, name: up?.name || '(unknown)', down_file: down };
+    });
+
+    emit('plan', { action: 'rollback', items: plan.map(p => ({ version: p.version, name: p.name + (p.down_file ? ' (' + p.down_file + ')' : ' [NO DOWN FILE]') })) });
+
+    for (const step of plan) {
+      if (!step.down_file) {
+        emit('error', { msg: 'No down file found for ' + step.version + ' — aborting rollback. Expected e.g. ' + step.version + '-' + step.name + '.down.sql' });
+        await backend.close();
+        flushJsonIfNeeded(1);
+        process.exit(1);
+      }
+      const sql = fs.readFileSync(path.join(MIGRATIONS_DIR, step.down_file), 'utf8');
+      emit('apply-start', { version: step.version, name: 'ROLLBACK ' + step.name, checksum: checksum(sql) });
+      if (DRY_RUN) { emit('info', { msg: '(dry-run) ' + sql.length + ' bytes' }); continue; }
+      const t0 = Date.now();
+      try {
+        await backend.executeMigration(sql);
+        await backend.deleteMigrationRow(step.version);
+        emit('apply-ok', { elapsed_ms: Date.now() - t0 });
+      } catch (err) {
+        emit('apply-fail', {
+          error: err.message,
+          code: err.code,
+          failing_statement: locateFailingStatement(err, sql),
+        });
+        await backend.close();
+        flushJsonIfNeeded(1);
+        process.exit(1);
+      }
+    }
+
+    emit('done', { msg: 'Rollback complete' });
+    await backend.close();
+    flushJsonIfNeeded(0);
+    process.exit(0);
+  }
+
+  // ── UP (default) ──────────────────────────────────────────
+  // Build the pending list. --force injects a specific version even if applied.
+  let pending = migrations.filter(m => !appliedMap.has(m.version));
+  if (FORCE_VER) {
+    const forced = migrations.find(m => m.version === FORCE_VER);
+    if (!forced) {
+      emit('error', { msg: '--force ' + FORCE_VER + ' does not match any migration file' });
+      await backend.close();
+      flushJsonIfNeeded(1);
+      process.exit(1);
+    }
+    if (!pending.some(m => m.version === forced.version)) {
+      pending.push(forced);
+      pending.sort((a, b) => a.version.localeCompare(b.version));
+    }
+    emit('info', { msg: 'FORCE re-run requested for ' + forced.version });
+  }
+
+  if (pending.length === 0) {
+    emit('info', { msg: 'No pending migrations - database is up to date' });
+    await backend.close();
+    flushJsonIfNeeded(0);
+    process.exit(0);
+  }
+
+  emit('plan', {
+    action: 'apply',
+    items: pending.map(m => ({ version: m.version, name: m.name })),
+  });
+
+  for (const m of pending) {
+    const filePath = path.join(MIGRATIONS_DIR, m.file);
+    const sql = fs.readFileSync(filePath, 'utf8');
+    const cs = checksum(sql);
+
+    emit('apply-start', { version: m.version, name: m.name, checksum: cs });
+
+    if (DRY_RUN) {
+      emit('info', { msg: '(dry-run) SQL length: ' + sql.length + ' bytes, ' + splitStatements(sql).length + ' statements' });
+      continue;
+    }
+
+    const t0 = Date.now();
+    try {
+      await backend.executeMigration(sql);
+      const elapsed = Date.now() - t0;
+      try {
+        await backend.recordApplied({ version: m.version, name: m.name, checksum: cs, execution_ms: elapsed });
+      } catch (recErr) {
+        // If schema_migrations didn't exist before 000 ran, retry once after 000.
+        if (recErr.code === '42P01' && m.version === '000') {
+          await backend.recordApplied({ version: m.version, name: m.name, checksum: cs, execution_ms: elapsed });
+        } else {
+          throw recErr;
+        }
+      }
+      emit('apply-ok', { elapsed_ms: elapsed });
+    } catch (err) {
+      emit('apply-fail', {
+        version: m.version,
+        error: err.message,
+        code: err.code,
+        hint: err.hint,
+        failing_statement: locateFailingStatement(err, sql),
+      });
+      emit('error', { msg: 'Aborting migration run after failure in ' + m.file });
+      await backend.close();
+      flushJsonIfNeeded(1);
+      process.exit(1);
+    }
+  }
+
+  emit('done', { msg: 'All migrations applied successfully' });
+  await backend.close();
+  flushJsonIfNeeded(0);
+  process.exit(0);
+}
+
+main().catch(err => {
+  emit('error', { msg: 'Migration runner crashed: ' + (err && err.stack || err) });
+  flushJsonIfNeeded(1);
+  process.exit(1);
+});

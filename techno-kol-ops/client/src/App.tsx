@@ -54,6 +54,7 @@ import { Reports } from './pages/Reports';
 import { InvoicePrint } from './pages/InvoicePrint';
 import { InventoryAlerts } from './pages/InventoryAlerts';
 import { Schedule } from './pages/Schedule';
+import { QRGenerator } from './pages/QRGenerator';
 
 function Project360RouteWrapper() {
   const { id } = useParams<{ id: string }>();
@@ -142,6 +143,7 @@ function Layout() {
           <Route path="/360/supplier/:id" element={<Supplier360 />} />
           <Route path="/360/work-order/:id" element={<WorkOrder360Detail />} />
           <Route path="/inventory-alerts" element={<InventoryAlerts />} />
+          <Route path="/qr-generator" element={<QRGenerator />} />
           <Route path="/schedule" element={<Schedule />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/reports/:type" element={<Reports />} />

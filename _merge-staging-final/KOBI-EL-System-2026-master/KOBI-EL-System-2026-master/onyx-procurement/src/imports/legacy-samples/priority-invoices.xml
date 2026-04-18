@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Priority>
+  <INVOICE>
+    <IVNUM>9001</IVNUM>
+    <CUSTNAME>Epsilon Industries</CUSTNAME>
+    <IVDATE>2026-01-10</IVDATE>
+    <QPRICE>1180</QPRICE>
+    <VAT>180</VAT>
+    <TOTPRICE>1000</TOTPRICE>
+  </INVOICE>
+  <INVOICE>
+    <IVNUM>9002</IVNUM>
+    <CUSTNAME>Zeta Trading</CUSTNAME>
+    <IVDATE>2026-01-14</IVDATE>
+    <QPRICE>2360</QPRICE>
+    <VAT>360</VAT>
+    <TOTPRICE>2000</TOTPRICE>
+  </INVOICE>
+</Priority>

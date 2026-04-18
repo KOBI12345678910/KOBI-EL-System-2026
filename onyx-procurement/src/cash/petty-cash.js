@@ -40,8 +40,8 @@ const CASH_LAW_LIMIT_ILS = 6000;
 /** Default float when not specified */
 const DEFAULT_FLOAT_ILS = 3000;
 
-/** VAT rate as of 2026 (17%) — can be overridden per voucher */
-const DEFAULT_VAT_RATE = 0.17;
+/** VAT rate as of 2026-01-01 (18%) — can be overridden per voucher. Prior rate 17% until 2025-12-31. */
+const DEFAULT_VAT_RATE = 0.18;
 
 /** Replenishment trigger ratio — when balance < 20% of float */
 const REPLENISH_THRESHOLD_RATIO = 0.20;
@@ -330,7 +330,7 @@ function findCategory(fund, code) {
  *   - receiptRef     : string (file id / url — required over ₪50)
  *   - taxInvoiceRef  : string (required over ₪300 for VAT)
  *   - vatAmount      : number (VAT component in the gross amount)
- *   - vatRate        : number (decimal, default 0.17)
+ *   - vatRate        : number (decimal, default 0.18)
  *   - custodianPin   : string (authorisation — custodian must sign)
  *   - approverId     : string (required over OVER_THRESHOLD_APPROVAL)
  *   - issuedBy       : string (current user id)

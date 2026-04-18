@@ -1,0 +1,33 @@
+import { pgTable, serial, text, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { platformModulesTable } from "./platform-modules";
+
+export const moduleEntitiesTable = pgTable("module_entities", {
+  id: serial("id").primaryKey(),
+  moduleId: integer("module_id").notNull().references(() => platformModulesTable.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  nameHe: text("name_he"),
+  nameEn: text("name_en"),
+  namePlural: text("name_plural").notNull(),
+  slug: text("slug").notNull(),
+  entityKey: text("entity_key").unique(),
+  tableName: text("table_name").unique(),
+  description: text("description"),
+  icon: text("icon").notNull().default("FileText"),
+  entityType: text("entity_type").notNull().default("master"),
+  primaryDisplayField: text("primary_display_field"),
+  parentEntityId: integer("parent_entity_id"),
+  settings: jsonb("settings").default({}),
+  sortOrder: integer("sort_order").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  hasStatus: boolean("has_status").notNull().default(false),
+  hasCategories: boolean("has_categories").notNull().default(false),
+  hasAttachments: boolean("has_attachments").notNull().default(false),
+  hasNotes: boolean("has_notes").notNull().default(false),
+  hasOwner: boolean("has_owner").notNull().default(false),
+  hasNumbering: boolean("has_numbering").notNull().default(false),
+  hasCreatedUpdated: boolean("has_created_updated").notNull().default(true),
+  hasSoftDelete: boolean("has_soft_delete").notNull().default(false),
+  hasAudit: boolean("has_audit").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});

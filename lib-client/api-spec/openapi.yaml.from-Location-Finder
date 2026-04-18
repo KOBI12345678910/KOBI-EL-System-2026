@@ -1,0 +1,409 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: GPS Location Tracker API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: sessions
+    description: Tracking session operations
+  - name: locations
+    description: Location point operations
+  - name: dashboard
+    description: Dashboard and summary operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /sessions:
+    get:
+      operationId: listSessions
+      tags: [sessions]
+      summary: List all tracking sessions
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: List of tracking sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TrackingSession"
+    post:
+      operationId: createSession
+      tags: [sessions]
+      summary: Create a new tracking session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSessionBody"
+      responses:
+        "201":
+          description: Created session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingSession"
+
+  /sessions/{id}:
+    get:
+      operationId: getSession
+      tags: [sessions]
+      summary: Get a single tracking session
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Session details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingSession"
+        "404":
+          description: Session not found
+    patch:
+      operationId: updateSession
+      tags: [sessions]
+      summary: Update a tracking session (e.g. stop it)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSessionBody"
+      responses:
+        "200":
+          description: Updated session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingSession"
+        "404":
+          description: Session not found
+    delete:
+      operationId: deleteSession
+      tags: [sessions]
+      summary: Delete a tracking session and its locations
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /sessions/{sessionId}/locations:
+    get:
+      operationId: listLocations
+      tags: [locations]
+      summary: List location points for a session
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of location points
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LocationPoint"
+    post:
+      operationId: addLocation
+      tags: [locations]
+      summary: Add a location point to a session
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddLocationBody"
+      responses:
+        "201":
+          description: Created location point
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LocationPoint"
+
+  /sessions/{sessionId}/locations/batch:
+    post:
+      operationId: addLocationsBatch
+      tags: [locations]
+      summary: Add multiple location points at once
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddLocationsBatchBody"
+      responses:
+        "201":
+          description: Created location points
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LocationPoint"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard summary stats
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Get recent tracking activity
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Recent activity entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecentActivity"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    TrackingSession:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+          enum: [active, stopped]
+        totalDistance:
+          type: number
+        totalPoints:
+          type: integer
+        startedAt:
+          type: string
+          format: date-time
+        stoppedAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - status
+        - totalDistance
+        - totalPoints
+        - startedAt
+        - createdAt
+
+    CreateSessionBody:
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+        - name
+
+    UpdateSessionBody:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+          enum: [active, stopped]
+
+    LocationPoint:
+      type: object
+      properties:
+        id:
+          type: integer
+        sessionId:
+          type: integer
+        latitude:
+          type: number
+        longitude:
+          type: number
+        altitude:
+          type: ["number", "null"]
+        accuracy:
+          type: ["number", "null"]
+        speed:
+          type: ["number", "null"]
+        heading:
+          type: ["number", "null"]
+        timestamp:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - sessionId
+        - latitude
+        - longitude
+        - timestamp
+        - createdAt
+
+    AddLocationBody:
+      type: object
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
+        altitude:
+          type: ["number", "null"]
+        accuracy:
+          type: ["number", "null"]
+        speed:
+          type: ["number", "null"]
+        heading:
+          type: ["number", "null"]
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - latitude
+        - longitude
+        - timestamp
+
+    AddLocationsBatchBody:
+      type: object
+      properties:
+        locations:
+          type: array
+          items:
+            $ref: "#/components/schemas/AddLocationBody"
+      required:
+        - locations
+
+    DashboardSummary:
+      type: object
+      properties:
+        totalSessions:
+          type: integer
+        activeSessions:
+          type: integer
+        totalDistance:
+          type: number
+        totalPoints:
+          type: integer
+        averageDistance:
+          type: number
+      required:
+        - totalSessions
+        - activeSessions
+        - totalDistance
+        - totalPoints
+        - averageDistance
+
+    RecentActivity:
+      type: object
+      properties:
+        id:
+          type: integer
+        sessionId:
+          type: integer
+        sessionName:
+          type: string
+        type:
+          type: string
+          enum: [session_started, session_stopped, location_added]
+        description:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - id
+        - sessionId
+        - sessionName
+        - type
+        - description
+        - timestamp

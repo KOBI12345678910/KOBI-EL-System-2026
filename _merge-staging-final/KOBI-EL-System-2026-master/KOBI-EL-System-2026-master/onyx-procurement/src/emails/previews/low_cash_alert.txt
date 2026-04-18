@@ -1,0 +1,22 @@
+התראה: יתרת מזומנים נמוכה
+
+חשבון: חשבון תפעולי ראשי
+יתרה נוכחית: ₪5,000
+רף התראה: ₪10,000
+תשלומים קרובים: ₪18,500
+נכון לתאריך: 2026-04-11
+
+English:
+Low cash alert on חשבון תפעולי ראשי.
+Current: ₪5,000 · Threshold: ₪10,000
+Upcoming outflows: ₪18,500
+
+--
+אוניקס פרוקיורמנט / Onyx Procurement
+Email: support@onyx.local · Phone: +972-3-000-0000
+Web: https://onyx.local
+רחוב המלאכה 1, תל אביב · 1 HaMelacha St, Tel Aviv, Israel
+
+הודעה אוטומטית — אין להשיב ישירות.
+Automated notification — please do not reply.
+Unsubscribe: https://onyx.local/unsubscribe

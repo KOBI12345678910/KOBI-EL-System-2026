@@ -1,0 +1,234 @@
+import * as fs from "fs";
+import * as path from "path";
+import { TerminalTool } from "./terminalTool";
+
+export interface Plugin {
+  name: string;
+  version: string;
+  description: string;
+  author: string;
+  hooks: Record<string, (...args: any[]) => Promise<any>>;
+  tools?: Record<string, { description: string; handler: (input: any) => Promise<any> }>;
+  config?: Record<string, any>;
+  enabled: boolean;
+}
+
+export interface PluginManifest {
+  name: string;
+  version: string;
+  description: string;
+  author: string;
+  main: string;
+  hooks: string[];
+  tools: string[];
+  config: Record<string, { type: string; default: any; description: string }>;
+}
+
+export class PluginSystem {
+  private plugins: Map<string, Plugin> = new Map();
+  private hookSubscribers: Map<string, Array<{ pluginName: string; handler: (...args: any[]) => Promise<any> }>> = new Map();
+  private pluginsDir: string;
+  private terminal: TerminalTool;
+  private onLog: (msg: string) => void;
+
+  constructor(workspaceDir: string, terminal: TerminalTool, onLog: (msg: string) => void) {
+    this.pluginsDir = path.join(workspaceDir, ".agent", "plugins");
+    this.terminal = terminal;
+    this.onLog = onLog;
+
+    if (!fs.existsSync(this.pluginsDir)) {
+      fs.mkdirSync(this.pluginsDir, { recursive: true });
+    }
+  }
+
+  async loadPlugin(pluginPath: string): Promise<Plugin | null> {
+    try {
+      const manifestPath = path.join(pluginPath, "manifest.json");
+      if (!fs.existsSync(manifestPath)) return null;
+
+      const manifest: PluginManifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
+      const mainPath = path.join(pluginPath, manifest.main);
+
+      if (!fs.existsSync(mainPath)) return null;
+
+      // Dynamic import the plugin
+      const mod = require(mainPath);
+
+      const plugin: Plugin = {
+        name: manifest.name,
+        version: manifest.version,
+        description: manifest.description,
+        author: manifest.author,
+        hooks: {},
+        tools: {},
+        config: {},
+        enabled: true,
+      };
+
+      // Register hooks
+      if (mod.hooks) {
+        for (const [hookName, handler] of Object.entries(mod.hooks)) {
+          plugin.hooks[hookName] = handler as any;
+          this.registerHook(hookName, manifest.name, handler as any);
+        }
+      }
+
+      // Register tools
+      if (mod.tools) {
+        for (const [toolName, tool] of Object.entries(mod.tools)) {
+          plugin.tools![toolName] = tool as any;
+        }
+      }
+
+      // Apply default config
+      if (manifest.config) {
+        for (const [key, def] of Object.entries(manifest.config)) {
+          plugin.config![key] = def.default;
+        }
+      }
+
+      this.plugins.set(manifest.name, plugin);
+      this.onLog(`🔌 Plugin loaded: ${manifest.name} v${manifest.version}`);
+      return plugin;
+    } catch (err: any) {
+      this.onLog(`❌ Plugin load error: ${err.message}`);
+      return null;
+    }
+  }
+
+  async loadAllPlugins(): Promise<void> {
+    if (!fs.existsSync(this.pluginsDir)) return;
+
+    const dirs = fs.readdirSync(this.pluginsDir, { withFileTypes: true });
+    for (const dir of dirs) {
+      if (dir.isDirectory()) {
+        await this.loadPlugin(path.join(this.pluginsDir, dir.name));
+      }
+    }
+  }
+
+  async installPlugin(source: string): Promise<boolean> {
+    // Support: git URL, npm package, or local path
+    if (source.startsWith("http") || source.startsWith("git@")) {
+      const name = source.split("/").pop()?.replace(".git", "") || "plugin";
+      const destPath = path.join(this.pluginsDir, name);
+      const result = await this.terminal.execute(`git clone ${source} ${destPath}`, { timeout: 30000 });
+      if (result.success) {
+        await this.loadPlugin(destPath);
+        return true;
+      }
+      return false;
+    }
+
+    if (source.startsWith("/") || source.startsWith(".")) {
+      return (await this.loadPlugin(source)) !== null;
+    }
+
+    // npm package
+    const destPath = path.join(this.pluginsDir, source);
+    fs.mkdirSync(destPath, { recursive: true });
+    const result = await this.terminal.execute(`cd ${destPath} && npm init -y && npm install ${source}`, {
+      timeout: 30000,
+    });
+    return result.success;
+  }
+
+  uninstallPlugin(name: string): boolean {
+    const plugin = this.plugins.get(name);
+    if (!plugin) return false;
+
+    // Unregister hooks
+    for (const hookName of Object.keys(plugin.hooks)) {
+      const subs = this.hookSubscribers.get(hookName);
+      if (subs) {
+        this.hookSubscribers.set(
+          hookName,
+          subs.filter((s) => s.pluginName !== name)
+        );
+      }
+    }
+
+    this.plugins.delete(name);
+
+    // Remove files
+    const pluginPath = path.join(this.pluginsDir, name);
+    if (fs.existsSync(pluginPath)) {
+      fs.rmSync(pluginPath, { recursive: true });
+    }
+
+    return true;
+  }
+
+  private registerHook(hookName: string, pluginName: string, handler: (...args: any[]) => Promise<any>): void {
+    if (!this.hookSubscribers.has(hookName)) {
+      this.hookSubscribers.set(hookName, []);
+    }
+    this.hookSubscribers.get(hookName)!.push({ pluginName, handler });
+  }
+
+  async triggerHook(hookName: string, ...args: any[]): Promise<any[]> {
+    const subscribers = this.hookSubscribers.get(hookName) || [];
+    const results: any[] = [];
+
+    for (const sub of subscribers) {
+      const plugin = this.plugins.get(sub.pluginName);
+      if (!plugin?.enabled) continue;
+
+      try {
+        const result = await sub.handler(...args);
+        results.push({ plugin: sub.pluginName, result });
+      } catch (err: any) {
+        results.push({ plugin: sub.pluginName, error: err.message });
+      }
+    }
+
+    return results;
+  }
+
+  async callTool(pluginName: string, toolName: string, input: any): Promise<any> {
+    const plugin = this.plugins.get(pluginName);
+    if (!plugin?.enabled) throw new Error(`Plugin not found or disabled: ${pluginName}`);
+
+    const tool = plugin.tools?.[toolName];
+    if (!tool) throw new Error(`Tool not found: ${pluginName}/${toolName}`);
+
+    return tool.handler(input);
+  }
+
+  getPlugins(): Plugin[] {
+    return Array.from(this.plugins.values());
+  }
+
+  getAvailableHooks(): string[] {
+    return [
+      "before:task",
+      "after:task",
+      "before:step",
+      "after:step",
+      "on:error",
+      "on:file_change",
+      "on:build",
+      "on:deploy",
+      "on:test",
+      "before:commit",
+      "after:commit",
+    ];
+  }
+
+  togglePlugin(name: string): boolean {
+    const plugin = this.plugins.get(name);
+    if (!plugin) return false;
+    plugin.enabled = !plugin.enabled;
+    return plugin.enabled;
+  }
+
+  getPluginTools(): Array<{ plugin: string; tool: string; description: string }> {
+    const tools: Array<{ plugin: string; tool: string; description: string }> = [];
+    for (const [name, plugin] of this.plugins) {
+      for (const [toolName, tool] of Object.entries(plugin.tools || {})) {
+        tools.push({ plugin: name, tool: toolName, description: tool.description });
+      }
+    }
+    return tools;
+  }
+}

@@ -1,0 +1,249 @@
+import { TerminalTool } from "./terminalTool";
+import { FileTool } from "./fileTool";
+import * as fs from "fs";
+import * as path from "path";
+
+export interface LintResult {
+  errors: number;
+  warnings: number;
+  fixable: number;
+  issues: Array<{
+    file: string;
+    line: number;
+    column: number;
+    severity: "error" | "warning";
+    message: string;
+    rule: string;
+  }>;
+  output: string;
+}
+
+export class LintTool {
+  private terminal: TerminalTool;
+  private fileTool: FileTool;
+  private workspaceDir: string;
+
+  constructor(workspaceDir: string, terminal: TerminalTool, fileTool: FileTool) {
+    this.workspaceDir = workspaceDir;
+    this.terminal = terminal;
+    this.fileTool = fileTool;
+  }
+
+  async setupEslint(options: {
+    typescript?: boolean;
+    react?: boolean;
+    prettier?: boolean;
+  } = { typescript: true }): Promise<void> {
+    const packages = ["eslint"];
+    
+    if (options.typescript) {
+      packages.push("@typescript-eslint/parser", "@typescript-eslint/eslint-plugin");
+    }
+    if (options.react) {
+      packages.push("eslint-plugin-react", "eslint-plugin-react-hooks");
+    }
+    if (options.prettier) {
+      packages.push("prettier", "eslint-config-prettier", "eslint-plugin-prettier");
+    }
+
+    await this.terminal.execute(`npm install -D ${packages.join(" ")}`, { timeout: 60000 });
+
+    const config: any = {
+      root: true,
+      env: { browser: true, es2022: true, node: true },
+      extends: ["eslint:recommended"],
+      parserOptions: { ecmaVersion: "latest", sourceType: "module" },
+      rules: {
+        "no-unused-vars": "warn",
+        "no-console": "warn",
+        "prefer-const": "error",
+        "no-var": "error",
+        eqeqeq: ["error", "always"],
+      },
+    };
+
+    if (options.typescript) {
+      config.parser = "@typescript-eslint/parser";
+      config.extends.push("plugin:@typescript-eslint/recommended");
+      config.plugins = config.plugins || [];
+      config.plugins.push("@typescript-eslint");
+      config.rules["@typescript-eslint/no-unused-vars"] = "warn";
+      config.rules["@typescript-eslint/no-explicit-any"] = "warn";
+    }
+
+    if (options.react) {
+      config.extends.push("plugin:react/recommended", "plugin:react-hooks/recommended");
+      config.settings = { react: { version: "detect" } };
+    }
+
+    if (options.prettier) {
+      config.extends.push("prettier");
+      this.fileTool.createFile(".prettierrc", JSON.stringify({
+        semi: true,
+        trailingComma: "es5",
+        singleQuote: true,
+        printWidth: 100,
+        tabWidth: 2,
+        useTabs: false,
+      }, null, 2));
+    }
+
+    this.fileTool.createFile(".eslintrc.json", JSON.stringify(config, null, 2));
+
+    this.fileTool.createFile(".eslintignore", `node_modules/
+dist/
+build/
+.next/
+coverage/
+*.min.js
+`);
+  }
+
+  async lint(options?: {
+    files?: string;
+    fix?: boolean;
+    format?: "json" | "stylish";
+  }): Promise<LintResult> {
+    const files = options?.files || "src/**/*.{ts,tsx,js,jsx}";
+    const fixFlag = options?.fix ? " --fix" : "";
+    const formatFlag = options?.format === "json" ? " -f json" : "";
+
+    const result = await this.terminal.execute(
+      `npx eslint ${files}${fixFlag}${formatFlag}`,
+      { timeout: 60000 }
+    );
+
+    return this.parseEslintOutput(result.stdout + "\n" + result.stderr);
+  }
+
+  async format(options?: { files?: string; check?: boolean }): Promise<{
+    success: boolean;
+    filesChanged: number;
+    output: string;
+  }> {
+    const files = options?.files || "src/**/*.{ts,tsx,js,jsx,json,css,md}";
+    const checkFlag = options?.check ? " --check" : " --write";
+
+    const result = await this.terminal.execute(
+      `npx prettier${checkFlag} "${files}"`,
+      { timeout: 60000 }
+    );
+
+    const changedMatch = result.stdout.match(/(\d+)\s+files?\s+(?:changed|reformatted)/);
+    return {
+      success: result.success || options?.check === false,
+      filesChanged: changedMatch ? parseInt(changedMatch[1]) : 0,
+      output: result.stdout,
+    };
+  }
+
+  async typeCheck(): Promise<{
+    success: boolean;
+    errors: Array<{ file: string; line: number; message: string }>;
+    output: string;
+  }> {
+    const result = await this.terminal.execute("npx tsc --noEmit", { timeout: 60000 });
+    const errors: Array<{ file: string; line: number; message: string }> = [];
+
+    const errorRegex = /(.+)\((\d+),\d+\): error TS\d+: (.+)/g;
+    let match;
+    while ((match = errorRegex.exec(result.stdout + result.stderr)) !== null) {
+      errors.push({
+        file: match[1],
+        line: parseInt(match[2]),
+        message: match[3],
+      });
+    }
+
+    return {
+      success: result.success,
+      errors,
+      output: result.stdout + result.stderr,
+    };
+  }
+
+  async setupHusky(): Promise<void> {
+    await this.terminal.execute("npm install -D husky lint-staged", { timeout: 30000 });
+    await this.terminal.execute("npx husky init", { timeout: 10000 });
+    
+    this.fileTool.createFile(".husky/pre-commit", `#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+npx lint-staged
+`);
+
+    // Add lint-staged config to package.json
+    try {
+      const pkgPath = path.join(this.workspaceDir, "package.json");
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
+      pkg["lint-staged"] = {
+        "*.{ts,tsx,js,jsx}": ["eslint --fix", "prettier --write"],
+        "*.{json,css,md}": ["prettier --write"],
+      };
+      fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
+    } catch {}
+  }
+
+  private parseEslintOutput(output: string): LintResult {
+    const result: LintResult = {
+      errors: 0,
+      warnings: 0,
+      fixable: 0,
+      issues: [],
+      output,
+    };
+
+    try {
+      // Try JSON parse first
+      const data = JSON.parse(output);
+      if (Array.isArray(data)) {
+        for (const file of data) {
+          for (const msg of file.messages || []) {
+            result.issues.push({
+              file: file.filePath,
+              line: msg.line,
+              column: msg.column,
+              severity: msg.severity === 2 ? "error" : "warning",
+              message: msg.message,
+              rule: msg.ruleId || "",
+            });
+            if (msg.severity === 2) result.errors++;
+            else result.warnings++;
+            if (msg.fix) result.fixable++;
+          }
+        }
+        return result;
+      }
+    } catch {}
+
+    // Parse text output
+    const issueRegex = /^\s*(\d+):(\d+)\s+(error|warning)\s+(.+?)\s+(\S+)\s*$/gm;
+    let match;
+    let currentFile = "";
+
+    for (const line of output.split("\n")) {
+      if (line.match(/^\//) || line.match(/^[A-Z]:\\/)) {
+        currentFile = line.trim();
+      }
+      while ((match = issueRegex.exec(line)) !== null) {
+        result.issues.push({
+          file: currentFile,
+          line: parseInt(match[1]),
+          column: parseInt(match[2]),
+          severity: match[3] as "error" | "warning",
+          message: match[4],
+          rule: match[5],
+        });
+        if (match[3] === "error") result.errors++;
+        else result.warnings++;
+      }
+    }
+
+    const summaryMatch = output.match(/(\d+)\s+errors?\s+and\s+(\d+)\s+warnings?/);
+    if (summaryMatch) {
+      result.errors = parseInt(summaryMatch[1]);
+      result.warnings = parseInt(summaryMatch[2]);
+    }
+
+    return result;
+  }
+}

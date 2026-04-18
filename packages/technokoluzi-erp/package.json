@@ -1,0 +1,21 @@
+{
+  "name": "techno-kol-uzi",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx tsx server/index.ts",
+    "build": "pnpm --filter @workspace/erp-app run build"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "tsx": "^4.19.4",
+    "vite": "^6.3.5",
+    "@vitejs/plugin-react": "^4.5.2",
+    "@tailwindcss/vite": "^4.1.7",
+    "@replit/vite-plugin-runtime-error-modal": "^0.0.6",
+    "@replit/vite-plugin-cartographer": "^0.5.1",
+    "@replit/vite-plugin-dev-banner": "^0.1.2"
+  },
+  "pnpm": {}
+}

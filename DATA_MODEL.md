@@ -149,7 +149,7 @@ Tax-ready customer register. `tax_id UNIQUE`, `tax_id_type ∈ {company, individ
 | customer_id FK → customers(id) | |
 | customer_name, customer_tax_id | denormalised for legal immutability |
 | project_id FK → projects(id) | |
-| net_amount, vat_rate (default 0.17), vat_amount, gross_amount — NUMERIC(14,2) | |
+| net_amount, vat_rate (default 0.18; 0.17 for pre-2026 historical invoices), vat_amount, gross_amount — NUMERIC(14,2) | |
 | allocation_number / allocation_status ∈ {pending, verified, invalid, exempt} | Invoice Reform 2024 |
 | amount_paid, amount_outstanding | NUMERIC(14,2) |
 | status ∈ {draft, issued, partial, paid, overdue, voided, disputed} | |
@@ -307,7 +307,7 @@ Every money-bearing column is `NUMERIC(14,2)`:
 - No `REAL`, no `DOUBLE PRECISION`, no JavaScript `Number` arithmetic before the value is persisted. The payroll calculator uses integer-agora math internally and rounds to 2 decimals only at the final writeback.
 - Migration `003-migration-tracking-and-precision.sql` retroactively alters every pre-existing money column (`suppliers.total_spent`, `supplier_products.unit_price`, `supplier_quotes.subtotal/total_price/vat_amount/total_with_vat/delivery_fee`, `quote_line_items.unit_price/total_price`, `purchase_orders.subtotal/delivery_fee/vat_amount/total/original_price/negotiated_savings`, `po_line_items.unit_price/total_price`, `procurement_decisions.selected_total_cost/highest_cost/savings_amount`, `subcontractor_decisions.project_value/selected_cost/alternative_cost/savings_amount`, `subcontractor_pricing.percentage_rate/price_per_sqm/minimum_price`).
 - CHECK constraint on `wage_slips`: `net_pay = gross_pay − total_deductions`. Any rounding drift fails the insert — caught before the slip is legally issued.
-- `vat_rate` is `NUMERIC(5,4)` so 0.1700 is exact for the 17% Israel rate.
+- `vat_rate` is `NUMERIC(5,4)` so 0.1800 is exact for the 18% Israel rate (effective 2026-01-01). Historical rows keep 0.1700.
 - `fx_rate` on `tax_invoices` is `NUMERIC(10,6)` for multi-currency edge cases (foreign suppliers).
 
 ---

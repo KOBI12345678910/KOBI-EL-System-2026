@@ -1,0 +1,10 @@
+name: Sync to Replit
+on:
+  push:
+    branches: [main]
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify sync available
+        run: echo "New code pushed to GitHub. Pull from Replit Shell with - git pull github main"

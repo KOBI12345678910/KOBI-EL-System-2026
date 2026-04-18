@@ -1,0 +1,30 @@
+{
+  "stats": {
+    "NEW": 800,
+    "EXISTS_SAME": 5492,
+    "EXISTS_DIFF": 1533,
+    "BUILD_ARTIFACT": 9,
+    "LOCKFILE": 8,
+    "NESTED_ZIP": 1,
+    "TOTAL": 7843
+  },
+  "merged": 481,
+  "conflictsCopied": 1533,
+  "mdCopied": 21,
+  "destBefore": {
+    "files": 10747,
+    "bytes": 3600063959
+  },
+  "newMigrations": [],
+  "newEdgeFunctions": [],
+  "newFilesByTopDir": {
+    "AI-Task-Manager": 481
+  },
+  "actions_summary": {
+    "NEW": 800,
+    "NEW_LOCKFILE": 0,
+    "CONFLICT": 1533,
+    "CONFLICT_PROTECTED": 0,
+    "CONFLICT_PROTECTED_MIGRATION": 0
+  }
+}

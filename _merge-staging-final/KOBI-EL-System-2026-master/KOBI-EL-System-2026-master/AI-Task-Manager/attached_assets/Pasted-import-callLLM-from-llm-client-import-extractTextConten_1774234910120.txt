@@ -1,0 +1,189 @@
+import { callLLM } from "../llm/client";
+import { extractTextContent } from "../llm/parser";
+import { FileTool } from "./fileTool";
+import { TerminalTool } from "./terminalTool";
+
+export interface FigmaComponent {
+  name: string;
+  type: "frame" | "component" | "text" | "rectangle" | "group" | "vector" | "instance";
+  width: number;
+  height: number;
+  x: number;
+  y: number;
+  styles: Record<string, any>;
+  children?: FigmaComponent[];
+  text?: string;
+  fills?: any[];
+  strokes?: any[];
+  effects?: any[];
+}
+
+export class FigmaImportTool {
+  private fileTool: FileTool;
+  private terminal: TerminalTool;
+
+  constructor(fileTool: FileTool, terminal: TerminalTool) {
+    this.fileTool = fileTool;
+    this.terminal = terminal;
+  }
+
+  async importFromFigma(figmaUrl: string, token: string): Promise<{
+    components: FigmaComponent[];
+    generatedFiles: string[];
+  }> {
+    // Extract file key from URL
+    const fileKeyMatch = figmaUrl.match(/\/(?:file|design)\/([a-zA-Z0-9]+)/);
+    if (!fileKeyMatch) throw new Error("Invalid Figma URL");
+    const fileKey = fileKeyMatch[1];
+
+    // Fetch Figma file
+    const result = await this.terminal.execute(
+      `curl -s -H "X-Figma-Token: ${token}" "https://api.figma.com/v1/files/${fileKey}" | head -c 50000`,
+      { timeout: 30000 }
+    );
+
+    if (!result.success) throw new Error("Failed to fetch Figma file");
+
+    let figmaData: any;
+    try {
+      figmaData = JSON.parse(result.stdout);
+    } catch {
+      throw new Error("Invalid Figma response");
+    }
+
+    const components = this.extractComponents(figmaData.document);
+    const generatedFiles: string[] = [];
+
+    // Generate React components from each top-level frame
+    for (const component of components) {
+      const code = await this.convertToReact(component);
+      const fileName = `src/components/figma/${this.sanitizeName(component.name)}.tsx`;
+      this.fileTool.createFile(fileName, code);
+      generatedFiles.push(fileName);
+    }
+
+    return { components, generatedFiles };
+  }
+
+  async importFromJSON(figmaJSON: string): Promise<string[]> {
+    const data = JSON.parse(figmaJSON);
+    const components = this.extractComponents(data);
+    const files: string[] = [];
+
+    for (const comp of components) {
+      const code = await this.convertToReact(comp);
+      const fileName = `src/components/figma/${this.sanitizeName(comp.name)}.tsx`;
+      this.fileTool.createFile(fileName, code);
+      files.push(fileName);
+    }
+
+    return files;
+  }
+
+  async convertToReact(component: FigmaComponent): Promise<string> {
+    const response = await callLLM({
+      system: `You are an expert at converting Figma designs to React + Tailwind CSS code.
+Rules:
+- Use semantic HTML elements
+- Use Tailwind CSS classes (no custom CSS)
+- Make it responsive
+- Include hover states where appropriate
+- Add proper TypeScript types
+- Make interactive elements functional (buttons, links, inputs)
+- Pixel-perfect conversion of dimensions, spacing, colors, typography
+- Use flexbox/grid for layouts
+
+Respond with ONLY the complete React TSX component code.`,
+      messages: [{
+        role: "user",
+        content: `Convert this Figma component to React + Tailwind:\n\n${JSON.stringify(component, null, 2)}`,
+      }],
+      maxTokens: 8192,
+    });
+
+    let code = extractTextContent(response.content);
+    return code.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+  }
+
+  async convertCSSToTailwind(cssCode: string): Promise<string> {
+    const response = await callLLM({
+      system: "Convert CSS to Tailwind CSS utility classes. Respond with ONLY the JSX with Tailwind classes.",
+      messages: [{ role: "user", content: `Convert to Tailwind:\n\`\`\`css\n${cssCode}\n\`\`\`` }],
+    });
+    return extractTextContent(response.content).replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+  }
+
+  private extractComponents(node: any, depth = 0): FigmaComponent[] {
+    const components: FigmaComponent[] = [];
+    if (depth > 10) return components;
+
+    if (node.type === "FRAME" || node.type === "COMPONENT" || node.type === "COMPONENT_SET") {
+      const comp: FigmaComponent = {
+        name: node.name || "Unnamed",
+        type: node.type.toLowerCase() as any,
+        width: node.absoluteBoundingBox?.width || 0,
+        height: node.absoluteBoundingBox?.height || 0,
+        x: node.absoluteBoundingBox?.x || 0,
+        y: node.absoluteBoundingBox?.y || 0,
+        styles: {
+          backgroundColor: node.fills?.[0]?.color ? this.rgbaToHex(node.fills[0].color) : undefined,
+          borderRadius: node.cornerRadius,
+          padding: node.paddingLeft ? `${node.paddingTop || 0}px ${node.paddingRight || 0}px ${node.paddingBottom || 0}px ${node.paddingLeft || 0}px` : undefined,
+          gap: node.itemSpacing,
+          layoutMode: node.layoutMode,
+        },
+        fills: node.fills,
+        strokes: node.strokes,
+        effects: node.effects,
+        children: node.children?.map((child: any) => this.extractSingleComponent(child)).filter(Boolean),
+      };
+      components.push(comp);
+    }
+
+    // Recurse into pages and frames
+    if (node.children && (node.type === "DOCUMENT" || node.type === "CANVAS")) {
+      for (const child of node.children) {
+        components.push(...this.extractComponents(child, depth + 1));
+      }
+    }
+
+    return components;
+  }
+
+  private extractSingleComponent(node: any): FigmaComponent | null {
+    if (!node) return null;
+    return {
+      name: node.name || "element",
+      type: (node.type || "rectangle").toLowerCase() as any,
+      width: node.absoluteBoundingBox?.width || node.size?.x || 0,
+      height: node.absoluteBoundingBox?.height || node.size?.y || 0,
+      x: node.absoluteBoundingBox?.x || 0,
+      y: node.absoluteBoundingBox?.y || 0,
+      styles: {
+        backgroundColor: node.fills?.[0]?.color ? this.rgbaToHex(node.fills[0].color) : undefined,
+        borderRadius: node.cornerRadius,
+        fontSize: node.style?.fontSize,
+        fontWeight: node.style?.fontWeight,
+        fontFamily: node.style?.fontFamily,
+        color: node.fills?.[0]?.type === "SOLID" && node.type === "TEXT" ? this.rgbaToHex(node.fills[0].color) : undefined,
+        textAlign: node.style?.textAlignHorizontal?.toLowerCase(),
+        lineHeight: node.style?.lineHeightPx,
+        opacity: node.opacity,
+      },
+      text: node.characters,
+      fills: node.fills,
+      children: node.children?.map((c: any) => this.extractSingleComponent(c)).filter(Boolean),
+    };
+  }
+
+  private rgbaToHex(color: { r: number; g: number; b: number; a?: number }): string {
+    const r = Math.round((color.r || 0) * 255);
+    const g = Math.round((color.g || 0) * 255);
+    const b = Math.round((color.b || 0) * 255);
+    return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+  }
+
+  private sanitizeName(name: string): string {
+    return name.replace(/[^a-zA-Z0-9]/g, "").replace(/^[0-9]/, "_$&") || "Component";
+  }
+}

@@ -1,0 +1,201 @@
+import { FileTool } from "./fileTool";
+import * as fs from "fs";
+import * as path from "path";
+
+export interface ProjectRules {
+  agent: {
+    defaultMode: string;
+    autoTest: boolean;
+    autoLint: boolean;
+    autoSnapshot: boolean;
+    autoCommit: boolean;
+    maxRetries: number;
+    codeStyle: string;
+    preferredStack: string[];
+  };
+  coding: {
+    language: string;
+    framework: string;
+    cssFramework: string;
+    stateManagement: string;
+    orm: string;
+    testFramework: string;
+    formatting: {
+      indentSize: number;
+      useTabs: boolean;
+      semicolons: boolean;
+      singleQuote: boolean;
+      trailingComma: string;
+    };
+  };
+  project: {
+    name: string;
+    description: string;
+    type: string;
+    structure: string;
+  };
+  custom: Record<string, string>;
+}
+
+export class RulesSyncTool {
+  private fileTool: FileTool;
+  private workspaceDir: string;
+  private rulesFile: string;
+  private rules: ProjectRules;
+
+  constructor(workspaceDir: string, fileTool: FileTool) {
+    this.fileTool = fileTool;
+    this.workspaceDir = workspaceDir;
+    this.rulesFile = path.join(workspaceDir, "kobi.md");
+    this.rules = this.loadRules();
+  }
+
+  private loadRules(): ProjectRules {
+    // Try loading from kobi.md
+    if (fs.existsSync(this.rulesFile)) {
+      const content = fs.readFileSync(this.rulesFile, "utf-8");
+      return this.parseMarkdownRules(content);
+    }
+
+    // Try loading from .kobi.json
+    const jsonPath = path.join(this.workspaceDir, ".kobi.json");
+    if (fs.existsSync(jsonPath)) {
+      try { return JSON.parse(fs.readFileSync(jsonPath, "utf-8")); } catch {}
+    }
+
+    return this.getDefaultRules();
+  }
+
+  private getDefaultRules(): ProjectRules {
+    return {
+      agent: {
+        defaultMode: "power",
+        autoTest: true,
+        autoLint: true,
+        autoSnapshot: true,
+        autoCommit: false,
+        maxRetries: 5,
+        codeStyle: "clean, well-typed TypeScript with error handling",
+        preferredStack: ["TypeScript", "React", "Node.js", "PostgreSQL", "Tailwind CSS"],
+      },
+      coding: {
+        language: "typescript",
+        framework: "express",
+        cssFramework: "tailwindcss",
+        stateManagement: "zustand",
+        orm: "drizzle",
+        testFramework: "vitest",
+        formatting: {
+          indentSize: 2,
+          useTabs: false,
+          semicolons: true,
+          singleQuote: true,
+          trailingComma: "es5",
+        },
+      },
+      project: {
+        name: "kobi-project",
+        description: "",
+        type: "fullstack",
+        structure: "src/",
+      },
+      custom: {},
+    };
+  }
+
+  getRules(): ProjectRules { return this.rules; }
+
+  updateRules(updates: Partial<ProjectRules>): void {
+    if (updates.agent) Object.assign(this.rules.agent, updates.agent);
+    if (updates.coding) Object.assign(this.rules.coding, updates.coding);
+    if (updates.project) Object.assign(this.rules.project, updates.project);
+    if (updates.custom) Object.assign(this.rules.custom, updates.custom);
+    this.saveRules();
+  }
+
+  setCustomRule(key: string, value: string): void {
+    this.rules.custom[key] = value;
+    this.saveRules();
+  }
+
+  getAgentSystemContext(): string {
+    return `Project Rules:
+- Language: ${this.rules.coding.language}
+- Framework: ${this.rules.coding.framework}
+- CSS: ${this.rules.coding.cssFramework}
+- ORM: ${this.rules.coding.orm}
+- Tests: ${this.rules.coding.testFramework}
+- Style: ${this.rules.agent.codeStyle}
+- Preferred Stack: ${this.rules.agent.preferredStack.join(", ")}
+- Formatting: ${this.rules.coding.formatting.indentSize} spaces, ${this.rules.coding.formatting.singleQuote ? "single" : "double"} quotes, ${this.rules.coding.formatting.semicolons ? "semicolons" : "no semicolons"}
+${Object.entries(this.rules.custom).map(([k, v]) => `- ${k}: ${v}`).join("\n")}`;
+  }
+
+  saveRules(): void {
+    // Save as JSON
+    this.fileTool.createFile(".kobi.json", JSON.stringify(this.rules, null, 2));
+
+    // Save as readable markdown
+    const md = `# Kobi Agent Rules
+
+## Project
+- **Name**: ${this.rules.project.name}
+- **Type**: ${this.rules.project.type}
+- **Description**: ${this.rules.project.description}
+
+## Agent Settings
+- **Default Mode**: ${this.rules.agent.defaultMode}
+- **Auto Test**: ${this.rules.agent.autoTest}
+- **Auto Lint**: ${this.rules.agent.autoLint}
+- **Auto Snapshot**: ${this.rules.agent.autoSnapshot}
+- **Auto Commit**: ${this.rules.agent.autoCommit}
+- **Max Retries**: ${this.rules.agent.maxRetries}
+- **Code Style**: ${this.rules.agent.codeStyle}
+- **Stack**: ${this.rules.agent.preferredStack.join(", ")}
+
+## Coding Standards
+- **Language**: ${this.rules.coding.language}
+- **Framework**: ${this.rules.coding.framework}
+- **CSS**: ${this.rules.coding.cssFramework}
+- **State**: ${this.rules.coding.stateManagement}
+- **ORM**: ${this.rules.coding.orm}
+- **Tests**: ${this.rules.coding.testFramework}
+
+## Formatting
+- **Indent**: ${this.rules.coding.formatting.indentSize} ${this.rules.coding.formatting.useTabs ? "tabs" : "spaces"}
+- **Quotes**: ${this.rules.coding.formatting.singleQuote ? "single" : "double"}
+- **Semicolons**: ${this.rules.coding.formatting.semicolons ? "yes" : "no"}
+- **Trailing Comma**: ${this.rules.coding.formatting.trailingComma}
+
+## Custom Rules
+${Object.entries(this.rules.custom).map(([k, v]) => `- **${k}**: ${v}`).join("\n")}
+`;
+
+    this.fileTool.createFile("kobi.md", md);
+  }
+
+  private parseMarkdownRules(content: string): ProjectRules {
+    const rules = this.getDefaultRules();
+
+    const getValue = (label: string): string | undefined => {
+      const match = content.match(new RegExp(`\\*\\*${label}\\*\\*:\\s*(.+)`, "i"));
+      return match?.[1]?.trim();
+    };
+
+    const name = getValue("Name"); if (name) rules.project.name = name;
+    const type = getValue("Type"); if (type) rules.project.type = type;
+    const desc = getValue("Description"); if (desc) rules.project.description = desc;
+    const mode = getValue("Default Mode"); if (mode) rules.agent.defaultMode = mode;
+    const lang = getValue("Language"); if (lang) rules.coding.language = lang;
+    const fw = getValue("Framework"); if (fw) rules.coding.framework = fw;
+    const css = getValue("CSS"); if (css) rules.coding.cssFramework = css;
+    const orm = getValue("ORM"); if (orm) rules.coding.orm = orm;
+    const tests = getValue("Tests"); if (tests) rules.coding.testFramework = tests;
+    const style = getValue("Code Style"); if (style) rules.agent.codeStyle = style;
+
+    const autoTest = getValue("Auto Test"); if (autoTest) rules.agent.autoTest = autoTest === "true";
+    const autoLint = getValue("Auto Lint"); if (autoLint) rules.agent.autoLint = autoLint === "true";
+
+    return rules;
+  }
+}

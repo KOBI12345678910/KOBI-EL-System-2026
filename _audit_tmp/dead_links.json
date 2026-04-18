@@ -1,0 +1,93 @@
+[
+  {
+    "path": "/portal/customer/login",
+    "count": 2,
+    "files": [
+      "erp-app\\src\\pages\\portal\\customer-portal-dashboard.tsx"
+    ]
+  },
+  {
+    "path": "/portal/customer/dashboard",
+    "count": 2,
+    "files": [
+      "erp-app\\src\\pages\\portal\\customer-portal-login.tsx"
+    ]
+  },
+  {
+    "path": "/ai-engine/chatbot-settings",
+    "count": 2,
+    "files": [
+      "erp-app\\src\\routes\\ai-routes.tsx"
+    ]
+  },
+  {
+    "path": "/executive/scorecard",
+    "count": 1,
+    "files": [
+      "erp-app\\src\\pages\\bi\\bi-hub.tsx"
+    ]
+  },
+  {
+    "path": "/contracts/risk-scoring",
+    "count": 1,
+    "files": [
+      "erp-app\\src\\pages\\contracts\\contract-ai-analysis.tsx"
+    ]
+  },
+  {
+    "path": "/fin/income",
+    "count": 1,
+    "files": [
+      "erp-app\\src\\pages\\fin\\fin-accounting.tsx"
+    ]
+  },
+  {
+    "path": "/fin/expenses",
+    "count": 1,
+    "files": [
+      "erp-app\\src\\pages\\fin\\fin-accounting.tsx"
+    ]
+  },
+  {
+    "path": "/fin/activity",
+    "count": 1,
+    "files": [
+      "erp-app\\src\\pages\\fin\\fin-dashboard.tsx"
+    ]
+  },
+  {
+    "path": "/logistics/tracking",
+    "count": 1,
+    "files": [
+      "erp-app\\src\\pages\\logistics\\logistics-dashboard.tsx"
+    ]
+  },
+  {
+    "path": "/logistics/returns",
+    "count": 1,
+    "files": [
+      "erp-app\\src\\pages\\logistics\\logistics-dashboard.tsx"
+    ]
+  },
+  {
+    "path": "/sales/crm-pipeline",
+    "count": 1,
+    "files": [
+      "erp-app\\src\\pages\\sales\\sales-dashboard.tsx"
+    ]
+  },
+  {
+    "path": "/supply-chain/command-center",
+    "count": 1,
+    "files": [
+      "erp-app\\src\\pages\\supply-chain\\supply-chain-dashboard.tsx"
+    ]
+  },
+  {
+    "path": "/ai-engine/cross-module",
+    "count": 1,
+    "files": [
+      "erp-app\\src\\routes\\ai-routes.tsx"
+    ]
+  }
+]

@@ -1,0 +1,113 @@
+{
+  "company": {
+    "legal_name": "טכנו-קול עוזי בע\"מ",
+    "company_id": "515123456",
+    "tax_file": "947123456"
+  },
+  "period": {
+    "year": 2026,
+    "month": 3,
+    "label": "2026-03"
+  },
+  "generated_at": "2026-04-11T09:15:00+03:00",
+  "kpis": {
+    "revenue": 2845000.50,
+    "expenses": 2130450.25,
+    "pnl": 714550.25,
+    "headcount": 42,
+    "open_pos": 17,
+    "pending_vat": 312875.40,
+    "cash_position": 1845320.80,
+    "ar": 684250.00,
+    "ap": 412800.00
+  },
+  "revenue_breakdown": [
+    { "label": "Installations / התקנות", "amount": 1420000.00 },
+    { "label": "Service contracts / חוזי שירות", "amount": 680000.50 },
+    { "label": "Spare parts / חלפים", "amount": 405000.00 },
+    { "label": "Training / הדרכות", "amount": 210000.00 },
+    { "label": "Consulting / ייעוץ", "amount": 130000.00 }
+  ],
+  "expenses_breakdown": [
+    { "category": "Salaries / שכר", "amount": 985000.00 },
+    { "category": "Materials / חומרים", "amount": 540000.25 },
+    { "category": "Subcontractors / קבלני משנה", "amount": 285000.00 },
+    { "category": "Vehicles / רכב", "amount": 95450.00 },
+    { "category": "Rent / שכירות", "amount": 72000.00 },
+    { "category": "Utilities / חשבונות", "amount": 34000.00 },
+    { "category": "Marketing / שיווק", "amount": 58000.00 },
+    { "category": "Other / אחר", "amount": 61000.00 }
+  ],
+  "top_suppliers": [
+    { "name": "Electra Components Ltd / אלקטרה רכיבים", "company_id": "511000001", "total": 385000.00, "invoice_count": 12 },
+    { "name": "Kabel Israel / כבל ישראל", "company_id": "511000002", "total": 215000.00, "invoice_count": 8 },
+    { "name": "Industrial Tools / כלי עבודה", "company_id": "511000003", "total": 148000.00, "invoice_count": 15 },
+    { "name": "Office Supplies / ציוד משרדי", "company_id": "511000004", "total": 42000.00, "invoice_count": 22 },
+    { "name": "Fuel Co / חברת דלק", "company_id": "511000005", "total": 68000.00, "invoice_count": 31 },
+    { "name": "Insurance Partners / ביטוח", "company_id": "511000006", "total": 54000.00, "invoice_count": 3 },
+    { "name": "Cleaning Services / ניקיון", "company_id": "511000007", "total": 18000.00, "invoice_count": 3 },
+    { "name": "Telco / תקשורת", "company_id": "511000008", "total": 22000.00, "invoice_count": 6 },
+    { "name": "Hardware Store / חומרי בניין", "company_id": "511000009", "total": 31000.00, "invoice_count": 9 },
+    { "name": "Subcontractor A / קבלן משנה א", "company_id": "511000010", "total": 145000.00, "invoice_count": 4 }
+  ],
+  "top_customers": [
+    { "name": "Municipality of Tel Aviv / עיריית תל אביב", "company_id": "500100001", "total": 620000.00, "invoice_count": 5 },
+    { "name": "Ministry of Defense / משרד הביטחון", "company_id": "500100002", "total": 485000.00, "invoice_count": 3 },
+    { "name": "Israel Railways / רכבת ישראל", "company_id": "500100003", "total": 310000.00, "invoice_count": 4 },
+    { "name": "Tech Park Ltd / פארק תעשייה", "company_id": "500100004", "total": 215000.50, "invoice_count": 7 },
+    { "name": "Hospital Beilinson / בי\"ח בילינסון", "company_id": "500100005", "total": 180000.00, "invoice_count": 2 },
+    { "name": "Ben Gurion University / אוניברסיטת בן גוריון", "company_id": "500100006", "total": 155000.00, "invoice_count": 3 },
+    { "name": "Private Customer A / לקוח פרטי א", "company_id": "500100007", "total": 88000.00, "invoice_count": 6 },
+    { "name": "Industrial Plant B / מפעל תעשייה ב", "company_id": "500100008", "total": 130000.00, "invoice_count": 4 },
+    { "name": "Hotel Chain / רשת מלונות", "company_id": "500100009", "total": 72000.00, "invoice_count": 8 },
+    { "name": "Retail Group / קבוצת קמעונאות", "company_id": "500100010", "total": 65000.00, "invoice_count": 5 }
+  ],
+  "headcount_trend": [
+    { "period": "2025-10", "headcount": 38, "joiners": 2, "leavers": 1 },
+    { "period": "2025-11", "headcount": 39, "joiners": 1, "leavers": 0 },
+    { "period": "2025-12", "headcount": 40, "joiners": 2, "leavers": 1 },
+    { "period": "2026-01", "headcount": 41, "joiners": 2, "leavers": 1 },
+    { "period": "2026-02", "headcount": 41, "joiners": 0, "leavers": 0 },
+    { "period": "2026-03", "headcount": 42, "joiners": 1, "leavers": 0 }
+  ],
+  "overdue_invoices": [
+    { "invoice_number": "INV-2026-0081", "customer": "Municipality of Tel Aviv / עיריית תל אביב", "due_date": "2026-02-28", "days_late": 42, "amount": 185000.00 },
+    { "invoice_number": "INV-2026-0095", "customer": "Private Customer A / לקוח פרטי א", "due_date": "2026-03-10", "days_late": 32, "amount": 32500.00 },
+    { "invoice_number": "INV-2026-0103", "customer": "Retail Group / קבוצת קמעונאות", "due_date": "2026-03-15", "days_late": 27, "amount": 14800.00 },
+    { "invoice_number": "INV-2026-0110", "customer": "Tech Park Ltd / פארק תעשייה", "due_date": "2026-03-20", "days_late": 22, "amount": 72000.50 }
+  ],
+  "vat_liability": {
+    "output_vat": 483650.09,
+    "input_vat": 362123.54,
+    "input_vat_fixed_assets": 8651.15,
+    "net_vat_due": 112875.40,
+    "due_date": "2026-05-15",
+    "form_type": "PCN 836"
+  },
+  "outstanding_payments": [
+    { "supplier": "Electra Components Ltd / אלקטרה רכיבים", "doc_number": "SUP-2026-212", "due_date": "2026-04-20", "amount": 95000.00, "status": "scheduled" },
+    { "supplier": "Subcontractor A / קבלן משנה א", "doc_number": "SUP-2026-218", "due_date": "2026-04-25", "amount": 72000.00, "status": "pending" },
+    { "supplier": "Kabel Israel / כבל ישראל", "doc_number": "SUP-2026-224", "due_date": "2026-04-30", "amount": 58000.00, "status": "pending" },
+    { "supplier": "Fuel Co / חברת דלק", "doc_number": "SUP-2026-230", "due_date": "2026-05-05", "amount": 18500.00, "status": "scheduled" }
+  ],
+  "critical_alerts": [
+    {
+      "severity": "critical",
+      "title": "Withholding tax certificate missing / אישור ניכוי במקור חסר",
+      "message": "3 suppliers are missing a valid withholding tax certificate — payments on hold / 3 ספקים ללא אישור ניכוי במקור בתוקף — תשלומים מעוכבים",
+      "count": 3
+    },
+    {
+      "severity": "high",
+      "title": "Missing signatures on POs / חתימות חסרות בהזמנות רכש",
+      "message": "5 purchase orders above the approval threshold are awaiting signature / 5 הזמנות מעל סף האישור ממתינות לחתימה",
+      "count": 5
+    },
+    {
+      "severity": "medium",
+      "title": "VAT return deadline approaching / מועד הגשת דוח מע\"מ מתקרב",
+      "message": "VAT return for 2026-03 is due on 2026-05-15 / דוח מע\"מ לחודש 03/2026 להגשה עד 15/05/2026",
+      "count": null
+    }
+  ]
+}

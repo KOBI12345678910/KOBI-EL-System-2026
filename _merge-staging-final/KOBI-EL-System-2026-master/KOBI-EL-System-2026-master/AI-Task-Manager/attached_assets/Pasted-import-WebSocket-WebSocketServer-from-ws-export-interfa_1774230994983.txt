@@ -1,0 +1,197 @@
+import { WebSocket, WebSocketServer } from "ws";
+
+export interface CollabUser {
+  id: string;
+  name: string;
+  color: string;
+  cursor?: { file: string; line: number; column: number };
+  selection?: { file: string; start: number; end: number };
+  lastActive: Date;
+}
+
+export interface CollabOperation {
+  type: "insert" | "delete" | "replace" | "cursor" | "selection" | "file_open" | "file_save";
+  userId: string;
+  file: string;
+  data: any;
+  timestamp: Date;
+  version: number;
+}
+
+export class RealtimeCollabTool {
+  private wss: WebSocketServer;
+  private users: Map<string, CollabUser> = new Map();
+  private clients: Map<string, WebSocket> = new Map();
+  private operations: CollabOperation[] = [];
+  private fileVersions: Map<string, number> = new Map();
+  private colors = ["#e74c3c", "#3498db", "#2ecc71", "#f39c12", "#9b59b6", "#1abc9c", "#e67e22", "#e91e63"];
+  private colorIndex = 0;
+
+  constructor(server: any) {
+    this.wss = new WebSocketServer({ server, path: "/collab" });
+    this.setupWebSocket();
+  }
+
+  private setupWebSocket(): void {
+    this.wss.on("connection", (ws: WebSocket, req) => {
+      const userId = `user_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+      const userName = `User ${this.users.size + 1}`;
+      const color = this.colors[this.colorIndex++ % this.colors.length];
+
+      const user: CollabUser = {
+        id: userId,
+        name: userName,
+        color,
+        lastActive: new Date(),
+      };
+
+      this.users.set(userId, user);
+      this.clients.set(userId, ws);
+
+      // Send welcome
+      ws.send(JSON.stringify({
+        type: "welcome",
+        userId,
+        user,
+        users: Array.from(this.users.values()),
+      }));
+
+      // Broadcast user joined
+      this.broadcast({
+        type: "user_joined",
+        user,
+      }, userId);
+
+      ws.on("message", (data: Buffer) => {
+        try {
+          const msg = JSON.parse(data.toString());
+          this.handleMessage(userId, msg);
+        } catch {}
+      });
+
+      ws.on("close", () => {
+        this.users.delete(userId);
+        this.clients.delete(userId);
+        this.broadcast({ type: "user_left", userId });
+      });
+    });
+  }
+
+  private handleMessage(userId: string, msg: any): void {
+    const user = this.users.get(userId);
+    if (!user) return;
+
+    user.lastActive = new Date();
+
+    switch (msg.type) {
+      case "cursor_move":
+        user.cursor = { file: msg.file, line: msg.line, column: msg.column };
+        this.broadcast({
+          type: "cursor_update",
+          userId,
+          cursor: user.cursor,
+          color: user.color,
+          name: user.name,
+        }, userId);
+        break;
+
+      case "selection_change":
+        user.selection = { file: msg.file, start: msg.start, end: msg.end };
+        this.broadcast({
+          type: "selection_update",
+          userId,
+          selection: user.selection,
+          color: user.color,
+        }, userId);
+        break;
+
+      case "text_change":
+        const version = (this.fileVersions.get(msg.file) || 0) + 1;
+        this.fileVersions.set(msg.file, version);
+
+        const op: CollabOperation = {
+          type: msg.operation, // insert, delete, replace
+          userId,
+          file: msg.file,
+          data: {
+            position: msg.position,
+            text: msg.text,
+            length: msg.length,
+          },
+          timestamp: new Date(),
+          version,
+        };
+
+        this.operations.push(op);
+
+        this.broadcast({
+          type: "text_change",
+          userId,
+          operation: op,
+          name: user.name,
+          color: user.color,
+        }, userId);
+        break;
+
+      case "file_open":
+        this.broadcast({
+          type: "file_opened",
+          userId,
+          file: msg.file,
+          name: user.name,
+        }, userId);
+        break;
+
+      case "set_name":
+        user.name = msg.name;
+        this.broadcast({
+          type: "user_renamed",
+          userId,
+          name: user.name,
+        });
+        break;
+
+      case "chat":
+        this.broadcast({
+          type: "chat_message",
+          userId,
+          name: user.name,
+          message: msg.message,
+          timestamp: new Date(),
+        });
+        break;
+
+      case "task_suggestion":
+        this.broadcast({
+          type: "task_suggestion",
+          userId,
+          name: user.name,
+          task: msg.task,
+        });
+        break;
+    }
+  }
+
+  private broadcast(data: any, excludeUserId?: string): void {
+    const msg = JSON.stringify(data);
+    for (const [userId, ws] of this.clients) {
+      if (userId !== excludeUserId && ws.readyState === WebSocket.OPEN) {
+        try { ws.send(msg); } catch {}
+      }
+    }
+  }
+
+  getUsers(): CollabUser[] {
+    return Array.from(this.users.values());
+  }
+
+  getOperationHistory(file: string, limit = 100): CollabOperation[] {
+    return this.operations
+      .filter((op) => op.file === file)
+      .slice(-limit);
+  }
+
+  getFileVersion(file: string): number {
+    return this.fileVersions.get(file) || 0;
+  }
+}

@@ -1,0 +1,155 @@
+import { TerminalTool } from "./terminalTool";
+import { FileTool } from "./fileTool";
+
+export class QueueSetupTool {
+  private terminal: TerminalTool;
+  private fileTool: FileTool;
+
+  constructor(terminal: TerminalTool, fileTool: FileTool) {
+    this.terminal = terminal;
+    this.fileTool = fileTool;
+  }
+
+  async setup(): Promise<void> {
+    await this.terminal.execute("npm install bullmq ioredis", { timeout: 30000 });
+
+    this.fileTool.createFile("src/queue/connection.ts", `import IORedis from 'ioredis';
+
+export const redisConnection = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379', {
+  maxRetriesPerRequest: null,
+});
+
+export const defaultJobOptions = {
+  attempts: 3,
+  backoff: { type: 'exponential' as const, delay: 1000 },
+  removeOnComplete: { count: 1000 },
+  removeOnFail: { count: 5000 },
+};
+`);
+
+    this.fileTool.createFile("src/queue/queues.ts", `import { Queue } from 'bullmq';
+import { redisConnection, defaultJobOptions } from './connection';
+
+// Register your queues here
+export const emailQueue = new Queue('email', {
+  connection: redisConnection,
+  defaultJobOptions,
+});
+
+export const notificationQueue = new Queue('notification', {
+  connection: redisConnection,
+  defaultJobOptions,
+});
+
+export const processingQueue = new Queue('processing', {
+  connection: redisConnection,
+  defaultJobOptions,
+});
+
+// Helper to add jobs
+export async function enqueue<T>(queueName: string, jobName: string, data: T, options?: any) {
+  const queues: Record<string, Queue> = {
+    email: emailQueue,
+    notification: notificationQueue,
+    processing: processingQueue,
+  };
+  const queue = queues[queueName];
+  if (!queue) throw new Error('Unknown queue: ' + queueName);
+  return queue.add(jobName, data, options);
+}
+`);
+
+    this.fileTool.createFile("src/queue/workers.ts", `import { Worker, Job } from 'bullmq';
+import { redisConnection } from './connection';
+
+// Email worker
+const emailWorker = new Worker('email', async (job: Job) => {
+  console.log('Processing email job:', job.name, job.data);
+  // TODO: Implement email sending
+  switch (job.name) {
+    case 'send':
+      // await sendEmail(job.data);
+      break;
+    case 'bulk':
+      // await sendBulkEmail(job.data);
+      break;
+  }
+}, { connection: redisConnection, concurrency: 5 });
+
+// Notification worker
+const notificationWorker = new Worker('notification', async (job: Job) => {
+  console.log('Processing notification:', job.name, job.data);
+  // TODO: Implement notification logic
+}, { connection: redisConnection, concurrency: 10 });
+
+// Processing worker
+const processingWorker = new Worker('processing', async (job: Job) => {
+  console.log('Processing job:', job.name, job.data);
+  // TODO: Implement processing logic
+  
+  // Report progress
+  for (let i = 0; i <= 100; i += 10) {
+    await job.updateProgress(i);
+    await new Promise(r => setTimeout(r, 100));
+  }
+}, { connection: redisConnection, concurrency: 3 });
+
+// Error handlers
+for (const worker of [emailWorker, notificationWorker, processingWorker]) {
+  worker.on('completed', (job) => console.log(\`Job \${job.id} completed\`));
+  worker.on('failed', (job, err) => console.error(\`Job \${job?.id} failed:\`, err.message));
+  worker.on('error', (err) => console.error('Worker error:', err));
+}
+
+export { emailWorker, notificationWorker, processingWorker };
+`);
+
+    this.fileTool.createFile("src/queue/dashboard.ts", `import { createBullBoard } from '@bull-board/api';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
+import { ExpressAdapter } from '@bull-board/express';
+import { emailQueue, notificationQueue, processingQueue } from './queues';
+import { Express } from 'express';
+
+export function setupQueueDashboard(app: Express) {
+  const serverAdapter = new ExpressAdapter();
+  serverAdapter.setBasePath('/admin/queues');
+
+  createBullBoard({
+    queues: [
+      new BullMQAdapter(emailQueue),
+      new BullMQAdapter(notificationQueue),
+      new BullMQAdapter(processingQueue),
+    ],
+    serverAdapter,
+  });
+
+  app.use('/admin/queues', serverAdapter.getRouter());
+  console.log('Queue dashboard: /admin/queues');
+}
+`);
+
+    // Install dashboard
+    await this.terminal.execute("npm install @bull-board/api @bull-board/express @bull-board/api", {
+      timeout: 30000,
+    });
+  }
+
+  async addScheduledJob(name: string, cron: string, handler: string): Promise<void> {
+    const code = `
+// Scheduled job: ${name}
+import { Queue } from 'bullmq';
+import { redisConnection } from './connection';
+
+const scheduledQueue = new Queue('scheduled', { connection: redisConnection });
+
+export async function schedule${name.charAt(0).toUpperCase() + name.slice(1)}() {
+  await scheduledQueue.add('${name}', {}, {
+    repeat: { pattern: '${cron}' },
+  });
+  console.log('Scheduled: ${name} (${cron})');
+}
+`;
+
+    this.fileTool.createFile(`src/queue/scheduled/${name}.ts`, code);
+  }
+}

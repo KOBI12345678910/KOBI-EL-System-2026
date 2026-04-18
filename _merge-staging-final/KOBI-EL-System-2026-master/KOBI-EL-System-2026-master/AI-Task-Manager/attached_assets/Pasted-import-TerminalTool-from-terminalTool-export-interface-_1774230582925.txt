@@ -1,0 +1,135 @@
+import { TerminalTool } from "./terminalTool";
+
+export interface HttpResponse {
+  status: number;
+  headers: Record<string, string>;
+  body: string;
+  time: number;
+}
+
+export class NetworkTool {
+  private terminal: TerminalTool;
+
+  constructor(terminal: TerminalTool) {
+    this.terminal = terminal;
+  }
+
+  async request(params: {
+    method: string;
+    url: string;
+    headers?: Record<string, string>;
+    body?: any;
+    timeout?: number;
+  }): Promise<HttpResponse> {
+    let curlCmd = `curl -s -w "\\n---HTTP_CODE:%{http_code}---\\n---TIME:%{time_total}---"`;
+
+    curlCmd += ` -X ${params.method.toUpperCase()}`;
+
+    if (params.headers) {
+      for (const [key, value] of Object.entries(params.headers)) {
+        curlCmd += ` -H "${key}: ${value}"`;
+      }
+    }
+
+    if (params.body) {
+      curlCmd += ` -H "Content-Type: application/json"`;
+      curlCmd += ` -d '${typeof params.body === "string" ? params.body : JSON.stringify(params.body)}'`;
+    }
+
+    curlCmd += ` -D - "${params.url}"`;
+
+    const result = await this.terminal.execute(curlCmd, {
+      timeout: params.timeout || 30000,
+    });
+
+    const output = result.stdout;
+    const statusMatch = output.match(/---HTTP_CODE:(\d+)---/);
+    const timeMatch = output.match(/---TIME:([\d.]+)---/);
+
+    // Parse headers
+    const headers: Record<string, string> = {};
+    const headerSection = output.split("\r\n\r\n")[0] || "";
+    for (const line of headerSection.split("\r\n")) {
+      const colonIdx = line.indexOf(":");
+      if (colonIdx > 0) {
+        headers[line.slice(0, colonIdx).trim().toLowerCase()] = line.slice(colonIdx + 1).trim();
+      }
+    }
+
+    // Extract body (after headers, before metadata)
+    const bodyParts = output.split("\r\n\r\n");
+    const body = bodyParts
+      .slice(1)
+      .join("\r\n\r\n")
+      .replace(/---HTTP_CODE:\d+---/, "")
+      .replace(/---TIME:[\d.]+---/, "")
+      .trim();
+
+    return {
+      status: statusMatch ? parseInt(statusMatch[1]) : 0,
+      headers,
+      body,
+      time: timeMatch ? parseFloat(timeMatch[1]) * 1000 : 0,
+    };
+  }
+
+  async get(url: string, headers?: Record<string, string>) {
+    return this.request({ method: "GET", url, headers });
+  }
+
+  async post(url: string, body: any, headers?: Record<string, string>) {
+    return this.request({ method: "POST", url, body, headers });
+  }
+
+  async put(url: string, body: any, headers?: Record<string, string>) {
+    return this.request({ method: "PUT", url, body, headers });
+  }
+
+  async del(url: string, headers?: Record<string, string>) {
+    return this.request({ method: "DELETE", url, headers });
+  }
+
+  async ping(host: string, count = 3): Promise<{ success: boolean; avgMs: number; output: string }> {
+    const result = await this.terminal.execute(
+      `ping -c ${count} -W 3 ${host}`,
+      { timeout: 15000 }
+    );
+
+    const avgMatch = result.stdout.match(/avg[^=]*=\s*[\d.]+\/([\d.]+)/);
+    return {
+      success: result.success,
+      avgMs: avgMatch ? parseFloat(avgMatch[1]) : 0,
+      output: result.stdout,
+    };
+  }
+
+  async checkDns(domain: string): Promise<{ ip: string; output: string }> {
+    const result = await this.terminal.execute(
+      `dig +short ${domain} 2>/dev/null || nslookup ${domain} | grep Address | tail -1`,
+      { timeout: 5000 }
+    );
+    return { ip: result.stdout.trim().split("\n")[0] || "", output: result.stdout };
+  }
+
+  async checkSsl(domain: string): Promise<{
+    valid: boolean;
+    expiry?: string;
+    issuer?: string;
+    output: string;
+  }> {
+    const result = await this.terminal.execute(
+      `echo | openssl s_client -servername ${domain} -connect ${domain}:443 2>/dev/null | openssl x509 -noout -dates -issuer 2>/dev/null`,
+      { timeout: 10000 }
+    );
+
+    const expiryMatch = result.stdout.match(/notAfter=(.+)/);
+    const issuerMatch = result.stdout.match(/issuer=(.+)/);
+
+    return {
+      valid: result.success && !!expiryMatch,
+      expiry: expiryMatch?.[1],
+      issuer: issuerMatch?.[1],
+      output: result.stdout,
+    };
+  }
+}

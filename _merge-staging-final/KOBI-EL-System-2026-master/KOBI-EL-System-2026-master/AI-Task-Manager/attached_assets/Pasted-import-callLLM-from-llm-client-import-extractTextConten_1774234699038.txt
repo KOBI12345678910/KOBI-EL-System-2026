@@ -1,0 +1,125 @@
+import { callLLM } from "../llm/client";
+import { extractTextContent } from "../llm/parser";
+import { FileTool } from "./fileTool";
+import { TerminalTool } from "./terminalTool";
+
+export class ContentGenTool {
+  private fileTool: FileTool;
+  private terminal: TerminalTool;
+
+  constructor(fileTool: FileTool, terminal: TerminalTool) {
+    this.fileTool = fileTool;
+    this.terminal = terminal;
+  }
+
+  // ===== SLIDE DECK GENERATOR =====
+  async generateSlides(topic: string, options?: {
+    slideCount?: number;
+    style?: "corporate" | "startup" | "creative" | "minimal";
+    format?: "reveal.js" | "html";
+  }): Promise<string> {
+    const count = options?.slideCount || 10;
+    const style = options?.style || "minimal";
+
+    const response = await callLLM({
+      system: `Generate a slide deck as a single HTML file using Reveal.js.
+Include: ${count} slides, smooth transitions, speaker notes, responsive.
+Style: ${style}. Use CDN for Reveal.js.
+Respond with ONLY the complete HTML file.`,
+      messages: [{ role: "user", content: `Create a slide deck about: ${topic}` }],
+      maxTokens: 8192,
+    });
+
+    let html = extractTextContent(response.content);
+    html = html.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    const filePath = `output/slides-${Date.now()}.html`;
+    this.fileTool.createFile(filePath, html);
+    return filePath;
+  }
+
+  // ===== ANIMATED VIDEO GENERATOR =====
+  async generateAnimation(description: string, options?: {
+    duration?: number;
+    width?: number;
+    height?: number;
+    fps?: number;
+  }): Promise<string> {
+    const width = options?.width || 1920;
+    const height = options?.height || 1080;
+
+    const response = await callLLM({
+      system: `Generate an HTML5 Canvas animation. Create a self-contained HTML file that:
+- Renders ${width}x${height} canvas animation
+- Is smooth and visually appealing
+- Has controls (play/pause)
+- Can be recorded with MediaRecorder API to produce a video
+- Uses requestAnimationFrame for smooth animation
+
+Respond with ONLY the complete HTML file.`,
+      messages: [{ role: "user", content: `Create animation: ${description}` }],
+      maxTokens: 8192,
+    });
+
+    let html = extractTextContent(response.content);
+    html = html.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    const filePath = `output/animation-${Date.now()}.html`;
+    this.fileTool.createFile(filePath, html);
+    return filePath;
+  }
+
+  // ===== DATA VISUALIZATION / DASHBOARD GENERATOR =====
+  async generateDashboard(config: {
+    title: string;
+    dataSources: Array<{
+      name: string;
+      type: "api" | "static" | "database";
+      endpoint?: string;
+      data?: any[];
+    }>;
+    charts: Array<{
+      type: "line" | "bar" | "pie" | "area" | "scatter" | "heatmap" | "table" | "kpi" | "gauge";
+      title: string;
+      dataSource: string;
+      xField?: string;
+      yField?: string;
+    }>;
+    layout?: "grid" | "rows" | "tabs";
+    theme?: "light" | "dark";
+  }): Promise<string> {
+    const response = await callLLM({
+      system: `Generate a complete React dashboard component with TypeScript and Tailwind CSS.
+Use Recharts for charts. Include: responsive layout, loading states, error handling, refresh button, date range picker.
+Respond with ONLY the complete TSX code.`,
+      messages: [{
+        role: "user",
+        content: `Generate dashboard:\n${JSON.stringify(config, null, 2)}`,
+      }],
+      maxTokens: 8192,
+    });
+
+    let code = extractTextContent(response.content);
+    code = code.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    const filePath = `src/components/dashboards/${config.title.replace(/\s/g, "")}.tsx`;
+    this.fileTool.createFile(filePath, code);
+    return code;
+  }
+
+  // ===== KPI CARDS =====
+  async generateKPICards(metrics: Array<{
+    label: string;
+    value: string;
+    change?: string;
+    trend?: "up" | "down" | "flat";
+    icon?: string;
+  }>): Promise<string> {
+    const response = await callLLM({
+      system: "Generate React KPI card components with Tailwind CSS. Include: animated counters, trend indicators, responsive grid. Respond with ONLY TSX code.",
+      messages: [{ role: "user", content: `KPI cards:\n${JSON.stringify(metrics, null, 2)}` }],
+    });
+
+    let code = extractTextContent(response.content);
+    code = code.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    this.fileTool.createFile("src/components/KPICards.tsx", code);
+    return code;
+  }
+}

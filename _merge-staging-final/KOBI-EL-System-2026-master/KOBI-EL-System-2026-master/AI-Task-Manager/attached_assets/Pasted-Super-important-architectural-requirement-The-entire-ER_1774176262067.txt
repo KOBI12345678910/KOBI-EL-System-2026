@@ -1,0 +1,92 @@
+Super important architectural requirement:
+
+The entire ERP must be built as one continuous data-flow system across all models and modules, not as isolated pages or disconnected entities.
+
+CORE DATA PRINCIPLE
+
+All important business data must be able to flow across the full platform through connected models, workflows, and relations.
+
+Each model/module should:
+1. receive the data relevant to it from upstream models
+2. extract the key information needed for its own business purpose
+3. enrich, transform, and pass structured data forward to downstream models
+4. avoid unnecessary duplication
+5. stay synchronized with the system’s single source of truth
+
+This means the platform must support an end-to-end connected data architecture.
+
+REQUIRED ARCHITECTURE
+
+Build the system with:
+- single source of truth
+- cross-model data flow
+- shared master/reference data
+- event-driven updates where appropriate
+- safe relational consistency
+- derived/computed fields
+- data propagation across workflows
+- AI-assisted extraction/classification/enrichment
+- minimal duplicate manual entry
+
+AI DATA EXTRACTION LAYER
+
+Add a smart AI-assisted data extraction / interpretation layer so that each module can automatically identify and use the important data relevant to itself.
+
+Examples:
+- CRM captures raw customer input
+- AI extracts customer intent, project type, urgency, budget signals, dimensions, material preferences
+- Quotation module receives pricing-relevant structured data
+- Project module receives project context and site data
+- Production module receives manufacturing-relevant structured data
+- Purchasing receives material/procurement signals
+- Finance receives revenue/cost/profitability context
+- Management dashboards receive KPI-level summaries
+
+Every major module should intelligently consume the relevant data it needs from the shared system flow.
+
+DO NOT BUILD DISCONNECTED SILOS
+
+Do not design modules as separate islands.
+Design the ERP as one integrated flow of business data:
+lead -> customer -> quotation -> project -> measurement -> engineering -> BOM -> purchasing -> inventory -> production -> QC -> delivery -> installation -> invoicing -> payment -> profitability -> executive analytics
+
+MODEL-LEVEL REQUIREMENT
+
+For every important model, define:
+- source data inputs
+- data it owns
+- data it derives
+- data it passes downstream
+- AI-assisted extracted fields where relevant
+- related upstream/downstream modules
+- synchronization rules
+- validation rules
+
+DATA HANDLING STANDARD
+
+Each model should show and use:
+- directly entered data
+- related inherited data
+- derived/calculated data
+- AI-extracted data
+- linked upstream/downstream records
+
+The user should not need to retype the same information many times across modules.
+
+If a field already exists upstream, reuse it, map it, derive it, or sync it properly.
+
+TECHNICAL EXPECTATION
+
+Implement safe and professional cross-system data flow using:
+- relationships
+- mapping logic
+- computed fields
+- transformation layers
+- workflow-triggered updates
+- event-based updates where useful
+- AI enrichment/classification where useful
+- auditability of changes
+
+FINAL GOAL
+
+The ERP must behave like one intelligent connected operating system where data travels through the business lifecycle, and each module automatically extracts and uses the information necessary for its own role.

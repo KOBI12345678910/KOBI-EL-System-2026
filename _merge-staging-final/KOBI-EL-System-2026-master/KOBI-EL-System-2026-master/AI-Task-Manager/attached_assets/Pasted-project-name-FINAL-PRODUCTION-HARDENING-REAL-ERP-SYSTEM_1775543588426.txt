@@ -1,0 +1,359 @@
+project_name: "FINAL PRODUCTION HARDENING - REAL ERP SYSTEM"
+goal: >
+  להפוך את המערכת ממערכת בנויה/מוצגת למערכת אמיתית, מלאה, יציבה,
+  מחוברת נכון, ללא דפים חסרים, ללא קישורים שבורים, ללא mock/demo data,
+  ולוודא שכל התפריטים, המודלים, הקטגוריות, הניווט והדפים עובדים כמו מערכת ERP אמיתית.
+
+global_rules:
+  - "לא להשאיר שום דף דמו, שום placeholder, שום mock API ושום fake data."
+  - "כל פריט בתפריט חייב להוביל לדף אמיתי ועובד."
+  - "כל מודל חייב להיות מחובר לדאטה אמיתי, CRUD אמיתי, ולוגיקה אמיתית."
+  - "כל קטגוריה ותת-קטגוריה חייבות להיות מחוברות למסך הנכון."
+  - "אין להשאיר dead links, empty routes, broken actions או buttons שלא עושים כלום."
+  - "כל מסך חייב לכלול states מלאים: loading, empty, error, success."
+  - "כל טופס חייב לכלול validation אמיתי."
+  - "כל המערכת צריכה להרגיש production-ready ולא prototype."
+
+tasks:
+
+  - id: "T01"
+    name: "System Inventory Audit"
+    priority: "CRITICAL"
+    mission: >
+      ליצור מיפוי מלא של כל המערכת:
+      כל מודול, כל עמוד, כל route, כל תפריט, כל submenu, כל model, כל entity,
+      כל form, כל table, כל dashboard וכל workflow.
+    output_required:
+      - "רשימת כל המודולים במערכת"
+      - "רשימת כל העמודים הקיימים"
+      - "רשימת כל ה-routes"
+      - "רשימת כל המודלים והקשרים ביניהם"
+      - "רשימת כל המסכים שחסרים"
+      - "רשימת כל המסכים שקיימים אבל לא מחוברים"
+    definition_of_done:
+      - "יש מסמך inventory מלא של המערכת"
+      - "אין חלקים נסתרים או לא ממופים"
+
+  - id: "T02"
+    name: "Menu Structure Validation"
+    priority: "CRITICAL"
+    mission: >
+      לבדוק את כל התפריט הראשי וכל תתי-התפריטים.
+      לוודא שכל פריט קיים, כתוב נכון, נמצא במקום הנכון,
+      מוביל למסך הנכון, ולא נתקע או נפתח למסך שגוי.
+    checks:
+      - "כל item בתפריט קיים"
+      - "כל item מחובר route תקין"
+      - "אין menu items ללא יעד"
+      - "אין כפילויות"
+      - "אין קטגוריות במקום לא נכון"
+      - "סדר התפריט הגיוני עסקית"
+      - "ההרשאות לא מסתירות בטעות מסכים חשובים"
+    definition_of_done:
+      - "100% מהתפריט עובד"
+      - "אין שום click שלא מוביל למקום אמיתי"
+
+  - id: "T03"
+    name: "Category and Subcategory Logic Audit"
+    priority: "CRITICAL"
+    mission: >
+      לבדוק שכל הקטגוריות ותתי-הקטגוריות במערכת בנויות נכון,
+      משויכות נכון, ומובילות לאובייקטים, מסכים ודוחות הנכונים.
+    checks:
+      - "קטגוריות ראשיות מוגדרות נכון"
+      - "תתי-קטגוריות תחת האב הנכון"
+      - "אין orphan categories"
+      - "אין עמודים שיושבים תחת קטגוריה לא נכונה"
+      - "הסיווג העסקי תואם את הלוגיקה של המערכת"
+    definition_of_done:
+      - "מבנה קטגוריות נקי, עקבי, וללא טעויות ניווט"
+
+  - id: "T04"
+    name: "Model and Entity Integrity Review"
+    priority: "CRITICAL"
+    mission: >
+      לבדוק שכל המודלים/טבלאות/ישויות במערכת אמיתיים,
+      בנויים נכון, עם שדות נכונים, קשרים נכונים, validations נכונים,
+      ושהם משמשים בפועל את המערכת.
+    checks:
+      - "לכל מודל יש purpose ברור"
+      - "אין models מיותרים"
+      - "אין models דמו"
+      - "כל שדה רלוונטי באמת"
+      - "foreign keys וקשרים עובדים נכון"
+      - "one-to-many / many-to-many מוגדרים נכון"
+      - "שדות חובה מוגדרים נכון"
+      - "enum/status/category values תקינים"
+    definition_of_done:
+      - "מודל הנתונים מוכן ל-production"
+      - "אין שדות/טבלאות פיקטיביים"
+
+  - id: "T05"
+    name: "Page Completeness Audit"
+    priority: "CRITICAL"
+    mission: >
+      לבדוק אילו דפים חייבים להיות במערכת כדי שהיא תהיה ERP אמיתית,
+      ולהשלים כל דף חסר.
+    minimum_required_pages:
+      - "Dashboard"
+      - "List pages"
+      - "Create pages"
+      - "Edit pages"
+      - "Details/View pages"
+      - "Settings"
+      - "Users & Roles"
+      - "Permissions"
+      - "Reports"
+      - "Logs/Audit"
+      - "Notifications"
+      - "Error/Not Found pages"
+    definition_of_done:
+      - "אין דף עסקי קריטי שחסר"
+      - "לכל מודול יש מסכי list/create/edit/view לפי הצורך"
+
+  - id: "T06"
+    name: "Routing and Navigation Hardening"
+    priority: "CRITICAL"
+    mission: >
+      לבצע בדיקה מלאה של כל ה-routing והניווט במערכת.
+      לוודא שאין שבירות, לופים, שגיאות redirect, דפים ריקים או תקיעות.
+    checks:
+      - "כל route נטען"
+      - "אין blank pages"
+      - "אין infinite loading"
+      - "back navigation עובד"
+      - "deep links עובדים"
+      - "refresh על דף פנימי לא שובר את המערכת"
+      - "404 page מוגדר"
+      - "redirects עובדים נכון"
+    definition_of_done:
+      - "ניווט מלא, יציב, רציף וללא תקיעות"
+
+  - id: "T07"
+    name: "Replace Demo/Mock with Real Data"
+    priority: "CRITICAL"
+    mission: >
+      להסיר לחלוטין demo content, mock responses, placeholder numbers,
+      fake charts, fake tables, fake statuses ו-lorem ipsum.
+      לחבר הכל לדאטה אמיתי.
+    checks:
+      - "אין hardcoded demo records"
+      - "אין fake KPIs"
+      - "אין mock API"
+      - "אין sample dashboards"
+      - "אין test labels במסכים פעילים"
+    definition_of_done:
+      - "כל המערכת מבוססת על נתונים אמיתיים בלבד"
+
+  - id: "T08"
+    name: "Real CRUD Verification"
+    priority: "CRITICAL"
+    mission: >
+      לבדוק שלכל ישות רלוונטית יש CRUD אמיתי:
+      create, read, update, delete או archive לפי הצורך.
+    checks:
+      - "אפשר ליצור רשומה"
+      - "אפשר לערוך רשומה"
+      - "אפשר לראות פרטים"
+      - "אפשר למחוק/לארכב לפי לוגיקה עסקית"
+      - "השינויים נשמרים באמת במסד הנתונים"
+      - "המידע מתעדכן גם ברשימות וגם במסכי detail"
+    definition_of_done:
+      - "כל פעולה עסקית בסיסית באמת עובדת"
+
+  - id: "T09"
+    name: "Forms and Validation Audit"
+    priority: "HIGH"
+    mission: >
+      לבדוק כל טופס במערכת ולוודא validation אמיתי,
+      הודעות שגיאה ברורות, ושמירה תקינה.
+    checks:
+      - "שדות חובה מסומנים"
+      - "email/phone/number/date formats נבדקים"
+      - "אי אפשר לשמור נתונים פגומים"
+      - "הודעות שגיאה ברורות"
+      - "הודעת success מופיעה אחרי שמירה"
+      - "אין submit כפול"
+    definition_of_done:
+      - "אין טופס שניתן לשבור בקלות"
+
+  - id: "T10"
+    name: "Cross-Module Connectivity Audit"
+    priority: "CRITICAL"
+    mission: >
+      לבדוק שכל המודולים מחוברים אחד לשני כמו ERP אמיתי:
+      רשומות מקושרות, פעולות זורמות, והקשרים עובדים end-to-end.
+    examples:
+      - "לקוח -> פרויקט"
+      - "פרויקט -> הזמנה"
+      - "הזמנה -> רכש"
+      - "רכש -> מלאי"
+      - "מלאי -> ייצור"
+      - "ייצור -> אספקה"
+      - "אספקה -> חשבונית"
+      - "משתמשים -> הרשאות -> פעולות"
+    definition_of_done:
+      - "המערכת מתנהגת כמערכת אחת ולא כאוסף מסכים מנותקים"
+
+  - id: "T11"
+    name: "Permissions and Role-Based Access"
+    priority: "HIGH"
+    mission: >
+      לבדוק מערכת הרשאות מלאה:
+      מי רואה מה, מי יוצר, מי עורך, מי מוחק, מי מאשר.
+    checks:
+      - "Admin"
+      - "Manager"
+      - "Office"
+      - "Operations"
+      - "Finance"
+      - "Read-only"
+    definition_of_done:
+      - "אין דליפות הרשאה"
+      - "אין מסכים קריטיים חשופים למשתמש לא מורשה"
+
+  - id: "T12"
+    name: "State Handling and UX Reliability"
+    priority: "HIGH"
+    mission: >
+      להשלים לכל מסך states תקינים כדי שהמערכת תהיה יציבה ונעימה כמו ERP אמיתי.
+    required_states:
+      - "loading"
+      - "empty"
+      - "error"
+      - "success"
+      - "no permission"
+      - "not found"
+    definition_of_done:
+      - "אין מסכים שבורים או ריקים בלי הסבר"
+
+  - id: "T13"
+    name: "Search, Filter, Sort, Pagination"
+    priority: "HIGH"
+    mission: >
+      לבדוק שבכל דפי הרשימות החשובים יש יכולות חיפוש, סינון, מיון ודפדוף.
+    checks:
+      - "search עובד"
+      - "filters עובדים"
+      - "sort עובד"
+      - "pagination עובד"
+      - "clear filters עובד"
+    definition_of_done:
+      - "אפשר לעבוד עם הרבה נתונים בצורה אמיתית"
+
+  - id: "T14"
+    name: "Dashboard Truthfulness Audit"
+    priority: "HIGH"
+    mission: >
+      לבדוק שכל dashboard, widget, KPI, chart ו-summary card
+      מציגים מידע אמיתי, מעודכן, ומחושב נכון.
+    checks:
+      - "כל מספר מגיע ממקור נתונים אמיתי"
+      - "החישובים נכונים"
+      - "אין KPI מומצא"
+      - "אין chart דמו"
+      - "אפשר להסביר מאיפה כל מספר מגיע"
+    definition_of_done:
+      - "כל dashboard אמין ולא קוסמטי בלבד"
+
+  - id: "T15"
+    name: "Error Logging and Audit Trail"
+    priority: "HIGH"
+    mission: >
+      להוסיף ניטור בסיסי, לוגים, ו-audit trail לפעולות קריטיות.
+    checks:
+      - "שגיאות נשמרות"
+      - "פעולות create/update/delete מתועדות"
+      - "אפשר להבין מי עשה מה ומתי"
+    definition_of_done:
+      - "אפשר לתחקר תקלות ופעולות משתמשים"
+
+  - id: "T16"
+    name: "Performance and Stability Pass"
+    priority: "HIGH"
+    mission: >
+      לבצע מעבר ביצועים ויציבות:
+      טעינת דפים, שאילתות כבדות, רשימות גדולות, ודפים עם הרבה קשרים.
+    checks:
+      - "אין דפים איטיים בצורה קיצונית"
+      - "אין queries מיותרות"
+      - "אין טעינות כפולות"
+      - "אין קריסות במעבר מהיר בין מסכים"
+    definition_of_done:
+      - "המערכת יציבה בשימוש אמיתי"
+
+  - id: "T17"
+    name: "Production Data Safety"
+    priority: "HIGH"
+    mission: >
+      לבדוק שהמערכת מוכנה לעבודה אמיתית בלי לפגוע בנתונים.
+    checks:
+      - "delete רגיש מוחלף ב-archive כשצריך"
+      - "confirmations קיימים לפעולות מסוכנות"
+      - "unique constraints קיימים"
+      - "אין duplicate records לא מבוקרים"
+      - "rollback/logical safety קיימת איפה שצריך"
+    definition_of_done:
+      - "המערכת בטוחה לשימוש עסקי"
+
+  - id: "T18"
+    name: "Final End-to-End Business Flows"
+    priority: "CRITICAL"
+    mission: >
+      להריץ תרחישים עסקיים מלאים מקצה לקצה ולוודא שכל ה-flow עובד באמת.
+    test_flows:
+      - "פתיחת רשומה חדשה -> שמירה -> הופעה ברשימה -> עריכה -> עדכון"
+      - "יצירת קשר בין שתי ישויות -> שמירה -> הצגה נכונה בשני הצדדים"
+      - "ניווט מתוך dashboard לפרטי רשומה"
+      - "מעבר בין כל תתי התפריטים בלי שגיאות"
+      - "עבודה עם משתמשים בתפקידים שונים"
+    definition_of_done:
+      - "המערכת עוברת flows אמיתיים מקצה לקצה"
+
+  - id: "T19"
+    name: "Missing Pages and Broken Links Report"
+    priority: "CRITICAL"
+    mission: >
+      להוציא דו''ח סופי שמציג:
+      כל הדפים החסרים, כל הכפתורים שלא עובדים,
+      כל ה-routes השבורים, וכל האזורים שעדיין נראים כמו דמו.
+    output_required:
+      - "Broken links report"
+      - "Missing pages report"
+      - "Unconnected models report"
+      - "Fake/demo elements report"
+      - "Priority fix list"
+    definition_of_done:
+      - "יש תמונת מצב מלאה לפני עלייה לאוויר"
+
+  - id: "T20"
+    name: "Go-Live Readiness Checklist"
+    priority: "CRITICAL"
+    mission: >
+      לבצע צ'קליסט סופי לפני עלייה לאוויר.
+    go_live_requirements:
+      - "כל התפריטים עובדים"
+      - "כל הדפים קיימים"
+      - "כל המודלים אמיתיים"
+      - "כל הקטגוריות משויכות נכון"
+      - "אין דמו"
+      - "אין mock"
+      - "אין broken routes"
+      - "אין buttons מתים"
+      - "CRUD עובד"
+      - "validation עובד"
+      - "permissions עובדים"
+      - "dashboards אמיתיים"
+      - "flows עסקיים עוברים"
+      - "המערכת יציבה"
+    final_definition_of_done:
+      - "המערכת מוכנה לשימוש אמיתי כמו ERP אמיתי"
+
+final_instruction_to_replit: >
+  תבצע audit מלא על כל המערכת לפי כל המשימות למעלה.
+  לאחר מכן תחזיר תשובה מסודרת ב-4 חלקים:
+  1. מה תקין
+  2. מה חסר
+  3. מה שבור
+  4. מה חייבים לתקן לפני production
+  ובסוף תציג רשימת תיקונים לפי סדר עדיפות: Critical, High, Medium.

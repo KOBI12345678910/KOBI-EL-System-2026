@@ -1,0 +1,113 @@
+[
+  {
+    "model": "customers",
+    "registry_expects": "crm.customers",
+    "db_has": [
+      "commercial.customers",
+      "public.customers"
+    ],
+    "why": "wrong_schema",
+    "confidence": "high"
+  },
+  {
+    "model": "opportunities",
+    "registry_expects": "sales.opportunities",
+    "db_has": [
+      "commercial.opportunities",
+      "crm.opportunities"
+    ],
+    "why": "wrong_schema",
+    "confidence": "high"
+  },
+  {
+    "model": "quotes",
+    "registry_expects": "sales.quotes",
+    "db_has": [
+      "commercial.quotes"
+    ],
+    "why": "wrong_schema",
+    "confidence": "high"
+  },
+  {
+    "model": "approvals",
+    "registry_expects": "sales.approvals",
+    "db_has": [
+      "procurement.approvals"
+    ],
+    "why": "wrong_schema",
+    "confidence": "high"
+  },
+  {
+    "model": "projects",
+    "registry_expects": "projects.projects",
+    "db_has": [
+      "execution.projects"
+    ],
+    "why": "wrong_schema",
+    "confidence": "high"
+  },
+  {
+    "model": "project_phases",
+    "registry_expects": "projects.project_phases",
+    "db_has": [
+      "execution.project_phases"
+    ],
+    "why": "wrong_schema",
+    "confidence": "high"
+  },
+  {
+    "model": "employees",
+    "registry_expects": "hr_workforce.employees",
+    "db_has": [
+      "public.employees",
+      "workforce.employees"
+    ],
+    "why": "wrong_schema",
+    "confidence": "high"
+  },
+  {
+    "model": "documents",
+    "registry_expects": "documents.documents",
+    "db_has": [
+      "docs.documents"
+    ],
+    "why": "wrong_schema",
+    "confidence": "high"
+  },
+  {
+    "model": "document_versions",
+    "registry_expects": "documents.document_versions",
+    "db_has": [
+      "docs.document_versions"
+    ],
+    "why": "wrong_schema",
+    "confidence": "high"
+  },
+  {
+    "model": "signatures",
+    "registry_expects": "documents.signatures",
+    "db_has": [
+      "execution.signatures"
+    ],
+    "why": "wrong_schema",
+    "confidence": "high"
+  },
+  {
+    "model": "attachments",
+    "registry_expects": "documents.attachments",
+    "db_has": [
+      "docs.attachments"
+    ],
+    "why": "wrong_schema",
+    "confidence": "high"
+  },
+  {
+    "model": "forecast_models",
+    "registry_expects": "analytics.forecast_models",
+    "db_has": [
+      "intelligence.forecast_models"
+    ],
+    "why": "wrong_schema",
+    "confidence": "high"
+  }
+]

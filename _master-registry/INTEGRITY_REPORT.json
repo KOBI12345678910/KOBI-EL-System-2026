@@ -1,0 +1,244 @@
+{
+  "typescript": {
+    "api-server": {
+      "status": "errors",
+      "error_count": 0,
+      "sample_errors": []
+    },
+    "erp-app": {
+      "status": "errors",
+      "error_count": 0,
+      "sample_errors": []
+    },
+    "onyx-procurement": {
+      "status": "node-check-ok",
+      "err": ""
+    },
+    "onyx-ai": {
+      "status": "errors",
+      "error_count": 0,
+      "sample_errors": []
+    },
+    "techno-kol-ops": {
+      "status": "errors",
+      "error_count": 0,
+      "sample_errors": []
+    },
+    "lib-client": {
+      "status": "no-tsconfig"
+    },
+    "vm-task-runner": {
+      "status": "node-check-ok",
+      "err": ""
+    },
+    "packages/shared-validation": {
+      "status": "no-tsconfig"
+    }
+  },
+  "menu_integrity": {
+    "total_routes": 1258,
+    "total_menu": 1220,
+    "menu_without_route": 458,
+    "route_without_menu": 496,
+    "menu_without_route_sample": [
+      "/operations",
+      "/workforce",
+      "/rfqs",
+      "/pos",
+      "/sales",
+      "/tax",
+      "/realestate",
+      "/intelligence",
+      "/system",
+      "/executive",
+      "/procurement-room",
+      "/workforce-room",
+      "/ai-room",
+      "/kpi",
+      "/leads",
+      "/quotes",
+      "/sales-funnel",
+      "/sales-leaders",
+      "/supplier-360",
+      "/rfq-360"
+    ],
+    "route_without_menu_sample": [
+      "/",
+      "/operations-control-center",
+      "/executive/war-room",
+      "/executive/order-lifecycle",
+      "/executive/ceo-dashboard",
+      "/executive/live-ops",
+      "/executive/company-health",
+      "/executive/kpi-board",
+      "/executive/live-alerts",
+      "/executive/financial-risk",
+      "/executive/operational-bottlenecks",
+      "/executive/delayed-projects",
+      "/executive/procurement-risk",
+      "/executive/production-efficiency",
+      "/executive/profitability",
+      "/executive/workforce-status",
+      "/products",
+      "/sales-orders",
+      "/manufacturing",
+      "/manufacturing/:rest*"
+    ]
+  },
+  "sql_syntax": {
+    "files": 41,
+    "with_paren_mismatch": 5,
+    "sample": [
+      {
+        "file": "00010_enterprise_expansion_30_tables.sql",
+        "open": 235,
+        "close": 265
+      },
+      {
+        "file": "00011_enterprise_expansion_30_more_tables.sql",
+        "open": 225,
+        "close": 255
+      },
+      {
+        "file": "00012_rpc_functions_core_block.sql",
+        "open": 168,
+        "close": 178
+      },
+      {
+        "file": "00015_read_model_views.sql",
+        "open": 135,
+        "close": 142
+      },
+      {
+        "file": "00016_trigger_functions_computed_fields.sql",
+        "open": 65,
+        "close": 73
+      }
+    ]
+  },
+  "broken_imports": {
+    "total": 30,
+    "sample": [
+      {
+        "from": "erp-app\\src\\components\\bots\\examples\\integration-example.ts",
+        "import": "../roles/DEVOPS.bot"
+      },
+      {
+        "from": "erp-app\\src\\components\\bots\\examples\\integration-example.ts",
+        "import": "../roles/PYTHON_FIXER.bot"
+      },
+      {
+        "from": "erp-app\\src\\components\\costing\\job-costing-table.tsx",
+        "import": "../common/DataTable"
+      },
+      {
+        "from": "erp-app\\src\\components\\costing\\margin-alerts.tsx",
+        "import": "../common/EmptyState"
+      },
+      {
+        "from": "erp-app\\src\\components\\customfields\\field-value-manager.tsx",
+        "import": "./DynamicFieldRenderer"
+      },
+      {
+        "from": "erp-app\\src\\components\\leads\\tabs\\lead-overview-tab.tsx",
+        "import": "../TimelineFeed"
+      },
+      {
+        "from": "erp-app\\src\\components\\leads\\tabs\\lead-overview-tab.tsx",
+        "import": "../AIInsightsPanel"
+      },
+      {
+        "from": "erp-app\\src\\components\\leads\\tabs\\lead-tasks-meetings-tab.tsx",
+        "import": "../modals/CreateTaskModal"
+      },
+      {
+        "from": "erp-app\\src\\components\\leads\\tabs\\lead-tasks-meetings-tab.tsx",
+        "import": "../modals/CreateMeetingModal"
+      },
+      {
+        "from": "erp-app\\src\\components\\permissions\\role-based-nav.tsx",
+        "import": "./PermissionGate"
+      },
+      {
+        "from": "erp-app\\src\\components\\project\\project-detail.tsx",
+        "import": "./MilestoneTracker"
+      },
+      {
+        "from": "erp-app\\src\\components\\project\\project-detail.tsx",
+        "import": "./TeamAssignments"
+      },
+      {
+        "from": "erp-app\\src\\components\\quality\\defects-tab.tsx",
+        "import": "../common/DataTable"
+      },
+      {
+        "from": "erp-app\\src\\components\\quality\\defects-tab.tsx",
+        "import": "../common/StatusBadge"
+      },
+      {
+        "from": "erp-app\\src\\components\\quality\\ncr-tab.tsx",
+        "import": "../common/DataTable"
+      },
+      {
+        "from": "erp-app\\src\\components\\quality\\ncr-tab.tsx",
+        "import": "../common/StatusBadge"
+      },
+      {
+        "from": "erp-app\\src\\components\\quality\\qc-checkpoints-tab.tsx",
+        "import": "../common/DataTable"
+      },
+      {
+        "from": "erp-app\\src\\components\\quality\\qc-checkpoints-tab.tsx",
+        "import": "../common/StatusBadge"
+      },
+      {
+        "from": "erp-app\\src\\components\\quality\\supplier-claims-tab.tsx",
+        "import": "../common/DataTable"
+      },
+      {
+        "from": "erp-app\\src\\components\\quality\\supplier-claims-tab.tsx",
+        "import": "../common/StatusBadge"
+      },
+      {
+        "from": "erp-app\\src\\components\\reporting\\report-builder.tsx",
+        "import": "./ReportFilters"
+      },
+      {
+        "from": "erp-app\\src\\components\\reporting\\report-builder.tsx",
+        "import": "./ReportVisualizer"
+      },
+      {
+        "from": "erp-app\\src\\components\\reporting\\report-builder.tsx",
+        "import": "./ReportExporter"
+      },
+      {
+        "from": "erp-app\\src\\pages\\goods-receipt.tsx",
+        "import": "../../lib/utils"
+      },
+      {
+        "from": "erp-app\\src\\pages\\purchase-requests.tsx",
+        "import": "../../lib/utils"
+      },
+      {
+        "from": "erp-app\\src\\pages\\raw-materials.tsx",
+        "import": "../../lib/utils"
+      },
+      {
+        "from": "erp-app\\src\\pages\\suppliers.tsx",
+        "import": "../../lib/utils"
+      },
+      {
+        "from": "api-server\\src\\lib\\kimi-test.ts",
+        "import": "./kimi-client.js"
+      },
+      {
+        "from": "api-server\\src\\routes\\kobi\\tools.ts",
+        "import": "../../lib/utils"
+      },
+      {
+        "from": "api-server\\src\\routes\\mfa.ts",
+        "import": "../lib/mfa"
+      }
+    ]
+  }
+}

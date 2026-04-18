@@ -1,0 +1,15 @@
+{
+  "name": "onyx-procurement",
+  "version": "1.0.0",
+  "description": "ONYX Procurement System — Google Cloud",
+  "main": "server-gcloud.js",
+  "scripts": {
+    "start": "node server-gcloud.js",
+    "seed": "node seed-firestore.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "@google-cloud/firestore": "^7.10.0",
+    "cors": "^2.8.5"
+  }
+}

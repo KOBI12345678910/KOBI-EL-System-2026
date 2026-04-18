@@ -91,8 +91,8 @@
 // CONSTANTS
 // ---------------------------------------------------------------
 
-/** Standard Israeli VAT rate for 2026 (17%). */
-const VAT_RATE = 0.17;
+/** Standard Israeli VAT rate for 2026 (18% effective 2026-01-01; 17% before). */
+const VAT_RATE = 0.18;
 
 /** Maximum commission per side, sale, as fraction of price. */
 const SALE_CAP_PCT = 0.02; // 2% per side

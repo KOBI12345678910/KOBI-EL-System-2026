@@ -1,0 +1,13 @@
+{
+  "apiBase": "http://localhost:3100",
+  "logFile": "./logs/onyx-procurement.log",
+  "logsDir": "./logs",
+  "cacheDir": "./.cache",
+  "queueFile": "./data/queue.json",
+  "cacheWarmupUrls": [
+    "/api/health",
+    "/api/suppliers",
+    "/api/products",
+    "/api/invoices/recent"
+  ]
+}

@@ -1,0 +1,705 @@
+{
+  "truly_orphan": [
+    {
+      "table": "analytics.dashboard_board_widgets",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "analytics.kpi_snapshots",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "analytics.read_model_invalidations",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "analytics.rm_ai_summary",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "analytics.rm_executive_summary",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "analytics.rm_finance_summary",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "analytics.rm_operations_summary",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "analytics.rm_procurement_summary",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "analytics.rm_workforce_summary",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "analytics.user_dashboard_boards",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "commercial.crm_activities",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "commercial.customer_contacts",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "commercial.customer_portal_accounts",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "commercial.lead_tag_assignments",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "commercial.quote_approval_rules",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "commercial.quote_lines",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "commercial.quote_revisions",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "comms.chatbot_sessions",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "comms.email_messages",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "comms.help_articles",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "comms.notification_deliveries",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "comms.portal_sessions",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "comms.sms_messages",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "comms.support_sla_tracking",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "comms.whatsapp_messages",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "compliance.policy_acknowledgements",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "crm.lead_activities",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "crm.opportunities",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "docs.attachments",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "docs.document_classifications",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "docs.document_signature_requests",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "docs.document_versions",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "docs.ocr_results",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "docs.print_jobs",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "docs.scan_sessions",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "documents.classification_runs",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "documents.document_chunks",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "documents.document_relations",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "documents.entity_extractions",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "documents.knowledge_cards",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "documents.ocr_runs",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "execution.delivery_events",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "execution.installation_events",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "execution.project_blockers",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "execution.project_cost_plans",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "execution.project_milestones",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "execution.signatures",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "execution.task_attachments",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "execution.task_comments",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "execution.task_dependencies",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "execution.work_order_qa_items",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "execution.work_order_tasks",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "finance.annual_tax_reports",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "finance.bank_matches",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "finance.budget_entries",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "finance.cashflow_entries",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "finance.collection_actions",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "finance.consolidation_entries",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "finance.costing_entries",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "finance.dunning_steps",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "finance.expenses",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "finance.fx_rates",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "finance.gl_transactions",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "finance.invoice_lines",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "finance.payment_allocations",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "finance.receipts",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "finance.reconciliation_exceptions",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "finance.reminder_schedules",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "finance.tax_exports",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "finance.tax_records",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "finance.vat_records",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "governance.alert_subscriptions",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "governance.audit_log_attachments",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "governance.command_logs",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "governance.config_entries",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "governance.escalation_rules",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "governance.event_deliveries",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "governance.feature_flag_targets",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "governance.health_checks",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "governance.idempotency_keys",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "governance.integration_sync_logs",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "governance.job_executions",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "governance.object_permissions",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "governance.role_permissions",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "governance.saved_filters",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "governance.security_events",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "governance.sla_timers",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "governance.state_history",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "governance.user_preferences",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "governance.user_roles",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "governance.validations_log",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "governance.webhook_deliveries",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "governance.workflow_step_executions",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "intelligence.agent_jobs",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "intelligence.ai_insights",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "intelligence.anomaly_feedback",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "intelligence.forecast_models",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "intelligence.model_executions",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "intelligence.quality_scores",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "intelligence.recommendation_feedback",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "intelligence.seasonality_patterns",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "intelligence.trend_signals",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "inventory.barcode_scans",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "inventory.inventory",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "inventory.inventory_issues",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "inventory.inventory_movements",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "inventory.inventory_receipts",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "inventory.inventory_reservations",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "inventory.inventory_transfers",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "inventory.manufacturing_batches",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "inventory.material_request_lines",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "inventory.reorder_rules",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "inventory.shortage_snapshots",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "inventory.stock_count_lines",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "maintenance.work_orders",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "orchestration.job_queue",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "orchestration.notifications",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "orchestration.universal_inbox",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "orchestration.workflow_step_runs",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "planning.capacity_slots",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "planning.demand_forecasts",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "pricing.calculations",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "procurement.approval_steps",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "procurement.contract_milestones",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "procurement.returns",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "procurement.rfq_comparison_snapshots",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "procurement.rfq_supplier_invites",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "procurement.supplier_contacts",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "procurement.supplier_invoices",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "procurement.supplier_portal_accounts",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "procurement.supplier_scorecards",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "procurement.warranty_cases",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "public.employees",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "public.inventory_items",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "public.orders",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "public.properties",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "public.user_profiles",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "quality.defects",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "routing.route_permission_map",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "service.ticket_comments",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "treasury.cash_forecasts",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "treasury.cash_positions",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "workforce.attendance",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "workforce.employee_expenses",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "workforce.employee_pay_components",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "workforce.hr_profiles",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "workforce.leave_requests",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "workforce.payroll_exceptions",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "workforce.payroll_export_batches",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "workforce.pension_records",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "workforce.shifts",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "workforce.wage_slips",
+      "reason": "no_fk_in AND no_api_use"
+    },
+    {
+      "table": "workforce.workforce_assignments",
+      "reason": "no_fk_in AND no_api_use"
+    }
+  ],
+  "hidden_but_referenced": [
+    "analytics.dashboard_boards",
+    "analytics.dashboard_definitions",
+    "analytics.dashboard_widgets",
+    "commercial.customers",
+    "commercial.lead_tags",
+    "commercial.leads",
+    "commercial.opportunities",
+    "commercial.pipeline_stages",
+    "commercial.pricing_snapshots",
+    "commercial.quotes",
+    "comms.comms_threads",
+    "comms.notifications",
+    "comms.portal_users",
+    "comms.support_tickets",
+    "compliance.policies",
+    "crm.leads",
+    "docs.documents",
+    "documents.extraction_runs",
+    "execution.alerts",
+    "execution.logistics_orders",
+    "execution.project_phases",
+    "execution.project_risks",
+    "execution.projects",
+    "execution.tasks",
+    "execution.work_order_qa_checklists",
+    "execution.work_orders",
+    "finance.bank_files",
+    "finance.collection_cases",
+    "finance.dunning_campaigns",
+    "finance.invoices",
+    "finance.payments",
+    "governance.audit_logs",
+    "governance.domain_events",
+    "governance.event_subscriptions",
+    "governance.feature_flags",
+    "governance.integration_connections",
+    "governance.permissions",
+    "governance.queue_jobs",
+    "governance.roles",
+    "governance.users_profile",
+    "governance.webhook_endpoints",
+    "governance.workflow_instances",
+    "governance.workflow_steps",
+    "governance.workflows",
+    "intelligence.agent_registry",
+    "intelligence.anomaly_cases",
+    "intelligence.decision_recommendations",
+    "intelligence.model_registry",
+    "inventory.material_categories",
+    "inventory.material_lots",
+    "inventory.material_requests",
+    "inventory.materials",
+    "inventory.stock_counts",
+    "inventory.warehouses",
+    "maintenance.assets",
+    "orchestration.workflow_definitions",
+    "orchestration.workflow_runs",
+    "orchestration.workflow_steps",
+    "planning.capacity_calendars",
+    "pricing.rule_sets",
+    "procurement.approvals",
+    "procurement.contracts",
+    "procurement.purchase_order_lines",
+    "procurement.purchase_orders",
+    "procurement.rfq_items",
+    "procurement.rfqs",
+    "procurement.supplier_quote_lines",
+    "procurement.supplier_quotes",
+    "procurement.suppliers",
+    "public.app_menu",
+    "public.customers",
+    "public.suppliers",
+    "quality.inspection_plans",
+    "quality.inspection_runs",
+    "routing.menu_nodes",
+    "routing.route_registry",
+    "service.tickets",
+    "treasury.bank_accounts",
+    "workforce.employees",
+    "workforce.employers",
+    "workforce.leave_types",
+    "workforce.pay_components",
+    "workforce.payroll_entries",
+    "workforce.payroll_runs"
+  ],
+  "apiTables": [
+    "<html><body dir=\\"
+  ]
+}

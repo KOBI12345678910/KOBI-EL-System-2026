@@ -1,0 +1,98 @@
+[
+  {
+    "id": "AUTO-0001",
+    "name": "quote_approved_create_project",
+    "trigger": "sales.quotes.status=approved",
+    "side_effects": [
+      "projects.projects.create"
+    ]
+  },
+  {
+    "id": "AUTO-0002",
+    "name": "project_status_change_alert",
+    "trigger": "projects.projects.status.change",
+    "side_effects": [
+      "orchestration.notifications.create"
+    ]
+  },
+  {
+    "id": "AUTO-0003",
+    "name": "overdue_project_alert",
+    "trigger": "projects.projects.target_delivery<today",
+    "side_effects": [
+      "orchestration.notifications.create"
+    ]
+  },
+  {
+    "id": "AUTO-0004",
+    "name": "auto_reorder_on_low_stock",
+    "trigger": "inventory.stock_balances<reorder_point",
+    "side_effects": [
+      "procurement.purchase_requests.create"
+    ]
+  },
+  {
+    "id": "AUTO-0005",
+    "name": "compute_wage_on_attendance_close",
+    "trigger": "hr_workforce.attendance_logs.status=submitted",
+    "side_effects": [
+      "hr_workforce.payroll_inputs.create"
+    ]
+  },
+  {
+    "id": "AUTO-0006",
+    "name": "vat_period_reminder",
+    "trigger": "cron 0 9 14 * *",
+    "side_effects": [
+      "orchestration.notifications.create"
+    ]
+  },
+  {
+    "id": "AUTO-0007",
+    "name": "daily_kpi_snapshot",
+    "trigger": "cron 5 0 * * *",
+    "side_effects": [
+      "analytics.scorecards.create"
+    ]
+  },
+  {
+    "id": "AUTO-0008",
+    "name": "payment_reminder_overdue",
+    "trigger": "finance.invoices.days_overdue>0",
+    "side_effects": [
+      "orchestration.notifications.create"
+    ]
+  },
+  {
+    "id": "AUTO-0009",
+    "name": "ai_anomaly_detection_nightly",
+    "trigger": "cron 0 3 * * *",
+    "side_effects": [
+      "ai_automation.prediction_outputs.create"
+    ]
+  },
+  {
+    "id": "AUTO-0010",
+    "name": "send_quote_email_on_approve",
+    "trigger": "sales.quotes.status=approved",
+    "side_effects": [
+      "documents.generated_files.create"
+    ]
+  },
+  {
+    "id": "AUTO-0011",
+    "name": "rfq_followup_no_response",
+    "trigger": "procurement.purchase_requests.no_response>3d",
+    "side_effects": [
+      "orchestration.notifications.create"
+    ]
+  },
+  {
+    "id": "AUTO-0012",
+    "name": "service_sla_breach_alert",
+    "trigger": "service.service_tickets.sla_exceeded=true",
+    "side_effects": [
+      "orchestration.notifications.create"
+    ]
+  }
+]

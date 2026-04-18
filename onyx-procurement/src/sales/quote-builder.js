@@ -18,7 +18,7 @@
  *     previous one, it appends to `discounts[]`.
  *   • Status transitions are recorded in `history[]` with actor + reason.
  *   • Line items carry a `sku`, qty, unitPrice, optional line discount.
- *   • VAT rate comes from constructor config (defaults 17%) so the module
+ *   • VAT rate comes from constructor config (defaults 18% from 2026-01-01; 17% before) so the module
  *     does not hard-code Israeli policy.
  *   • Currency conversion is delegated to src/fx/fx-engine.js if present.
  *   • Hebrew RTL bilingual PDF is generated via pdfkit (optional dep) — if
@@ -62,7 +62,7 @@ const fs = require('fs');
 const path = require('path');
 
 /* ---------- constants ---------- */
-const DEFAULT_VAT = 0.17;           // ברירת מחדל — מע"מ 17%
+const DEFAULT_VAT = 0.18;           // ברירת מחדל — מע"מ 18% (מ-2026-01-01, לפני כן 17%)
 const DEFAULT_CURRENCY = 'ILS';
 const DEFAULT_VALID_DAYS = 30;
 
@@ -176,7 +176,7 @@ function genId(prefix, now) {
 class QuoteBuilder {
   /**
    * @param {Object} opts
-   * @param {number} [opts.vatRate=0.17]    — VAT rate, from config
+   * @param {number} [opts.vatRate=0.18]    — VAT rate, from config (0.17 pre-2026)
    * @param {string} [opts.currency='ILS']   — default display currency
    * @param {Object} [opts.fxEngine]         — instance of createFxEngine() (optional)
    * @param {Function} [opts.now]            — clock injection for tests

@@ -1,0 +1,181 @@
+import { callLLM } from "../llm/client";
+import { extractJSON, extractTextContent } from "../llm/parser";
+import { AgentMemory } from "../agent/memory";
+
+export interface PlanTask {
+  id: number;
+  title: string;
+  description: string;
+  type: "backend" | "frontend" | "database" | "auth" | "design" | "config" | "test" | "deploy";
+  status: "pending" | "approved" | "rejected" | "modified" | "completed";
+  estimatedMinutes: number;
+  dependencies: number[];
+  subtasks?: string[];
+  userNotes?: string;
+}
+
+export interface Plan {
+  id: string;
+  title: string;
+  overview: string;
+  tasks: PlanTask[];
+  questions: string[]; // Agent asks user before building
+  assumptions: string[];
+  techStack: string[];
+  estimatedTotal: string;
+  status: "drafting" | "reviewing" | "approved" | "executing" | "completed";
+  createdAt: Date;
+}
+
+export class PlanMode {
+  private memory: AgentMemory;
+  private currentPlan: Plan | null = null;
+  private onUpdate: (plan: Plan) => void;
+
+  constructor(memory: AgentMemory, onUpdate: (plan: Plan) => void) {
+    this.memory = memory;
+    this.onUpdate = onUpdate;
+  }
+
+  async createPlan(task: string): Promise<Plan> {
+    const context = this.memory.getProjectContext();
+
+    const response = await callLLM({
+      system: `You are a project planner. Create a detailed, interactive plan.
+DO NOT start building yet. Only plan.
+
+Rules:
+- Break into ordered tasks with clear descriptions
+- Identify dependencies between tasks
+- Estimate time per task
+- List assumptions you're making
+- Ask clarifying questions if anything is ambiguous
+- Suggest the tech stack
+
+Respond with JSON:
+{
+  "title": "project title",
+  "overview": "2-3 sentence summary of what will be built",
+  "tasks": [
+    {
+      "id": 1,
+      "title": "short title",
+      "description": "detailed description",
+      "type": "backend|frontend|database|auth|design|config|test|deploy",
+      "estimatedMinutes": 5,
+      "dependencies": [],
+      "subtasks": ["sub-step 1", "sub-step 2"]
+    }
+  ],
+  "questions": ["clarifying questions for the user"],
+  "assumptions": ["things you're assuming"],
+  "techStack": ["React", "TypeScript", "PostgreSQL"],
+  "estimatedTotal": "~30 minutes"
+}`,
+      messages: [{
+        role: "user",
+        content: `Project context:\n${context}\n\nTask: ${task}`,
+      }],
+      maxTokens: 4096,
+    });
+
+    const parsed = extractJSON(extractTextContent(response.content));
+    if (!parsed) throw new Error("Failed to create plan");
+
+    const plan: Plan = {
+      id: `plan_${Date.now()}`,
+      title: parsed.title,
+      overview: parsed.overview,
+      tasks: (parsed.tasks || []).map((t: any) => ({ ...t, status: "pending" })),
+      questions: parsed.questions || [],
+      assumptions: parsed.assumptions || [],
+      techStack: parsed.techStack || [],
+      estimatedTotal: parsed.estimatedTotal || "unknown",
+      status: "reviewing",
+      createdAt: new Date(),
+    };
+
+    this.currentPlan = plan;
+    this.onUpdate(plan);
+    return plan;
+  }
+
+  approveTask(taskId: number): boolean {
+    if (!this.currentPlan) return false;
+    const task = this.currentPlan.tasks.find((t) => t.id === taskId);
+    if (task) { task.status = "approved"; this.onUpdate(this.currentPlan); return true; }
+    return false;
+  }
+
+  rejectTask(taskId: number, reason?: string): boolean {
+    if (!this.currentPlan) return false;
+    const task = this.currentPlan.tasks.find((t) => t.id === taskId);
+    if (task) { task.status = "rejected"; task.userNotes = reason; this.onUpdate(this.currentPlan); return true; }
+    return false;
+  }
+
+  modifyTask(taskId: number, changes: Partial<PlanTask>): boolean {
+    if (!this.currentPlan) return false;
+    const task = this.currentPlan.tasks.find((t) => t.id === taskId);
+    if (task) { Object.assign(task, changes); task.status = "modified"; this.onUpdate(this.currentPlan); return true; }
+    return false;
+  }
+
+  addTask(task: Omit<PlanTask, "id" | "status">): PlanTask {
+    if (!this.currentPlan) throw new Error("No plan");
+    const newTask: PlanTask = { ...task, id: this.currentPlan.tasks.length + 1, status: "approved" };
+    this.currentPlan.tasks.push(newTask);
+    this.onUpdate(this.currentPlan);
+    return newTask;
+  }
+
+  reorderTasks(taskIds: number[]): void {
+    if (!this.currentPlan) return;
+    const taskMap = new Map(this.currentPlan.tasks.map((t) => [t.id, t]));
+    this.currentPlan.tasks = taskIds.map((id) => taskMap.get(id)!).filter(Boolean);
+    this.onUpdate(this.currentPlan);
+  }
+
+  approveAll(): void {
+    if (!this.currentPlan) return;
+    for (const task of this.currentPlan.tasks) {
+      if (task.status === "pending") task.status = "approved";
+    }
+    this.currentPlan.status = "approved";
+    this.onUpdate(this.currentPlan);
+  }
+
+  async answerQuestions(answers: Record<number, string>): Promise<Plan> {
+    if (!this.currentPlan) throw new Error("No plan");
+
+    const response = await callLLM({
+      system: "Update the plan based on user answers. Respond with the updated JSON plan.",
+      messages: [{
+        role: "user",
+        content: `Current plan:\n${JSON.stringify(this.currentPlan, null, 2)}\n\nUser answers:\n${JSON.stringify(answers, null, 2)}`,
+      }],
+      maxTokens: 4096,
+    });
+
+    const updated = extractJSON(extractTextContent(response.content));
+    if (updated?.tasks) {
+      this.currentPlan.tasks = updated.tasks.map((t: any) => ({ ...t, status: t.status || "pending" }));
+      this.currentPlan.questions = updated.questions || [];
+      this.onUpdate(this.currentPlan);
+    }
+
+    return this.currentPlan;
+  }
+
+  getApprovedTasks(): PlanTask[] {
+    return this.currentPlan?.tasks.filter((t) => t.status === "approved" || t.status === "modified") || [];
+  }
+
+  getPlan(): Plan | null { return this.currentPlan; }
+
+  isReadyToExecute(): boolean {
+    if (!this.currentPlan) return false;
+    const pending = this.currentPlan.tasks.filter((t) => t.status === "pending");
+    return pending.length === 0 && this.currentPlan.tasks.length > 0;
+  }
+}

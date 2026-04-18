@@ -1,0 +1,42 @@
+{
+  // ─────────────────────────────────────────────────────────────────────────
+  // ONYX AI — Experimental FULLY STRICT TypeScript config
+  //
+  // Extends ./tsconfig.json and turns every strict-family flag ON.
+  // Use this to get an empirical baseline of how many errors exist today:
+  //
+  //     npx tsc -p tsconfig.strict.json --noEmit
+  //
+  // DO NOT use this as the build config until TYPESCRIPT_STRICT_PLAN.md
+  // steps 1–7 have been completed. It is expected to produce errors on
+  // first run. See TYPESCRIPT_STRICT_PLAN.md for the migration sequence.
+  // ─────────────────────────────────────────────────────────────────────────
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // Core strict family (8 flags) — all ON
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "alwaysStrict": true,
+    "useUnknownInCatchVariables": true,
+    "noImplicitThis": true,
+
+    // Extra strictness flags (6) — all ON
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitOverride": true,
+
+    // Experimental config never emits — only typechecks
+    "noEmit": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
+}

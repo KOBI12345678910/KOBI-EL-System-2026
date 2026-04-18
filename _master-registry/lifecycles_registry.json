@@ -1,0 +1,67 @@
+{
+  "lead_lifecycle": [
+    "new",
+    "contacted",
+    "qualified",
+    "quoted",
+    "converted",
+    "lost"
+  ],
+  "quote_lifecycle": [
+    "draft",
+    "submitted",
+    "under_review",
+    "approved",
+    "rejected",
+    "expired",
+    "converted"
+  ],
+  "project_lifecycle": [
+    "draft",
+    "approved",
+    "planning",
+    "engineering",
+    "procurement",
+    "in_production",
+    "ready_for_installation",
+    "installed",
+    "completed",
+    "closed"
+  ],
+  "purchase_order_lifecycle": [
+    "draft",
+    "pending_approval",
+    "approved",
+    "ordered",
+    "partially_received",
+    "received",
+    "closed",
+    "cancelled"
+  ],
+  "production_order_lifecycle": [
+    "planned",
+    "released",
+    "in_progress",
+    "paused",
+    "quality_check",
+    "completed",
+    "closed"
+  ],
+  "invoice_lifecycle": [
+    "draft",
+    "issued",
+    "partially_paid",
+    "paid",
+    "overdue",
+    "cancelled"
+  ],
+  "service_ticket_lifecycle": [
+    "opened",
+    "assigned",
+    "in_progress",
+    "waiting_parts",
+    "waiting_customer",
+    "resolved",
+    "closed"
+  ]
+}

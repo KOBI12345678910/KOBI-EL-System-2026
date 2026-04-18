@@ -1,0 +1,21 @@
+{
+  "at": "2026-04-18T06:25:30.496Z",
+  "total_route_files": 327,
+  "already_imported": 247,
+  "unmounted_found": 86,
+  "wired": 84,
+  "skipped": 2,
+  "skip_breakdown": {
+    "utility": 2
+  },
+  "skip_log": [
+    {
+      "file": "fin-seed",
+      "reason": "utility"
+    },
+    {
+      "file": "supplier-notification-trigger",
+      "reason": "utility"
+    }
+  ]
+}

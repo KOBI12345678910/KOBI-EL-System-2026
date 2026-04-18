@@ -1,0 +1,144 @@
+import { FileTool } from "./fileTool";
+import { SearchTool } from "./searchTool";
+import { callLLM } from "../llm/client";
+import { extractTextContent } from "../llm/parser";
+import * as fs from "fs";
+import * as path from "path";
+
+export class DocGenTool {
+  private fileTool: FileTool;
+  private searchTool: SearchTool;
+  private workspaceDir: string;
+
+  constructor(workspaceDir: string, fileTool: FileTool, searchTool: SearchTool) {
+    this.workspaceDir = workspaceDir;
+    this.fileTool = fileTool;
+    this.searchTool = searchTool;
+  }
+
+  async generateReadme(): Promise<string> {
+    const context = this.gatherProjectInfo();
+
+    const response = await callLLM({
+      system: `You are a technical writer. Generate a professional README.md based on the project info.
+Include: Title, Description, Features, Tech Stack, Getting Started (prerequisites, installation, running), 
+Project Structure, API docs (if applicable), Environment Variables, Scripts, Contributing, License.
+Respond with ONLY the markdown content.`,
+      messages: [{ role: "user", content: `Generate README for:\n\n${context}` }],
+      maxTokens: 4096,
+    });
+
+    const readme = extractTextContent(response.content);
+    this.fileTool.createFile("README.md", readme);
+    return readme;
+  }
+
+  async generateApiDocs(routesDir = "src/routes"): Promise<string> {
+    const files = await this.searchTool.searchFiles("*.ts", { maxResults: 50 });
+    const routeFiles = files.filter((f) => f.includes("route") || f.includes(routesDir));
+
+    let allRoutes = "";
+    for (const file of routeFiles) {
+      const content = this.fileTool.readFile(file);
+      if (content.success) {
+        allRoutes += `\n// File: ${file}\n${content.output}\n`;
+      }
+    }
+
+    if (!allRoutes) return "No routes found";
+
+    const response = await callLLM({
+      system: `You are an API documentation expert. Generate comprehensive API documentation in markdown format.
+For each endpoint, include: HTTP method, URL, description, request params/body, response format, example.
+Respond with ONLY the markdown.`,
+      messages: [{ role: "user", content: `Generate API docs from these route files:\n${allRoutes}` }],
+      maxTokens: 4096,
+    });
+
+    const docs = extractTextContent(response.content);
+    this.fileTool.createFile("docs/API.md", docs);
+    return docs;
+  }
+
+  async generateJSDoc(filePath: string): Promise<string> {
+    const content = this.fileTool.readFile(filePath);
+    if (!content.success) throw new Error(`Cannot read: ${filePath}`);
+
+    const response = await callLLM({
+      system: `You are a code documentation expert. Add JSDoc/TSDoc comments to all exported functions, 
+classes, interfaces, and types. Keep existing comments, add missing ones. 
+Respond with ONLY the complete file content with added documentation.`,
+      messages: [{ role: "user", content: `Add documentation to:\n\n\`\`\`\n${content.output}\n\`\`\`` }],
+      maxTokens: 8192,
+    });
+
+    let documented = extractTextContent(response.content);
+    documented = documented.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    this.fileTool.createFile(filePath, documented);
+    return documented;
+  }
+
+  async generateChangelog(gitAvailable = true): Promise<string> {
+    let commits = "";
+    if (gitAvailable) {
+      const result = await require("./terminalTool").execute?.(
+        "git log --oneline --no-decorate -50"
+      );
+      commits = result?.stdout || "";
+    }
+
+    const response = await callLLM({
+      system: `Generate a CHANGELOG.md from git commits. Group by type: Added, Changed, Fixed, Removed.
+Use conventional commit format. Respond with ONLY the markdown.`,
+      messages: [{ role: "user", content: `Commits:\n${commits || "No git history. Create initial changelog."}` }],
+    });
+
+    const changelog = extractTextContent(response.content);
+    this.fileTool.createFile("CHANGELOG.md", changelog);
+    return changelog;
+  }
+
+  private gatherProjectInfo(): string {
+    let info = "";
+
+    // Package.json
+    try {
+      const pkg = JSON.parse(
+        fs.readFileSync(path.join(this.workspaceDir, "package.json"), "utf-8")
+      );
+      info += `Package: ${pkg.name || "unknown"}\n`;
+      info += `Description: ${pkg.description || "N/A"}\n`;
+      info += `Version: ${pkg.version || "0.0.0"}\n`;
+      info += `Dependencies: ${Object.keys(pkg.dependencies || {}).join(", ")}\n`;
+      info += `Dev Dependencies: ${Object.keys(pkg.devDependencies || {}).join(", ")}\n`;
+      info += `Scripts: ${JSON.stringify(pkg.scripts || {})}\n\n`;
+    } catch {}
+
+    // File structure
+    const listDir = (dir: string, prefix = "", depth = 0): string => {
+      if (depth > 3) return "";
+      let result = "";
+      try {
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          if (["node_modules", ".git", "dist", ".next", ".snapshots", "__pycache__"].includes(entry.name)) continue;
+          result += `${prefix}${entry.isDirectory() ? "📁" : "📄"} ${entry.name}\n`;
+          if (entry.isDirectory()) {
+            result += listDir(path.join(dir, entry.name), prefix + "  ", depth + 1);
+          }
+        }
+      } catch {}
+      return result;
+    };
+
+    info += `\nProject Structure:\n${listDir(this.workspaceDir)}`;
+
+    // .env.example
+    try {
+      const envExample = fs.readFileSync(path.join(this.workspaceDir, ".env.example"), "utf-8");
+      info += `\nEnvironment Variables:\n${envExample}\n`;
+    } catch {}
+
+    return info;
+  }
+}

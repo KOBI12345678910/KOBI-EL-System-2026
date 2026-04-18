@@ -1,0 +1,110 @@
+import chokidar from "chokidar";
+import * as path from "path";
+
+export type WatchEvent = "add" | "change" | "unlink" | "addDir" | "unlinkDir";
+
+export interface WatchCallback {
+  (event: WatchEvent, filePath: string): void;
+}
+
+export class WatcherTool {
+  private watchers: Map<string, chokidar.FSWatcher> = new Map();
+  private workspaceDir: string;
+
+  constructor(workspaceDir: string) {
+    this.workspaceDir = workspaceDir;
+  }
+
+  watch(
+    id: string,
+    patterns: string | string[],
+    callback: WatchCallback,
+    options?: {
+      ignored?: string[];
+      debounce?: number;
+    }
+  ): void {
+    // Stop existing watcher with same id
+    this.unwatch(id);
+
+    const ignored = [
+      "**/node_modules/**",
+      "**/.git/**",
+      "**/dist/**",
+      "**/.next/**",
+      "**/.snapshots/**",
+      ...(options?.ignored || []),
+    ];
+
+    const watcher = chokidar.watch(patterns, {
+      cwd: this.workspaceDir,
+      ignored,
+      persistent: true,
+      ignoreInitial: true,
+      awaitWriteFinish: {
+        stabilityThreshold: options?.debounce || 300,
+        pollInterval: 100,
+      },
+    });
+
+    const events: WatchEvent[] = ["add", "change", "unlink", "addDir", "unlinkDir"];
+    for (const event of events) {
+      watcher.on(event, (filePath: string) => {
+        callback(event, filePath);
+      });
+    }
+
+    watcher.on("error", (error) => {
+      console.error(`[Watcher ${id}] Error:`, error);
+    });
+
+    this.watchers.set(id, watcher);
+  }
+
+  unwatch(id: string): void {
+    const watcher = this.watchers.get(id);
+    if (watcher) {
+      watcher.close();
+      this.watchers.delete(id);
+    }
+  }
+
+  unwatchAll(): void {
+    for (const [id] of this.watchers) {
+      this.unwatch(id);
+    }
+  }
+
+  isWatching(id: string): boolean {
+    return this.watchers.has(id);
+  }
+
+  getActiveWatchers(): string[] {
+    return Array.from(this.watchers.keys());
+  }
+
+  watchForReload(
+    id: string,
+    onReload: (changedFiles: string[]) => void,
+    options?: { extensions?: string[]; debounceMs?: number }
+  ): void {
+    const extensions = options?.extensions || [".ts", ".tsx", ".js", ".jsx", ".css", ".html"];
+    const debounceMs = options?.debounceMs || 500;
+    let pendingFiles: string[] = [];
+    let timer: NodeJS.Timeout | null = null;
+
+    const patterns = extensions.map((ext) => `**/*${ext}`);
+
+    this.watch(id, patterns, (event, filePath) => {
+      if (event === "change" || event === "add") {
+        pendingFiles.push(filePath);
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => {
+          const files = [...pendingFiles];
+          pendingFiles = [];
+          onReload(files);
+        }, debounceMs);
+      }
+    });
+  }
+}

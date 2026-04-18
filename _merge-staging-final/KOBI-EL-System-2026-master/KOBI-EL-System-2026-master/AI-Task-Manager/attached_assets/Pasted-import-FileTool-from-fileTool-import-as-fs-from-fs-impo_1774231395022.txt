@@ -1,0 +1,172 @@
+import { FileTool } from "./fileTool";
+import * as fs from "fs";
+import * as path from "path";
+
+export interface FeatureFlag {
+  key: string;
+  name: string;
+  description: string;
+  enabled: boolean;
+  percentage?: number; // 0-100 for gradual rollout
+  userWhitelist?: string[];
+  environments?: string[]; // ["development", "staging", "production"]
+  createdAt: Date;
+  updatedAt: Date;
+  metadata?: Record<string, any>;
+}
+
+export class FeatureFlagsTool {
+  private flags: Map<string, FeatureFlag> = new Map();
+  private fileTool: FileTool;
+  private flagsFile: string;
+
+  constructor(workspaceDir: string, fileTool: FileTool) {
+    this.fileTool = fileTool;
+    this.flagsFile = path.join(workspaceDir, ".agent", "feature-flags.json");
+    this.loadFlags();
+  }
+
+  create(flag: Omit<FeatureFlag, "createdAt" | "updatedAt">): FeatureFlag {
+    const fullFlag: FeatureFlag = {
+      ...flag,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.flags.set(flag.key, fullFlag);
+    this.saveFlags();
+    return fullFlag;
+  }
+
+  isEnabled(key: string, context?: { userId?: string; environment?: string }): boolean {
+    const flag = this.flags.get(key);
+    if (!flag) return false;
+    if (!flag.enabled) return false;
+
+    // Check environment
+    if (flag.environments?.length && context?.environment) {
+      if (!flag.environments.includes(context.environment)) return false;
+    }
+
+    // Check whitelist
+    if (flag.userWhitelist?.length && context?.userId) {
+      if (flag.userWhitelist.includes(context.userId)) return true;
+    }
+
+    // Percentage rollout
+    if (flag.percentage !== undefined && flag.percentage < 100) {
+      if (context?.userId) {
+        const hash = this.hashString(`${key}:${context.userId}`);
+        return (hash % 100) < flag.percentage;
+      }
+      return Math.random() * 100 < flag.percentage;
+    }
+
+    return true;
+  }
+
+  toggle(key: string): boolean {
+    const flag = this.flags.get(key);
+    if (!flag) return false;
+    flag.enabled = !flag.enabled;
+    flag.updatedAt = new Date();
+    this.saveFlags();
+    return flag.enabled;
+  }
+
+  update(key: string, updates: Partial<FeatureFlag>): FeatureFlag | null {
+    const flag = this.flags.get(key);
+    if (!flag) return null;
+    Object.assign(flag, updates, { updatedAt: new Date() });
+    this.saveFlags();
+    return flag;
+  }
+
+  delete(key: string): boolean {
+    const deleted = this.flags.delete(key);
+    if (deleted) this.saveFlags();
+    return deleted;
+  }
+
+  getAll(): FeatureFlag[] {
+    return Array.from(this.flags.values());
+  }
+
+  getEnabled(): FeatureFlag[] {
+    return this.getAll().filter((f) => f.enabled);
+  }
+
+  // Generate client-side code for feature flags
+  generateClientSDK(): string {
+    const code = `// Auto-generated Feature Flags SDK
+const FLAGS: Record<string, { enabled: boolean; percentage?: number }> = ${JSON.stringify(
+      Object.fromEntries(
+        Array.from(this.flags.entries()).map(([key, flag]) => [
+          key,
+          { enabled: flag.enabled, percentage: flag.percentage },
+        ])
+      ),
+      null,
+      2
+    )};
+
+export function isFeatureEnabled(key: string, userId?: string): boolean {
+  const flag = FLAGS[key];
+  if (!flag || !flag.enabled) return false;
+  
+  if (flag.percentage !== undefined && flag.percentage < 100 && userId) {
+    let hash = 0;
+    const str = key + ':' + userId;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash |= 0;
+    }
+    return (Math.abs(hash) % 100) < flag.percentage;
+  }
+  
+  return true;
+}
+
+export function getAllFlags(): Record<string, boolean> {
+  return Object.fromEntries(
+    Object.entries(FLAGS).map(([key, flag]) => [key, flag.enabled])
+  );
+}
+`;
+
+    this.fileTool.createFile("src/lib/featureFlags.ts", code);
+    return code;
+  }
+
+  private hashString(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash |= 0;
+    }
+    return Math.abs(hash);
+  }
+
+  private saveFlags(): void {
+    const dir = path.dirname(this.flagsFile);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(
+      this.flagsFile,
+      JSON.stringify(Array.from(this.flags.entries()), null, 2)
+    );
+  }
+
+  private loadFlags(): void {
+    try {
+      if (fs.existsSync(this.flagsFile)) {
+        const data = JSON.parse(fs.readFileSync(this.flagsFile, "utf-8"));
+        for (const [key, flag] of data) {
+          flag.createdAt = new Date(flag.createdAt);
+          flag.updatedAt = new Date(flag.updatedAt);
+          this.flags.set(key, flag);
+        }
+      }
+    } catch {}
+  }
+}

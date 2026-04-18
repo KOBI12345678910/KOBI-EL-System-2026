@@ -1,0 +1,271 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   a11y.css  —  Accessibility base stylesheet
+   Techno-Kol Uzi ERP 2026  ·  Palantir dark theme  ·  Hebrew RTL-first
+
+   Drop-in stylesheet that provides baseline WCAG 2.1 AA compliance on top of
+   the existing component styles. Safe to import last; all selectors are
+   intentionally specific so they will not override branding tokens.
+
+   Import:
+     <link rel="stylesheet" href="/onyx-procurement/web/lib/a11y.css" />
+   or in JS:
+     import './lib/a11y.css';
+
+   Author: Agent-30  ·  read-only A11y audit
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* --------------------------------------------------------------------------
+   1. FOCUS VISIBILITY  (WCAG 2.4.7)
+   Keyboard users need a clearly visible focus indicator. We use
+   :focus-visible so mouse clicks do not trigger the outline.
+   -------------------------------------------------------------------------- */
+
+:where(a, button, input, select, textarea, [tabindex], [role="button"],
+       [role="link"], [role="menuitem"], [role="option"], [role="tab"],
+       [role="checkbox"], [role="radio"], [role="switch"],
+       summary, details):focus {
+  outline: none; /* remove default, but only because we re-add focus-visible */
+}
+
+:where(a, button, input, select, textarea, [tabindex], [role="button"],
+       [role="link"], [role="menuitem"], [role="option"], [role="tab"],
+       [role="checkbox"], [role="radio"], [role="switch"],
+       summary, details):focus-visible {
+  outline: 2px solid #FFA500;           /* Techno-Kol accent orange */
+  outline-offset: 2px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 4px rgba(255, 165, 0, 0.25);
+  transition: outline-offset 0.12s ease, box-shadow 0.12s ease;
+}
+
+/* High-contrast focus for form fields inside dark panels. */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline-color: #5AA8FF;               /* accent blue — cooler for inputs */
+  box-shadow: 0 0 0 3px rgba(90, 168, 255, 0.35);
+}
+
+/* --------------------------------------------------------------------------
+   2. SKIP-TO-MAIN LINK  (WCAG 2.4.1)
+   Invisible until focused. RTL-aware via logical properties.
+
+   HTML:  <a href="#main" class="skip-to-main">דלג לתוכן הראשי</a>
+          <main id="main">...</main>
+   -------------------------------------------------------------------------- */
+
+.skip-to-main {
+  position: fixed;
+  inset-block-start: -100px;            /* off-screen above */
+  inset-inline-start: 1rem;             /* RTL-safe: visually right in he, left in en */
+  z-index: 9999;
+
+  background: #FFA500;
+  color: #1C2127;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  font-family: 'Heebo', 'Assistant', 'Segoe UI', -apple-system, sans-serif;
+  transition: inset-block-start 0.18s ease;
+}
+
+.skip-to-main:focus,
+.skip-to-main:focus-visible {
+  inset-block-start: 1rem;              /* slide into view */
+  outline: 2px solid #1C2127;
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   3. SCREEN-READER-ONLY  (visually hidden but announced)
+   Standard "sr-only" utility. Use for labels that are visually conveyed
+   by icons, e.g. <button><span class="sr-only">רענן</span>🔄</button>
+   -------------------------------------------------------------------------- */
+
+.sr-only,
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* "Focusable" variant — becomes visible when it receives focus, for inline
+   keyboard hints. */
+.sr-only-focusable:not(:focus):not(:focus-within) {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. HIGH-CONTRAST / FORCED-COLORS MEDIA
+   Windows High Contrast mode (forced-colors) + user-preferred contrast.
+   -------------------------------------------------------------------------- */
+
+@media (prefers-contrast: more) {
+  :root {
+    --text-dim: #D5DCE6;                /* boost dim text */
+    --border:   #7A8CA3;                /* stronger borders */
+  }
+
+  *,
+  *::before,
+  *::after {
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 3px solid currentColor !important;
+    outline-offset: 3px !important;
+  }
+
+  button,
+  [role="button"],
+  .btn,
+  .tile-btn,
+  .primary-btn,
+  .secondary-btn {
+    border: 2px solid currentColor !important;
+  }
+}
+
+@media (forced-colors: active) {
+  /* Respect the user's forced palette; strip backgrounds that obscure it. */
+  .skip-to-main {
+    background: Canvas;
+    color: LinkText;
+    border: 2px solid LinkText;
+  }
+
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 3px solid Highlight !important;
+    outline-offset: 2px !important;
+  }
+
+  .status-dot,
+  .badge {
+    forced-color-adjust: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   5. REDUCED MOTION  (WCAG 2.3.3)
+   Disable toast slide-ins, hover translates, and chart transitions for
+   users with vestibular concerns.
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   6. RTL-AWARE LOGICAL SHORTCUTS
+   Utility classes so component authors do not need to reason about
+   left/right in a bidi app.
+   -------------------------------------------------------------------------- */
+
+.a11y-stack { display: flex; flex-direction: column; gap: 8px; }
+.a11y-row   { display: flex; flex-direction: row; gap: 8px; align-items: center; }
+.a11y-row-reverse { display: flex; flex-direction: row-reverse; gap: 8px; align-items: center; }
+
+.a11y-ms-auto { margin-inline-start: auto; }
+.a11y-me-auto { margin-inline-end: auto; }
+
+.a11y-text-start { text-align: start; }
+.a11y-text-end   { text-align: end; }
+
+/* Bidi isolation utility — wrap Latin/digits in here when embedded in Hebrew. */
+.a11y-bidi-isolate {
+  unicode-bidi: isolate;
+}
+
+/* Force numbers to render LTR even inside RTL text — useful for IDs, phone, VAT. */
+.a11y-ltr {
+  direction: ltr;
+  unicode-bidi: isolate-override;
+  display: inline-block;
+}
+
+/* --------------------------------------------------------------------------
+   7. INCREASED TAP TARGETS  (WCAG 2.5.5 — 44x44 minimum)
+   Applies only when the user prefers larger controls or is on touch.
+   -------------------------------------------------------------------------- */
+
+@media (pointer: coarse) {
+  button,
+  [role="button"],
+  a.tile-btn,
+  input[type="button"],
+  input[type="submit"],
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-block-size: 44px;
+    min-inline-size: 44px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   8. ARIA LIVE REGIONS
+   Visual + semantic defaults so screen-readers announce dynamic updates
+   without authors needing to style manually.
+   -------------------------------------------------------------------------- */
+
+[aria-live="polite"],
+[aria-live="assertive"],
+[role="status"],
+[role="alert"] {
+  /* Ensure the element actually has layout so the SR picks it up. */
+  min-height: 1px;
+}
+
+/* --------------------------------------------------------------------------
+   9. HEBREW FONT STACK FALLBACK
+   Apply via .a11y-hebrew-font — guarantees a Hebrew-capable face is tried
+   before any system fallback.
+   -------------------------------------------------------------------------- */
+
+.a11y-hebrew-font,
+html[lang="he"] body {
+  font-family: 'Heebo', 'Assistant', 'Rubik', 'Segoe UI',
+               -apple-system, BlinkMacSystemFont, 'Arial Hebrew', sans-serif;
+  font-feature-settings: 'kern' 1, 'liga' 1;
+}
+
+/* --------------------------------------------------------------------------
+   10. PRINT FALLBACK
+   Ensures printed invoices/wage-slips don't lose contrast on dark theme.
+   -------------------------------------------------------------------------- */
+
+@media print {
+  :root, body, html {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .skip-to-main,
+  [aria-hidden="true"] {
+    display: none !important;
+  }
+}

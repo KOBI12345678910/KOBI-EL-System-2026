@@ -1,0 +1,251 @@
+import { callLLM } from "../llm/client";
+import { extractJSON, extractTextContent } from "../llm/parser";
+import { FileTool } from "./fileTool";
+import { TerminalTool } from "./terminalTool";
+import { AIArchitectTool, SystemDesign } from "./aiArchitectTool";
+
+export class FullStackGenerator {
+  private fileTool: FileTool;
+  private terminal: TerminalTool;
+  private architect: AIArchitectTool;
+  private onLog: (msg: string) => void;
+
+  constructor(fileTool: FileTool, terminal: TerminalTool, onLog: (msg: string) => void) {
+    this.fileTool = fileTool;
+    this.terminal = terminal;
+    this.architect = new AIArchitectTool(fileTool);
+    this.onLog = onLog;
+  }
+
+  async generateFullCRUD(entity: {
+    name: string;
+    fields: Array<{ name: string; type: string; required?: boolean; unique?: boolean }>;
+    relations?: Array<{ entity: string; type: "one-to-one" | "one-to-many" | "many-to-many" }>;
+  }): Promise<Map<string, string>> {
+    const files = new Map<string, string>();
+    const entityName = entity.name;
+    const entityLower = entityName.toLowerCase();
+    const entityPlural = entityLower + "s";
+
+    this.onLog(`🏗️ Generating full CRUD for ${entityName}`);
+
+    // 1. Drizzle Schema
+    const schemaResponse = await callLLM({
+      system: "Generate Drizzle ORM schema. Respond with ONLY TypeScript code.",
+      messages: [{
+        role: "user",
+        content: `Generate Drizzle schema for entity "${entityName}" with fields: ${JSON.stringify(entity.fields)} and relations: ${JSON.stringify(entity.relations || [])}. Include pgTable, proper types, timestamps, indexes.`,
+      }],
+    });
+    let schema = extractTextContent(schemaResponse.content).replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    this.fileTool.createFile(`src/db/schema/${entityLower}.ts`, schema);
+    files.set(`src/db/schema/${entityLower}.ts`, schema);
+
+    // 2. Zod Validation
+    const zodResponse = await callLLM({
+      system: "Generate Zod validation schemas. Respond with ONLY TypeScript code.",
+      messages: [{
+        role: "user",
+        content: `Generate Zod schemas for "${entityName}" with fields: ${JSON.stringify(entity.fields)}.
+Create: create${entityName}Schema, update${entityName}Schema, query${entityName}Schema (with pagination, filters, sorting).
+Export TypeScript types from schemas.`,
+      }],
+    });
+    let zod = extractTextContent(zodResponse.content).replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    this.fileTool.createFile(`src/validators/${entityLower}.ts`, zod);
+    files.set(`src/validators/${entityLower}.ts`, zod);
+
+    // 3. Service Layer
+    const serviceResponse = await callLLM({
+      system: "Generate a service layer with full CRUD + pagination + filtering. Respond with ONLY TypeScript code.",
+      messages: [{
+        role: "user",
+        content: `Generate service for "${entityName}" using Drizzle ORM.
+Methods: getAll (paginated, filtered, sorted), getById, create, update, delete, search.
+Include proper error handling, transaction support, and types.
+Schema import from ../db/schema/${entityLower}.
+Validator import from ../validators/${entityLower}.`,
+      }],
+    });
+    let service = extractTextContent(serviceResponse.content).replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    this.fileTool.createFile(`src/services/${entityLower}Service.ts`, service);
+    files.set(`src/services/${entityLower}Service.ts`, service);
+
+    // 4. API Routes
+    const routeResponse = await callLLM({
+      system: "Generate Express.js API routes. Respond with ONLY TypeScript code.",
+      messages: [{
+        role: "user",
+        content: `Generate Express routes for "${entityName}" CRUD:
+GET /${entityPlural} (list with pagination/filter/sort query params)
+GET /${entityPlural}/:id
+POST /${entityPlural}
+PUT /${entityPlural}/:id
+DELETE /${entityPlural}/:id
+GET /${entityPlural}/search?q=
+
+Use service from ../services/${entityLower}Service.
+Use validation middleware with schemas from ../validators/${entityLower}.
+Include proper error handling, auth middleware placeholder.`,
+      }],
+    });
+    let routes = extractTextContent(routeResponse.content).replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    this.fileTool.createFile(`src/routes/${entityLower}.ts`, routes);
+    files.set(`src/routes/${entityLower}.ts`, routes);
+
+    // 5. React Components
+    const componentsResponse = await callLLM({
+      system: "Generate React components with TypeScript and Tailwind CSS. Respond with ONLY TypeScript/TSX code.",
+      messages: [{
+        role: "user",
+        content: `Generate complete React components for "${entityName}" CRUD:
+
+1. ${entityName}List - table view with pagination, sorting, filtering, search, delete button
+2. ${entityName}Form - create/edit form with validation
+3. ${entityName}Detail - detail view with edit/delete actions
+4. use${entityName} - custom hook for API calls (useQuery-style with fetch)
+
+Fields: ${JSON.stringify(entity.fields)}
+Use Tailwind CSS. Include loading states, error handling, empty states.
+Put all in one file with proper exports.`,
+      }],
+      maxTokens: 8192,
+    });
+    let components = extractTextContent(componentsResponse.content).replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    this.fileTool.createFile(`src/components/${entityName}/index.tsx`, components);
+    files.set(`src/components/${entityName}/index.tsx`, components);
+
+    // 6. Tests
+    const testResponse = await callLLM({
+      system: "Generate comprehensive tests using Vitest. Respond with ONLY TypeScript code.",
+      messages: [{
+        role: "user",
+        content: `Generate tests for "${entityName}" service:
+- CRUD operations
+- Validation (invalid data, missing fields)
+- Pagination and filtering
+- Error handling
+- Edge cases
+
+Import from ../services/${entityLower}Service`,
+      }],
+    });
+    let tests = extractTextContent(testResponse.content).replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+    this.fileTool.createFile(`src/__tests__/${entityLower}.test.ts`, tests);
+    files.set(`src/__tests__/${entityLower}.test.ts`, tests);
+
+    this.onLog(`✅ Generated ${files.size} files for ${entityName} CRUD`);
+    return files;
+  }
+
+  async generateAuthSystem(options: {
+    type: "jwt" | "session" | "oauth";
+    providers?: ("google" | "github" | "apple" | "email")[];
+    roles?: string[];
+    mfa?: boolean;
+  }): Promise<Map<string, string>> {
+    const files = new Map<string, string>();
+    this.onLog(`🔐 Generating auth system: ${options.type}`);
+
+    const response = await callLLM({
+      system: `You are a security expert. Generate a complete, production-ready authentication system.
+Respond with JSON: { "files": { "path": "content" } }`,
+      messages: [{
+        role: "user",
+        content: `Generate complete auth system:
+Type: ${options.type}
+Providers: ${JSON.stringify(options.providers || ["email"])}
+Roles: ${JSON.stringify(options.roles || ["user", "admin"])}
+MFA: ${options.mfa ? "yes" : "no"}
+
+Generate these files:
+- src/auth/config.ts (auth configuration)
+- src/auth/middleware.ts (auth middleware with role-based access)
+- src/auth/service.ts (auth service: register, login, logout, refresh, password reset)
+- src/auth/routes.ts (Express routes for all auth endpoints)
+- src/auth/types.ts (TypeScript types)
+- src/auth/utils.ts (helpers: hash password, generate tokens, verify tokens)
+${options.mfa ? "- src/auth/mfa.ts (TOTP-based MFA)" : ""}
+${options.providers?.includes("google") ? "- src/auth/providers/google.ts (Google OAuth)" : ""}
+${options.providers?.includes("github") ? "- src/auth/providers/github.ts (GitHub OAuth)" : ""}
+- src/db/schema/users.ts (Drizzle user schema with roles)
+- src/components/Auth/LoginForm.tsx (React login form with Tailwind)
+- src/components/Auth/RegisterForm.tsx (React register form)
+- src/components/Auth/AuthProvider.tsx (React context for auth state)
+
+All code must be production-ready with proper error handling, input validation, and security best practices.`,
+      }],
+      maxTokens: 8192,
+    });
+
+    const text = extractTextContent(response.content);
+    const parsed = extractJSON(text);
+
+    if (parsed?.files) {
+      for (const [filePath, content] of Object.entries(parsed.files)) {
+        this.fileTool.createFile(filePath, content as string);
+        files.set(filePath, content as string);
+      }
+    }
+
+    this.onLog(`✅ Generated ${files.size} auth files`);
+    return files;
+  }
+
+  async generateFromDescription(description: string): Promise<{
+    design: SystemDesign;
+    files: Map<string, string>;
+  }> {
+    this.onLog("🧠 Analyzing requirements...");
+    const design = await this.architect.designSystem(description);
+
+    this.onLog("📐 System designed, generating code...");
+    const files = new Map<string, string>();
+
+    // Generate schema
+    if (design.dataModel?.length > 0) {
+      this.onLog("💾 Generating database schema...");
+      const schema = await this.architect.generateSchemaFromDesign(design, "drizzle");
+      files.set("src/db/schema.ts", schema);
+    }
+
+    // Generate API routes
+    if (design.apiDesign?.length > 0) {
+      this.onLog("🔌 Generating API routes...");
+      const apiFiles = await this.architect.generateAPIFromDesign(design);
+      for (const [path, content] of apiFiles) {
+        files.set(path, content);
+      }
+    }
+
+    // Generate each entity CRUD
+    for (const entity of design.dataModel || []) {
+      this.onLog(`🏗️ Generating CRUD for ${entity.entity}...`);
+      const crudFiles = await this.generateFullCRUD({
+        name: entity.entity,
+        fields: entity.fields.map((f) => ({
+          name: f.name,
+          type: f.type,
+          required: f.constraints?.includes("required") || f.constraints?.includes("NOT NULL"),
+          unique: f.constraints?.includes("unique"),
+        })),
+        relations: entity.relations?.map((r) => {
+          const parts = r.split(" ");
+          return { entity: parts[parts.length - 1], type: "one-to-many" as const };
+        }),
+      });
+
+      for (const [path, content] of crudFiles) {
+        files.set(path, content);
+      }
+    }
+
+    // Generate diagrams
+    this.onLog("📊 Generating architecture diagrams...");
+    await this.architect.generateMermaidDiagram(design, "architecture");
+    await this.architect.generateMermaidDiagram(design, "erd");
+
+    this.onLog(`\n✅ Generated ${files.size} files from description`);
+    return { design, files };
+  }
+}

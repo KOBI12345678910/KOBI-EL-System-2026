@@ -1,0 +1,670 @@
+"""
+=============================================================================
+VALUE AT RISK (VaR) MODEL - TECHNO-KOL UZI 2026
+מודל ערך בסיכון למפעל מסגרות ברזל, אלומיניום, נירוסטה וזכוכית
+=============================================================================
+50,000 תרחישים + 100 תרחישים מפורטים + המלצות AI
+=============================================================================
+"""
+
+import numpy as np
+from datetime import datetime
+
+np.random.seed(123)
+
+N = 50000  # 50,000 תרחישים
+
+print("=" * 80)
+print("  VALUE AT RISK (VaR) MODEL - TECHNO-KOL UZI 2026")
+print("  מודל ערך בסיכון (VaR) - טכנו-כל עוזי")
+print("  מפעל מסגרות ברזל / אלומיניום / נירוסטה / זכוכית")
+print("=" * 80)
+print(f"\n  Running {N:,} scenarios across 8 risk categories...")
+
+# =============================================================================
+# RISK FACTOR DEFINITIONS - הגדרת גורמי סיכון
+# =============================================================================
+
+RISK_FACTORS = {
+    # --- סיכוני שוק ---
+    "iron_price": {
+        "category": "Market Risk - סיכון שוק",
+        "name": "מחיר ברזל",
+        "description": "שינוי במחיר ברזל (ש\"ח/ק\"ג)",
+        "current_value": 8.5,
+        "annual_volatility": 0.25,       # 25% תנודתיות שנתית
+        "exposure_monthly": 5000,        # ק"ג לחודש
+        "distribution": "lognormal",
+        "correlation_group": "commodities",
+    },
+    "aluminum_price": {
+        "category": "Market Risk - סיכון שוק",
+        "name": "מחיר אלומיניום",
+        "current_value": 22.0,
+        "annual_volatility": 0.30,
+        "exposure_monthly": 3500,
+        "distribution": "lognormal",
+        "correlation_group": "commodities",
+    },
+    "stainless_price": {
+        "category": "Market Risk - סיכון שוק",
+        "name": "מחיר נירוסטה",
+        "current_value": 35.0,
+        "annual_volatility": 0.28,
+        "exposure_monthly": 1500,
+        "distribution": "lognormal",
+        "correlation_group": "commodities",
+    },
+    "glass_price": {
+        "category": "Market Risk - סיכון שוק",
+        "name": "מחיר זכוכית",
+        "current_value": 120.0,
+        "annual_volatility": 0.20,
+        "exposure_monthly": 800,
+        "distribution": "lognormal",
+        "correlation_group": "commodities",
+    },
+    # --- סיכוני תפעול ---
+    "equipment_failure": {
+        "category": "Operational Risk - סיכון תפעולי",
+        "name": "תקלות ציוד",
+        "frequency_annual": 4.0,         # 4 תקלות בשנה
+        "severity_mean": 15000,
+        "severity_std": 8000,
+        "max_severity": 80000,
+        "distribution": "poisson_lognormal",
+    },
+    "quality_defects": {
+        "category": "Operational Risk - סיכון תפעולי",
+        "name": "פגמי איכות / עבודה חוזרת",
+        "frequency_annual": 8.0,
+        "severity_mean": 8000,
+        "severity_std": 4000,
+        "max_severity": 40000,
+        "distribution": "poisson_lognormal",
+    },
+    "worker_safety": {
+        "category": "Operational Risk - סיכון תפעולי",
+        "name": "תאונות עבודה",
+        "frequency_annual": 1.5,
+        "severity_mean": 25000,
+        "severity_std": 15000,
+        "max_severity": 200000,
+        "distribution": "poisson_lognormal",
+    },
+    "supplier_disruption": {
+        "category": "Supply Chain Risk - סיכון שרשרת אספקה",
+        "name": "שיבוש ספקים",
+        "frequency_annual": 6.0,
+        "severity_mean": 12000,
+        "severity_std": 7000,
+        "max_severity": 60000,
+        "distribution": "poisson_lognormal",
+    },
+    # --- סיכוני אשראי ---
+    "client_default": {
+        "category": "Credit Risk - סיכון אשראי",
+        "name": "חובות אבודים",
+        "annual_revenue": 4920000,
+        "default_rate_mean": 0.03,
+        "default_rate_std": 0.02,
+        "recovery_rate": 0.20,
+        "distribution": "beta",
+    },
+    "payment_delay": {
+        "category": "Credit Risk - סיכון אשראי",
+        "name": "עיכוב תשלומים (עלות מימון)",
+        "annual_revenue": 4920000,
+        "delay_days_mean": 45,
+        "delay_days_std": 20,
+        "interest_rate": 0.065,
+        "distribution": "normal",
+    },
+    # --- סיכוני שוק/ביקוש ---
+    "demand_shock": {
+        "category": "Demand Risk - סיכון ביקוש",
+        "name": "ירידת ביקוש",
+        "base_monthly_projects": 12,
+        "volatility": 0.30,
+        "distribution": "normal",
+    },
+    # --- סיכון רגולטורי ---
+    "regulatory": {
+        "category": "Regulatory Risk - סיכון רגולטורי",
+        "name": "קנסות ורגולציה",
+        "frequency_annual": 0.5,
+        "severity_mean": 30000,
+        "severity_std": 25000,
+        "max_severity": 250000,
+        "distribution": "poisson_lognormal",
+    },
+    # --- סיכון מט"ח ---
+    "forex": {
+        "category": "FX Risk - סיכון מט\"ח",
+        "name": "שינוי שער דולר",
+        "current_rate": 3.65,
+        "annual_volatility": 0.10,
+        "exposure_annual": 800000,  # סכום ייבוא שנתי בדולרים
+        "distribution": "normal",
+    },
+}
+
+# =============================================================================
+# CORRELATION MATRIX - מטריצת מתאמים
+# =============================================================================
+
+# מתאם בין מחירי חומרי גלם
+COMMODITY_CORRELATION = 0.45  # מתאם חיובי בין מתכות
+MACRO_CORRELATION = 0.30      # מתאם עם גורמים מאקרו
+
+# =============================================================================
+# VaR SIMULATION ENGINE
+# =============================================================================
+
+def simulate_market_risk(n):
+    """סימולציית סיכון שוק - מחירי חומרי גלם"""
+    # יצירת מתאמים עם Cholesky decomposition
+    corr_matrix = np.array([
+        [1.0, 0.5, 0.4, 0.2],
+        [0.5, 1.0, 0.6, 0.2],
+        [0.4, 0.6, 1.0, 0.1],
+        [0.2, 0.2, 0.1, 1.0],
+    ])
+    L = np.linalg.cholesky(corr_matrix)
+
+    # תשואות לוג-נורמליות מתואמות
+    z = np.random.normal(0, 1, (n, 4))
+    correlated_z = z @ L.T
+
+    materials = ["iron_price", "aluminum_price", "stainless_price", "glass_price"]
+    losses = np.zeros(n)
+    component_losses = {}
+
+    for i, mat_key in enumerate(materials):
+        mat = RISK_FACTORS[mat_key]
+        vol = mat["annual_volatility"]
+        current = mat["current_value"]
+        exposure = mat["exposure_monthly"] * 12  # שנתי
+
+        # שינוי מחיר שנתי
+        price_change = np.exp(correlated_z[:, i] * vol - 0.5 * vol**2) - 1
+
+        # הפסד = חשיפה * שינוי מחיר
+        loss = exposure * current * np.maximum(0, price_change)
+        losses += loss
+        component_losses[mat["name"]] = loss
+
+    return losses, component_losses
+
+
+def simulate_operational_risk(n):
+    """סימולציית סיכון תפעולי - Poisson-Lognormal"""
+    op_risks = ["equipment_failure", "quality_defects", "worker_safety", "supplier_disruption", "regulatory"]
+    losses = np.zeros(n)
+    component_losses = {}
+
+    for risk_key in op_risks:
+        risk = RISK_FACTORS[risk_key]
+
+        # מספר אירועים (פואסון)
+        n_events = np.random.poisson(risk["frequency_annual"], n)
+
+        # חומרה לכל אירוע (לוג-נורמלי)
+        risk_loss = np.zeros(n)
+        for i in range(n):
+            if n_events[i] > 0:
+                severities = np.random.lognormal(
+                    np.log(risk["severity_mean"]) - 0.5 * (np.log(1 + (risk["severity_std"]/risk["severity_mean"])**2)),
+                    np.sqrt(np.log(1 + (risk["severity_std"]/risk["severity_mean"])**2)),
+                    n_events[i]
+                )
+                severities = np.minimum(severities, risk["max_severity"])
+                risk_loss[i] = np.sum(severities)
+
+        losses += risk_loss
+        component_losses[risk["name"]] = risk_loss
+
+    return losses, component_losses
+
+
+def simulate_credit_risk(n):
+    """סימולציית סיכון אשראי"""
+    losses = np.zeros(n)
+    component_losses = {}
+
+    # חובות אבודים
+    cr = RISK_FACTORS["client_default"]
+    default_rate = np.maximum(0, np.random.beta(
+        cr["default_rate_mean"] * 20,
+        (1 - cr["default_rate_mean"]) * 20,
+        n
+    ))
+    lgd = 1 - cr["recovery_rate"]
+    credit_loss = cr["annual_revenue"] * default_rate * lgd
+    losses += credit_loss
+    component_losses["חובות אבודים"] = credit_loss
+
+    # עלות מימון
+    pd = RISK_FACTORS["payment_delay"]
+    delay = np.maximum(0, np.random.normal(pd["delay_days_mean"], pd["delay_days_std"], n))
+    finance_cost = pd["annual_revenue"] * (delay / 365) * pd["interest_rate"]
+    losses += finance_cost
+    component_losses["עלות מימון"] = finance_cost
+
+    return losses, component_losses
+
+
+def simulate_demand_risk(n):
+    """סימולציית סיכון ביקוש"""
+    dr = RISK_FACTORS["demand_shock"]
+    avg_project_revenue = 35000  # הכנסה ממוצעת לפרויקט
+
+    # שינוי בביקוש
+    demand_change = np.random.normal(0, dr["volatility"], n)
+
+    # הפסד רק כשיש ירידה
+    lost_projects = np.maximum(0, -demand_change) * dr["base_monthly_projects"] * 12
+    demand_loss = lost_projects * avg_project_revenue
+
+    return demand_loss, {"ירידת ביקוש": demand_loss}
+
+
+def simulate_forex_risk(n):
+    """סימולציית סיכון מט\"ח"""
+    fx = RISK_FACTORS["forex"]
+
+    # שינוי שער
+    rate_change = np.random.normal(0, fx["annual_volatility"], n)
+
+    # הפסד כשהדולר מתחזק (ייבוא יקר יותר)
+    forex_loss = np.maximum(0, rate_change) * fx["exposure_annual"]
+
+    return forex_loss, {"סיכון מט\"ח": forex_loss}
+
+
+# =============================================================================
+# RUN FULL VaR SIMULATION
+# =============================================================================
+
+print(f"\n  Simulating market risk...")
+market_loss, market_components = simulate_market_risk(N)
+
+print(f"  Simulating operational risk...")
+operational_loss, op_components = simulate_operational_risk(N)
+
+print(f"  Simulating credit risk...")
+credit_loss, credit_components = simulate_credit_risk(N)
+
+print(f"  Simulating demand risk...")
+demand_loss, demand_components = simulate_demand_risk(N)
+
+print(f"  Simulating forex risk...")
+forex_loss, forex_components = simulate_forex_risk(N)
+
+# סה"כ הפסד
+total_loss = market_loss + operational_loss + credit_loss + demand_loss + forex_loss
+
+# =============================================================================
+# VaR CALCULATIONS
+# =============================================================================
+
+def fmt(val):
+    if abs(val) >= 1000000:
+        return f"₪{val/1000000:,.2f}M"
+    elif abs(val) >= 1000:
+        return f"₪{val/1000:,.1f}K"
+    return f"₪{val:,.0f}"
+
+confidence_levels = [0.90, 0.95, 0.99, 0.995, 0.999]
+
+print(f"\n{'=' * 80}")
+print(f"  VaR RESULTS - TOTAL PORTFOLIO")
+print(f"  תוצאות VaR - סך כל הסיכונים")
+print(f"{'=' * 80}")
+
+print(f"\n  {'Confidence':<15} {'VaR (Annual)':<20} {'VaR (Monthly)':<20} {'Meaning'}")
+print(f"  {'─' * 75}")
+
+for cl in confidence_levels:
+    var_annual = np.percentile(total_loss, cl * 100)
+    var_monthly = var_annual / np.sqrt(12)
+    pct_label = f"{cl*100:.1f}%"
+    meaning = f"In {100-cl*100:.1f}% of years, loss exceeds this"
+    print(f"  {pct_label:<15} {fmt(var_annual):<20} {fmt(var_monthly):<20} {meaning}")
+
+# Expected Shortfall (CVaR)
+print(f"\n  {'─' * 75}")
+print(f"  Expected Shortfall (CVaR / Conditional VaR):")
+for cl in [0.95, 0.99]:
+    threshold = np.percentile(total_loss, cl * 100)
+    cvar = np.mean(total_loss[total_loss >= threshold])
+    print(f"  CVaR {cl*100:.0f}%:       {fmt(cvar)}")
+
+# Maximum Loss
+print(f"\n  Maximum Loss:    {fmt(np.max(total_loss))}")
+print(f"  Average Loss:    {fmt(np.mean(total_loss))}")
+print(f"  Median Loss:     {fmt(np.median(total_loss))}")
+
+# =============================================================================
+# VaR BY RISK CATEGORY
+# =============================================================================
+
+print(f"\n{'=' * 80}")
+print(f"  VaR DECOMPOSITION BY RISK CATEGORY")
+print(f"  פירוק VaR לפי קטגוריית סיכון")
+print(f"{'=' * 80}")
+
+risk_categories = {
+    "Market Risk (חומרי גלם)": market_loss,
+    "Operational Risk (תפעולי)": operational_loss,
+    "Credit Risk (אשראי)": credit_loss,
+    "Demand Risk (ביקוש)": demand_loss,
+    "FX Risk (מט\"ח)": forex_loss,
+}
+
+print(f"\n  {'Category':<35} {'Mean Loss':<15} {'VaR 95%':<15} {'VaR 99%':<15} {'Max':<15} {'% of Total'}")
+print(f"  {'─' * 95}")
+
+total_var_95 = np.percentile(total_loss, 95)
+for name, losses in risk_categories.items():
+    mean_l = np.mean(losses)
+    var95 = np.percentile(losses, 95)
+    var99 = np.percentile(losses, 99)
+    max_l = np.max(losses)
+    pct_of_total = mean_l / np.mean(total_loss) * 100
+    print(f"  {name:<35} {fmt(mean_l):<15} {fmt(var95):<15} {fmt(var99):<15} {fmt(max_l):<15} {pct_of_total:>5.1f}%")
+
+print(f"  {'─' * 95}")
+print(f"  {'TOTAL':<35} {fmt(np.mean(total_loss)):<15} {fmt(np.percentile(total_loss, 95)):<15} {fmt(np.percentile(total_loss, 99)):<15} {fmt(np.max(total_loss)):<15} 100.0%")
+
+# =============================================================================
+# VaR BY INDIVIDUAL RISK FACTOR
+# =============================================================================
+
+print(f"\n{'=' * 80}")
+print(f"  VaR BY INDIVIDUAL RISK FACTOR")
+print(f"  VaR לפי גורם סיכון בודד")
+print(f"{'=' * 80}")
+
+all_components = {**market_components, **op_components, **credit_components, **demand_components, **forex_components}
+
+print(f"\n  {'Risk Factor':<30} {'Mean':<12} {'VaR 95%':<12} {'VaR 99%':<12} {'Max':<12} {'Freq>10K'}")
+print(f"  {'─' * 85}")
+
+sorted_components = sorted(all_components.items(), key=lambda x: np.mean(x[1]), reverse=True)
+for name, losses in sorted_components:
+    freq = np.mean(losses > 10000) * 100
+    print(f"  {name:<30} {fmt(np.mean(losses)):<12} {fmt(np.percentile(losses, 95)):<12} "
+          f"{fmt(np.percentile(losses, 99)):<12} {fmt(np.max(losses)):<12} {freq:>5.1f}%")
+
+# =============================================================================
+# 100 DETAILED SCENARIOS
+# =============================================================================
+
+print(f"\n{'=' * 80}")
+print(f"  100 DETAILED VaR SCENARIOS")
+print(f"  100 תרחישים מפורטים לחישוב")
+print(f"{'=' * 80}")
+
+# בחר 100 תרחישים ייצוגיים מפוזרים על פני ההתפלגות
+percentiles_to_show = list(range(1, 101))
+indices = []
+for p in percentiles_to_show:
+    target = np.percentile(total_loss, p)
+    idx = np.argmin(np.abs(total_loss - target))
+    indices.append(idx)
+
+print(f"\n{'#':<5} {'Total Loss':<15} {'Market':<12} {'Operational':<12} {'Credit':<12} {'Demand':<12} {'FX':<10} {'Percentile':<12} {'Risk Level'}")
+print("-" * 105)
+
+for rank, (p, idx) in enumerate(zip(percentiles_to_show, indices), 1):
+    tl = total_loss[idx]
+    ml = market_loss[idx]
+    ol = operational_loss[idx]
+    cl = credit_loss[idx]
+    dl = demand_loss[idx]
+    fl = forex_loss[idx]
+
+    if p >= 99:
+        level = "EXTREME"
+    elif p >= 95:
+        level = "VERY HIGH"
+    elif p >= 90:
+        level = "HIGH"
+    elif p >= 75:
+        level = "MODERATE"
+    elif p >= 50:
+        level = "LOW"
+    else:
+        level = "MINIMAL"
+
+    print(f"{rank:<5} {fmt(tl):<15} {fmt(ml):<12} {fmt(ol):<12} {fmt(cl):<12} {fmt(dl):<12} {fmt(fl):<10} P{p:<10} {level}")
+
+# =============================================================================
+# STRESS TESTING / SCENARIO INTAKE
+# =============================================================================
+
+print(f"\n{'=' * 80}")
+print(f"  STRESS TEST SCENARIOS - תרחישי קיצון")
+print(f"{'=' * 80}")
+
+stress_scenarios = [
+    {
+        "name": "Black Swan - מיתון עולמי",
+        "market_mult": 2.5, "op_mult": 1.5, "credit_mult": 3.0, "demand_mult": 4.0, "fx_mult": 2.0,
+        "description": "משבר כלכלי עולמי, ירידת ביקוש חדה, עליית חומרי גלם"
+    },
+    {
+        "name": "Supply Chain Crisis - משבר שרשרת אספקה",
+        "market_mult": 3.0, "op_mult": 2.0, "credit_mult": 1.2, "demand_mult": 1.5, "fx_mult": 1.8,
+        "description": "שיבוש עולמי בשרשרת אספקה, מחסור בחומרי גלם"
+    },
+    {
+        "name": "War Scenario - מלחמה",
+        "market_mult": 2.0, "op_mult": 3.0, "credit_mult": 2.5, "demand_mult": 5.0, "fx_mult": 2.5,
+        "description": "מצב חירום ביטחוני, השבתת מפעל, עובדים במילואים"
+    },
+    {
+        "name": "Hyperinflation - אינפלציה גבוהה",
+        "market_mult": 3.5, "op_mult": 1.3, "credit_mult": 2.0, "demand_mult": 2.0, "fx_mult": 3.0,
+        "description": "אינפלציה דו-ספרתית, עליית מחירים מהירה"
+    },
+    {
+        "name": "Major Client Loss - אובדן לקוח מרכזי",
+        "market_mult": 1.0, "op_mult": 1.2, "credit_mult": 4.0, "demand_mult": 3.0, "fx_mult": 1.0,
+        "description": "אובדן 2-3 לקוחות גדולים, חוב אבוד גדול"
+    },
+    {
+        "name": "Equipment Catastrophe - אסון ציוד",
+        "market_mult": 1.2, "op_mult": 5.0, "credit_mult": 1.0, "demand_mult": 2.0, "fx_mult": 1.0,
+        "description": "שריפה במפעל, נזק לציוד, השבתה ממושכת"
+    },
+    {
+        "name": "Tech Disruption - שיבוש טכנולוגי",
+        "market_mult": 1.5, "op_mult": 2.0, "credit_mult": 1.5, "demand_mult": 2.5, "fx_mult": 1.3,
+        "description": "טכנולוגיה חדשה מייתרת שיטות ייצור קיימות"
+    },
+    {
+        "name": "Perfect Storm - כל הסיכונים יחד",
+        "market_mult": 3.0, "op_mult": 3.0, "credit_mult": 3.0, "demand_mult": 3.0, "fx_mult": 3.0,
+        "description": "כל גורמי הסיכון מתממשים בו-זמנית"
+    },
+    {
+        "name": "Regulatory Crackdown - חקיקה מחמירה",
+        "market_mult": 1.3, "op_mult": 2.5, "credit_mult": 1.0, "demand_mult": 1.5, "fx_mult": 1.0,
+        "description": "רגולציה חדשה מחייבת השקעות גדולות"
+    },
+    {
+        "name": "Normal Bad Year - שנה רעה רגילה",
+        "market_mult": 1.5, "op_mult": 1.5, "credit_mult": 1.5, "demand_mult": 1.5, "fx_mult": 1.5,
+        "description": "כל הגורמים גרועים ב-50% מהממוצע"
+    },
+]
+
+base_market = np.mean(market_loss)
+base_op = np.mean(operational_loss)
+base_credit = np.mean(credit_loss)
+base_demand = np.mean(demand_loss)
+base_fx = np.mean(forex_loss)
+annual_revenue = 4920000
+
+print(f"\n  {'Scenario':<40} {'Est. Loss':<15} {'% Revenue':<12} {'Survivable?'}")
+print(f"  {'─' * 80}")
+
+for sc in stress_scenarios:
+    est_loss = (base_market * sc["market_mult"] + base_op * sc["op_mult"] +
+                base_credit * sc["credit_mult"] + base_demand * sc["demand_mult"] +
+                base_fx * sc["fx_mult"])
+    pct_rev = est_loss / annual_revenue * 100
+
+    if pct_rev < 20:
+        survivable = "YES - manageable"
+    elif pct_rev < 40:
+        survivable = "RISKY - needs reserves"
+    elif pct_rev < 60:
+        survivable = "DANGEROUS - threatens viability"
+    else:
+        survivable = "CRITICAL - may not survive"
+
+    print(f"  {sc['name']:<40} {fmt(est_loss):<15} {pct_rev:>7.1f}%     {survivable}")
+    print(f"    {sc['description']}")
+
+# =============================================================================
+# AI RECOMMENDATIONS
+# =============================================================================
+
+print(f"\n{'=' * 80}")
+print(f"  AI-POWERED VaR RECOMMENDATIONS")
+print(f"  המלצות AI מבוססות ניתוח VaR")
+print(f"{'=' * 80}")
+
+var_95 = np.percentile(total_loss, 95)
+var_99 = np.percentile(total_loss, 99)
+cvar_95 = np.mean(total_loss[total_loss >= var_95])
+
+recommendations = []
+
+# 1. Capital Reserve
+required_reserve = cvar_95  # CVaR 95% as minimum reserve
+recommendations.append({
+    "priority": "CRITICAL",
+    "title": "Capital Reserve Requirement",
+    "finding": f"CVaR 95% = {fmt(cvar_95)}. The factory needs this amount as minimum emergency fund.",
+    "action": f"Maintain cash reserve of at least {fmt(cvar_95)} ({cvar_95/annual_revenue*100:.0f}% of annual revenue)",
+    "hebrew": f"יש לשמור קרן חירום של לפחות {fmt(cvar_95)} - זה הסכום שצריך לכסות 95% מתרחישי ההפסד"
+})
+
+# 2. Biggest Risk
+biggest_risk_name = max(risk_categories.items(), key=lambda x: np.mean(x[1]))
+recommendations.append({
+    "priority": "CRITICAL",
+    "title": f"Highest Risk Category: {biggest_risk_name[0]}",
+    "finding": f"This category contributes {np.mean(biggest_risk_name[1])/np.mean(total_loss)*100:.0f}% of total risk",
+    "action": "Focus risk mitigation efforts on this category first",
+    "hebrew": f"הקטגוריה {biggest_risk_name[0]} מהווה את הסיכון הגדול ביותר - יש להתמקד בה"
+})
+
+# 3. Hedging
+if np.mean(forex_loss) > annual_revenue * 0.01:
+    recommendations.append({
+        "priority": "HIGH",
+        "title": "FX Hedging Required",
+        "finding": f"FX risk averages {fmt(np.mean(forex_loss))}/year with VaR 95% of {fmt(np.percentile(forex_loss, 95))}",
+        "action": "Purchase forward contracts or options to hedge USD exposure",
+        "hebrew": "יש לרכוש חוזים עתידיים או אופציות לגידור חשיפת הדולר"
+    })
+
+# 4. Diversification
+if np.mean(demand_loss) > annual_revenue * 0.05:
+    recommendations.append({
+        "priority": "HIGH",
+        "title": "Revenue Diversification Critical",
+        "finding": f"Demand risk VaR 95% = {fmt(np.percentile(demand_loss, 95))} - highly volatile",
+        "action": "Diversify into maintenance contracts, recurring revenue, and export markets",
+        "hebrew": "יש לגוון לחוזי תחזוקה, הכנסה חוזרת, ושווקי ייצוא"
+    })
+
+# 5. Insurance
+total_op_var99 = np.percentile(operational_loss, 99)
+recommendations.append({
+    "priority": "HIGH",
+    "title": "Insurance Coverage Gap Analysis",
+    "finding": f"Operational risk VaR 99% = {fmt(total_op_var99)}. Ensure insurance covers this level.",
+    "action": f"Review insurance policies - need minimum coverage of {fmt(total_op_var99)} for operational events",
+    "hebrew": f"לבדוק שפוליסות הביטוח מכסות לפחות {fmt(total_op_var99)} באירועים תפעוליים"
+})
+
+# 6. Material Hedging
+recommendations.append({
+    "priority": "MEDIUM",
+    "title": "Material Price Hedging",
+    "finding": f"Material price risk VaR 95% = {fmt(np.percentile(market_loss, 95))}",
+    "action": "Lock in prices with 3-6 month supply contracts with key suppliers",
+    "hebrew": "לנעול מחירים עם חוזי אספקה ל-3-6 חודשים עם ספקים מרכזיים"
+})
+
+# 7. Credit Management
+recommendations.append({
+    "priority": "MEDIUM",
+    "title": "Credit Risk Management",
+    "finding": f"Credit risk (bad debt + financing) averages {fmt(np.mean(credit_loss))}/year",
+    "action": "Implement credit checks, require deposits >30% for new clients, use factoring",
+    "hebrew": "לבצע בדיקות אשראי, לדרוש מקדמה 30% מלקוחות חדשים, להשתמש בפקטורינג"
+})
+
+# 8. Tail Risk
+extreme_loss_prob = np.mean(total_loss > annual_revenue * 0.5) * 100
+recommendations.append({
+    "priority": "MEDIUM",
+    "title": "Tail Risk Awareness",
+    "finding": f"Probability of loss exceeding 50% of revenue: {extreme_loss_prob:.2f}%",
+    "action": "Develop business continuity plan for extreme scenarios, consider stop-loss triggers",
+    "hebrew": f"לפתח תוכנית המשכיות עסקית לתרחישי קיצון. הסתברות {extreme_loss_prob:.1f}% להפסד חמור"
+})
+
+for i, rec in enumerate(recommendations, 1):
+    emoji = "🔴" if rec["priority"] == "CRITICAL" else "🟡" if rec["priority"] == "HIGH" else "🟢"
+    print(f"\n  {emoji} RECOMMENDATION #{i} [{rec['priority']}]")
+    print(f"  Title:   {rec['title']}")
+    print(f"  Finding: {rec['finding']}")
+    print(f"  Action:  {rec['action']}")
+    print(f"  עברית:   {rec['hebrew']}")
+
+# =============================================================================
+# STATISTICAL SUMMARY
+# =============================================================================
+
+print(f"\n{'=' * 80}")
+print(f"  STATISTICAL SUMMARY")
+print(f"{'=' * 80}")
+
+print(f"""
+  VaR Summary:
+  ─────────────────────────────────────────────
+  VaR 90%:      {fmt(np.percentile(total_loss, 90))}
+  VaR 95%:      {fmt(np.percentile(total_loss, 95))}
+  VaR 99%:      {fmt(np.percentile(total_loss, 99))}
+  VaR 99.9%:    {fmt(np.percentile(total_loss, 99.9))}
+  CVaR 95%:     {fmt(np.mean(total_loss[total_loss >= np.percentile(total_loss, 95)]))}
+  CVaR 99%:     {fmt(np.mean(total_loss[total_loss >= np.percentile(total_loss, 99)]))}
+
+  Loss Distribution:
+  ─────────────────────────────────────────────
+  Mean Loss:    {fmt(np.mean(total_loss))} ({np.mean(total_loss)/annual_revenue*100:.1f}% of revenue)
+  Median Loss:  {fmt(np.median(total_loss))}
+  Std Dev:      {fmt(np.std(total_loss))}
+  Skewness:     {float(np.mean(((total_loss - np.mean(total_loss)) / np.std(total_loss))**3)):.2f}
+  Kurtosis:     {float(np.mean(((total_loss - np.mean(total_loss)) / np.std(total_loss))**4)):.2f}
+
+  Capital Adequacy:
+  ─────────────────────────────────────────────
+  Min Reserve (VaR 95%):     {fmt(var_95)} ({var_95/annual_revenue*100:.0f}% of revenue)
+  Recommended (CVaR 95%):    {fmt(cvar_95)} ({cvar_95/annual_revenue*100:.0f}% of revenue)
+  Max Exposure (VaR 99.9%):  {fmt(np.percentile(total_loss, 99.9))} ({np.percentile(total_loss, 99.9)/annual_revenue*100:.0f}% of revenue)
+
+  Scenarios: {N:,} | Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}
+""")
+
+print("=" * 80)
+print("  END OF VaR MODEL")
+print("=" * 80)

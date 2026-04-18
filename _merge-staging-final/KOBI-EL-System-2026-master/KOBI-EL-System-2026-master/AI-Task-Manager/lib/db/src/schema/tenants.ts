@@ -1,0 +1,25 @@
+import { pgTable, serial, text, boolean, timestamp, varchar } from "drizzle-orm/pg-core";
+
+export const tenantsTable = pgTable("tenants", {
+  id: serial("id").primaryKey(),
+  code: varchar("code", { length: 50 }).notNull().unique(),
+  name: varchar("name", { length: 255 }).notNull(),
+  nameHe: varchar("name_he", { length: 255 }),
+  taxId: varchar("tax_id", { length: 20 }),
+  address: text("address"),
+  city: varchar("city", { length: 100 }),
+  country: varchar("country", { length: 50 }).default("ישראל"),
+  phone: varchar("phone", { length: 30 }),
+  email: varchar("email", { length: 255 }),
+  website: varchar("website", { length: 255 }),
+  logoUrl: text("logo_url"),
+  currency: varchar("currency", { length: 10 }).default("ILS"),
+  fiscalYearStart: varchar("fiscal_year_start", { length: 5 }).default("01-01"),
+  vatRate: varchar("vat_rate", { length: 10 }).default("0.17"),
+  status: varchar("status", { length: 30 }).notNull().default("ACTIVE"),
+  isActive: boolean("is_active").notNull().default(true),
+  subscriptionPlan: varchar("subscription_plan", { length: 50 }).default("enterprise"),
+  maxUsers: serial("max_users").default(100),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});

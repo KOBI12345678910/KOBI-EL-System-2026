@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kobi Agent</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --surface2: #1a1a2e;
+      --border: #2a2a3e;
+      --primary: #6c5ce7;
+      --primary-glow: rgba(108, 92, 231, 0.3);
+      --success: #00b894;
+      --error: #e17055;
+      --warning: #fdcb6e;
+      --text: #dfe6e9;
+      --text-dim: #636e72;
+      --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      --mono: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-badge.connected { background: rgba(0,184,148,0.15); color: var(--success); }
+    .status-badge.disconnected { background: rgba(225,112,85,0.15); color: var(--error); }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Main Layout */
+    .main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Left Panel - Chat */
+    .chat-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid var(--border);
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .message {
+      max-width: 90%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .message.user {
+      align-self: flex-end;
+      background: var(--primary);
+      color: white;
+      border-bottom-left-radius: 4px;
+    }
+
+    .message.agent {
+      align-self: flex-start;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.system {
+      align-self: center;
+      background: transparent;
+      color: var(--text-dim);
+      font-size: 12px;
+      padding: 4px 12px;
+    }
+
+    .message.error {
+      border-color: var(--error);
+      background: rgba(225,112,85,0.1);
+    }
+
+    /* Input Area */
+    .input-area {
+      padding: 16px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+
+    .input-wrapper {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .input-wrapper textarea {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-family: var(--font);
+      font-size: 14px;
+      resize: none;
+      min-height: 48px;
+      max-height: 200px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-wrapper textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+
+    .send-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+
+    .send-btn:hover { transform: scale(1.05); }
+    .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .stop-btn {
+      background: var(--error);
+    }
+
+    /* Right Panel - Progress */
+    .progress-panel {
+      width: 350px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .progress-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .progress-bar-container {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .progress-bar {
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+
+    .progress-text {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 6px;
+    }
+
+    .steps-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 4px;
+      transition: background 0.2s;
+    }
+
+    .step-item:hover { background: var(--surface2); }
+
+    .step-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .step-icon.pending { background: var(--surface2); color: var(--text-dim); }
+    .step-icon.running { background: var(--primary-glow); color: var(--primary); animation: pulse 1s infinite; }
+    .step-icon.success { background: rgba(0,184,148,0.15); color: var(--success); }
+    .step-icon.failed { background: rgba(225,112,85,0.15); color: var(--error); }
+
+    .step-info { flex: 1; }
+    .step-type { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+    /* Log Panel */
+    .log-panel {
+      height: 200px;
+      background: #050508;
+      border-top: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 12px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.8;
+    }
+
+    .log-line.error { color: var(--error); }
+    .log-line.success { color: var(--success); }
+    .log-line.info { color: var(--primary); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <h1>🤖 Kobi Agent</h1>
+    <div class="status-badge disconnected" id="statusBadge">
+      <span class="status-dot"></span>
+      <span id="statusText">Disconnected</span>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <!-- Progress Panel -->
+    <div class="progress-panel">
+      <div class="progress-header">📋 Execution Plan</div>
+      <div class="progress-bar-container">
+        <div class="progress-bar">
+          <div class="progress-bar-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">Waiting for task...</div>
+      </div>
+      <div class="steps-list" id="stepsList"></div>
+    </div>
+
+    <!-- Chat Panel -->
+    <div class="chat-panel">
+      <div class="messages" id="messages">
+        <div class="message system">👋 Welcome! Describe what you want to build.</div>
+      </div>
+      <div class="input-area">
+        <div class="input-wrapper">
+          <textarea
+            id="taskInput"
+            placeholder="Describe your task... (Shift+Enter for new line)"
+            rows="2"
+          ></textarea>
+          <button class="send-btn" id="sendBtn" onclick="sendTask()">▶</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Log Panel -->
+  <div class="log-panel" id="logPanel"></div>
+
+  <script>
+    // ============ STATE ============
+    let ws = null;
+    let isRunning = false;
+    let currentSteps = [];
+
+    // ============ WEBSOCKET ============
+    function connectWS() {
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${protocol}//${location.host}/ws`);
+
+      ws.onopen = () => {
+        document.getElementById('statusBadge').className = 'status-badge connected';
+        document.getElementById('statusText').textContent = 'Connected';
+      };
+
+      ws.onclose = () => {
+        document.getElementById('statusBadge').className = 'status-badge disconnected';
+        document.getElementById('statusText').textContent = 'Disconnected';
+        setTimeout(connectWS, 3000);
+      };
+
+      ws.onmessage = (e) => {
+        const event = JSON.parse(e.data);
+        handleEvent(event);
+      };
+    }
+
+    // ============ EVENT HANDLER ============
+    function handleEvent(event) {
+      switch (event.type) {
+        case 'plan':
+          currentSteps = event.data.plan.steps || [];
+          renderSteps();
+          addMessage('agent', `📋 Plan: ${event.data.plan.taskSummary}\n${currentSteps.length} steps to execute`);
+          break;
+
+        case 'step_start':
+          updateStepStatus(event.data.stepId, 'running');
+          updateProgress(event.data.progress);
+          break;
+
+        case 'step_complete':
+          updateStepStatus(event.data.stepId, 'success');
+          updateProgress(event.data.progress);
+          break;
+
+        case 'step_failed':
+          updateStepStatus(event.data.stepId, 'failed');
+          break;
+
+        case 'log':
+          addLog(event.data.message);
+          break;
+
+        case 'status':
+          addMessage('system', `[${event.data.status}] ${event.data.message}`);
+          break;
+
+        case 'error':
+          addMessage('error', `❌ ${event.data.message}`);
+          break;
+
+        case 'complete':
+          isRunning = false;
+          updateSendButton();
+          const icon = event.data.success ? '✅' : '⚠️';
+          addMessage('agent', `${icon} ${event.data.summary}`);
+          break;
+      }
+    }
+
+    // ============ UI FUNCTIONS ============
+    function addMessage(type, text) {
+      const el = document.createElement('div');
+      el.className = `message ${type}`;
+      el.textContent = text;
+      const container = document.getElementById('messages');
+      container.appendChild(el);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function addLog(text) {
+      const el = document.createElement('div');
+      el.className = 'log-line';
+      if (text.includes('✅')) el.className += ' success';
+      else if (text.includes('❌')) el.className += ' error';
+      else if (text.includes('🔄') || text.includes('📦')) el.className += ' info';
+      el.textContent = text;
+      const panel = document.getElementById('logPanel');
+      panel.appendChild(el);
+      panel.scrollTop = panel.scrollHeight;
+    }
+
+    function renderSteps() {
+      const list = document.getElementById('stepsList');
+      list.innerHTML = currentSteps.map(step => `
+        <div class="step-item" id="step-${step.id}">
+          <div class="step-icon pending" id="step-icon-${step.id}">
+            ${step.id}
+          </div>
+          <div class="step-info">
+            <div>${step.description}</div>
+            <div class="step-type">${step.type}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function updateStepStatus(stepId, status) {
+      const icon = document.getElementById(`step-icon-${stepId}`);
+      if (!icon) return;
+      icon.className = `step-icon ${status}`;
+      const symbols = { pending: stepId, running: '⟳', success: '✓', failed: '✗' };
+      icon.textContent = symbols[status] || stepId;
+    }
+
+    function updateProgress(progressStr) {
+      if (!progressStr) return;
+      const [done, total] = progressStr.split('/').map(Number);
+      const pct = Math.round((done / total) * 100);
+      document.getElementById('progressFill').style.width = `${pct}%`;
+      document.getElementById('progressText').textContent = `${done}/${total} steps (${pct}%)`;
+    }
+
+    function updateSendButton() {
+      const btn = document.getElementById('sendBtn');
+      if (isRunning) {
+        btn.className = 'send-btn stop-btn';
+        btn.textContent = '■';
+        btn.onclick = stopTask;
+      } else {
+        btn.className = 'send-btn';
+        btn.textContent = '▶';
+        btn.onclick = sendTask;
+      }
+    }
+
+    // ============ API CALLS ============
+    async function sendTask() {
+      const input = document.getElementById('taskInput');
+      const task = input.value.trim();
+      if (!task) return;
+
+      addMessage('user', task);
+      input.value = '';
+
+      isRunning = true;
+      updateSendButton();
+
+      try {
+        const res = await fetch('/api/task', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ task }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          addMessage('error', `❌ ${data.error}`);
+        }
+      } catch (err) {
+        addMessage('error', `❌ ${err.message}`);
+      }
+
+      isRunning = false;
+      updateSendButton();
+    }
+
+    async function stopTask() {
+      await fetch('/api/stop', { method: 'POST' });
+      isRunning = false;
+      updateSendButton();
+      addMessage('system', 'Task stopped by user');
+    }
+
+    // ============ INPUT HANDLING ============
+    document.getElementById('taskInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (isRunning) return;
+        sendTask();
+      }
+    });
+
+    // Auto-resize textarea
+    document.getElementById('taskInput').addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+    });
+
+    // ============ INIT ============
+    connectWS();
+  </script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+import { pgTable, serial, text, numeric, timestamp, integer, date, boolean } from "drizzle-orm/pg-core";
+
+export const projectResourcesTable = pgTable("project_resources", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").notNull(),
+  taskId: integer("task_id"),
+  resourceType: text("resource_type").notNull().default("person"),
+  name: text("name").notNull(),
+  role: text("role"),
+  employeeId: integer("employee_id"),
+  machineId: integer("machine_id"),
+  allocationPct: numeric("allocation_pct", { precision: 5, scale: 2 }),
+  capacityHours: numeric("capacity_hours", { precision: 8, scale: 2 }),
+  startDate: date("start_date"),
+  endDate: date("end_date"),
+  dailyRate: numeric("daily_rate", { precision: 12, scale: 2 }),
+  hourlyRate: numeric("hourly_rate", { precision: 12, scale: 2 }),
+  totalCost: numeric("total_cost", { precision: 15, scale: 2 }),
+  hasConflict: boolean("has_conflict").default(false),
+  conflictDetails: text("conflict_details"),
+  status: text("status").default("assigned"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});

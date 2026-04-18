@@ -1,0 +1,172 @@
+import { TerminalTool } from "./terminalTool";
+
+export interface ManagedProcess {
+  id: string;
+  name: string;
+  command: string;
+  status: "running" | "stopped" | "errored" | "restarting";
+  pid?: number;
+  restarts: number;
+  maxRestarts: number;
+  uptime: number;
+  startedAt?: Date;
+  stoppedAt?: Date;
+  lastError?: string;
+  env?: Record<string, string>;
+  cwd?: string;
+  autoRestart: boolean;
+  memory?: number;
+  cpu?: number;
+}
+
+export class ProcessManager {
+  private processes: Map<string, ManagedProcess> = new Map();
+  private terminal: TerminalTool;
+  private onLog: (msg: string) => void;
+  private monitorTimer?: NodeJS.Timeout;
+
+  constructor(terminal: TerminalTool, onLog: (msg: string) => void) {
+    this.terminal = terminal;
+    this.onLog = onLog;
+  }
+
+  async start(config: {
+    name: string;
+    command: string;
+    env?: Record<string, string>;
+    cwd?: string;
+    autoRestart?: boolean;
+    maxRestarts?: number;
+  }): Promise<ManagedProcess> {
+    const id = `proc_${config.name}_${Date.now()}`;
+
+    const proc: ManagedProcess = {
+      id,
+      name: config.name,
+      command: config.command,
+      status: "running",
+      restarts: 0,
+      maxRestarts: config.maxRestarts || 10,
+      uptime: 0,
+      startedAt: new Date(),
+      env: config.env,
+      cwd: config.cwd,
+      autoRestart: config.autoRestart ?? true,
+    };
+
+    this.processes.set(id, proc);
+
+    await this.terminal.startBackground(id, config.command, {
+      env: config.env,
+      cwd: config.cwd,
+      onOutput: (data, stream) => {
+        if (stream === "stderr" && data.includes("Error")) {
+          proc.lastError = data.trim();
+        }
+      },
+    });
+
+    this.onLog(`🚀 Started: ${config.name} (${id})`);
+    this.ensureMonitor();
+
+    return proc;
+  }
+
+  async stop(id: string): Promise<boolean> {
+    const proc = this.processes.get(id);
+    if (!proc) return false;
+
+    proc.autoRestart = false;
+    const stopped = await this.terminal.stopBackground(id);
+    proc.status = "stopped";
+    proc.stoppedAt = new Date();
+
+    this.onLog(`⏹️ Stopped: ${proc.name}`);
+    return stopped;
+  }
+
+  async restart(id: string): Promise<boolean> {
+    const proc = this.processes.get(id);
+    if (!proc) return false;
+
+    proc.status = "restarting";
+    await this.terminal.stopBackground(id);
+    await new Promise((r) => setTimeout(r, 1000));
+
+    await this.terminal.startBackground(id, proc.command, {
+      env: proc.env,
+      cwd: proc.cwd,
+      onOutput: (data, stream) => {
+        if (stream === "stderr" && data.includes("Error")) {
+          proc.lastError = data.trim();
+        }
+      },
+    });
+
+    proc.status = "running";
+    proc.restarts++;
+    proc.startedAt = new Date();
+    this.onLog(`🔄 Restarted: ${proc.name} (restart #${proc.restarts})`);
+
+    return true;
+  }
+
+  async stopAll(): Promise<void> {
+    for (const [id] of this.processes) {
+      await this.stop(id);
+    }
+    if (this.monitorTimer) clearInterval(this.monitorTimer);
+  }
+
+  getProcess(id: string): ManagedProcess | undefined {
+    return this.processes.get(id);
+  }
+
+  getAll(): ManagedProcess[] {
+    return Array.from(this.processes.values()).map((proc) => ({
+      ...proc,
+      uptime: proc.startedAt ? Date.now() - proc.startedAt.getTime() : 0,
+    }));
+  }
+
+  getByName(name: string): ManagedProcess | undefined {
+    return Array.from(this.processes.values()).find((p) => p.name === name);
+  }
+
+  private ensureMonitor(): void {
+    if (this.monitorTimer) return;
+
+    this.monitorTimer = setInterval(async () => {
+      for (const [id, proc] of this.processes) {
+        if (proc.status !== "running") continue;
+
+        const isAlive = this.terminal.isRunning(id);
+        if (!isAlive) {
+          proc.status = "errored";
+          this.onLog(`💀 Process died: ${proc.name}`);
+
+          if (proc.autoRestart && proc.restarts < proc.maxRestarts) {
+            this.onLog(`🔄 Auto-restarting: ${proc.name}`);
+            await this.restart(id);
+          } else if (proc.restarts >= proc.maxRestarts) {
+            proc.autoRestart = false;
+            this.onLog(`❌ Max restarts reached: ${proc.name}`);
+          }
+        }
+
+        // Update metrics
+        if (proc.pid) {
+          try {
+            const result = await this.terminal.execute(
+              `ps -p ${proc.pid} -o %cpu,%mem --no-headers 2>/dev/null`,
+              { timeout: 3000 }
+            );
+            const parts = result.stdout.trim().split(/\s+/);
+            proc.cpu = parseFloat(parts[0]) || 0;
+            proc.memory = parseFloat(parts[1]) || 0;
+          } catch {}
+        }
+      }
+    }, 5000);
+  }
+}

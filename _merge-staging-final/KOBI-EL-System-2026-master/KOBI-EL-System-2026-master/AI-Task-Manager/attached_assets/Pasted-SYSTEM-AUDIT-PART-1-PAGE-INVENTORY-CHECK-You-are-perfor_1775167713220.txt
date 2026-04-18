@@ -1,0 +1,33 @@
+SYSTEM AUDIT PART 1 - PAGE INVENTORY CHECK
+
+You are performing a 360 degree system audit for this ERP. Audit every route in the React Router config.
+
+For EACH route verify:
+1. Component FILE exists
+2. Renders without crashing
+3. Proper layout (sidebar, header, breadcrumb)
+4. NOT placeholder/Coming Soon/empty div
+5. Loads real API data (not hardcoded)
+6. Correct HEBREW title
+
+REQUIRED PAGES - verify each exists and is complete:
+
+AUTH: /login, /forgot-password, /reset-password/:token
+DASHBOARD: / with real KPI data
+EMPLOYEES: /employees, /employees/new, /employees/:id, /employees/:id/edit, /employees/:id/documents, /employees/:id/attendance, /employees/:id/shifts, /employees/:id/payslips, /employees/:id/performance, /onboarding
+SHIFTS: /shifts, /shifts/new, /attendance, /attendance/clock-in, /attendance/:employeeId/:month
+WORK ORDERS: /work-orders, /work-orders/new, /work-orders/:id, /work-orders/:id/edit, /work-orders/kanban, /work-orders/:id/photos
+CUSTOMERS: /customers, /customers/new, /customers/:id, /customers/:id/edit, /customers/:id/history
+QUOTES: /quotes, /quotes/new, /quotes/:id, /quotes/:id/edit
+INVOICES: /invoices, /invoices/new, /invoices/:id, /invoices/:id/payments
+PAYMENTS: /payments, /payments/new
+INVENTORY: /inventory, /inventory/new, /inventory/:id, /inventory/:id/edit, /inventory/:id/history, /inventory/warehouse, /inventory/stock-count, /inventory/low-stock
+PURCHASE ORDERS: /purchase-orders, /purchase-orders/new, /purchase-orders/:id
+SUPPLIERS: /suppliers, /suppliers/new, /suppliers/:id
+PAYROLL: /payroll, /payroll/run, /payroll/export
+REPORTS: /reports, /reports/revenue, /reports/production, /reports/attendance, /reports/payroll, /reports/inventory, /reports/profitability, /reports/sales
+SETTINGS: /settings, /settings/company, /settings/users, /settings/users/new, /settings/users/:id, /settings/roles, /settings/notifications, /settings/integrations, /settings/billing, /settings/ip-allowlist, /settings/backup
+PROFILE: /profile, /profile/security, /profile/2fa
+SPECIAL: /403, /404, /500, /maintenance
+
+ACTION: For every missing page CREATE it. For every broken page FIX it. For every placeholder COMPLETE it.

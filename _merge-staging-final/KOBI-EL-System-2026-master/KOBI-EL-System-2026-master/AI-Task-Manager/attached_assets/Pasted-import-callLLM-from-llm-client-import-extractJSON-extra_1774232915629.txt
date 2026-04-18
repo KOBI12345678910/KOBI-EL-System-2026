@@ -1,0 +1,204 @@
+import { callLLM } from "../llm/client";
+import { extractJSON, extractTextContent } from "../llm/parser";
+import { FileTool } from "./fileTool";
+
+export interface DesignVariant {
+  id: string;
+  name: string;
+  html: string;
+  css: string;
+  preview?: string;
+  selected: boolean;
+}
+
+export interface DesignElement {
+  id: string;
+  type: "page" | "component" | "section" | "header" | "footer" | "form" | "card" | "modal" | "nav";
+  name: string;
+  variants: DesignVariant[];
+  props?: Record<string, any>;
+}
+
+export class DesignCanvasTool {
+  private fileTool: FileTool;
+  private elements: Map<string, DesignElement> = new Map();
+
+  constructor(fileTool: FileTool) {
+    this.fileTool = fileTool;
+  }
+
+  async generateVariants(
+    description: string,
+    count = 3,
+    style?: "minimal" | "modern" | "playful" | "corporate" | "dark"
+  ): Promise<DesignVariant[]> {
+    const variants: DesignVariant[] = [];
+
+    const response = await callLLM({
+      system: `You are a UI/UX designer. Generate ${count} distinct design variants as React components with Tailwind CSS.
+Each variant should have a meaningfully different visual approach:
+- Variant 1: ${style || "clean"} with emphasis on whitespace
+- Variant 2: Bold, with strong visual hierarchy
+- Variant 3: Creative/unique approach
+
+Rules:
+- Use Tailwind CSS only (no custom CSS)
+- Mobile responsive
+- Dark mode compatible (use dark: prefix)
+- Include hover/active states
+- Each variant must be a complete, self-contained React component
+
+Respond with JSON:
+{
+  "variants": [
+    {
+      "name": "descriptive name",
+      "description": "design approach",
+      "code": "complete React/TSX code"
+    }
+  ]
+}`,
+      messages: [{ role: "user", content: `Generate ${count} design variants for: ${description}\nStyle: ${style || "modern"}` }],
+      maxTokens: 8192,
+    });
+
+    const parsed = extractJSON(extractTextContent(response.content));
+    if (!parsed?.variants) return [];
+
+    for (let i = 0; i < parsed.variants.length; i++) {
+      const v = parsed.variants[i];
+      variants.push({
+        id: `var_${Date.now()}_${i}`,
+        name: v.name,
+        html: v.code,
+        css: "",
+        selected: i === 0,
+      });
+    }
+
+    return variants;
+  }
+
+  async applyVariant(variantId: string, targetFile: string): Promise<void> {
+    let variant: DesignVariant | undefined;
+
+    for (const [, element] of this.elements) {
+      variant = element.variants.find((v) => v.id === variantId);
+      if (variant) break;
+    }
+
+    if (!variant) throw new Error("Variant not found");
+
+    let code = variant.html;
+    code = code.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+
+    this.fileTool.createFile(targetFile, code);
+  }
+
+  async generatePageDesign(config: {
+    pageName: string;
+    sections: string[];
+    style: string;
+    brandColors?: { primary: string; secondary: string };
+  }): Promise<string> {
+    const response = await callLLM({
+      system: `Design a complete page with all sections. Use React + Tailwind CSS.
+Include: responsive design, animations, proper spacing, typography hierarchy.
+Respond with ONLY the complete TSX code.`,
+      messages: [{
+        role: "user",
+        content: `Design page "${config.pageName}" with sections: ${config.sections.join(", ")}
+Style: ${config.style}
+${config.brandColors ? `Brand colors: primary=${config.brandColors.primary}, secondary=${config.brandColors.secondary}` : ""}`,
+      }],
+      maxTokens: 8192,
+    });
+
+    let code = extractTextContent(response.content);
+    code = code.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+
+    const filePath = `src/pages/${config.pageName}.tsx`;
+    this.fileTool.createFile(filePath, code);
+    return code;
+  }
+
+  async convertToMobile(webComponentPath: string): Promise<string> {
+    const content = this.fileTool.readFile(webComponentPath);
+    if (!content.success) throw new Error(`Cannot read: ${webComponentPath}`);
+
+    const response = await callLLM({
+      system: `Convert this web React component to React Native (Expo).
+Rules:
+- Replace HTML elements with RN components (View, Text, ScrollView, TouchableOpacity, etc.)
+- Replace Tailwind with StyleSheet
+- Use SafeAreaView
+- Handle platform differences
+- Keep all functionality
+Respond with ONLY the React Native code.`,
+      messages: [{
+        role: "user",
+        content: `Convert to React Native:\n\`\`\`\n${content.output}\n\`\`\``,
+      }],
+      maxTokens: 8192,
+    });
+
+    let mobileCode = extractTextContent(response.content);
+    mobileCode = mobileCode.replace(/^```\w*\n/, "").replace(/\n```$/, "").trim();
+
+    const mobilePath = webComponentPath.replace("/pages/", "/mobile/").replace("/components/", "/mobile/");
+    this.fileTool.createFile(mobilePath, mobileCode);
+    return mobileCode;
+  }
+
+  async generateResponsivePreview(componentPath: string): Promise<{
+    mobile: string;
+    tablet: string;
+    desktop: string;
+  }> {
+    const content = this.fileTool.readFile(componentPath);
+    if (!content.success) throw new Error(`Cannot read: ${componentPath}`);
+
+    const previewHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .preview-frame { border: 2px solid #333; border-radius: 8px; overflow: hidden; margin: 16px; background: white; }
+    .label { text-align: center; font-family: monospace; padding: 4px; background: #1a1a2e; color: #ddd; font-size: 12px; }
+    body { background: #0a0a0f; display: flex; justify-content: center; flex-wrap: wrap; padding: 20px; }
+  </style>
+</head>
+<body>
+  <div>
+    <div class="label">Mobile (375px)</div>
+    <div class="preview-frame" style="width:375px;height:667px;">
+      <iframe src="about:blank" style="width:100%;height:100%;border:none;"></iframe>
+    </div>
+  </div>
+  <div>
+    <div class="label">Tablet (768px)</div>
+    <div class="preview-frame" style="width:768px;height:1024px;">
+      <iframe src="about:blank" style="width:100%;height:100%;border:none;"></iframe>
+    </div>
+  </div>
+  <div>
+    <div class="label">Desktop (1440px)</div>
+    <div class="preview-frame" style="width:1440px;height:900px;">
+      <iframe src="about:blank" style="width:100%;height:100%;border:none;"></iframe>
+    </div>
+  </div>
+</body>
+</html>`;
+
+    const previewPath = "/tmp/responsive-preview.html";
+    this.fileTool.createFile(previewPath, previewHtml);
+
+    return {
+      mobile: "375x667",
+      tablet: "768x1024",
+      desktop: "1440x900",
+    };
+  }
+}

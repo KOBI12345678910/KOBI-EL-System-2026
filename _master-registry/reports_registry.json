@@ -1,0 +1,181 @@
+[
+  {
+    "id": "RPT-0001",
+    "name": "project_profitability_report",
+    "sources": [
+      "projects.projects",
+      "finance.invoices",
+      "procurement.purchase_orders",
+      "production.material_consumption"
+    ],
+    "domain": "projects"
+  },
+  {
+    "id": "RPT-0002",
+    "name": "aging_report",
+    "sources": [
+      "finance.invoices",
+      "finance.payments"
+    ],
+    "domain": "finance"
+  },
+  {
+    "id": "RPT-0003",
+    "name": "pnl",
+    "sources": [
+      "finance.cashflow_entries",
+      "finance.expenses"
+    ],
+    "domain": "finance"
+  },
+  {
+    "id": "RPT-0004",
+    "name": "balance_sheet",
+    "sources": [
+      "finance.cashflow_entries"
+    ],
+    "domain": "finance"
+  },
+  {
+    "id": "RPT-0005",
+    "name": "cash_flow",
+    "sources": [
+      "finance.cashflow_entries"
+    ],
+    "domain": "finance"
+  },
+  {
+    "id": "RPT-0006",
+    "name": "vat_report_pcn836",
+    "sources": [
+      "finance.invoices",
+      "finance.invoice_items"
+    ],
+    "domain": "finance"
+  },
+  {
+    "id": "RPT-0007",
+    "name": "production_kpi",
+    "sources": [
+      "production.production_orders",
+      "production.production_quality_checks"
+    ],
+    "domain": "production"
+  },
+  {
+    "id": "RPT-0008",
+    "name": "sales_pipeline",
+    "sources": [
+      "crm.leads",
+      "sales.opportunities",
+      "sales.quotes"
+    ],
+    "domain": "sales"
+  },
+  {
+    "id": "RPT-0009",
+    "name": "procurement_savings",
+    "sources": [
+      "procurement.purchase_orders"
+    ],
+    "domain": "procurement"
+  },
+  {
+    "id": "RPT-0010",
+    "name": "inventory_turnover",
+    "sources": [
+      "inventory.stock_movements",
+      "inventory.items"
+    ],
+    "domain": "inventory"
+  },
+  {
+    "id": "RPT-0011",
+    "name": "payroll_summary",
+    "sources": [
+      "hr_workforce.payroll_inputs"
+    ],
+    "domain": "hr_workforce"
+  },
+  {
+    "id": "RPT-0012",
+    "name": "attendance_report",
+    "sources": [
+      "hr_workforce.attendance_logs"
+    ],
+    "domain": "hr_workforce"
+  },
+  {
+    "id": "RPT-0013",
+    "name": "service_sla",
+    "sources": [
+      "service.service_tickets",
+      "service.sla_rules"
+    ],
+    "domain": "service"
+  },
+  {
+    "id": "RPT-0014",
+    "name": "customer_360",
+    "sources": [
+      "crm.customers",
+      "sales.quotes",
+      "projects.projects",
+      "finance.invoices"
+    ],
+    "domain": "crm"
+  },
+  {
+    "id": "RPT-0015",
+    "name": "supplier_scorecard",
+    "sources": [
+      "procurement.suppliers",
+      "procurement.supplier_price_lists"
+    ],
+    "domain": "procurement"
+  },
+  {
+    "id": "RPT-0016",
+    "name": "overdue_projects_report",
+    "sources": [
+      "projects.projects"
+    ],
+    "domain": "projects"
+  },
+  {
+    "id": "RPT-0017",
+    "name": "bank_reconciliation",
+    "sources": [
+      "finance.cashflow_entries",
+      "finance.payments"
+    ],
+    "domain": "finance"
+  },
+  {
+    "id": "RPT-0018",
+    "name": "stock_reorder_suggestions",
+    "sources": [
+      "inventory.stock_balances",
+      "inventory.reorder_rules"
+    ],
+    "domain": "inventory"
+  },
+  {
+    "id": "RPT-0019",
+    "name": "installation_completion",
+    "sources": [
+      "installation.installation_orders",
+      "installation.completion_reports"
+    ],
+    "domain": "installation"
+  },
+  {
+    "id": "RPT-0020",
+    "name": "audit_log_review",
+    "sources": [
+      "governance.audit_logs",
+      "governance.change_logs"
+    ],
+    "domain": "governance"
+  }
+]

@@ -1,0 +1,163 @@
+import { useState, useEffect } from "react";
+import { authFetch } from "../../lib/utils";
+
+export default function GoodsReceiptsPage() {
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState<any>({});
+  const [editId, setEditId] = useState<number | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    const res = await authFetch("/api/goods-receipts");
+    if (res.ok) setItems(await res.json());
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const save = async () => {
+    const method = editId ? "PUT" : "POST";
+    const url = editId ? "/api/goods-receipts/" + editId : "/api/goods-receipts";
+    await authFetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+    setForm({}); setEditId(null); setShowForm(false); load();
+  };
+
+  const remove = async (id: number) => {
+    await authFetch("/api/goods-receipts/" + id, { method: "DELETE" });
+    load();
+  };
+
+  return (
+    <div className="p-6 space-y-6" dir="rtl">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-100">קבלת סחורה</h1>
+        <button onClick={() => { setShowForm(!showForm); setForm({}); setEditId(null); }} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm">
+          {showForm ? "סגור" : "+ חדש"}
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="rounded-xl border border-gray-700/50 bg-gray-800/30 p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">receipt_number</label>
+                <input
+                  type="text"
+                  className="w-full rounded-lg border border-gray-600 bg-gray-700/50 px-3 py-2 text-gray-200"
+                  placeholder="receipt_number"
+                  value={form.receipt_number || ""}
+                  onChange={e => setForm({...form, receipt_number: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">purchase_order_id</label>
+                <input
+                  type="number"
+                  className="w-full rounded-lg border border-gray-600 bg-gray-700/50 px-3 py-2 text-gray-200"
+                  placeholder="purchase_order_id"
+                  value={form.purchase_order_id || ""}
+                  onChange={e => setForm({...form, purchase_order_id: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">receipt_date</label>
+                <input
+                  type="text"
+                  className="w-full rounded-lg border border-gray-600 bg-gray-700/50 px-3 py-2 text-gray-200"
+                  placeholder="receipt_date"
+                  value={form.receipt_date || ""}
+                  onChange={e => setForm({...form, receipt_date: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">received_by</label>
+                <input
+                  type="number"
+                  className="w-full rounded-lg border border-gray-600 bg-gray-700/50 px-3 py-2 text-gray-200"
+                  placeholder="received_by"
+                  value={form.received_by || ""}
+                  onChange={e => setForm({...form, received_by: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">warehouse_id</label>
+                <input
+                  type="number"
+                  className="w-full rounded-lg border border-gray-600 bg-gray-700/50 px-3 py-2 text-gray-200"
+                  placeholder="warehouse_id"
+                  value={form.warehouse_id || ""}
+                  onChange={e => setForm({...form, warehouse_id: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">status</label>
+                <input
+                  type="text"
+                  className="w-full rounded-lg border border-gray-600 bg-gray-700/50 px-3 py-2 text-gray-200"
+                  placeholder="status"
+                  value={form.status || ""}
+                  onChange={e => setForm({...form, status: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">notes</label>
+                <input
+                  type="text"
+                  className="w-full rounded-lg border border-gray-600 bg-gray-700/50 px-3 py-2 text-gray-200"
+                  placeholder="notes"
+                  value={form.notes || ""}
+                  onChange={e => setForm({...form, notes: e.target.value})}
+                />
+              </div>
+          </div>
+          <div className="mt-4 flex gap-2 justify-end">
+            <button onClick={() => setShowForm(false)} className="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg text-sm">ביטול</button>
+            <button onClick={save} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm">{editId ? "עדכן" : "שמור"}</button>
+          </div>
+        </div>
+      )}
+
+      <div className="rounded-xl border border-gray-700/50 bg-gray-800/30 overflow-hidden">
+        {loading ? <div className="p-8 text-center text-gray-400">טוען...</div> : (
+          <table className="w-full">
+            <thead className="bg-gray-800/60 border-b border-gray-700/50">
+              <tr>
+                <th className="px-4 py-3 text-right text-sm font-medium text-gray-300">#</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-gray-300">receipt_number</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-gray-300">purchase_order_id</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-gray-300">receipt_date</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-gray-300">received_by</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-gray-300">warehouse_id</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-gray-300">status</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-gray-300">notes</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-gray-300">פעולות</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-700/30">
+              {items.map(item => (
+                <tr key={item.id} className="hover:bg-gray-700/20">
+                  <td className="px-4 py-3 text-sm text-gray-400">{item.id}</td>
+                <td className="px-4 py-3 text-sm text-gray-300">{item.receipt_number}</td>
+                <td className="px-4 py-3 text-sm text-gray-300">{item.purchase_order_id}</td>
+                <td className="px-4 py-3 text-sm text-gray-300">{item.receipt_date}</td>
+                <td className="px-4 py-3 text-sm text-gray-300">{item.received_by}</td>
+                <td className="px-4 py-3 text-sm text-gray-300">{item.warehouse_id}</td>
+                <td className="px-4 py-3 text-sm text-gray-300">{item.status}</td>
+                <td className="px-4 py-3 text-sm text-gray-300">{item.notes}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex gap-1">
+                      <button onClick={() => { setForm(item); setEditId(item.id); setShowForm(true); }} className="px-2 py-1 text-xs bg-yellow-600/20 text-yellow-400 rounded">עריכה</button>
+                      <button onClick={() => remove(item.id)} className="px-2 py-1 text-xs bg-red-600/20 text-red-400 rounded">מחיקה</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}

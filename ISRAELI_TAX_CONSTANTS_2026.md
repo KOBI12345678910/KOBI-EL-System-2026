@@ -52,10 +52,13 @@
 
 | Item | Value | Status | Source |
 |---|---|---|---|
-| Standard rate (2026) | **17%** | CONFIRMED | Rate raised to 17% effective 1 January 2025; remains 17% in 2026 |
+| Standard rate (2026, effective 2026-01-01) | **18%** | CONFIRMED | Rate raised from 17% to 18% effective 1 January 2026 |
+| Standard rate (prior period, 2015-10-01 → 2025-12-31) | **17%** | CONFIRMED (historical) | Retained for historical invoices — do not re-rate past transactions |
 | Eilat zone (אילת) | **0%** | CONFIRMED | חוק אזור סחר חופשי אילת |
 | Export | **0%** | CONFIRMED | סעיף 30 חוק מע"מ |
 | Fruit & vegetables (unprocessed) | **0%** | CONFIRMED | סעיף 30 |
+
+> **Note:** Invoices, quotes, and transactions dated on or after `2026-01-01` use the 18% rate. Historical records (invoices issued before 2026-01-01) MUST retain 17% — see `finance.vat_rates` table and `getVatRateForDate()` helper.
 
 **Source placeholder:** https://www.gov.il/he/departments/taxes/value-added-tax
 **Law:** חוק מס ערך מוסף, התשל"ו-1975

@@ -555,7 +555,7 @@ class ScrapTracker {
       }));
     }
 
-    // VAT note — scrapyards in Israel generally apply standard VAT (17%),
+    // VAT note — scrapyards in Israel generally apply standard VAT (18% from 2026-01-01; was 17%),
     // reported on a normal self-invoice (חשבונית עצמית). We do NOT compute
     // VAT here; the invoicing module handles that. This is a revenue event.
     const ticket = freezeRecord({

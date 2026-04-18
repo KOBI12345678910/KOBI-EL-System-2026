@@ -1,0 +1,648 @@
+חשוב מאוד לפני שמתחילים:
+
+אני לא רוצה לבנות "עוד מודול" בתוך המערכת.
+אני רוצה לבנות מנוע פלטפורמה עצום, גנרי, אוניברסלי, בלתי מוגבל, שיאפשר לנו לבנות בעתיד אינסוף מודולים, אינסוף ישויות, אינסוף מסכים, אינסוף תהליכים ואינסוף מחלקות — בלי צורך כל פעם לפתח מחדש.
+
+המטרה היא לא לבנות רק ERP.
+המטרה היא לבנות מערכת-על, Platform פנימי, שמסוגל להצמיח מתוך עצמו כל מודול חדש שנרצה בעתיד.
+
+כלומר:
+אני רוצה לבנות בתוך המערכת Meta-System / Universal Builder Engine.
+
+ה-Builder הזה חייב להיות:
+- אינסופי בהתרחבות שלו
+- גנרי לחלוטין
+- metadata-driven
+- reusable
+- scalable
+- system-wide
+- extensible בלי גבול
+- מתאים לכך שבעתיד נבנה דרכו כל דבר חדש
+
+אני רוצה שה-Builder יהיה בנוי כך שלא נצטרך בעתיד להוסיף כל מודול חדש דרך קוד hardcoded,
+אלא דרך מערכת בנייה פנימית.
+
+==================================================
+1. החזון של המערכת
+==================================================
+
+אני רוצה שהמערכת תהפוך מ-ERP רגיל ל-ERP Platform.
+
+כלומר:
+במקום לבנות ידנית כל מחלקה,
+נבנה מנוע שיודע לייצר מחלקות.
+
+במקום לבנות ידנית כל מסך,
+נבנה מנוע שיודע לייצר מסכים.
+
+במקום לבנות ידנית כל טופס,
+נבנה מנוע שיודע לייצר טפסים.
+
+במקום לבנות ידנית כל כפתור,
+נבנה מנוע שיודע לייצר כפתורים ופעולות.
+
+במקום לבנות ידנית כל תהליך,
+נבנה מנוע שיודע לייצר workflows ואוטומציות.
+
+כלומר:
+אנחנו בונים שכבת פלטפורמה שיכולה לבנות כל דבר חדש בעתיד.
+
+==================================================
+2. דרישת על - אינסופיות והתרחבות
+==================================================
+
+חשוב מאוד:
+ה-Builder חייב להיות בנוי בצורה כזאת שאפשר להרחיב אותו בלי סוף.
+
+אני לא רוצה מערכת מוגבלת למספר מודולים קבוע.
+אני לא רוצה רשימה קשיחה של מחלקות.
+אני לא רוצה מסכים סגורים מראש.
+אני לא רוצה כפתורים קבועים בקוד.
+אני לא רוצה טפסים hardcoded.
+
+אני רוצה מערכת שמאפשרת:
+
+- אינסוף מודולים
+- אינסוף ישויות
+- אינסוף שדות
+- אינסוף קשרים
+- אינסוף תצוגות
+- אינסוף טפסים
+- אינסוף detail pages
+- אינסוף כפתורים
+- אינסוף פעולות
+- אינסוף workflows
+- אינסוף קטגוריות
+- אינסוף סטטוסים
+- אינסוף dashboards
+- אינסוף widgets
+- אינסוף automations
+- אינסוף חוקים
+- אינסוף סוגי אובייקטים
+
+אני רוצה שתתכנן את זה בתור engine פתוח, ולא feature קטן.
+
+==================================================
+3. מה זה אומר "מודלים" במערכת הזאת
+==================================================
+
+כשאני אומר "מודלים", אני לא מתכוון רק למודולי ERP.
+
+אני מתכוון שהמערכת צריכה לאפשר לבנות כמה שכבות של מודלים:
+
+1. מודולי מערכת
+2. מודלי נתונים
+3. מודלי תצוגה
+4. מודלי טפסים
+5. מודלי לוגיקה
+6. מודלי workflow
+7. מודלי הרשאות
+8. מודלי תפריטים
+9. מודלי dashboards
+10. מודלי כפתורים ופעולות
+11. מודלי אוטומציה
+12. מודלי אינטגרציות
+13. מודלי AI
+14. מודלי חוקים עסקיים
+15. מודלי מסמכים
+16. מודלי קטלוגים
+17. מודלי היררכיה
+18. מודלי גרסאות
+19. מודלי events
+20. מודלי UI components
+
+אני רוצה שכל אחת מהשכבות האלה תהיה ניתנת להגדרה והרחבה.
+
+==================================================
+4. מודלים ברמת הפלטפורמה
+==================================================
+
+אני רוצה שהמערכת תדע לייצר מודלים מהסוגים הבאים:
+
+A. Business Modules
+למשל:
+- לקוחות
+- ספקים
+- רכש
+- מלאי
+- ייצור
+- פרויקטים
+- כספים
+- עובדים
+- שירות
+- מסמכים
+
+B. Meta Modules
+מודולים שבונים את המערכת עצמה:
+- module builder
+- entity builder
+- field builder
+- workflow builder
+- permissions builder
+- menu builder
+- dashboard builder
+
+C. Configuration Modules
+- קטגוריות
+- סטטוסים
+- הגדרות
+- מספרורים
+- סוגים
+- תבניות
+
+D. Logic Modules
+- אוטומציות
+- workflow transitions
+- business rules
+- formulas
+- triggers
+- approval flows
+
+E. Presentation Modules
+- form templates
+- list templates
+- detail templates
+- dashboard templates
+- page layouts
+- sections
+- tabs
+
+F. Integration Modules
+- webhooks
+- API mapping
+- import/export
+- sync jobs
+- external systems
+- AI providers
+
+אני רוצה שכל אלה יהיו ניתנים לבנייה מתוך אותו Builder.
+
+==================================================
+5. מבנה אינסופי של ישויות
+==================================================
+
+אני רוצה שהמערכת תאפשר אינסוף ישויות מכל סוג:
+
+- master entities
+- transaction entities
+- child entities
+- reference entities
+- log entities
+- workflow entities
+- system entities
+- analytics entities
+- document entities
+- relation entities
+- version entities
+- attachment entities
+
+לכל ישות צריך להיות:
+- schema דינמי
+- שדות דינמיים
+- סוגי נתונים דינמיים
+- קשרים דינמיים
+- התנהגות דינמית
+- מסכים דינמיים
+- הרשאות דינמיות
+- סטטוסים דינמיים
+- כפתורים דינמיים
+
+אני רוצה שהמערכת לא תהיה מוגבלת ל-CRUD בסיסי בלבד, אלא תדע לייצר ישויות חכמות.
+
+==================================================
+6. מבנה אינסופי של שדות
+==================================================
+
+Field Builder חייב להיות ברמה ענקית.
+
+לא מספיק:
+- text
+- number
+- date
+
+אני רוצה שכבת שדות עצומה, עם אפשרות להתרחב לסוגי שדות חדשים.
+
+סוגי שדות בסיסיים:
+- text
+- long text
+- rich text
+- number
+- decimal
+- currency
+- percent
+- boolean
+- checkbox
+- radio
+- single select
+- multi select
+- tags
+- date
+- datetime
+- time
+- duration
+- file
+- image
+- signature
+- email
+- phone
+- URL
+- address
+- location
+- barcode
+- QR
+- relation
+- relation list
+- user reference
+- role reference
+- status
+- category
+- formula field
+- computed field
+- AI-generated field
+- JSON field
+- object field
+- array field
+
+לכל שדה צריך להיות engine מלא של:
+- validation
+- visibility
+- editability
+- formatting
+- default values
+- dynamic values
+- dependencies
+- formulas
+- conditional logic
+- display rules
+- indexing/searchability
+- auditability
+- required logic
+- permissions by field
+
+אני רוצה שגם שדות עצמם יהיו extensible, כך שבעתיד נוסיף field types חדשים.
+
+==================================================
+7. מבנה אינסופי של מסכים
+==================================================
+
+אני לא רוצה 3 סוגי מסכים וזהו.
+אני רוצה מנוע מסכים אינסופי.
+
+המערכת צריכה לדעת לייצר:
+- list pages
+- detail pages
+- create pages
+- edit pages
+- wizard pages
+- dashboard pages
+- kanban views
+- timeline views
+- calendar views
+- table views
+- board views
+- nested detail pages
+- master-detail pages
+- modal forms
+- drawer forms
+- quick create screens
+- bulk edit screens
+- import screens
+- approval screens
+- audit screens
+- report pages
+- analytics pages
+- workspace pages
+
+אני רוצה שה-screen engine יהיה דינמי ויאפשר להוסיף screen types בעתיד.
+
+==================================================
+8. כפתורים ופעולות - בלי גבול
+==================================================
+
+אני רוצה שכבת Buttons & Actions אוניברסלית ואינסופית.
+
+כל כפתור במערכת חייב להיות metadata-driven.
+
+אפשרויות:
+- page action
+- row action
+- bulk action
+- header action
+- card action
+- widget action
+- workflow action
+- contextual action
+- conditional action
+
+כל פעולה צריכה להיות ניתנת להגדרה:
+- create
+- save
+- update
+- delete
+- duplicate
+- approve
+- reject
+- submit
+- send
+- export
+- import
+- print
+- archive
+- restore
+- close
+- cancel
+- convert
+- assign
+- lock
+- unlock
+- trigger workflow
+- open modal
+- open detail
+- run automation
+- call integration
+- call AI
+- custom action
+
+אני רוצה שגם מערכת הפעולות עצמה תהיה extensible, כך שבעתיד יהיה אפשר להוסיף action types חדשים.
+
+==================================================
+9. Workflow Engine רחב
+==================================================
+
+אני רוצה שה-Builder יוכל בעתיד לתמוך ב-workflows עצומים.
+
+לא workflow קטן.
+אלא מנוע workflow שיכול לגדול בלי סוף.
+
+הוא צריך לתמוך ב:
+- status transitions
+- triggers
+- conditions
+- approvals
+- multi-step flows
+- user assignments
+- timers
+- escalations
+- branching logic
+- parallel flows
+- event-based flows
+- scheduled flows
+- notifications
+- audit trail
+- rollback logic בעתיד
+
+כרגע לא חייב לבנות engine עצום עד הסוף,
+אבל הארכיטקטורה חייבת להיות מוכנה לכך.
+
+==================================================
+10. Automation Engine רחב
+==================================================
+
+אני רוצה שהמערכת תהיה בנויה כך שאפשר יהיה לבנות מעליה מנוע אוטומציות אינסופי.
+
+טריגרים:
+- on create
+- on update
+- on delete
+- on status change
+- on time reached
+- on threshold
+- on scheduled event
+- on relation update
+- on import
+- on approval
+- on workflow step
+
+פעולות:
+- update field
+- create record
+- send alert
+- trigger workflow
+- call AI
+- call integration
+- assign user
+- generate document
+- create task
+- create child record
+- change status
+- run formula
+- run validation
+
+==================================================
+11. UI Builder אינסופי
+==================================================
+
+אני רוצה שהמערכת לא תייצר רק נתונים, אלא גם ממשק דינמי רחב.
+
+ה-UI Builder צריך להיות מוכן לנהל:
+- page layouts
+- sections
+- columns
+- cards
+- tabs
+- collapsible groups
+- widgets
+- banners
+- side panels
+- quick action areas
+- related data blocks
+- attachments block
+- comments block
+- audit block
+- AI block בעתיד
+
+כלומר:
+גם הממשק עצמו צריך להיות configurable ולא hardcoded.
+
+==================================================
+12. Template Engine
+==================================================
+
+אני רוצה Template System שיאפשר ליצור templates חוזרים, כדי שנוכל לשכפל מבנים ולבנות מהר.
+
+Templates עבור:
+- modules
+- entities
+- forms
+- list views
+- detail pages
+- dashboards
+- workflows
+- categories
+- status sets
+- permissions
+
+אני רוצה שבעתיד אפשר יהיה ללחוץ:
+"צור מודול חדש מתוך תבנית"
+
+==================================================
+13. Versioning & Draft System
+==================================================
+
+אני רוצה שלכל מה שנבנה ידנית יהיה:
+- draft
+- published
+- archived
+- version history
+
+כלומר:
+אפשר לבנות משהו, לשמור בטיוטה, לבדוק, לפרסם, ולחזור אחורה אם צריך.
+
+זה קריטי כי המערכת תהיה עצומה.
+
+==================================================
+14. Hierarchy & Composition
+==================================================
+
+אני רוצה שהמערכת תתמוך במבנים מורכבים:
+
+- parent module
+- child module
+- nested entity
+- related block
+- reusable component
+- inherited template
+- shared field set
+- shared button set
+- shared status set
+
+כלומר:
+אני רוצה יכולת להלחין מערכת ממבנים חוזרים, ולא לבנות כל דבר מאפס.
+
+==================================================
+15. מודלים של AI בתוך ה-Builder
+==================================================
+
+חשוב:
+אני רוצה שה-Builder ייבנה כך שבעתיד אפשר יהיה לחבר אליו AI.
+
+אבל ה-AI לא יכתוב קוד ישירות.
+
+במקום זה, ה-AI ישתמש ב-Builder כדי:
+- ליצור מודול
+- ליצור ישות
+- להוסיף שדות
+- ליצור טפסים
+- ליצור כפתורים
+- ליצור workflow
+- להוסיף סטטוסים
+- להציע תבניות
+
+כלומר:
+ה-Builder הוא המנוע.
+ה-AI הוא רק משתמש חכם של המנוע.
+
+לכן הארכיטקטורה חייבת להיות API-ready ו-AI-ready.
+
+==================================================
+16. דרישה מרכזית - Builder as Platform Core
+==================================================
+
+אני רוצה שתבין שזה לא "feature".
+זה הלב החדש של המערכת.
+
+ה-Builder צריך להיות Platform Core.
+
+כלומר:
+כל המערכת הקיימת,
+וכל המערכת העתידית,
+אמורה להיבנות ולהתנהל דרכו.
+
+זה צריך להיות:
+- core layer
+- universal layer
+- system-wide layer
+- future-proof foundation
+
+==================================================
+17. איך לפרק את הבנייה
+==================================================
+
+אל תבנה את כל המפלצת הזאת בבת אחת.
+
+אני רוצה שתתכנן אותה בצורה הדרגתית, אבל עם ראייה של מערכת אינסופית.
+
+פאזה 1:
+Core metadata architecture
+
+פאזה 2:
+Module + Entity + Field foundation
+
+פאזה 3:
+Forms + Views + Detail pages
+
+פאזה 4:
+Statuses + Categories + Buttons + Actions
+
+פאזה 5:
+Permissions + Menu + Layout system
+
+פאזה 6:
+Dashboards + Widgets + Templates
+
+פאזה 7:
+Workflow + Automation architecture
+
+פאזה 8:
+Draft + Publish + Versioning
+
+פאזה 9:
+API layer for AI / integrations
+
+==================================================
+18. מה אני רוצה ממך עכשיו
+==================================================
+
+אני לא רוצה שתתחיל ישר לבנות הכל.
+
+אני רוצה שקודם תציג:
+
+1. חזון הארכיטקטורה
+2. מבנה מלא של שכבת המטא-דאטה
+3. פירוק מפורט של כל המודלים של ה-Builder
+4. איך המערכת תהיה אינסופית ו-extensible
+5. איך המערכת תישאר גנרית ולא hardcoded
+6. איך המודולים העתידיים ייבנו מעליה
+7. מה ה-Core הראשון שצריך לבנות
+
+אחרי זה תתחיל לבנות רק את:
+- Core metadata database
+- Module Builder
+- Entity Builder
+- Field Builder foundation
+
+==================================================
+19. פורמט תשובה חובה
+==================================================
+
+אני רוצה שבסוף התכנון תכתוב:
+
+מה הולכים לבנות:
+- ...
+
+למה זה נבנה כשכבת פלטפורמה:
+- ...
+
+איך זה יהיה תקף לכל המערכת:
+- ...
+
+איך זה יאפשר בנייה של אינסוף מודולים:
+- ...
+
+אילו שכבות Core חייבות להיבנות קודם:
+- ...
+
+מה ייבנה בפאזה הראשונה בלבד:
+- ...
+
+מה עדיין לא ייבנה בפאזה הראשונה:
+- ...
+
+האם הארכיטקטורה גנרית ולא hardcoded:
+- כן / לא
+
+האם הארכיטקטורה extensible לאינסוף מודולים:
+- כן / לא
+
+האם המערכת תהיה AI-ready בעתיד:
+- כן / לא

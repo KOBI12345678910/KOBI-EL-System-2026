@@ -1,0 +1,102 @@
+# ONYX Procurement — DR Playbook
+# Agent-X95 — Application rollback to previous release
+#
+# Rule of the system: לא מוחקים, רק משדרגים ומגדלים.
+# A rollback is itself a form of upgrade — we move forward to a known
+# good state, preserving all data written during the faulty release.
+
+id: app-rollback
+name_he: "החזרת גרסת אפליקציה קודמת"
+name_en: "Application rollback to previous release"
+description_he: "מבטל את הפריסה האחרונה כאשר זוהתה רגרסיה קריטית"
+description_en: "Reverts the most recent deploy when a critical regression is detected"
+rto_minutes: 15
+rpo_minutes: 0
+
+steps:
+  - id: confirm-regression
+    description_he: "אימות שאכן קיימת רגרסיה"
+    description_en: "Confirm that a regression actually exists"
+    type: manual
+    timeout_seconds: 300
+
+  - id: capture-baseline
+    description_he: "תיעוד מצב הבריאות לפני הביטול"
+    description_en: "Capture health baseline before rollback"
+    type: http
+    url: "http://localhost:3100/api/health"
+    method: GET
+    expectedStatus: 200
+    timeout_seconds: 15
+
+  - id: stop-current-release
+    description_he: "עצירת הגרסה הנוכחית"
+    description_en: "Stop current release pods / process"
+    type: command
+    command: "echo 'systemctl stop onyx-procurement || docker compose stop onyx-procurement'"
+    timeout_seconds: 60
+    compensating:
+      description_he: "הפעלה מחדש של הגרסה הנוכחית"
+      description_en: "Start the current release again"
+      type: command
+      command: "echo 'systemctl start onyx-procurement || docker compose start onyx-procurement'"
+
+  - id: checkout-previous-tag
+    description_he: "החזרה לתגית Git הקודמת"
+    description_en: "Check out previous Git tag"
+    type: command
+    command: "echo 'git fetch --tags && git checkout $(git describe --tags --abbrev=0 HEAD^)'"
+    timeout_seconds: 60
+    compensating:
+      description_he: "חזרה לתגית החדשה"
+      description_en: "Return to newer tag"
+      type: command
+      command: "echo 'git checkout -'"
+
+  - id: reinstall-deps
+    description_he: "התקנת תלויות של הגרסה הקודמת"
+    description_en: "Reinstall dependencies for previous release"
+    type: command
+    command: "echo 'npm ci'"
+    timeout_seconds: 300
+
+  - id: migrate-down-if-needed
+    description_he: "גלגול אחורה של מיגרציות במידת הצורך"
+    description_en: "Roll migrations back only if schema changed"
+    type: verify
+    verifier: schema-compatible
+    timeout_seconds: 30
+    compensating:
+      description_he: "גלגול המיגרציות חזרה קדימה"
+      description_en: "Roll migrations forward again"
+      type: command
+      command: "echo 'npm run migrate'"
+
+  - id: start-previous-release
+    description_he: "הפעלת הגרסה הקודמת"
+    description_en: "Start the previous release"
+    type: command
+    command: "echo 'systemctl start onyx-procurement || docker compose up -d'"
+    timeout_seconds: 60
+
+  - id: wait-warmup
+    description_he: "המתנה להתחממות השירות"
+    description_en: "Wait for warm-up"
+    type: wait
+    seconds: 5
+
+  - id: verify-health
+    description_he: "אימות שהשירות בריא"
+    description_en: "Verify service health after rollback"
+    type: http
+    url: "http://localhost:3100/api/health"
+    method: GET
+    expectedStatus: 200
+    expectedBodyRegex: "ok|healthy"
+    timeout_seconds: 30
+
+  - id: tag-incident
+    description_he: "תיוג האירוע למעקב post-mortem"
+    description_en: "Tag the incident for post-mortem tracking"
+    type: manual
+    timeout_seconds: 120

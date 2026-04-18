@@ -1,0 +1,3863 @@
+
+בדיוק סיימתי לבנות את התוכנה המערכת שלי בריפלייט למפעל מסגרות ברזל ואלומיניום שלי ל200 עובדים זהו סיימנו עכשיו אני חייב אותך שתרשום לי ואני יעביר לריפלייט את כל המשימות שצריך   לעשות בסיום בניית האפליקציה  שלנו  והמערכת אבל הכל 360  הכל הכל הכל הכל ה כל שלא  יחסר כלום
+
+23:44
+עכשיו אני בונה לך את רשימת המשימות הכוללת 360° לסיום הפרויקט — הכל, כלום לא יחסר.
+
+
+
+הנה הרשימה המלאה — 14 קטגוריות, מעל 110 משימות, כיסוי 360° מלא.
+
+כל משימה ניתנת לסימון ✅ עם progress bar אוטומטי. כפתור ההעתקה שולח את הכל לקליפבורד — מוכן להדבקה ישירה לריפלייט.
+
+סדר עבודה מומלץ עם ריפלייט:
+
+קריטי קודם — DB + אבטחה + עובדים + ייצור (בלי אלה לא מתחילים)
+גבוה — דוחות, חשבוניות, WhatsApp
+בינוני — UX, אינטגרציות, accessibility
+Go-Live — רק אחרי UAT עם עובדים אמיתיים + parallel run
+כשתתחיל להעביר לריפלייט — תוכל לפרק כל קטגוריה לפי בלוק, אני אתן לך prompt מדויק לכל אחת.
+
+תרשום לי את כל המשימות האלה את כולם בקוד  ואני יעתיק את הקוד לכל משימה ת הקוש שלה
+
+23:52
+אתה רוצה שאכתוב לך prompt מוכן להעתקה לכל משימה בנפרד?
+
+כדי שאדע בדיוק מה לכתוב — איפה תעתיק את הקוד? לריפלייט Agent ישירות?
+
+Q: לאיזה כלי תעתיק את הפרומפטים?
+A: Replit Agent
+
+Q: איזה פורמט תרצה?
+A: פרומפט נפרד לכל משימה
+
+23:53
+מעולה. אכתוב לך פרומפט מקצועי לריפלייט Agent לכל אחת מ-110+ המשימות — כל פרומפט מוכן להעתקה ישירה.
+
+זה יהיה קובץ markdown גדול. מתחיל עכשיו.
+
+
+Creating full 360° prompt list for all tasks
+Creating full 360° prompt list for all tasks
+
+Check skills available
+
+Creating full 360° prompt list for all tasks
+markdown
+
+# 🚀 רשימת פרומפטים לריפלייט Agent — ERP מפעל מסגרות 360°
+# העתק כל פרומפט בנפרד לריפלייט Agent
+
+---
+
+## 🗄️ קטגוריה 1: מסד נתונים ו-Backend
+
+---
+
+### משימה 1.1 — סכמת PostgreSQL סופית
+
+```
+You are building a production ERP system for a metal fabrication factory with 200 employees in Israel.
+Tech stack: React 18 / TypeScript / Node.js / Express / PostgreSQL / Prisma ORM.
+Language: Hebrew UI, RTL layout, monetary values in agorot (integer), 18% VAT.
+
+Task: Create the complete final PostgreSQL database schema using Prisma.
+Include ALL tables:
+- employees (id, full_name, id_number, role, department, salary_agorot, start_date, contract_end, phone, status)
+- departments (id, name, manager_id)
+- shifts (id, employee_id, date, start_time, end_time, type: regular/overtime/holiday)
+- attendance (id, employee_id, clock_in, clock_out, hours_worked)
+- work_orders (id, order_number, customer_id, status, created_at, due_date, assigned_employee_id, notes)
+- customers (id, name, phone, email, address, tier: A/B/C, balance_agorot)
+- quotes (id, customer_id, items_json, total_agorot, vat_agorot, status, created_at)
+- invoices (id, quote_id, customer_id, invoice_number, total_agorot, paid_agorot, due_date, status)
+- inventory (id, item_name, category, quantity, unit, min_quantity, location, cost_agorot)
+- suppliers (id, name, phone, email, lead_time_days)
+- purchase_orders (id, supplier_id, items_json, total_agorot, status, expected_date)
+- audit_log (id, user_id, action, table_name, record_id, old_value, new_value, timestamp)
+- users (id, employee_id, email, password_hash, role, last_login, is_active)
+
+Requirements:
+- All tables: id UUID primary key, created_at, updated_at, deleted_at (soft delete)
+- Foreign key constraints with proper ON DELETE rules
+- Indexes on all foreign keys and frequently queried fields
+- Row-level security policies
+- Generate: schema.prisma file complete
+- Generate: initial migration SQL file
+- Generate: seed.ts with default data (departments, admin user, sample inventory)
+```
+
+---
+
+### משימה 1.2 — Migrations תחת Prisma
+
+```
+You are working on an ERP system for a 200-employee metal fabrication factory.
+Tech stack: Node.js / Express / Prisma ORM / PostgreSQL.
+
+Task: Set up a proper Prisma migrations workflow.
+1. Initialize Prisma with correct datasource for PostgreSQL
+2. Create the initial migration: npx prisma migrate dev --name init
+3. Create a migrations folder structure with versioned files
+4. Add a migration for adding indexes after initial schema
+5. Add a migration script that checks current DB state vs schema
+6. Create a safe migration runner script (migrations/run.ts) that:
+   - Backs up DB before running migration
+   - Runs migration in transaction
+   - Rolls back on error
+   - Logs migration history to a migrations_log table
+7. Add npm scripts: "db:migrate", "db:migrate:prod", "db:rollback", "db:status"
+
+Output all files with complete code, no placeholders.
+```
+
+---
+
+### משימה 1.3 — Seed Data
+
+```
+You are working on an ERP system for a metal fabrication factory with 200 employees in Israel.
+Tech stack: Node.js / TypeScript / Prisma / PostgreSQL.
+
+Task: Create a complete seed file (prisma/seed.ts) that populates:
+1. Departments: ייצור, רתכות, מסגרות אלומיניום, מסגרות ברזל, לוגיסטיקה, מחסן, אדמיניסטרציה, מכירות
+2. Admin user: username=admin, password=hashed, role=ADMIN
+3. Default system settings: VAT=18%, currency=ILS, timezone=Asia/Jerusalem
+4. 10 sample employees across departments with realistic Hebrew names
+5. 20 sample inventory items: iron profiles, aluminum profiles, screws, paint, etc.
+6. 5 sample customers with addresses in Tel Aviv area
+7. 3 sample work orders in different statuses
+
+All monetary values in agorot (integer). Hebrew names and data.
+Run with: npx prisma db seed
+Include error handling and idempotency (safe to run multiple times).
+```
+
+---
+
+### משימה 1.4 — Backup אוטומטי יומי
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / TypeScript / PostgreSQL running on Replit.
+
+Task: Implement automated daily database backup system.
+1. Create backup service (src/services/backup.service.ts):
+   - Uses pg_dump to create compressed backup
+   - Uploads to Supabase Storage bucket named "erp-backups"
+   - Filename format: backup_YYYY-MM-DD_HH-mm.sql.gz
+   - Keeps last 30 backups, deletes older ones
+   - Sends email notification on success/failure via Gmail API
+
+2. Create cron job (src/cron/backup.cron.ts):
+   - Runs daily at 02:00 AM Israel time (Asia/Jerusalem)
+   - Integrates with existing cron scheduler
+
+3. Create backup restore script (scripts/restore.ts):
+   - Lists available backups from Supabase Storage
+   - Downloads selected backup
+   - Restores to database with confirmation prompt
+
+4. Add /api/admin/backup endpoint:
+   - POST: trigger manual backup
+   - GET: list recent backups with sizes and dates
+
+Environment variables needed: SUPABASE_URL, SUPABASE_SERVICE_KEY, BACKUP_BUCKET_NAME
+Output complete code for all files.
+```
+
+---
+
+### משימה 1.5 — Connection Pooling לעומס 200 עובדים
+
+```
+You are working on a production ERP system for a metal fabrication factory with 200 concurrent users.
+Tech stack: Node.js / Express / Prisma / PostgreSQL on Replit.
+
+Task: Configure connection pooling for 200 simultaneous users.
+1. Configure Prisma connection pool in schema.prisma:
+   - connection_limit: 20
+   - pool_timeout: 30
+   - Add connection URL with pooling parameters
+
+2. Create database middleware (src/middleware/db.middleware.ts):
+   - Connection health check
+   - Automatic reconnection on failure
+   - Query timeout of 30 seconds
+   - Log slow queries (>2 seconds) to console
+
+3. Add Supabase Pooler configuration (PgBouncer mode):
+   - Transaction pooling mode
+   - Separate connection strings for migrations vs app
+
+4. Create load test script (scripts/load-test.ts):
+   - Simulates 200 concurrent database queries
+   - Reports response times and connection errors
+
+5. Add /api/health/db endpoint returning:
+   - Connection pool status
+   - Active connections count
+   - Query response time
+
+Output complete code with all configurations.
+```
+
+---
+
+### משימה 1.6 — Row-Level Security
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / Express / Prisma / PostgreSQL / JWT auth.
+
+Task: Implement Row-Level Security (RLS) so each employee sees only what they're authorized to see.
+
+Roles and permissions:
+- ADMIN: sees everything
+- MANAGER: sees own department + reports for all departments
+- SHIFT_SUPERVISOR: sees only own department employees and work orders
+- EMPLOYEE: sees only own attendance, own shifts, own profile
+- VIEWER: read-only access to work orders and inventory
+
+1. Enable RLS on PostgreSQL tables: employees, attendance, shifts, work_orders, invoices
+2. Create RLS policies for each table/role combination
+3. Create Prisma middleware that automatically adds WHERE clauses based on JWT role
+4. Create role checking utility (src/utils/rbac.ts):
+   - canRead(user, resource): boolean
+   - canWrite(user, resource): boolean
+   - canDelete(user, resource): boolean
+   - filterByRole(user, query): modified query
+
+5. Apply middleware to all API routes
+6. Write tests for each permission combination
+
+Output complete PostgreSQL RLS SQL + TypeScript middleware code.
+```
+
+---
+
+### משימה 1.7 — Audit Log
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / Express / Prisma / PostgreSQL / TypeScript.
+
+Task: Implement a complete audit logging system.
+
+1. Create audit_log table (if not exists):
+   - id, user_id, user_name, action (CREATE/UPDATE/DELETE/LOGIN/EXPORT)
+   - table_name, record_id, old_value (jsonb), new_value (jsonb)
+   - ip_address, user_agent, timestamp
+
+2. Create Prisma middleware (src/middleware/audit.middleware.ts):
+   - Automatically captures all Prisma mutations
+   - Stores old and new values as JSON
+   - Links to current authenticated user from request context
+
+3. Create audit service (src/services/audit.service.ts):
+   - logAction(userId, action, table, recordId, oldVal, newVal)
+   - getAuditHistory(recordId, table): paginated history
+   - getUserActivity(userId, dateRange): user activity report
+
+4. Create audit log API endpoints:
+   - GET /api/audit?table=&record_id=&user_id=&from=&to= (admin only)
+   - GET /api/audit/user/:userId (manager+)
+
+5. UI component: AuditLogDrawer showing timeline of changes for any record
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 1.8 — Soft Delete
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / TypeScript / Prisma / PostgreSQL / React.
+
+Task: Implement soft delete across all main tables.
+
+1. Ensure deleted_at timestamp column exists on: employees, customers, work_orders, inventory, quotes, invoices, suppliers
+
+2. Create Prisma middleware (src/middleware/softDelete.middleware.ts):
+   - Intercepts all findMany, findFirst, findUnique queries
+   - Automatically adds WHERE deleted_at IS NULL
+   - Allows bypass with includeDeleted: true option
+
+3. Create soft delete service (src/services/softDelete.service.ts):
+   - softDelete(model, id): sets deleted_at = now()
+   - restore(model, id): sets deleted_at = null
+   - permanentDelete(model, id): admin only, actually deletes record
+   - listDeleted(model): returns all soft-deleted records
+
+4. API endpoints:
+   - DELETE /api/:resource/:id — soft delete
+   - POST /api/:resource/:id/restore — restore
+   - DELETE /api/:resource/:id/permanent — admin only hard delete
+
+5. UI: RecycleBin page showing all deleted items with restore option
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 1.9 — Full-Text Search
+
+```
+You are working on a production ERP system for a metal fabrication factory with Hebrew data.
+Tech stack: Node.js / TypeScript / Prisma / PostgreSQL / React.
+
+Task: Implement fast Hebrew full-text search across customers, work orders, and inventory.
+
+1. Add PostgreSQL full-text search indexes:
+   - customers: search on name, phone, email
+   - work_orders: search on order_number, notes
+   - inventory: search on item_name, category
+   - employees: search on full_name, id_number
+
+2. Create search service (src/services/search.service.ts):
+   - globalSearch(query: string, userId): results from all tables
+   - Returns: { customers: [], workOrders: [], inventory: [], employees: [] }
+   - Highlights matching terms in results
+   - Respects user permissions from RBAC
+
+3. API endpoint:
+   - GET /api/search?q=&type= (type optional for filtering by category)
+   - Returns paginated results with category grouping
+   - Response time target: <200ms
+
+4. React component: GlobalSearchBar
+   - Keyboard shortcut: Ctrl+K to open
+   - Real-time search with 300ms debounce
+   - Shows grouped results with icons
+   - Click navigates to correct page
+   - RTL Hebrew support
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 1.10 — Database Health Check
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / Express / TypeScript / Prisma / PostgreSQL.
+
+Task: Create comprehensive database health check system.
+
+1. Health check endpoint GET /api/health:
+   Returns JSON:
+   {
+     status: "ok" | "degraded" | "down",
+     database: { connected: bool, responseTime: ms, activeConnections: number },
+     memory: { used: mb, total: mb, percentage: number },
+     uptime: seconds,
+     version: string,
+     timestamp: ISO string
+   }
+
+2. Create health service (src/services/health.service.ts):
+   - checkDatabase(): runs SELECT 1 and measures response time
+   - checkMemory(): returns process memory stats
+   - checkDiskSpace(): returns available disk space
+   - getSystemInfo(): returns Node version, env, uptime
+
+3. Create monitoring middleware:
+   - Logs slow API responses >1000ms with endpoint + duration
+   - Tracks error rate per endpoint
+   - Exposes /api/metrics for internal monitoring
+
+4. Add to startup: if DB health check fails on boot, log error and retry 3 times before crashing
+
+Output complete code for all files.
+```
+
+---
+
+## 🔐 קטגוריה 2: אימות, הרשאות ואבטחה
+
+---
+
+### משימה 2.1 — JWT Refresh Tokens
+
+```
+You are working on a production ERP system for a metal fabrication factory with 200 employees.
+Tech stack: Node.js / Express / TypeScript / Prisma / PostgreSQL.
+
+Task: Implement secure JWT authentication with refresh token rotation.
+
+1. Auth service (src/services/auth.service.ts):
+   - login(email, password): returns { accessToken, refreshToken, user }
+   - refreshTokens(refreshToken): returns new token pair, invalidates old
+   - logout(refreshToken): blacklists refresh token
+   - Access token expiry: 15 minutes
+   - Refresh token expiry: 7 days
+
+2. Token storage:
+   - refresh_tokens table: id, user_id, token_hash, expires_at, revoked_at, ip_address, user_agent
+   - Automatic cleanup of expired tokens via cron
+
+3. Auth middleware (src/middleware/auth.middleware.ts):
+   - authenticateToken: verifies JWT, attaches user to request
+   - requireRole(...roles): role-based route protection
+
+4. API endpoints:
+   - POST /api/auth/login
+   - POST /api/auth/refresh
+   - POST /api/auth/logout
+   - GET /api/auth/me
+
+5. React hooks:
+   - useAuth(): { user, login, logout, isLoading }
+   - Axios interceptor: auto-refreshes token on 401
+   - Stores tokens in httpOnly cookie (not localStorage)
+
+Output complete code for all files including React hooks.
+```
+
+---
+
+### משימה 2.2 — RBAC מלא
+
+```
+You are working on a production ERP system for a metal fabrication factory with 200 employees.
+Tech stack: Node.js / Express / TypeScript / React.
+
+Task: Implement complete Role-Based Access Control (RBAC).
+
+Roles:
+- SUPER_ADMIN: full access including system settings and user management
+- ADMIN: full access except system settings
+- MANAGER: own department full access + read all reports
+- SHIFT_SUPERVISOR: own department employees + work orders
+- EMPLOYEE: own profile, own attendance, own shifts
+- VIEWER: read-only on work orders and inventory
+
+1. Define permissions matrix (src/config/permissions.ts):
+   Resource x Action matrix for all 5 roles across resources:
+   employees, departments, shifts, attendance, work_orders, customers, quotes, invoices, inventory, reports, users, settings
+
+2. RBAC middleware (src/middleware/rbac.middleware.ts):
+   - authorize(resource, action) factory function
+   - Checks JWT role against permissions matrix
+   - Returns 403 with Hebrew error message if unauthorized
+
+3. React permission components:
+   - <CanAccess resource="invoices" action="delete">...</CanAccess>
+   - usePermission(resource, action): boolean hook
+   - Hides/shows UI elements based on role
+
+4. Apply permissions to ALL existing API routes
+
+5. Admin UI: permissions matrix table showing role vs resource grid
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 2.3 — 2FA לאדמינים
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / Express / TypeScript / React / Prisma.
+
+Task: Implement Two-Factor Authentication (2FA) for Admin and Manager roles.
+
+1. TOTP implementation (src/services/twoFactor.service.ts):
+   - generateSecret(userId): creates TOTP secret, returns QR code URL
+   - verifyTOTP(userId, code): validates 6-digit code
+   - enableTwoFactor(userId, code): confirms and activates 2FA
+   - disableTwoFactor(userId, adminConfirmation): deactivates
+
+2. Database: add to users table:
+   - totp_secret (encrypted), totp_enabled, totp_backup_codes (array)
+
+3. Login flow update:
+   - If user has 2FA enabled: after password check, return { requires2FA: true, tempToken }
+   - Frontend shows 2FA input
+   - POST /api/auth/verify-2fa with tempToken + code → returns full JWT
+
+4. React component: TwoFactorSetup
+   - Shows QR code to scan with Google Authenticator
+   - Asks user to enter code to confirm setup
+   - Shows backup codes to save
+
+5. Backup codes:
+   - Generate 10 single-use backup codes on setup
+   - Allow login with backup code (marks it as used)
+   - Allow regeneration from profile settings
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 2.4 — Rate Limiting
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / Express / TypeScript.
+
+Task: Implement rate limiting on all API endpoints.
+
+1. Install and configure express-rate-limit + rate-limit-redis (or in-memory for Replit).
+
+2. Rate limit configurations:
+   - Global: 1000 requests per 15 minutes per IP
+   - Auth endpoints (login, refresh): 10 requests per 15 minutes per IP
+   - Search endpoint: 100 requests per minute per user
+   - Export/reports: 10 requests per hour per user
+   - Admin operations: 200 requests per 15 minutes
+
+3. Custom rate limiter middleware (src/middleware/rateLimit.middleware.ts):
+   - Different limits per route
+   - Returns Hebrew error message: "יותר מדי בקשות. נסה שוב בעוד X שניות"
+   - Includes Retry-After header
+   - Logs rate limit hits to audit log
+
+4. IP whitelist: allow specific internal IPs to bypass rate limiting
+
+5. Monitoring endpoint: GET /api/admin/rate-limits showing current counters
+
+Output complete code for all configurations.
+```
+
+---
+
+### משימה 2.5 — Input Validation + SQL Injection Protection
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / Express / TypeScript / Prisma / Zod.
+
+Task: Implement comprehensive input validation and SQL injection protection.
+
+1. Install: zod, express-validator, helmet, xss-clean, express-mongo-sanitize
+
+2. Create Zod schemas (src/schemas/) for ALL request bodies:
+   - createEmployee.schema.ts
+   - createWorkOrder.schema.ts
+   - createQuote.schema.ts
+   - createInventoryItem.schema.ts
+   - login.schema.ts
+   (And all other resources)
+
+3. Validation middleware (src/middleware/validate.middleware.ts):
+   - validate(schema) factory function using Zod
+   - Returns Hebrew validation error messages
+   - Strips unknown fields automatically
+
+4. Security middleware stack (src/middleware/security.middleware.ts):
+   - helmet(): security headers
+   - xss-clean: sanitize HTML from inputs
+   - hpp: prevent HTTP parameter pollution
+   - Custom: strip SQL keywords from string inputs
+   - Custom: validate file upload types
+
+5. Apply validate() to ALL POST/PUT/PATCH routes
+
+6. Security test: write 10 test cases for common injection attacks
+
+Output complete code for all schemas and middleware.
+```
+
+---
+
+### משימה 2.6 — HTTPS + SSL Certificate
+
+```
+You are working on a production ERP system for a metal fabrication factory deployed on Replit.
+
+Task: Configure HTTPS and security headers for production deployment.
+
+1. Configure Replit deployment for HTTPS:
+   - Ensure custom domain SSL via Replit's built-in HTTPS
+   - Document the steps in DEPLOYMENT.md
+
+2. Security headers middleware (src/middleware/headers.middleware.ts) using helmet:
+   - Strict-Transport-Security: max-age=31536000; includeSubDomains
+   - Content-Security-Policy: appropriate for React SPA
+   - X-Frame-Options: DENY
+   - X-Content-Type-Options: nosniff
+   - Referrer-Policy: strict-origin-when-cross-origin
+   - Permissions-Policy: camera=(), microphone=()
+
+3. CORS configuration (src/config/cors.ts):
+   - Allow only: technokoluzi.com, localhost:3000 (dev), Replit preview URL
+   - Methods: GET, POST, PUT, PATCH, DELETE
+   - Headers: Content-Type, Authorization
+   - Credentials: true
+
+4. Cookie security:
+   - All auth cookies: Secure=true, HttpOnly=true, SameSite=Strict
+   - __Host- prefix on sensitive cookies
+
+5. Create security checklist file: SECURITY_CHECKLIST.md
+
+Output complete code and documentation.
+```
+
+---
+
+### משימה 2.7 — Secrets Management
+
+```
+You are working on a production ERP system for a metal fabrication factory on Replit.
+Tech stack: Node.js / TypeScript.
+
+Task: Implement proper secrets management — no credentials in code.
+
+1. Create environment variable schema (src/config/env.ts) using zod:
+   - Validates all required env vars on startup
+   - Crashes with clear error message if any are missing
+   - Documents each variable with description
+
+   Required vars:
+   DATABASE_URL, JWT_SECRET, JWT_REFRESH_SECRET,
+   SUPABASE_URL, SUPABASE_SERVICE_KEY,
+   GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN,
+   WHATSAPP_API_TOKEN, WHATSAPP_PHONE_ID,
+   MAKE_WEBHOOK_SECRET, NODE_ENV, PORT
+
+2. Create .env.example with all keys but no values
+
+3. Create .env.development with safe dev defaults
+
+4. Create scripts/check-secrets.ts:
+   - Scans all .ts and .js files for hardcoded secrets patterns
+   - Fails CI if secrets found in code
+
+5. Add to .gitignore: .env, .env.local, .env.production
+
+6. Create SETUP.md documenting how to configure Replit Secrets
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 2.8 — Session Timeout
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / Express / TypeScript / React.
+
+Task: Implement automatic session timeout after 30 minutes of inactivity.
+
+1. Backend: track last activity per session in Redis/memory:
+   - Update lastActivity on every authenticated request
+   - Add middleware that checks if session is expired
+
+2. React hook (src/hooks/useSessionTimeout.ts):
+   - Tracks mouse movement, keyboard, clicks, touch events
+   - Resets 30-minute countdown on any activity
+   - At 5 minutes remaining: shows warning dialog
+   - At 0: calls logout() and shows "תפוגת הפעילות" message
+
+3. React component: SessionWarningDialog
+   - Hebrew: "הפעילות שלך תפוג בעוד 5 דקות"
+   - "המשך פעילות" button resets timer
+   - "התנתק" button logs out immediately
+   - Countdown timer visible in dialog
+
+4. Auto-logout behavior:
+   - Clears tokens from cookies
+   - Redirects to /login
+   - Saves current URL to redirect back after re-login
+
+5. Factory workers exception: specific employee roles can opt for 8-hour session (for production terminals)
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 2.9 — Password Policy
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / Express / TypeScript / React / Prisma.
+
+Task: Implement password policy and secure password reset.
+
+1. Password requirements (src/config/passwordPolicy.ts):
+   - Minimum 8 characters
+   - Must contain: uppercase, lowercase, number
+   - Cannot be same as last 5 passwords
+   - Cannot contain employee's name or ID number
+
+2. Password hashing: bcrypt with saltRounds=12
+
+3. Password reset flow:
+   - POST /api/auth/forgot-password: sends reset link via email
+   - Reset token: cryptographically random, expires in 1 hour
+   - Stored as hash in DB: password_resets table
+   - POST /api/auth/reset-password: validates token, updates password
+   - Invalidates all existing sessions after reset
+
+4. React components:
+   - PasswordStrengthMeter: visual indicator (1-5 strength)
+   - ForgotPasswordPage: email input + sent confirmation
+   - ResetPasswordPage: new password + confirm
+
+5. Admin: force password reset on next login for specific user
+   - users table: must_reset_password boolean
+   - Middleware: redirects to reset page if flag is set
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 2.10 — IP Allowlist
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / Express / TypeScript / Prisma.
+
+Task: Implement optional IP allowlist for admin users.
+
+1. Database: ip_allowlist table (id, user_id, ip_address, label, created_at, created_by)
+
+2. IP allowlist middleware (src/middleware/ipAllowlist.middleware.ts):
+   - For users with role ADMIN/SUPER_ADMIN: check if their IP is in allowlist
+   - If allowlist is empty for user: no restriction (opt-in feature)
+   - If allowlist has entries: block access from unlisted IPs
+   - Returns 403 with Hebrew message: "גישה נדחתה מכתובת IP לא מורשית"
+
+3. API endpoints:
+   - GET /api/admin/ip-allowlist — list allowed IPs for current admin
+   - POST /api/admin/ip-allowlist — add IP (auto-detects current IP option)
+   - DELETE /api/admin/ip-allowlist/:id — remove IP
+
+4. React page: IPAllowlistSettings
+   - Shows current IP with "הוסף כתובת זו" button
+   - List of allowed IPs with labels (e.g., "משרד ראשי", "בית")
+   - Toggle to enable/disable the feature per user
+
+5. Email notification: when admin logs in from new IP, send email alert
+
+Output complete code for all files.
+```
+
+---
+
+## 👥 קטגוריה 3: ניהול עובדים
+
+---
+
+### משימה 3.1 — פרופיל עובד מלא
+
+```
+You are working on a production ERP system for a metal fabrication factory with 200 employees in Israel.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / PostgreSQL.
+UI: Hebrew RTL, dark slate theme, agorot for monetary values.
+
+Task: Build complete Employee Profile system.
+
+1. Backend API (src/routes/employees.routes.ts):
+   - GET /api/employees — list with pagination, search, filter by department/status
+   - GET /api/employees/:id — full profile
+   - POST /api/employees — create new employee
+   - PUT /api/employees/:id — update
+   - DELETE /api/employees/:id — soft delete
+
+2. Employee model fields:
+   employee_number (auto-generated: EMP-001), full_name, id_number (Israeli 9 digits),
+   date_of_birth, phone, emergency_contact_phone, address,
+   department_id, role, employment_type (FULL_TIME/PART_TIME/CONTRACTOR),
+   start_date, contract_end_date, salary_agorot, bank_account_last_4,
+   status (ACTIVE/INACTIVE/ON_LEAVE), notes, profile_photo_url
+
+3. React page: EmployeeProfilePage
+   - Tabs: פרטים אישיים | חוזה ושכר | נוכחות | משמרות | מסמכים
+   - Edit mode with form validation
+   - Photo upload to Supabase Storage
+   - Status badge with color coding
+   - History of salary changes
+
+4. React page: EmployeesListPage
+   - Table with sort/filter/search (Hebrew)
+   - Bulk actions: export, change department
+   - Quick-add employee button
+
+5. Employee number auto-generation: EMP-001 → EMP-200 → EMP-201
+
+Output complete React components and API code.
+```
+
+---
+
+### משימה 3.2 — ניהול משמרות
+
+```
+You are working on a production ERP system for a metal fabrication factory with 200 employees.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / PostgreSQL.
+UI: Hebrew RTL, dark slate theme.
+
+Task: Build complete shift management system.
+
+1. Shift types: MORNING (06:00-14:00), AFTERNOON (14:00-22:00), NIGHT (22:00-06:00), CUSTOM
+
+2. Backend API (src/routes/shifts.routes.ts):
+   - GET /api/shifts?week=&department= — weekly schedule
+   - POST /api/shifts — assign shift to employee
+   - PUT /api/shifts/:id — edit shift
+   - DELETE /api/shifts/:id — cancel shift
+   - POST /api/shifts/bulk — assign shifts to multiple employees
+
+3. Validation logic:
+   - Cannot assign same employee to overlapping shifts
+   - Minimum 8 hours between shifts
+   - Maximum 6 consecutive days
+   - Alert if employee has pending vacation on shift date
+
+4. React component: WeeklyScheduleGrid
+   - 7-day calendar grid × departments
+   - Drag and drop to reassign shifts
+   - Color coded by shift type
+   - Shows employee count per shift vs required minimum
+   - Red alert if understaffed
+
+5. React component: ShiftAssignmentModal
+   - Select employees from department
+   - Repeat weekly option
+   - Override vacation/holiday with confirmation
+
+6. Automatic alerts:
+   - Email/SMS to employee when assigned to new shift
+   - Manager alert if shift has less than minimum staff
+
+Output complete React components and API code.
+```
+
+---
+
+### משימה 3.3 — שעון נוכחות
+
+```
+You are working on a production ERP system for a metal fabrication factory with 200 employees.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / PostgreSQL.
+UI: Hebrew RTL, dark slate theme.
+
+Task: Build complete attendance clock-in/clock-out system.
+
+1. Backend API (src/routes/attendance.routes.ts):
+   - POST /api/attendance/clock-in — record clock in with timestamp + location
+   - POST /api/attendance/clock-out — record clock out
+   - GET /api/attendance/:employeeId?month= — monthly attendance report
+   - POST /api/attendance/manual — manager manual override with reason
+   - GET /api/attendance/today — all employees, current status (IN/OUT)
+
+2. Automatic calculations:
+   - Hours worked per day (clock_out - clock_in)
+   - Overtime: hours > 8 in a day = overtime_hours
+   - Late arrival: clock_in > shift start + 10 min
+   - Early departure: clock_out < shift end - 10 min
+
+3. React page: AttendanceDashboard (for managers)
+   - Real-time list: who is IN now vs who should be IN but isn't
+   - Red row if late, green if on time
+   - Manual check-in button for manager
+   - Daily summary: total present / total expected
+
+4. React page: EmployeeAttendancePage (for individual employee)
+   - Monthly calendar view with color per day (present/absent/vacation)
+   - Hours summary: total hours / expected / overtime / absences
+
+5. React component: ClockInTerminal (for tablet on factory floor)
+   - Employee enters ID number → shows photo + name
+   - Big CHECK IN / CHECK OUT button
+   - Designed for dirty hands (large touch targets)
+   - Works offline with sync when reconnected
+
+Output complete React components and API code.
+```
+
+---
+
+### משימה 3.4 — חישוב שכר
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel with 200 employees.
+Tech stack: Node.js / TypeScript / Prisma / PostgreSQL / React.
+All monetary values in agorot (integer). Israeli labor law applies.
+
+Task: Build complete payroll calculation system.
+
+1. Salary calculation engine (src/services/payroll.service.ts):
+   calculateMonthlyPayroll(employeeId, month, year):
+   - Base salary from employee profile
+   - Regular hours worked (from attendance, up to 182 hours/month)
+   - Overtime 125%: hours 1-2 beyond 8.5/day × 1.25
+   - Overtime 150%: hours 3+ beyond 8.5/day × 1.50
+   - Friday hours 150%: × 1.50
+   - Holiday hours 200%: × 2.00
+   - Deductions: Bituach Leumi (3.5%), income tax (bracket calculation), pension (6%)
+   - Allowances: travel (based on distance), meal, phone (if applicable)
+
+2. Payslip generation (src/services/payslip.service.ts):
+   - Generates PDF payslip in Hebrew format
+   - Shows gross, all deductions line-by-line, net pay
+   - Employer cost section
+   - Stores PDF in Supabase Storage
+
+3. Backend API:
+   - GET /api/payroll/:employeeId/:month/:year — calculate for one employee
+   - POST /api/payroll/run-month — run payroll for all employees
+   - GET /api/payroll/payslip/:id — download PDF
+   - GET /api/payroll/summary/:month — department summary report
+
+4. React page: PayrollPage
+   - Run monthly payroll button
+   - Employee list with calculated amounts
+   - Approve all → mark as paid
+   - Export to Excel for external accountant
+
+Output complete service code and React components.
+```
+
+---
+
+### משימה 3.5 — ניהול חופשות
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / PostgreSQL.
+UI: Hebrew RTL.
+
+Task: Build complete vacation and leave management system.
+
+1. Leave types (Israeli law): ANNUAL (12 days/year), SICK, PERSONAL, RESERVE_DUTY (מילואים), MATERNITY, BEREAVEMENT, UNPAID
+
+2. Accrual calculation:
+   - Annual vacation: accrues monthly (1 day per month)
+   - Sick days: 18 days/year Israeli law
+   - Track balance per employee per leave type
+
+3. Backend API (src/routes/leaves.routes.ts):
+   - GET /api/leaves/balance/:employeeId — all balances
+   - POST /api/leaves/request — employee submits request
+   - PUT /api/leaves/:id/approve — manager approves
+   - PUT /api/leaves/:id/reject — manager rejects with reason
+   - GET /api/leaves/calendar?month= — all approved leaves on calendar
+
+4. Approval workflow:
+   - Employee requests → Manager notified (email/in-app)
+   - Manager approves/rejects → Employee notified
+   - On approval: balance deducted automatically
+
+5. React component: LeaveRequestForm
+   - Date range picker
+   - Leave type selector
+   - Shows available balance for selected type
+   - Reason field (required for personal/unpaid)
+
+6. React component: LeaveCalendar
+   - Monthly view showing all employees on leave
+   - Color per department
+   - Manager can approve directly from calendar
+
+Output complete React components and API code.
+```
+
+---
+
+### משימה 3.6 — תיקי עובד — מסמכים
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / Supabase Storage.
+
+Task: Build employee document management system.
+
+1. Document types: CONTRACT, ID_COPY, MEDICAL_CERTIFICATE, TRAINING_CERTIFICATE, WORK_PERMIT, OTHER
+
+2. Backend:
+   - POST /api/employees/:id/documents — upload file to Supabase Storage
+   - GET /api/employees/:id/documents — list documents
+   - GET /api/employees/:id/documents/:docId/download — signed URL for download
+   - DELETE /api/employees/:id/documents/:docId — soft delete
+
+3. File restrictions:
+   - Allowed types: PDF, JPG, PNG, DOC, DOCX
+   - Max size: 10MB per file
+   - Virus scan: check file type matches extension
+   - Store with encrypted filename in Supabase
+
+4. Expiry tracking:
+   - Documents can have expiry_date
+   - 30 days before expiry: alert to employee and manager
+   - 7 days before: urgent alert
+   - Expired docs shown with red badge
+
+5. React component: EmployeeDocumentsTab
+   - File upload with drag & drop
+   - List of documents with type, date, expiry
+   - Download, preview, delete actions
+   - Filter by type
+   - Expiry alerts section at top
+
+Output complete code for backend and React component.
+```
+
+---
+
+### משימה 3.7 — Onboarding Checklist
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / PostgreSQL.
+UI: Hebrew RTL.
+
+Task: Build new employee onboarding checklist system.
+
+1. Default checklist template (pre-loaded in seed data):
+   - [ ] קבלת תעודת זהות וצילום
+   - [ ] חתימה על חוזה עבודה
+   - [ ] פתיחת תיק עובד
+   - [ ] הדרכת בטיחות — קבלת אישור חתום
+   - [ ] קבלת ציוד מגן אישי (כפפות, נעלי בטיחות, משקפי מגן)
+   - [ ] הכרת רצפת הייצור עם מנהל ישיר
+   - [ ] פתיחת חשבון בנק + הגשת טופס ניכוי מס במקור
+   - [ ] הגדרת משתמש במערכת
+   - [ ] הדרכה על נהלי המפעל
+   - [ ] שיוך למשמרת ראשונה
+
+2. Backend:
+   - POST /api/onboarding/:employeeId/start — creates checklist from template
+   - PUT /api/onboarding/:employeeId/item/:itemId — mark item complete with notes
+   - GET /api/onboarding/:employeeId — get checklist with progress
+
+3. React component: OnboardingChecklist
+   - Progress bar showing X/10 completed
+   - Each item: checkbox, description, who completed it, date
+   - Add custom items button
+   - Print checklist button (PDF)
+   - Manager sign-off at bottom
+
+4. Manager dashboard widget: "עובדים בתהליך קליטה" showing incomplete onboardings
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 3.8 — דירוג ביצועים
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / PostgreSQL.
+UI: Hebrew RTL.
+
+Task: Build employee performance review system.
+
+1. Review structure:
+   - Frequency: quarterly
+   - Categories: quality_score (1-5), punctuality_score, teamwork_score, productivity_score, safety_score
+   - Overall score: weighted average
+   - Manager comments (text field)
+   - Employee self-evaluation (optional)
+
+2. Backend API:
+   - POST /api/performance/review — create new review
+   - GET /api/performance/:employeeId — all reviews history
+   - GET /api/performance/due — employees due for review this month
+
+3. React page: PerformanceReviewPage
+   - Star rating for each category
+   - Comments field
+   - Historical chart: performance over time (Recharts line chart)
+   - Comparison: employee vs department average
+
+4. Manager dashboard widget: "ביקורות ממתינות" — employees due for review
+
+5. Automatic reminders: send manager email 7 days before quarterly review is due
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 3.9 — התראות אוטומטיות לעובדים
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: Node.js / TypeScript / Prisma / PostgreSQL / node-cron.
+
+Task: Build automatic employee alerts system.
+
+Create alerts cron service (src/cron/employeeAlerts.cron.ts) running daily:
+
+1. Birthday alerts:
+   - 3 days before employee birthday: send congratulations email to employee
+   - On birthday: send notification to their manager
+
+2. Contract expiry alerts:
+   - 60 days before: notify HR manager + employee
+   - 30 days before: urgent notification
+   - 7 days before: critical alert
+
+3. Document expiry alerts:
+   - 30 days before document expires: notify employee and manager
+   - 7 days before: urgent
+
+4. Annual leave alerts:
+   - Employees with >10 unused vacation days: monthly reminder to manager
+
+5. Probation period alerts:
+   - 7 days before end of probation (usually 6 months): alert manager to evaluate
+
+Create notification service (src/services/notification.service.ts):
+   - sendEmail(to, subject, body)
+   - sendInAppNotification(userId, title, message, type)
+   - notifications table in DB for in-app notifications
+
+API: GET /api/notifications — user's unread notifications
+     PUT /api/notifications/:id/read
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 3.10 — ייצוא נתוני שכר
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: Node.js / TypeScript / Prisma / PostgreSQL / React / ExcelJS.
+
+Task: Build payroll data export for external accountant.
+
+1. Export service (src/services/payrollExport.service.ts):
+   generateMonthlyExport(month, year):
+   Returns Excel file with:
+   - Sheet 1: "נתוני שכר" — employee_number, full_name, id_number, gross_salary_agorot, overtime_agorot, deductions_bituach_agorot, deductions_tax_agorot, deductions_pension_agorot, net_salary_agorot
+   - Sheet 2: "סיכום מחלקות" — department totals
+   - Sheet 3: "עובדים חדשים" — started this month
+   - Sheet 4: "עובדים שעזבו" — left this month
+   - Hebrew headers, RTL sheet direction
+
+2. Export formats:
+   - Excel (.xlsx) — primary
+   - CSV — secondary option
+
+3. API endpoint:
+   - GET /api/payroll/export/:month/:year?format=xlsx — download file
+   - Requires ADMIN or MANAGER role
+
+4. React component: PayrollExportButton
+   - Month/year picker
+   - Format selector (Excel/CSV)
+   - Download button
+   - Shows preview of record count before download
+
+Output complete code for all files.
+```
+
+---
+
+## 🏭 קטגוריה 4: ייצור וניהול עבודות
+
+---
+
+### משימה 4.1 — הזמנת עבודה מלאה
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / PostgreSQL.
+UI: Hebrew RTL, dark slate theme, agorot.
+
+Task: Build complete work order management system.
+
+1. Work order fields:
+   order_number (auto: WO-2024-001), customer_id, product_type (RAILING/GATE/FENCE/PERGOLA/WINDOW/DOOR/CUSTOM),
+   description, quantity, dimensions_json, material_type (IRON/ALUMINUM/MIXED),
+   status (PENDING/IN_PRODUCTION/QUALITY_CHECK/READY/DELIVERED/CANCELLED),
+   priority (URGENT/NORMAL/LOW), due_date, assigned_employee_id,
+   estimated_hours, actual_hours, notes, location_address, site_photos_urls
+
+2. Backend API (src/routes/workOrders.routes.ts):
+   - GET /api/work-orders — list with filters (status, customer, date range, priority)
+   - GET /api/work-orders/:id — full details
+   - POST /api/work-orders — create
+   - PUT /api/work-orders/:id — update
+   - PUT /api/work-orders/:id/status — status change with timestamp log
+   - DELETE /api/work-orders/:id — soft delete
+
+3. Status change log: every status change recorded in work_order_status_history table
+
+4. React page: WorkOrderFormPage
+   - Multi-step form: פרטי לקוח → פרטי עבודה → חומרים → לוח זמנים
+   - Auto-fill customer details from customer search
+   - Dimension input with visual guide
+   - Due date with calendar picker
+
+5. React page: WorkOrderDetailPage
+   - Full details view
+   - Status change buttons (role-based)
+   - Timeline showing all status changes
+   - Attached photos
+   - Assigned employee with contact info
+
+Output complete React components and API code.
+```
+
+---
+
+### משימה 4.2 — מעקב סטטוס עבודה
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / PostgreSQL.
+UI: Hebrew RTL, dark slate theme.
+
+Task: Build real-time work order status tracking system.
+
+1. Status flow:
+   PENDING → IN_PRODUCTION → QUALITY_CHECK → READY → DELIVERED
+   (any status can go to CANCELLED)
+   (QUALITY_CHECK can go back to IN_PRODUCTION for rework)
+
+2. Status history tracking:
+   - Every status change: who changed it, when, previous status, notes
+   - Stored in work_order_status_history table
+
+3. Backend:
+   - PUT /api/work-orders/:id/status — validates transition is allowed
+   - GET /api/work-orders/:id/history — full status timeline
+   - GET /api/work-orders/stats — count by status for dashboard
+
+4. Real-time updates using Server-Sent Events (SSE):
+   - GET /api/events/work-orders — SSE endpoint
+   - Frontend subscribes and updates UI without refresh
+   - Shows toast notification when status changes
+
+5. React component: WorkOrderStatusTimeline
+   - Visual step-by-step timeline with timestamps and user names
+   - Each step shows how long it took
+   - Notes per step
+
+6. React component: ProductionDashboard
+   - Cards for each status showing count
+   - Click → filtered list of work orders in that status
+   - Overdue orders highlighted in red (past due date)
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 4.3 — Kanban Board לרצפת ייצור
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma.
+UI: Hebrew RTL, dark slate theme.
+
+Task: Build Kanban board for production floor management.
+
+1. Columns (RTL order): ממתין לייצור | בייצור | בדיקת איכות | מוכן למסירה | נמסר
+
+2. React component: KanbanBoard
+   - Cards can be dragged between columns using @dnd-kit/core
+   - Drag updates status via API call
+   - Columns show count + total estimated hours
+   - Cards show: order number, customer name, product type, due date, assigned employee avatar
+   - Overdue cards: red border
+   - Urgent priority: yellow star badge
+
+3. Card detail: click card → drawer opens with full work order details
+   - Edit button
+   - Assign employee dropdown
+   - Add note button
+
+4. Filters bar above board:
+   - Filter by employee (show only their orders)
+   - Filter by product type
+   - Filter by date range
+   - Search by order number / customer
+
+5. Mobile-friendly: on small screens → vertical list view with status badges instead of kanban
+
+6. Real-time: subscribes to SSE for live updates when another user changes status
+
+Output complete React component code.
+```
+
+---
+
+### משימה 4.4 — שיוך עובד לעבודה
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / PostgreSQL.
+
+Task: Build employee assignment and accountability system for work orders.
+
+1. Work order can have multiple assigned employees (many-to-many):
+   work_order_assignments: work_order_id, employee_id, role (LEAD/ASSISTANT), assigned_at, hours_logged
+
+2. Backend API:
+   - POST /api/work-orders/:id/assign — assign employee with role
+   - DELETE /api/work-orders/:id/assign/:employeeId — unassign
+   - POST /api/work-orders/:id/log-hours — employee logs hours worked
+   - GET /api/employees/:id/assignments — all current assignments for employee
+
+3. React component: EmployeeAssignmentSection
+   - Shows currently assigned employees with roles
+   - Search and add employee button (only shows available employees, not already assigned)
+   - Log hours: employee enters hours for today on this order
+   - Hours summary: estimated vs actual
+
+4. React page: MyWorkOrdersPage (for employees)
+   - Orders assigned to current user
+   - Sorted by due date
+   - Log hours button on each
+   - Status they can change: IN_PRODUCTION ↔ QUALITY_CHECK only
+
+5. Manager view: who is working on what right now (real-time dashboard)
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 4.5 — זמן ביצוע בפועל vs אומדן
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / TypeScript / Prisma / PostgreSQL / React / Recharts.
+
+Task: Build work order efficiency tracking and reporting.
+
+1. Time tracking:
+   - estimated_hours set when creating work order
+   - actual_hours accumulated from employee hour logs
+   - efficiency_percentage = (estimated / actual) × 100
+
+2. Analysis service (src/services/efficiency.service.ts):
+   - getWorkOrderEfficiency(id): returns time comparison
+   - getEmployeeEfficiency(employeeId, month): average across their orders
+   - getDepartmentEfficiency(deptId, month): department-level stats
+   - getProductTypeEfficiency(type): which product types take longer than estimated
+
+3. React component: EfficiencyReport
+   - Bar chart: estimated vs actual hours per work order
+   - Line chart: efficiency trend over last 6 months
+   - Table: employees sorted by efficiency (best to worst)
+   - Color coding: green >100%, yellow 85-100%, red <85%
+
+4. Insights:
+   - "עבודות עם 40% חריגה מהאומדן" — list of worst offenders
+   - "העובד הכי יעיל החודש" — top performer
+
+5. Export efficiency report to PDF
+
+Output complete service code and React components.
+```
+
+---
+
+### משימה 4.6 — QR Code לכל הזמנה
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / TypeScript / React / qrcode library.
+
+Task: Generate and use QR codes for work orders.
+
+1. QR generation service (src/services/qrCode.service.ts):
+   - generateWorkOrderQR(workOrderId): returns base64 PNG QR code
+   - QR encodes URL: https://erp.technokoluzi.com/work-orders/{id}
+   - Also generate barcode (CODE128) as alternative
+
+2. API endpoint:
+   - GET /api/work-orders/:id/qr — returns QR code image
+   - GET /api/work-orders/:id/barcode — returns barcode image
+
+3. Print label: GET /api/work-orders/:id/label
+   Returns HTML for printing:
+   - Work order number (large)
+   - Customer name
+   - Product type
+   - Due date
+   - QR code
+   - Barcode
+   Designed for 10cm × 6cm label sticker
+
+4. React component: WorkOrderQRLabel
+   - Shows QR and barcode
+   - Print button (opens print dialog with label-optimized CSS)
+   - Batch print: select multiple orders → print all labels
+
+5. Scanner: if user is on mobile and has camera permission:
+   - QR scanner using device camera
+   - Scans → opens work order detail page
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 4.7 — תמונות לפני ואחרי
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: React 18 / TypeScript / Node.js / Express / Supabase Storage.
+
+Task: Build photo management for work orders (before/after photos).
+
+1. Photo types: BEFORE (before starting), IN_PROGRESS, AFTER_PRODUCTION, DELIVERED, SITE_VISIT
+
+2. Backend:
+   - POST /api/work-orders/:id/photos — upload photo (multipart form)
+   - GET /api/work-orders/:id/photos — list all photos
+   - DELETE /api/work-orders/:id/photos/:photoId — delete
+   - Stores in Supabase Storage: /work-orders/{id}/{type}/{filename}
+   - Creates thumbnail (max 400px wide) for preview
+
+3. React component: WorkOrderPhotosGallery
+   - Upload: drag & drop or camera capture on mobile
+   - Photo type selector before upload
+   - Grid view with thumbnails organized by type
+   - Click → lightbox full-screen view
+   - Before/After slider comparison view (for BEFORE vs AFTER_PRODUCTION)
+
+4. React component: FieldPhotoCapture
+   - Optimized for mobile use on job site
+   - Camera capture button (large, easy to use with work gloves)
+   - Auto-tags with GPS location and timestamp
+   - Uploads even on slow connection with retry queue
+
+5. Customer-facing: option to share "after" photos with customer via WhatsApp
+
+Output complete code for all components.
+```
+
+---
+
+### משימה 4.8 — הערות ואינדיקציות לכל שלב
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / PostgreSQL.
+
+Task: Build notes and stage instructions system for work orders.
+
+1. Work order notes (work_order_notes table):
+   id, work_order_id, author_id, content, type (NOTE/INSTRUCTION/ISSUE/RESOLUTION), created_at, is_pinned
+
+2. Stage instructions:
+   - work_order_stage_instructions table: work_order_id, stage (status), instructions text
+   - Pre-fill from product type templates
+
+3. Backend API:
+   - POST /api/work-orders/:id/notes — add note
+   - PUT /api/work-orders/:id/notes/:noteId — edit own note
+   - DELETE /api/work-orders/:id/notes/:noteId — delete
+   - PUT /api/work-orders/:id/notes/:noteId/pin — pin/unpin important note
+
+4. React component: WorkOrderNotesSection
+   - Chronological feed of notes
+   - Pinned notes shown at top
+   - Rich text input (bold, lists — no need for full editor, just basic formatting)
+   - @ mention employees (sends them notification)
+   - Type filter: show only Issues, only Instructions, etc.
+
+5. Issue tracking:
+   - Note type ISSUE starts an issue thread
+   - Can mark issue as RESOLVED with resolution note
+   - Open issues shown as badge on work order card
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 4.9 — תבניות עבודה חוזרות
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / PostgreSQL.
+
+Task: Build work order templates for standard recurring jobs.
+
+1. Template model (work_order_templates table):
+   id, name, product_type, description_template, estimated_hours,
+   default_material_type, stage_instructions_json, checklist_json, is_active
+
+2. Seed default templates:
+   - "מעקה לגג סטנדרטי 10מ'" — iron railing
+   - "שער כניסה מרובע 3×2" — iron gate
+   - "גדר אלומיניום 20מ'" — aluminum fence
+   - "פרגולה עץ + ברזל 4×4" — pergola
+   - "חלון ויטרינה אלומיניום" — aluminum window
+
+3. Backend API:
+   - GET /api/work-order-templates — list all templates
+   - POST /api/work-order-templates — create new
+   - PUT /api/work-order-templates/:id — edit
+   - POST /api/work-orders/from-template/:templateId — create work order from template
+
+4. React component: TemplateSelector
+   - Grid of template cards with icon, name, typical hours
+   - "צור מתבנית" button on new work order page
+   - After selection: pre-fills form, user only needs to add customer + due date
+   - "שמור כתבנית" button when creating custom work order
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 4.10 — אינטגרציה עם לוח שנה
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / TypeScript / Prisma / PostgreSQL / Google Calendar API / React.
+
+Task: Sync work order due dates with Google Calendar.
+
+1. Calendar sync service (src/services/calendarSync.service.ts):
+   - createCalendarEvent(workOrder): creates event on due date
+   - updateCalendarEvent(workOrderId, changes): updates if due date changes
+   - deleteCalendarEvent(workOrderId): removes when cancelled
+   - Event format: title = "WO-001: גדר לקוח [שם לקוח]", description = details
+   - Reminders: 3 days before + day before
+
+2. Trigger sync on:
+   - Work order creation (due date set)
+   - Due date changed
+   - Work order cancelled
+   - Status changed to DELIVERED (marks as completed)
+
+3. Calendar view React component: ProductionCalendar
+   - Monthly view showing work order due dates
+   - Color by status and priority
+   - Click → work order detail
+
+4. Google Calendar credentials setup (docs/GOOGLE_CALENDAR_SETUP.md)
+
+Output complete code for all files.
+```
+
+---
+
+## 📦 קטגוריה 5: מלאי וחומרי גלם
+
+---
+
+### משימה 5.1 — קטלוג חומרי גלם
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / PostgreSQL.
+UI: Hebrew RTL, dark slate theme.
+
+Task: Build complete raw materials catalog.
+
+1. Inventory item model:
+   id, item_code (auto: RM-001), item_name (Hebrew), category
+   (IRON_PROFILE/ALUMINUM_PROFILE/SCREWS_BOLTS/PAINT/GLASS/RUBBER/ELECTRICAL/TOOLS/CONSUMABLES),
+   description, unit (METER/KG/PIECE/BOX/LITER),
+   quantity_in_stock (decimal), min_stock_level, reorder_quantity,
+   cost_per_unit_agorot, supplier_id (main supplier),
+   location (warehouse location: e.g., "מדף A-3"),
+   weight_kg_per_unit, barcode, notes, is_active
+
+2. Seed with 30 realistic inventory items:
+   - Iron profiles: 40×40×2mm angle, 50×50×3mm square tube, 100×50 flat bar, etc.
+   - Aluminum profiles: 60×40 tube, 80×40 profile, etc.
+   - Consumables: welding wire, grinding discs, drill bits
+   - Paint: primer, topcoat (colors)
+   - Hardware: screws, bolts, anchors
+
+3. Backend API (src/routes/inventory.routes.ts):
+   - GET /api/inventory — list with filters and search
+   - GET /api/inventory/:id — full item details
+   - POST /api/inventory — add new item
+   - PUT /api/inventory/:id — edit
+   - DELETE /api/inventory/:id — soft delete
+   - GET /api/inventory/low-stock — items below min level
+
+4. React page: InventoryCatalogPage
+   - Table with sort, filter by category, search
+   - Stock level visual bar (green/yellow/red)
+   - Quick-edit quantity button
+   - Low stock badge on items below minimum
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 5.2 — רמות מלאי בזמן אמת
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / TypeScript / Prisma / PostgreSQL / React.
+
+Task: Build real-time inventory level tracking with automatic deductions.
+
+1. Inventory movements table (inventory_movements):
+   id, item_id, type (IN/OUT/ADJUSTMENT/WASTE), quantity, unit_cost_agorot,
+   work_order_id (if OUT due to production), purchase_order_id (if IN from purchase),
+   performed_by_user_id, notes, timestamp
+
+2. Inventory service (src/services/inventory.service.ts):
+   - recordMovement(itemId, type, quantity, context): updates stock + logs movement
+   - getCurrentStock(itemId): current quantity
+   - checkAvailability(itemId, needed): boolean
+   - reserveForWorkOrder(workOrderId, items): reserve materials for an order
+   - releaseReservation(workOrderId): release if order cancelled
+
+3. Backend API:
+   - POST /api/inventory/:id/movement — record movement
+   - GET /api/inventory/:id/history — movement history
+   - POST /api/inventory/adjust — manual adjustment with reason (manager only)
+
+4. React component: InventoryMovementHistory
+   - Timeline of all movements for an item
+   - Shows quantity change, who recorded it, linked work order
+   - Running balance column
+
+5. React component: StockAdjustmentModal
+   - Physical count vs system count
+   - Enter actual count → calculates adjustment
+   - Reason required (counted physically, damaged, lost)
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 5.3 — התראת מלאי מינימלי
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / TypeScript / Prisma / PostgreSQL / node-cron.
+
+Task: Build automated low-stock alert system.
+
+1. Cron job (src/cron/inventoryAlerts.cron.ts) running every 6 hours:
+   - Query all items where quantity_in_stock <= min_stock_level
+   - For each: create alert if not already alerted in last 24 hours
+   - Send email to warehouse manager
+   - Create in-app notification for MANAGER and ADMIN roles
+
+2. Alert levels:
+   - WARNING: stock <= min_stock_level (yellow)
+   - CRITICAL: stock <= min_stock_level / 2 (red)
+   - OUT_OF_STOCK: stock = 0 (black — stops production)
+
+3. low_stock_alerts table: item_id, level, alerted_at, resolved_at, purchase_order_created_id
+
+4. Auto-create purchase order option:
+   - If item has preferred_supplier and reorder_quantity set
+   - Automatically creates draft purchase order for approval
+
+5. React component: LowStockAlertPanel (on manager dashboard)
+   - List of all items below minimum
+   - Quick "צור הזמנת רכש" button per item
+   - Mark as "בטיפול" button
+
+6. Weekly summary email: every Monday morning, summary of inventory status
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 5.4 — ניהול ספקים
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / PostgreSQL.
+UI: Hebrew RTL.
+
+Task: Build supplier management system.
+
+1. Supplier model:
+   id, supplier_code (AUTO: SUP-001), company_name, contact_name, phone, email,
+   address, payment_terms_days (30/45/60), lead_time_days, rating (1-5),
+   categories_supplied (array), notes, is_active
+
+2. Seed with 5 Israeli iron/aluminum suppliers:
+   - Names, phones, typical lead times, categories
+
+3. Backend API (src/routes/suppliers.routes.ts):
+   - Full CRUD for suppliers
+   - GET /api/suppliers/:id/orders — purchase order history
+   - GET /api/suppliers/:id/performance — on-time delivery stats, quality rating
+
+4. Supplier performance tracking:
+   - On each purchase order receipt: was it on time? quality issues? (1-5 rating)
+   - Average delivery performance over last 12 months
+
+5. React page: SupplierDetailPage
+   - Contact info with click-to-call/email
+   - Performance stats: avg lead time, on-time rate, quality score
+   - Order history table
+   - Items supplied catalog
+   - Notes and rating
+
+6. React component: SupplierSelector
+   - Used in purchase orders and inventory items
+   - Shows rating and lead time in dropdown
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 5.5 — הזמנת רכש
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / PostgreSQL.
+UI: Hebrew RTL, agorot for values.
+
+Task: Build complete purchase order system.
+
+1. Purchase order statuses: DRAFT → SENT → CONFIRMED → PARTIAL_RECEIPT → RECEIVED → CANCELLED
+
+2. Purchase order model:
+   id, po_number (AUTO: PO-2024-001), supplier_id, items (line items with quantity, unit price),
+   subtotal_agorot, vat_agorot, total_agorot, expected_delivery_date, actual_delivery_date,
+   status, created_by, notes
+
+3. Backend API (src/routes/purchaseOrders.routes.ts):
+   - Full CRUD + status transitions
+   - POST /api/purchase-orders/:id/receive — partial or full receipt
+   - On receipt: updates inventory automatically
+
+4. Receive items flow:
+   - PO has 50m iron profile ordered
+   - Manager records receipt: received 50m or partial (e.g., 30m)
+   - Inventory auto-updated with the received quantity
+   - If partial: PO status = PARTIAL_RECEIPT, expects more
+
+5. React page: PurchaseOrderFormPage
+   - Supplier selector
+   - Add line items from inventory catalog
+   - Auto-calculates totals with 18% VAT
+   - Generate PDF PO to send to supplier (Hebrew format)
+
+6. React page: PurchaseOrderDetailPage
+   - Status timeline
+   - Receive goods button → receipt modal
+   - PDF download
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 5.6 — BOM — חשבון חומרים
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: Node.js / TypeScript / Prisma / PostgreSQL / React.
+
+Task: Build Bill of Materials (BOM) system for standard products.
+
+1. BOM model (bill_of_materials):
+   id, product_type (e.g., IRON_RAILING_10M), component_item_id (inventory item),
+   quantity_needed, unit, notes, version
+
+2. Seed default BOMs for standard products:
+   "מעקה ברזל 10 מטר" requires:
+   - 12m of 40×40 iron profile
+   - 0.5kg welding wire
+   - 2 grinding discs
+   - 1 can primer paint
+   - 0.5 can topcoat paint
+   (Similar for other product types)
+
+3. BOM service (src/services/bom.service.ts):
+   - getBOM(productType, quantity): scaled materials list
+   - checkMaterialAvailability(productType, quantity): can we make this?
+   - reserveMaterials(workOrderId, productType, quantity)
+   - calculateMaterialCost(productType, quantity): cost estimate in agorot
+
+4. Work order integration:
+   - When creating work order: auto-load BOM and check availability
+   - Show warning if any material is insufficient
+   - Reserve materials on work order start
+
+5. React component: BOMViewer
+   - Table of required materials for a work order
+   - Green/red availability indicator per item
+   - Link to purchase needed materials
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 5.7 — מיקום מחסן
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / PostgreSQL.
+
+Task: Build warehouse location system for inventory items.
+
+1. Location format: Zone-Shelf-Position (e.g., "A-3-2" = Zone A, Shelf 3, Position 2)
+   Define zones: A (iron profiles), B (aluminum profiles), C (hardware), D (paint/consumables), E (tools)
+
+2. Backend:
+   - Inventory items have location field
+   - GET /api/warehouse/map — all zones with items in each
+   - PUT /api/inventory/:id/location — update location
+   - GET /api/warehouse/find/:itemId — where is this item?
+
+3. React component: WarehouseMapView
+   - Visual grid representing the warehouse
+   - Each zone shown as section with items
+   - Click item → highlights in map and shows details
+   - Search: type item name → highlights its location in map
+   - Move item: drag to new location
+
+4. Picking list for work orders:
+   - Generate picking list ordered by warehouse location (efficient route)
+   - Printable format for warehouse worker
+   - Check off items as picked
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 5.8 — ספירת מלאי תקופתית
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / PostgreSQL.
+
+Task: Build periodic physical stock count system.
+
+1. Stock count sessions (stock_count_sessions table):
+   id, started_at, completed_at, performed_by, status (OPEN/COMPLETED), notes
+
+2. Stock count flow:
+   a. Manager creates new count session
+   b. System exports current quantities as expected
+   c. Warehouse workers count and enter actual quantities (via tablet/mobile)
+   d. System shows discrepancies: expected vs actual
+   e. Manager reviews and approves adjustments
+   f. Inventory updated with approved adjustments + movement record
+
+3. Backend API:
+   - POST /api/stock-count/start — new session
+   - POST /api/stock-count/:sessionId/enter — enter actual count for item
+   - GET /api/stock-count/:sessionId/discrepancies — items with differences
+   - POST /api/stock-count/:sessionId/approve — approve all adjustments
+
+4. React page: StockCountPage (tablet-optimized)
+   - Search item by name or barcode
+   - Enter actual count
+   - Auto-calculate difference
+   - Color: green = matches, red = discrepancy
+
+5. Report: variance report showing financial impact of discrepancies (in ILS)
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 5.9 — עלות ממוצעת נעה
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / TypeScript / Prisma / PostgreSQL.
+
+Task: Implement moving average cost calculation for inventory items.
+
+1. Moving average cost formula:
+   New average cost = (current_stock × current_avg_cost + received_qty × received_cost) / (current_stock + received_qty)
+
+2. Inventory item table: add avg_cost_agorot, last_cost_agorot columns
+
+3. Cost update service (src/services/inventoryCost.service.ts):
+   - updateMovingAverage(itemId, receivedQty, receivedCostPerUnit): updates avg_cost
+   - getValuation(itemId): current stock × avg_cost
+   - getTotalInventoryValue(): total value of all stock
+
+4. Cost tracking:
+   - Every purchase receipt updates moving average
+   - Inventory valuation report: all items × avg_cost = total value
+   - Historical cost tracking per item
+
+5. React component: InventoryValuationReport
+   - Table: item, quantity, avg_cost (₪), total_value (₪)
+   - Summary: total inventory value in ILS
+   - Export to Excel
+   - Date picker: see valuation at any past date
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 5.10 — ייצוא דוח מלאי
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / TypeScript / ExcelJS / Prisma / React.
+
+Task: Build comprehensive inventory export system.
+
+1. Export service (src/services/inventoryExport.service.ts):
+   generateInventoryReport(options):
+   Excel file with multiple sheets:
+   - "מלאי נוכחי" — all items with current quantities, location, value
+   - "מלאי נמוך" — items below minimum stock
+   - "תנועות החודש" — all movements in selected month
+   - "ספקים ומחירים" — supplier + cost comparison per item
+
+2. Export options:
+   - All items / category filter / low stock only
+   - Date range for movements
+   - Include costs (admin/manager only) or quantities only (warehouse)
+
+3. API endpoint:
+   - GET /api/inventory/export?category=&include_costs=&month= → xlsx download
+
+4. React component: InventoryExportPanel
+   - Category filter checkboxes
+   - Date range picker
+   - Include costs toggle (role-dependent)
+   - Preview: shows count of records before export
+   - Download button
+
+5. Scheduled export: auto-email inventory summary to manager every Sunday at 08:00
+
+Output complete code for all files.
+```
+
+---
+
+## 💰 קטגוריה 6: לקוחות, הצעות מחיר וחשבוניות
+
+---
+
+### משימה 6.1 — קטלוג לקוחות
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / PostgreSQL.
+UI: Hebrew RTL, dark slate theme.
+
+Task: Build complete customer management system.
+
+1. Customer model:
+   id, customer_number (AUTO: CUS-001), name, company_name (optional),
+   id_or_company_number, phone, whatsapp_phone, email, address, city,
+   tier (A/B/C — A=VIP, B=regular, C=new), payment_terms_days (0=cash/30/45/60),
+   total_revenue_agorot (calculated), open_balance_agorot, notes, is_active
+
+2. Seed with 10 sample Israeli customers
+
+3. Backend API (src/routes/customers.routes.ts):
+   - Full CRUD
+   - GET /api/customers/:id/summary — work orders, quotes, invoices summary
+   - GET /api/customers/top — top 10 by revenue
+   - GET /api/customers/debtors — customers with open balance >0
+
+4. React page: CustomerDetailPage
+   Tabs:
+   - פרטים: contact info + edit
+   - היסטוריה: all work orders timeline
+   - כספים: quotes, invoices, payments, open balance
+   - מסמכים: files attached to customer
+
+5. React page: CustomersListPage
+   - Table with tier badge, open balance
+   - Search by name/phone/email
+   - Filter by tier, city, has_open_balance
+   - Export to Excel
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 6.2 — יצירת הצעת מחיר
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / PostgreSQL.
+UI: Hebrew RTL, dark slate theme, agorot.
+
+Task: Build complete quote (הצעת מחיר) creation system.
+
+1. Quote model:
+   id, quote_number (AUTO: QT-2024-001), customer_id,
+   line_items: [{description, quantity, unit, unit_price_agorot, total_agorot}],
+   subtotal_agorot, vat_agorot (18%), total_agorot,
+   valid_until_date, status (DRAFT/SENT/ACCEPTED/REJECTED/EXPIRED),
+   notes, terms_and_conditions, created_by
+
+2. Line item features:
+   - Product catalog pre-loaded with standard prices
+   - Free-text description option
+   - Discount per item (percentage)
+   - Markup calculation helper (cost → sale price)
+
+3. React page: QuoteFormPage
+   - Customer selector (search, auto-fill details)
+   - Line items table with add/remove/reorder
+   - Auto-calculate subtotal, VAT, total
+   - Notes and payment terms
+   - Preview button shows final PDF look
+   - Save as Draft / Finalize buttons
+
+4. Quote statuses workflow:
+   DRAFT → SENT (triggers email/WhatsApp) → ACCEPTED (auto-create work order) / REJECTED / EXPIRED
+
+5. React component: QuoteStatusActions
+   - "שלח ללקוח" → opens send modal (WhatsApp/Email selector)
+   - "אשר הזמנה" → converts to work order
+   - "דחייה" → asks for reason
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 6.3 — PDF הצעת מחיר עם לוגו
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: Node.js / TypeScript / PDFKit or Puppeteer.
+
+Task: Generate professional Hebrew PDF quote with company branding.
+
+1. PDF generation service (src/services/quotePDF.service.ts):
+   generateQuotePDF(quoteId): returns Buffer of PDF
+
+   PDF layout (A4, Hebrew RTL):
+   Header section:
+   - Company logo (top right) + company name "טכנו כל עוזי" + address: "ריבל 37, תל אביב" + phone
+   - Quote title: "הצעת מחיר" (large, bold)
+   - Quote number + date + valid until date
+
+   Customer section:
+   - לכבוד: [customer name/company]
+   - Address, phone
+
+   Items table (RTL columns):
+   - מס' | תיאור | כמות | יח' | מחיר יחידה | סה"כ
+   - Line items with Hebrew descriptions
+   - Subtotal row, VAT 18% row, Total row (bold)
+
+   Footer:
+   - Terms and conditions (small text)
+   - Signature line + date
+   - "תקף עד:" date
+   - Company bank details
+
+2. API endpoint:
+   - GET /api/quotes/:id/pdf → download PDF
+   - GET /api/quotes/:id/pdf-url → Supabase Storage URL (for WhatsApp sharing)
+
+3. React button: "הורד PDF" that triggers download
+
+Output complete PDF generation code.
+```
+
+---
+
+### משימה 6.4 — המרת הצעה להזמנת עבודה
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / TypeScript / Prisma / PostgreSQL / React.
+
+Task: Build seamless quote-to-work-order conversion.
+
+1. Conversion service (src/services/quoteConversion.service.ts):
+   convertQuoteToWorkOrder(quoteId, overrides?):
+   - Validates quote is in ACCEPTED status
+   - Creates work_order from quote data
+   - Sets work_order.source_quote_id = quoteId
+   - Updates quote status = ACCEPTED
+   - Assigns auto-generated work order number
+   - Returns created work order
+
+2. React component: QuoteConversionModal
+   - Shows quote summary
+   - Allows adjusting: due_date, assigned_employee, priority
+   - Product type selector
+   - "צור הזמנת עבודה" button
+   - Redirect to new work order on success
+
+3. Reverse link:
+   - Work order shows "מבוסס על הצעת מחיר: QT-2024-001" with link
+   - Quote shows linked work order when converted
+
+4. Financial flow: quote total → pre-fills invoice when work is DELIVERED
+
+5. Stats: track quote conversion rate (accepted/total) on sales dashboard
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 6.5 — חשבונית מס ישראלית
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: Node.js / TypeScript / Prisma / PostgreSQL / PDFKit.
+
+Task: Build Israeli-compliant tax invoice (חשבונית מס) generation.
+
+1. Invoice model:
+   id, invoice_number (sequential: must match Israel tax authority requirements),
+   customer_id, work_order_id (optional), quote_id (optional),
+   line_items, subtotal_agorot, vat_agorot, total_agorot,
+   type (TAX_INVOICE/RECEIPT_INVOICE/CREDIT_INVOICE),
+   issue_date, due_date, status (DRAFT/ISSUED/PARTIALLY_PAID/PAID/OVERDUE/CANCELLED)
+
+2. Invoice numbering: must be sequential without gaps (Israeli law requirement)
+   - invoice_sequence table with atomic counter
+   - Cannot delete issued invoice (only cancel with credit note)
+
+3. PDF generation (Hebrew, RTL):
+   Header: "חשבונית מס" (or relevant type) + company details + invoice number
+   Required fields by Israeli law:
+   - Company name + VAT number (ח.פ./ע.מ.)
+   - Customer details + ID/company number
+   - Invoice date
+   - Item descriptions, quantities, prices
+   - Subtotal, VAT rate (18%), VAT amount, total
+   - "כולל מע"מ 18%"
+
+4. Receipt (קבלה):
+   - Separate from invoice
+   - Created when payment received
+   - Links to invoice
+
+5. Credit note: to cancel an issued invoice (legally required, not deletion)
+
+Output complete invoice service and PDF generation code.
+```
+
+---
+
+### משימה 6.6 — מעקב תשלומים
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / PostgreSQL.
+UI: Hebrew RTL, agorot.
+
+Task: Build complete payment tracking system.
+
+1. Payments table:
+   id, invoice_id, customer_id, amount_agorot, payment_method (CASH/BANK_TRANSFER/CHECK/CREDIT_CARD),
+   payment_date, reference_number, notes, recorded_by
+
+2. Backend API:
+   - POST /api/payments — record payment
+   - GET /api/invoices/:id/payments — payment history for invoice
+   - GET /api/customers/:id/balance — current balance + overdue
+
+3. Auto-calculate open balance:
+   customer.open_balance = sum of (invoice.total - sum of payments)
+
+4. React component: RecordPaymentModal
+   - Invoice details at top
+   - Amount field (can be partial)
+   - Payment method selector
+   - Date picker (default today)
+   - Reference number (check number / transfer ID)
+   - "צור קבלה" checkbox — auto-generates receipt PDF
+
+5. React component: CustomerBalanceSummary
+   - Total owed
+   - Oldest unpaid invoice age
+   - Payment history timeline
+
+6. Aging report: customers with balance, grouped by:
+   - 0-30 days, 31-60 days, 61-90 days, 90+ days (overdue)
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 6.7 — התראות חוב
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: Node.js / TypeScript / Prisma / node-cron.
+
+Task: Build automated debt collection alerts.
+
+1. Cron job (src/cron/debtAlerts.cron.ts) running daily at 08:00:
+
+   Alert rules:
+   - Invoice due in 3 days: reminder email/WhatsApp to customer
+   - Invoice due today: payment due today notification
+   - Invoice 7 days overdue: first overdue notice (polite)
+   - Invoice 30 days overdue: second notice (firmer)
+   - Invoice 60 days overdue: urgent notice + alert to manager
+
+2. WhatsApp message templates (Hebrew):
+   - Reminder: "שלום [שם], מזכירים לך שחשבונית מספר [NUM] בסך ₪[AMOUNT] יתרת תשלום עד [DATE]. טכנו כל עוזי."
+   - Overdue: "שלום [שם], חשבונית [NUM] בסך ₪[AMOUNT] עברה את מועד התשלום. אנא צור קשר: 03-XXXXXXX"
+
+3. Alert log: debt_alerts_log table to avoid duplicate alerts
+
+4. React component: DebtAlertsPanel (manager dashboard)
+   - List of all overdue invoices
+   - Customer name, amount, days overdue
+   - "שלח תזכורת ידנית" button
+   - Mark as "בטיפול" button
+
+5. Settings page: enable/disable automatic reminders + customize message templates
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 6.8 — היסטוריית עסקאות לקוח
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / PostgreSQL.
+
+Task: Build complete customer transaction history view.
+
+1. Transaction timeline query:
+   Single API that merges chronologically:
+   - Work orders (linked to customer)
+   - Quotes (sent/accepted/rejected)
+   - Invoices issued
+   - Payments received
+   - Notes added
+
+2. API endpoint:
+   GET /api/customers/:id/timeline?from=&to=&type=
+   Returns merged sorted array with type indicator
+
+3. React component: CustomerTimeline
+   - Chronological feed with type icons
+   - WORK_ORDER: wrench icon, blue
+   - QUOTE: document icon, gray
+   - INVOICE: receipt icon, orange
+   - PAYMENT: check icon, green
+   - Each item: date, description, amount (if applicable), status badge
+   - Click → navigate to related record
+
+4. React component: CustomerFinancialSummary
+   - Total revenue (all time)
+   - Revenue this year
+   - Revenue this month
+   - Average order value
+   - Total open balance
+   - Number of completed orders
+
+5. Export customer statement: PDF showing all transactions in date range, opening/closing balance
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 6.9 — דוח הכנסות
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: Node.js / TypeScript / Prisma / PostgreSQL / React / Recharts.
+
+Task: Build monthly and quarterly revenue reporting.
+
+1. Revenue analytics service (src/services/revenue.service.ts):
+   - getMonthlyRevenue(year): revenue per month for year
+   - getQuarterlyRevenue(year): Q1/Q2/Q3/Q4 breakdown
+   - getRevenueByCustomer(month, year): top customers ranked
+   - getRevenueByProductType(month, year): railing vs gate vs fence etc.
+   - getRevenueVsTarget(month, year): vs set target
+
+2. React page: RevenueReportPage
+   Components:
+   - Monthly bar chart (Recharts): revenue per month, current year
+   - YoY comparison: this year vs last year line chart
+   - Product type pie chart: breakdown by what we make
+   - Top 10 customers table: revenue + % of total
+   - Open invoices summary: how much is still owed
+
+3. Summary KPI cards at top:
+   - החודש: ₪XX,XXX
+   - היעד החודשי: ₪XX,XXX
+   - שנה עד כה: ₪XXX,XXX
+   - ממוצע לעסקה: ₪X,XXX
+
+4. Filters: year selector, month selector, department filter
+
+5. Export to PDF button: generates executive summary report
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 6.10 — דוח הכנסות חודשי/רבעוני
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: Node.js / TypeScript / PDFKit / ExcelJS / React.
+
+Task: Build automated monthly/quarterly revenue report generation.
+
+1. Report generation service (src/services/revenueReport.service.ts):
+   generateMonthlyReport(month, year):
+   - Queries all invoices issued in period
+   - Queries all payments received in period
+   - Calculates: gross revenue, VAT collected, net revenue, new customers, work orders completed
+
+   generateQuarterlyReport(quarter, year):
+   - 3-month aggregation
+   - Month-by-month breakdown within quarter
+
+2. Excel report format:
+   Sheet 1: "סיכום" — KPIs, YoY comparison
+   Sheet 2: "חשבוניות" — all invoices issued
+   Sheet 3: "תשלומים" — all payments received
+   Sheet 4: "לקוחות חדשים" — new customers this period
+
+3. API:
+   - GET /api/reports/revenue/monthly/:month/:year → Excel download
+   - GET /api/reports/revenue/quarterly/:quarter/:year → Excel download
+
+4. Scheduled auto-send:
+   - First day of each month at 07:00: send previous month's report to admin email
+   - First day of each quarter: send quarterly report
+
+5. React component: ReportSchedulerSettings
+   - Configure who receives auto reports
+   - Email list per report type
+
+Output complete code for all files.
+```
+
+---
+
+## 📊 קטגוריה 7: דוחות, BI ו-KPIs
+
+---
+
+### משימה 7.1 — Dashboard ראשי
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: React 18 / TypeScript / Recharts / TailwindCSS.
+UI: Hebrew RTL, dark slate theme.
+
+Task: Build the main executive dashboard with real-time KPIs.
+
+Dashboard layout (RTL):
+
+Row 1 — KPI cards (4 cards):
+- הכנסות החודש: ₪XX,XXX vs target (% achievement)
+- עבודות פעילות: COUNT (color by urgency)
+- עובדים נוכחים: X/200 (% of expected)
+- מלאי נמוך: X פריטים (alert if >0)
+
+Row 2 — Charts:
+- Revenue trend: 6-month bar chart (Recharts)
+- Work order status distribution: donut chart
+
+Row 3 — Lists:
+- עבודות דחופות: top 5 by urgency + due date
+- חובות פתוחים: top 5 customers with open balance
+- התראות: latest system alerts
+
+Role-based content:
+- MANAGER/ADMIN: sees all above
+- SHIFT_SUPERVISOR: sees only work orders and attendance
+- EMPLOYEE: sees only own work orders and attendance
+
+All data fetched from /api/dashboard/:role endpoint.
+Refresh every 5 minutes automatically.
+Loading skeletons while data loads.
+
+Output complete React dashboard page code.
+```
+
+---
+
+### משימה 7.2 — דוח ייצור יומי
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma / PDFKit.
+
+Task: Build daily production report.
+
+1. Report data service (src/services/dailyProductionReport.service.ts):
+   generateDailyReport(date):
+   - Work orders completed today: count + list
+   - Work orders started today
+   - Currently in production: list
+   - Overdue work orders (past due date)
+   - Employee attendance: present/absent/on leave
+   - Materials consumed today
+
+2. API endpoint:
+   - GET /api/reports/production/daily?date= → JSON + optional PDF
+
+3. React page: DailyProductionReportPage
+   - Date picker (default today)
+   - Section: "הושלם היום" — green cards
+   - Section: "בייצור עכשיו" — blue cards
+   - Section: "באיחור" — red cards
+   - Section: "נוכחות" — donut chart
+   - Print button
+
+4. Auto-generate and email at:
+   - Start of day (07:00): yesterday's summary + today's plan
+   - End of day (18:00): today's production summary
+
+5. WhatsApp to Dima (manager): brief daily summary (5 lines max)
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 7.3 — דוח שכר חודשי
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: Node.js / TypeScript / ExcelJS / Prisma / React.
+
+Task: Build monthly payroll report for management.
+
+1. Report service (src/services/payrollReport.service.ts):
+   generateMonthlyPayrollReport(month, year):
+   - Total payroll cost: sum of all gross salaries
+   - Per department: count and total cost
+   - Overtime costs: total overtime paid
+   - Employer contributions (ביטוח לאומי, pension, vacation accrual)
+   - Total employer cost = gross + employer contributions
+
+2. React page: PayrollReportPage
+   KPI cards:
+   - סה"כ ברוטו החודש: ₪XX,XXX
+   - עלות מעסיק: ₪XX,XXX
+   - שעות נוספות: X שעות = ₪X,XXX
+   - חופשות שנוצלו: X ימים
+
+   Table: department breakdown
+   Chart: payroll cost trend (last 12 months, Recharts)
+
+3. Excel export:
+   - Detailed per-employee breakdown
+   - Department totals
+   - Monthly comparison (this month vs last 3)
+
+4. Employee efficiency link:
+   - Show cost per work order completed
+   - Most cost-efficient department this month
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 7.4 — דוח רווחיות לפי עבודה ולקוח
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / TypeScript / Prisma / PostgreSQL / React / Recharts.
+
+Task: Build profitability analysis by work order and customer.
+
+1. Profitability calculation service (src/services/profitability.service.ts):
+   getWorkOrderProfitability(workOrderId):
+   - Revenue: invoice amount linked to this work order
+   - Material cost: materials consumed × avg cost
+   - Labor cost: hours worked × employee hourly rate
+   - Gross profit = revenue - material cost - labor cost
+   - Gross margin % = gross profit / revenue
+
+   getCustomerProfitability(customerId, period):
+   - Aggregate across all work orders for customer
+
+2. React page: ProfitabilityPage
+   - Work orders table: order, customer, revenue, cost, margin %
+   - Sort by margin % (find most/least profitable jobs)
+   - Customer profitability ranking
+
+   Charts:
+   - Scatter: revenue vs cost per work order (bubble chart)
+   - Bar: margin % by product type
+
+3. Insights section:
+   - "העבודה הכי רווחית החודש": WO-XXX (75% margin)
+   - "הלקוח הכי רווחי": [name]
+   - "סוג עבודה הכי רווחי": מעקות (68% avg margin)
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 7.5 — דוח מלאי
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / TypeScript / Prisma / PostgreSQL / React / Recharts.
+
+Task: Build inventory consumption vs. receipts report.
+
+1. Inventory analytics service (src/services/inventoryAnalytics.service.ts):
+   - getConsumptionByPeriod(month, year, category?): items consumed, qty, cost
+   - getReceiptsByPeriod(month, year): items received, qty, cost
+   - getInventoryTurnover(itemId, period): turns per year
+   - getMostUsedItems(period, limit): top N by quantity or value consumed
+
+2. React page: InventoryAnalyticsPage
+
+   Section 1: Monthly comparison
+   - Bar chart: receipts vs consumption per month
+   - Running inventory value line
+
+   Section 2: Top consumed items
+   - Table: item, qty consumed, total value consumed
+   - By category breakdown
+
+   Section 3: Slow-moving items
+   - Items with no movement in last 90 days
+   - Consider reducing reorder levels
+
+3. Inventory efficiency:
+   - Days of supply: current stock / avg daily consumption
+   - Items with >6 months supply (overstocked)
+   - Items with <1 month supply (at risk)
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 7.6 — דוח נוכחות עובדים
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / TypeScript / Prisma / PostgreSQL / React / Recharts.
+
+Task: Build employee attendance analytics report.
+
+1. Attendance analytics service (src/services/attendanceAnalytics.service.ts):
+   - getMonthlyAttendanceSummary(month, year): per employee stats
+   - getDepartmentAttendanceRate(deptId, month): % present per day
+   - getLateArrivals(month, year): employees late >3 times
+   - getAbsencePatterns(employeeId): trends over time
+
+2. React page: AttendanceReportPage
+
+   Filter: by department, by month, by employee
+
+   Table columns: employee, expected days, present, absent, late arrivals, overtime hours, vacation used
+
+   Charts:
+   - Department attendance rate bar chart
+   - Late arrivals heat map (days of week × employees)
+
+   KPI cards:
+   - ממוצע נוכחות החברה: X%
+   - הכי הרבה איחורים: [name] (X פעמים)
+   - שעות נוספות החודש: X שעות
+
+3. Individual employee report:
+   - Monthly calendar heat map (color = early/on time/late/absent)
+   - Hours breakdown: regular / overtime / sick / vacation
+
+4. Export to Excel for HR
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 7.7 — גרפי Recharts
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: React 18 / TypeScript / Recharts / TailwindCSS.
+UI: Hebrew RTL, dark slate theme, ILS currency.
+
+Task: Create a reusable chart library for the ERP dashboard.
+
+Build these reusable chart components (src/components/charts/):
+
+1. RevenueBarChart.tsx
+   - Monthly revenue bars for selected year
+   - Target line overlay (dashed)
+   - Hebrew month names (ינואר, פברואר...)
+   - Y-axis in thousands (₪): 50K, 100K, 150K
+   - Tooltip: exact amount + % vs target
+
+2. WorkOrderStatusDonut.tsx
+   - Donut chart: work orders by status
+   - Hebrew status labels
+   - Center text: total count
+   - Color per status: PENDING=gray, IN_PRODUCTION=blue, etc.
+
+3. AttendanceLineChart.tsx
+   - Weekly attendance rate %
+   - Multi-line: this month vs last month
+
+4. TopCustomersBarChart.tsx
+   - Horizontal bar chart (RTL)
+   - Top 10 customers by revenue
+   - Customer name + amount
+
+5. InventoryLevelGauge.tsx
+   - Custom gauge component for stock level
+   - Green/yellow/red zones
+
+All charts:
+- RTL friendly
+- Dark/light theme via CSS variables
+- Responsive (100% width)
+- Loading skeleton state
+- Empty state message in Hebrew
+
+Output complete React component code for all charts.
+```
+
+---
+
+### משימה 7.8 — ייצוא דוחות ל-Excel ו-PDF
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / TypeScript / ExcelJS / PDFKit.
+
+Task: Build universal report export service.
+
+1. Excel export service (src/services/excelExport.service.ts):
+   createWorkbook(title, data, columns):
+   - Hebrew header row with right-to-left direction
+   - Column widths auto-fit
+   - Alternating row colors
+   - Freeze first row
+   - Auto-filter on all columns
+   - Footer: generated by + timestamp
+   - Sheet RTL direction: ws['!dir'] = 'rtl'
+
+2. PDF export service (src/services/pdfExport.service.ts):
+   createPDFReport(title, sections):
+   - A4 page, Hebrew font (if available via pdfkit-hebrew or custom font)
+   - Company header on first page
+   - Page numbers in footer
+   - Section headers
+   - Tables with borders
+
+3. API generic export endpoint:
+   POST /api/export
+   Body: { type: 'excel'|'pdf', report: 'revenue'|'attendance'|'inventory'|'payroll', params: {} }
+   Returns file download
+
+4. React component: ExportButton
+   - Dropdown: Excel | PDF
+   - Loading state during generation
+   - Auto-download on complete
+
+Output complete code for all export services.
+```
+
+---
+
+### משימה 7.9 — דוח מכירות
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / TypeScript / Prisma / PostgreSQL / React / Recharts.
+
+Task: Build sales funnel and conversion report.
+
+1. Sales analytics service (src/services/salesAnalytics.service.ts):
+   - getQuoteFunnel(period): total quotes → sent → accepted → rejected → expired
+   - getConversionRate(period): accepted / total %
+   - getAvgQuoteValue(period): average quote amount
+   - getWinLossAnalysis(period): why quotes rejected (if reason recorded)
+   - getForecast(months): based on pipeline quotes
+
+2. React page: SalesReportPage
+
+   Funnel chart: quotes pipeline visualization
+
+   KPI cards:
+   - הצעות שנשלחו: X
+   - אחוז המרה: X%
+   - ממוצע עסקה: ₪X,XXX
+   - צפי הכנסות (pipeline): ₪XX,XXX
+
+   Charts:
+   - Quote conversion rate trend (monthly)
+   - Revenue by product type pie chart
+   - New vs returning customers bar chart
+
+3. Win/loss analysis:
+   - When rejecting quote: reason field (too expensive / competitor / no need / other)
+   - Report: rejection reasons breakdown
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 7.10 — לוח בקרה מנהל בכיר
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: React 18 / TypeScript / Recharts / Node.js.
+UI: Hebrew RTL, dark slate theme.
+
+Task: Build senior management executive dashboard showing complete 360° business view.
+
+Single-page dashboard divided into sections:
+
+Section 1 — Financial health (top row):
+- Monthly revenue vs target (big number + trend arrow)
+- YTD revenue vs YTD target
+- Open receivables total
+- Cash flow this month estimate
+
+Section 2 — Operations (second row):
+- Work orders: pending / in production / overdue
+- Employee utilization: hours worked vs capacity
+- On-time delivery rate %
+- Quality issues this month count
+
+Section 3 — People (third row):
+- Today's attendance rate
+- Open positions (from HR)
+- Payroll cost this month
+- Upcoming contract expirations
+
+Section 4 — Inventory (bottom):
+- Inventory value total
+- Low stock alerts count
+- Material cost trend chart
+
+All sections:
+- Click → drill down to detailed report page
+- Refresh every 10 minutes
+- Export entire dashboard to PDF option
+- "תאריך עדכון אחרון" timestamp visible
+
+Output complete React page code.
+```
+
+---
+
+## 🔔 קטגוריה 8: התראות ותקשורת
+
+---
+
+### משימה 8.1 — WhatsApp Business API
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: Node.js / TypeScript / Meta WhatsApp Business API.
+
+Task: Integrate WhatsApp Business API for customer and employee communication.
+
+1. WhatsApp service (src/services/whatsapp.service.ts):
+   - sendMessage(to: string, message: string): plain text
+   - sendTemplate(to, templateName, params): approved template message
+   - sendDocument(to, documentUrl, filename, caption): send PDF
+
+2. Message templates (pre-approved in Meta):
+   - quote_ready: "שלום {{1}}, הצעת המחיר {{2}} בסך ₪{{3}} מוכנה לצפייה. לפרטים: {{4}}"
+   - payment_reminder: "שלום {{1}}, תזכורת לתשלום חשבונית {{2}} בסך ₪{{3}} עד {{4}}"
+   - work_complete: "שלום {{1}}, העבודה שלך {{2}} הושלמה ומוכנה לאיסוף"
+   - appointment_reminder: "שלום {{1}}, מזכירים ביקור מחר {{2}} בשעה {{3}}"
+
+3. Webhook handler (src/routes/whatsapp.webhook.ts):
+   - Receive incoming messages
+   - Parse and store in whatsapp_messages table
+   - Notify relevant employee via in-app notification
+
+4. React component: WhatsAppSendPanel
+   - Phone number input (auto-format Israeli)
+   - Template selector with preview
+   - Fill in template variables
+   - Send button + delivery status indicator
+
+5. Conversation log:
+   - whatsapp_messages table: to/from, content, status, timestamp
+   - Link to customer record
+
+Environment vars: WHATSAPP_API_TOKEN, WHATSAPP_PHONE_ID, WHATSAPP_VERIFY_TOKEN
+Output complete code for all files.
+```
+
+---
+
+### משימה 8.2 — Email אוטומטי
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / TypeScript / Gmail API / Nodemailer.
+
+Task: Build automated email system for customer and internal communication.
+
+1. Email service (src/services/email.service.ts):
+   - sendEmail(to, subject, htmlBody, attachments?): via Gmail API
+   - Use Gmail API with OAuth2 (not SMTP password)
+
+2. Email templates (src/templates/emails/):
+   Hebrew HTML email templates for:
+   - quote-sent.html: הצעת מחיר שנשלחה + PDF attached
+   - invoice-issued.html: חשבונית + PDF attached
+   - work-order-complete.html: עבודה הושלמה, מוכן לאיסוף
+   - payment-received.html: אישור קבלת תשלום + receipt PDF
+   - payment-reminder.html: תזכורת תשלום
+   - daily-report.html: דוח יומי למנהל
+
+3. All templates:
+   - RTL Hebrew
+   - Company logo + branding
+   - Responsive HTML
+   - Unsubscribe link (legal requirement)
+
+4. Email queue service:
+   - email_queue table: to, subject, body, status, attempts, error, scheduled_for
+   - Cron: process queue every 5 minutes
+   - Retry failed emails up to 3 times
+
+5. React component: EmailPreviewModal
+   - Shows rendered email before sending
+   - Edit subject and body option
+   - Send / Schedule later buttons
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 8.3 — Push Notifications
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: React 18 / TypeScript / Node.js / Express / Prisma.
+
+Task: Build in-app notification system for managers.
+
+1. Notifications table:
+   id, user_id, title, message, type (INFO/WARNING/ERROR/SUCCESS),
+   category (WORK_ORDER/PAYMENT/INVENTORY/EMPLOYEE/SYSTEM),
+   action_url (where to navigate on click), is_read, created_at
+
+2. Notification service (src/services/notification.service.ts):
+   - createNotification(userId, data): creates DB record
+   - markAsRead(notificationId, userId)
+   - markAllRead(userId)
+   - getUnread(userId): count + list
+
+3. Real-time delivery via Server-Sent Events (SSE):
+   - GET /api/notifications/stream — per-user SSE connection
+   - Push new notifications immediately
+   - Ping every 30s to keep alive
+
+4. React component: NotificationBell
+   - Bell icon with unread count badge
+   - Dropdown showing last 10 notifications
+   - "סמן הכל כנקרא" button
+   - Click notification → navigate to action_url
+   - Toast popup for new critical notifications
+
+5. Browser notifications (optional with permission):
+   - Request permission on first login
+   - Send browser push for URGENT items even when tab not focused
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 8.4 — SMS לעובדים
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: Node.js / TypeScript / Infobip or Twilio SMS API.
+
+Task: Implement SMS notifications for employees.
+
+1. SMS service (src/services/sms.service.ts):
+   - sendSMS(to: string, message: string): sends via Infobip API (preferred in Israel)
+   - Formats Israeli phone numbers (+972)
+   - Hebrew message support
+
+2. SMS triggers:
+   - Shift assigned: "שלום [שם], שובצת למשמרת [סוג] ביום [תאריך] [שעה]. טכנו כל עוזי."
+   - Shift cancelled: "שלום [שם], המשמרת שלך ביום [תאריך] בוטלה. פנה למנהל לפרטים."
+   - Urgent message: "הודעה דחופה מהמנהל: [הודעה]"
+   - Salary paid: "שכרך לחודש [חודש] הועבר לחשבונך"
+
+3. SMS opt-in/opt-out:
+   - Employee profile: sms_notifications boolean
+   - Reply STOP to unsubscribe (handle webhook)
+
+4. SMS log: sms_messages table for all sent messages + delivery status
+
+5. React component: BroadcastSMSModal
+   - Select recipients (all / department / individuals)
+   - Message composer with Hebrew (char counter 160 chars)
+   - Preview + send
+   - Reports: who received / failed
+
+Environment var: INFOBIP_API_KEY, INFOBIP_BASE_URL
+Output complete code for all files.
+```
+
+---
+
+### משימה 8.5 — תזכורת תשלום ללקוח
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / TypeScript / Prisma / node-cron.
+Already have: WhatsApp service + Email service built.
+
+Task: Build automated payment reminder sequences.
+
+1. Reminder sequence configuration (in system settings):
+   - 3 days before due: WhatsApp + email
+   - On due date: WhatsApp only
+   - 7 days overdue: WhatsApp + email (firmer tone)
+   - 14 days overdue: email only + flag customer in system
+   - 30 days overdue: email to manager + customer marked as HIGH_RISK
+
+2. payment_reminders table: invoice_id, reminder_type, sent_at, channel, status
+
+3. Cron job (src/cron/paymentReminders.cron.ts) daily at 09:00:
+   - Query invoices matching each reminder condition
+   - Check if reminder of that type already sent
+   - Send if not sent yet
+   - Log in payment_reminders
+
+4. Customer preference: some customers prefer only WhatsApp, others only email
+   - customer.preferred_contact_method field
+
+5. Opt-out: customer can disable reminders via unsubscribe link
+   - customer.disable_payment_reminders boolean
+
+6. React settings page: customize reminder texts per stage + enable/disable each stage
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 8.6 — Slack/Teams Integration
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / TypeScript / Slack API (Webhooks).
+
+Task: Send internal team notifications to Slack.
+
+1. Slack notification service (src/services/slack.service.ts):
+   - sendMessage(channel, message, blocks?)
+   - Uses Incoming Webhooks (simpler than bot)
+   - Channel per notification type
+
+2. Notification triggers and channels:
+   #production:
+   - New work order created (urgent ones)
+   - Work order overdue
+   - Work order completed
+
+   #finance:
+   - Invoice paid (any payment received)
+   - Large debt overdue (>₪5,000)
+
+   #management:
+   - Daily production summary (EOD)
+   - Critical system alerts
+   - Low stock alerts
+
+3. Message format: Hebrew + English key data
+   Example: "✅ עבודה WO-2024-047 הושלמה | לקוח: כהן דוד | סכום: ₪3,500"
+
+4. React settings page: SlackIntegrationSettings
+   - Webhook URL input
+   - Channel mapping per event type
+   - Test message button
+   - Enable/disable per event
+
+5. Fallback: if Slack fails, log error but don't break the main action
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 8.7 — דוח יומי אוטומטי
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: Node.js / TypeScript / Prisma / node-cron / Gmail API.
+Already have: email service and daily production report service.
+
+Task: Build automated daily report email sent to manager at end of day.
+
+1. Daily report cron (src/cron/dailyReport.cron.ts) at 18:30 Israel time:
+   Generates and sends email with:
+   - Subject: "דוח יומי - [date] | טכנו כל עוזי"
+
+   Report sections:
+   a. ייצור היום: הושלמו X עבודות, נפתחו Y עבודות חדשות
+   b. נוכחות: X/200 עובדים נכחו (X%)
+   c. כספים: התקבלו ₪X,XXX תשלומים היום
+   d. מלאי: X פריטים בסף מינימום
+   e. התראות: list of alerts generated today
+
+2. Configurable recipients: admin_daily_report_emails in system settings (array of emails)
+
+3. WhatsApp summary to Dima (operations manager):
+   Short 5-line summary version sent at 19:00
+
+4. Morning briefing at 07:00:
+   - Today's planned work orders (due today + in production)
+   - Who is scheduled for shifts today
+   - Pending approvals (leaves, POs)
+
+5. React settings: DailyReportSettings
+   - Toggle on/off each report section
+   - Edit recipient list
+   - Send test report now button
+
+Output complete code for all files.
+```
+
+---
+
+### משימה 8.8 — התראה על מלאי נמוך לאחראי רכש
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: Node.js / TypeScript / Prisma / already-built notification + WhatsApp services.
+
+Task: Build targeted low-stock alert system for procurement manager.
+
+1. Procurement manager role:
+   - Specific user with role PROCUREMENT_MANAGER
+   - Receives all inventory alerts
+   - Can be set in user settings
+
+2. Alert routing (src/services/inventoryAlert.service.ts):
+   - On each inventory check: find users with PROCUREMENT_MANAGER role
+   - Send in-app notification + WhatsApp + email
+
+3. Alert types and urgency:
+   - Level 1 (APPROACHING_MIN): in-app only
+   - Level 2 (BELOW_MIN): in-app + email
+   - Level 3 (CRITICAL < 50% of min): in-app + email + WhatsApp
+   - Level 4 (OUT_OF_STOCK): all channels + SMS if available
+
+4. Smart batching:
+   - Don't send 20 individual alerts for 20 items
+   - Batch: "10 פריטים במלאי נמוך — לפרטים: [link]"
+   - Immediate alert only for OUT_OF_STOCK
+
+5. React page: ProcurementAlertCenter
+   - All current low-stock items in one place
+   - "צור הזמנת רכש" button for each or bulk
+   - Alert history for last 30 days
+
+Output complete code for all files.
+```
+
+---
+
+## 📱 קטגוריה 9: ממשק משתמש ו-UX
+
+---
+
+### משימה 9.1 — Mobile Responsive
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: React 18 / TypeScript / TailwindCSS.
+UI: Hebrew RTL, dark slate theme.
+
+Task: Make entire application fully mobile responsive for factory floor use.
+
+Mobile breakpoints (TailwindCSS):
+- sm: 640px (large phones)
+- md: 768px (tablets)
+- lg: 1024px (desktop)
+
+1. Navigation: mobile sidebar → hamburger menu
+   - Bottom tab bar on mobile: 5 main sections
+   - Touch-friendly: minimum 44px tap targets
+
+2. Mobile-optimized pages:
+   - WorkOrderMobileCard: full-screen card, swipe actions
+   - AttendanceClockIn: big buttons, works with gloves
+   - InventoryQuickCount: barcode scan + number input
+
+3. Tables → Cards on mobile:
+   - Create ResponsiveTable component
+   - On mobile: each row becomes a card
+   - Show only key columns, rest in "more" drawer
+
+4. Forms on mobile:
+   - Single column layout
+   - Native date/time pickers
+   - Number pad for quantity inputs
+   - Large submit button
+
+5. Performance on weak connections:
+   - Lazy load routes (React.lazy + Suspense)
+   - Compress images before upload
+   - Cache API responses in localStorage
+
+Output TailwindCSS utility classes and React component updates for full mobile support.
+```
+
+---
+
+### משימה 9.2 — RTL עברית מלאה
+
+```
+You are working on a production ERP system for a metal fabrication factory in Israel.
+Tech stack: React 18 / TypeScript / TailwindCSS.
+
+Task: Ensure complete RTL Hebrew support across all components.
+
+1. Global RTL setup:
+   - <html dir="rtl" lang="he"> in index.html
+   - TailwindCSS RTL plugin or manual RTL utilities
+   - CSS: body { direction: rtl; font-family: 'Heebo', 'Arial Hebrew', Arial; }
+
+2. RTL-specific components to fix:
+   - Navigation: items flow right to left
+   - Breadcrumbs: right → left arrow direction
+   - Tables: columns right-aligned by default
+   - Forms: labels right-aligned, inputs right-to-left
+   - Date inputs: Hebrew date format (DD/MM/YYYY)
+   - Currency: ₪ symbol on RIGHT side (₪1,000 not $1,000)
+   - Icons: flip directional icons (arrows, chevrons) using scale(-1,1)
+
+3. Recharts RTL:
+   - Y-axis on right side
+   - Legend RTL order
+   - Tooltip in Hebrew
+
+4. Hebrew number formatting utility (src/utils/format.ts):
+   - formatCurrency(agorot): "₪1,234.56"
+   - formatDate(date): "15/01/2024"
+   - formatDateTime(date): "15/01/2024 14:30"
+   - formatPhone(phone): "050-123-4567"
+
+5. Hebrew month and day names:
+   - Month names: ינואר, פברואר, מרץ, אפריל, מאי, יוני, יולי, אוגוסט, ספטמבר, אוקטובר, נובמבר, דצמבר
+   - Day names: ראשון, שני, שלישי, רביעי, חמישי, שישי, שבת
+
+Output complete CSS, utilities, and component RTL fixes.
+```
+
+---
+
+### משימה 9.3 — חיפוש גלובלי מהיר
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: React 18 / TypeScript / TailwindCSS.
+Already have: search API endpoint /api/search built.
+
+Task: Build Cmd+K global search interface.
+
+1. React component: GlobalSearch (src/components/GlobalSearch.tsx)
+   Triggered by: Ctrl+K (or Cmd+K on Mac), or clicking search icon
+
+2. UI:
+   - Modal/drawer overlay
+   - Large search input with Hebrew placeholder: "חפש עבודות, לקוחות, מלאי..."
+   - Real-time results as user types (300ms debounce)
+   - Grouped results by category with Hebrew labels:
+     👷 לקוחות | 🔧 הזמנות עבודה | 📦 מלאי | 👤 עובדים
+   - Up/down arrow navigation + Enter to select
+   - Escape to close
+
+3. Result items:
+   - Icon per type
+   - Primary text (name/number) + secondary text (status/phone)
+   - Highlighted matching term (bold)
+   - Click/Enter → navigate to detail page
+
+4. Recent searches:
+   - Store last 5 searches in localStorage
+   - Show when input is empty
+   - "x" to clear each
+
+5. Keyboard shortcut registration:
+   - Register on app mount
+   - Unregister on unmount
+   - Don't trigger if user is typing in another input
+
+Output complete React component with all features.
+```
+
+---
+
+### משימה 9.4 — Onboarding Tour
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: React 18 / TypeScript / react-joyride or driver.js.
+
+Task: Build onboarding tour for new users.
+
+1. Install: driver.js (better RTL support than Joyride)
+
+2. Tour steps per role:
+
+   ADMIN tour (12 steps):
+   - Dashboard overview
+   - Work orders section
+   - Create work order button
+   - Employees section
+   - Inventory section
+   - Reports section
+   - Settings
+
+   EMPLOYEE tour (5 steps):
+   - My work orders
+   - Clock in/out
+   - My profile
+   - Request leave
+
+3. Tour trigger:
+   - Auto-start on first login (first_login flag in DB)
+   - "הצג סיור" button in help menu
+   - Role-appropriate tour based on user role
+
+4. Step format (Hebrew, RTL):
+   - Title: bold Hebrew
+   - Description: 1-2 sentences explaining what this does
+   - "הבא" / "הקודם" / "סיים" buttons
+   - Step counter: "שלב 3 מתוך 12"
+   - Skip button always visible
+
+5. Progress saved: if user closes mid-tour, remember where they were and offer to continue
+
+Output complete tour implementation code.
+```
+
+---
+
+### משימה 9.5 — Loading States + Skeleton Screens
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: React 18 / TypeScript / TailwindCSS.
+
+Task: Build comprehensive loading states and skeleton screens.
+
+1. Base skeleton component (src/components/ui/Skeleton.tsx):
+   - Animated shimmer effect (CSS animation)
+   - Variants: text, circle, rect, card
+   - Dark theme: dark gray shimmer
+
+2. Page-specific skeleton screens:
+   - DashboardSkeleton: KPI cards + chart placeholders
+   - WorkOrdersListSkeleton: 10 row table skeleton
+   - WorkOrderDetailSkeleton: header + tabs + content
+   - EmployeeListSkeleton: 15 row table with avatar
+   - InvoiceFormSkeleton: form fields
+
+3. Loading patterns:
+   - useLoadingState hook: manages loading/error/data states
+   - <DataLoader isLoading skeleton={<TableSkeleton/>} error={error} data={data}>
+   - Spinner for actions (button loading state)
+
+4. Error states (Hebrew):
+   - Network error: "שגיאת רשת. בדוק חיבור לאינטרנט."
+   - Server error: "שגיאת שרת. נסה שוב מאוחר יותר."
+   - Not found: "הרשומה לא נמצאה."
+   - Empty state with illustration and Hebrew message
+
+5. Optimistic updates:
+   - Mark work order complete → UI updates immediately, syncs in background
+   - Rollback if API fails with error toast
+
+Output complete skeleton components and loading state patterns.
+```
+
+---
+
+### משימה 9.6 — Error Messages בעברית
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: React 18 / TypeScript / Node.js / Express / Zod.
+
+Task: Build comprehensive Hebrew error message system.
+
+1. Backend error handler (src/middleware/errorHandler.middleware.ts):
+   Maps error codes to Hebrew messages:
+   - 400 ValidationError → specific field errors in Hebrew
+   - 401 Unauthorized → "יש להתחבר כדי להמשיך"
+   - 403 Forbidden → "אין לך הרשאה לבצע פעולה זו"
+   - 404 NotFound → "הרשומה המבוקשת לא נמצאה"
+   - 409 Conflict → "הרשומה כבר קיימת במערכת"
+   - 429 RateLimit → "יותר מדי בקשות. המתן X שניות."
+   - 500 ServerError → "שגיאת מערכת. הצוות קיבל התראה."
+
+2. Zod validation Hebrew messages (src/schemas/messages.ts):
+   - required: "שדה חובה"
+   - too_small (string): "מינימום {{min}} תווים"
+   - too_big: "מקסימום {{max}} תווים"
+   - invalid_type: "סוג נתונים לא תקין"
+   - invalid_email: "כתובת אימייל לא תקינה"
+   - custom phone: "מספר טלפון לא תקין (10 ספרות)"
+
+3. React toast notifications (src/components/ui/Toast.tsx):
+   - Success: green, 3 seconds
+   - Error: red, 5 seconds + manual dismiss
+   - Warning: yellow, 4 seconds
+   - Info: blue, 3 seconds
+   - Hebrew text, RTL layout, dismiss button
+
+4. Form field inline errors:
+   - Red border + Hebrew error below field
+   - Error disappears when user starts typing
+
+Output complete error handling code.
+```
+
+---
+
+### משימה 9.7 — Keyboard Shortcuts
+
+```
+You are working on a production ERP system for a metal fabrication factory.
+Tech stack: React 18 / TypeScript.
+
+Task: Implement keyboard shortcuts for power users.
+
+1. Global shortcuts (src/hooks/useKeyboardShortcuts.ts):
+   - Ctrl+K: open global search
+   - Ctrl+N: new work order (on work orders page)
+   - Ctrl+S: save current form
+   - Escape: close modal
+
+
+
+Claude is AI and can make mistakes. Please double-check responses.
+SKILL.md
+Copy
+
+Description
+Use this skill whenever the user wants to create, read, edit, or manipulate Word documents (.docx files). Triggers include: any mention of 'Word doc', 'word document', '.docx', or requests to produce professional documents with formatting like tables of contents, headings, page numbers, or letterheads. Also use when extracting or reorganizing content from .docx files, inserting or replacing images in documents, performing find-and-replace in Word files, working with tracked changes or comments, or converting content into a polished Word document. If the user asks for a 'report', 'memo', 'letter', 'template', or similar deliverable as a Word or .docx file, use this skill. Do NOT use for PDFs, spreadsheets, Google Docs, or general coding tasks unrelated to document generation.
+
+License
+Proprietary. LICENSE.txt has complete terms
+
+DOCX creation, editing, and analysis
+Overview
+A .docx file is a ZIP archive containing XML files.
+
+Quick Reference
+Task	Approach
+Read/analyze content	pandoc or unpack for raw XML
+Create new document	Use docx-js - see Creating New Documents below
+Edit existing document	Unpack → edit XML → repack - see Editing Existing Documents below
+Converting .doc to .docx
+Legacy .doc files must be converted before editing:
+
+bash
+python scripts/office/soffice.py --headless --convert-to docx document.doc
+Reading Content
+bash
+# Text extraction with tracked changes
+pandoc --track-changes=all document.docx -o output.md
+
+# Raw XML access
+python scripts/office/unpack.py document.docx unpacked/
+Converting to Images
+bash
+python scripts/office/soffice.py --headless --convert-to pdf document.docx
+pdftoppm -jpeg -r 150 document.pdf page
+Accepting Tracked Changes
+To produce a clean document with all tracked changes accepted (requires LibreOffice):
+
+bash
+python scripts/accept_changes.py input.docx output.docx
+Creating New Documents
+Generate .docx files with JavaScript, then validate. Install: npm install -g docx
+
+Setup
+javascript
+const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, ImageRun,
+        Header, Footer, AlignmentType, PageOrientation, LevelFormat, ExternalHyperlink,
+        InternalHyperlink, Bookmark, FootnoteReferenceRun, PositionalTab,
+        PositionalTabAlignment, PositionalTabRelativeTo, PositionalTabLeader,
+        TabStopType, TabStopPosition, Column, SectionType,
+        TableOfContents, HeadingLevel, BorderStyle, WidthType, ShadingType,
+        VerticalAlign, PageNumber, PageBreak } = require('docx');
+
+const doc = new Document({ sections: [{ children: [/* content */] }] });
+Packer.toBuffer(doc).then(buffer => fs.writeFileSync("doc.docx", buffer));
+Validation
+After creating the file, validate it. If validation fails, unpack, fix the XML, and repack.
+
+bash
+python scripts/office/validate.py doc.docx
+Page Size
+javascript
+// CRITICAL: docx-js defaults to A4, not US Letter
+// Always set page size explicitly for consistent results
+sections: [{
+  properties: {
+    page: {
+      size: {
+        width: 12240,   // 8.5 inches in DXA
+        height: 15840   // 11 inches in DXA
+      },
+      margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } // 1 inch margins
+    }
+  },
+  children: [/* content */]
+}]
+Common page sizes (DXA units, 1440 DXA = 1 inch):
+
+Paper	Width	Height	Content Width (1" margins)
+US Letter	12,240	15,840	9,360
+A4 (default)	11,906	16,838	9,026
+Landscape orientation: docx-js swaps width/height internally, so pass portrait dimensions and let it handle the swap:
+
+javascript
+size: {
+  width: 12240,   // Pass SHORT edge as width
+  height: 15840,  // Pass LONG edge as height
+  orientation: PageOrientation.LANDSCAPE  // docx-js swaps them in the XML
+},
+// Content width = 15840 - left margin - right margin (uses the long edge)
+Styles (Override Built-in Headings)
+Use Arial as the default font (universally supported). Keep titles black for readability.
+
+javascript
+const doc = new Document({
+  styles: {
+    default: { document: { run: { font: "Arial", size: 24 } } }, // 12pt default
+    paragraphStyles: [
+      // IMPORTANT: Use exact IDs to override built-in styles
+      { id: "Heading1", name: "Heading 1", basedOn: "Normal", next: "Normal", quickFormat: true,
+        run: { size: 32, bold: true, font: "Arial" },
+        paragraph: { spacing: { before: 240, after: 240 }, outlineLevel: 0 } }, // outlineLevel required for TOC
+      { id: "Heading2", name: "Heading 2", basedOn: "Normal", next: "Normal", quickFormat: true,
+        run: { size: 28, bold: true, font: "Arial" },
+        paragraph: { spacing: { before: 180, after: 180 }, outlineLevel: 1 } },
+    ]
+  },
+  sections: [{
+    children: [
+      new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun("Title")] }),
+    ]
+  }]
+});
+Lists (NEVER use unicode bullets)
+javascript
+// ❌ WRONG - never manually insert bullet characters
+new Paragraph({ children: [new TextRun("• Item")] })  // BAD
+new Paragraph({ children: [new TextRun("\u2022 Item")] })  // BAD
+
+// ✅ CORRECT - use numbering config with LevelFormat.BULLET
+const doc = new Document({
+  numbering: {
+    config: [
+      { reference: "bullets",
+        levels: [{ level: 0, format: LevelFormat.BULLET, text: "•", alignment: AlignmentType.LEFT,
+          style: { paragraph: { indent: { left: 720, hanging: 360 } } } }] },
+      { reference: "numbers",
+        levels: [{ level: 0, format: LevelFormat.DECIMAL, text: "%1.", alignment: AlignmentType.LEFT,
+          style: { paragraph: { indent: { left: 720, hanging: 360 } } } }] },
+    ]
+  },
+  sections: [{
+    children: [
+      new Paragraph({ numbering: { reference: "bullets", level: 0 },
+        children: [new TextRun("Bullet item")] }),
+      new Paragraph({ numbering: { reference: "numbers", level: 0 },
+        children: [new TextRun("Numbered item")] }),
+    ]
+  }]
+});
+
+// ⚠️ Each reference creates INDEPENDENT numbering
+// Same reference = continues (1,2,3 then 4,5,6)
+// Different reference = restarts (1,2,3 then 1,2,3)
+Tables
+CRITICAL: Tables need dual widths - set both columnWidths on the table AND width on each cell. Without both, tables render incorrectly on some platforms.
+
+javascript
+// CRITICAL: Always set table width for consistent rendering
+// CRITICAL: Use ShadingType.CLEAR (not SOLID) to prevent black backgrounds
+const border = { style: BorderStyle.SINGLE, size: 1, color: "CCCCCC" };
+const borders = { top: border, bottom: border, left: border, right: border };
+
+new Table({
+  width: { size: 9360, type: WidthType.DXA }, // Always use DXA (percentages break in Google Docs)
+  columnWidths: [4680, 4680], // Must sum to table width (DXA: 1440 = 1 inch)
+  rows: [
+    new TableRow({
+      children: [
+        new TableCell({
+          borders,
+          width: { size: 4680, type: WidthType.DXA }, // Also set on each cell
+          shading: { fill: "D5E8F0", type: ShadingType.CLEAR }, // CLEAR not SOLID
+          margins: { top: 80, bottom: 80, left: 120, right: 120 }, // Cell padding (internal, not added to width)
+          children: [new Paragraph({ children: [new TextRun("Cell")] })]
+        })
+      ]
+    })
+  ]
+})
+Table width calculation:
+
+Always use WidthType.DXA — WidthType.PERCENTAGE breaks in Google Docs.
+
+javascript
+// Table width = sum of columnWidths = content width
+// US Letter with 1" margins: 12240 - 2880 = 9360 DXA
+width: { size: 9360, type: WidthType.DXA },
+columnWidths: [7000, 2360]  // Must sum to table width
+Width rules:
+
+Always use WidthType.DXA — never WidthType.PERCENTAGE (incompatible with Google Docs)
+Table width must equal the sum of columnWidths
+Cell width must match corresponding columnWidth
+Cell margins are internal padding - they reduce content area, not add to cell width
+For full-width tables: use content width (page width minus left and right margins)
+Images
+javascript
+// CRITICAL: type parameter is REQUIRED
+new Paragraph({
+  children: [new ImageRun({
+    type: "png", // Required: png, jpg, jpeg, gif, bmp, svg
+    data: fs.readFileSync("image.png"),
+    transformation: { width: 200, height: 150 },
+    altText: { title: "Title", description: "Desc", name: "Name" } // All three required
+  })]
+})
+Page Breaks
+javascript
+// CRITICAL: PageBreak must be inside a Paragraph
+new Paragraph({ children: [new PageBreak()] })
+
+// Or use pageBreakBefore
+new Paragraph({ pageBreakBefore: true, children: [new TextRun("New page")] })
+Hyperlinks
+javascript
+// External link
+new Paragraph({
+  children: [new ExternalHyperlink({
+    children: [new TextRun({ text: "Click here", style: "Hyperlink" })],
+    link: "https://example.com",
+  })]
+})
+
+// Internal link (bookmark + reference)
+// 1. Create bookmark at destination
+new Paragraph({ heading: HeadingLevel.HEADING_1, children: [
+  new Bookmark({ id: "chapter1", children: [new TextRun("Chapter 1")] }),
+]})
+// 2. Link to it
+new Paragraph({ children: [new InternalHyperlink({
+  children: [new TextRun({ text: "See Chapter 1", style: "Hyperlink" })],
+  anchor: "chapter1",
+})]})
+Footnotes
+javascript
+const doc = new Document({
+  footnotes: {
+    1: { children: [new Paragraph("Source: Annual Report 2024")] },
+    2: { children: [new Paragraph("See appendix for methodology")] },
+  },
+  sections: [{
+    children: [new Paragraph({
+      children: [
+        new TextRun("Revenue grew 15%"),
+        new FootnoteReferenceRun(1),
+        new TextRun(" using adjusted metrics"),
+        new FootnoteReferenceRun(2),
+      ],
+    })]
+  }]
+});
+Tab Stops
+javascript
+// Right-align text on same line (e.g., date opposite a title)
+new Paragraph({
+  children: [
+    new TextRun("Company Name"),
+    new TextRun("\tJanuary 2025"),
+  ],
+  tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+})
+
+// Dot leader (e.g., TOC-style)
+new Paragraph({
+  children: [
+    new TextRun("Introduction"),
+    new TextRun({ children: [
+      new PositionalTab({
+        alignment: PositionalTabAlignment.RIGHT,
+        relativeTo: PositionalTabRelativeTo.MARGIN,
+        leader: PositionalTabLeader.DOT,
+      }),
+      "3",
+    ]}),
+  ],
+})
+Multi-Column Layouts
+javascript
+// Equal-width columns
+sections: [{
+  properties: {
+    column: {
+      count: 2,          // number of columns
+      space: 720,        // gap between columns in DXA (720 = 0.5 inch)
+      equalWidth: true,
+      separate: true,    // vertical line between columns
+    },
+  },
+  children: [/* content flows naturally across columns */]
+}]
+
+// Custom-width columns (equalWidth must be false)
+sections: [{
+  properties: {
+    column: {
+      equalWidth: false,
+      children: [
+        new Column({ width: 5400, space: 720 }),
+        new Column({ width: 3240 }),
+      ],
+    },
+  },
+  children: [/* content */]
+}]
+Force a column break with a new section using type: SectionType.NEXT_COLUMN.
+
+Table of Contents
+javascript
+// CRITICAL: Headings must use HeadingLevel ONLY - no custom styles
+new TableOfContents("Table of Contents", { hyperlink: true, headingStyleRange: "1-3" })
+Headers/Footers
+javascript
+sections: [{
+  properties: {
+    page: { margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } } // 1440 = 1 inch
+  },
+  headers: {
+    default: new Header({ children: [new Paragraph({ children: [new TextRun("Header")] })] })
+  },
+  footers: {
+    default: new Footer({ children: [new Paragraph({
+      children: [new TextRun("Page "), new TextRun({ children: [PageNumber.CURRENT] })]
+    })] })
+  },
+  children: [/* content */]
+}]
+Critical Rules for docx-js
+Set page size explicitly - docx-js defaults to A4; use US Letter (12240 x 15840 DXA) for US documents
+Landscape: pass portrait dimensions - docx-js swaps width/height internally; pass short edge as width, long edge as height, and set orientation: PageOrientation.LANDSCAPE
+Never use \n - use separate Paragraph elements
+Never use unicode bullets - use LevelFormat.BULLET with numbering config
+PageBreak must be in Paragraph - standalone creates invalid XML
+ImageRun requires type - always specify png/jpg/etc
+Always set table width with DXA - never use WidthType.PERCENTAGE (breaks in Google Docs)
+Tables need dual widths - columnWidths array AND cell width, both must match
+Table width = sum of columnWidths - for DXA, ensure they add up exactly
+Always add cell margins - use margins: { top: 80, bottom: 80, left: 120, right: 120 } for readable padding
+Use ShadingType.CLEAR - never SOLID for table shading
+Never use tables as dividers/rules - cells have minimum height and render as empty boxes (including in headers/footers); use border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "2E75B6", space: 1 } } on a Paragraph instead. For two-column footers, use tab stops (see Tab Stops section), not tables
+TOC requires HeadingLevel only - no custom styles on heading paragraphs
+Override built-in styles - use exact IDs: "Heading1", "Heading2", etc.
+Include outlineLevel - required for TOC (0 for H1, 1 for H2, etc.)
+Editing Existing Documents
+Follow all 3 steps in order.
+
+Step 1: Unpack
+bash
+python scripts/office/unpack.py document.docx unpacked/
+Extracts XML, pretty-prints, merges adjacent runs, and converts smart quotes to XML entities (&#x201C; etc.) so they survive editing. Use --merge-runs false to skip run merging.
+
+Step 2: Edit XML
+Edit files in unpacked/word/. See XML Reference below for patterns.
+
+Use "Claude" as the author for tracked changes and comments, unless the user explicitly requests use of a different name.
+
+Use the Edit tool directly for string replacement. Do not write Python scripts. Scripts introduce unnecessary complexity. The Edit tool shows exactly what is being replaced.
+
+CRITICAL: Use smart quotes for new content. When adding text with apostrophes or quotes, use XML entities to produce smart quotes:
+
+xml
+<!-- Use these entities for professional typography -->
+<w:t>Here&#x2019;s a quote: &#x201C;Hello&#x201D;</w:t>
+Entity	Character
+&#x2018;	‘ (left single)
+&#x2019;	’ (right single / apostrophe)
+&#x201C;	“ (left double)
+&#x201D;	” (right double)
+Adding comments: Use comment.py to handle boilerplate across multiple XML files (text must be pre-escaped XML):
+
+bash
+python scripts/comment.py unpacked/ 0 "Comment text with &amp; and &#x2019;"
+python scripts/comment.py unpacked/ 1 "Reply text" --parent 0  # reply to comment 0
+python scripts/comment.py unpacked/ 0 "Text" --author "Custom Author"  # custom author name
+Then add markers to document.xml (see Comments in XML Reference).
+
+Step 3: Pack
+bash
+python scripts/office/pack.py unpacked/ output.docx --original document.docx
+Validates with auto-repair, condenses XML, and creates DOCX. Use --validate false to skip.
+
+Auto-repair will fix:
+
+durableId >= 0x7FFFFFFF (regenerates valid ID)
+Missing xml:space="preserve" on <w:t> with whitespace
+Auto-repair won't fix:
+
+Malformed XML, invalid element nesting, missing relationships, schema violations
+Common Pitfalls
+Replace entire <w:r> elements: When adding tracked changes, replace the whole <w:r>...</w:r> block with <w:del>...<w:ins>... as siblings. Don't inject tracked change tags inside a run.
+Preserve <w:rPr> formatting: Copy the original run's <w:rPr> block into your tracked change runs to maintain bold, font size, etc.
+XML Reference
+Schema Compliance
+Element order in <w:pPr>: <w:pStyle>, <w:numPr>, <w:spacing>, <w:ind>, <w:jc>, <w:rPr> last
+Whitespace: Add xml:space="preserve" to <w:t> with leading/trailing spaces
+RSIDs: Must be 8-digit hex (e.g., 00AB1234)
+Tracked Changes
+Insertion:
+
+xml
+<w:ins w:id="1" w:author="Claude" w:date="2025-01-01T00:00:00Z">
+  <w:r><w:t>inserted text</w:t></w:r>
+</w:ins>
+Deletion:
+
+xml
+<w:del w:id="2" w:author="Claude" w:date="2025-01-01T00:00:00Z">
+  <w:r><w:delText>deleted text</w:delText></w:r>
+</w:del>
+Inside <w:del>: Use <w:delText> instead of <w:t>, and <w:delInstrText> instead of <w:instrText>.
+
+Minimal edits - only mark what changes:
+
+xml
+<!-- Change "30 days" to "60 days" -->
+<w:r><w:t>The term is </w:t></w:r>
+<w:del w:id="1" w:author="Claude" w:date="...">
+  <w:r><w:delText>30</w:delText></w:r>
+</w:del>
+<w:ins w:id="2" w:author="Claude" w:date="...">
+  <w:r><w:t>60</w:t></w:r>
+</w:ins>
+<w:r><w:t> days.</w:t></w:r>
+Deleting entire paragraphs/list items - when removing ALL content from a paragraph, also mark the paragraph mark as deleted so it merges with the next paragraph. Add <w:del/> inside <w:pPr><w:rPr>:
+
+xml
+<w:p>
+  <w:pPr>
+    <w:numPr>...</w:numPr>  <!-- list numbering if present -->
+    <w:rPr>
+      <w:del w:id="1" w:author="Claude" w:date="2025-01-01T00:00:00Z"/>
+    </w:rPr>
+  </w:pPr>
+  <w:del w:id="2" w:author="Claude" w:date="2025-01-01T00:00:00Z">
+    <w:r><w:delText>Entire paragraph content being deleted...</w:delText></w:r>
+  </w:del>
+</w:p>
+Without the <w:del/> in <w:pPr><w:rPr>, accepting changes leaves an empty paragraph/list item.
+
+Rejecting another author's insertion - nest deletion inside their insertion:
+
+xml
+<w:ins w:author="Jane" w:id="5">
+  <w:del w:author="Claude" w:id="10">
+    <w:r><w:delText>their inserted text</w:delText></w:r>
+  </w:del>
+</w:ins>
+Restoring another author's deletion - add insertion after (don't modify their deletion):
+
+xml
+<w:del w:author="Jane" w:id="5">
+  <w:r><w:delText>deleted text</w:delText></w:r>
+</w:del>
+<w:ins w:author="Claude" w:id="10">
+  <w:r><w:t>deleted text</w:t></w:r>
+</w:ins>
+Comments
+After running comment.py (see Step 2), add markers to document.xml. For replies, use --parent flag and nest markers inside the parent's.
+
+CRITICAL: <w:commentRangeStart> and <w:commentRangeEnd> are siblings of <w:r>, never inside <w:r>.
+
+xml
+<!-- Comment markers are direct children of w:p, never inside w:r -->
+<w:commentRangeStart w:id="0"/>
+<w:del w:id="1" w:author="Claude" w:date="2025-01-01T00:00:00Z">
+  <w:r><w:delText>deleted</w:delText></w:r>
+</w:del>
+<w:r><w:t> more text</w:t></w:r>
+<w:commentRangeEnd w:id="0"/>
+<w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:commentReference w:id="0"/></w:r>
+
+<!-- Comment 0 with reply 1 nested inside -->
+<w:commentRangeStart w:id="0"/>
+  <w:commentRangeStart w:id="1"/>
+  <w:r><w:t>text</w:t></w:r>
+  <w:commentRangeEnd w:id="1"/>
+<w:commentRangeEnd w:id="0"/>
+<w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:commentReference w:id="0"/></w:r>
+<w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:commentReference w:id="1"/></w:r>
+Images
+Add image file to word/media/
+Add relationship to word/_rels/document.xml.rels:
+xml
+<Relationship Id="rId5" Type=".../image" Target="media/image1.png"/>
+Add content type to [Content_Types].xml:
+xml
+<Default Extension="png" ContentType="image/png"/>
+Reference in document.xml:
+xml
+<w:drawing>
+  <wp:inline>
+    <wp:extent cx="914400" cy="914400"/>  <!-- EMUs: 914400 = 1 inch -->
+    <a:graphic>
+      <a:graphicData uri=".../picture">
+        <pic:pic>
+          <pic:blipFill><a:blip r:embed="rId5"/></pic:blipFill>
+        </pic:pic>
+      </a:graphicData>
+    </a:graphic>
+  </wp:inline>
+</w:drawing>
+Dependencies
+pandoc: Text extraction
+docx: npm install -g docx (new documents)
+LibreOffice: PDF conversion (auto-configured for sandboxed environments via scripts/office/soffice.py)
+Poppler: pdftoppm for images

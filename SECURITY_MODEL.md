@@ -246,7 +246,7 @@ Helmet defaults are applied — `X-Frame-Options: DENY`, `X-Content-Type-Options
 - `TWILIO_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM`
 - `JWT_SECRET` (techno-kol-ops)
 - `PCN836_ARCHIVE_DIR`
-- `VAT_RATE` (default 0.17)
+- `VAT_RATE` (default 0.18 from 2026-01-01; 0.17 before)
 - `PORT`, `NODE_ENV`
 
 Rules:

@@ -1,0 +1,21 @@
+
+╔══════════════════════════════════════════════════════════════════╗
+║       MASTER REGISTRY BUILD v2 — COMPLETE                        ║
+╠══════════════════════════════════════════════════════════════════╣
+║ Domains:             15 (target: 15)                       ║
+║ Models:             342 (target: 290)                      ║
+║ Expected models found: 120/120 ✅                                ║
+║ Fields:            3420 (10 × 342)                    ║
+║ Relationships:       96                                 ║
+║ Pages:              402                                 ║
+║ Flows:                8 (4 cross-domain + 4 ops)            ║
+║ Automations:         12                                 ║
+║ Reports:             20                                 ║
+║ Dashboards:          10                                 ║
+║ Roles:               18 (full role_framework)               ║
+║ Lifecycles:           7 (lead/quote/project/PO/prod/inv/svc) ║
+║ Controlled meanings: 11                                 ║
+║ Audited tables:     342                                 ║
+║ Orphans:            236                                 ║
+║ Integrity:         PASS                                  ║
+╚══════════════════════════════════════════════════════════════════╝

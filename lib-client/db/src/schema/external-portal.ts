@@ -1,0 +1,148 @@
+import { pgTable, serial, text, boolean, timestamp, varchar, integer, jsonb } from "drizzle-orm/pg-core";
+
+export const externalUsersTable = pgTable("external_users", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  fullName: varchar("full_name", { length: 200 }).notNull(),
+  phone: varchar("phone", { length: 50 }),
+  userType: varchar("user_type", { length: 20 }).notNull(),
+  linkedEntityId: integer("linked_entity_id"),
+  linkedEntityType: varchar("linked_entity_type", { length: 50 }),
+  isActive: boolean("is_active").notNull().default(true),
+  lastLoginAt: timestamp("last_login_at"),
+  loginCount: integer("login_count").notNull().default(0),
+  failedLoginAttempts: integer("failed_login_attempts").notNull().default(0),
+  lockedUntil: timestamp("locked_until"),
+  invitedBy: integer("invited_by"),
+  invitedAt: timestamp("invited_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const externalUserSessionsTable = pgTable("external_user_sessions", {
+  id: serial("id").primaryKey(),
+  externalUserId: integer("external_user_id").notNull(),
+  token: varchar("token", { length: 512 }).notNull().unique(),
+  ipAddress: varchar("ip_address", { length: 45 }),
+  userAgent: text("user_agent"),
+  isActive: boolean("is_active").notNull().default(true),
+  expiresAt: timestamp("expires_at").notNull(),
+  lastActivityAt: timestamp("last_activity_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const portalInvitationsTable = pgTable("portal_invitations", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 255 }).notNull(),
+  userType: varchar("user_type", { length: 20 }).notNull(),
+  linkedEntityId: integer("linked_entity_id"),
+  linkedEntityType: varchar("linked_entity_type", { length: 50 }),
+  inviteToken: varchar("invite_token", { length: 256 }).notNull().unique(),
+  invitedBy: integer("invited_by").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  usedAt: timestamp("used_at"),
+  isUsed: boolean("is_used").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const externalApiKeysTable = pgTable("external_api_keys", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 200 }).notNull(),
+  keyHash: varchar("key_hash", { length: 512 }).notNull(),
+  keyPrefix: varchar("key_prefix", { length: 20 }).notNull(),
+  ownerType: varchar("owner_type", { length: 20 }).notNull(),
+  ownerId: integer("owner_id"),
+  permissions: jsonb("permissions").default({}),
+  isActive: boolean("is_active").notNull().default(true),
+  lastUsedAt: timestamp("last_used_at"),
+  usageCount: integer("usage_count").notNull().default(0),
+  expiresAt: timestamp("expires_at"),
+  createdBy: integer("created_by").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const documentSendHistoryTable = pgTable("document_send_history", {
+  id: serial("id").primaryKey(),
+  documentType: varchar("document_type", { length: 50 }).notNull(),
+  documentId: integer("document_id"),
+  documentTitle: varchar("document_title", { length: 500 }),
+  recipientType: varchar("recipient_type", { length: 20 }).notNull(),
+  recipientId: integer("recipient_id"),
+  recipientName: varchar("recipient_name", { length: 200 }),
+  recipientEmail: varchar("recipient_email", { length: 255 }),
+  recipientPhone: varchar("recipient_phone", { length: 50 }),
+  channel: varchar("channel", { length: 20 }).notNull(),
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  errorMessage: text("error_message"),
+  messageContent: text("message_content"),
+  sentBy: integer("sent_by").notNull(),
+  sentAt: timestamp("sent_at").notNull().defaultNow(),
+  deliveredAt: timestamp("delivered_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const webhookConfigsTable = pgTable("webhook_configs", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 200 }).notNull(),
+  url: text("url").notNull(),
+  events: jsonb("events").notNull().default([]),
+  secret: varchar("secret", { length: 256 }),
+  ownerType: varchar("owner_type", { length: 20 }),
+  ownerId: integer("owner_id"),
+  isActive: boolean("is_active").notNull().default(true),
+  lastTriggeredAt: timestamp("last_triggered_at"),
+  failureCount: integer("failure_count").notNull().default(0),
+  headers: jsonb("headers").default({}),
+  createdBy: integer("created_by").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const webhookLogsTable = pgTable("webhook_logs", {
+  id: serial("id").primaryKey(),
+  webhookId: integer("webhook_id").notNull(),
+  event: varchar("event", { length: 100 }).notNull(),
+  payload: jsonb("payload"),
+  responseStatus: integer("response_status"),
+  responseBody: text("response_body"),
+  success: boolean("success").notNull().default(false),
+  duration: integer("duration"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const leaveRequestsTable = pgTable("leave_requests", {
+  id: serial("id").primaryKey(),
+  employeeId: integer("employee_id").notNull(),
+  externalUserId: integer("external_user_id"),
+  leaveType: varchar("leave_type", { length: 50 }).notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  totalDays: integer("total_days").notNull(),
+  reason: text("reason"),
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  approvedBy: integer("approved_by"),
+  approvedAt: timestamp("approved_at"),
+  rejectionReason: text("rejection_reason"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const reimbursementRequestsTable = pgTable("reimbursement_requests", {
+  id: serial("id").primaryKey(),
+  employeeId: integer("employee_id").notNull(),
+  externalUserId: integer("external_user_id"),
+  category: varchar("category", { length: 50 }).notNull(),
+  amount: varchar("amount", { length: 50 }).notNull(),
+  currency: varchar("currency", { length: 10 }).notNull().default("ILS"),
+  description: text("description"),
+  receiptUrl: text("receipt_url"),
+  expenseDate: timestamp("expense_date"),
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  approvedBy: integer("approved_by"),
+  approvedAt: timestamp("approved_at"),
+  rejectionReason: text("rejection_reason"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});

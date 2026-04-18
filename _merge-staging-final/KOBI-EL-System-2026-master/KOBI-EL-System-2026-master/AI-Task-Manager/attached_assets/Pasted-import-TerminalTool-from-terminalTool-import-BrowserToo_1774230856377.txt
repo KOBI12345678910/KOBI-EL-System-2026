@@ -1,0 +1,279 @@
+import { TerminalTool } from "./terminalTool";
+import { BrowserTool } from "./browserTool";
+import { ErrorHandler } from "../agent/errorHandler";
+import { AgentMemory } from "../agent/memory";
+import { WatcherTool } from "./watcherTool";
+
+export interface HealthCheck {
+  name: string;
+  check: () => Promise<boolean>;
+  fix: () => Promise<boolean>;
+  interval: number; // ms
+  consecutiveFailures: number;
+  maxRetries: number;
+}
+
+export interface HealthStatus {
+  name: string;
+  healthy: boolean;
+  lastCheck: Date;
+  lastError?: string;
+  failures: number;
+  autoFixed: number;
+}
+
+export class SelfHealTool {
+  private terminal: TerminalTool;
+  private browser: BrowserTool;
+  private errorHandler: ErrorHandler;
+  private watcher: WatcherTool;
+  private healthChecks: Map<string, HealthCheck & { timer?: NodeJS.Timeout }> = new Map();
+  private statuses: Map<string, HealthStatus> = new Map();
+  private isMonitoring = false;
+  private onLog: (msg: string) => void;
+  private onAlert: (alert: { severity: string; message: string }) => void;
+
+  constructor(params: {
+    workspaceDir: string;
+    terminal: TerminalTool;
+    browser: BrowserTool;
+    memory: AgentMemory;
+    onLog: (msg: string) => void;
+    onAlert: (alert: { severity: string; message: string }) => void;
+  }) {
+    this.terminal = params.terminal;
+    this.browser = params.browser;
+    this.watcher = new WatcherTool(params.workspaceDir);
+    this.errorHandler = new ErrorHandler(params.workspaceDir, params.memory, params.onLog);
+    this.onLog = params.onLog;
+    this.onAlert = params.onAlert;
+  }
+
+  registerCheck(check: HealthCheck): void {
+    this.healthChecks.set(check.name, check);
+    this.statuses.set(check.name, {
+      name: check.name,
+      healthy: true,
+      lastCheck: new Date(),
+      failures: 0,
+      autoFixed: 0,
+    });
+  }
+
+  async startMonitoring(): Promise<void> {
+    if (this.isMonitoring) return;
+    this.isMonitoring = true;
+
+    this.onLog("🏥 Self-Healing Monitor started");
+
+    // Register default health checks
+    this.registerDefaultChecks();
+
+    // Start all check timers
+    for (const [name, check] of this.healthChecks) {
+      const timer = setInterval(async () => {
+        await this.runCheck(name);
+      }, check.interval);
+      check.timer = timer;
+    }
+
+    // Watch for crashes in file changes
+    this.watcher.watchForReload("self-heal", async (files) => {
+      // If package.json changed, auto-install
+      if (files.some((f) => f.endsWith("package.json"))) {
+        this.onLog("📦 package.json changed — auto-installing dependencies");
+        await this.terminal.execute("npm install", { timeout: 60000 });
+      }
+    });
+  }
+
+  stopMonitoring(): void {
+    this.isMonitoring = false;
+    for (const [, check] of this.healthChecks) {
+      if (check.timer) clearInterval(check.timer);
+    }
+    this.watcher.unwatchAll();
+    this.onLog("🏥 Self-Healing Monitor stopped");
+  }
+
+  private async runCheck(name: string): Promise<void> {
+    const check = this.healthChecks.get(name);
+    const status = this.statuses.get(name);
+    if (!check || !status) return;
+
+    try {
+      const healthy = await check.check();
+      status.lastCheck = new Date();
+
+      if (healthy) {
+        if (!status.healthy) {
+          this.onLog(`✅ [${name}] Recovered`);
+        }
+        status.healthy = true;
+        status.failures = 0;
+        return;
+      }
+
+      // Unhealthy
+      status.failures++;
+      status.healthy = false;
+
+      this.onLog(`⚠️ [${name}] Failed (${status.failures}/${check.maxRetries})`);
+
+      if (status.failures >= check.consecutiveFailures && status.failures <= check.maxRetries) {
+        // Attempt auto-fix
+        this.onLog(`🔧 [${name}] Attempting auto-fix...`);
+        this.onAlert({ severity: "warning", message: `${name} unhealthy, attempting fix` });
+
+        try {
+          const fixed = await check.fix();
+          if (fixed) {
+            status.autoFixed++;
+            this.onLog(`✅ [${name}] Auto-fixed successfully`);
+            this.onAlert({ severity: "info", message: `${name} auto-fixed` });
+
+            // Verify fix worked
+            await new Promise((r) => setTimeout(r, 2000));
+            const verifyHealthy = await check.check();
+            status.healthy = verifyHealthy;
+            if (verifyHealthy) status.failures = 0;
+          } else {
+            this.onLog(`❌ [${name}] Auto-fix failed`);
+          }
+        } catch (err: any) {
+          this.onLog(`❌ [${name}] Fix error: ${err.message}`);
+        }
+      }
+
+      if (status.failures > check.maxRetries) {
+        this.onAlert({
+          severity: "critical",
+          message: `${name} failed ${status.failures} times and could not be auto-fixed`,
+        });
+      }
+    } catch (err: any) {
+      status.lastError = err.message;
+      status.healthy = false;
+    }
+  }
+
+  private registerDefaultChecks(): void {
+    // Server health check
+    this.registerCheck({
+      name: "dev-server",
+      interval: 10000,
+      consecutiveFailures: 3,
+      maxRetries: 5,
+      check: async () => {
+        const result = await this.browser.checkUrl("http://localhost:3000");
+        return result.ok;
+      },
+      fix: async () => {
+        // Kill stuck processes and restart
+        await this.terminal.execute("kill -9 $(lsof -t -i:3000) 2>/dev/null");
+        await new Promise((r) => setTimeout(r, 1000));
+        await this.terminal.startBackground("dev-server-heal", "npm run dev", {
+          env: { PORT: "3000" },
+        });
+        await new Promise((r) => setTimeout(r, 5000));
+        const result = await this.browser.checkUrl("http://localhost:3000");
+        return result.ok;
+      },
+    });
+
+    // Disk space
+    this.registerCheck({
+      name: "disk-space",
+      interval: 60000,
+      consecutiveFailures: 1,
+      maxRetries: 3,
+      check: async () => {
+        const result = await this.terminal.execute("df / | tail -1 | awk '{print $5}' | tr -d '%'");
+        const usage = parseInt(result.stdout.trim());
+        return usage < 90;
+      },
+      fix: async () => {
+        // Clean up common space hogs
+        await this.terminal.execute(`
+          rm -rf /tmp/* 2>/dev/null;
+          npm cache clean --force 2>/dev/null;
+          find . -name '*.log' -size +10M -delete 2>/dev/null;
+          find . -name '.next' -type d -exec rm -rf {} + 2>/dev/null;
+          find . -name 'coverage' -type d -exec rm -rf {} + 2>/dev/null;
+        `);
+        return true;
+      },
+    });
+
+    // Memory check
+    this.registerCheck({
+      name: "memory",
+      interval: 30000,
+      consecutiveFailures: 2,
+      maxRetries: 3,
+      check: async () => {
+        const result = await this.terminal.execute("free -m | awk 'NR==2{print $3/$2*100}'");
+        const usage = parseFloat(result.stdout.trim());
+        return usage < 85;
+      },
+      fix: async () => {
+        // Kill heavy node processes
+        await this.terminal.execute(`
+          kill -9 $(ps aux | grep node | sort -k4 -rn | head -3 | awk '{print $2}') 2>/dev/null;
+        `);
+        return true;
+      },
+    });
+
+    // Node modules integrity
+    this.registerCheck({
+      name: "node-modules",
+      interval: 120000,
+      consecutiveFailures: 1,
+      maxRetries: 2,
+      check: async () => {
+        const result = await this.terminal.execute("npm ls --depth=0 2>&1 | grep 'MISSING\\|ERR' | wc -l");
+        const errors = parseInt(result.stdout.trim());
+        return errors === 0;
+      },
+      fix: async () => {
+        const result = await this.terminal.execute("npm install", { timeout: 120000 });
+        return result.success;
+      },
+    });
+
+    // TypeScript compilation
+    this.registerCheck({
+      name: "typescript",
+      interval: 60000,
+      consecutiveFailures: 2,
+      maxRetries: 3,
+      check: async () => {
+        const result = await this.terminal.execute("npx tsc --noEmit 2>&1 | grep 'error TS' | wc -l", {
+          timeout: 30000,
+        });
+        return parseInt(result.stdout.trim()) === 0;
+      },
+      fix: async () => {
+        // Try to fix common TS errors
+        await this.terminal.execute("npx tsc --noEmit 2>&1 | head -20", { timeout: 30000 });
+        return false; // Usually needs manual intervention
+      },
+    });
+  }
+
+  getStatus(): Map<string, HealthStatus> {
+    return new Map(this.statuses);
+  }
+
+  getAllStatuses(): HealthStatus[] {
+    return Array.from(this.statuses.values());
+  }
+
+  async runAllChecksNow(): Promise<Map<string, HealthStatus>> {
+    for (const name of this.healthChecks.keys()) {
+      await this.runCheck(name);
+    }
+    return this.getStatus();
+  }
+}

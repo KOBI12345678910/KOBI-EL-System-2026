@@ -1,0 +1,187 @@
+# =============================================================================
+# Onyx Procurement — Prometheus Alerting Rules
+# =============================================================================
+# File:        ops/alerts/rules.yml
+# Owner:       SRE / Platform Team
+# Last update: 2026-04-11
+# Runbook base: https://runbooks.onyx-procurement.local/alerts/
+#
+# Load this file from prometheus.yml:
+#   rule_files:
+#     - /etc/prometheus/rules/*.yml
+#
+# All alerts carry bilingual (Hebrew + English) summary strings so Alertmanager
+# can route them to Israeli on-call channels (WhatsApp / SMS) without needing
+# any additional translation layer.
+# =============================================================================
+
+groups:
+  # ---------------------------------------------------------------------------
+  # Group 1 — API & Service Health
+  # ---------------------------------------------------------------------------
+  - name: onyx-procurement.api
+    interval: 30s
+    rules:
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          service: api
+          team: platform
+          runbook_url: https://runbooks.onyx-procurement.local/alerts/high-error-rate
+          summary: "שיעור שגיאות גבוה ב-API / High 5xx error rate on API"
+        annotations:
+          summary: "שיעור שגיאות גבוה ב-API / High 5xx error rate on API"
+          description: |
+            The API is returning more than 5% 5xx responses over the last 5 minutes.
+            שרת ה-API מחזיר למעלה מ-5% שגיאות 5xx בחמש הדקות האחרונות.
+            Current rate: {{ $value | humanize }} req/s.
+            Investigate recent deploys, database health, and upstream dependencies.
+          runbook_url: https://runbooks.onyx-procurement.local/alerts/high-error-rate
+
+      - alert: SlowDBQueries
+        expr: histogram_quantile(0.95, sum by (le) (rate(db_query_duration_seconds_bucket[5m]))) > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: database
+          team: platform
+          runbook_url: https://runbooks.onyx-procurement.local/alerts/slow-db-queries
+          summary: "שאילתות DB איטיות / Slow database queries (p95 > 2s)"
+        annotations:
+          summary: "שאילתות DB איטיות / Slow database queries (p95 > 2s)"
+          description: |
+            95th-percentile database query latency exceeds 2 seconds.
+            אחוזון 95 של זמן תגובת שאילתות בסיס הנתונים עבר 2 שניות.
+            Current p95: {{ $value | humanize }}s.
+            Check slow-query log, missing indexes, and lock contention.
+          runbook_url: https://runbooks.onyx-procurement.local/alerts/slow-db-queries
+
+  # ---------------------------------------------------------------------------
+  # Group 2 — Host & Resource Saturation
+  # ---------------------------------------------------------------------------
+  - name: onyx-procurement.host
+    interval: 30s
+    rules:
+
+      - alert: HighMemoryUsage
+        expr: process_resident_memory_bytes > 1073741824
+        for: 10m
+        labels:
+          severity: warning
+          service: runtime
+          team: platform
+          runbook_url: https://runbooks.onyx-procurement.local/alerts/high-memory-usage
+          summary: "שימוש גבוה בזיכרון / High memory usage (> 1 GiB RSS)"
+        annotations:
+          summary: "שימוש גבוה בזיכרון / High memory usage (> 1 GiB RSS)"
+          description: |
+            Process RSS memory exceeds 1 GiB for more than 10 minutes.
+            תהליך צורך מעל 1 ג'יגה-בייט זיכרון יותר מ-10 דקות.
+            Current: {{ $value | humanize1024 }}B on instance {{ $labels.instance }}.
+            Suspect memory leak, unbounded cache, or runaway job.
+          runbook_url: https://runbooks.onyx-procurement.local/alerts/high-memory-usage
+
+      - alert: LowDiskSpace
+        expr: (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}) < 0.10
+        for: 15m
+        labels:
+          severity: critical
+          service: host
+          team: platform
+          runbook_url: https://runbooks.onyx-procurement.local/alerts/low-disk-space
+          summary: "מקום אחסון נמוך / Low disk space (< 10% free)"
+        annotations:
+          summary: "מקום אחסון נמוך / Low disk space (< 10% free)"
+          description: |
+            Filesystem {{ $labels.mountpoint }} on {{ $labels.instance }} has less than 10% free space.
+            פחות מ-10% מקום פנוי בכונן {{ $labels.mountpoint }} במכונה {{ $labels.instance }}.
+            Current free: {{ $value | humanizePercentage }}.
+            Rotate logs, purge temp files, or extend the volume.
+          runbook_url: https://runbooks.onyx-procurement.local/alerts/low-disk-space
+
+  # ---------------------------------------------------------------------------
+  # Group 3 — Integrations (Webhooks, Backups)
+  # ---------------------------------------------------------------------------
+  - name: onyx-procurement.integrations
+    interval: 30s
+    rules:
+
+      - alert: FailedWebhookDeliveries
+        expr: increase(webhook_delivery_failures_total[10m]) > 5
+        for: 0m
+        labels:
+          severity: warning
+          service: webhooks
+          team: integrations
+          runbook_url: https://runbooks.onyx-procurement.local/alerts/failed-webhook-deliveries
+          summary: "כשלי משלוח Webhook / Failed webhook deliveries"
+        annotations:
+          summary: "כשלי משלוח Webhook / Failed webhook deliveries"
+          description: |
+            More than 5 webhook deliveries failed in the last 10 minutes.
+            יותר מ-5 כשלי משלוח Webhook בעשר הדקות האחרונות.
+            Count: {{ $value | humanize }}. Check the dead-letter queue and retry policy.
+          runbook_url: https://runbooks.onyx-procurement.local/alerts/failed-webhook-deliveries
+
+      - alert: MissingDailyBackup
+        expr: time() - backup_last_success_timestamp > 86400 + 3600
+        for: 0m
+        labels:
+          severity: critical
+          service: backup
+          team: platform
+          runbook_url: https://runbooks.onyx-procurement.local/alerts/missing-daily-backup
+          summary: "גיבוי יומי חסר / Missing daily backup (> 25h since last success)"
+        annotations:
+          summary: "גיבוי יומי חסר / Missing daily backup (> 25h since last success)"
+          description: |
+            The last successful backup was more than 25 hours ago (24h + 1h grace).
+            הגיבוי האחרון שהצליח היה לפני יותר מ-25 שעות (24 שעות + שעת גרייס).
+            Age: {{ $value | humanizeDuration }}. Trigger a manual backup and investigate the scheduler.
+          runbook_url: https://runbooks.onyx-procurement.local/alerts/missing-daily-backup
+
+  # ---------------------------------------------------------------------------
+  # Group 4 — Business-Critical Pipelines (Payroll, VAT)
+  # ---------------------------------------------------------------------------
+  - name: onyx-procurement.business
+    interval: 30s
+    rules:
+
+      - alert: PayrollGenerationFailures
+        expr: rate(payroll_slips_generated_total{status="failed"}[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          service: payroll
+          team: finance-ops
+          runbook_url: https://runbooks.onyx-procurement.local/alerts/payroll-generation-failures
+          summary: "כשל ביצירת תלושי שכר / Payroll slip generation failures"
+        annotations:
+          summary: "כשל ביצירת תלושי שכר / Payroll slip generation failures"
+          description: |
+            Payroll slip generation is producing failed results.
+            יצירת תלושי שכר מפיקה שגיאות.
+            Current fail rate: {{ $value | humanize }} slips/s.
+            Check the payroll worker logs, Form 102/126 templates, and the employer master data.
+          runbook_url: https://runbooks.onyx-procurement.local/alerts/payroll-generation-failures
+
+      - alert: VATExportFailure
+        expr: rate(vat_exports_total{status="failed"}[15m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          service: vat
+          team: finance-ops
+          runbook_url: https://runbooks.onyx-procurement.local/alerts/vat-export-failure
+          summary: "כשל בייצוא דוח מע\"מ / VAT export failure"
+        annotations:
+          summary: "כשל בייצוא דוח מע\"מ / VAT export failure"
+          description: |
+            At least one VAT export (PCN874 / Form 6111) has failed in the last 15 minutes.
+            כשל אחד לפחות בייצוא דוח מע"מ (PCN874 / טופס 6111) ב-15 הדקות האחרונות.
+            Current fail rate: {{ $value | humanize }} exports/s.
+            Check the Tax Authority submission endpoint and the latest reporting period rollup.
+          runbook_url: https://runbooks.onyx-procurement.local/alerts/vat-export-failure

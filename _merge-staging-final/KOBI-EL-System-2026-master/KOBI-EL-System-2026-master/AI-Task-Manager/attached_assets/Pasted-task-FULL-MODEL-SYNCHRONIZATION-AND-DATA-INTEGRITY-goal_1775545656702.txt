@@ -1,0 +1,73 @@
+task: "FULL MODEL SYNCHRONIZATION AND DATA INTEGRITY"
+
+goal: >
+  לבצע סנכרון מלא, עמוק, ותקין בין כל המודלים, הישויות, הקשרים,
+  הטפסים, הדשבורדים, הדוחות, הפעולות, והסטטוסים במערכת,
+  כך שכל שינוי בכל מודל יתעדכן בצורה אמינה, עקבית, ובזמן אמת
+  בכל המקומות הרלוונטיים במערכת.
+
+requirements:
+
+  - "למפות את כל המודלים במערכת ואת כל הקשרים ביניהם."
+  - "לוודא שכל model מחובר נכון ל-database, ל-API, ל-frontend ול-state management."
+  - "לוודא שכל create / update / delete / archive בכל מודל משפיע ומסתנכרן בכל המודולים הקשורים."
+  - "לוודא שכל foreign keys, relations, joins, references ו-derived fields עובדים תקין."
+  - "לוודא שאין orphan records, duplicate relations, broken references או data mismatch."
+  - "לוודא שכל שינוי בסטטוס של רשומה מתעדכן אוטומטית גם במודולים הקשורים."
+  - "לוודא שכל counters, KPI, dashboard cards, tables, reports ו-summary widgets מושכים נתונים אמיתיים ומעודכנים."
+  - "לוודא שכל טופס מציג ושומר נתונים אמיתיים מהמודל הנכון."
+  - "לוודא שכל מסך list / details / edit / create מציג בדיוק את אותו מקור אמת (Single Source of Truth)."
+  - "לוודא שאין שדות שמופיעים ב-UI אבל לא נשמרים באמת."
+  - "לוודא שאין שדות שנשמרים ב-backend אבל לא מוצגים נכון ב-frontend."
+  - "לוודא שכל הניווט בין המודלים שומר על הקשר העסקי הנכון."
+  - "לוודא שכל data flow עובד מקצה לקצה בלי תקיעות, בלי איבוד מידע ובלי שגיאות סנכרון."
+
+critical_sync_flows:
+  - "Lead -> Customer"
+  - "Customer -> Quote"
+  - "Quote -> Project"
+  - "Project -> Measurements"
+  - "Measurements -> BOM"
+  - "BOM -> Purchase Request"
+  - "Purchase Request -> Purchase Order / Material Receipt"
+  - "Inventory -> Work Order"
+  - "Work Order -> Production"
+  - "Production -> QA"
+  - "QA -> Delivery / Installation"
+  - "Delivery / Installation -> Invoice"
+  - "Invoice -> Payment"
+  - "All core models -> Dashboards / Reports / KPI"
+
+validation_rules:
+  - "כל מודל חייב לכלול schema תקין, validations, required fields ו-status flow ברור."
+  - "כל קשר בין מודלים חייב להיות דו-כיווני איפה שצריך ולהופיע נכון בכל המסכים."
+  - "כל עדכון חייב לעדכן גם caches, computed fields, aggregates ו-related summaries."
+  - "כל מחיקה חייבת להיות מבוקרת ולא לשבור קשרים."
+  - "איפה שלא מתאים למחוק פיזית, להשתמש ב-archive / soft delete."
+  - "כל empty state, loading state, error state ו-success state חייבים להיות תקינים."
+  - "כל פעולה חייבת להחזיר תוצאה אמיתית ולא mock או placeholder."
+
+required_audit:
+  - "להוציא טבלת מיפוי מלאה של כל המודלים."
+  - "להציג לכל מודל: fields, relations, source of truth, dependent modules, actions, dashboards impacted."
+  - "לזהות כל mismatch בין backend, database ו-frontend."
+  - "לזהות כל route, page, form או widget שלא מחובר נכון."
+  - "לזהות כל dashboard metric שלא מבוסס על נתון אמיתי."
+
+definition_of_done:
+  - "כל המודלים מסונכרנים מקצה לקצה."
+  - "כל שינוי במודל אחד מתעדכן בכל המערכת לפי הלוגיקה העסקית."
+  - "אין broken relations."
+  - "אין data mismatch."
+  - "אין widgets ריקים בגלל חיבור לקוי."
+  - "אין כפילויות נתונים לא נשלטות."
+  - "המערכת עובדת עם Single Source of Truth אמיתי."
+  - "המערכת מרגישה כמו ERP production אמיתי ולא כמו אוסף מסכים."
+
+final_output_required:
+  - "1. מה תוקן"
+  - "2. אילו מודלים סונכרנו"
+  - "3. אילו קשרים היו שבורים"
+  - "4. אילו מסכים עדיין לא מחוברים"
+  - "5. אילו שדות/קשרים/סטטוסים עדיין דורשים תיקון"
+  - "6. רשימת בעיות לפי Critical / High / Medium"

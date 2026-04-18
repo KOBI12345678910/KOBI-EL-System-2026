@@ -1,0 +1,72 @@
+{
+  "sources": {
+    "technokoluzi-erp": "C:/Users/kobi/Projects/techno-kol-uzi-2026/_merge-staging/technokoluzi-erp/technokoluzi-erp",
+    "AI-Task-Manager": "C:/Users/kobi/Projects/techno-kol-uzi-2026/AI-Task-Manager",
+    "Location-Finder": "C:/Users/kobi/Projects/techno-kol-uzi-2026/_merge-staging/Location-Finder/Location-Finder",
+    "GPS-Connect": "C:/Users/kobi/Projects/techno-kol-uzi-2026/_merge-staging/GPS-Connect/GPS-Connect",
+    "Invoice-Ledger": "C:/Users/kobi/Projects/techno-kol-uzi-2026/_merge-staging/Invoice-Ledger/Invoice-Ledger",
+    "erp-upload": "C:/Users/kobi/Projects/techno-kol-uzi-2026/_merge-staging/erp-upload",
+    "files-2": "C:/Users/kobi/Projects/techno-kol-uzi-2026/_merge-staging/files-2",
+    "files-4": "C:/Users/kobi/Projects/techno-kol-uzi-2026/_merge-staging/files-4",
+    "files-5": "C:/Users/kobi/Projects/techno-kol-uzi-2026/_merge-staging/files-5"
+  },
+  "per_source_stats": {
+    "technokoluzi-erp": {
+      "files": 1045,
+      "bytes": 23985739,
+      "skipped": 1
+    },
+    "AI-Task-Manager": {
+      "files": 2883,
+      "bytes": 55783044,
+      "skipped": 4
+    },
+    "Location-Finder": {
+      "files": 205,
+      "bytes": 809669,
+      "skipped": 1
+    },
+    "GPS-Connect": {
+      "files": 208,
+      "bytes": 708253,
+      "skipped": 1
+    },
+    "Invoice-Ledger": {
+      "files": 115,
+      "bytes": 411707,
+      "skipped": 1
+    },
+    "erp-upload": {
+      "files": 1518,
+      "bytes": 29133668,
+      "skipped": 2
+    },
+    "files-2": {
+      "files": 6,
+      "bytes": 94757,
+      "skipped": 0
+    },
+    "files-4": {
+      "files": 5,
+      "bytes": 37550,
+      "skipped": 0
+    },
+    "files-5": {
+      "files": 5,
+      "bytes": 37550,
+      "skipped": 0
+    }
+  },
+  "total_files_scanned": 5990,
+  "unique_hashes": 4226,
+  "duplicates_eliminated": 1764,
+  "counts": {
+    "CODE-NEW": 1750,
+    "CODE-EXISTING": 32,
+    "CODE-CONFLICT": 2240,
+    "CONFIG": 80,
+    "ASSET": 21,
+    "DOCS": 48,
+    "BINARY-SKIP": 55
+  }
+}

@@ -270,8 +270,8 @@ const RULES = {
   // ─── Tax / VAT ─────────────────────────────────────────────────────────
   VAT_RATE: {
     kind: 'optional', type: 'float', min: 0, max: 1,
-    description: 'Israel VAT rate as decimal. 2026 default: 0.17.',
-    defaultHint: '0.17',
+    description: 'Israel VAT rate as decimal. 2026 default: 0.18 (effective 2026-01-01; 0.17 before).',
+    defaultHint: '0.18',
   },
   ISRAEL_TAX_VAT_FILE_NUMBER: {
     kind: 'optional', type: 'string',

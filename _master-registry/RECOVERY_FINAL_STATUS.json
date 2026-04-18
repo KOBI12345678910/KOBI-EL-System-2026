@@ -1,0 +1,319 @@
+{
+  "generated_at": "2026-04-18T12:45:00+03:00",
+  "phase": 1,
+  "phase_status": "complete",
+  "scope": "C:/Users/kobi/Projects/techno-kol-uzi-2026",
+  "system_version": "v1.0.0",
+  "baseline": {
+    "schemas": 23,
+    "tables": 237,
+    "create_table_statements": 235,
+    "views": 15,
+    "rpcs": 143,
+    "fks": 385,
+    "rls_policies_range": [213, 302],
+    "api_route_files": 328,
+    "api_mounts": 328,
+    "api_endpoints_min": 4364,
+    "api_endpoints_max": 5598,
+    "api_endpoints_unique": 5313,
+    "react_routes_declared": 1262,
+    "react_routes_with_elements": 629,
+    "react_routes_unique_paths": 666,
+    "page_files_filesystem": 1166,
+    "page_files_audit_scope": 658,
+    "menu_seed_migrations": 7,
+    "menu_insert_rows": 1289,
+    "menu_routes_unique_min": 1012,
+    "menu_routes_unique_max": 1271,
+    "pipeline_entities": 16,
+    "state_machines_min": 13,
+    "state_machines_max": 15,
+    "state_transitions_min": 91,
+    "state_transitions_max": 115,
+    "workflow_flows": 5,
+    "orchestrator_actions": 18,
+    "page_contracts": 9,
+    "action_api_mappings": 55,
+    "cross_service_contracts": 7,
+    "entity_relationships_wiring_spec": 20,
+    "entity_relationship_strings_pipeline": 190,
+    "registry_models_claimed": 342,
+    "registry_vs_db_delta": 105,
+    "zod_schema_files": 419,
+    "reports": 20,
+    "dashboards": 10,
+    "automations": 12,
+    "crons": 5,
+    "roles": 18,
+    "lifecycles": 7,
+    "supabase_migrations": 42
+  },
+  "findings_imported": {
+    "from_AUDIT_REAL": {
+      "total_findings": 16,
+      "by_category": {
+        "counts_confirmed": 4,
+        "schema_conflicts": 2,
+        "orphans": 1,
+        "duplicates": 4,
+        "registry_delta": 2,
+        "source_of_truth_conflicts": 1,
+        "menu_orphan": 1,
+        "pipeline_declarations": 1
+      }
+    },
+    "from_DISCOVERY_RECOVERY_MAP": {
+      "total_findings": 10,
+      "by_category": {
+        "hidden_models": 1,
+        "wrong_schema": 1,
+        "api_route_no_db": 1,
+        "fe_no_db": 1,
+        "duplicate_models": 1,
+        "orphan_tables_extended": 1,
+        "truly_missing": 1,
+        "unmounted_routes": 1,
+        "dead_rpcs": 1,
+        "top_wins": 1
+      }
+    },
+    "from_INVISIBLE_MENU_ITEMS": {
+      "total_findings": 10,
+      "by_category": {
+        "invisible_total": 1,
+        "invisible_models": 1,
+        "invisible_pages": 1,
+        "invisible_engines": 1,
+        "invisible_reports": 1,
+        "invisible_dashboards": 1,
+        "invisible_workflows": 1,
+        "invisible_state_machines": 1,
+        "analytics_zero_coverage": 1,
+        "docs_low_coverage": 1
+      }
+    },
+    "from_SYSTEM_360_SANITY": {
+      "total_findings": 11,
+      "by_category": {
+        "missing_menu": 1,
+        "menu_no_route": 1,
+        "route_no_menu": 1,
+        "broken_refs_ok": 1,
+        "api_coverage_ok": 1,
+        "dead_links": 1,
+        "orphan_pages": 1,
+        "orphan_routes": 1,
+        "miscategorized": 1,
+        "realestate_leftovers": 1,
+        "migration_pending": 1
+      }
+    },
+    "from_CONNECTIVITY_VALIDATION": {
+      "total_findings": 9,
+      "by_category": {
+        "sql_paren_mismatch": 1,
+        "broken_imports": 1,
+        "duplicate_endpoints": 1,
+        "broken_imports_extended": 1,
+        "broken_dashboards": 1,
+        "broken_reports": 1,
+        "pipeline_drift": 1,
+        "rls_drift": 1,
+        "verdict": 1
+      }
+    },
+    "from_INTEGRITY_REPORT_and_others": {
+      "total_findings": 6,
+      "by_category": {
+        "typescript_clean": 1,
+        "broken_imports_detailed": 1,
+        "vat_update": 1,
+        "merge_report": 1,
+        "ab_validation": 1,
+        "missing_models_scan": 1
+      }
+    }
+  },
+  "findings_imported_total": 62,
+  "unresolved_queues": {
+    "wrong_schema_pointers": 12,
+    "hidden_existing_models": 30,
+    "duplicate_models": 17,
+    "orphan_tables": 29,
+    "orphan_tables_extended": 119,
+    "truly_missing_models": 75,
+    "invisible_menu_items": 779,
+    "invisible_db_tables": 101,
+    "invisible_pages": 455,
+    "invisible_engines": 223,
+    "invisible_reports": 14,
+    "invisible_dashboards": 10,
+    "invisible_workflows": 5,
+    "invisible_state_machines": 13,
+    "broken_pages_runtime": 4,
+    "broken_imports_total": 30,
+    "dead_links": 13,
+    "duplicate_endpoints": 285,
+    "duplicate_tables": 5,
+    "duplicate_routes_apptsx": 15,
+    "duplicate_api_handlers": 171,
+    "duplicate_menu_rows": 32,
+    "source_of_truth_conflicts": 7,
+    "tables_without_rls": "pending_per_table_audit",
+    "rls_policy_drift": [213, 302],
+    "broken_dashboards": 10,
+    "broken_reports": 17,
+    "menu_without_route": 458,
+    "routes_without_menu": 496,
+    "pages_without_route": 535,
+    "orphan_pages": 43,
+    "orphan_route_files": 2,
+    "unmounted_route_files": 3,
+    "sql_paren_mismatch": 5,
+    "menu_miscategorizations": 6,
+    "realestate_leftovers": 14,
+    "pipeline_entity_misalignment": 3,
+    "dead_rpcs_candidate": 127
+  },
+  "unresolved_queue_total_primary": 28,
+  "phase_tracker": {
+    "phase_1": {
+      "title": "Recovery Baseline Lock",
+      "status": "complete",
+      "started": "2026-04-18",
+      "completed": "2026-04-18",
+      "deliverables": [
+        "_master-registry/RECOVERY_MASTER_LEDGER.md",
+        "_master-registry/RECOVERY_TASK_BOARD.md",
+        "_master-registry/RECOVERY_DECISION_LOG.md",
+        "_master-registry/RECOVERY_EVIDENCE_MAP.md",
+        "_master-registry/RECOVERY_CHANGELOG.md",
+        "_master-registry/RECOVERY_FINAL_STATUS.json"
+      ]
+    },
+    "phase_1b": {
+      "title": "Full Spec Verification + Gap Discovery",
+      "status": "done",
+      "started": "2026-04-18",
+      "completed": "2026-04-18",
+      "deliverables": [
+        "_master-registry/CANONICAL_DOMAIN_VERIFICATION.md",
+        "_master-registry/PHASE_1B_VERIFICATION_SUMMARY.md",
+        "supabase/migrations/00041_menu_categorize_by_business_topic.sql"
+      ]
+    },
+    "phase_2": {
+      "title": "Canonical Schema Resolution",
+      "status": "ready",
+      "started": null,
+      "completed": null,
+      "focus": "Fix 12 wrong-schema pointers; align registry domains with migration schemas per D003/D009"
+    },
+    "phase_3": {
+      "title": "Registry Reconciliation",
+      "status": "pending",
+      "started": null,
+      "completed": null,
+      "focus": "Close the 105-model delta between registry and DB"
+    },
+    "phase_4": {
+      "title": "RLS & Permissions Audit",
+      "status": "pending",
+      "started": null,
+      "completed": null,
+      "focus": "Resolve 213 vs 302 RLS count drift; per-table inventory per D020"
+    },
+    "phase_5": {
+      "title": "Duplicate Elimination",
+      "status": "pending",
+      "started": null,
+      "completed": null,
+      "focus": "5 duplicate tables + ~285 endpoints + 32 menu + 15 routes"
+    },
+    "phase_6": {
+      "title": "Orphan Table Decision (wire or drop)",
+      "status": "pending",
+      "started": null,
+      "completed": null,
+      "focus": "29 primary + 119 extended orphans per D004"
+    },
+    "phase_7": {
+      "title": "Truly-Missing Build-Out",
+      "status": "pending",
+      "started": null,
+      "completed": null,
+      "focus": "75 net-new DB tables full-stack per D012"
+    },
+    "phase_8": {
+      "title": "Menu/Route/Page Reconciliation",
+      "status": "pending",
+      "started": null,
+      "completed": null,
+      "focus": "458 menu-no-route + 496 route-no-menu + 535 pages-no-route; 779 invisible items"
+    },
+    "phase_9": {
+      "title": "Broken Import/Page Repair",
+      "status": "pending",
+      "started": null,
+      "completed": null,
+      "focus": "4 runtime-breaking pages + 30 broken imports + 5 SQL paren bugs + 13 dead links + 43 orphan pages"
+    },
+    "phase_10": {
+      "title": "Dashboard & Report Rewiring",
+      "status": "pending",
+      "started": null,
+      "completed": null,
+      "focus": "10 dashboards + 17 reports to real tables per D015"
+    },
+    "phase_11": {
+      "title": "Pipeline/Entity Alignment",
+      "status": "pending",
+      "started": null,
+      "completed": null,
+      "focus": "entity-map.js, wiring-spec.js alignment; dead RPC confirmation per D014"
+    },
+    "phase_12": {
+      "title": "Final Integrity Audit",
+      "status": "pending",
+      "started": null,
+      "completed": null,
+      "focus": "Re-emit AUDIT_REAL, INTEGRITY_REPORT, CONNECTIVITY_VALIDATION; all counts zero for broken categories"
+    }
+  },
+  "tasks_created": 368,
+  "evidence_entries": 368,
+  "decisions_logged": 50,
+  "changelog_entries": 14,
+  "next_phase_readiness": "ready",
+  "next_phase": 2,
+  "blockers": [],
+  "spec_completeness": 1.0,
+  "phase_1b": {
+    "title": "Full Spec Verification + Gap Discovery",
+    "status": "done",
+    "started": "2026-04-18",
+    "completed": "2026-04-18",
+    "spec_items_verified": "30/30",
+    "new_forgotten_models_found": 35,
+    "canonical_entities_enumerated": 181,
+    "canonical_entities_fully_present": 11,
+    "canonical_entities_partial": 170,
+    "canonical_entities_absent_db": 0,
+    "pages_360_present": 5,
+    "pages_360_missing": 8,
+    "pages_360_total_required": 13,
+    "menu_items_recategorized": 130,
+    "deliverables": [
+      "_master-registry/CANONICAL_DOMAIN_VERIFICATION.md",
+      "_master-registry/PHASE_1B_VERIFICATION_SUMMARY.md",
+      "supabase/migrations/00041_menu_categorize_by_business_topic.sql"
+    ]
+  },
+  "notes": [
+    "Filesystem counts were independently verified where possible. Some counts have a [min,max] range reflecting differences between AUDIT_REAL, CONNECTIVITY_VALIDATION, and direct grep — this drift is itself flagged as a finding and scheduled for resolution in Phase 12.",
+    "Phase 1 is read-only on code; only the 6 ledger files under _master-registry/ were created.",
+    "Phase 1b is read-heavy: ledger files updated + CANONICAL_DOMAIN_VERIFICATION.md + PHASE_1B_VERIFICATION_SUMMARY.md + 00041 menu-recategorization migration (UPDATE-only, no INSERT, no DELETE) created. No schema or code changes.",
+    "All 368 Task Board entries have status=todo (except phase markers)."
+  ]
+}
