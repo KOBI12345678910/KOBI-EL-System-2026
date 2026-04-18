@@ -1,0 +1,117 @@
+[
+  {
+    "name": "commercial_menu_wiring",
+    "file": "00044_commercial_menu_wiring.sql",
+    "sql_length": 5859
+  },
+  {
+    "name": "execution_domain_complete",
+    "file": "00045_execution_domain_complete.sql",
+    "sql_length": 41052
+  },
+  {
+    "name": "execution_menu_wiring",
+    "file": "00046_execution_menu_wiring.sql",
+    "sql_length": 6534
+  },
+  {
+    "name": "procurement_domain_complete",
+    "file": "00047_procurement_domain_complete.sql",
+    "sql_length": 26696
+  },
+  {
+    "name": "procurement_menu_wiring",
+    "file": "00048_procurement_menu_wiring.sql",
+    "sql_length": 5772
+  },
+  {
+    "name": "inventory_domain_complete",
+    "file": "00049_inventory_domain_complete.sql",
+    "sql_length": 28701
+  },
+  {
+    "name": "inventory_menu_wiring",
+    "file": "00050_inventory_menu_wiring.sql",
+    "sql_length": 5341
+  },
+  {
+    "name": "finance_domain_complete",
+    "file": "00051_finance_domain_complete.sql",
+    "sql_length": 29332
+  },
+  {
+    "name": "finance_menu_wiring",
+    "file": "00052_finance_menu_wiring.sql",
+    "sql_length": 7203
+  },
+  {
+    "name": "workforce_domain_complete",
+    "file": "00053_workforce_domain_complete.sql",
+    "sql_length": 21904
+  },
+  {
+    "name": "workforce_menu_wiring",
+    "file": "00054_workforce_menu_wiring.sql",
+    "sql_length": 3189
+  },
+  {
+    "name": "docs_domain_complete",
+    "file": "00055_docs_domain_complete.sql",
+    "sql_length": 24970
+  },
+  {
+    "name": "docs_menu_wiring",
+    "file": "00056_docs_menu_wiring.sql",
+    "sql_length": 4132
+  },
+  {
+    "name": "intelligence_domain_complete",
+    "file": "00057_intelligence_domain_complete.sql",
+    "sql_length": 26316
+  },
+  {
+    "name": "intelligence_menu_wiring",
+    "file": "00058_intelligence_menu_wiring.sql",
+    "sql_length": 4422
+  },
+  {
+    "name": "governance_domain_complete",
+    "file": "00059_governance_domain_complete.sql",
+    "sql_length": 28329
+  },
+  {
+    "name": "governance_menu_wiring",
+    "file": "00060_governance_menu_wiring.sql",
+    "sql_length": 6594
+  },
+  {
+    "name": "analytics_domain_complete",
+    "file": "00061_analytics_domain_complete.sql",
+    "sql_length": 17736
+  },
+  {
+    "name": "analytics_menu_wiring",
+    "file": "00062_analytics_menu_wiring.sql",
+    "sql_length": 3666
+  },
+  {
+    "name": "orchestration_domain_complete",
+    "file": "00063_orchestration_domain_complete.sql",
+    "sql_length": 24146
+  },
+  {
+    "name": "orchestration_menu_wiring",
+    "file": "00064_orchestration_menu_wiring.sql",
+    "sql_length": 2851
+  },
+  {
+    "name": "comms_domain_complete",
+    "file": "00065_comms_domain_complete.sql",
+    "sql_length": 24389
+  },
+  {
+    "name": "comms_menu_wiring",
+    "file": "00066_comms_menu_wiring.sql",
+    "sql_length": 3916
+  }
+]

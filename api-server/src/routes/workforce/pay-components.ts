@@ -1,4 +1,6 @@
 // workforce.pay_components + workforce.employee_pay_components
+// NOTE: `/employee-assignments*` routes are registered BEFORE the `/:id`
+// routes so Express doesn't match "employee-assignments" as an :id param.
 import { Router } from "express";
 import {
   CreatePayComponentSchema, UpdatePayComponentSchema, ListPayComponentsQuerySchema,
@@ -17,6 +19,71 @@ router.use(hrOrAdminMiddleware);
 
 const PC_ALLOWED = new Set(["id","component_code","component_name","component_type","created_at","updated_at"]);
 const EPC_ALLOWED = new Set(["id","employee_id","pay_component_id","effective_from","created_at","updated_at"]);
+
+// ───── employee_pay_components (MUST be before /:id) ─────
+router.get("/employee-assignments", async (req, res) => {
+  const q = parseQuery(ListEmployeePayComponentsQuerySchema, req, res); if (!q) return;
+  try {
+    const c = [sql`coalesce(is_deleted, false) = false`];
+    if (q.employee_id) c.push(sql`employee_id = ${q.employee_id}`);
+    if (q.pay_component_id) c.push(sql`pay_component_id = ${q.pay_component_id}`);
+    if (q.active !== undefined) c.push(sql`active = ${q.active}`);
+    const r = await runSafeList({
+      table: "workforce.employee_pay_components", conditions: c,
+      allowedOrderColumns: EPC_ALLOWED, fallbackColumn: "effective_from",
+      orderBy: q.order_by, orderDir: q.order_dir,
+      limit: safeLimit(q.limit), offset: safeOffset(q.offset),
+    });
+    res.json(r);
+  } catch (err) { sendDbError(res, err, "employee-pay-components:list"); }
+});
+
+router.post("/employee-assignments", async (req, res) => {
+  const d = parseBody(CreateEmployeePayComponentSchema, req, res); if (!d) return;
+  const uid = currentUserId(req);
+  try {
+    const r = await db.execute(sql`
+      insert into workforce.employee_pay_components (
+        employee_id, pay_component_id, value_type, value_amount,
+        effective_from, effective_to, active, metadata,
+        created_by, updated_by, created_at, updated_at
+      ) values (
+        ${d.employee_id}, ${d.pay_component_id}, ${d.value_type}, ${d.value_amount},
+        ${d.effective_from}, ${d.effective_to ?? null}, ${d.active ?? true},
+        ${JSON.stringify(d.metadata ?? {})}::jsonb,
+        ${uid}, ${uid}, now(), now()
+      ) returning *
+    `);
+    const row = (r.rows ?? [])[0] as { id?: number } | undefined;
+    if (row?.id) await logAudit({ user_id: uid, table_name: "workforce_employee_pay_components", record_id: row.id, action: "INSERT", new_values: { employee_id: d.employee_id, pay_component_id: d.pay_component_id }, ip_address: req.ip ?? null });
+    res.status(201).json(row);
+  } catch (err) { sendDbError(res, err, "employee-pay-components:create"); }
+});
+
+router.patch("/employee-assignments/:id", async (req, res) => {
+  const id = idFromParams(req, res); if (!id) return;
+  const d = parseBody(UpdateEmployeePayComponentSchema, req, res); if (!d) return;
+  const uid = currentUserId(req);
+  const entries = Object.entries(d).filter(([, v]) => v !== undefined);
+  if (entries.length === 0) return res.status(400).json({ error: "אין שינויים" });
+  try {
+    const fragments = entries.map(([k, v]) =>
+      k === "metadata"
+        ? sql`${sql.raw(k)} = ${JSON.stringify(v ?? {})}::jsonb`
+        : sql`${sql.raw(k)} = ${v as string | number | boolean | null}`
+    );
+    let setClause = fragments[0];
+    for (let i = 1; i < fragments.length; i++) setClause = sql`${setClause}, ${fragments[i]}`;
+    const r = await db.execute(sql`
+      update workforce.employee_pay_components set ${setClause}, updated_by = ${uid}, updated_at = now()
+      where id = ${id} and coalesce(is_deleted,false)=false returning *
+    `);
+    const row = (r.rows ?? [])[0];
+    if (!row) return res.status(404).json({ error: "הקצאה לא נמצאה" });
+    await logAudit({ user_id: uid, table_name: "workforce_employee_pay_components", record_id: id, action: "UPDATE", new_values: Object.fromEntries(entries), ip_address: req.ip ?? null });
+    res.json(row);
+  } catch (err) { sendDbError(res, err, "employee-pay-components:update"); }
+});
 
 // ───── pay_components ─────
 router.get("/", async (req, res) => {
@@ -108,71 +175,6 @@ router.delete("/:id", async (req, res) => {
     await logAudit({ user_id: uid, table_name: "workforce_pay_components", record_id: id, action: "DELETE", ip_address: req.ip ?? null });
     res.status(204).send();
   } catch (err) { sendDbError(res, err, "pay-components:delete"); }
-});
-
-// ───── employee_pay_components ─────
-router.get("/employee-assignments", async (req, res) => {
-  const q = parseQuery(ListEmployeePayComponentsQuerySchema, req, res); if (!q) return;
-  try {
-    const c = [sql`coalesce(is_deleted, false) = false`];
-    if (q.employee_id) c.push(sql`employee_id = ${q.employee_id}`);
-    if (q.pay_component_id) c.push(sql`pay_component_id = ${q.pay_component_id}`);
-    if (q.active !== undefined) c.push(sql`active = ${q.active}`);
-    const r = await runSafeList({
-      table: "workforce.employee_pay_components", conditions: c,
-      allowedOrderColumns: EPC_ALLOWED, fallbackColumn: "effective_from",
-      orderBy: q.order_by, orderDir: q.order_dir,
-      limit: safeLimit(q.limit), offset: safeOffset(q.offset),
-    });
-    res.json(r);
-  } catch (err) { sendDbError(res, err, "employee-pay-components:list"); }
-});
-
-router.post("/employee-assignments", async (req, res) => {
-  const d = parseBody(CreateEmployeePayComponentSchema, req, res); if (!d) return;
-  const uid = currentUserId(req);
-  try {
-    const r = await db.execute(sql`
-      insert into workforce.employee_pay_components (
-        employee_id, pay_component_id, value_type, value_amount,
-        effective_from, effective_to, active, metadata,
-        created_by, updated_by, created_at, updated_at
-      ) values (
-        ${d.employee_id}, ${d.pay_component_id}, ${d.value_type}, ${d.value_amount},
-        ${d.effective_from}, ${d.effective_to ?? null}, ${d.active ?? true},
-        ${JSON.stringify(d.metadata ?? {})}::jsonb,
-        ${uid}, ${uid}, now(), now()
-      ) returning *
-    `);
-    const row = (r.rows ?? [])[0] as { id?: number } | undefined;
-    if (row?.id) await logAudit({ user_id: uid, table_name: "workforce_employee_pay_components", record_id: row.id, action: "INSERT", new_values: { employee_id: d.employee_id, pay_component_id: d.pay_component_id }, ip_address: req.ip ?? null });
-    res.status(201).json(row);
-  } catch (err) { sendDbError(res, err, "employee-pay-components:create"); }
-});
-
-router.patch("/employee-assignments/:id", async (req, res) => {
-  const id = idFromParams(req, res); if (!id) return;
-  const d = parseBody(UpdateEmployeePayComponentSchema, req, res); if (!d) return;
-  const uid = currentUserId(req);
-  const entries = Object.entries(d).filter(([, v]) => v !== undefined);
-  if (entries.length === 0) return res.status(400).json({ error: "אין שינויים" });
-  try {
-    const fragments = entries.map(([k, v]) =>
-      k === "metadata"
-        ? sql`${sql.raw(k)} = ${JSON.stringify(v ?? {})}::jsonb`
-        : sql`${sql.raw(k)} = ${v as string | number | boolean | null}`
-    );
-    let setClause = fragments[0];
-    for (let i = 1; i < fragments.length; i++) setClause = sql`${setClause}, ${fragments[i]}`;
-    const r = await db.execute(sql`
-      update workforce.employee_pay_components set ${setClause}, updated_by = ${uid}, updated_at = now()
-      where id = ${id} and coalesce(is_deleted,false)=false returning *
-    `);
-    const row = (r.rows ?? [])[0];
-    if (!row) return res.status(404).json({ error: "הקצאה לא נמצאה" });
-    await logAudit({ user_id: uid, table_name: "workforce_employee_pay_components", record_id: id, action: "UPDATE", new_values: Object.fromEntries(entries), ip_address: req.ip ?? null });
-    res.json(row);
-  } catch (err) { sendDbError(res, err, "employee-pay-components:update"); }
 });
 
 export default router;
