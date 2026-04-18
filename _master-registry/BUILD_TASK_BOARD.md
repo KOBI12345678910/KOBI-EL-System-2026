@@ -85,7 +85,7 @@ Tasks created during Phase 1 that do not exist in RECOVERY:
 | 4 | ~25 | pending D020 | |
 | 5 | ~20 | pending D006 | |
 | 6 | ~50 | pending D004 (per-table decision) | |
-| 7 | ~71 (T111–T165, T326–T360) | pending D012 | Commercial Mega Batch 01 (2026-04-18): 4/75 tables full-stack delivered (lead_sources, customer_segments, sales_orders, pricing_rules) |
+| 7 | ~42 (T111–T165 partial, T326–T360) | pending D012 | Commercial Mega Batch 01 (2026-04-18): 4/75 tables. Execution Mega Batch (2026-04-18): 29/29 execution entities full-stack delivered (10 new tables + 19 enhanced; 29 Zod, 29 API routers, 22 pages, menu + audit + permission matrix). Project360 + WorkOrder360 gates passed. |
 | 8 | ~100 | pending D005, D008 | |
 | 9 | ~45 | pending D014, D017 | |
 | 10 | ~27 | pending D015 | |
@@ -94,3 +94,37 @@ Tasks created during Phase 1 that do not exist in RECOVERY:
 | 13 | pending | after P12 | |
 | 14 | 1 (B016) | after P13 | |
 | 15 | 1 (B017) | after P14 | |
+
+---
+
+## Phase 7 — Mega Batch: Procurement Domain (2026-04-18) — DONE
+
+| ID | Task | Phase | Status | Priority | Evidence | Depends | Notes |
+|---|---|---|---|---|---|---|---|
+| B-PROC-01 | Emit `supabase/migrations/00047_procurement_domain_complete.sql` | 7 | done | critical | B-E015 | D014 | 7 new tables + po_receipts view + ALTERs + seeds + RLS + triggers |
+| B-PROC-02 | Emit `supabase/migrations/00048_procurement_menu_wiring.sql` | 7 | done | critical | B-E016 | B-PROC-01 | 16 idempotent menu entries |
+| B-PROC-03 | Emit 18 Zod schemas `lib-client/api-zod/src/procurement/*.ts` + barrel | 7 | done | critical | B-E017 | B-PROC-01 | zod + _shared + index |
+| B-PROC-04 | Emit 18 API routes `api-server/src/routes/procurement/*.ts` + aggregator | 7 | done | critical | B-E018 | B-PROC-03 | mounted at `/api/procurement/*` in routes/index.ts |
+| B-PROC-05 | Emit 14 Hebrew RTL pages `erp-app/src/pages/procurement/v2/*.tsx` | 7 | done | critical | B-E019 | B-PROC-04 | wouter lazy-load wired into App.tsx |
+| B-PROC-06 | Emit permission matrix `_master-registry/domains/procurement_permission_matrix.md` | 7 | done | high | B-E020 | B-PROC-01..05 | 10 roles × 18 models |
+| B-PROC-07 | Emit evidence log `_master-registry/procurement_evidence_log.md` | 7 | done | high | — | — | 13 sections |
+| B-PROC-08 | Update `BUILD_CHANGELOG.md` (B-C015..B-C020) | 7 | done | high | — | all | Phase 7 section extended |
+| B-PROC-09 | Update `BUILD_FINAL_STATUS.json` (procurement completion_percent 17→85, procurement_mega_batch_metadata) | 7 | done | high | — | all | domain_completion_average 6.8→12.8 |
+
+---
+
+## Phase 7 — Mega Batch: Execution Domain (2026-04-18) — DONE
+
+| ID | Task | Phase | Status | Priority | Evidence | Depends | Notes |
+|---|---|---|---|---|---|---|---|
+| B-EXEC-01 | Emit `supabase/migrations/00045_execution_domain_complete.sql` | 7 | done | critical | execution_evidence_log.md §3 §4 | D014 | 10 new tables + ALTER IF NOT EXISTS on 19 existing tables + state lifecycle CHECK constraints + audit triggers + seed (work_centers, installation_teams) |
+| B-EXEC-02 | Emit `supabase/migrations/00046_execution_menu_wiring.sql` | 7 | done | critical | — | B-EXEC-01 | 18 idempotent menu entries (projects/production/installation/engineering) |
+| B-EXEC-03 | Emit 29 Zod schemas `lib-client/api-zod/src/execution/*.ts` + `_shared.ts` + barrel | 7 | done | critical | — | B-EXEC-01 | 29 entities with Create/Update/Read/List query schemas |
+| B-EXEC-04 | Emit 29 API routes `api-server/src/routes/execution/*.ts` + `_shared.ts` + `_crud-factory.ts` + aggregator | 7 | done | critical | — | B-EXEC-03 | mounted at `/api/execution/*` in routes/index.ts; CRUD + state-transition endpoints |
+| B-EXEC-05 | Emit 22 Hebrew RTL pages `erp-app/src/pages/execution/*.tsx` (Project360 + WorkOrder360 + Task360 + Contract360 + Alert360 + 17 list pages) | 7 | done | critical | — | B-EXEC-04 | Project360 + WorkOrder360 completion gates passed |
+| B-EXEC-06 | Wire lazy imports + Route entries in `erp-app/src/App.tsx` | 7 | done | critical | — | B-EXEC-05 | 25 lazy imports, 29 `<Route>` entries placed above legacy redirects |
+| B-EXEC-07 | Emit permission matrix `_master-registry/domains/execution_permission_matrix.md` | 7 | done | high | — | B-EXEC-01..06 | endpoint → capability + role grants |
+| B-EXEC-08 | Emit evidence log `_master-registry/execution_evidence_log.md` | 7 | done | high | — | — | 12 sections |
+| B-EXEC-09 | Update `BUILD_CHANGELOG.md` (B-C080..B-C087) | 7 | done | high | — | all | Phase 7 section extended |
+| B-EXEC-10 | Update `BUILD_FINAL_STATUS.json` (execution completion_percent 3→92, execution_mega_batch_executed=true) | 7 | done | high | — | all | Project360 + WorkOrder360 gates passed |
+

@@ -24,15 +24,15 @@ interface QueryRow {
 
 // שיעור מע"מ נוכחי — 18% מ-1 בינואר 2026 (לפני כן 17% עד 2025-12-31)
 // להיסטוריה: חשבוניות שהוצאו לפני 2026-01-01 שומרות על 17%. חדשות נפתחות ב-18%.
-const VAT_RATE = 0.18; // שיעור מע"מ נוכחי 18%
-const VAT_RATE_PRIOR = 0.17; // שיעור מע"מ קודם עד 2025-12-31
-const VAT_EFFECTIVE_FROM = "2026-01-01"; // תאריך כניסה לתוקף של 18%
+export const VAT_RATE = 0.18; // שיעור מע"מ נוכחי 18%
+export const VAT_RATE_PRIOR = 0.17; // שיעור מע"מ קודם עד 2025-12-31
+export const VAT_EFFECTIVE_FROM = "2026-01-01"; // תאריך כניסה לתוקף של 18%
 
 /**
  * מחזיר את שיעור המע"מ התקף לתאריך נתון.
  * Historical invoices must keep their original rate — call with the invoice date.
  */
-function getVatRateForDate(isoDate?: string | Date | null): number {
+export function getVatRateForDate(isoDate?: string | Date | null): number {
   if (!isoDate) return VAT_RATE;
   const d = typeof isoDate === "string" ? new Date(isoDate) : isoDate;
   if (isNaN(d.getTime())) return VAT_RATE;

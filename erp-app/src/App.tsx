@@ -62,6 +62,32 @@ const RateLimitsPage = lazy(() => import('./pages/integrations/rate-limits'));
 const EventBusPage = lazy(() => import('./pages/integrations/event-bus'));
 const EnginePage = lazy(() => import('./pages/platform/workflow-engine'));
 const OpportunitiesPage = lazy(() => import('./pages/sales/opportunities'));
+
+// ───────── Execution domain (mega batch 2026-04-18) ─────────
+const ExecProjectsListPage = lazy(() => import('./pages/execution/ProjectsListPage'));
+const ExecProject360 = lazy(() => import('./pages/execution/Project360'));
+const ExecProjectRisksPage = lazy(() => import('./pages/execution/ProjectRisksPage'));
+const ExecProjectBlockersPage = lazy(() => import('./pages/execution/ProjectBlockersPage'));
+const ExecProjectCostPlansPage = lazy(() => import('./pages/execution/ProjectCostPlansPage'));
+const ExecTasksListPage = lazy(() => import('./pages/execution/TasksListPage'));
+const ExecTask360 = lazy(() => import('./pages/execution/Task360'));
+const ExecWorkOrdersListPage = lazy(() => import('./pages/execution/WorkOrdersListPage'));
+const ExecWorkOrder360 = lazy(() => import('./pages/execution/WorkOrder360'));
+const ExecWorkOrderTasksPage = lazy(() => import('./pages/execution/WorkOrderTasksPage'));
+const ExecDeliveryEventsPage = lazy(() => import('./pages/execution/DeliveryEventsPage'));
+const ExecInstallationEventsPage = lazy(() => import('./pages/execution/InstallationEventsPage'));
+const ExecMaterialPlanningPage = lazy(() => import('./pages/execution/MaterialPlanningPage'));
+const ExecContract360 = lazy(() => import('./pages/execution/Contract360'));
+const ExecAlert360 = lazy(() => import('./pages/execution/Alert360'));
+const ExecProductionOrdersPage = lazy(() => import('./pages/execution/ProductionOrdersPage'));
+const ExecWorkCentersPage = lazy(() => import('./pages/execution/WorkCentersPage'));
+const ExecLaborLogsPage = lazy(() => import('./pages/execution/LaborLogsPage'));
+const ExecInstallationTeamsPage = lazy(() => import('./pages/execution/InstallationTeamsPage'));
+const ExecSiteVisitsPage = lazy(() => import('./pages/execution/SiteVisitsPage'));
+const ExecPunchListsPage = lazy(() => import('./pages/execution/PunchListsPage'));
+const ExecDrawingsPage = lazy(() => import('./pages/execution/DrawingsPage'));
+const ExecBomHeadersPage = lazy(() => import('./pages/execution/BomHeadersPage'));
+const ExecRevisionControlPage = lazy(() => import('./pages/execution/RevisionControlPage'));
 const SalesDashboardPage = lazy(() => import('./pages/sales/sales-dashboard'));
 const SalesAnalyticsPage = lazy(() => import('./pages/sales/sales-analytics'));
 const SalesCommissionsPage = lazy(() => import('./pages/sales/sales-commissions'));
@@ -1146,6 +1172,23 @@ const CommercialCustomerSegmentsPage = lazy(() => import('./pages/commercial/cus
 const CommercialSalesOrdersPage = lazy(() => import('./pages/commercial/sales-orders'));
 const CommercialPricingRulesPage = lazy(() => import('./pages/commercial/pricing-rules'));
 
+// === PROCUREMENT DOMAIN (Mega Batch 00047/00048) — 14 v2 pages ===
+const ProcurementSuppliersListPageV2 = lazy(() => import('./pages/procurement/v2/SuppliersListPage'));
+const ProcurementSupplier360V2 = lazy(() => import('./pages/procurement/v2/Supplier360'));
+const ProcurementRFQsListPageV2 = lazy(() => import('./pages/procurement/v2/RFQsListPage'));
+const ProcurementRFQ360V2 = lazy(() => import('./pages/procurement/v2/RFQ360'));
+const ProcurementRFQItemsEditorV2 = lazy(() => import('./pages/procurement/v2/RFQItemsEditor'));
+const ProcurementPurchaseOrdersListPageV2 = lazy(() => import('./pages/procurement/v2/PurchaseOrdersListPage'));
+const ProcurementPurchaseOrder360V2 = lazy(() => import('./pages/procurement/v2/PurchaseOrder360'));
+const ProcurementPurchaseOrderLinesPageV2 = lazy(() => import('./pages/procurement/v2/PurchaseOrderLinesPage'));
+const ProcurementGoodsReceiptsPageV2 = lazy(() => import('./pages/procurement/v2/GoodsReceiptsPage'));
+const ProcurementThreeWayMatchQueueV2 = lazy(() => import('./pages/procurement/v2/ThreeWayMatchQueue'));
+const ProcurementSupplierInvoicesPageV2 = lazy(() => import('./pages/procurement/v2/SupplierInvoicesPage'));
+const ProcurementSupplierEvaluationsPageV2 = lazy(() => import('./pages/procurement/v2/SupplierEvaluationsPage'));
+const ProcurementApprovalsQueueV2 = lazy(() => import('./pages/procurement/v2/ProcurementApprovalsQueue'));
+const ProcurementContract360V2 = lazy(() => import('./pages/procurement/v2/Contract360'));
+const ProcurementSubcontractorsPageV2 = lazy(() => import('./pages/procurement/v2/SubcontractorsPage'));
+
 function Router() {
   const [location] = useLocation();
   return (
@@ -1172,6 +1215,35 @@ function Router() {
           <Route path="/system/model-catalog" component={ModelCatalogPage} />
           <Route path="/customers"><Redirect to="/sales/customers" /></Route>
           <Route path="/products"><Redirect to="/product-catalog" /></Route>
+          {/* ───── Execution domain routes (mega batch 2026-04-18) ───── */}
+          <Route path="/projects/list" component={ExecProjectsListPage} />
+          <Route path="/projects/risks" component={ExecProjectRisksPage} />
+          <Route path="/projects/blockers" component={ExecProjectBlockersPage} />
+          <Route path="/projects/cost-plans" component={ExecProjectCostPlansPage} />
+          <Route path="/projects/:id/risks" component={ExecProjectRisksPage} />
+          <Route path="/projects/:id/blockers" component={ExecProjectBlockersPage} />
+          <Route path="/projects/:id/cost-plans" component={ExecProjectCostPlansPage} />
+          <Route path="/projects/:id" component={ExecProject360} />
+          <Route path="/tasks" component={ExecTasksListPage} />
+          <Route path="/tasks/:id" component={ExecTask360} />
+          <Route path="/work-orders/list" component={ExecWorkOrdersListPage} />
+          <Route path="/work-orders/:id/tasks" component={ExecWorkOrderTasksPage} />
+          <Route path="/work-orders/:id" component={ExecWorkOrder360} />
+          <Route path="/work-order-tasks" component={ExecWorkOrderTasksPage} />
+          <Route path="/delivery-events" component={ExecDeliveryEventsPage} />
+          <Route path="/installation-events" component={ExecInstallationEventsPage} />
+          <Route path="/material-planning" component={ExecMaterialPlanningPage} />
+          <Route path="/contracts/:id" component={ExecContract360} />
+          <Route path="/alerts/:id" component={ExecAlert360} />
+          <Route path="/production-orders" component={ExecProductionOrdersPage} />
+          <Route path="/work-centers" component={ExecWorkCentersPage} />
+          <Route path="/labor-logs" component={ExecLaborLogsPage} />
+          <Route path="/installation-teams" component={ExecInstallationTeamsPage} />
+          <Route path="/site-visits" component={ExecSiteVisitsPage} />
+          <Route path="/punch-lists" component={ExecPunchListsPage} />
+          <Route path="/drawings" component={ExecDrawingsPage} />
+          <Route path="/bom-headers" component={ExecBomHeadersPage} />
+          <Route path="/revision-control" component={ExecRevisionControlPage} />
           <Route path="/projects"><Redirect to="/projects/dashboard" /></Route>
           <Route path="/invoices"><Redirect to="/finance/invoices" /></Route>
           <Route path="/sales-orders"><Redirect to="/sales/orders" /></Route>
@@ -1801,6 +1873,23 @@ function Router() {
           <Route path="/commercial/customer-segments" component={CommercialCustomerSegmentsPage} />
           <Route path="/commercial/sales-orders" component={CommercialSalesOrdersPage} />
           <Route path="/commercial/pricing-rules" component={CommercialPricingRulesPage} />
+
+          {/* Procurement Mega Batch (00047/00048) — 14 v2 pages */}
+          <Route path="/suppliers" component={ProcurementSuppliersListPageV2} />
+          <Route path="/suppliers/:id" component={ProcurementSupplier360V2} />
+          <Route path="/rfqs" component={ProcurementRFQsListPageV2} />
+          <Route path="/rfqs/:id" component={ProcurementRFQ360V2} />
+          <Route path="/rfqs/:id/items" component={ProcurementRFQItemsEditorV2} />
+          <Route path="/purchase-orders" component={ProcurementPurchaseOrdersListPageV2} />
+          <Route path="/purchase-orders/:id" component={ProcurementPurchaseOrder360V2} />
+          <Route path="/purchase-orders/:id/lines" component={ProcurementPurchaseOrderLinesPageV2} />
+          <Route path="/goods-receipts" component={ProcurementGoodsReceiptsPageV2} />
+          <Route path="/three-way-match" component={ProcurementThreeWayMatchQueueV2} />
+          <Route path="/supplier-invoices" component={ProcurementSupplierInvoicesPageV2} />
+          <Route path="/supplier-evaluations" component={ProcurementSupplierEvaluationsPageV2} />
+          <Route path="/procurement-approvals" component={ProcurementApprovalsQueueV2} />
+          <Route path="/contracts/:id" component={ProcurementContract360V2} />
+          <Route path="/subcontractors" component={ProcurementSubcontractorsPageV2} />
 
           <Route component={NotFound} />
         </Switch>

@@ -12,11 +12,17 @@ import type { Request, Response, NextFunction } from "express";
 // קבועי תצורה
 // ─────────────────────────────────────────────────────────
 
-/** מפתח סודי ל-JWT - נטען ממשתנה סביבה */
-const JWT_SECRET = process.env.JWT_SECRET || "default_jwt_secret_change_in_production_2026";
+/** מפתח סודי ל-JWT - נטען ממשתנה סביבה (חובה) */
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET environment variable is required. Set it in .env before starting the server.");
+}
 
-/** מפתח הצפנה לסודות 2FA */
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || "default_encryption_key_32chars!!";
+/** מפתח הצפנה לסודות 2FA (חובה) */
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
+if (!ENCRYPTION_KEY) {
+  throw new Error("ENCRYPTION_KEY environment variable is required. Set it in .env before starting the server.");
+}
 
 /** חלון זמן TOTP בשניות */
 const TOTP_WINDOW_SECONDS = 30;

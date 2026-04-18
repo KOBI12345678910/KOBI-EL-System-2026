@@ -254,7 +254,7 @@ async function ensureTables() {
         capabilities: ["daily_briefing","risk_summary","opportunity_detection","competitor_monitoring","strategic_recommendations","kpi_alerts"],
         modules_access: ["executive","all_modules","strategy"],
         autonomy_level: "advisory"
-      }
+      },
       // ─── 20 QA Testing Agents ─────────────────────────────────────
       {
         agent_key: "qa_terminal_runtime",

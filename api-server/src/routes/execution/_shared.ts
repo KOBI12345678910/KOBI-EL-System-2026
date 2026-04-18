@@ -98,14 +98,15 @@ export async function audit(
 ): Promise<void> {
   try {
     const userId = typeof req.userId === "string" ? parseInt(req.userId, 10) : req.userId;
+    const numId = typeof recordId === "number" ? recordId : parseInt(String(recordId), 10);
     await logAudit({
       user_id: Number.isFinite(userId as number) ? (userId as number) : null,
       user_name: req.username || null,
       table_name: tableName,
-      record_id: String(recordId),
+      record_id: Number.isFinite(numId) ? numId : 0,
       action,
-      old_values: oldValues ?? null,
-      new_values: newValues ?? null,
+      old_values: (oldValues as Record<string, unknown> | null) ?? null,
+      new_values: (newValues as Record<string, unknown> | null) ?? null,
       ip_address: req.ip || null,
       notes: null,
     });
