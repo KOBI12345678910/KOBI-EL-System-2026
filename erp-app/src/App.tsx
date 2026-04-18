@@ -1140,6 +1140,12 @@ function LazyErrorFallback() {
   );
 }
 
+// === COMMERCIAL DOMAIN (Mega Batch 00043/00044) ===
+const CommercialLeadSourcesPage = lazy(() => import('./pages/commercial/lead-sources'));
+const CommercialCustomerSegmentsPage = lazy(() => import('./pages/commercial/customer-segments'));
+const CommercialSalesOrdersPage = lazy(() => import('./pages/commercial/sales-orders'));
+const CommercialPricingRulesPage = lazy(() => import('./pages/commercial/pricing-rules'));
+
 function Router() {
   const [location] = useLocation();
   return (
@@ -1789,6 +1795,12 @@ function Router() {
           <Route path="/import-management" component={ImportManagementPage} />
           <Route path="/risk-management" component={RiskManagementPage} />
           <Route path="/finance/company-financials" component={CompanyFinancialsPage} />
+
+          {/* Commercial Mega Batch (00043/00044) */}
+          <Route path="/commercial/lead-sources" component={CommercialLeadSourcesPage} />
+          <Route path="/commercial/customer-segments" component={CommercialCustomerSegmentsPage} />
+          <Route path="/commercial/sales-orders" component={CommercialSalesOrdersPage} />
+          <Route path="/commercial/pricing-rules" component={CommercialPricingRulesPage} />
 
           <Route component={NotFound} />
         </Switch>

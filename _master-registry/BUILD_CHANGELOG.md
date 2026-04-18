@@ -69,3 +69,22 @@ Types: `docs` | `decision` | `matrix` | `schema` | `data` | `code` | `deploy` | 
 
 ### Phase 15 — Enterprise Lock & Release
 (no entries yet)
+
+---
+
+## Phase 7 — Truly-Missing Build-Out (partial — Commercial Mega Batch)
+
+Batch: `B-BATCH-COMMERCIAL-MEGA-01` — 2026-04-18
+
+| ID | Date | Phase | Type | Description | Evidence |
+|---|---|---|---|---|---|
+| B-C100 | 2026-04-18 | 7 | docs   | Evidence log for commercial mega batch — patterns, conventions, decisions. | `_master-registry/commercial_evidence_log.md` |
+| B-C101 | 2026-04-18 | 7 | schema | Migration 00043 — 4 new commercial tables (lead_sources, customer_segments, sales_orders, pricing_rules) + ALTER enhancements on 11 existing tables + seed data + updated_at triggers. | `supabase/migrations/00043_commercial_domain_complete.sql` |
+| B-C102 | 2026-04-18 | 7 | schema | Migration 00044 — commercial menu wiring (17 entries under category 2 'מכירות ולקוחות'), idempotent. | `supabase/migrations/00044_commercial_menu_wiring.sql` |
+| B-C103 | 2026-04-18 | 7 | code   | Zod schemas — commercial domain (5 files: lead-sources, customer-segments, sales-orders, pricing-rules, index). | `lib-client/api-zod/src/commercial/` |
+| B-C104 | 2026-04-18 | 7 | code   | API routes — commercial domain (5 files: 4 CRUD routers + aggregator). Full auth + audit + validation. | `api-server/src/routes/commercial/` |
+| B-C105 | 2026-04-18 | 7 | code   | Mount commercial aggregator at `/api/commercial` in `routes/index.ts`. | `api-server/src/routes/index.ts` |
+| B-C106 | 2026-04-18 | 7 | code   | Frontend pages — commercial domain (4 pages: lead-sources, customer-segments, sales-orders, pricing-rules). | `erp-app/src/pages/commercial/` |
+| B-C107 | 2026-04-18 | 7 | code   | App.tsx — 4 lazy imports + 4 `<Route>` declarations for `/commercial/*` paths. | `erp-app/src/App.tsx` |
+| B-C108 | 2026-04-18 | 7 | docs   | Commercial permission matrix (RACI-style: role × endpoint, status-transition RACI). | `_master-registry/domains/commercial_permission_matrix.md` |
+

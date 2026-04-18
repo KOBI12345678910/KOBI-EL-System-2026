@@ -126,9 +126,15 @@ import warehousesRouter from "./warehouses";
 import stock_countsRouter from "./stock_counts";
 import stock_movementsRouter from "./stock_movements";
 import purchase_order_itemsRouter from "./purchase_order_items";
+import commercialRouter from "./commercial";
+import procurementRouter from "./procurement";
+import executionRouter from "./execution";
 
 const router: IRouter = Router();
 
+router.use("/commercial", commercialRouter);
+router.use("/execution", executionRouter);
+router.use("/procurement", procurementRouter);
 router.use(healthRouter);
 router.use(dashboardStatsRouter);
 router.use(dedicatedEntityRoutes);

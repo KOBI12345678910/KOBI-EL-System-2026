@@ -98,7 +98,7 @@
     "phase_4":  { "title": "RLS & Permissions Audit",            "status": "pending", "started": null, "completed": null, "focus": "Resolve 213↔302 RLS drift; per-table audit (D020)" },
     "phase_5":  { "title": "Duplicate Elimination",              "status": "pending", "started": null, "completed": null, "focus": "5 duplicate tables + 285 endpoint duplicates + 32 menu + 15 route duplicates" },
     "phase_6":  { "title": "Orphan Table Decision (wire or drop)","status": "pending", "started": null, "completed": null, "focus": "29 primary + 119 extended orphans (D004)" },
-    "phase_7":  { "title": "Truly-Missing Build-Out",            "status": "pending", "started": null, "completed": null, "focus": "75 net-new tables full stack (D012)" },
+    "phase_7":  { "title": "Truly-Missing Build-Out",            "status": "in_progress", "started": "2026-04-18", "completed": null, "focus": "75 net-new tables full stack (D012); commercial_mega_batch_executed=true on 2026-04-18 — delivered 4/75 tables (lead_sources, customer_segments, sales_orders, pricing_rules) full stack (migration + zod + api + page)" },
     "phase_8":  { "title": "Menu/Route/Page Reconciliation",     "status": "pending", "started": null, "completed": null, "focus": "458 menu-no-route + 496 route-no-menu + 535 pages-no-route + 779 invisible menu" },
     "phase_9":  { "title": "Broken Import/Page Repair",          "status": "pending", "started": null, "completed": null, "focus": "4 runtime-breaking + 30 broken imports + 5 SQL bugs + 13 dead links + 43 orphan pages" },
     "phase_10": { "title": "Dashboard & Report Rewiring",        "status": "pending", "started": null, "completed": null, "focus": "10 dashboards + 17 reports → real tables (D015)" },
@@ -121,7 +121,7 @@
     "L10_integrity_runtime":      { "present": "INTEGRITY_REPORT=PASS (v2 registry); 43 migrations; Dockerfile + k8s; CI hooks",    "missing": "30 broken imports, 285 duplicate endpoints, 5 paren bugs, deployment-verify gate not run", "completion_percent": 55 }
   },
   "domain_completion": {
-    "commercial":       { "expected_models": 18, "fully_present": 2,  "partial": 15, "completion_percent": 11, "business_readiness": "partial", "gate_status": "blocked",   "notes": "leads + work_orders-equiv full; quote_lines/revisions/approval_rules unregistered" },
+    "commercial":       { "expected_models": 18, "fully_present": 6,  "partial": 12, "completion_percent": 33, "business_readiness": "partial", "gate_status": "in_progress", "notes": "B-BATCH-COMMERCIAL-MEGA-01: +4 new tables built full-stack (lead_sources, customer_segments, sales_orders, pricing_rules) via migrations 00043/00044; zod + api + page wired; permission matrix documented. 12 existing tables still need enhance-level Zod/page coverage." },
     "execution":        { "expected_models": 29, "fully_present": 1,  "partial": 28, "completion_percent": 3,  "business_readiness": "blocked",  "gate_status": "blocked",   "notes": "work_orders full; everything else partial — tasks/deliveries/risks/blockers unregistered" },
     "procurement":      { "expected_models": 18, "fully_present": 3,  "partial": 15, "completion_percent": 17, "business_readiness": "partial", "gate_status": "blocked",   "notes": "suppliers (dup risk), purchase_orders, rfqs full; contracts partial; 15 others unregistered" },
     "inventory":        { "expected_models": 18, "fully_present": 1,  "partial": 17, "completion_percent": 6,  "business_readiness": "blocked",  "gate_status": "blocked",   "notes": "materials full; inventory partial; 16 tables unregistered" },
@@ -216,6 +216,24 @@
     "Phase 1 is read-only on code. Only files under _master-registry/ and _master-registry/domains/ were created.",
     "MENU_ROUTE_COVERAGE_MATRIX emits summary + sample per B-D011; full 2000-row listing deferred to Phase 8.",
     "All deployment_verified flags default to false until Phase 11 runs mcp__supabase__list_tables.",
-    "domain_completion_average_percent uses unweighted mean of 13 domain completion_percent values."
-  ]
+    "domain_completion_average_percent uses unweighted mean of 13 domain completion_percent values.",
+    "Commercial Mega Batch executed 2026-04-18 (B-BATCH-COMMERCIAL-MEGA-01): migrations 00043 + 00044, Zod/API/page for 4 new tables, App.tsx wiring, permission matrix. See `_master-registry/commercial_evidence_log.md`."
+  ],
+  "commercial_mega_batch_executed": true,
+  "commercial_mega_batch_metadata": {
+    "date": "2026-04-18",
+    "batch_id": "B-BATCH-COMMERCIAL-MEGA-01",
+    "tables_added": ["commercial.lead_sources","commercial.customer_segments","commercial.sales_orders","commercial.pricing_rules"],
+    "migrations": ["00043_commercial_domain_complete.sql","00044_commercial_menu_wiring.sql"],
+    "zod_files": 5,
+    "api_route_files": 5,
+    "page_files": 4,
+    "app_tsx_edits": 2,
+    "permission_matrix_doc": "_master-registry/domains/commercial_permission_matrix.md",
+    "deferred": [
+      "RLS policies for 4 new commercial tables (separate migration per project convention)",
+      "Enhancement Zod/API/pages for the 14 existing commercial tables",
+      "18 full entity Zod + page triad — shipped only 4 NEW tables per context-budget prioritization"
+    ]
+  }
 }

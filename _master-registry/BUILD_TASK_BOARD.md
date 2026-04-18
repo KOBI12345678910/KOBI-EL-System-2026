@@ -85,7 +85,7 @@ Tasks created during Phase 1 that do not exist in RECOVERY:
 | 4 | ~25 | pending D020 | |
 | 5 | ~20 | pending D006 | |
 | 6 | ~50 | pending D004 (per-table decision) | |
-| 7 | ~75 (T111–T165, T326–T360) | pending D012 | |
+| 7 | ~71 (T111–T165, T326–T360) | pending D012 | Commercial Mega Batch 01 (2026-04-18): 4/75 tables full-stack delivered (lead_sources, customer_segments, sales_orders, pricing_rules) |
 | 8 | ~100 | pending D005, D008 | |
 | 9 | ~45 | pending D014, D017 | |
 | 10 | ~27 | pending D015 | |
