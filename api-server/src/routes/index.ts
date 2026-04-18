@@ -129,6 +129,7 @@ import purchase_order_itemsRouter from "./purchase_order_items";
 import commercialRouter from "./commercial";
 import procurementRouter from "./procurement";
 import executionRouter from "./execution";
+import financeV2Router from "./finance/index";
 
 const router: IRouter = Router();
 
@@ -786,6 +787,7 @@ router.use('/contract-lifecycle', contractLifecycleRouter);
 router.use('/contract-templates', contractTemplatesRouter);
 router.use('/contractor-payment-decision', contractorPaymentDecisionRouter);
 router.use('/api/v2/contracts', contractsRouter);
+router.use('/api/v2/finance', financeV2Router);
 router.use('/crm-communications', crmCommunicationsRouter);
 router.use('/crm-customer360', crmCustomer360Router);
 router.use('/crm-sales-pipeline', crmSalesPipelineRouter);

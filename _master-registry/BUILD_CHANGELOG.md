@@ -112,4 +112,20 @@ Batch: `B-BATCH-COMMERCIAL-MEGA-01` — 2026-04-18
 | B-C106 | 2026-04-18 | 7 | code   | Frontend pages — commercial domain (4 pages: lead-sources, customer-segments, sales-orders, pricing-rules). | `erp-app/src/pages/commercial/` |
 | B-C107 | 2026-04-18 | 7 | code   | App.tsx — 4 lazy imports + 4 `<Route>` declarations for `/commercial/*` paths. | `erp-app/src/App.tsx` |
 | B-C108 | 2026-04-18 | 7 | docs   | Commercial permission matrix (RACI-style: role × endpoint, status-transition RACI). | `_master-registry/domains/commercial_permission_matrix.md` |
+| C021   | 2026-04-18 | 7 | code   | Fixed SQLi in `commercial/sales-orders.ts` LIST handler via parameterized bindings — replaced `sql.raw` + hand-rolled quote escaping with `sql` template fragments joined via `sql.join`, added explicit whitelist for `order_by`/`order_dir` identifier slots. Preserved API contract and all filters (q, status, customer_id, quote_id, from_date, to_date). Same unsafe pattern still present in `customer-segments.ts`, `pricing-rules.ts`, `lead-sources.ts` — flagged in B-D033 for follow-up. | `api-server/src/routes/commercial/sales-orders.ts` |
+
+---
+
+## Phase 7 — Foundation Fix (safe subset) — 2026-04-18
+
+Batch: `B-BATCH-FOUNDATION-FIX-01`
+
+| ID | Date | Phase | Type | Description | Evidence |
+|---|---|---|---|---|---|
+| C015 | 2026-04-18 | 7 | code   | Created `tsconfig.base.json` at repo root with strict settings (ES2022, strict:true, noImplicitReturns:true). Note: `api-server/tsconfig.json` references `../../tsconfig.base.json` which from `api-server/` resolves one level outside repo root — pre-existing path drift, documented in B-D034, not changed this pass. | `tsconfig.base.json` |
+| C016 | 2026-04-18 | 7 | code   | Fixed syntax error in `api-server/src/routes/ai-agents-system.ts` — added missing `,` after `ceo_advisor` object (line 257 `}` → `},`) before `// ─── 20 QA Testing Agents` comment and next object literal at line 259. Resolves `error TS1005: ',' expected.` | `api-server/src/routes/ai-agents-system.ts:257` |
+| C017 | 2026-04-18 | 7 | code   | Removed insecure JWT/ENCRYPTION_KEY default fallbacks in `api-server/src/lib/security-upgrade.ts`. Replaced `\|\|` default-string with fail-fast `throw` at module import time. Previous fallbacks `"default_jwt_secret_change_in_production_2026"` / `"default_encryption_key_32chars!!"` would otherwise sign tokens and encrypt 2FA secrets with shipped constants if env vars unset. Downstream usages (lines 66, 172, 183, 409) retain type narrowing. | `api-server/src/lib/security-upgrade.ts:16-25` |
+| C018 | 2026-04-18 | 7 | docs   | Verified `erp-app/package.json` already contains `@tailwindcss/typography` (devDeps) and `wouter` (deps). No changes required. | `erp-app/package.json` |
+| C019 | 2026-04-18 | 7 | decision | Documented 3 BLOCKED items in BUILD_DECISION_LOG §5: B-D030 (authMiddleware global mount), B-D031 (30 VAT literal replacements), B-D032 (AR/AP gross/net asymmetry). Each includes required sign-offs and interim mitigations. | `_master-registry/BUILD_DECISION_LOG.md` §5 |
+| C020 | 2026-04-18 | 7 | docs   | Produced `FOUNDATION_FIX_REPORT.md` — 4 fixes applied, 3 blocked for review. tsc delta measurements, validation checklist. | `_master-registry/FOUNDATION_FIX_REPORT.md` |
 

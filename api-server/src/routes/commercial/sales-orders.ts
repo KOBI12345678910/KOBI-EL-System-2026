@@ -65,25 +65,42 @@ async function nextOrderNumber(): Promise<string> {
 // ──────────────────────────────────────────────────────────────
 // LIST
 // ──────────────────────────────────────────────────────────────
+// Whitelists for identifier positions (order_by / order_dir). Zod already
+// constrains these to the same enums, but we re-validate here as defence in
+// depth before any value is embedded into raw SQL identifier slots.
+const LIST_ORDER_BY = new Set([
+  "order_date", "total_with_vat", "created_at", "updated_at", "status",
+]);
+const LIST_ORDER_DIR = new Set(["asc", "desc"]);
+
 router.get("/", async (req: Request, res: Response) => {
   const parsed = ListSalesOrdersQuerySchema.safeParse(req.query);
   if (!parsed.success) { res.status(400).json({ error: "בקשה לא תקינה", details: parsed.error.flatten() }); return; }
   const { q, status, customer_id, quote_id, from_date, to_date, limit, offset, order_by, order_dir } = parsed.data;
 
-  const whereParts: string[] = ["deleted_at is null"];
+  // Build WHERE as parameterized sql`` fragments. All user-supplied values go
+  // through ${} bindings; nothing is string-concatenated into the SQL text.
+  const conditions = [sql`deleted_at is null`];
   if (q) {
-    const safe = q.replace(/'/g, "''");
-    whereParts.push(`(order_number ILIKE '%${safe}%' OR notes ILIKE '%${safe}%')`);
+    const like = `%${q}%`;
+    conditions.push(sql`(order_number ILIKE ${like} OR notes ILIKE ${like})`);
   }
-  if (status) whereParts.push(`status = '${status}'`);
-  if (customer_id) whereParts.push(`customer_id = ${customer_id}`);
-  if (quote_id) whereParts.push(`quote_id = ${quote_id}`);
-  if (from_date) whereParts.push(`order_date >= '${from_date.replace(/'/g, "''")}'`);
-  if (to_date) whereParts.push(`order_date <= '${to_date.replace(/'/g, "''")}'`);
-  const whereClause = `where ${whereParts.join(" and ")}`;
+  if (status) conditions.push(sql`status = ${status}`);
+  if (customer_id) conditions.push(sql`customer_id = ${customer_id}`);
+  if (quote_id) conditions.push(sql`quote_id = ${quote_id}`);
+  if (from_date) conditions.push(sql`order_date >= ${from_date}`);
+  if (to_date) conditions.push(sql`order_date <= ${to_date}`);
+  const whereClause = sql`where ${sql.join(conditions, sql` and `)}`;
+
+  // Identifier slots (column name + direction) cannot be parameter-bound by
+  // the driver, so we enforce an explicit whitelist and only then splice them
+  // in via sql.raw. Zod has already narrowed the types to the same enums.
+  const safeOrderBy = LIST_ORDER_BY.has(order_by) ? order_by : "order_date";
+  const safeOrderDir = LIST_ORDER_DIR.has(order_dir) ? order_dir : "desc";
+  const orderClause = sql`order by ${sql.raw(safeOrderBy)} ${sql.raw(safeOrderDir)}`;
 
   try {
-    const rows = await db.execute(sql.raw(`
+    const rows = await db.execute(sql`
       select id, public_id, order_number, customer_id, quote_id, opportunity_id, status,
              order_date, expected_delivery, actual_delivery,
              subtotal, discount_total, vat_rate, vat_total, total_amount, total_with_vat,
@@ -92,10 +109,12 @@ router.get("/", async (req: Request, res: Response) => {
              created_at, updated_at, created_by, updated_by, deleted_at
       from commercial.sales_orders
       ${whereClause}
-      order by ${order_by} ${order_dir}
+      ${orderClause}
       limit ${limit} offset ${offset}
-    `));
-    const countRes = await db.execute(sql.raw(`select count(*)::int as total from commercial.sales_orders ${whereClause}`));
+    `);
+    const countRes = await db.execute(sql`
+      select count(*)::int as total from commercial.sales_orders ${whereClause}
+    `);
     res.json({
       data: rows.rows ?? [],
       total: Number((countRes.rows?.[0] as { total?: number })?.total ?? 0),

@@ -91,5 +91,59 @@ These are authoritative. Full text lives in `RECOVERY_DECISION_LOG.md`. One-line
 
 ## 3. Decision index summary
 - Imported from RECOVERY: **50**
-- New BUILD decisions: **15**
-- Total tracked: **65**
+- New BUILD decisions: **21** (B-D001–B-D016 + B-D030–B-D035, one pre-existing B-D033)
+- Total tracked: **71**
+
+---
+
+## 4. Security hardening decisions
+
+| ID | Topic | Decision | Status | Rationale | Owner | Date |
+|---|---|---|---|---|---|---|
+| B-D033 | SQLi-safe query pattern for commercial routers | All future route files must use parameterized `sql` template bindings, never `sql.raw()` with user input. Commercial `sales-orders.ts` LIST handler fixed (C021). Identifier slots (`order_by`, `order_dir`, column names in dynamic SET clauses) must be gated by an explicit whitelist before any `sql.raw` splice. Apply same review to other commercial routes where `sql.raw` was detected: `customer-segments.ts`, `pricing-rules.ts`, `lead-sources.ts` — each has the same unsafe LIST-handler pattern and must be remediated in a follow-up pass. | approved | Hand-rolled quote escaping (`.replace(/'/g, "''")`) breaks under backslash handling, non-UTF-8 sequences, and does nothing for numeric/identifier positions — classic SQLi footgun. Parameterized bindings delegate escaping to the driver. | architect | 2026-04-18 |
+
+---
+
+## 5. Foundation Fix — BLOCKED items (2026-04-18)
+
+### B-D030 — authMiddleware global mount — BLOCKED
+- **Status:** `blocked_pending_human_review`
+- **Reason:** Mounting `authMiddleware` at the global `/api/*` router would fail-close every endpoint currently reachable anonymously. Per `QA_AGENT_12_PERMISSIONS.md` this is **4,128 endpoints**.
+- **Required before unblock:**
+  - Audit of every service-to-service caller (mobile-app, erp-app, external webhooks, CI smoke tests).
+  - Final approval of the exemption allow-list (health checks, public catalogue, signed-webhook receivers, OAuth callbacks, etc.).
+  - Staging rollout plan with a shadow/report-only mode for >= 48 h.
+  - Rollback procedure (feature-flag + router unmount + cache invalidation).
+- **Current mitigation:** Per-router `authMiddleware` is already applied on the new `commercial`, `execution`, `procurement` route trees. Legacy routes remain unauthenticated pending full-mount.
+- **Blockers to lift:** human sign-off from security owner **and** ops owner.
+- **Do not auto-mount.** Requires explicit human approval.
+
+### B-D031 — 30 hardcoded VAT literal replacements — BLOCKED
+- **Status:** `blocked_pending_accounting_review`
+- **Reason:** Replacing `* 0.18` / `* 0.17` / `/ 1.18` with `getVatRateForDate(date)` changes financial computation. Any existing booked record whose posting date yields a rate different from what was persisted will cause historical reports to diverge from posted ledger entries.
+- **Scope:** ~30 files under `api-server/src/routes/` — discover via `grep -rE '\* 0\.18|/ 1\.18|\* 0\.17' api-server/src/routes/`.
+- **Required before unblock:**
+  - Accounting owner sign-off on the canonical VAT-rate resolution function.
+  - Audit of `getVatRateForDate()` behaviour for **all** historical dates in the ledger (especially the 17%→18% transition cutover).
+  - Migration plan for in-flight invoices (quotes created pre-cutover, invoiced post-cutover).
+  - Reconciliation plan for already-posted journal entries (re-state vs. grandfather).
+- **Safe workaround in place:** New code paths under `commercial`, `execution`, `procurement`, and `finance` already consume `getVatRateForDate()` correctly.
+
+### B-D032 — AR/AP VAT gross/net asymmetry — BLOCKED
+- **Status:** `blocked_pending_accounting_review`
+- **Reason:** `api-server/src/routes/finance/ar-enterprise.ts:92` treats the `amount` field as **gross** (VAT-inclusive). `api-server/src/routes/finance/ap-enterprise.ts:90` treats it as **net** (VAT-exclusive). Normalising either side changes the semantic meaning of `amount` in persisted rows.
+- **Required before unblock:**
+  - Chart-of-accounts owner decision on the canonical interpretation (gross vs. net, per domain).
+  - Data migration plan for existing rows (backfill `amount_net` / `amount_gross` columns, or transform in place).
+  - Report-regeneration plan for VAT-returns, AR-aging, AP-aging, and trial-balance reports that key on `amount`.
+- **Interim guard:** New Zod schemas in `commercial`, `execution`, `procurement`, `finance` explicitly document `amount` semantics (`amount_net` + `vat_amount` + `amount_gross` where all three exist).
+- **Blockers to lift:** accounting owner + data owner sign-off.
+
+---
+
+## 6. Foundation Fix — decisions applied (2026-04-18)
+
+| ID | Topic | Decision | Status | Rationale | Owner | Date |
+|---|---|---|---|---|---|---|
+| B-D034 | `tsconfig.base.json` at repo root | Created shared strict base (`target ES2022`, `strict:true`, `noImplicitReturns:true`, `allowSyntheticDefaultImports:true`) at `C:/Users/kobi/Projects/techno-kol-uzi-2026/tsconfig.base.json`. Note: `api-server/tsconfig.json` references `../../tsconfig.base.json` which from `api-server/` resolves to `C:/Users/kobi/Projects/tsconfig.base.json` — one level **outside** the repo root. Pre-existing path drift. Not changed this pass per directive. Follow-up: flip the extends path to `../tsconfig.base.json` (single `../`). | approved | Unblocks intent of shared config; documents relative-path drift for separate remediation. | architect | 2026-04-18 |
+| B-D035 | JWT / ENCRYPTION_KEY fail-fast | Removed `\|\|` insecure-default fallbacks in `api-server/src/lib/security-upgrade.ts` (lines 16, 22). Server now throws at module import time if either env var is missing. | approved | Eliminates boot-with-default-secret footgun. The previous fallbacks `"default_jwt_secret_change_in_production_2026"` / `"default_encryption_key_32chars!!"` would otherwise silently sign tokens and encrypt 2FA secrets with shipped constants. | architect | 2026-04-18 |
