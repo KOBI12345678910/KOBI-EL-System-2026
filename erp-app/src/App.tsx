@@ -1176,6 +1176,26 @@ const CommercialPricingRulesPage = lazy(() => import('./pages/commercial/pricing
 const FinanceInvoice360 = lazy(() => import('./pages/finance/Invoice360'));
 const FinancePayment360 = lazy(() => import('./pages/finance/Payment360'));
 
+// === GOVERNANCE DOMAIN (00059/00060) — admin-only surfaces ===
+const GovUsersPage = lazy(() => import('./pages/governance/UsersPage'));
+const GovRolesPage = lazy(() => import('./pages/governance/RolesPage'));
+const GovPermissionsPage = lazy(() => import('./pages/governance/PermissionsPage'));
+const GovAuditLogsPage = lazy(() => import('./pages/governance/AuditLogsPage'));
+const GovStateHistoryPage = lazy(() => import('./pages/governance/StateHistoryPage'));
+const GovDomainEventsPage = lazy(() => import('./pages/governance/DomainEventsPage'));
+const GovWebhooksPage = lazy(() => import('./pages/governance/WebhooksPage'));
+const GovWebhookDeliveriesPage = lazy(() => import('./pages/governance/WebhookDeliveriesPage'));
+const GovIntegrationsPage = lazy(() => import('./pages/governance/IntegrationsPage'));
+const GovIntegrationSyncLogsPage = lazy(() => import('./pages/governance/IntegrationSyncLogsPage'));
+const GovFeatureFlagsPage = lazy(() => import('./pages/governance/FeatureFlagsPage'));
+const GovHealthChecksPage = lazy(() => import('./pages/governance/HealthChecksPage'));
+const GovValidationsLogPage = lazy(() => import('./pages/governance/ValidationsLogPage'));
+const GovConfigEntriesPage = lazy(() => import('./pages/governance/ConfigEntriesPage'));
+const GovQueueJobsPage = lazy(() => import('./pages/governance/QueueJobsPage'));
+const GovSLATimersPage = lazy(() => import('./pages/governance/SLATimersPage'));
+const GovEscalationRulesPage = lazy(() => import('./pages/governance/EscalationRulesPage'));
+const GovSecurityEventsPage = lazy(() => import('./pages/governance/SecurityEventsPage'));
+
 // === PROCUREMENT DOMAIN (Mega Batch 00047/00048) — 14 v2 pages ===
 const ProcurementSuppliersListPageV2 = lazy(() => import('./pages/procurement/v2/SuppliersListPage'));
 const ProcurementSupplier360V2 = lazy(() => import('./pages/procurement/v2/Supplier360'));
@@ -1192,6 +1212,29 @@ const ProcurementSupplierEvaluationsPageV2 = lazy(() => import('./pages/procurem
 const ProcurementApprovalsQueueV2 = lazy(() => import('./pages/procurement/v2/ProcurementApprovalsQueue'));
 const ProcurementContract360V2 = lazy(() => import('./pages/procurement/v2/Contract360'));
 const ProcurementSubcontractorsPageV2 = lazy(() => import('./pages/procurement/v2/SubcontractorsPage'));
+
+// === DOCS DOMAIN (Mega Batch 00055/00056) — 10 v2 pages ===
+const DocsDocumentsListPageV2 = lazy(() => import('./pages/docs/v2/DocumentsListPage'));
+const DocsDocument360V2 = lazy(() => import('./pages/docs/v2/Document360'));
+const DocsDocumentVersionsPageV2 = lazy(() => import('./pages/docs/v2/DocumentVersionsPage'));
+const DocsAttachmentsPageV2 = lazy(() => import('./pages/docs/v2/AttachmentsPage'));
+const DocsOCRCenterPageV2 = lazy(() => import('./pages/docs/v2/OCRCenterPage'));
+const DocsOCRRunsPageV2 = lazy(() => import('./pages/docs/v2/OCRRunsPage'));
+const DocsExtractionRunsPageV2 = lazy(() => import('./pages/docs/v2/ExtractionRunsPage'));
+const DocsClassificationRunsPageV2 = lazy(() => import('./pages/docs/v2/ClassificationRunsPage'));
+const DocsSignatureRequestsPageV2 = lazy(() => import('./pages/docs/v2/SignatureRequestsPage'));
+const DocsKnowledgeCardsPageV2 = lazy(() => import('./pages/docs/v2/KnowledgeCardsPage'));
+
+// === INTELLIGENCE DOMAIN (Mega Batch 00057/00058) — 9 pages ===
+const IntelligenceAIInsightsPage = lazy(() => import('./pages/intelligence/AIInsightsPage'));
+const IntelligenceAnomalyCasesPage = lazy(() => import('./pages/intelligence/AnomalyCasesPage'));
+const IntelligenceRecommendationCenterPage = lazy(() => import('./pages/intelligence/RecommendationCenterPage'));
+const IntelligenceForecastModelsPage = lazy(() => import('./pages/intelligence/ForecastModelsPage'));
+const IntelligenceAgentRegistryPage = lazy(() => import('./pages/intelligence/AgentRegistryPage'));
+const IntelligenceAgentJobsPage = lazy(() => import('./pages/intelligence/AgentJobsPage'));
+const IntelligenceOrchestrationFlowsPage = lazy(() => import('./pages/intelligence/OrchestrationFlowsPage'));
+const IntelligencePromptTemplatesPage = lazy(() => import('./pages/intelligence/PromptTemplatesPage'));
+const IntelligenceProcessMiningPage = lazy(() => import('./pages/intelligence/ProcessMiningPage'));
 
 function Router() {
   const [location] = useLocation();
@@ -1895,9 +1938,52 @@ function Router() {
           <Route path="/contracts/:id" component={ProcurementContract360V2} />
           <Route path="/subcontractors" component={ProcurementSubcontractorsPageV2} />
 
+          {/* Docs Mega Batch (00055/00056) — 10 v2 pages */}
+          <Route path="/documents" component={DocsDocumentsListPageV2} />
+          <Route path="/documents/:id/versions" component={DocsDocumentVersionsPageV2} />
+          <Route path="/documents/:id" component={DocsDocument360V2} />
+          <Route path="/attachments" component={DocsAttachmentsPageV2} />
+          <Route path="/ocr-center" component={DocsOCRCenterPageV2} />
+          <Route path="/ocr-runs" component={DocsOCRRunsPageV2} />
+          <Route path="/extraction-runs" component={DocsExtractionRunsPageV2} />
+          <Route path="/classification-runs" component={DocsClassificationRunsPageV2} />
+          <Route path="/signature-requests" component={DocsSignatureRequestsPageV2} />
+          <Route path="/knowledge-cards" component={DocsKnowledgeCardsPageV2} />
+
           {/* Finance Tier 1 (00051/00052) — Invoice360 + Payment360 */}
           <Route path="/invoices/:id" component={FinanceInvoice360} />
           <Route path="/payments/:id" component={FinancePayment360} />
+
+          {/* Governance Tier (00059/00060) — admin-only surfaces */}
+          <Route path="/users" component={GovUsersPage} />
+          <Route path="/roles" component={GovRolesPage} />
+          <Route path="/permissions" component={GovPermissionsPage} />
+          <Route path="/audit-logs" component={GovAuditLogsPage} />
+          <Route path="/state-history" component={GovStateHistoryPage} />
+          <Route path="/domain-events" component={GovDomainEventsPage} />
+          <Route path="/webhooks" component={GovWebhooksPage} />
+          <Route path="/webhook-deliveries" component={GovWebhookDeliveriesPage} />
+          <Route path="/integrations" component={GovIntegrationsPage} />
+          <Route path="/integration-sync-logs" component={GovIntegrationSyncLogsPage} />
+          <Route path="/feature-flags" component={GovFeatureFlagsPage} />
+          <Route path="/health-checks" component={GovHealthChecksPage} />
+          <Route path="/validations-log" component={GovValidationsLogPage} />
+          <Route path="/config" component={GovConfigEntriesPage} />
+          <Route path="/queue-jobs" component={GovQueueJobsPage} />
+          <Route path="/sla-timers" component={GovSLATimersPage} />
+          <Route path="/escalation-rules" component={GovEscalationRulesPage} />
+          <Route path="/security-events" component={GovSecurityEventsPage} />
+
+          {/* Intelligence Mega Batch (00057/00058) — 9 pages */}
+          <Route path="/ai-insights" component={IntelligenceAIInsightsPage} />
+          <Route path="/anomalies" component={IntelligenceAnomalyCasesPage} />
+          <Route path="/recommendations" component={IntelligenceRecommendationCenterPage} />
+          <Route path="/forecast-models" component={IntelligenceForecastModelsPage} />
+          <Route path="/agents" component={IntelligenceAgentRegistryPage} />
+          <Route path="/agent-jobs" component={IntelligenceAgentJobsPage} />
+          <Route path="/orchestration-flows" component={IntelligenceOrchestrationFlowsPage} />
+          <Route path="/prompt-templates" component={IntelligencePromptTemplatesPage} />
+          <Route path="/process-mining" component={IntelligenceProcessMiningPage} />
 
           <Route component={NotFound} />
         </Switch>

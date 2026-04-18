@@ -130,12 +130,18 @@ import commercialRouter from "./commercial";
 import procurementRouter from "./procurement";
 import executionRouter from "./execution";
 import financeV2Router from "./finance/index";
+import governanceRouter from "./governance";
+import docsRouter from "./docs";
+import intelligenceRouter from "./intelligence";
 
 const router: IRouter = Router();
 
 router.use("/commercial", commercialRouter);
 router.use("/execution", executionRouter);
 router.use("/procurement", procurementRouter);
+router.use("/docs", docsRouter);
+router.use("/governance", governanceRouter);
+router.use("/intelligence", intelligenceRouter);
 router.use(healthRouter);
 router.use(dashboardStatsRouter);
 router.use(dedicatedEntityRoutes);

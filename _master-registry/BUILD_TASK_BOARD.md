@@ -167,3 +167,14 @@ costing, FX admin, consolidation, annual tax) are deferred to Tier 2.
 | B-FIN-T2-09 | FX rates admin — Zod already shipped (B-FIN-04); API + page | 7 | in_progress | normal | B-FIN-04 | |
 | B-FIN-T2-10 | Consolidation entries + annual tax reports — Zod + API + page | 7 | in_progress | normal | B-FIN-02 | |
 | B-FIN-T2-11 | Tax exports browser page (PCN836/874 archive) | 7 | in_progress | normal | B-FIN-05 | Export endpoint exists; UI pending |
+
+## Docs Mega Batch (2026-04-18)
+
+| id | title | phase | status | priority | build_layer | domain | api_needed | page_needed |
+|---|---|---|---|---|---|---|---|---|
+| B-DO001 | Migration 00055 — docs domain complete (ALTER 6 + CREATE 9 tables + RLS + audit) | 7 | done | P0 | L3 | docs | N | N |
+| B-DO002 | Migration 00056 — docs menu wiring (11 entries) | 7 | done | P0 | L7 | docs | N | N |
+| B-DO003 | Zod schemas — 15 docs models + _shared + barrel + package.json sub-path | 7 | done | P0 | L4 | docs | Y | Y |
+| B-DO004 | API routes — 15 docs route files + _helpers + aggregator + business endpoints + mount | 7 | done | P0 | L5 | docs | Y | N |
+| B-DO005 | React pages — 10 v2 pages + _shared + App.tsx wiring | 7 | done | P0 | L7 | docs | N | Y |
+| B-DO006 | Docs permission matrix | 7 | done | P1 | L9 | docs | N | N |
