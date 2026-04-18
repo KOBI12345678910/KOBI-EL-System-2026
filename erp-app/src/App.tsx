@@ -385,6 +385,8 @@ const LaborCostAllocationPage = lazy(() => import('./pages/hr/labor-cost-allocat
 const OffboardingRetirementPage = lazy(() => import('./pages/hr/offboarding-retirement'));
 const TrainingManagementPage = lazy(() => import('./pages/hr/training-management'));
 const Employee360Page = lazy(() => import('./pages/workforce/Employee360'));
+const PayrollRun360Page = lazy(() => import('./pages/workforce/PayrollRun360'));
+const WageSlipsArchivePage = lazy(() => import('./pages/workforce/WageSlipsArchivePage'));
 const ComplaintsPage2 = lazy(() => import('./pages/quality/complaints'));
 const RmaPage2 = lazy(() => import('./pages/customer-service/rma'));
 const ServiceDashboardPage = lazy(() => import('./pages/customer-service/service-dashboard'));
@@ -1235,6 +1237,22 @@ const ProcurementApprovalsQueueV2 = lazy(() => import('./pages/procurement/v2/Pr
 const ProcurementContract360V2 = lazy(() => import('./pages/procurement/v2/Contract360'));
 const ProcurementSubcontractorsPageV2 = lazy(() => import('./pages/procurement/v2/SubcontractorsPage'));
 
+// === INVENTORY DOMAIN (Mega Batch 00049/00050) — 14 v2 pages ===
+const InventoryMaterialsListPageV2 = lazy(() => import('./pages/inventory/v2/MaterialsListPage'));
+const InventoryMaterial360V2 = lazy(() => import('./pages/inventory/v2/Material360'));
+const InventoryJournalPageV2 = lazy(() => import('./pages/inventory/v2/InventoryJournalPage'));
+const InventoryReceiptsPageV2 = lazy(() => import('./pages/inventory/v2/InventoryReceiptsPage'));
+const InventoryIssuesPageV2 = lazy(() => import('./pages/inventory/v2/InventoryIssuesPage'));
+const InventoryTransfersPageV2 = lazy(() => import('./pages/inventory/v2/InventoryTransfersPage'));
+const InventoryReservationsPageV2 = lazy(() => import('./pages/inventory/v2/InventoryReservationsPage'));
+const InventoryMaterialLotsPageV2 = lazy(() => import('./pages/inventory/v2/MaterialLotsPage'));
+const InventoryWarehousesPageV2 = lazy(() => import('./pages/inventory/v2/WarehousesPage'));
+const InventoryManufacturingBatchesPageV2 = lazy(() => import('./pages/inventory/v2/ManufacturingBatchesPage'));
+const InventoryReorderRulesPageV2 = lazy(() => import('./pages/inventory/v2/ReorderRulesPage'));
+const InventoryShortageSnapshotsPageV2 = lazy(() => import('./pages/inventory/v2/ShortageSnapshotsPage'));
+const InventoryStockCountsPageV2 = lazy(() => import('./pages/inventory/v2/StockCountsPage'));
+const InventoryMaterialRequestsPageV2 = lazy(() => import('./pages/inventory/v2/MaterialRequestsPage'));
+
 // === DOCS DOMAIN (Mega Batch 00055/00056) — 10 v2 pages ===
 const DocsDocumentsListPageV2 = lazy(() => import('./pages/docs/v2/DocumentsListPage'));
 const DocsDocument360V2 = lazy(() => import('./pages/docs/v2/Document360'));
@@ -1970,6 +1988,22 @@ function Router() {
           <Route path="/contracts/:id" component={ProcurementContract360V2} />
           <Route path="/subcontractors" component={ProcurementSubcontractorsPageV2} />
 
+          {/* Inventory Mega Batch (00049/00050) — 14 v2 pages */}
+          <Route path="/materials" component={InventoryMaterialsListPageV2} />
+          <Route path="/materials/:id" component={InventoryMaterial360V2} />
+          <Route path="/material-requests" component={InventoryMaterialRequestsPageV2} />
+          <Route path="/inventory/journal" component={InventoryJournalPageV2} />
+          <Route path="/inventory/receipts" component={InventoryReceiptsPageV2} />
+          <Route path="/inventory/issues" component={InventoryIssuesPageV2} />
+          <Route path="/inventory/transfers" component={InventoryTransfersPageV2} />
+          <Route path="/inventory/reservations" component={InventoryReservationsPageV2} />
+          <Route path="/inventory/lots" component={InventoryMaterialLotsPageV2} />
+          <Route path="/warehouses" component={InventoryWarehousesPageV2} />
+          <Route path="/manufacturing-batches" component={InventoryManufacturingBatchesPageV2} />
+          <Route path="/reorder-rules" component={InventoryReorderRulesPageV2} />
+          <Route path="/shortage-snapshots" component={InventoryShortageSnapshotsPageV2} />
+          <Route path="/stock-counts" component={InventoryStockCountsPageV2} />
+
           {/* Docs Mega Batch (00055/00056) — 10 v2 pages */}
           <Route path="/documents" component={DocsDocumentsListPageV2} />
           <Route path="/documents/:id/versions" component={DocsDocumentVersionsPageV2} />
@@ -2417,6 +2451,10 @@ function PortalRouter() {
         <Route path="/hr/offboarding-retirement" element={<OffboardingRetirementPage />} />
         <Route path="/hr/training-management" element={<TrainingManagementPage />} />
         <Route path="/workforce/employee360" element={<Employee360Page />} />
+        <Route path="/payroll-runs/:id" element={<PayrollRun360Page />} />
+        <Route path="/workforce/payroll-run/:id" element={<PayrollRun360Page />} />
+        <Route path="/wage-slips-archive" element={<WageSlipsArchivePage />} />
+        <Route path="/workforce/wage-slips-archive" element={<WageSlipsArchivePage />} />
         <Route path="/customer-service/complaints" element={<ComplaintsPage2 />} />
         <Route path="/customer-service/rma" element={<RmaPage2 />} />
         <Route path="/customer-service/service-dashboard" element={<ServiceDashboardPage />} />

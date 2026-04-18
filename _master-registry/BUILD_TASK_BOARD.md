@@ -201,3 +201,28 @@ costing, FX admin, consolidation, annual tax) are deferred to Tier 2.
 | B-IN004 | API routes — 15 intelligence route files + _helpers + aggregator + business endpoints + mount at /api/intelligence/* (legacy flat files preserved) | 7 | done | P0 | L5 | intelligence | Y | N |
 | B-IN005 | React pages — 9 intelligence pages + _shared + App.tsx wiring (9 lazy imports + 9 Routes) | 7 | done | P0 | L7 | intelligence | N | Y |
 | B-IN006 | Intelligence permission matrix (3 roles × all endpoints) | 7 | done | P1 | L9 | intelligence | N | N |
+
+## Workforce Reconciliation (2026-04-18)
+
+Scope: **backend reconciliation only**. Legacy `hr/*` 53-page UI surface preserved. Only 2 gap-fill pages added under `workforce/*` to close registry completion_gate.
+
+| id | title | phase | status | priority | build_layer | domain | api_needed | page_needed |
+|---|---|---|---|---|---|---|---|---|
+| B-WF001 | Migration 00053 — workforce domain complete (ALTER 17 + CREATE 2 + RLS + CHECK lifecycles + audit triggers on 8 PII tables + PII column comments + seeds: 7 pay_components + 7 leave_types) | 7 | done | P0 | L3 | workforce | N | N |
+| B-WF002 | Migration 00054 — workforce menu wiring (7 net-new entries; legacy 53 hr/* entries untouched) | 7 | done | P0 | L7 | workforce | N | N |
+| B-WF003 | Zod schemas — 14 workforce models + _shared + barrel + package.json `./workforce` sub-path; Hebrew-locale PII validators | 7 | done | P0 | L4 | workforce | Y | Y |
+| B-WF004 | API routes — 14 route files + _helpers + aggregator + business endpoints (calculate/approve/pay/close/publish/export) + PII-role middleware + mount at /api/workforce | 7 | done | P0 | L5 | workforce | Y | N |
+| B-WF005 | Gap-fill pages — PayrollRun360 (lines+exceptions+approval actions) + WageSlipsArchivePage (filters+publish) + App.tsx wiring. NO duplicate list pages (hr/ is canonical UI) | 7 | done | P0 | L7 | workforce | N | Y |
+| B-WF006 | Workforce permission matrix (7 roles × 24 modules; self-only rules documented; PII markers) | 7 | done | P1 | L9 | workforce | N | N |
+| B-WF007 | Ledger hardening — document that 53 hr/* pages are canonical UI; workforce/ is backend + 2 gap pages | 7 | done | P1 | L1 | workforce | N | N |
+
+## Inventory Mega Batch (2026-04-18)
+
+| id | title | phase | status | priority | build_layer | domain | api_needed | page_needed |
+|---|---|---|---|---|---|---|---|---|
+| B-IV001 | Migration 00049 — inventory domain complete (ALTER 14 + ensure 4 supporting tables + CHECK lifecycles + audit triggers on traceability set + RLS 3-policy baseline × 18 tables + seeds: 6 categories + 3 warehouses) | 7 | done | P0 | L3 | inventory | N | N |
+| B-IV002 | Migration 00050 — inventory menu wiring (15 entries under "מלאי ומחסנים") | 7 | done | P0 | L7 | inventory | N | N |
+| B-IV003 | Zod schemas — 18 inventory models + _shared + barrel + `./inventory` sub-path in `lib-client/api-zod/package.json` | 7 | done | P0 | L4 | inventory | Y | Y |
+| B-IV004 | API routes — 18 route files + `_helpers.ts` + aggregator mounted at `/api/inventory/*`; every router uses `authMiddleware`; business endpoints: post receipts/issues, execute transfers, reservations availability (409), reconcile stock counts, lot traceability, reorder-rules trigger, material-requests approve+fulfill, barcode-scans POST, consume materials for manufacturing batch | 7 | done | P0 | L5 | inventory | Y | N |
+| B-IV005 | React pages — 14 inventory v2 pages + _shared + App.tsx wiring (14 lazy imports + 14 Routes) under `erp-app/src/pages/inventory/v2/` | 7 | done | P0 | L7 | inventory | N | Y |
+| B-IV006 | Inventory permission matrix (10 roles × 18 models) | 7 | done | P1 | L9 | inventory | N | N |
