@@ -5,9 +5,15 @@
 // ============================================================
 import { Router, type Request, type Response } from "express";
 import { db } from "@workspace/db";
-import { sql } from "drizzle-orm";
+import { sql, type SQL } from "drizzle-orm";
 import { authMiddleware } from "../../middleware/auth";
 import { logAudit } from "../../lib/audit-log";
+import {
+  buildSafeWhere,
+  buildSafeOrderByFragment,
+  safeLimit,
+  safeOffset,
+} from "../_safe-list-helpers";
 import {
   CreateCustomerSegmentSchema,
   UpdateCustomerSegmentSchema,
@@ -16,6 +22,12 @@ import {
 
 const router = Router();
 router.use(authMiddleware);
+
+// SQLi fix B-D033: whitelist of columns allowed in ORDER BY
+const ALLOWED_LIST_COLUMNS = new Set([
+  "id", "code", "name_he", "segment_type", "member_count", "is_active",
+  "created_at", "updated_at",
+]);
 
 // ──────────────────────────────────────────────────────────────
 // LIST
@@ -27,33 +39,41 @@ router.get("/", async (req: Request, res: Response) => {
     return;
   }
   const { q, segment_type, is_active, limit, offset, order_by, order_dir } = parsed.data;
-  const whereParts: string[] = [];
+
+  // SQLi fix B-D033: parameterized bindings via _safe-list-helpers
+  const conditions: SQL[] = [];
   if (q) {
-    const safe = q.replace(/'/g, "''");
-    whereParts.push(`(name_he ILIKE '%${safe}%' OR code ILIKE '%${safe}%')`);
+    const like = `%${q}%`;
+    conditions.push(sql`(name_he ILIKE ${like} OR code ILIKE ${like})`);
   }
-  if (segment_type) whereParts.push(`segment_type = '${segment_type}'`);
-  if (typeof is_active === "boolean") whereParts.push(`is_active = ${is_active}`);
-  const whereClause = whereParts.length ? `where ${whereParts.join(" and ")}` : "";
+  if (segment_type) conditions.push(sql`segment_type = ${segment_type}`);
+  if (typeof is_active === "boolean") conditions.push(sql`is_active = ${is_active}`);
+
+  const whereClause = buildSafeWhere(conditions);
+  const orderByFrag = buildSafeOrderByFragment(
+    order_by, order_dir, ALLOWED_LIST_COLUMNS, "created_at", "desc"
+  );
+  const safeLim = safeLimit(limit, 500);
+  const safeOff = safeOffset(offset);
 
   try {
-    const rows = await db.execute(sql.raw(`
+    const rows = await db.execute(sql`
       select id, public_id, code, name_he, name_en, description,
              segment_type, criteria, member_count, is_active, metadata,
              created_at, updated_at, created_by, updated_by
       from commercial.customer_segments
       ${whereClause}
-      order by ${order_by} ${order_dir}
-      limit ${limit} offset ${offset}
-    `));
-    const countRes = await db.execute(sql.raw(
-      `select count(*)::int as total from commercial.customer_segments ${whereClause}`,
-    ));
+      ${orderByFrag}
+      limit ${safeLim} offset ${safeOff}
+    `);
+    const countRes = await db.execute(sql`
+      select count(*)::int as total from commercial.customer_segments ${whereClause}
+    `);
     res.json({
       data: rows.rows ?? [],
       total: Number((countRes.rows?.[0] as { total?: number })?.total ?? 0),
-      limit,
-      offset,
+      limit: safeLim,
+      offset: safeOff,
     });
   } catch (err) {
     console.error("[customer-segments:list]", err);

@@ -5,9 +5,15 @@
 // ============================================================
 import { Router, type Request, type Response } from "express";
 import { db } from "@workspace/db";
-import { sql } from "drizzle-orm";
+import { sql, type SQL } from "drizzle-orm";
 import { authMiddleware } from "../../middleware/auth";
 import { logAudit } from "../../lib/audit-log";
+import {
+  buildSafeWhere,
+  buildSafeOrderByFragment,
+  safeLimit,
+  safeOffset,
+} from "../_safe-list-helpers";
 import {
   CreateLeadSourceSchema,
   UpdateLeadSourceSchema,
@@ -17,7 +23,11 @@ import {
 const router = Router();
 router.use(authMiddleware);
 
-const TABLE = "commercial.lead_sources";
+// SQLi fix B-D033: whitelist of columns allowed in ORDER BY
+const ALLOWED_LIST_COLUMNS = new Set([
+  "id", "code", "name_he", "channel", "sort_order", "is_active",
+  "created_at", "updated_at",
+]);
 
 // ──────────────────────────────────────────────────────────────
 // LIST  GET /api/commercial/lead-sources
@@ -30,29 +40,40 @@ router.get("/", async (req: Request, res: Response) => {
   }
   const { q, channel, is_active, limit, offset, order_by, order_dir } = parsed.data;
 
-  const whereParts: string[] = [];
-  if (q) whereParts.push(`(name_he ILIKE '%${q.replace(/'/g, "''")}%' OR code ILIKE '%${q.replace(/'/g, "''")}%')`);
-  if (channel) whereParts.push(`channel = '${channel}'`);
-  if (typeof is_active === "boolean") whereParts.push(`is_active = ${is_active}`);
-  const whereClause = whereParts.length ? `where ${whereParts.join(" and ")}` : "";
-  const orderClause = `order by ${order_by} ${order_dir}`;
+  // SQLi fix B-D033: parameterized bindings via _safe-list-helpers
+  const conditions: SQL[] = [];
+  if (q) {
+    const like = `%${q}%`;
+    conditions.push(sql`(name_he ILIKE ${like} OR code ILIKE ${like})`);
+  }
+  if (channel) conditions.push(sql`channel = ${channel}`);
+  if (typeof is_active === "boolean") conditions.push(sql`is_active = ${is_active}`);
+
+  const whereClause = buildSafeWhere(conditions);
+  const orderByFrag = buildSafeOrderByFragment(
+    order_by, order_dir, ALLOWED_LIST_COLUMNS, "created_at", "desc"
+  );
+  const safeLim = safeLimit(limit, 500);
+  const safeOff = safeOffset(offset);
 
   try {
-    const rows = await db.execute(sql.raw(`
+    const rows = await db.execute(sql`
       select id, public_id, code, name_he, name_en, channel, description,
              is_active, sort_order, metadata,
              created_at, updated_at, created_by, updated_by
-      from ${TABLE}
+      from commercial.lead_sources
       ${whereClause}
-      ${orderClause}
-      limit ${limit} offset ${offset}
-    `));
-    const countRes = await db.execute(sql.raw(`select count(*)::int as total from ${TABLE} ${whereClause}`));
+      ${orderByFrag}
+      limit ${safeLim} offset ${safeOff}
+    `);
+    const countRes = await db.execute(sql`
+      select count(*)::int as total from commercial.lead_sources ${whereClause}
+    `);
     res.json({
       data: rows.rows ?? [],
       total: Number((countRes.rows?.[0] as { total?: number })?.total ?? 0),
-      limit,
-      offset,
+      limit: safeLim,
+      offset: safeOff,
     });
   } catch (err: unknown) {
     console.error("[lead-sources:list]", err);

@@ -1136,6 +1136,35 @@ const requestTimeout: express.RequestHandler = (req, res, next) => {
   next();
 };
 
+// ============================================================
+// AUTH MIDDLEWARE — conditional global mount (D030 implemented)
+// Runs authMiddleware on every /api/* request UNLESS the path is
+// explicitly allowlisted as public. See _master-registry/AUTH_ALLOWLIST_RATIONALE.md
+// Gated by env flag AUTH_GLOBAL_MOUNT_ENABLED for gradual rollout.
+// ============================================================
+const AUTH_GLOBAL_MOUNT_ENABLED = process.env.AUTH_GLOBAL_MOUNT_ENABLED !== "false";
+
+if (AUTH_GLOBAL_MOUNT_ENABLED) {
+  try {
+    // Lazy-load to avoid crashing startup if either file has issues
+    const { isPublicEndpoint } = require("./middleware/auth-allowlist");
+    const authModule = require("./middleware/auth");
+    const authMw = authModule.authMiddleware || authModule.default;
+
+    if (typeof authMw === "function" && typeof isPublicEndpoint === "function") {
+      app.use((req: any, res: any, next: any) => {
+        if (isPublicEndpoint(req.path)) return next();
+        return authMw(req, res, next);
+      });
+      console.log("[auth] global mount ENABLED with allowlist");
+    } else {
+      console.warn("[auth] global mount SKIPPED — auth or allowlist module missing");
+    }
+  } catch (err: any) {
+    console.warn("[auth] global mount SKIPPED — load error:", err?.message || err);
+  }
+}
+
 app.use("/api", apiLimiter, requestTimeout, attachPermissions, auditMiddleware, router);
 
 app.use(globalErrorHandler);

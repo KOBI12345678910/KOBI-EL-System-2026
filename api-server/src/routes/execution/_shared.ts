@@ -39,23 +39,47 @@ export const requireExecutionAuth: RequestHandler = async (req, res, next) => {
   next();
 };
 
-/** Execute a SQL query and return rows. */
-export async function query<T = Record<string, unknown>>(
-  text: string,
-  params: unknown[] = []
-): Promise<T[]> {
-  // Drizzle sql template — we use sql.raw for interpolated queries.
-  // For parameterized queries, callers should prefer db.execute(sql`...`) directly.
-  const result = await db.execute(sql.raw(text.replace(/\$(\d+)/g, (_m, n) => {
-    const v = params[Number(n) - 1];
-    if (v === null || v === undefined) return "NULL";
-    if (typeof v === "number") return String(v);
-    if (typeof v === "boolean") return v ? "true" : "false";
-    if (v instanceof Date) return `'${v.toISOString()}'`;
-    const safe = String(v).replace(/'/g, "''");
-    return `'${safe}'`;
-  })));
-  return (result.rows || []) as T[];
+/**
+ * DEPRECATED — SQLi fix B-D033.
+ *
+ * The old query(text, params) helper used sql.raw() with manual string
+ * interpolation + quote escaping. That pattern is SQL-injection-prone:
+ *   - String() coercion of complex values is attacker-controllable
+ *   - Manual quote-doubling fails under non-standard_conforming_strings
+ *   - Backslash escapes, NUL bytes, multi-byte truncation all bypass it
+ *   - Identifier-position slots (order_by, order_dir, column names) have
+ *     no protection at all
+ *
+ * SAFE REPLACEMENT — use Drizzle parameterized tagged templates directly:
+ *
+ *   import { db } from "@workspace/db";
+ *   import { sql } from "drizzle-orm";
+ *
+ *   const rows = await db.execute(sql`
+ *     select id, name from execution.tasks
+ *     where project_id = ${projectId}
+ *     order by ${sql.raw("created_at")} desc
+ *     limit ${limit} offset ${offset}
+ *   `);
+ *
+ * For dynamic WHERE clauses with user input, see
+ *   api-server/src/routes/_safe-list-helpers.ts
+ * which provides buildSafeWhere(), buildSafeOrderByFragment(),
+ * safeLimit(), safeOffset(), and buildSafeSetClause() — all with
+ * whitelist-validated identifiers and parameterized value bindings.
+ *
+ * This stub throws intentionally so any remaining caller fails loudly
+ * at runtime rather than silently executing unsafe SQL.
+ */
+export function query<_T = Record<string, unknown>>(
+  _text: string,
+  _params: unknown[] = []
+): Promise<never> {
+  throw new Error(
+    "DEPRECATED: execution/_shared.ts::query() removed (SQLi fix B-D033). " +
+    "Use db.execute(sql`...`) with parameterized ${bindings} directly. " +
+    "For ORDER BY/WHERE/SET helpers see api-server/src/routes/_safe-list-helpers.ts."
+  );
 }
 
 /** Safe JSON parse for jsonb columns returned as strings. */
