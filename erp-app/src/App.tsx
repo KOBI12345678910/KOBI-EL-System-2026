@@ -11,6 +11,37 @@ import { ErrorBoundary, withPage } from "@/components/ui/unified-states";
 import { useToast } from "@/hooks/use-toast";
 
 // === AUTO-WIRED REACT ROUTES ===
+// Generated: 2026-04-18T13:34:26.057Z · Added: 28
+const OpportunitiesPage = lazy(() => import('./pages/sales/opportunities'));
+const DashboardPage = lazy(() => import('./pages/crm/crm-dashboard'));
+const CrmPipelinePage = lazy(() => import('./pages/sales/crm-pipeline'));
+const CrmActivitiesPage = lazy(() => import('./pages/crm/crm-activities'));
+const SupplierScorecardsPage = lazy(() => import('./pages/supplier-mgmt/supplier-scorecards'));
+const DashboardPage2 = lazy(() => import('./pages/modules/procurement-dashboard'));
+const ContractsPage = lazy(() => import('./pages/documents/contracts'));
+const VendorNegotiationPage = lazy(() => import('./pages/procurement/vendor-negotiation'));
+const SupplierManagementPage = lazy(() => import('./pages/procurement/supplier-management'));
+const RawMaterialStockPage = lazy(() => import('./pages/procurement/raw-materials/raw-material-stock'));
+const IncomePage = lazy(() => import('./pages/finance/income'));
+const ExpensesPage = lazy(() => import('./pages/finance/expenses'));
+const DashboardPage3 = lazy(() => import('./pages/finance/finance-dashboard'));
+const CompanyFinancialsPage = lazy(() => import('./pages/company-financials'));
+const ShiftsPage = lazy(() => import('./pages/hr/shifts'));
+const DashboardPage4 = lazy(() => import('./pages/hr/hr-dashboard'));
+const SettingsPage = lazy(() => import('./pages/hr/hr-settings'));
+const LoginPage = lazy(() => import('./pages/login'));
+const DashboardPage5 = lazy(() => import('./pages/dashboard'));
+const ScorecardPage = lazy(() => import('./pages/executive/executive-scorecard'));
+const PoliciesPage = lazy(() => import('./pages/hr/policies'));
+const IntegrationsHubDataPage = lazy(() => import('./pages/integrations-hub-data'));
+const IntegrationSettingsPage = lazy(() => import('./pages/integrations/integration-settings'));
+const ApiKeysPage = lazy(() => import('./pages/settings/api-keys'));
+const SystemSettingsPage = lazy(() => import('./pages/settings/sections/system-settings'));
+const OpportunitiesPage2 = lazy(() => import('./pages/sales/opportunities'));
+const CrmActivitiesPage2 = lazy(() => import('./pages/crm/crm-activities'));
+const PredictiveAnalyticsPage = lazy(() => import('./pages/crm/predictive-analytics'));
+
+// === AUTO-WIRED REACT ROUTES ===
 // Generated: 2026-04-18T06:26:09.682Z · Added: 629
 const DashboardPage = lazy(() => import('./pages/dashboard'));
 const CommandCenterPage = lazy(() => import('./pages/command-center/command-center'));
@@ -2737,6 +2768,35 @@ function PortalRouter() {
         <Route path="/tenders/tender-competitors" element={<TenderCompetitorsPage />} />
         <Route path="/tenders/tender-timeline" element={<TenderTimelinePage />} />
         <Route path="/ai-engine/ai-agents-dashboard" element={<AiAgentsDashboardPage />} />
+        {/* === AUTO-WIRED ROUTES === */}
+        <Route path="/opportunities" element={<OpportunitiesPage />} />
+        <Route path="/crm/dashboard" element={<DashboardPage />} />
+        <Route path="/sales/crm-pipeline" element={<CrmPipelinePage />} />
+        <Route path="/crm-activities" element={<CrmActivitiesPage />} />
+        <Route path="/supplier-scorecards" element={<SupplierScorecardsPage />} />
+        <Route path="/procurement/dashboard" element={<DashboardPage2 />} />
+        <Route path="/procurement/contracts" element={<ContractsPage />} />
+        <Route path="/vendor-negotiation" element={<VendorNegotiationPage />} />
+        <Route path="/supplier-management" element={<SupplierManagementPage />} />
+        <Route path="/raw-material-stock" element={<RawMaterialStockPage />} />
+        <Route path="/fin/income" element={<IncomePage />} />
+        <Route path="/fin/expenses" element={<ExpensesPage />} />
+        <Route path="/finance/dashboard" element={<DashboardPage3 />} />
+        <Route path="/company-financials" element={<CompanyFinancialsPage />} />
+        <Route path="/shifts" element={<ShiftsPage />} />
+        <Route path="/hr/dashboard" element={<DashboardPage4 />} />
+        <Route path="/hr/settings" element={<SettingsPage />} />
+        <Route path="/portal/customer/login" element={<LoginPage />} />
+        <Route path="/portal/customer/dashboard" element={<DashboardPage5 />} />
+        <Route path="/executive/scorecard" element={<ScorecardPage />} />
+        <Route path="/policies" element={<PoliciesPage />} />
+        <Route path="/integrations-hub-data" element={<IntegrationsHubDataPage />} />
+        <Route path="/integration-settings" element={<IntegrationSettingsPage />} />
+        <Route path="/api-keys" element={<ApiKeysPage />} />
+        <Route path="/system-settings" element={<SystemSettingsPage />} />
+        <Route path="/commercial/opportunities" element={<OpportunitiesPage2 />} />
+        <Route path="/commercial/crm-activities" element={<CrmActivitiesPage2 />} />
+        <Route path="/predictive-analytics" element={<PredictiveAnalyticsPage />} />
       </Switch>
     </Suspense>
   );
