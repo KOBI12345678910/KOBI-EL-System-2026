@@ -5,8 +5,36 @@ import { pool } from "@workspace/db";
 import { getProjectMemory, getRecentMessages, saveMessage, autoExtractMemory, getSessionContext, saveMemory, updateSessionContext } from "./memory";
 import multer from "multer";
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync, unlinkSync, renameSync, rmSync } from "fs";
-import { execSync } from "child_process";
+import { execSync, execFileSync } from "child_process";
 import { join, extname, dirname } from "path";
+
+// B-SEC-GIT: Safe git runner — uses execFileSync (no shell), args as array.
+// Prevents shell metachar injection in file names / commit messages.
+function gitRun(args: string[], opts: { cwd: string; timeout?: number } = { cwd: process.cwd() }): string {
+  try {
+    return execFileSync("git", args, {
+      cwd: opts.cwd,
+      timeout: opts.timeout ?? 10000,
+      encoding: "utf-8",
+      maxBuffer: 1024 * 1024,
+      stdio: ["ignore", "pipe", "pipe"],
+    }).toString();
+  } catch (e: any) {
+    // Return stderr/stdout from failed git so callers get the diagnostic
+    const msg = e?.stderr?.toString?.() || e?.stdout?.toString?.() || e?.message || "git error";
+    throw new Error(msg);
+  }
+}
+
+// Reject file paths that look like they contain shell injection or path traversal
+function isSafeGitPath(p: unknown): p is string {
+  if (typeof p !== "string" || p.length === 0 || p.length > 500) return false;
+  // forbid NUL, backticks, $, pipe, ;, &, newline, backslash-escape tricks
+  if (/[\x00`$|;&\n\r]/.test(p)) return false;
+  // forbid absolute paths and upward traversal
+  if (p.startsWith("/") || p.startsWith("\\") || /^[A-Za-z]:/.test(p) || p.split(/[\\/]/).includes("..")) return false;
+  return true;
+}
 
 const router: IRouter = Router();
 
@@ -536,8 +564,9 @@ router.post("/kobi/terminal", (req, res) => {
 router.get("/kobi/git/status", (_req, res) => {
   const ROOT = join(process.cwd(), "../..");
   try {
-    const branch = execSync("git branch --show-current 2>/dev/null || echo main", { cwd: ROOT, encoding: "utf-8", timeout: 5000 }).trim();
-    const statusRaw = execSync("git status --porcelain 2>/dev/null || echo ''", { cwd: ROOT, encoding: "utf-8", timeout: 5000 }).trim();
+    // B-SEC-GIT: execFileSync instead of execSync (no shell)
+    const branch = gitRun(["branch", "--show-current"], { cwd: ROOT, timeout: 5000 }).trim() || "main";
+    const statusRaw = gitRun(["status", "--porcelain"], { cwd: ROOT, timeout: 5000 }).trim();
     const files = statusRaw ? statusRaw.split("\n").map(line => {
       const status = line.substring(0, 2).trim();
       const filePath = line.substring(3);
@@ -548,12 +577,12 @@ router.get("/kobi/git/status", (_req, res) => {
       else if (status === "M" || status === "MM") statusLabel = "שונה";
       return { path: filePath, status, statusLabel };
     }) : [];
-    const logRaw = execSync("git log --oneline -20 2>/dev/null || echo ''", { cwd: ROOT, encoding: "utf-8", timeout: 5000 }).trim();
+    const logRaw = gitRun(["log", "--oneline", "-20"], { cwd: ROOT, timeout: 5000 }).trim();
     const commits = logRaw ? logRaw.split("\n").map(line => {
       const spaceIdx = line.indexOf(" ");
       return { hash: line.substring(0, spaceIdx), message: line.substring(spaceIdx + 1) };
     }) : [];
-    const branchesRaw = execSync("git branch -a 2>/dev/null || echo main", { cwd: ROOT, encoding: "utf-8", timeout: 5000 }).trim();
+    const branchesRaw = gitRun(["branch", "-a"], { cwd: ROOT, timeout: 5000 }).trim();
     const branches = branchesRaw.split("\n").map(b => b.replace("*", "").trim()).filter(Boolean);
     res.json({ data: { branch, files, commits, branches } });
   } catch (e: any) {
@@ -569,43 +598,64 @@ router.post("/kobi/git/action", (req, res) => {
     switch (action) {
       case "add":
         if (files && Array.isArray(files)) {
-          output = execSync(`git add ${files.map((f: string) => `"${f}"`).join(" ")}`, { cwd: ROOT, encoding: "utf-8", timeout: 10000 });
+          // B-SEC-GIT: validate each path, pass as args (no shell interpolation)
+          const safe = (files as unknown[]).filter(isSafeGitPath) as string[];
+          if (safe.length !== files.length) {
+            res.status(400).json({ error: "נתיב לא חוקי ברשימת הקבצים" });
+            return;
+          }
+          output = gitRun(["add", "--", ...safe], { cwd: ROOT });
         } else {
-          output = execSync("git add -A", { cwd: ROOT, encoding: "utf-8", timeout: 10000 });
+          output = gitRun(["add", "-A"], { cwd: ROOT });
         }
         break;
-      case "commit":
-        const msg = message || "עדכון מ-קובי IDE";
-        execSync("git add -A", { cwd: ROOT, encoding: "utf-8", timeout: 10000 });
-        output = execSync(`git commit -m "${msg}"`, { cwd: ROOT, encoding: "utf-8", timeout: 10000 });
+      case "commit": {
+        // B-SEC-GIT: commit message passed as argv, cannot escape
+        const msg = typeof message === "string" && message.length > 0 && message.length <= 2000
+          ? message
+          : "עדכון מ-קובי IDE";
+        gitRun(["add", "-A"], { cwd: ROOT });
+        output = gitRun(["commit", "-m", msg], { cwd: ROOT });
         break;
+      }
       case "diff":
         if (files && files[0]) {
-          output = execSync(`git diff -- "${files[0]}" 2>/dev/null; git diff --cached -- "${files[0]}" 2>/dev/null`, { cwd: ROOT, encoding: "utf-8", timeout: 10000 }) || "אין שינויים";
+          if (!isSafeGitPath(files[0])) { res.status(400).json({ error: "נתיב לא חוקי" }); return; }
+          const workDiff = gitRun(["diff", "--", files[0]], { cwd: ROOT });
+          const cachedDiff = gitRun(["diff", "--cached", "--", files[0]], { cwd: ROOT });
+          output = (workDiff + cachedDiff) || "אין שינויים";
         } else {
-          output = execSync("git diff 2>/dev/null; git diff --cached 2>/dev/null", { cwd: ROOT, encoding: "utf-8", timeout: 10000 }) || "אין שינויים";
+          const workDiff = gitRun(["diff"], { cwd: ROOT });
+          const cachedDiff = gitRun(["diff", "--cached"], { cwd: ROOT });
+          output = (workDiff + cachedDiff) || "אין שינויים";
         }
         break;
       case "stash":
-        output = execSync("git stash", { cwd: ROOT, encoding: "utf-8", timeout: 10000 });
+        output = gitRun(["stash"], { cwd: ROOT });
         break;
       case "stash-pop":
-        output = execSync("git stash pop", { cwd: ROOT, encoding: "utf-8", timeout: 10000 });
+        output = gitRun(["stash", "pop"], { cwd: ROOT });
         break;
       case "reset":
         if (files && files[0]) {
-          output = execSync(`git checkout -- "${files[0]}"`, { cwd: ROOT, encoding: "utf-8", timeout: 10000 });
+          if (!isSafeGitPath(files[0])) { res.status(400).json({ error: "נתיב לא חוקי" }); return; }
+          output = gitRun(["checkout", "--", files[0]], { cwd: ROOT });
         } else {
-          output = execSync("git checkout -- .", { cwd: ROOT, encoding: "utf-8", timeout: 10000 });
+          output = gitRun(["checkout", "--", "."], { cwd: ROOT });
         }
         break;
       case "checkout":
         if (files && files[0]) {
-          output = execSync(`git checkout "${files[0]}"`, { cwd: ROOT, encoding: "utf-8", timeout: 10000 });
+          if (!isSafeGitPath(files[0])) { res.status(400).json({ error: "נתיב לא חוקי" }); return; }
+          output = gitRun(["checkout", files[0]], { cwd: ROOT });
         }
         break;
       case "push":
-        output = execSync("git push 2>&1 || echo 'Push failed or no remote'", { cwd: ROOT, encoding: "utf-8", timeout: 30000 });
+        try {
+          output = gitRun(["push"], { cwd: ROOT, timeout: 30000 });
+        } catch (e: any) {
+          output = `Push failed: ${e.message || "no remote"}`;
+        }
         break;
       default:
         res.status(400).json({ error: "פעולה לא ידועה" });

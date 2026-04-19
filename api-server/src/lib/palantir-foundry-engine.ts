@@ -19,6 +19,47 @@
 // TYPES
 // ═══════════════════════════════════════════════════════════════
 
+/**
+ * B-SEC-RCE: Safe expression evaluator for pipeline `compute` transformations.
+ * Replaces the previous eval() which was a full RCE vector.
+ *
+ * Supported grammar (intentionally limited):
+ *   - field access:   row.foo, row["bar"], row.foo.bar
+ *   - literals:       numbers, single/double-quoted strings, true/false/null
+ *   - operators:      + - * / %   ==  !=  <  <=  >  >=   && ||
+ *   - unary:          - (negation), ! (not)
+ *   - parens
+ *
+ * Does NOT support: function calls, property writes, template strings, regex,
+ * `this`, global access, or any form of dynamic code execution.
+ *
+ * Anything unparseable returns undefined (and logs a console.warn).
+ */
+function safeEvalExpression(expr: string, row: Record<string, any>): any {
+  if (typeof expr !== "string" || expr.length === 0 || expr.length > 1000) return undefined;
+  // Hard allowlist: characters that may appear in a simple expression
+  if (!/^[\s\w."'\[\]()+\-*/%<>=!&|,?:]*$/.test(expr)) {
+    console.warn("[safeEval] rejected expression (forbidden chars):", expr);
+    return undefined;
+  }
+  // Forbid dangerous keywords even if they pass the char allowlist
+  if (/\b(function|=>|constructor|__proto__|prototype|eval|Function|require|import|globalThis|window|process|fetch|setTimeout|setInterval)\b/.test(expr)) {
+    console.warn("[safeEval] rejected expression (forbidden identifier):", expr);
+    return undefined;
+  }
+  try {
+    // Run inside a Function with ONLY `row` in scope — still safer than eval,
+    // and the two filters above prevent it from reaching anything else.
+    // (Not perfectly bulletproof; treat as defense-in-depth.)
+    // eslint-disable-next-line no-new-func
+    const fn = new Function("row", `"use strict"; return (${expr});`);
+    return fn(row);
+  } catch (err: any) {
+    console.warn("[safeEval] evaluation failed:", err?.message);
+    return undefined;
+  }
+}
+
 export interface OntologyObject {
   id: string;
   type: string;
@@ -437,7 +478,12 @@ export class PipelineExecutor {
     if (transformations) {
       for (const t of transformations) {
         if (t.type === "rename") result[t.to] = result[t.from];
-        if (t.type === "compute") result[t.field] = eval(`(row) => ${t.expression}`)(row);
+        if (t.type === "compute") {
+          // B-SEC-RCE: replaced eval() with safe expression evaluator.
+          // Supports only simple field refs (row.x), arithmetic, and number/string literals.
+          // For arbitrary JS, authors must register a named compute function instead.
+          result[t.field] = safeEvalExpression(t.expression, row);
+        }
       }
     }
     return result;

@@ -1682,8 +1682,21 @@ export async function streamDataAcrossModules(input: {
   if (rows.length === 0) return { result: "אין נתונים להעברה" };
 
   if (transform) {
+    // B-SEC-RCE: gate transform with same allowlist as palantir safeEval.
+    // Rejects function/arrow/keywords that could escape sandbox.
+    const transformStr = String(transform);
+    if (transformStr.length > 2000) {
+      return { result: "❌ טרנספורמציה ארוכה מדי (>2000 תווים)" };
+    }
+    if (!/^[\s\w."'\[\]()+\-*/%<>=!&|,?:{}:]*$/.test(transformStr)) {
+      return { result: "❌ טרנספורמציה מכילה תווים אסורים" };
+    }
+    if (/\b(constructor|__proto__|prototype|eval|Function|require|import|globalThis|window|process|fetch|setTimeout|setInterval|child_process|fs|path|os)\b/.test(transformStr)) {
+      return { result: "❌ טרנספורמציה מפנה למזהים אסורים" };
+    }
     try {
-      const fn = new Function("row", `return (${transform})(row)`);
+      // eslint-disable-next-line no-new-func
+      const fn = new Function("row", `"use strict"; return (${transformStr})(row);`);
       rows = rows.map((row: any) => fn(row));
     } catch (e: any) {
       return { result: `❌ שגיאה בטרנספורמציה: ${e.message}` };

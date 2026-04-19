@@ -13,6 +13,26 @@ interface CacheEntry { result: string; expiresAt: number; }
 const schemaCache = new Map<string, CacheEntry>();
 const SCHEMA_CACHE_TTL_MS = 30 * 60 * 1000;
 
+// B-SEC-SQL: Validate identifiers before embedding in SQL.
+// Only allow bare Postgres identifier characters + optional schema.table form.
+// Rejects anything with spaces, quotes, or SQL metacharacters.
+function assertSafeIdent(ident: unknown, label: string): asserts ident is string {
+  if (typeof ident !== "string") throw new Error(`${label}: חובה מחרוזת`);
+  if (ident.length === 0 || ident.length > 128) throw new Error(`${label}: אורך לא חוקי`);
+  // optional "schema.table" — each part: letters/digits/underscore only, can't start with digit
+  if (!/^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)?$/.test(ident)) {
+    throw new Error(`${label}: שם לא חוקי — מותר רק אותיות/ספרות/קו-תחתי`);
+  }
+}
+
+function assertSafeLimit(n: unknown): number {
+  const v = Number(n);
+  if (!Number.isFinite(v) || !Number.isInteger(v) || v <= 0 || v > 1000) {
+    return 5; // default safe
+  }
+  return v;
+}
+
 const sqlQueryCache = new Map<string, CacheEntry>();
 const SQL_CACHE_TTL_MS = 5 * 60 * 1000;
 const SQL_CACHE_MAX_SIZE = 200;
@@ -230,14 +250,26 @@ function listFiles(input: { path?: string; recursive?: boolean; pattern?: string
 
 function searchFiles(input: { pattern: string; path?: string; file_pattern?: string; max_results?: number }): { result: string } {
   const searchPath = input.path ? safePath(input.path) : ROOT;
-  const max = input.max_results || 30;
+  const max = Math.min(Math.max(1, Number(input.max_results) || 30), 500);
   try {
-    const globArg = input.file_pattern ? `--glob '${input.file_pattern}'` : "--glob '!node_modules' --glob '!dist' --glob '!.git'";
-    const escaped = input.pattern.replace(/'/g, "'\\''");
-    const cmd = `rg -n --max-count ${max} ${globArg} '${escaped}' '${searchPath}' 2>/dev/null | head -${max * 3}`;
-    const output = execSync(cmd, { timeout: 15000, maxBuffer: 200000 }).toString().trim();
-    if (!output) return { result: "לא נמצאו תוצאות" };
-    return { result: output.replace(new RegExp(ROOT + "/", "g"), "") };
+    // B-SEC-CMD: use execFileSync with args array instead of shell string.
+    // Prevents injection via pattern / file_pattern.
+    const args = ["-n", "--max-count", String(max)];
+    if (input.file_pattern && typeof input.file_pattern === "string") {
+      // Reject patterns containing shell metachars (defense-in-depth; execFile already avoids shell)
+      if (/[\x00\n\r]/.test(input.file_pattern)) {
+        return { result: "תבנית קבצים לא חוקית" };
+      }
+      args.push("--glob", input.file_pattern);
+    } else {
+      args.push("--glob", "!node_modules", "--glob", "!dist", "--glob", "!.git");
+    }
+    args.push("--", String(input.pattern), searchPath);
+    const { execFileSync } = require("child_process") as typeof import("child_process");
+    const raw = execFileSync("rg", args, { timeout: 15000, maxBuffer: 200000, stdio: ["ignore", "pipe", "pipe"] }).toString();
+    const limited = raw.split("\n").slice(0, max * 3).join("\n").trim();
+    if (!limited) return { result: "לא נמצאו תוצאות" };
+    return { result: limited.replace(new RegExp(ROOT + "/", "g"), "") };
   } catch {
     return { result: "לא נמצאו תוצאות" };
   }
@@ -706,13 +738,19 @@ async function createTable(input: any): Promise<{ result: string }> {
     return def;
   });
 
+  // B-SEC-SQL: validate table name before DDL
+  assertSafeIdent(table_name, "table_name");
   const sql = `CREATE TABLE ${table_name} (\n  ${colDefs.join(",\n  ")}\n);`;
   await pool.query(sql);
 
   if (indexes?.length) {
     for (const idx of indexes) {
-      const idxName = `idx_${table_name}_${idx.replace(/,\s*/g, "_")}`;
-      await pool.query(`CREATE INDEX IF NOT EXISTS ${idxName} ON ${table_name} (${idx})`);
+      // validate each column name (may be "col_a, col_b" — split, validate each)
+      const cols = String(idx).split(",").map(s => s.trim()).filter(Boolean);
+      cols.forEach(c => assertSafeIdent(c, "index column"));
+      const idxName = `idx_${table_name.replace(/\./g, "_")}_${cols.join("_")}`;
+      assertSafeIdent(idxName, "index name");
+      await pool.query(`CREATE INDEX IF NOT EXISTS ${idxName} ON ${table_name} (${cols.join(", ")})`);
     }
   }
 
@@ -724,18 +762,22 @@ async function dataOperations(input: any): Promise<{ result: string }> {
   switch (action) {
     case "count_rows": {
       if (!table_name) throw new Error("table_name נדרש");
+      // B-SEC-SQL: validate identifier before embedding
+      assertSafeIdent(table_name, "table_name");
       const r = await pool.query(`SELECT count(*) as cnt FROM ${table_name}`);
       return { result: `📊 ${table_name}: ${r.rows[0].cnt} רשומות` };
     }
     case "table_stats": {
       if (!table_name) throw new Error("table_name נדרש");
+      assertSafeIdent(table_name, "table_name");
       const cols = await pool.query("SELECT column_name, data_type, is_nullable, column_default FROM information_schema.columns WHERE table_name = $1 ORDER BY ordinal_position", [table_name]);
       const count = await pool.query(`SELECT count(*) as cnt FROM ${table_name}`);
       return { result: `📊 **${table_name}** — ${count.rows[0].cnt} רשומות, ${cols.rows.length} עמודות:\n${cols.rows.map((c: any) => `  ${c.column_name}: ${c.data_type}${c.is_nullable === "NO" ? " NOT NULL" : ""}${c.column_default ? ` DEFAULT ${c.column_default}` : ""}`).join("\n")}` };
     }
     case "sample_data": {
       if (!table_name) throw new Error("table_name נדרש");
-      const limit = input.limit || 5;
+      assertSafeIdent(table_name, "table_name");
+      const limit = assertSafeLimit(input.limit);
       const r = await pool.query(`SELECT * FROM ${table_name} LIMIT ${limit}`);
       if (r.rows.length === 0) return { result: `${table_name}: טבלה ריקה` };
       return { result: `📊 ${table_name} (${r.rows.length} דוגמאות):\n${JSON.stringify(r.rows, null, 2).slice(0, 4000)}` };
@@ -882,19 +924,35 @@ async function streamData(input: { source_query: string; target_table: string; t
   if (rows.length === 0) return { result: "אין שורות להעברה" };
 
   if (transform) {
+    // B-SEC-RCE: same allowlist/blocklist as palantir + super-ai-agent.
+    const transformStr = String(transform);
+    if (transformStr.length > 2000) {
+      return { result: "❌ טרנספורמציה ארוכה מדי (>2000 תווים)" };
+    }
+    if (!/^[\s\w."'\[\]()+\-*/%<>=!&|,?:{}:]*$/.test(transformStr)) {
+      return { result: "❌ טרנספורמציה מכילה תווים אסורים" };
+    }
+    if (/\b(constructor|__proto__|prototype|eval|Function|require|import|globalThis|window|process|fetch|setTimeout|setInterval|child_process|fs|path|os)\b/.test(transformStr)) {
+      return { result: "❌ טרנספורמציה מפנה למזהים אסורים" };
+    }
     try {
-      const fn = new Function("row", `return (${transform})(row)`);
+      // eslint-disable-next-line no-new-func
+      const fn = new Function("row", `"use strict"; return (${transformStr})(row);`);
       rows = rows.map((row: any) => fn(row));
     } catch (e: any) {
       return { result: `❌ שגיאה בטרנספורמציה: ${e.message}` };
     }
   }
 
+  // B-SEC-SQL: validate target_table + cols before embedding in SQL
+  assertSafeIdent(target_table, "target_table");
+
   const BATCH = batch_size || 100;
   let inserted = 0;
   for (let i = 0; i < rows.length; i += BATCH) {
     const batch = rows.slice(i, i + BATCH);
     const cols = Object.keys(batch[0]);
+    cols.forEach(c => assertSafeIdent(c, "column"));
     for (const row of batch) {
       const vals = cols.map(c => row[c]);
       const placeholders = cols.map((_, j) => `$${j + 1}`).join(", ");
