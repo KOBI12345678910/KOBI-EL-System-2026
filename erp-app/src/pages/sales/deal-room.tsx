@@ -279,8 +279,8 @@ export default function DealRoom() {
                     <TableCell className="font-mono text-xs">{fmt(deal.lineItems.reduce((s, li) => s + li.total, 0))}</TableCell>
                   </TableRow>
                   <TableRow className="bg-primary/5">
-                    <TableCell colSpan={4} className="text-xs text-muted-foreground">מע"מ 17%</TableCell>
-                    <TableCell className="font-mono text-[10px] text-muted-foreground">{fmt(deal.lineItems.reduce((s, li) => s + li.total, 0) * 0.17)}</TableCell>
+                    <TableCell colSpan={4} className="text-xs text-muted-foreground">מע"מ 18%</TableCell>
+                    <TableCell className="font-mono text-[10px] text-muted-foreground">{fmt(deal.lineItems.reduce((s, li) => s + li.total, 0) * 0.18)}</TableCell>
                   </TableRow>
                   <TableRow className="bg-primary/10 font-bold border-t-2">
                     <TableCell colSpan={4} className="text-sm">סה"כ כולל מע"מ</TableCell>
