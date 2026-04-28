@@ -47,7 +47,7 @@ export default defineConfig({
   ],
   base: '/payroll/',
   server: {
-    port: 5174,
+    port: 5173,
     host: true,
     open: true
   },
