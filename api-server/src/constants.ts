@@ -1,4 +1,4 @@
-export const VAT_RATE = 0.17;
+export const VAT_RATE = 0.18; // IL VAT raised from 17% to 18% effective 2026-01-01
 
 export const CORPORATE_TAX_RATE = 0.23;
 
