@@ -79,7 +79,7 @@ const ORCHESTRATIONS = {
 
   'project.create_work_order': {
     service: 'ops', label: 'צור הזמנת עבודה',
-    preconditions: [{ check: 'entity_exists', entity: 'project' }, { check: 'status_in', statuses: ['approved', 'in_planning', 'in_procurement'] }],
+    preconditions: [{ check: 'entity_exists', entity: 'project' }, { check: 'status_in', statuses: ['approved', 'in_planning', 'in_procurement', 'in_production'] }],
     effects: [
       { type: 'create', entity: 'work_order', fields: { project_id: ':projectId' } },
       { type: 'link', from: 'work_order', to: 'project' },
@@ -119,7 +119,7 @@ const ORCHESTRATIONS = {
 
   'rfq.convert_to_po': {
     service: 'procurement', label: 'המר RFQ להזמנת רכש',
-    preconditions: [{ check: 'entity_exists', entity: 'rfq' }, { check: 'status_is', status: 'approved' }],
+    preconditions: [{ check: 'entity_exists', entity: 'rfq' }, { check: 'status_in', statuses: ['approved', 'decided'] }],
     effects: [
       { type: 'create', entity: 'po', copyFrom: 'rfq', fields: ['items', 'supplier_id'] },
       { type: 'link', from: 'po', to: 'rfq' },
@@ -161,7 +161,7 @@ const ORCHESTRATIONS = {
 
   'work_order.signoff': {
     service: 'ops', label: 'חתימה וסגירת הזמנת עבודה',
-    preconditions: [{ check: 'entity_exists', entity: 'work_order' }, { check: 'status_is', status: 'completed' }],
+    preconditions: [{ check: 'entity_exists', entity: 'work_order' }, { check: 'status_in', statuses: ['completed', 'done'] }],
     effects: [
       { type: 'create', entity: 'signature', fields: { work_order_id: ':woId' } },
       { type: 'transition', entity: 'work_order', transition: 'signoff' },
