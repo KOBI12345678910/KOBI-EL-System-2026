@@ -1,34 +1,3 @@
-# AGENT-214 - RLS Hardening Migration
-
-**Project:** kobi-el-system-2026 (`ponypxhushxeskxgrmha`)
-**Scope:** Generate `supabase/migrations/00073_rls_hardening.sql`
-**Date:** 2026-04-29
-**Auditor:** Agent 214 - RLS Hardening
-**Source findings:** AGENT-09 (318 USING(true) policies + 59 RLS-disabled tables)
-
----
-
-## Status
-
-**Migration generated.** Persists to `supabase/migrations/00073_rls_hardening.sql`.
-
-| Step | Tables touched | Notes |
-|------|----------------|-------|
-| 1. Helper `governance.current_tenant_id()` | n/a | Reads `request.jwt.claim.tenant_id`, then session var `app.current_tenant_id`, then `governance.users_profile.tenant_id` |
-| 2. Helper `governance.is_service_role()` | n/a | Reads `request.jwt.claim.role` = `service_role` |
-| 3. ENABLE RLS on 59 tables | 59 | Includes `api_keys`, `env_variables`, `webhooks`, `system_logs`, etc. |
-| 4. Service-role escape policies for system tables | 12 | `api_keys`, `env_variables`, `webhooks`, `system_logs`, `backups`, `feature_flags`, `global_settings`, `error_tracking`, `analytics_events`, `daily_usage`, `performance_metrics`, `compliance_certs` |
-| 5. User-scoped policies for personal tables | 7 | `notification_preferences`, `dashboard_layouts`, `user_integrations`, `voice_sessions`, `support_tickets`, `team_invites`, `shared_links` |
-| 6. Tenant-scoped policies for tenanted tables | 40 | All other previously-disabled tables |
-| 7. Replace `USING (true)` with tenant predicate | 26 vertical-domain prefixes | Drops permissive policy and adds `tenant_id = governance.current_tenant_id()` filter |
-
-Run **after** `00072_create_governance_tenant_helper.sql` (helper) and `00075_index_tenant_id_columns.sql` (index) per AGENT-09 plan, but this migration is **idempotent** and can be re-applied.
-
----
-
-## Migration SQL
-
-```sql
 -- ============================================================
 -- 00073_rls_hardening.sql
 -- AGENT-214 RLS Hardening
@@ -155,9 +124,6 @@ END $$;
 -- ============================================================
 -- 4. SERVICE-ROLE-ONLY tables (secrets, infra, telemetry)
 -- ============================================================
--- Pattern: only service_role and platform_admin may read/write.
--- Authenticated users get NO access - these never reach the API.
-
 DO $$
 DECLARE
   t text;
@@ -189,37 +155,31 @@ END $$;
 -- ============================================================
 -- 5. OWNER-SCOPED tables (personal)
 -- ============================================================
--- Each row owned by a single user; only owner + admin may access.
 
--- notification_preferences (user_id)
 DROP POLICY IF EXISTS notification_preferences_owner ON public.notification_preferences;
 CREATE POLICY notification_preferences_owner ON public.notification_preferences
   FOR ALL TO authenticated
   USING (user_id = auth.uid() OR governance.current_user_is_admin())
   WITH CHECK (user_id = auth.uid() OR governance.current_user_is_admin());
 
--- dashboard_layouts (user_id)
 DROP POLICY IF EXISTS dashboard_layouts_owner ON public.dashboard_layouts;
 CREATE POLICY dashboard_layouts_owner ON public.dashboard_layouts
   FOR ALL TO authenticated
   USING (user_id = auth.uid() OR governance.current_user_is_admin())
   WITH CHECK (user_id = auth.uid() OR governance.current_user_is_admin());
 
--- user_integrations (user_id)
 DROP POLICY IF EXISTS user_integrations_owner ON public.user_integrations;
 CREATE POLICY user_integrations_owner ON public.user_integrations
   FOR ALL TO authenticated
   USING (user_id = auth.uid() OR governance.current_user_is_admin())
   WITH CHECK (user_id = auth.uid() OR governance.current_user_is_admin());
 
--- voice_sessions (user_id)
 DROP POLICY IF EXISTS voice_sessions_owner ON public.voice_sessions;
 CREATE POLICY voice_sessions_owner ON public.voice_sessions
   FOR ALL TO authenticated
   USING (user_id = auth.uid() OR governance.current_user_is_admin())
   WITH CHECK (user_id = auth.uid() OR governance.current_user_is_admin());
 
--- support_tickets (created_by + tenant_id)
 DROP POLICY IF EXISTS support_tickets_owner_or_tenant ON public.support_tickets;
 CREATE POLICY support_tickets_owner_or_tenant ON public.support_tickets
   FOR ALL TO authenticated
@@ -230,7 +190,6 @@ CREATE POLICY support_tickets_owner_or_tenant ON public.support_tickets
               OR tenant_id = governance.current_tenant_id()
               OR governance.current_user_is_admin());
 
--- team_invites (tenant_id, but readable by invitee email)
 DROP POLICY IF EXISTS team_invites_tenant ON public.team_invites;
 CREATE POLICY team_invites_tenant ON public.team_invites
   FOR ALL TO authenticated
@@ -240,7 +199,6 @@ CREATE POLICY team_invites_tenant ON public.team_invites
   WITH CHECK (tenant_id = governance.current_tenant_id()
               OR governance.current_user_is_admin());
 
--- shared_links (creator OR token-readable; here: owner only via RLS)
 DROP POLICY IF EXISTS shared_links_owner ON public.shared_links;
 CREATE POLICY shared_links_owner ON public.shared_links
   FOR ALL TO authenticated
@@ -291,8 +249,6 @@ END $$;
 -- ============================================================
 -- 7. TENANT-SCOPED tables (the rest of the 59)
 -- ============================================================
--- Each row carries tenant_id; only members of that tenant may access.
-
 DO $$
 DECLARE
   t text;
@@ -333,7 +289,6 @@ BEGIN
                       OR governance.current_user_is_admin())
       $p$, t, t);
     ELSE
-      -- table has no tenant_id; admin-only until backfilled by 00074
       EXECUTE format($p$
         CREATE POLICY %I_tenant ON public.%I
           FOR ALL TO authenticated, service_role
@@ -351,12 +306,6 @@ DROP TABLE IF EXISTS public._temp_file_transfer CASCADE;
 
 -- ============================================================
 -- 8. Replace USING (true) on vertical-domain public.* tables
--- ============================================================
--- For every public.<prefix>_* table that has a tenant_id column
--- and a permissive policy, drop the permissive policy and create
--- a tenant-scoped policy. Prefixes from AGENT-09:
---   agri,ai,ap,ar,auto,bank,crm,ecom,edu,energy,events,food,
---   gl,health,hotel,hr,ins,inv,legal,log,mfg,pm,proc,re,sec,sports
 -- ============================================================
 DO $$
 DECLARE
@@ -376,7 +325,6 @@ BEGIN
     WHERE p.schemaname='public'
       AND p.qual = 'true'
   LOOP
-    -- match prefix
     prefix_match := NULL;
     SELECT pre INTO prefix_match
     FROM unnest(prefixes) pre
@@ -405,8 +353,6 @@ BEGIN
                       OR governance.current_user_is_admin())
       $p$, r.policyname, r.tablename);
     ELSE
-      -- child/line-item table without denormalised tenant_id;
-      -- tighten to admin/service until 00074 backfills.
       EXECUTE format($p$
         CREATE POLICY %I ON public.%I
           FOR ALL TO authenticated, service_role
@@ -420,7 +366,7 @@ BEGIN
 END $$;
 
 -- ============================================================
--- 9. Audit log: record what changed
+-- 9. Audit log
 -- ============================================================
 INSERT INTO governance.audit_log
   (actor, action, entity_type, entity_id, payload, created_at)
@@ -445,50 +391,3 @@ WHERE EXISTS (SELECT 1 FROM information_schema.tables
               WHERE table_schema='governance' AND table_name='audit_log');
 
 COMMIT;
-
--- ============================================================
--- POST-MIGRATION VERIFICATION (run manually)
--- ============================================================
--- 1. SELECT count(*) FROM pg_tables t
---    WHERE schemaname='public' AND NOT EXISTS (
---      SELECT 1 FROM pg_class c
---      JOIN pg_namespace n ON n.oid=c.relnamespace
---      WHERE n.nspname=t.schemaname AND c.relname=t.tablename
---        AND c.relrowsecurity);
---    -> expect 0
---
--- 2. SELECT count(*) FROM pg_policies
---    WHERE schemaname='public' AND qual='true';
---    -> expect 0 (or only catalog/admin tables)
---
--- 3. As an authenticated user with no tenant_id, SELECT against
---    any tenanted table should return 0 rows.
--- ============================================================
-```
-
----
-
-## Helper function summary
-
-`governance.current_tenant_id()` resolves the tenant in order: (a) JWT claim `request.jwt.claim.tenant_id` (preferred - app puts active tenant on JWT at sign-in); (b) session GUC `app.current_tenant_id` (cron/edge functions via `SET LOCAL`); (c) `governance.users_profile.tenant_id` (fallback for sessions minted before multi-tenant claim).
-
-`governance.is_service_role()` checks `request.jwt.claim.role = 'service_role'` - escape hatch for edge functions and platform admin tooling.
-
-Both functions are `STABLE`, `SECURITY DEFINER`, granted to all roles. They never raise; missing claims yield NULL/false so RLS denies by default.
-
----
-
-## What this migration does NOT do (follow-up migrations)
-
-- **00074** add `tenant_id` to 57 child/line-item tables; admin-only fallback used here.
-- **00075** index the 29 unindexed `tenant_id` columns + the 167 FK columns; required before this becomes performant.
-- **00077** harden schema-qualified domains (`commercial.*`, `finance.*`, `procurement.*`, etc.). 00073 only touches `public.*`.
-- **00080** fix `WITH CHECK NULL` policies on INSERT-only policies.
-- **00081** add `CHECK` constraints for status enums and non-negative money.
-
----
-
-## Files referenced and output
-
-- Inputs: `_qa-reports-25/AGENT-09-db-integrity.md`, `supabase/migrations/00068_harden_rls_policies_always_true.sql`, `supabase/migrations/00071_remove_dangerous_anon_read_policies.sql`, `supabase/migrations/00004_rls_helper_functions_v2.sql`
-- Output migration: `supabase/migrations/00073_rls_hardening.sql` (written separately, contains the SQL above verbatim)
