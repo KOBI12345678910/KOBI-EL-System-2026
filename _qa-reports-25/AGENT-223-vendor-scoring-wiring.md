@@ -75,21 +75,14 @@ registerVendorScoringListener({ bus, supabase, logger: console });
 
 ## 2. Patch 2 — Nightly cron sweep
 
-**File:** `onyx-procurement/src/jobs/jobs-registry.js` — append to `DEFAULT_JOBS`. Reason: AGENT-183 §6 noted `recentScores[]` history must be assembled by the caller; a nightly sweep also covers vendors with no recent PO.
+**File:** `onyx-procurement/src/jobs/jobs-registry.js` — append to `DEFAULT_JOBS`. Covers vendors with no recent PO and feeds `recentScores[]` history (AGENT-183 §6).
 
 ```js
-{
-  id: 'nightly-vendor-rescore',
-  description: 'Re-score every active supplier; persist composite + risk_level',
-  category: 'analytics',
-  cron: '15 2 * * *',                  // 02:15 daily, after 02:00 backup
-  handler: runNightlyVendorRescore,
-  timeout: 30*60*1000, retries: 1, retryDelayMs: 5*60_000,
-  onFailure: 'notify-admin', runMissedOnStartup: true,
-},
-```
+{ id:'nightly-vendor-rescore', description:'Re-score every active supplier; persist composite + risk_level',
+  category:'analytics', cron:'15 2 * * *',  // 02:15 daily, after 02:00 backup
+  handler: runNightlyVendorRescore, timeout: 30*60*1000, retries:1, retryDelayMs: 5*60_000,
+  onFailure:'notify-admin', runMissedOnStartup:true },
 
-```js
 async function runNightlyVendorRescore(ctx) {
   const { scoreVendor } = require('../analytics/vendor-scoring');
   const { persistScore } = require('../suppliers/score-persistence');
@@ -97,13 +90,11 @@ async function runNightlyVendorRescore(ctx) {
   const supabase = ctx.supabase || ctx.deps?.supabase;
   if (!supabase) return ctx.logger.warn({ id: ctx.id }, 'rescore.skipped_no_supabase');
   const { data: vendors = [] } = await supabase.from('procurement.suppliers')
-    .select('id').in('status', ['active', 'preferred', 'monitor', 'on_hold']);
+    .select('id').in('status', ['active','preferred','monitor','on_hold']);
   let scored = 0, failed = 0;
   for (const v of vendors) {
-    try {
-      await persistScore(supabase, v.id, scoreVendor(String(v.id), await __loadSupplierHistory(supabase, v.id)));
-      scored++;
-    } catch (err) { failed++; ctx.logger.warn({ vendorId: v.id, err: err?.message }, 'rescore.row_failed'); }
+    try { await persistScore(supabase, v.id, scoreVendor(String(v.id), await __loadSupplierHistory(supabase, v.id))); scored++; }
+    catch (err) { failed++; ctx.logger.warn({ vendorId: v.id, err: err?.message }, 'rescore.row_failed'); }
   }
   ctx.logger.info({ id: ctx.id, scored, failed }, 'rescore.done');
 }
@@ -147,10 +138,8 @@ module.exports = { persistScore, riskLevelFor };
 
 ```sql
 create table if not exists procurement.vendor_score_history (
-  id bigserial primary key,
-  supplier_id bigint not null references procurement.suppliers(id) on delete cascade,
-  composite numeric(5,2) not null,
-  badge text not null, badge_en text,
+  id bigserial primary key, supplier_id bigint not null references procurement.suppliers(id) on delete cascade,
+  composite numeric(5,2) not null, badge text not null, badge_en text,
   risk_level text not null check (risk_level in ('low','medium','high','critical')),
   dimensions jsonb not null, risks jsonb not null default '[]',
   recommendations jsonb not null default '[]', samples integer not null default 0,
@@ -165,27 +154,23 @@ alter table procurement.vendor_score_history enable row level security;
 
 ## 4. Patch 4 — Supplier360 tab `ניקוד והערכה`
 
-**File:** `onyx-procurement/src/features/suppliers/Supplier360.tsx` (381 LOC). Insertion points: `SupplierTab` union (line 161), `TabBtn` row (lines 234-240), tab body (after line 363).
+**File:** `onyx-procurement/src/features/suppliers/Supplier360.tsx` (381 LOC). Edits at line 70 (payload type), 161 (`SupplierTab` union), 240 (TabBtn row), after line 363 (tab body).
 
 ```diff
-@@ line 70 (Supplier360Payload) @@
-   open_pos_count?: number;
+@@ Supplier360Payload (line 70) @@
 +  vendor_score?: VendorScore | null;
- };
-+type VendorScore = {
-+  composite: number; badge: string; badgeEn: string;
++}; type VendorScore = { composite: number; badge: string; badgeEn: string;
 +  risk_level: 'low'|'medium'|'high'|'critical';
-+  dimensions: Record<'onTimeDelivery'|'priceCompetitiveness'|'quality'|'communication'|'paymentTerms',
-+    { score: number; samples: number; detail?: string }>;
++  dimensions: Record<'onTimeDelivery'|'priceCompetitiveness'|'quality'|'communication'|'paymentTerms', { score: number; samples: number; detail?: string }>;
 +  risks: Array<{ code: string; he: string; severity: string; detail?: string }>;
 +  recommendations: string[]; as_of: string;
 +};
 
-@@ line 161 (SupplierTab union) @@
+@@ line 161: SupplierTab union @@
 -type SupplierTab = "overview" | "contacts" | "scorecards" | "pos" | "rfqs";
 +type SupplierTab = "overview" | "contacts" | "scorecards" | "scoring" | "pos" | "rfqs";
 
-@@ line 240 (Tab buttons row) @@
+@@ line 240: tab buttons row @@
 +  <TabBtn active={tab === "scoring"} label="ניקוד והערכה" onClick={() => setTab("scoring")} />
 ```
 
@@ -194,73 +179,59 @@ Tab body (insert after the `tab === "scorecards"` block):
 ```tsx
 {tab === "scoring" && (
   <Card title="ניקוד והערכה — Vendor Performance">
-    {!data.vendor_score
-      ? <div className="text-sm text-slate-600">אין ניקוד עדיין. ה-PO הראשון של הספק יפעיל חישוב אוטומטי.</div>
-      : <VendorScoringPanel score={data.vendor_score} supplierId={supplierId} />}
-  </Card>
-)}
+    {!data.vendor_score ? <div className="text-sm text-slate-600">אין ניקוד עדיין. ה-PO הראשון של הספק יפעיל חישוב אוטומטי.</div>
+     : <VendorScoringPanel score={data.vendor_score} supplierId={supplierId} />}
+  </Card>)}
 ```
 
-`VendorScoringPanel` (above `Supplier360`) — RTL, 5-dim bars, risks/recs, contextual blacklist button:
+`VendorScoringPanel` (above `Supplier360`) — RTL header (composite + badge + risk + as-of + blacklist button when `composite<50`), 5 dimension progress bars with weights (40/20/20/10/10), risks list (red/amber/slate by severity), numbered recommendations:
 
 ```tsx
-const DIMS = [
-  { key:'onTimeDelivery', he:'אספקה בזמן', w:40 }, { key:'priceCompetitiveness', he:'תחרותיות מחיר', w:20 },
-  { key:'quality', he:'איכות', w:20 }, { key:'communication', he:'תקשורת', w:10 }, { key:'paymentTerms', he:'תנאי תשלום', w:10 },
-] as const;
+const DIMS = [{key:'onTimeDelivery',he:'אספקה בזמן',w:40},{key:'priceCompetitiveness',he:'תחרותיות מחיר',w:20},
+  {key:'quality',he:'איכות',w:20},{key:'communication',he:'תקשורת',w:10},{key:'paymentTerms',he:'תנאי תשלום',w:10}] as const;
 
 function VendorScoringPanel({ score, supplierId }: { score: VendorScore; supplierId: number }) {
   const c = score.composite;
-  const badgeCls = c > 85 ? 'bg-emerald-100 text-emerald-800' : c >= 70 ? 'bg-blue-100 text-blue-800'
-    : c >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800';
-  const riskCls = (s: string) => s==='high'?'bg-red-100 text-red-800 border-red-200':s==='medium'?'bg-amber-100 text-amber-800 border-amber-200':'bg-slate-100 text-slate-800 border-slate-200';
-  return (
-    <div className="space-y-6" dir="rtl">
-      <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-5">
-        <div>
-          <div className="text-xs text-slate-500">ציון משוקלל</div>
-          <div className="text-4xl font-black">{c.toFixed(1)} <span className="text-lg font-normal text-slate-500">/ 100</span></div>
-          <div className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-bold ${badgeCls}`}>{score.badge} ({score.badgeEn})</div>
-        </div>
-        <div className="text-sm text-slate-600 text-left">
-          <div>סטטוס סיכון: <b>{score.risk_level}</b></div>
-          <div>נכון ל: {new Date(score.as_of).toLocaleDateString('he-IL')}</div>
-          {c < 50 && <BlacklistButton supplierId={supplierId} score={c} />}
-        </div>
+  const bC = c>85?'bg-emerald-100 text-emerald-800':c>=70?'bg-blue-100 text-blue-800':c>=50?'bg-amber-100 text-amber-800':'bg-red-100 text-red-800';
+  const rC = (s:string)=>s==='high'?'bg-red-100 text-red-800 border-red-200':s==='medium'?'bg-amber-100 text-amber-800 border-amber-200':'bg-slate-100 text-slate-800 border-slate-200';
+  return (<div className="space-y-6" dir="rtl">
+    <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-5">
+      <div>
+        <div className="text-xs text-slate-500">ציון משוקלל</div>
+        <div className="text-4xl font-black">{c.toFixed(1)} <span className="text-lg font-normal text-slate-500">/ 100</span></div>
+        <div className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-bold ${bC}`}>{score.badge} ({score.badgeEn})</div>
       </div>
-      <div className="space-y-2">
-        {DIMS.map(d => { const dim = score.dimensions[d.key]; return (
-          <div key={d.key} className="grid grid-cols-[140px_1fr_60px_50px] items-center gap-3">
-            <div className="font-bold text-slate-700">{d.he}</div>
-            <div className="h-3 rounded-full bg-slate-200 overflow-hidden"><div className="h-full bg-blue-600" style={{width:`${dim.score}%`}}/></div>
-            <div className="text-right tabular-nums font-bold">{dim.score.toFixed(1)}</div>
-            <div className="text-xs text-slate-500">{d.w}%</div>
-          </div>); })}
+      <div className="text-sm text-slate-600 text-left">
+        <div>סטטוס סיכון: <b>{score.risk_level}</b></div>
+        <div>נכון ל: {new Date(score.as_of).toLocaleDateString('he-IL')}</div>
+        {c < 50 && <BlacklistButton supplierId={supplierId} score={c} />}
       </div>
-      {score.risks.length > 0 && <div><div className="font-bold mb-2">סיכונים</div><div className="space-y-2">
-        {score.risks.map((r,i)=><div key={i} className={`rounded-xl border px-3 py-2 text-sm ${riskCls(r.severity)}`}><span className="font-bold">{r.he}</span>{r.detail?` — ${r.detail}`:''}</div>)}
-      </div></div>}
-      {score.recommendations.length > 0 && <div><div className="font-bold mb-2">המלצות</div>
-        <ol className="list-decimal pr-5 space-y-1 text-sm text-slate-700">{score.recommendations.map((rec,i)=><li key={i}>{rec}</li>)}</ol></div>}
     </div>
-  );
+    <div className="space-y-2">{DIMS.map(d => { const dim = score.dimensions[d.key]; return (
+      <div key={d.key} className="grid grid-cols-[140px_1fr_60px_50px] items-center gap-3">
+        <div className="font-bold text-slate-700">{d.he}</div>
+        <div className="h-3 rounded-full bg-slate-200 overflow-hidden"><div className="h-full bg-blue-600" style={{width:`${dim.score}%`}}/></div>
+        <div className="text-right tabular-nums font-bold">{dim.score.toFixed(1)}</div>
+        <div className="text-xs text-slate-500">{d.w}%</div></div>); })}</div>
+    {score.risks.length > 0 && <div><div className="font-bold mb-2">סיכונים</div><div className="space-y-2">
+      {score.risks.map((r,i)=><div key={i} className={`rounded-xl border px-3 py-2 text-sm ${rC(r.severity)}`}><span className="font-bold">{r.he}</span>{r.detail?` — ${r.detail}`:''}</div>)}</div></div>}
+    {score.recommendations.length > 0 && <div><div className="font-bold mb-2">המלצות</div>
+      <ol className="list-decimal pr-5 space-y-1 text-sm text-slate-700">{score.recommendations.map((rec,i)=><li key={i}>{rec}</li>)}</ol></div>}
+  </div>);
 }
 
 function BlacklistButton({ supplierId, score }: { supplierId: number; score: number }) {
   const qc = useQueryClient();
-  const onClick = async () => {
+  return <button onClick={async () => {
     if (!confirm(`להוציא את הספק לרשימה שחורה? ציון נוכחי: ${score.toFixed(1)}.`)) return;
-    const r = await fetch('/api/orchestrator/execute', {
-      method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include',
-      body: JSON.stringify({ action:'supplier.blacklist', context:{ supplierId, composite: score } }),
-    });
+    const r = await fetch('/api/orchestrator/execute', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include',
+      body: JSON.stringify({ action:'supplier.blacklist', context:{ supplierId, composite: score } }) });
     if (r.ok) qc.invalidateQueries({ queryKey: supplier360QueryKey(supplierId) }); else alert('פעולה נכשלה');
-  };
-  return <button onClick={onClick} className="mt-2 rounded-xl bg-red-600 px-3 py-2 text-xs font-bold text-white hover:bg-red-700">הוצא לרשימה שחורה</button>;
+  }} className="mt-2 rounded-xl bg-red-600 px-3 py-2 text-xs font-bold text-white hover:bg-red-700">הוצא לרשימה שחורה</button>;
 }
 ```
 
-Server: extend `GET /api/suppliers/:id/360` to include `vendor_score` from latest `vendor_score_history` row (or compute on-demand if none).
+Server: extend `GET /api/suppliers/:id/360` to include `vendor_score` from latest `vendor_score_history` row (or compute on-demand).
 
 ---
 
@@ -361,22 +332,22 @@ create trigger trg_guard_po_supplier before insert on procurement.purchase_order
 | # | Scenario | Expected |
 |---|----------|----------|
 | 1 | `npm test -- vendor-scoring` | 32 existing tests still pass |
-| 2 | New unit test for `persistScore()` | writes both rows; idempotent on identical `as_of` (23505 swallowed) |
+| 2 | Unit `persistScore()` | writes both rows; idempotent on identical `as_of` (23505 swallowed) |
 | 3 | Emit `procurement.po.fully_received` | `suppliers.performance_score` updated < 2s |
-| 4 | Cron `nightly-vendor-rescore` runs at 02:15 | one history row per active supplier per day |
-| 5 | Orchestrator `supplier.blacklist` for composite ≥ 50 | precondition fails: `composite N not below 50` |
-| 6 | Same call with composite < 50 | supplier `active→blacklisted`; open RFQs cancelled; new RFQ/PO insert raises Postgres `P0001` |
-| 7 | Supplier360 tab `ניקוד והערכה` with `vendor_score` | renders 5 dimension bars + risks + recs in RTL |
-| 8 | Same tab without score | shows `אין ניקוד עדיין. ה-PO הראשון…` |
-| 9 | `הוצא לרשימה שחורה` button when composite < 50 | confirm -> orchestrator -> query invalidate -> badge re-renders as `blacklisted` |
-| 10 | `supplier.reinstate` from blacklisted | requires `procurement_manager` role; lands on `on_hold`, not `active` |
+| 4 | Cron `nightly-vendor-rescore` at 02:15 | one history row per active supplier per day |
+| 5 | `supplier.blacklist` for composite ≥ 50 | precondition fails: `composite N not below 50` |
+| 6 | Same with composite < 50 | `active→blacklisted`; RFQs cancelled; new RFQ/PO insert raises `P0001` |
+| 7 | Supplier360 tab `ניקוד והערכה` with score | renders 5 bars + risks + recs in RTL |
+| 8 | Same tab without score | empty-state Hebrew message |
+| 9 | Blacklist button when composite < 50 | confirm → orchestrator → invalidate → status badge `blacklisted` |
+| 10 | `supplier.reinstate` from blacklisted | requires `procurement_manager` role; lands on `on_hold` |
 
 ---
 
 ## 7. Files touched
 
-| Action | Path | LOC delta |
-|--------|------|-----------|
+| Action | Path | LOC |
+|--------|------|----:|
 | NEW | `onyx-procurement/src/wiring/vendor-scoring-listener.js` | +50 |
 | NEW | `onyx-procurement/src/suppliers/score-persistence.js` | +45 |
 | EDIT | `onyx-procurement/server.js` | +3 |
@@ -387,18 +358,12 @@ create trigger trg_guard_po_supplier before insert on procurement.purchase_order
 | NEW | `supabase/migrations/00084_vendor_score_history.sql` | +18 |
 | NEW | `supabase/migrations/00085_supplier_blacklist_status.sql` | +25 |
 
-**Total:** +339 LOC, zero deletions, all existing exports preserved.
+**Total: +339 LOC, zero deletions, all existing exports preserved.**
 
 ---
 
 ## 8. Sign-off
 
-Four wiring deliverables required by Agent-183 are spec'd above:
-1. **Cron-like trigger** — listener on `procurement.po.fully_received|closed|received` plus `nightly-vendor-rescore` at 02:15.
-2. **Persistence** — `persistScore()` writes `performance_score` + `risk_level` + appends to `vendor_score_history`.
-3. **Supplier360 tab `ניקוד והערכה`** — composite, badge, 5 dimension bars, risks, recs, contextual blacklist button.
-4. **`blacklist_vendor` orchestrator** — `supplier.blacklist` with precondition `composite < 50`, supplier state machine, DB-level guard triggers refusing RFQ/PO inserts against blacklisted suppliers.
-
-Math layer (AGENT-183 verified) untouched. Wiring is fully additive.
+Four AGENT-183 deliverables spec'd above: (1) event listener + nightly cron at 02:15; (2) `persistScore()` writes `performance_score`+`risk_level`+history table; (3) Supplier360 tab `ניקוד והערכה` with composite, badge, 5 bars, risks, recs, contextual blacklist button; (4) `supplier.blacklist` orchestrator + state machine + DB triggers refusing RFQ/PO inserts against blacklisted suppliers. Math layer untouched; wiring fully additive.
 
 *End of AGENT-223 wiring report.*
