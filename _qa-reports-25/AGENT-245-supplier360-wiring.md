@@ -363,36 +363,26 @@ scorecardRoute.get('/api/suppliers/:id/scorecard', async (req, res) => {
 | Required | Where | Status |
 |----------|-------|--------|
 | 12 tabs | `Supplier360.contract.ts` SUPPLIER360_TABS | DONE |
-| `supplier_summary_card` | `Overview.tsx` | DONE |
-| `open_po_card` | `Overview.tsx` | DONE |
-| `delivery_performance_card` | bound to `dimensions.onTimeDelivery` | DONE |
-| `defect_rate_card` | bound to `dimensions.quality` | DONE |
-| `overdue_supplier_invoice_card` | `Overview.tsx` queries AP w/ `due_date<NOW()` | DONE |
-| `create_rfq` primary | `SUPPLIER360_ACTIONS.create_rfq` -> POST /api/rfq | DONE |
-| `create_po` primary | POST /api/purchase-orders | DONE |
-| `register_supplier_invoice` | POST /api/invoices `direction:'input'` | DONE |
-| `create_return` | POST /api/returns | DONE |
-| `add_contract`, `view_portal`, `view_score`, `add_document` secondary | Header360 menu | DONE |
-| `RFQs` related | `tabs/index.tsx` RFQs | DONE |
-| `POs` related | tabs/index.tsx PurchaseOrders | DONE |
-| `GRNs` related | tabs/index.tsx GRNs | DONE |
-| `AP Invoices` related | tabs/index.tsx APInvoices | DONE |
-| `Payments` related | tabs/index.tsx Payments | DONE |
-| `Vendor Scorecard` | tabs/Scorecard.tsx <- `scoreVendor()` | DONE |
+| 5 widgets (summary, open PO, delivery, defect, overdue AP) | `Overview.tsx` | DONE |
+| `delivery_performance_card` / `defect_rate_card` | bound to `dimensions.onTimeDelivery` & `dimensions.quality` | DONE |
+| Primary actions (create_rfq, create_po, register_supplier_invoice, create_return) | `SUPPLIER360_ACTIONS` | DONE |
+| Secondary actions (add_contract, view_portal, view_score, add_document) | Header360 menu | DONE |
+| Related: RFQs, POs, GRNs, AP Invoices, Payments | `tabs/index.tsx` (makeTab factory) | DONE |
+| Vendor Scorecard | `tabs/Scorecard.tsx` <- `scoreVendor()` | DONE |
 
 ---
 
 ## 9. Files to Create
 
-| File | Lines | Role |
-|------|-------|------|
-| `onyx-procurement/src/features/suppliers/Supplier360.contract.ts` | ~50 | Tabs/API/action constants |
-| `onyx-procurement/src/features/suppliers/Supplier360.tsx` | ~120 | Page root + header + tab rail |
-| `onyx-procurement/src/features/suppliers/tabs/Overview.tsx` | ~80 | 5 widget cards |
-| `onyx-procurement/src/features/suppliers/tabs/Scorecard.tsx` | ~70 | Binds vendor-scoring engine output |
-| `onyx-procurement/src/features/suppliers/tabs/index.tsx` | ~150 | RFQs/POs/GRNs/APInvoices/Payments |
-| `onyx-procurement/src/features/suppliers/tabs/Misc.tsx` | ~80 | SupplierQuotes/Returns/Warranty/Contracts/Documents |
-| `api-server/src/routes/suppliers/scorecard.ts` | ~50 | Backend that calls `scoreVendor()` |
+| File | Role |
+|------|------|
+| `onyx-procurement/src/features/suppliers/Supplier360.contract.ts` | Tabs/API/action constants |
+| `onyx-procurement/src/features/suppliers/Supplier360.tsx` | Page root + header + tab rail |
+| `onyx-procurement/src/features/suppliers/tabs/Overview.tsx` | 5 widget cards |
+| `onyx-procurement/src/features/suppliers/tabs/Scorecard.tsx` | Binds vendor-scoring engine output |
+| `onyx-procurement/src/features/suppliers/tabs/index.tsx` | RFQs/POs/GRNs/APInvoices/Payments |
+| `onyx-procurement/src/features/suppliers/tabs/Misc.tsx` | SupplierQuotes/Returns/Warranty/Contracts/Documents |
+| `api-server/src/routes/suppliers/scorecard.ts` | Backend that calls `scoreVendor()` |
 
 ---
 

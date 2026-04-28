@@ -8,6 +8,7 @@ import {
 import { globalConfirm } from "@/components/confirm-dialog";
 import BulkActions, { useBulkSelection, BulkCheckbox, defaultBulkActions } from "@/components/bulk-actions";
 import { useFormValidation, FormFieldError, RequiredMark } from "@/hooks/use-form-validation";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 const API = "/api";
 const getHeaders = () => ({ "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("erp_token") || ""}` });
@@ -291,67 +292,72 @@ export default function TerritoryManagement() {
         </div>
       )}
 
-      {/* Create/Edit Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
-          <div className="bg-card rounded-2xl border border-border w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 space-y-5" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold">{editing ? "עריכת טריטוריה" : "טריטוריה חדשה"}</h2>
-              <button onClick={() => setShowForm(false)} className="p-1 rounded hover:bg-muted/30"><X className="w-5 h-5" /></button>
-            </div>
+      {/* Create/Edit Form Modal — Radix Dialog (focus trap + ESC + ARIA) */}
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent dir="rtl" className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editing ? "עריכת טריטוריה" : "טריטוריה חדשה"}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={(e) => { e.preventDefault(); save(); }} noValidate>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {(() => { const p = validation.getFieldProps("name"); return (
+                <div>
+                  <label htmlFor={p.id} className="text-sm font-medium">שם טריטוריה <RequiredMark /></label>
+                  <input {...p.inputProps} value={form.name || ""} onChange={e => setForm({ ...form, name: e.target.value })} className={`w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm ${p.className}`} placeholder="שם הטריטוריה" />
+                  <FormFieldError id={p.errorId} error={p.error} />
+                </div>
+              ); })()}
+              {(() => { const p = validation.getFieldProps("region"); return (
+                <div>
+                  <label htmlFor={p.id} className="text-sm font-medium">אזור <RequiredMark /></label>
+                  <select {...p.inputProps} value={form.region || ""} onChange={e => setForm({ ...form, region: e.target.value })} className={`w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm ${p.className}`}>
+                    <option value="">בחר אזור</option>
+                    {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                  <FormFieldError id={p.errorId} error={p.error} />
+                </div>
+              ); })()}
+              {(() => { const p = validation.getFieldProps("manager"); return (
+                <div>
+                  <label htmlFor={p.id} className="text-sm font-medium">מנהל <RequiredMark /></label>
+                  <input {...p.inputProps} value={form.manager || ""} onChange={e => setForm({ ...form, manager: e.target.value })} className={`w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm ${p.className}`} placeholder="שם מנהל" />
+                  <FormFieldError id={p.errorId} error={p.error} />
+                </div>
+              ); })()}
               <div>
-                <label className="text-sm font-medium">שם טריטוריה <RequiredMark /></label>
-                <input value={form.name || ""} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" placeholder="שם הטריטוריה" />
-                <FormFieldError error={validation.errors.name} />
-              </div>
-              <div>
-                <label className="text-sm font-medium">אזור <RequiredMark /></label>
-                <select value={form.region || ""} onChange={e => setForm({ ...form, region: e.target.value })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm">
-                  <option value="">בחר אזור</option>
-                  {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
-                </select>
-                <FormFieldError error={validation.errors.region} />
-              </div>
-              <div>
-                <label className="text-sm font-medium">מנהל <RequiredMark /></label>
-                <input value={form.manager || ""} onChange={e => setForm({ ...form, manager: e.target.value })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" placeholder="שם מנהל" />
-                <FormFieldError error={validation.errors.manager} />
-              </div>
-              <div>
-                <label className="text-sm font-medium">סטטוס</label>
-                <select value={form.status || "planning"} onChange={e => setForm({ ...form, status: e.target.value })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm">
+                <label htmlFor={`${validation.idPrefix}-status`} className="text-sm font-medium">סטטוס</label>
+                <select id={`${validation.idPrefix}-status`} value={form.status || "planning"} onChange={e => setForm({ ...form, status: e.target.value })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm">
                   {Object.entries(STATUS_MAP).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-sm font-medium">מספר נציגים</label>
-                <input type="number" min={0} value={form.repsCount || 0} onChange={e => setForm({ ...form, repsCount: Number(e.target.value) })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+                <label htmlFor={`${validation.idPrefix}-repsCount`} className="text-sm font-medium">מספר נציגים</label>
+                <input id={`${validation.idPrefix}-repsCount`} type="number" min={0} value={form.repsCount || 0} onChange={e => setForm({ ...form, repsCount: Number(e.target.value) })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
               </div>
               <div>
-                <label className="text-sm font-medium">מספר לקוחות</label>
-                <input type="number" min={0} value={form.customerCount || 0} onChange={e => setForm({ ...form, customerCount: Number(e.target.value) })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+                <label htmlFor={`${validation.idPrefix}-customerCount`} className="text-sm font-medium">מספר לקוחות</label>
+                <input id={`${validation.idPrefix}-customerCount`} type="number" min={0} value={form.customerCount || 0} onChange={e => setForm({ ...form, customerCount: Number(e.target.value) })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
               </div>
               <div>
-                <label className="text-sm font-medium">יעד הכנסה (₪)</label>
-                <input type="number" min={0} value={form.revenueTarget || 0} onChange={e => setForm({ ...form, revenueTarget: Number(e.target.value) })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+                <label htmlFor={`${validation.idPrefix}-revenueTarget`} className="text-sm font-medium">יעד הכנסה (₪)</label>
+                <input id={`${validation.idPrefix}-revenueTarget`} type="number" min={0} value={form.revenueTarget || 0} onChange={e => setForm({ ...form, revenueTarget: Number(e.target.value) })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
               </div>
               <div>
-                <label className="text-sm font-medium">הכנסה בפועל (₪)</label>
-                <input type="number" min={0} value={form.revenueActual || 0} onChange={e => setForm({ ...form, revenueActual: Number(e.target.value) })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+                <label htmlFor={`${validation.idPrefix}-revenueActual`} className="text-sm font-medium">הכנסה בפועל (₪)</label>
+                <input id={`${validation.idPrefix}-revenueActual`} type="number" min={0} value={form.revenueActual || 0} onChange={e => setForm({ ...form, revenueActual: Number(e.target.value) })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
               </div>
               <div className="md:col-span-2">
-                <label className="text-sm font-medium">תיאור</label>
-                <textarea value={form.description || ""} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" placeholder="תיאור הטריטוריה..." />
+                <label htmlFor={`${validation.idPrefix}-description`} className="text-sm font-medium">תיאור</label>
+                <textarea id={`${validation.idPrefix}-description`} value={form.description || ""} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" placeholder="תיאור הטריטוריה..." />
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
-              <button onClick={() => setShowForm(false)} className="px-4 py-2 rounded-lg border border-border text-sm hover:bg-muted/30 transition">ביטול</button>
-              <button onClick={save} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90 transition">{editing ? "עדכון" : "יצירה"}</button>
-            </div>
-          </div>
-        </div>
-      )}
+            <DialogFooter className="pt-4 border-t border-border mt-4">
+              <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 rounded-lg border border-border text-sm hover:bg-muted/30 transition">ביטול</button>
+              <button type="submit" className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90 transition">{editing ? "עדכון" : "יצירה"}</button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

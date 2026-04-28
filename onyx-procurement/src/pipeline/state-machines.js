@@ -52,6 +52,74 @@ const STATE_MACHINES = {
     },
   },
 
+  // ─────────────────────────────────────────────────────────────
+  // sales_order — added per AGENT-159 / AGENT-246. Entity exists in
+  // commercial.sales_orders (migration 00043) and now in 00084 with
+  // DB-layer guard trigger. Statuses align with status check
+  // constraint AND state_machines.transitions seed in 00084.
+  // ─────────────────────────────────────────────────────────────
+  sales_order: {
+    initial: 'draft',
+    states: {
+      draft:         { transitions: { confirm: 'confirmed', cancel: 'cancelled' } },
+      confirmed:     { transitions: { start_production: 'in_production', invoice_direct: 'invoiced', cancel: 'cancelled' } },
+      in_production: { transitions: { ship: 'shipped', cancel: 'cancelled' } },
+      shipped:       { transitions: { deliver: 'delivered' } },
+      delivered:     { transitions: { invoice: 'invoiced' } },
+      invoiced:      { transitions: { close: 'closed' } },
+      closed:        { transitions: {}, final: true },
+      cancelled:     { transitions: {}, final: true },
+    },
+    triggers: {
+      'draft→confirmed': [
+        { action: 'reserve_inventory', params: {} },
+        { action: 'create_draft_invoice', params: { target: 'accounts_receivable' } },
+        { action: 'notify_customer', params: { template: 'order_confirmed' } },
+      ],
+      'confirmed→in_production': [
+        { action: 'create_work_orders', params: { fromOrder: true } },
+        { action: 'link_to_project', params: {} },
+      ],
+      'in_production→shipped': [
+        { action: 'create_logistics_order', params: {} },
+        { action: 'decrement_inventory', params: { type: 'shipment' } },
+      ],
+      'shipped→delivered': [
+        { action: 'capture_pod', params: {} },
+        { action: 'notify_customer', params: { template: 'order_delivered' } },
+      ],
+      'delivered→invoiced': [
+        { action: 'issue_invoice', params: { copyFrom: 'sales_order' } },
+        { action: 'post_to_gl', params: {} },
+      ],
+      'confirmed→invoiced': [
+        { action: 'issue_invoice', params: { copyFrom: 'sales_order' } },
+      ],
+      'invoiced→closed': [
+        { action: 'reconcile_payment', params: {} },
+        { action: 'create_audit', params: { type: 'order_closure' } },
+      ],
+      'confirmed→cancelled': [
+        { action: 'release_inventory', params: {} },
+        { action: 'void_draft_invoice', params: {} },
+      ],
+      'in_production→cancelled': [
+        { action: 'cancel_work_orders', params: {} },
+        { action: 'release_inventory', params: {} },
+      ],
+    },
+    badges: {
+      draft:         { he: 'טיוטה',         en: 'Draft',         tone: 'neutral', icon: 'FileText' },
+      confirmed:     { he: 'מאושר',         en: 'Confirmed',     tone: 'info',    icon: 'CheckCircle2' },
+      in_production: { he: 'בייצור',        en: 'In Production', tone: 'warning', icon: 'Factory' },
+      shipped:       { he: 'נשלח',          en: 'Shipped',       tone: 'info',    icon: 'Truck' },
+      delivered:     { he: 'נמסר',          en: 'Delivered',     tone: 'success', icon: 'PackageCheck' },
+      invoiced:      { he: 'חשבונית הופקה', en: 'Invoiced',      tone: 'success', icon: 'Receipt' },
+      closed:        { he: 'סגור',          en: 'Closed',        tone: 'muted',   icon: 'Lock' },
+      cancelled:     { he: 'בוטל',          en: 'Cancelled',     tone: 'danger',  icon: 'XCircle' },
+    },
+  },
+
   rfq: {
     initial: 'draft',
     states: {
@@ -334,6 +402,12 @@ function getTriggersForTransition(entityType, fromStatus, toStatus) {
   return machine.triggers[key] || [];
 }
 
+function getBadge(entityType, status) {
+  const machine = STATE_MACHINES[entityType];
+  if (!machine || !machine.badges) return null;
+  return machine.badges[status] || null;
+}
+
 // ═══════════════════════════════════════════════════════════════
 // REGISTER ROUTES
 // ═══════════════════════════════════════════════════════════════
@@ -366,7 +440,15 @@ function registerStateMachineRoutes(app) {
     res.json({ transitions: getAvailableTransitions(req.params.type, current) });
   });
 
+  // Get UI badge mapping for a status (or all if no status param)
+  app.get('/api/state-machines/:type/badges', (req, res) => {
+    const machine = STATE_MACHINES[req.params.type];
+    if (!machine) return res.status(404).json({ error: `Unknown entity: ${req.params.type}` });
+    if (req.query.status) return res.json({ badge: getBadge(req.params.type, req.query.status) });
+    res.json({ badges: machine.badges || {} });
+  });
+
   console.log('   ✓ State machines registered (' + Object.keys(STATE_MACHINES).length + ' entities)');
 }
 
-module.exports = { STATE_MACHINES, canTransition, getAvailableTransitions, getTriggersForTransition, registerStateMachineRoutes };
+module.exports = { STATE_MACHINES, canTransition, getAvailableTransitions, getTriggersForTransition, getBadge, registerStateMachineRoutes };

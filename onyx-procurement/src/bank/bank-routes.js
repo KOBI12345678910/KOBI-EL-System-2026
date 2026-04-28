@@ -7,8 +7,19 @@
 
 const { autoParse } = require('./parsers');
 const { autoReconcileBatch } = require('./matcher');
+const { parseStatement: parseMultiFormat, detectFormat } = require('./multi-format-parser');
 
-function registerBankRoutes(app, { supabase, audit, requirePermission }) {
+// Agent 224: wire detectAnomalies() into the bank-statement post-parse path.
+// Bridge is loaded lazily so unit tests of bank-routes can run in isolation.
+let _anomalyBridge = null;
+function getAnomalyBridge() {
+  if (_anomalyBridge !== null) return _anomalyBridge;
+  try { _anomalyBridge = require('../ml/anomaly-bridge'); }
+  catch { _anomalyBridge = false; }
+  return _anomalyBridge;
+}
+
+function registerBankRoutes(app, { supabase, audit, requirePermission, createNotificationForAllUsers }) {
   // ═══ BANK ACCOUNTS ═══
 
   app.get('/api/bank/accounts', async (req, res) => {
@@ -100,6 +111,22 @@ function registerBankRoutes(app, { supabase, audit, requirePermission }) {
     await audit('bank_statement', statement.id, 'imported', req.actor || 'api',
       `יובאו ${inserted.length} תנועות בנק לחשבון ${req.params.id}`, null, statement);
 
+    // Agent 224: run anomaly detection on the parsed transactions.
+    // Failure here is non-fatal — the import response still ships normally.
+    let anomalyResult = null;
+    try {
+      const bridge = getAnomalyBridge();
+      if (bridge && parsed.transactions && parsed.transactions.length > 0) {
+        anomalyResult = await bridge.detectAndPersist(
+          parsed.transactions,
+          { supabase, createNotificationForAllUsers },
+          { entity: 'bank_transactions' },
+        );
+      }
+    } catch (e) {
+      console.warn('[bank-routes] anomaly detection failed:', e && e.message);
+    }
+
     // BUG-15 fix: use DB row values, not parser values that may be 0
     res.status(201).json({
       statement,
@@ -107,6 +134,61 @@ function registerBankRoutes(app, { supabase, audit, requirePermission }) {
       period: parsed.period,
       openingBalance: statement.opening_balance,
       closingBalance: statement.closing_balance,
+      anomalies: anomalyResult && anomalyResult.persisted
+        ? {
+            inserted: anomalyResult.persisted.inserted,
+            critical: anomalyResult.persisted.criticalCount,
+            skipped:  anomalyResult.persisted.skipped,
+          }
+        : null,
+    });
+  });
+
+  // Agent 224: dedicated multi-format endpoint that exercises
+  // multi-format-parser.js directly (OFX / QIF / CAMT.053 / PDF / CSV-IL)
+  // and pipes the result through the anomaly bridge.
+  app.post('/api/bank/multi-format/parse', async (req, res) => {
+    const { content, format } = req.body || {};
+    if (!content) return res.status(400).json({ error: 'content required' });
+
+    const buffer = Buffer.isBuffer(content)
+      ? content
+      : (typeof content === 'string'
+          ? Buffer.from(content, 'utf8')
+          : (content.base64 ? Buffer.from(content.base64, 'base64') : Buffer.from(String(content))));
+
+    let transactions;
+    try {
+      transactions = await parseMultiFormat(buffer, format || detectFormat(buffer));
+    } catch (e) {
+      return res.status(422).json({ error: `Parse failed: ${e.message}` });
+    }
+
+    let anomalyResult = null;
+    try {
+      const bridge = getAnomalyBridge();
+      if (bridge && transactions.length > 0) {
+        anomalyResult = await bridge.detectAndPersist(
+          transactions,
+          { supabase, createNotificationForAllUsers },
+          { entity: 'bank_transactions' },
+        );
+      }
+    } catch (e) {
+      console.warn('[bank-routes] multi-format anomaly run failed:', e && e.message);
+    }
+
+    res.json({
+      format: format || detectFormat(buffer),
+      count: transactions.length,
+      transactions,
+      anomalies: anomalyResult && anomalyResult.persisted
+        ? {
+            inserted: anomalyResult.persisted.inserted,
+            critical: anomalyResult.persisted.criticalCount,
+            skipped:  anomalyResult.persisted.skipped,
+          }
+        : null,
     });
   });
 

@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { globalConfirm } from "@/components/confirm-dialog";
 import { useFormValidation, FormFieldError, RequiredMark } from "@/hooks/use-form-validation";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 const API = "/api";
 const getHeaders = () => ({ "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("erp_token") || ""}` });
@@ -401,57 +402,60 @@ export default function CommissionManagement() {
         </div>
       )}
 
-      {/* Plan Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
-          <div className="bg-card rounded-2xl border border-border w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 space-y-5" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold">{editing ? "עריכת תוכנית עמלות" : "תוכנית עמלות חדשה"}</h2>
-              <button onClick={() => setShowForm(false)} className="p-1 rounded hover:bg-muted/30"><X className="w-5 h-5" /></button>
-            </div>
+      {/* Plan Form Modal — Radix Dialog (focus trap + ESC + ARIA) */}
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent dir="rtl" className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editing ? "עריכת תוכנית עמלות" : "תוכנית עמלות חדשה"}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={(e) => { e.preventDefault(); save(); }} noValidate>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
-                <label className="text-sm font-medium">שם תוכנית <RequiredMark /></label>
-                <input value={form.name || ""} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
-                <FormFieldError error={validation.errors.name} />
-              </div>
+              {(() => { const p = validation.getFieldProps("name"); return (
+                <div className="md:col-span-2">
+                  <label htmlFor={p.id} className="text-sm font-medium">שם תוכנית <RequiredMark /></label>
+                  <input {...p.inputProps} value={form.name || ""} onChange={e => setForm({ ...form, name: e.target.value })} className={`w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm ${p.className}`} />
+                  <FormFieldError id={p.errorId} error={p.error} />
+                </div>
+              ); })()}
+              {(() => { const p = validation.getFieldProps("type"); return (
+                <div>
+                  <label htmlFor={p.id} className="text-sm font-medium">סוג <RequiredMark /></label>
+                  <select {...p.inputProps} value={form.type || "flat"} onChange={e => setForm({ ...form, type: e.target.value })} className={`w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm ${p.className}`}>
+                    {Object.entries(PLAN_TYPE_MAP).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                  </select>
+                  <FormFieldError id={p.errorId} error={p.error} />
+                </div>
+              ); })()}
               <div>
-                <label className="text-sm font-medium">סוג <RequiredMark /></label>
-                <select value={form.type || "flat"} onChange={e => setForm({ ...form, type: e.target.value })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm">
-                  {Object.entries(PLAN_TYPE_MAP).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-                </select>
-                <FormFieldError error={validation.errors.type} />
-              </div>
-              <div>
-                <label className="text-sm font-medium">סטטוס</label>
-                <select value={form.status || "draft"} onChange={e => setForm({ ...form, status: e.target.value })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm">
+                <label htmlFor={`${validation.idPrefix}-status`} className="text-sm font-medium">סטטוס</label>
+                <select id={`${validation.idPrefix}-status`} value={form.status || "draft"} onChange={e => setForm({ ...form, status: e.target.value })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm">
                   {Object.entries(PLAN_STATUS_MAP).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-sm font-medium">שיעור בסיסי (%)</label>
-                <input type="number" min={0} max={100} step={0.5} value={form.baseRate || 0} onChange={e => setForm({ ...form, baseRate: Number(e.target.value) })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+                <label htmlFor={`${validation.idPrefix}-baseRate`} className="text-sm font-medium">שיעור בסיסי (%)</label>
+                <input id={`${validation.idPrefix}-baseRate`} type="number" min={0} max={100} step={0.5} value={form.baseRate || 0} onChange={e => setForm({ ...form, baseRate: Number(e.target.value) })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
               </div>
               <div>
-                <label className="text-sm font-medium">מכסה (₪)</label>
-                <input type="number" min={0} value={form.quota || 0} onChange={e => setForm({ ...form, quota: Number(e.target.value) })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+                <label htmlFor={`${validation.idPrefix}-quota`} className="text-sm font-medium">מכסה (₪)</label>
+                <input id={`${validation.idPrefix}-quota`} type="number" min={0} value={form.quota || 0} onChange={e => setForm({ ...form, quota: Number(e.target.value) })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
               </div>
               <div className="md:col-span-2">
-                <label className="text-sm font-medium">תקרת עמלה (₪)</label>
-                <input type="number" min={0} value={form.cap || 0} onChange={e => setForm({ ...form, cap: Number(e.target.value) })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+                <label htmlFor={`${validation.idPrefix}-cap`} className="text-sm font-medium">תקרת עמלה (₪)</label>
+                <input id={`${validation.idPrefix}-cap`} type="number" min={0} value={form.cap || 0} onChange={e => setForm({ ...form, cap: Number(e.target.value) })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
               </div>
               <div className="md:col-span-2">
-                <label className="text-sm font-medium">תיאור</label>
-                <textarea value={form.description || ""} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+                <label htmlFor={`${validation.idPrefix}-description`} className="text-sm font-medium">תיאור</label>
+                <textarea id={`${validation.idPrefix}-description`} value={form.description || ""} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
-              <button onClick={() => setShowForm(false)} className="px-4 py-2 rounded-lg border border-border text-sm hover:bg-muted/30 transition">ביטול</button>
-              <button onClick={save} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90 transition">{editing ? "עדכון" : "יצירה"}</button>
-            </div>
-          </div>
-        </div>
-      )}
+            <DialogFooter className="pt-4 border-t border-border mt-4">
+              <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 rounded-lg border border-border text-sm hover:bg-muted/30 transition">ביטול</button>
+              <button type="submit" className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90 transition">{editing ? "עדכון" : "יצירה"}</button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

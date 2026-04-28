@@ -1,17 +1,26 @@
 /**
  * Shared building blocks for all 360 pages.
- * Every 360 page must have: header+status, primary actions, related records, documents, audit log.
+ * Every 360 page must have: breadcrumb, header+status, primary actions, related records, documents, audit log.
  */
 import React from "react";
+import Breadcrumb, { type BreadcrumbItem } from "../../components/Breadcrumb";
 
 /* ── Page wrapper ── */
 export function Page360({
-  title, subtitle, state, children,
+  title, subtitle, state, breadcrumbs, children,
 }: {
-  title: string; subtitle?: string; state?: string; children: React.ReactNode;
+  title: string;
+  subtitle?: string;
+  state?: string;
+  /** Optional trail rendered above the header. Last item = current page. */
+  breadcrumbs?: BreadcrumbItem[];
+  children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 max-w-6xl" dir="rtl">
+      {breadcrumbs && breadcrumbs.length >= 2 && (
+        <Breadcrumb items={breadcrumbs} className="-mb-3 text-xs text-gray-400" />
+      )}
       <header className="flex items-start justify-between">
         <div>
           <h1 className="text-xl font-bold">{title}</h1>
