@@ -81,32 +81,48 @@ router.get("/", async (req: Request, res: Response) => {
   if (!parsed.success) { res.status(400).json({ error: "בקשה לא תקינה", details: parsed.error.flatten() }); return; }
   const { q, state, payment_method, invoice_id, customer_id, supplier_id, from_date, to_date, limit, offset, order_by, order_dir } = parsed.data;
 
-  const whereParts: string[] = ["coalesce(is_deleted, false) = false"];
+  // Whitelist for ORDER BY identifier and direction. Defends in depth even though
+  // Zod constrains values upstream — a schema regression must not re-open the hole.
+  const ORDER_BY_COLUMNS: Record<string, ReturnType<typeof sql.identifier>> = {
+    id:             sql.identifier("id"),
+    payment_number: sql.identifier("payment_number"),
+    payment_date:   sql.identifier("payment_date"),
+    amount:         sql.identifier("amount"),
+    state:          sql.identifier("state"),
+    created_at:     sql.identifier("created_at"),
+  };
+  const orderCol = ORDER_BY_COLUMNS[order_by as string] ?? ORDER_BY_COLUMNS.created_at;
+  const orderDir = String(order_dir).toUpperCase() === "ASC" ? sql.raw("ASC") : sql.raw("DESC");
+
+  const conditions: any[] = [sql`coalesce(is_deleted, false) = false`];
   if (q) {
-    const safe = q.replace(/'/g, "''");
-    whereParts.push(`(payment_number ILIKE '%${safe}%' OR reference_number ILIKE '%${safe}%' OR notes ILIKE '%${safe}%')`);
+    const like = `%${q}%`;
+    conditions.push(sql`(payment_number ILIKE ${like} OR reference_number ILIKE ${like} OR notes ILIKE ${like})`);
   }
-  if (state)          whereParts.push(`state = '${state}'`);
-  if (payment_method) whereParts.push(`payment_method = '${payment_method}'`);
-  if (invoice_id)     whereParts.push(`invoice_id = ${invoice_id}`);
-  if (customer_id)    whereParts.push(`customer_id = ${customer_id}`);
-  if (supplier_id)    whereParts.push(`supplier_id = ${supplier_id}`);
-  if (from_date)      whereParts.push(`payment_date >= '${from_date.replace(/'/g, "''")}'`);
-  if (to_date)        whereParts.push(`payment_date <= '${to_date.replace(/'/g, "''")}'`);
-  const whereClause = `where ${whereParts.join(" and ")}`;
+  if (state)          conditions.push(sql`state = ${state}`);
+  if (payment_method) conditions.push(sql`payment_method = ${payment_method}`);
+  if (invoice_id)     conditions.push(sql`invoice_id = ${Number(invoice_id)}`);
+  if (customer_id)    conditions.push(sql`customer_id = ${Number(customer_id)}`);
+  if (supplier_id)    conditions.push(sql`supplier_id = ${Number(supplier_id)}`);
+  if (from_date)      conditions.push(sql`payment_date >= ${from_date}`);
+  if (to_date)        conditions.push(sql`payment_date <= ${to_date}`);
+  const whereSql = sql.join(conditions, sql` AND `);
+
+  const lim = Math.min(Math.max(Number(limit) || 50, 1), 1000);
+  const off = Math.max(Number(offset) || 0, 0);
 
   try {
-    const rows = await db.execute(sql.raw(`
-      select * from finance.payments
-      ${whereClause}
-      order by ${order_by} ${order_dir}
-      limit ${limit} offset ${offset}
-    `));
-    const countRes = await db.execute(sql.raw(`select count(*)::int as total from finance.payments ${whereClause}`));
+    const rows = await db.execute(sql`
+      SELECT * FROM finance.payments WHERE ${whereSql}
+      ORDER BY ${orderCol} ${orderDir} LIMIT ${lim} OFFSET ${off}
+    `);
+    const countRes = await db.execute(sql`
+      SELECT COUNT(*)::int AS total FROM finance.payments WHERE ${whereSql}
+    `);
     res.json({
       data: rows.rows ?? [], rows: rows.rows ?? [],
       total: Number((countRes.rows?.[0] as { total?: number })?.total ?? 0),
-      limit, offset,
+      limit: lim, offset: off,
     });
   } catch (err) {
     console.error("[finance:payments:list]", err);

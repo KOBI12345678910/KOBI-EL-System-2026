@@ -1559,6 +1559,19 @@ try {
   console.error('⚠️  Payroll module failed to load:', err.message);
 }
 
+// ═══ APP MENU (Agent-330) — sidebar tree from public.app_menu ═══
+// Exposes GET /api/app-menu so the 138 active DB-backed menu rows are
+// no longer dark. Frontends (techno-kol-ops AppShell, erp-app, payroll)
+// can converge on this single endpoint instead of bypassing the API
+// to hit Supabase PostgREST or hard-coding NAV arrays.
+try {
+  const { registerAppMenuRoutes } = require('./src/routes/app-menu');
+  registerAppMenuRoutes(app, { supabase });
+  console.log('✓ app-menu wired — GET /api/app-menu (public.app_menu tree)');
+} catch (err) {
+  console.error('⚠️  App menu module failed to load:', err.message);
+}
+
 
 // ═══════════════════════════════════════════════════════════════
 // API: DOMAIN EVENTS — health + stats

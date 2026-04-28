@@ -21,11 +21,33 @@ async function q(query: string) {
   try { const r = await db.execute(sql.raw(query)); return r.rows || []; }
   catch (e: any) { console.error("AR query error:", e.message); return []; }
 }
+// Parameterized helper alongside legacy q(string) - used by SQLi-safe handlers
+async function qSql(query: any) {
+  try { const r = await db.execute(query); return r.rows || []; }
+  catch (e: any) { console.error("AR query error:", e.message); return []; }
+}
 async function nextNum(prefix: string, table: string, col: string) {
   const year = new Date().getFullYear();
   const rows = await q(`SELECT ${col} FROM ${table} WHERE ${col} LIKE '${prefix}${year}-%' ORDER BY id DESC LIMIT 1`);
   const last = (rows[0] as any)?.[col];
   const seq = last ? parseInt(last.split("-").pop()!) + 1 : 1;
+  return `${prefix}${year}-${String(seq).padStart(4, "0")}`;
+}
+
+// Whitelist - identifiers can never come from user input. Only safe (table, col) combos.
+const NEXT_NUM_TARGETS = {
+  ar_receipts_receipt_number: { table: sql.identifier("ar_receipts"), col: sql.identifier("receipt_number") },
+} as const;
+async function nextNumSafe(prefix: string, target: keyof typeof NEXT_NUM_TARGETS) {
+  const year = new Date().getFullYear();
+  const t = NEXT_NUM_TARGETS[target];
+  const like = `${prefix}${year}-%`;
+  const rows = await qSql(sql`
+    SELECT ${t.col} AS col_val FROM ${t.table}
+    WHERE ${t.col} LIKE ${like} ORDER BY id DESC LIMIT 1
+  `);
+  const last = (rows[0] as any)?.col_val;
+  const seq = last ? parseInt(String(last).split("-").pop()!) + 1 : 1;
   return `${prefix}${year}-${String(seq).padStart(4, "0")}`;
 }
 
@@ -166,53 +188,101 @@ router.get("/ar-receipts", async (_req, res) => {
 router.post("/ar-receipts", async (req, res) => {
   const d = req.body;
   const user = (req as any).user;
-  const s = (v: any) => v ? `'${String(v).replace(/'/g, "''")}'` : "NULL";
-  const receiptNum = d.receiptNumber ? `'${String(d.receiptNumber).replace(/'/g,"''")}'` : `'${await nextNum("RCP-", "ar_receipts", "receipt_number")}'`;
-  await q(`INSERT INTO ar_receipts (ar_id, receipt_number, receipt_date, amount, currency, payment_method, bank_account, reference, notes, created_by, created_by_name)
-    VALUES (${d.invoiceId ? d.invoiceId : 'NULL'}, ${receiptNum}, '${d.receiptDate || new Date().toISOString().slice(0,10)}', ${d.amountReceived||d.amount||0}, '${d.currency||'ILS'}', ${s(d.paymentMethod)}, ${s(d.bankAccount)}, ${s(d.referenceNumber||d.reference)}, ${s(d.notes)}, ${user?.id||'NULL'}, ${user?.fullName ? `'${user.fullName.replace(/'/g,"''")}'` : 'NULL'})`);
+  const receiptNum = d.receiptNumber ? String(d.receiptNumber)
+                                     : await nextNumSafe("RCP-", "ar_receipts_receipt_number");
+  const receiptDate = d.receiptDate || new Date().toISOString().slice(0, 10);
+  const amount = Number(d.amountReceived ?? d.amount ?? 0);
+  const currency = String(d.currency || "ILS");
+  const invoiceId = d.invoiceId ? Number(d.invoiceId) : null;
+  const userId   = user?.id ? Number(user.id) : null;
+  const userName = user?.fullName ? String(user.fullName) : null;
+
+  await qSql(sql`
+    INSERT INTO ar_receipts
+      (ar_id, receipt_number, receipt_date, amount, currency, payment_method,
+       bank_account, reference, notes, created_by, created_by_name)
+    VALUES
+      (${invoiceId}, ${receiptNum}, ${receiptDate}, ${amount}, ${currency},
+       ${d.paymentMethod ?? null}, ${d.bankAccount ?? null},
+       ${d.referenceNumber ?? d.reference ?? null}, ${d.notes ?? null},
+       ${userId}, ${userName})
+  `);
   res.json({ success: true });
 });
 
 router.put("/ar-receipts/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) { res.status(400).json({ error: "מזהה לא תקין" }); return; }
   const d = req.body;
-  const s = (v: any) => v ? `'${String(v).replace(/'/g, "''")}'` : "NULL";
-  await q(`UPDATE ar_receipts SET
-    amount=${d.amountReceived||d.amount||0},
-    payment_method=${s(d.paymentMethod)},
-    reference=${s(d.referenceNumber||d.reference)},
-    notes=${s(d.notes)},
-    receipt_date='${d.receiptDate || new Date().toISOString().slice(0,10)}',
-    updated_at=NOW()
-    WHERE id=${req.params.id}`);
+  const amount = Number(d.amountReceived ?? d.amount ?? 0);
+  const receiptDate = d.receiptDate || new Date().toISOString().slice(0, 10);
+  await qSql(sql`
+    UPDATE ar_receipts SET
+      amount = ${amount},
+      payment_method = ${d.paymentMethod ?? null},
+      reference = ${d.referenceNumber ?? d.reference ?? null},
+      notes = ${d.notes ?? null},
+      receipt_date = ${receiptDate},
+      updated_at = NOW()
+    WHERE id = ${id}
+  `);
   res.json({ success: true });
 });
 
 router.delete("/ar-receipts/:id", async (req, res) => {
-  await q(`DELETE FROM ar_receipts WHERE id=${req.params.id}`);
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) { res.status(400).json({ error: "מזהה לא תקין" }); return; }
+  await qSql(sql`DELETE FROM ar_receipts WHERE id = ${id}`);
   res.json({ success: true });
 });
 
 // ========== AR RECEIPTS ==========
 router.get("/ar/:id/receipts", async (req, res) => {
-  res.json(await q(`SELECT * FROM ar_receipts WHERE ar_id=${req.params.id} ORDER BY receipt_date DESC`));
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) { res.status(400).json({ error: "מזהה לא תקין" }); return; }
+  res.json(await qSql(sql`
+    SELECT * FROM ar_receipts WHERE ar_id = ${id} ORDER BY receipt_date DESC
+  `));
 });
 
 router.post("/ar/:id/collect", async (req, res) => {
+  const arId = Number(req.params.id);
+  if (!Number.isInteger(arId) || arId <= 0) { res.status(400).json({ error: "מזהה לא תקין" }); return; }
   const d = req.body;
   const user = (req as any).user;
-  const s = (v: any) => v ? `'${String(v).replace(/'/g, "''")}'` : "NULL";
-  const num = await nextNum("RCT-", "ar_receipts", "receipt_number");
-  await q(`INSERT INTO ar_receipts (ar_id, receipt_number, receipt_date, amount, currency, payment_method, bank_account, check_number, check_date, reference, notes, created_by, created_by_name)
-    VALUES (${req.params.id}, '${num}', '${d.receiptDate || new Date().toISOString().slice(0,10)}', ${d.amount||0}, '${d.currency||'ILS'}', ${s(d.paymentMethod)}, ${s(d.bankAccount)}, ${s(d.checkNumber)}, ${d.checkDate ? `'${d.checkDate}'` : 'NULL'}, ${s(d.reference)}, ${s(d.notes)}, ${user?.id||'NULL'}, ${user?.fullName ? `'${user.fullName.replace(/'/g,"''")}'` : 'NULL'})`);
-  
-  const totalCollected = await q(`SELECT COALESCE(SUM(amount),0) as total FROM ar_receipts WHERE ar_id=${req.params.id}`);
+  const num = await nextNumSafe("RCT-", "ar_receipts_receipt_number");
+  const receiptDate = d.receiptDate || new Date().toISOString().slice(0, 10);
+  const amount = Number(d.amount ?? 0);
+  const currency = String(d.currency || "ILS");
+  const userId   = user?.id ? Number(user.id) : null;
+  const userName = user?.fullName ? String(user.fullName) : null;
+
+  await qSql(sql`
+    INSERT INTO ar_receipts
+      (ar_id, receipt_number, receipt_date, amount, currency, payment_method,
+       bank_account, check_number, check_date, reference, notes, created_by, created_by_name)
+    VALUES
+      (${arId}, ${num}, ${receiptDate}, ${amount}, ${currency},
+       ${d.paymentMethod ?? null}, ${d.bankAccount ?? null}, ${d.checkNumber ?? null},
+       ${d.checkDate ?? null}, ${d.reference ?? null}, ${d.notes ?? null},
+       ${userId}, ${userName})
+  `);
+
+  const totalCollected = await qSql(sql`
+    SELECT COALESCE(SUM(amount), 0) AS total FROM ar_receipts WHERE ar_id = ${arId}
+  `);
   const collectedAmount = Number((totalCollected[0] as any)?.total || 0);
-  const ar = await q(`SELECT amount FROM accounts_receivable WHERE id=${req.params.id}`);
+  const ar = await qSql(sql`SELECT amount FROM accounts_receivable WHERE id = ${arId}`);
   const arAmount = Number((ar[0] as any)?.amount || 0);
-  const newStatus = collectedAmount >= arAmount ? 'paid' : collectedAmount > 0 ? 'partial' : 'open';
-  await q(`UPDATE accounts_receivable SET paid_amount=${collectedAmount}, status='${newStatus}', updated_at=NOW() WHERE id=${req.params.id}`);
-  
-  const updated = await q(`SELECT * FROM accounts_receivable WHERE id=${req.params.id}`);
+  const newStatus: "paid" | "partial" | "open" =
+    collectedAmount >= arAmount ? "paid" : collectedAmount > 0 ? "partial" : "open";
+
+  await qSql(sql`
+    UPDATE accounts_receivable
+    SET paid_amount = ${collectedAmount}, status = ${newStatus}, updated_at = NOW()
+    WHERE id = ${arId}
+  `);
+  const updated = await qSql(sql`SELECT * FROM accounts_receivable WHERE id = ${arId}`);
   res.json(updated[0]);
 });
 
