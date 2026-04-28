@@ -63,6 +63,9 @@
  *  └─────────────────────────────────────────────────────────────────────┘
  */
 
+// Load environment variables from .env (FIX from Agent 03 audit — was declared in deps but never imported)
+import 'dotenv/config';
+
 import { EventEmitter } from 'events';
 import * as crypto from 'crypto';
 import * as fs from 'fs';

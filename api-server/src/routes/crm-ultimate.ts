@@ -263,7 +263,7 @@ async function ensureCrmUltimateTables(): Promise<void> {
         discount_requires_approval BOOLEAN DEFAULT false,
         discount_approved_by VARCHAR(200),
         total_before_vat NUMERIC(15,2) DEFAULT 0,
-        vat_rate NUMERIC(5,2) DEFAULT 17,
+        vat_rate NUMERIC(5,2) DEFAULT 18,
         vat_amount NUMERIC(15,2) DEFAULT 0,
         total_with_vat NUMERIC(15,2) DEFAULT 0,
         price_per_sqm NUMERIC(15,2) DEFAULT 0,
@@ -864,7 +864,7 @@ router.post("/quotes", async (req: Request, res: Response) => {
     const discAmt = discPct > 0 ? sub * (discPct / 100) : Number(d.discount_amount || 0);
     d.discount_amount = discAmt;
     d.total_before_vat = sub - discAmt;
-    const vatRate = Number(d.vat_rate || 17);
+    const vatRate = Number(d.vat_rate || 18);
     d.vat_amount = d.total_before_vat * (vatRate / 100);
     d.total_with_vat = d.total_before_vat + d.vat_amount;
     if (d.total_sqm && d.total_sqm > 0) d.price_per_sqm = d.total_before_vat / d.total_sqm;
