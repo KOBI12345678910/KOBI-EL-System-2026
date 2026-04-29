@@ -214,14 +214,14 @@ export default function TerritoryManagement() {
           <table className="w-full text-sm">
             <thead className="bg-muted/30 border-b border-border">
               <tr>
-                <th className="p-3 text-right font-medium"><BulkCheckbox checked={selectedIds.size === filtered.length && filtered.length > 0} onChange={() => toggleAll(filtered.map(r => r.id))} /></th>
-                <th className="p-3 text-right font-medium cursor-pointer" onClick={() => toggleSort("name")}>שם טריטוריה <SortIcon field="name" /></th>
-                <th className="p-3 text-right font-medium cursor-pointer" onClick={() => toggleSort("region")}>אזור <SortIcon field="region" /></th>
-                <th className="p-3 text-right font-medium">מנהל</th>
+                <th className="p-3 text-end font-medium"><BulkCheckbox checked={selectedIds.size === filtered.length && filtered.length > 0} onChange={() => toggleAll(filtered.map(r => r.id))} /></th>
+                <th className="p-3 text-end font-medium cursor-pointer" onClick={() => toggleSort("name")}>שם טריטוריה <SortIcon field="name" /></th>
+                <th className="p-3 text-end font-medium cursor-pointer" onClick={() => toggleSort("region")}>אזור <SortIcon field="region" /></th>
+                <th className="p-3 text-end font-medium">מנהל</th>
                 <th className="p-3 text-center font-medium cursor-pointer" onClick={() => toggleSort("repsCount")}>נציגים <SortIcon field="repsCount" /></th>
                 <th className="p-3 text-center font-medium cursor-pointer" onClick={() => toggleSort("customerCount")}>לקוחות <SortIcon field="customerCount" /></th>
-                <th className="p-3 text-right font-medium cursor-pointer" onClick={() => toggleSort("revenueTarget")}>יעד הכנסה <SortIcon field="revenueTarget" /></th>
-                <th className="p-3 text-right font-medium cursor-pointer" onClick={() => toggleSort("revenueActual")}>הכנסה בפועל <SortIcon field="revenueActual" /></th>
+                <th className="p-3 text-end font-medium cursor-pointer" onClick={() => toggleSort("revenueTarget")}>יעד הכנסה <SortIcon field="revenueTarget" /></th>
+                <th className="p-3 text-end font-medium cursor-pointer" onClick={() => toggleSort("revenueActual")}>הכנסה בפועל <SortIcon field="revenueActual" /></th>
                 <th className="p-3 text-center font-medium cursor-pointer" onClick={() => toggleSort("attainment")}>% השגה <SortIcon field="attainment" /></th>
                 <th className="p-3 text-center font-medium">סטטוס</th>
                 <th className="p-3 text-center font-medium">פעולות</th>
@@ -240,8 +240,8 @@ export default function TerritoryManagement() {
                   <td className="p-3">{r.manager}</td>
                   <td className="p-3 text-center">{fmt(r.repsCount)}</td>
                   <td className="p-3 text-center">{fmt(r.customerCount)}</td>
-                  <td className="p-3 text-left font-mono text-xs">{fmtC(r.revenueTarget)}</td>
-                  <td className="p-3 text-left font-mono text-xs">{fmtC(r.revenueActual)}</td>
+                  <td className="p-3 text-start font-mono text-xs">{fmtC(r.revenueTarget)}</td>
+                  <td className="p-3 text-start font-mono text-xs">{fmtC(r.revenueActual)}</td>
                   <td className="p-3 text-center">
                     <span className={`font-bold ${attColor(r.attainment)}`}>{pct(r.attainment)}</span>
                     <div className="w-full bg-muted/30 rounded-full h-1.5 mt-1">

@@ -50,8 +50,8 @@ export default function InventoryItem360() {
       </div>
       <div className="flex gap-2 flex-wrap">
         <ActionBtn label="צור הזמנת רכש" onClick={() => navigate(`/po/new?item=${id}`)} />
-        <ActionBtn label="התאמת מלאי" onClick={() => {}} variant="secondary" />
-        <ActionBtn label="העברה בין מחסנים" onClick={() => {}} variant="secondary" />
+        <ActionBtn label="התאמת מלאי" onClick={() => navigate(`/inventory/${id}/adjust`)} variant="secondary" />
+        <ActionBtn label="העברה בין מחסנים" onClick={() => navigate(`/inventory/${id}/transfer`)} variant="secondary" />
         <ActionBtn label="הדפס תווית" onClick={() => window.open(`/api/inventory/${id}/label`, "_blank")} variant="secondary" />
       </div>
       <RelatedTable title="מחסנים ומיקומים" rows={data.locations ?? []}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
-import { Page360, KPI, RelatedTable, AuditLog, ActionBtn, Loader, ErrCard } from "./shared360";
+import { Page360, KPI, RelatedTable, AuditLog, ActionBtn, Loader, ErrCard, executeAction } from "./shared360";
 
 export default function Payment360() {
   const { id } = useParams<{ id: string }>();
@@ -49,8 +49,21 @@ export default function Payment360() {
       <div className="flex gap-2 flex-wrap">
         <ActionBtn label="הוצא קבלה" onClick={() => window.open(`/api/payments/${id}/receipt`, "_blank")} />
         <ActionBtn label="התאם לבנק" onClick={reconcile} variant="secondary" />
-        <ActionBtn label="הקצה לחשבונית" onClick={() => {}} variant="secondary" />
-        <ActionBtn label="בטל תשלום" onClick={() => {}} variant="secondary" />
+        <ActionBtn label="הקצה לחשבונית" onClick={() => navigate(`/payment/${id}/allocate`)} variant="secondary" />
+        <ActionBtn
+          label="בטל תשלום"
+          onClick={async () => {
+            if (!id) return;
+            if (!window.confirm("האם לבטל את התשלום?")) return;
+            try {
+              await executeAction("payment.cancel", "payment", id);
+              window.location.reload();
+            } catch (err) {
+              alert(`ביטול תשלום נכשל: ${(err as Error)?.message ?? "שגיאה"}`);
+            }
+          }}
+          variant="secondary"
+        />
       </div>
       <RelatedTable title="חשבוניות שהוקצו" rows={data.allocations ?? []}
         cols={[

@@ -1649,6 +1649,27 @@ try {
   console.error('⚠️  Form 856 routes failed to load:', err.message);
 }
 
+// Form 102 — IL Bituach Leumi monthly withholding report.
+// Mounts: GET/POST /api/tax/form-102/:year/:month/...
+// Permission: tax-monthly:export
+try {
+  const { registerForm102Routes } = require('./src/tax/form-102-routes');
+  registerForm102Routes(app, { supabase, audit, requirePermission });
+} catch (err) {
+  console.error('⚠️  Form 102 routes failed to load:', err.message);
+}
+
+// Form 126 — IL annual employee tax certificate (employee side; complement
+// to 856 which is the freelancer/contractor side).
+// Mounts: GET/POST /api/tax/form-126/:year/...
+// Permission: tax-annual:export
+try {
+  const { registerForm126Routes } = require('./src/tax/form-126-routes');
+  registerForm126Routes(app, { supabase, audit, requirePermission });
+} catch (err) {
+  console.error('⚠️  Form 126 routes failed to load:', err.message);
+}
+
 // BKMV — מבנה אחיד / regulation 36 (Agent 216)
 // Generates BKMVDATA.TXT + INI.TXT (windows-1255) for tax-authority audits.
 // Mounts: GET /api/tax/bkmv/:year/generate (+ preview / last / download / health)

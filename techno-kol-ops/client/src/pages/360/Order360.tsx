@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
-import { Page360, KPI, RelatedTable, AuditLog, ActionBtn, Loader, ErrCard } from "./shared360";
+import { Page360, KPI, RelatedTable, AuditLog, ActionBtn, Loader, ErrCard, executeAction } from "./shared360";
 
 export default function Order360() {
   const { id } = useParams<{ id: string }>();
@@ -50,7 +50,20 @@ export default function Order360() {
         <ActionBtn label="פתח פרויקט" onClick={createProject} />
         <ActionBtn label="צור הזמנת רכש" onClick={() => navigate(`/po/new?order=${id}`)} variant="secondary" />
         <ActionBtn label="הדפס הזמנה" onClick={() => window.open(`/api/orders/${id}/print`, "_blank")} variant="secondary" />
-        <ActionBtn label="בטל הזמנה" onClick={() => {}} variant="secondary" />
+        <ActionBtn
+          label="בטל הזמנה"
+          onClick={async () => {
+            if (!id) return;
+            if (!window.confirm("האם לבטל את ההזמנה?")) return;
+            try {
+              await executeAction("order.cancel", "order", id);
+              window.location.reload();
+            } catch (err) {
+              alert(`ביטול הזמנה נכשל: ${(err as Error)?.message ?? "שגיאה"}`);
+            }
+          }}
+          variant="secondary"
+        />
       </div>
       <RelatedTable title="שורות הזמנה" rows={data.line_items ?? []}
         cols={[

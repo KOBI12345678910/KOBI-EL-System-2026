@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
-import { Page360, KPI, RelatedTable, AuditLog, ActionBtn, Loader, ErrCard } from "./shared360";
+import { Page360, KPI, RelatedTable, AuditLog, ActionBtn, Loader, ErrCard, executeAction } from "./shared360";
 
 export default function Lead360() {
   const { id } = useParams<{ id: string }>();
@@ -50,7 +50,19 @@ export default function Lead360() {
         <ActionBtn label="המר להצעת מחיר" onClick={convertToQuote} />
         <ActionBtn label="קבע פגישה" onClick={() => navigate(`/calendar/new?lead=${id}`)} variant="secondary" />
         <ActionBtn label="שלח אימייל" onClick={() => navigate(`/comms/new?lead=${id}`)} variant="secondary" />
-        <ActionBtn label="סגור כלא רלוונטי" onClick={() => {}} variant="secondary" />
+        <ActionBtn
+          label="סגור כלא רלוונטי"
+          onClick={async () => {
+            if (!id) return;
+            try {
+              await executeAction("lead.close_irrelevant", "lead", id);
+              window.location.reload();
+            } catch (err) {
+              alert(`סגירת ליד נכשלה: ${(err as Error)?.message ?? "שגיאה"}`);
+            }
+          }}
+          variant="secondary"
+        />
       </div>
       <RelatedTable title="פעילויות" rows={data.activities ?? []}
         cols={[

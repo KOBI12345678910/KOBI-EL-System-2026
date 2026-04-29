@@ -4,6 +4,24 @@
  */
 import React from "react";
 import Breadcrumb, { type BreadcrumbItem } from "../../components/Breadcrumb";
+import { apiPost } from "../../lib/api-client";
+
+/* ── Orchestrator action helper ──
+ * Thin wrapper for POST /api/orchestrator/execute used by 360 page action buttons.
+ * Body shape matches the orchestrator contract: { action, entity_type, entity_id }.
+ * Returns the response from the orchestrator (effects, new_id, etc.) or throws ApiError.
+ */
+export async function executeAction(
+  action: string,
+  entity_type: string,
+  entity_id: string | number,
+): Promise<any> {
+  return await apiPost("/api/orchestrator/execute", {
+    action,
+    entity_type,
+    entity_id: typeof entity_id === "string" ? Number(entity_id) || entity_id : entity_id,
+  });
+}
 
 /* ── Page wrapper ── */
 export function Page360({

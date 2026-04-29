@@ -713,7 +713,7 @@ const Th: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <th
     style={{
       padding: '10px 12px',
-      textAlign: 'right',
+      textAlign: 'end',
       fontSize: 11,
       fontWeight: 700,
       textTransform: 'uppercase',
@@ -734,7 +734,7 @@ const Td: React.FC<{
       padding: '10px 12px',
       color: color || '#F6F7F9',
       fontWeight: bold ? 700 : 400,
-      textAlign: 'right',
+      textAlign: 'end',
     }}
   >
     {children}
@@ -756,7 +756,7 @@ const BarRow: React.FC<{
           width: 110,
           fontSize: 12,
           color: '#ABB3BF',
-          textAlign: 'left',
+          textAlign: 'start',
           fontWeight: 600,
         }}
       >
@@ -834,16 +834,16 @@ const ExpandedEmployeeView: React.FC<{
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
           <thead>
             <tr style={{ color: '#5C7080' }}>
-              <th style={{ textAlign: 'right', padding: '6px 10px' }}>תאריך</th>
-              <th style={{ textAlign: 'right', padding: '6px 10px' }}>התחלה</th>
-              <th style={{ textAlign: 'right', padding: '6px 10px' }}>סיום</th>
-              <th style={{ textAlign: 'right', padding: '6px 10px' }}>הפסקה</th>
-              <th style={{ textAlign: 'right', padding: '6px 10px' }}>סה"כ</th>
-              <th style={{ textAlign: 'right', padding: '6px 10px' }}>תקן</th>
-              <th style={{ textAlign: 'right', padding: '6px 10px' }}>125%</th>
-              <th style={{ textAlign: 'right', padding: '6px 10px' }}>150%</th>
-              <th style={{ textAlign: 'right', padding: '6px 10px' }}>פרויקט</th>
-              <th style={{ textAlign: 'right', padding: '6px 10px' }}>סטטוס</th>
+              <th style={{ textAlign: 'end', padding: '6px 10px' }}>תאריך</th>
+              <th style={{ textAlign: 'end', padding: '6px 10px' }}>התחלה</th>
+              <th style={{ textAlign: 'end', padding: '6px 10px' }}>סיום</th>
+              <th style={{ textAlign: 'end', padding: '6px 10px' }}>הפסקה</th>
+              <th style={{ textAlign: 'end', padding: '6px 10px' }}>סה"כ</th>
+              <th style={{ textAlign: 'end', padding: '6px 10px' }}>תקן</th>
+              <th style={{ textAlign: 'end', padding: '6px 10px' }}>125%</th>
+              <th style={{ textAlign: 'end', padding: '6px 10px' }}>150%</th>
+              <th style={{ textAlign: 'end', padding: '6px 10px' }}>פרויקט</th>
+              <th style={{ textAlign: 'end', padding: '6px 10px' }}>סטטוס</th>
             </tr>
           </thead>
           <tbody>

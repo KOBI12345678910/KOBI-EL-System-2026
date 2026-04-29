@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
-import { Page360, KPI, RelatedTable, AuditLog, ActionBtn, Loader, ErrCard } from "./shared360";
+import { Page360, KPI, RelatedTable, AuditLog, ActionBtn, Loader, ErrCard, executeAction } from "./shared360";
 
 export default function Closure360() {
   const { id } = useParams<{ id: string }>();
@@ -56,8 +56,33 @@ export default function Closure360() {
       <div className="flex gap-2 flex-wrap">
         <ActionBtn label="סגור פרויקט סופית" onClick={closeProject} />
         <ActionBtn label="הפק תעודת סיום" onClick={() => window.open(`/api/projects/${id}/completion-cert`, "_blank")} variant="secondary" />
-        <ActionBtn label="שלח שאלון לקוח" onClick={() => {}} variant="secondary" />
-        <ActionBtn label="פתח מחדש" onClick={() => {}} variant="secondary" />
+        <ActionBtn
+          label="שלח שאלון לקוח"
+          onClick={async () => {
+            if (!id) return;
+            try {
+              await executeAction("project.send_satisfaction_survey", "project", id);
+              window.location.reload();
+            } catch (err) {
+              alert(`שליחת שאלון נכשלה: ${(err as Error)?.message ?? "שגיאה"}`);
+            }
+          }}
+          variant="secondary"
+        />
+        <ActionBtn
+          label="פתח מחדש"
+          onClick={async () => {
+            if (!id) return;
+            if (!window.confirm("האם לפתוח את הפרויקט מחדש?")) return;
+            try {
+              await executeAction("project.reopen", "project", id);
+              navigate(`/project/${id}`);
+            } catch (err) {
+              alert(`פתיחה מחדש נכשלה: ${(err as Error)?.message ?? "שגיאה"}`);
+            }
+          }}
+          variant="secondary"
+        />
       </div>
       <RelatedTable title="צ'קליסט סגירה" rows={data.checklist ?? []}
         cols={[

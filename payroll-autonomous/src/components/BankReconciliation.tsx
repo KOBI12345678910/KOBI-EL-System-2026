@@ -355,7 +355,7 @@ export default function BankReconciliation() {
                       <div style={{ fontWeight: 600 }}>{tx.description}</div>
                       <div style={{ color: '#8b96a5', fontSize: 11 }}>{tx.transaction_date}</div>
                     </div>
-                    <div style={{ color: tx.amount > 0 ? '#3fb950' : '#f85149', fontWeight: 700, minWidth: 80, textAlign: 'left' as const }}>
+                    <div style={{ color: tx.amount > 0 ? '#3fb950' : '#f85149', fontWeight: 700, minWidth: 80, textAlign: 'start' as const }}>
                       {tx.amount > 0 ? '+' : ''}₪{Math.abs(tx.amount).toLocaleString('he-IL')}
                     </div>
                     {isMatched && <span style={S.badge('#3fb950')}>✅</span>}
@@ -400,7 +400,7 @@ export default function BankReconciliation() {
                       <div style={{ fontWeight: 600 }}>{tx.description}</div>
                       <div style={{ color: '#8b96a5', fontSize: 11 }}>{tx.transaction_date}{tx.counterparty_name ? ' · ' + tx.counterparty_name : ''}</div>
                     </div>
-                    <div style={{ color: tx.amount > 0 ? '#3fb950' : '#f85149', fontWeight: 700, minWidth: 80, textAlign: 'left' as const }}>
+                    <div style={{ color: tx.amount > 0 ? '#3fb950' : '#f85149', fontWeight: 700, minWidth: 80, textAlign: 'start' as const }}>
                       {tx.amount > 0 ? '+' : ''}₪{Math.abs(tx.amount).toLocaleString('he-IL')}
                     </div>
                     {isMatched ? <span style={S.badge('#3fb950')}>✅</span> : <span style={S.badge('#d29922')}>⚠️</span>}

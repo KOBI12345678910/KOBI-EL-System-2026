@@ -289,7 +289,7 @@ function VendorScoringPanel({
             {score.badge} ({score.badgeEn})
           </div>
         </div>
-        <div className="text-sm text-slate-600 text-left">
+        <div className="text-sm text-slate-600 text-start">
           <div>
             סטטוס סיכון: <b>{score.risk_level}</b>
           </div>
@@ -315,7 +315,7 @@ function VendorScoringPanel({
                   style={{ width: `${Math.max(0, Math.min(100, v))}%` }}
                 />
               </div>
-              <div className="text-right tabular-nums font-bold">
+              <div className="text-end tabular-nums font-bold">
                 {v.toFixed(1)}
               </div>
               <div className="text-xs text-slate-500">{d.weight}%</div>

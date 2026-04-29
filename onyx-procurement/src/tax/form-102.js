@@ -843,6 +843,392 @@ function submitXML102(data) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// File builder API — IL Bituach Leumi monthly fixed-width / JSON / XML export
+// (parallel surface to form-856 / pcn874; this is the simpler row-oriented
+//  interface used by the form-102-routes Express layer.)
+// ═══════════════════════════════════════════════════════════════════════════
+
+const F102_ICONV = (() => {
+  try { return require('iconv-lite'); } catch { return null; }
+})();
+
+/**
+ * Field layout for the per-employee Form 102 monthly detail line.
+ * Fixed width = 110 chars. Numeric amounts are whole shekels (לא אגורות),
+ * dates are YYYYMM. All strings space-padded; numbers zero-padded.
+ *
+ * Header layout = same width with record_type='102' / Trailer = '999'.
+ *
+ *   1   record_type      "102" (data) / "100" (header) / "999" (trailer)
+ *   9   employer_id      ח.פ. / ת.ז. מעסיק
+ *   6   period           YYYYMM
+ *   9   employee_id      ת"ז עובד
+ *  40   employee_name    שם העובד (Hebrew, windows-1255)
+ *  10   gross_wages      שכר ברוטו
+ *  10   bl_employee      ביטוח לאומי — חלק עובד
+ *  10   bl_employer      ביטוח לאומי — חלק מעסיק
+ *  10   health_employee  דמי בריאות — חלק עובד
+ *   5   filler           רזרבה
+ */
+const FORM102_FIELD_LAYOUT = Object.freeze([
+  { name: 'record_type',     width:  3, type: 'A', pad: ' ' },
+  { name: 'employer_id',     width:  9, type: 'N', pad: '0' },
+  { name: 'period',          width:  6, type: 'N', pad: '0' },
+  { name: 'employee_id',     width:  9, type: 'N', pad: '0' },
+  { name: 'employee_name',   width: 40, type: 'H', pad: ' ' },
+  { name: 'gross_wages',     width: 10, type: 'N', pad: '0' },
+  { name: 'bl_employee',     width: 10, type: 'N', pad: '0' },
+  { name: 'bl_employer',     width: 10, type: 'N', pad: '0' },
+  { name: 'health_employee', width: 10, type: 'N', pad: '0' },
+  { name: 'filler',          width:  5, type: 'A', pad: ' ' },
+]);
+const FORM102_RECORD_WIDTH =
+  FORM102_FIELD_LAYOUT.reduce((s, f) => s + f.width, 0);
+
+/** Field labels — Hebrew per IL Bituach Leumi standard headings. */
+const FORM102_LABELS = Object.freeze({
+  he: Object.freeze({
+    form_title:       'טופס 102 — דיווח חודשי על ניכויי שכר',
+    employer:         'מעסיק',
+    employer_id:      'ח.פ. / ת.ז. מעסיק',
+    period:           'תקופת דיווח',
+    period_year:      'שנת מס',
+    period_month:     'חודש',
+    employee:         'עובד',
+    employee_id:      'תעודת זהות',
+    employee_name:    'שם העובד',
+    gross_wages:      'שכר ברוטו',
+    bl_employee:      'ביטוח לאומי — חלק עובד',
+    bl_employer:      'ביטוח לאומי — חלק מעסיק',
+    health_employee:  'דמי בריאות — חלק עובד',
+    totals:           'סה"כ',
+    record_count:     'מספר רשומות',
+    submission_type:  'סוג הגשה',
+    initial:          'ראשוני',
+    correction:       'תיקון',
+    generated:        'הופק בתאריך',
+    deadline:         'מועד הגשה',
+  }),
+  en: Object.freeze({
+    form_title:       'Form 102 — Monthly Bituach Leumi Withholding Report',
+    employer:         'Employer',
+    employer_id:      'Employer ID (חפ/תז)',
+    period:           'Reporting Period',
+    period_year:      'Tax Year',
+    period_month:     'Month',
+    employee:         'Employee',
+    employee_id:      'National ID',
+    employee_name:    'Employee Name',
+    gross_wages:      'Gross Wages',
+    bl_employee:      'BL — Employee Portion',
+    bl_employer:      'BL — Employer Portion',
+    health_employee:  'Health Tax — Employee',
+    totals:           'Totals',
+    record_count:     'Record Count',
+    submission_type:  'Submission Type',
+    initial:          'initial',
+    correction:       'correction',
+    generated:        'Generated at',
+    deadline:         'Submission Deadline',
+  }),
+});
+
+function f102PadNumber(v, width, pad = '0') {
+  const n = Math.max(0, Math.trunc(toNumber(v, 0)));
+  const s = String(n);
+  return s.length >= width ? s.slice(-width) : pad.repeat(width - s.length) + s;
+}
+
+function f102PadString(v, width, pad = ' ') {
+  const s = (v === undefined || v === null) ? '' : String(v);
+  if (s.length >= width) return s.slice(0, width);
+  return s + pad.repeat(width - s.length);
+}
+
+/**
+ * Build a single fixed-width line from a values map keyed by field name.
+ * Numbers are rounded to whole shekels; Hebrew strings are length-truncated
+ * by character count (the windows-1255 encoder later rejects bytes > width).
+ */
+function f102SerializeLine(values) {
+  return FORM102_FIELD_LAYOUT.map(f => {
+    const v = values[f.name];
+    switch (f.type) {
+      case 'N': return f102PadNumber(Math.round(toNumber(v, 0)), f.width, f.pad);
+      case 'A':
+      case 'H':
+      default:  return f102PadString(v, f.width, f.pad);
+    }
+  }).join('');
+}
+
+/**
+ * Compute the IL deadline for Form 102: the 15th of the month FOLLOWING
+ * the reporting period. Returns YYYY-MM-DD string.
+ */
+function form102Deadline(year, month) {
+  const y = Number(year), m = Number(month);
+  if (!Number.isInteger(y) || !Number.isInteger(m) || m < 1 || m > 12) return null;
+  const next = new Date(Date.UTC(y, m, 15)); // m is 1-12; Date.UTC month is 0-11 so y/m gives next month
+  return next.toISOString().slice(0, 10);
+}
+
+/**
+ * buildForm102File({ year, month, rows, employer, submission_type })
+ *
+ * @param {Object}   payload
+ * @param {number}   payload.year                e.g. 2026
+ * @param {number}   payload.month               1..12
+ * @param {Array}    payload.rows                per-employee detail rows.
+ *   Each row: { employee_id, employee_name, gross_wages,
+ *               bl_employee, bl_employer, health_employee }
+ * @param {Object}   [payload.employer]          { id, name, tax_file_number }
+ * @param {string}   [payload.submission_type]   'initial' | 'correction'
+ * @returns {Object} {
+ *   formCode, year, month, period, deadline,
+ *   header, detail, trailer, totals,
+ *   fixedWidth: string,        // \r\n CRLF, ready for windows-1255
+ *   buffer:     Buffer|null,   // windows-1255 encoded bytes
+ *   json:       Object,        // structured representation
+ *   xml:        string,        // XML envelope
+ *   metadata: { encoding, recordWidth, lineCount, filename, generatedAt }
+ * }
+ */
+function buildForm102File(payload) {
+  if (!payload || typeof payload !== 'object') {
+    throw new Error('form-102.buildForm102File: payload required');
+  }
+  const year  = Number(payload.year);
+  const month = Number(payload.month);
+  if (!Number.isInteger(year) || year < 2000 || year > 2100) {
+    throw new Error('form-102.buildForm102File: payload.year must be a 4-digit year');
+  }
+  if (!Number.isInteger(month) || month < 1 || month > 12) {
+    throw new Error('form-102.buildForm102File: payload.month must be 1..12');
+  }
+  const rows = Array.isArray(payload.rows) ? payload.rows : [];
+  const employer = payload.employer || {};
+  const submissionType =
+    payload.submission_type === 'correction' ? 'correction' : 'initial';
+
+  const period = `${year}${String(month).padStart(2, '0')}`;
+  const employerIdRaw = String(employer.id || employer.employer_id || employer.company_id || '')
+    .replace(/\D/g, '');
+
+  // ── Header (record_type=100) — same width as data lines ──────────────
+  const header = f102SerializeLine({
+    record_type:     '100',
+    employer_id:     employerIdRaw,
+    period,
+    employee_id:     0,
+    employee_name:   String(employer.name || employer.legal_name || '').slice(0, 40),
+    gross_wages:     0,
+    bl_employee:     0,
+    bl_employer:     0,
+    health_employee: 0,
+    filler:          submissionType === 'correction' ? 'CORR' : 'INIT',
+  });
+
+  // ── Detail rows (record_type=102) + accumulate totals ─────────────────
+  let totGross = 0, totBlEmp = 0, totBlEr = 0, totHealth = 0;
+  const detail = rows.map((r, idx) => {
+    const gross = round2(toNumber(r.gross_wages));
+    const blEmp = round2(toNumber(r.bl_employee));
+    const blEr  = round2(toNumber(r.bl_employer));
+    const heal  = round2(toNumber(r.health_employee));
+    totGross  += gross;
+    totBlEmp  += blEmp;
+    totBlEr   += blEr;
+    totHealth += heal;
+    return f102SerializeLine({
+      record_type:     '102',
+      employer_id:     employerIdRaw,
+      period,
+      employee_id:     String(r.employee_id || r.national_id || '').replace(/\D/g, ''),
+      employee_name:   String(r.employee_name || r.full_name || `Employee ${idx + 1}`).slice(0, 40),
+      gross_wages:     gross,
+      bl_employee:     blEmp,
+      bl_employer:     blEr,
+      health_employee: heal,
+      filler:          '',
+    });
+  });
+
+  // ── Trailer (record_type=999) — totals row ────────────────────────────
+  const trailer = f102SerializeLine({
+    record_type:     '999',
+    employer_id:     employerIdRaw,
+    period,
+    employee_id:     rows.length,           // record_count packed into employee_id slot
+    employee_name:   'TOTALS',
+    gross_wages:     Math.round(totGross),
+    bl_employee:     Math.round(totBlEmp),
+    bl_employer:     Math.round(totBlEr),
+    health_employee: Math.round(totHealth),
+    filler:          '',
+  });
+
+  const lines = [header, ...detail, trailer];
+
+  // Sanity — every line must be the canonical width.
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].length !== FORM102_RECORD_WIDTH) {
+      throw new Error(
+        `form-102.buildForm102File: line ${i} width ${lines[i].length}, expected ${FORM102_RECORD_WIDTH}`
+      );
+    }
+  }
+  const fixedWidth = lines.join('\r\n') + '\r\n';
+  const buffer = F102_ICONV ? F102_ICONV.encode(fixedWidth, 'windows-1255') : null;
+
+  // ── Totals object (used by JSON + UI) ─────────────────────────────────
+  const totals = {
+    record_count:    rows.length,
+    gross_wages:     round2(totGross),
+    bl_employee:     round2(totBlEmp),
+    bl_employer:     round2(totBlEr),
+    health_employee: round2(totHealth),
+    payable_total:   round2(totBlEmp + totBlEr + totHealth),
+  };
+
+  // ── JSON representation ───────────────────────────────────────────────
+  const json = {
+    formCode: '102',
+    version:  '2026.1',
+    year,
+    month,
+    period,
+    submission_type: submissionType,
+    employer: {
+      id:               employer.id || employer.employer_id || employer.company_id || '',
+      name:             employer.name || employer.legal_name || '',
+      tax_file_number:  employer.tax_file_number || employer.deductionFileNumber || '',
+      bituach_leumi_no: employer.bituach_leumi_number || employer.bituachLeumiNumber || '',
+    },
+    rows: rows.map((r, idx) => ({
+      employee_id:     String(r.employee_id || r.national_id || ''),
+      employee_name:   String(r.employee_name || r.full_name || `Employee ${idx + 1}`),
+      gross_wages:     round2(toNumber(r.gross_wages)),
+      bl_employee:     round2(toNumber(r.bl_employee)),
+      bl_employer:     round2(toNumber(r.bl_employer)),
+      health_employee: round2(toNumber(r.health_employee)),
+    })),
+    totals,
+    deadline: form102Deadline(year, month),
+    generated_at: new Date().toISOString(),
+  };
+
+  // ── XML envelope ──────────────────────────────────────────────────────
+  const x = (tag, body) =>
+    body == null || body === ''
+      ? `<${tag}/>`
+      : `<${tag}>${typeof body === 'string' ? body : xmlEscape(body)}</${tag}>`;
+  const rowXml = json.rows.map(r => [
+    '<Employee>',
+      x('NationalId',     xmlEscape(r.employee_id)),
+      x('FullName',       xmlEscape(r.employee_name)),
+      x('GrossWages',     Math.round(r.gross_wages)),
+      x('BlEmployee',     Math.round(r.bl_employee)),
+      x('BlEmployer',     Math.round(r.bl_employer)),
+      x('HealthEmployee', Math.round(r.health_employee)),
+    '</Employee>',
+  ].join('')).join('');
+  const xml =
+    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<Form102 version="2026.1">' +
+      '<Header>' +
+        x('FormCode',       '102') +
+        x('Year',           year) +
+        x('Month',          month) +
+        x('Period',         period) +
+        x('SubmissionType', submissionType) +
+        x('EmployerId',     xmlEscape(json.employer.id)) +
+        x('EmployerName',   xmlEscape(json.employer.name)) +
+        x('TaxFile',        xmlEscape(json.employer.tax_file_number)) +
+        x('BituachLeumiNo', xmlEscape(json.employer.bituach_leumi_no)) +
+        x('GeneratedAt',    xmlEscape(json.generated_at)) +
+      '</Header>' +
+      '<Employees>' + rowXml + '</Employees>' +
+      '<Totals>' +
+        x('RecordCount',    totals.record_count) +
+        x('GrossWages',     Math.round(totals.gross_wages)) +
+        x('BlEmployee',     Math.round(totals.bl_employee)) +
+        x('BlEmployer',     Math.round(totals.bl_employer)) +
+        x('HealthEmployee', Math.round(totals.health_employee)) +
+        x('PayableTotal',   Math.round(totals.payable_total)) +
+      '</Totals>' +
+    '</Form102>';
+
+  return {
+    formCode: '102',
+    version:  '2026.1',
+    year,
+    month,
+    period,
+    deadline: json.deadline,
+    submission_type: submissionType,
+    header,
+    detail,
+    trailer,
+    totals,
+    fixedWidth,
+    buffer,
+    json,
+    xml,
+    metadata: {
+      encoding:    'windows-1255',
+      recordWidth: FORM102_RECORD_WIDTH,
+      lineCount:   lines.length,
+      filename:    `form-102-${period}.txt`,
+      generatedAt: json.generated_at,
+    },
+  };
+}
+
+/**
+ * validateForm102File — structural check on a buildForm102File() result.
+ * Returns an array of error strings (empty when the file is valid).
+ */
+function validateForm102File(file) {
+  const errors = [];
+  if (!file || typeof file !== 'object') return ['file is missing'];
+  if (file.formCode !== '102') errors.push(`formCode mismatch: ${file.formCode}`);
+  if (typeof file.fixedWidth !== 'string' || file.fixedWidth.length === 0) {
+    errors.push('fixedWidth payload is missing');
+  }
+  if (typeof file.header !== 'string' || file.header.length !== FORM102_RECORD_WIDTH) {
+    errors.push(`header width ${file.header?.length} != ${FORM102_RECORD_WIDTH}`);
+  }
+  if (file.header?.slice(0, 3) !== '100') errors.push('header record_type must be "100"');
+  if (typeof file.trailer !== 'string' || file.trailer.length !== FORM102_RECORD_WIDTH) {
+    errors.push(`trailer width ${file.trailer?.length} != ${FORM102_RECORD_WIDTH}`);
+  }
+  if (file.trailer?.slice(0, 3) !== '999') errors.push('trailer record_type must be "999"');
+  if (!Array.isArray(file.detail)) errors.push('detail must be an array');
+  else {
+    file.detail.forEach((line, i) => {
+      if (typeof line !== 'string' || line.length !== FORM102_RECORD_WIDTH) {
+        errors.push(`detail[${i}] width ${line?.length} != ${FORM102_RECORD_WIDTH}`);
+      } else if (line.slice(0, 3) !== '102') {
+        errors.push(`detail[${i}] record_type must be "102"`);
+      }
+    });
+  }
+  if (!file.totals || typeof file.totals !== 'object') {
+    errors.push('totals object missing');
+  } else if (file.totals.record_count !== (file.detail?.length || 0)) {
+    errors.push(`totals.record_count (${file.totals.record_count}) != detail length (${file.detail?.length})`);
+  }
+  if (!Number.isInteger(file.year) || file.year < 2000 || file.year > 2100) {
+    errors.push('year must be a 4-digit integer');
+  }
+  if (!Number.isInteger(file.month) || file.month < 1 || file.month > 12) {
+    errors.push('month must be 1..12');
+  }
+  return errors;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // Exports
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -850,6 +1236,14 @@ module.exports = {
   // Primary API
   generate102,
   submitXML102,
+
+  // File builder API (parallel to form-856 / pcn874)
+  buildForm102File,
+  validateForm102File,
+  form102Deadline,
+  FORM102_FIELD_LAYOUT,
+  FORM102_RECORD_WIDTH,
+  FORM102_LABELS,
 
   // Helpers (public for tests + reuse)
   CONSTANTS_2026,

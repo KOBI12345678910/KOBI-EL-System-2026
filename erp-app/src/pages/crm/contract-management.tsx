@@ -224,7 +224,7 @@ export default function ContractManagement() {
                     <div className="text-xs text-muted-foreground">{a.title}</div>
                   </div>
                 </div>
-                <div className="text-left">
+                <div className="text-start">
                   <div className={`text-sm font-bold ${a.daysLeft <= 0 ? "text-red-400" : "text-amber-400"}`}>
                     {a.daysLeft <= 0 ? `פג לפני ${Math.abs(a.daysLeft)} ימים` : `עוד ${a.daysLeft} ימים`}
                   </div>
@@ -263,14 +263,14 @@ export default function ContractManagement() {
           <table className="w-full text-sm">
             <thead className="bg-muted/30 border-b border-border">
               <tr>
-                <th className="p-3 text-right font-medium"><BulkCheckbox checked={selectedIds.size === filtered.length && filtered.length > 0} onChange={() => toggleAll(filtered.map(r => r.id))} /></th>
-                <th className="p-3 text-right font-medium cursor-pointer" onClick={() => toggleSort("contractNumber")}>מספר חוזה <SortIcon field="contractNumber" /></th>
-                <th className="p-3 text-right font-medium cursor-pointer" onClick={() => toggleSort("customer")}>לקוח <SortIcon field="customer" /></th>
+                <th className="p-3 text-end font-medium"><BulkCheckbox checked={selectedIds.size === filtered.length && filtered.length > 0} onChange={() => toggleAll(filtered.map(r => r.id))} /></th>
+                <th className="p-3 text-end font-medium cursor-pointer" onClick={() => toggleSort("contractNumber")}>מספר חוזה <SortIcon field="contractNumber" /></th>
+                <th className="p-3 text-end font-medium cursor-pointer" onClick={() => toggleSort("customer")}>לקוח <SortIcon field="customer" /></th>
                 <th className="p-3 text-center font-medium">סוג</th>
-                <th className="p-3 text-right font-medium">כותרת</th>
+                <th className="p-3 text-end font-medium">כותרת</th>
                 <th className="p-3 text-center font-medium cursor-pointer" onClick={() => toggleSort("startDate")}>התחלה <SortIcon field="startDate" /></th>
                 <th className="p-3 text-center font-medium cursor-pointer" onClick={() => toggleSort("endDate")}>סיום <SortIcon field="endDate" /></th>
-                <th className="p-3 text-right font-medium cursor-pointer" onClick={() => toggleSort("value")}>שווי <SortIcon field="value" /></th>
+                <th className="p-3 text-end font-medium cursor-pointer" onClick={() => toggleSort("value")}>שווי <SortIcon field="value" /></th>
                 <th className="p-3 text-center font-medium">חידוש אוטו'</th>
                 <th className="p-3 text-center font-medium">סטטוס</th>
                 <th className="p-3 text-center font-medium">פעולות</th>
