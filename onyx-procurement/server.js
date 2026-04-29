@@ -553,6 +553,43 @@ try {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// PIPELINE / WIRING / ENTITY-MAP / STATE-MACHINES / ORCHESTRATOR /
+// WORKFLOW-FLOWS — System Blueprint APIs (Agent 210)
+//
+// CLAUDE.md "Key APIs" contract:
+//   GET  /api/wiring/spec
+//   GET  /api/entity-map/:type
+//   GET  /api/state-machines/:type/transitions?current=X
+//   POST /api/orchestrator/execute
+//   GET  /api/pipeline/stages
+//   GET  /api/workflows/:id
+//
+// Each module exports a register*Routes(app[, deps]) helper that mounts
+// the contract route plus its sibling endpoints. supabase + audit() are
+// already in scope (defined above at lines 168 and 498).
+// ═══════════════════════════════════════════════════════════════
+try {
+  const { registerWiringRoutes }       = require('./src/pipeline/wiring-spec');
+  const { registerEntityMapRoutes }    = require('./src/pipeline/entity-map');
+  const { registerStateMachineRoutes } = require('./src/pipeline/state-machines');
+  const { registerOrchestratorRoutes } = require('./src/pipeline/orchestrator');
+  const { registerPipelineRoutes }     = require('./src/pipeline/pipeline-engine');
+  const { registerWorkflowRoutes }     = require('./src/pipeline/workflow-flows');
+
+  registerWiringRoutes(app);
+  registerEntityMapRoutes(app);
+  registerStateMachineRoutes(app);
+  registerOrchestratorRoutes(app, { supabase, audit });
+  registerPipelineRoutes(app, { supabase, audit });
+  registerWorkflowRoutes(app);
+
+  console.log('✓ pipeline blueprint APIs wired — wiring-spec + entity-map + state-machines + orchestrator + pipeline-engine + workflow-flows');
+} catch (e) {
+  console.error('❌ pipeline blueprint wiring failed:', e && e.message);
+  if (errorTracker) errorTracker.capture(e, { tag: 'pipeline-blueprint-wiring' });
+}
+
+// ═══════════════════════════════════════════════════════════════
 // API: STATUS
 // ═══════════════════════════════════════════════════════════════
 

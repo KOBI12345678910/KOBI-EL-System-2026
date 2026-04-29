@@ -133,15 +133,15 @@ function Layout() {
           <Route path="/control-room/operations" element={<OperationsControlRoom />} />
           <Route path="/control-room/procurement" element={<ProcurementControlRoom />} />
           <Route path="/control-room/workforce" element={<WorkforceControlRoom />} />
-          <Route path="/360/customer/:id" element={<Customer360 />} />
-          <Route path="/360/employee/:id" element={<Employee360 />} />
-          <Route path="/360/finance/:id" element={<Finance360 />} />
-          <Route path="/360/po/:id" element={<PO360 />} />
-          <Route path="/360/project/:id" element={<Project360Detail />} />
-          <Route path="/360/quote/:id" element={<Quote360 />} />
-          <Route path="/360/rfq/:id" element={<RFQ360 />} />
-          <Route path="/360/supplier/:id" element={<Supplier360 />} />
-          <Route path="/360/work-order/:id" element={<WorkOrder360Detail />} />
+          <Route path="/customer/:id" element={<Customer360 />} />
+          <Route path="/employee/:id" element={<Employee360 />} />
+          <Route path="/finance/:id" element={<Finance360 />} />
+          <Route path="/po/:id" element={<PO360 />} />
+          <Route path="/project/:id" element={<Project360Detail />} />
+          <Route path="/quote/:id" element={<Quote360 />} />
+          <Route path="/rfq/:id" element={<RFQ360 />} />
+          <Route path="/supplier/:id" element={<Supplier360 />} />
+          <Route path="/work-order/:id" element={<WorkOrder360Detail />} />
           <Route path="/inventory-alerts" element={<InventoryAlerts />} />
           <Route path="/qr-generator" element={<QRGenerator />} />
           <Route path="/schedule" element={<Schedule />} />

@@ -1,11 +1,9 @@
 # AGENT-223 — Vendor Scoring: Close-the-Loop Wiring
 
-**Agent:** 223
-**Date:** 2026-04-29
-**Worktree:** `objective-merkle-40ff93`
-**Reference:** AGENT-183 (`_qa-reports-25/AGENT-183-vendor-scoring.md`) — module green, **zero production callers**.
+**Agent:** 223 · **Date:** 2026-04-29 · **Worktree:** `objective-merkle-40ff93`
+**Reference:** AGENT-183 — module green, **zero production callers**.
 **Source under wiring:** `onyx-procurement/src/analytics/vendor-scoring.js` (930 LOC, 32 tests pass).
-**Verdict:** Patches resolve the P1 gap (Blacklist flow / `performance_score` persistence / orchestrator action / Supplier360 tab). Math layer untouched.
+**Verdict:** Patches resolve P1 gap (blacklist flow / `performance_score` persistence / orchestrator action / Supplier360 tab). Math layer untouched.
 
 ---
 
@@ -13,12 +11,12 @@
 
 | Gap | Fix |
 |-----|-----|
-| `scoreVendor` has no callers | Patches 1 + 2 (event listener + cron) |
-| `performance_score` / `risk_level` never written | Patch 3 (persistence helper + history table) |
+| `scoreVendor` has no callers | Patches 1+2 (event listener + nightly cron) |
+| `performance_score`/`risk_level` never written | Patch 3 (persistence + history table) |
 | No Supplier360 surface | Patch 4 (new tab `ניקוד והערכה`) |
-| `blacklist_vendor` orchestrator action missing | Patch 5 (orchestrator + supplier state machine + DB guards) |
+| `blacklist_vendor` orchestrator action missing | Patch 5 (orchestrator + supplier SM + DB guards) |
 
-All five patches additive. No deletions. Existing 32-case test suite is untouched and remains green.
+Patches additive. No deletions. Existing 32-case suite untouched and remains green.
 
 ---
 
@@ -75,13 +73,12 @@ registerVendorScoringListener({ bus, supabase, logger: console });
 
 ## 2. Patch 2 — Nightly cron sweep
 
-**File:** `onyx-procurement/src/jobs/jobs-registry.js` — append to `DEFAULT_JOBS`. Covers vendors with no recent PO and feeds `recentScores[]` history (AGENT-183 §6).
+**File:** `onyx-procurement/src/jobs/jobs-registry.js` — append to `DEFAULT_JOBS`. Covers vendors with no recent PO and feeds `recentScores[]` (AGENT-183 §6). Cron `15 2 * * *` (02:15, after 02:00 backup), `runMissedOnStartup:true`.
 
 ```js
-{ id:'nightly-vendor-rescore', description:'Re-score every active supplier; persist composite + risk_level',
-  category:'analytics', cron:'15 2 * * *',  // 02:15 daily, after 02:00 backup
-  handler: runNightlyVendorRescore, timeout: 30*60*1000, retries:1, retryDelayMs: 5*60_000,
-  onFailure:'notify-admin', runMissedOnStartup:true },
+{ id:'nightly-vendor-rescore', description:'Re-score every active supplier', category:'analytics',
+  cron:'15 2 * * *', handler: runNightlyVendorRescore, timeout:30*60*1000, retries:1,
+  retryDelayMs:5*60_000, onFailure:'notify-admin', runMissedOnStartup:true },
 
 async function runNightlyVendorRescore(ctx) {
   const { scoreVendor } = require('../analytics/vendor-scoring');
@@ -91,7 +88,7 @@ async function runNightlyVendorRescore(ctx) {
   if (!supabase) return ctx.logger.warn({ id: ctx.id }, 'rescore.skipped_no_supabase');
   const { data: vendors = [] } = await supabase.from('procurement.suppliers')
     .select('id').in('status', ['active','preferred','monitor','on_hold']);
-  let scored = 0, failed = 0;
+  let scored=0, failed=0;
   for (const v of vendors) {
     try { await persistScore(supabase, v.id, scoreVendor(String(v.id), await __loadSupplierHistory(supabase, v.id))); scored++; }
     catch (err) { failed++; ctx.logger.warn({ vendorId: v.id, err: err?.message }, 'rescore.row_failed'); }
@@ -127,9 +124,7 @@ async function persistScore(supabase, supplierId, scoreResult) {
 
 function riskLevelFor(composite, risks = []) {
   if (composite < 50 || risks.some(r => r.severity === 'high')) return 'critical';
-  if (composite < 70) return 'high';
-  if (composite < 85) return 'medium';
-  return 'low';
+  if (composite < 70) return 'high'; if (composite < 85) return 'medium'; return 'low';
 }
 module.exports = { persistScore, riskLevelFor };
 ```
@@ -237,24 +232,23 @@ Server: extend `GET /api/suppliers/:id/360` to include `vendor_score` from lates
 
 ## 5. Patch 5 — `blacklist_vendor` orchestrator + supplier state machine
 
-**`pipeline/state-machines.js`** — register entity `supplier` (insert before final closing brace ~line 308):
+**`pipeline/state-machines.js`** — register entity `supplier` (before final closing brace ~line 308):
 
 ```js
-supplier: {
-  initial: 'active',
+supplier: { initial:'active',
   states: {
-    active:      { transitions: { monitor:'monitor', hold:'on_hold', blacklist:'blacklisted' } },
-    preferred:   { transitions: { monitor:'monitor', hold:'on_hold', blacklist:'blacklisted' } },
-    monitor:     { transitions: { restore:'active', hold:'on_hold', blacklist:'blacklisted' } },
-    on_hold:     { transitions: { restore:'active', blacklist:'blacklisted' } },
-    blacklisted: { transitions: { reinstate:'on_hold' } },
-    inactive:    { transitions: { restore:'active' } },
+    active:      { transitions:{ monitor:'monitor', hold:'on_hold', blacklist:'blacklisted' } },
+    preferred:   { transitions:{ monitor:'monitor', hold:'on_hold', blacklist:'blacklisted' } },
+    monitor:     { transitions:{ restore:'active', hold:'on_hold', blacklist:'blacklisted' } },
+    on_hold:     { transitions:{ restore:'active', blacklist:'blacklisted' } },
+    blacklisted: { transitions:{ reinstate:'on_hold' } },
+    inactive:    { transitions:{ restore:'active' } },
   },
   triggers: {
-    'active→blacklisted':    [{ action:'cancel_open_rfq_invites' }, { action:'freeze_open_pos' }, { action:'notify_buyers', params:{ template:'vendor_blacklisted' } }],
-    'preferred→blacklisted': [{ action:'cancel_open_rfq_invites' }, { action:'freeze_open_pos' }, { action:'notify_buyers', params:{ template:'vendor_blacklisted' } }],
-    'monitor→blacklisted':   [{ action:'cancel_open_rfq_invites' }, { action:'freeze_open_pos' }],
-    'blacklisted→on_hold':   [{ action:'create_audit', params:{ type:'vendor_reinstated' } }],
+    'active→blacklisted':    [{action:'cancel_open_rfq_invites'},{action:'freeze_open_pos'},{action:'notify_buyers',params:{template:'vendor_blacklisted'}}],
+    'preferred→blacklisted': [{action:'cancel_open_rfq_invites'},{action:'freeze_open_pos'},{action:'notify_buyers',params:{template:'vendor_blacklisted'}}],
+    'monitor→blacklisted':   [{action:'cancel_open_rfq_invites'},{action:'freeze_open_pos'}],
+    'blacklisted→on_hold':   [{action:'create_audit',params:{type:'vendor_reinstated'}}],
   },
 },
 ```
@@ -264,46 +258,38 @@ supplier: {
 ```js
 'supplier.blacklist': {
   service:'procurement', label:'הוצא ספק לרשימה שחורה',
-  preconditions: [
-    { check:'entity_exists', entity:'supplier' },
-    { check:'status_in', statuses:['active','preferred','monitor','on_hold'] },
-    { check:'composite_below', threshold:50 },
+  preconditions:[ {check:'entity_exists',entity:'supplier'}, {check:'status_in',statuses:['active','preferred','monitor','on_hold']}, {check:'composite_below',threshold:50} ],
+  effects:[
+    {type:'transition',entity:'supplier',transition:'blacklist'},
+    {type:'update_field',entity:'supplier',field:'risk_level',value:'critical'},
+    {type:'update_field',entity:'supplier',field:'blacklist_reason',from:'context.reason'},
+    {type:'cancel_related',entity:'rfq_invite',filter:{supplier_id:':supplierId',status:'pending'}},
+    {type:'freeze_related',entity:'po',filter:{supplier_id:':supplierId',status_in:['draft','pending_approval','sent']}},
+    {type:'notify',channels:['email','in_app'],template:'vendor_blacklisted',audience:'buyers'},
+    {type:'audit',message:'ספק הוצא לרשימה שחורה'},
   ],
-  effects: [
-    { type:'transition', entity:'supplier', transition:'blacklist' },
-    { type:'update_field', entity:'supplier', field:'risk_level', value:'critical' },
-    { type:'update_field', entity:'supplier', field:'blacklist_reason', from:'context.reason' },
-    { type:'cancel_related', entity:'rfq_invite', filter:{ supplier_id:':supplierId', status:'pending' } },
-    { type:'freeze_related', entity:'po', filter:{ supplier_id:':supplierId', status_in:['draft','pending_approval','sent'] } },
-    { type:'notify', channels:['email','in_app'], template:'vendor_blacklisted', audience:'buyers' },
-    { type:'audit', message:'ספק הוצא לרשימה שחורה' },
-  ],
-  events:['vendor.blacklisted'],
-  listeners:['ai.find_alternative_suppliers','ops.alert_open_pos_for_reassignment'],
+  events:['vendor.blacklisted'], listeners:['ai.find_alternative_suppliers','ops.alert_open_pos_for_reassignment'],
   navigate:'/entity360.html?type=supplier&id=:supplierId',
 },
 'supplier.reinstate': {
   service:'procurement', label:'החזר ספק מהרשימה השחורה',
-  preconditions:[ { check:'entity_exists', entity:'supplier' }, { check:'status_is', status:'blacklisted' }, { check:'role_in', roles:['procurement_manager','cfo','admin'] } ],
-  effects:[ { type:'transition', entity:'supplier', transition:'reinstate' }, { type:'update_field', entity:'supplier', field:'risk_level', value:'high' }, { type:'audit', message:'ספק הוחזר (status=on_hold)' } ],
+  preconditions:[{check:'entity_exists',entity:'supplier'},{check:'status_is',status:'blacklisted'},{check:'role_in',roles:['procurement_manager','cfo','admin']}],
+  effects:[{type:'transition',entity:'supplier',transition:'reinstate'},{type:'update_field',entity:'supplier',field:'risk_level',value:'high'},{type:'audit',message:'ספק הוחזר (status=on_hold)'}],
   events:['vendor.reinstated'],
 },
 ```
 
-`composite_below` precondition extension (in `executeOrchestration`, before iterating effects):
+`composite_below` precondition (in `executeOrchestration` before effects loop):
 
 ```js
-for (const pc of orch.preconditions) {
-  if (pc.check === 'composite_below') {
-    const { data: row } = await supabase.from('procurement.suppliers')
-      .select('performance_score').eq('id', context.supplierId || context.id).single();
-    const s = Number(row?.performance_score);
-    if (!Number.isFinite(s) || s >= pc.threshold) return { ok:false, error:`composite ${s} not below ${pc.threshold}` };
-  }
+for (const pc of orch.preconditions) if (pc.check === 'composite_below') {
+  const { data: row } = await supabase.from('procurement.suppliers').select('performance_score').eq('id', context.supplierId || context.id).single();
+  const s = Number(row?.performance_score);
+  if (!Number.isFinite(s) || s >= pc.threshold) return { ok:false, error:`composite ${s} not below ${pc.threshold}` };
 }
 ```
 
-**Migration `supabase/migrations/00085_supplier_blacklist_status.sql`** — DB guard refuses RFQ/PO inserts against blacklisted supplier regardless of caller (the `procurement.subcontractors` constraint at `00047:370` already permits `'blacklisted'`; this aligns parent `suppliers`):
+**Migration `supabase/migrations/00085_supplier_blacklist_status.sql`** — DB guard refuses RFQ/PO inserts against blacklisted supplier (the `procurement.subcontractors` constraint at `00047:370` already permits `'blacklisted'`; this aligns parent `suppliers`):
 
 ```sql
 alter table procurement.suppliers drop constraint if exists suppliers_status_check;
@@ -313,8 +299,7 @@ alter table procurement.suppliers add column if not exists blacklist_reason text
 alter table procurement.suppliers add column if not exists blacklisted_at timestamptz;
 
 create or replace function procurement.guard_supplier_active() returns trigger language plpgsql as $$
-declare s text;
-begin
+declare s text; begin
   select status into s from procurement.suppliers where id = new.supplier_id;
   if s = 'blacklisted' then raise exception 'supplier % is blacklisted; cannot send RFQ/PO', new.supplier_id using errcode = 'P0001'; end if;
   return new;
@@ -350,13 +335,10 @@ create trigger trg_guard_po_supplier before insert on procurement.purchase_order
 |--------|------|----:|
 | NEW | `onyx-procurement/src/wiring/vendor-scoring-listener.js` | +50 |
 | NEW | `onyx-procurement/src/suppliers/score-persistence.js` | +45 |
-| EDIT | `onyx-procurement/server.js` | +3 |
-| EDIT | `onyx-procurement/src/jobs/jobs-registry.js` | +35 |
-| EDIT | `onyx-procurement/src/features/suppliers/Supplier360.tsx` | +110 |
-| EDIT | `onyx-procurement/src/pipeline/state-machines.js` | +18 |
-| EDIT | `onyx-procurement/src/pipeline/orchestrator.js` | +35 |
 | NEW | `supabase/migrations/00084_vendor_score_history.sql` | +18 |
 | NEW | `supabase/migrations/00085_supplier_blacklist_status.sql` | +25 |
+| EDIT | `onyx-procurement/server.js` (+3), `jobs-registry.js` (+35) | +38 |
+| EDIT | `Supplier360.tsx` (+110), `state-machines.js` (+18), `orchestrator.js` (+35) | +163 |
 
 **Total: +339 LOC, zero deletions, all existing exports preserved.**
 
@@ -364,6 +346,4 @@ create trigger trg_guard_po_supplier before insert on procurement.purchase_order
 
 ## 8. Sign-off
 
-Four AGENT-183 deliverables spec'd above: (1) event listener + nightly cron at 02:15; (2) `persistScore()` writes `performance_score`+`risk_level`+history table; (3) Supplier360 tab `ניקוד והערכה` with composite, badge, 5 bars, risks, recs, contextual blacklist button; (4) `supplier.blacklist` orchestrator + state machine + DB triggers refusing RFQ/PO inserts against blacklisted suppliers. Math layer untouched; wiring fully additive.
-
-*End of AGENT-223 wiring report.*
+Four AGENT-183 deliverables spec'd: (1) event listener + nightly cron at 02:15; (2) `persistScore()` writes `performance_score`+`risk_level`+history table; (3) Supplier360 tab `ניקוד והערכה` with composite, badge, 5 bars, risks, recs, contextual blacklist button; (4) `supplier.blacklist` orchestrator + state machine + DB triggers refusing RFQ/PO inserts against blacklisted suppliers. Math layer untouched; wiring fully additive. *End AGENT-223.*

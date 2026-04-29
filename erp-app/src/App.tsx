@@ -1,7 +1,7 @@
 import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wouter";
 import { useState, useEffect, useCallback, lazy, Suspense, type ComponentType } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ConfirmDialogProvider } from "@/components/confirm-dialog";
 import { Layout } from "@/components/layout";
@@ -2903,7 +2903,7 @@ function App() {
             <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
               <PortalRouter />
             </WouterRouter>
-            <Toaster />
+            <Toaster dir="rtl" position="top-right" richColors closeButton expand visibleToasts={5} />
             <GlobalErrorHandler />
           </ConfirmDialogProvider>
         </TooltipProvider>
@@ -2932,7 +2932,7 @@ function App() {
               <LoginPage onLogin={handleLogin} />
             </Suspense>
           </ErrorBoundary>
-          <Toaster />
+          <Toaster dir="rtl" position="top-right" richColors closeButton expand visibleToasts={5} />
           <GlobalErrorHandler />
         </TooltipProvider>
       </QueryClientProvider>
@@ -2948,7 +2948,7 @@ function App() {
               <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
                 <Router />
               </WouterRouter>
-              <Toaster />
+              <Toaster dir="rtl" position="top-right" richColors closeButton expand visibleToasts={5} />
               <GlobalErrorHandler />
             </ConfirmDialogProvider>
           </TooltipProvider>

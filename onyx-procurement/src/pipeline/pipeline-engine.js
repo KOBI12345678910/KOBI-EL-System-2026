@@ -54,7 +54,7 @@ const ENTITY_STATUSES = {
   quote:      ['draft', 'sent', 'under_review', 'approved', 'rejected', 'converted'],
   po:         ['draft', 'pending_approval', 'approved', 'sent', 'partially_received', 'fully_received', 'closed'],
   project:    ['draft', 'approved', 'in_planning', 'in_procurement', 'in_production', 'in_delivery', 'completed', 'closed'],
-  workOrder:  ['open', 'assigned', 'in_progress', 'waiting_materials', 'qa_check', 'done', 'signed_off'],
+  workOrder:  ['open', 'assigned', 'in_progress', 'waiting_materials', 'qa', 'completed', 'signed_off', 'cancelled'],
   invoice:    ['draft', 'issued', 'partially_paid', 'paid', 'overdue', 'cancelled'],
   payroll:    ['draft', 'calculated', 'approved', 'exported', 'paid'],
 };

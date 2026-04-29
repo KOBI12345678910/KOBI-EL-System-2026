@@ -63,6 +63,9 @@
  *  └─────────────────────────────────────────────────────────────────────┘
  */
 
+// Agent-218 fix: load .env at module top so all process.env reads see vault keys.
+import 'dotenv/config';
+
 import { EventEmitter } from 'events';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
@@ -2292,13 +2295,19 @@ class APIServer {
     return /^\/(api\/agent|api\/dag|api\/tasks|api\/orchestrat)/.test(pathname);
   }
 
-  start(port: number = 3100): void {
+  // Agent-218 fix: liveness/readiness probes must bypass rate-limit
+  private isHealthPath(pathname: string): boolean {
+    return pathname === '/' || pathname === '/healthz' || pathname === '/livez' || pathname === '/readyz' || pathname === '/health';
+  }
+
+  start(port: number = 3300): void {
     // CORS allowed origins — env-driven, fail-safe default for dev
     const rawOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean);
     const allowedOrigins: Set<string> = new Set(rawOrigins.length ? rawOrigins : [
       'http://localhost:5173',
       'http://localhost:3200',
       'http://localhost:3100',
+      'http://localhost:3300',
     ]);
 
     this.server = http.createServer(async (req, res) => {
@@ -2334,14 +2343,17 @@ class APIServer {
         return;
       }
 
-      // ── Rate limiting ────────────────────────────────────────────────────
+      // ── Rate limiting (probes exempt) ───────────────────────────────────
       const ip = (req.headers['x-forwarded-for'] as string || req.socket.remoteAddress || 'unknown').split(',')[0].trim();
       const pathname = (req.url ?? '/').split('?')[0];
-      const maxForPath = this.isAiPath(pathname) ? this.rateLimitMaxAi : this.rateLimitMaxApi;
-      if (!this.checkRateLimit(ip, maxForPath)) {
-        res.writeHead(429, { 'Retry-After': String(Math.ceil(this.rateLimitWindowMs / 1000)) });
-        res.end(JSON.stringify({ error: 'יותר מדי בקשות, נסה שוב מאוחר יותר' }));
-        return;
+      // Agent-218: never 429 a k8s liveness check.
+      if (!this.isHealthPath(pathname)) {
+        const maxForPath = this.isAiPath(pathname) ? this.rateLimitMaxAi : this.rateLimitMaxApi;
+        if (!this.checkRateLimit(ip, maxForPath)) {
+          res.writeHead(429, { 'Retry-After': String(Math.ceil(this.rateLimitWindowMs / 1000)) });
+          res.end(JSON.stringify({ error: 'יותר מדי בקשות, נסה שוב מאוחר יותר' }));
+          return;
+        }
       }
 
       try {
