@@ -311,9 +311,16 @@ class SeveranceTracker {
    * @param {string} p.finalMonth — 'YYYY-MM' of termination.
    * @param {number} p.yearsEmployed — decimal years, e.g. 4.25
    * @param {string} p.reason — key into CONSTANTS.REASON_RIGHTS.
+   * @param {object} [p.section14Status] — optional offset from
+   *        `pension/section-14.js` `computeSeveranceOffset()`. When
+   *        provided AND `has_arrangement === true`, the statutory
+   *        amount for covered years is reduced by `employer_offset_to_apply`
+   *        before computing employerTopUp — this prevents the
+   *        double-count documented in AGENT-328 §3.1c (the fund deposit
+   *        IS the severance for those months and must not be paid twice).
    * @returns {object}
    */
-  computeSeveranceOwed({ employee, finalMonth, yearsEmployed, reason }) {
+  computeSeveranceOwed({ employee, finalMonth, yearsEmployed, reason, section14Status = null }) {
     if (!employee || !employee.id) throw new TypeError('employee.id is required');
     assertNonNeg(employee.lastMonthlySalary, 'employee.lastMonthlySalary');
     assertNonNeg(yearsEmployed, 'yearsEmployed');
@@ -331,12 +338,45 @@ class SeveranceTracker {
 
     const { balance: fundBalance } = this.getBalance(employee.id, { asOf: finalMonth });
 
-    // Employer top-up: the part the employer still owes if the fund is short.
-    // If the fund has a surplus, the difference is employee upside (השלמה
-    // לעובד) — we surface it as `fundSurplus` rather than silently hiding.
-    const gap = round2(statutory - fundBalance);
+    // ── Section 14 coupling (AGENT-328 §3.1c, §5 item 6) ──────────────────
+    // Suppress employerTopUp for the months covered by a valid Section 14
+    // arrangement. The fund deposit IS the severance for those months and
+    // would otherwise be paid twice.
+    let section14Note = null;
+    let coveredOffset = 0;
+    let isReleasedForCovered = false;
+    if (section14Status && section14Status.has_arrangement) {
+      coveredOffset = round2(Number(section14Status.employer_offset_to_apply) || 0);
+      isReleasedForCovered = !!section14Status.fully_released_for_covered;
+      section14Note = {
+        applied: true,
+        arrangementId: section14Status.arrangement_id || null,
+        coverageRatio: section14Status.coverage_ratio,
+        yearsCovered: section14Status.years_covered,
+        yearsBeforeArrangement: section14Status.years_before_arrangement,
+        offsetApplied: coveredOffset,
+        offsetApplied_he: 'הופחת חישוב פיצויים בגין הסדר סעיף 14',
+        fullyReleasedForCovered: isReleasedForCovered,
+      };
+    }
+
+    // Statutory minus the covered-period offset = the amount on which the
+    // employer top-up gap is computed.
+    const statutoryNetOfSection14 = round2(Math.max(0, statutory - coveredOffset));
+
+    // Employer top-up: the part the employer still owes if the fund is short
+    // for the UNCOVERED tail. If the fund has a surplus, the difference is
+    // employee upside (השלמה לעובד) — we surface it as `fundSurplus` rather
+    // than silently hiding.
+    const gap = round2(statutoryNetOfSection14 - fundBalance);
     const topUp = gap > 0 ? gap : 0;
     const fundSurplus = gap < 0 ? -gap : 0;
+
+    // The total paid to the employee remains the larger of statutory or
+    // fund balance (full statute, not the net) — Section 14 only suppresses
+    // the EMPLOYER's separate top-up; it does NOT reduce what reaches the
+    // employee.
+    const totalPaidToEmployee = round2(Math.max(statutory, fundBalance));
 
     return {
       employeeId: employee.id,
@@ -348,10 +388,12 @@ class SeveranceTracker {
       rightsMultiplier: multiplier,
       lastMonthlySalary: round2(employee.lastMonthlySalary),
       statutorySeverance: statutory,
+      statutorySeveranceNetOfSection14: statutoryNetOfSection14,
       fundBalance,
       employerTopUp: topUp,
       fundSurplus,
-      totalPaidToEmployee: round2(Math.max(statutory, fundBalance)),
+      totalPaidToEmployee,
+      section14: section14Note,  // null when no arrangement was supplied
     };
   }
 
@@ -412,7 +454,10 @@ class SeveranceTracker {
         ? employee.marginalRate
         : this.constants.DEFAULT_MARGINAL_RATE;
 
-    if (marginal < 0 || marginal > 0.5) {
+    // 2026: top bracket including יסף can hit 50%. Allow a small epsilon
+    // for the floating-point stack on top of the 0.50 ceiling.
+    // Per AGENT-328 §3.1d.
+    if (marginal < 0 || marginal > 0.5 + 1e-9) {
       throw new RangeError(
         `marginalRate out of bounds (0..0.5), got ${marginal}`,
       );
@@ -605,10 +650,37 @@ class SeveranceTracker {
   /**
    * Orchestration helper — run the full termination flow and return every
    * intermediate result. Used by the HR termination wizard UI.
+   *
+   * If `opts.section14Status` is not supplied, this method will lazy-load
+   * `pension/section-14.js` and compute the offset automatically. Pass
+   * `{ skipSection14: true }` to opt out for testing.
    */
-  terminateEmployee({ employee, finalMonth, yearsEmployed, reason }) {
+  terminateEmployee({ employee, finalMonth, yearsEmployed, reason, section14Status, skipSection14 }) {
+    let s14 = section14Status || null;
+    if (!s14 && !skipSection14) {
+      try {
+        // Lazy require: avoid hard coupling at module load.
+        // eslint-disable-next-line global-require
+        const section14 = require('./section-14');
+        if (section14 && typeof section14.computeSeveranceOffset === 'function') {
+          // finalMonth is YYYY-MM; convert to a YYYY-MM-DD termination date.
+          const terminationDate = `${normalisePeriod(finalMonth)}-28`;
+          s14 = section14.computeSeveranceOffset({
+            employeeId: employee.id,
+            terminationDate,
+            finalSalary: employee.lastMonthlySalary,
+            yearsEmployed,
+          });
+        }
+      } catch (e) {
+        // Section 14 module unavailable — proceed without offset.
+        s14 = null;
+      }
+    }
+
     const severance = this.computeSeveranceOwed({
       employee, finalMonth, yearsEmployed, reason,
+      section14Status: s14,
     });
     const tax = this.computeTaxOnSeverance({
       severance: severance.totalPaidToEmployee,
@@ -625,7 +697,7 @@ class SeveranceTracker {
       cashNowTaxDue: election.cashNow.taxDue,
       pensionDeferredTax: election.pensionCredit.deferredTaxEstimate,
     };
-    return { severance, tax, election, form161 };
+    return { severance, tax, election, form161, section14Status: s14 };
   }
 }
 
