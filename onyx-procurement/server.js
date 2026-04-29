@@ -652,6 +652,19 @@ try {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// API: GENERIC DB-ENTITY BROWSER (allow-listed schema/table peek)
+// Mount after registerWiringRoutes so the wiring-spec module loads first.
+// ═══════════════════════════════════════════════════════════════
+try {
+  const { registerDbEntityRoutes } = require('./src/routes/db-entity');
+  registerDbEntityRoutes(app, { supabase });
+  console.log('✓ db-entity browser wired — /api/db-entity/:schema/:table');
+} catch (e) {
+  console.error('❌ db-entity wiring failed:', e && e.message);
+  if (errorTracker) errorTracker.capture(e, { tag: 'db-entity-wiring' });
+}
+
+// ═══════════════════════════════════════════════════════════════
 // API: STATUS
 // ═══════════════════════════════════════════════════════════════
 
@@ -1737,6 +1750,19 @@ try {
   console.log('✓ app-menu wired — GET /api/app-menu (public.app_menu tree)');
 } catch (err) {
   console.error('⚠️  App menu module failed to load:', err.message);
+}
+
+// ═══ MENU TREE — service+domain grouped sidebar ═══
+// Same source (public.app_menu) but bucketed by order_index ranges into
+// 12 services (core / marketplace / registry / hamelech / addons /
+// integrations / misc / code / db / rpcs / views / backend) so frontend
+// shells can render a domain-organised mega-menu instead of a flat tree.
+try {
+  const { registerMenuTreeRoutes } = require('./src/routes/menu-tree');
+  registerMenuTreeRoutes(app, { supabase });
+  console.log('✓ menu-tree wired — GET /api/menu/tree (service+domain buckets)');
+} catch (err) {
+  console.error('⚠️  Menu tree module failed to load:', err.message);
 }
 
 

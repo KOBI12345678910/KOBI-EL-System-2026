@@ -63,6 +63,7 @@ import { InventoryAlerts } from './pages/InventoryAlerts';
 import { Schedule } from './pages/Schedule';
 import { QRGenerator } from './pages/QRGenerator';
 import { MarketplaceModuleDetail, MarketplaceCategory } from './pages/MarketplaceModuleDetail';
+import { GenericMenuPage } from './pages/GenericMenuPage';
 
 function Project360RouteWrapper() {
   const { id } = useParams<{ id: string }>();
@@ -166,6 +167,21 @@ function Layout() {
           {/* Marketplace — 2,371 module routes seeded in app_menu */}
           <Route path="/marketplace/module/:id" element={<MarketplaceModuleDetail />} />
           <Route path="/marketplace/:category" element={<MarketplaceCategory />} />
+          {/* Catch-all dynamic menu routes — backed by GenericMenuPage which
+              reads app_menu / db-entity / rpc-meta and renders a stub. */}
+          <Route path="/registry/*" element={<GenericMenuPage />} />
+          <Route path="/marketplace/*" element={<GenericMenuPage />} />
+          <Route path="/db/*" element={<GenericMenuPage />} />
+          <Route path="/rpc/*" element={<GenericMenuPage />} />
+          <Route path="/view/*" element={<GenericMenuPage />} />
+          <Route path="/component/*" element={<GenericMenuPage />} />
+          <Route path="/hook/*" element={<GenericMenuPage />} />
+          <Route path="/api-doc/*" element={<GenericMenuPage />} />
+          <Route path="/addons/*" element={<GenericMenuPage />} />
+          <Route path="/integrations/*" element={<GenericMenuPage />} />
+          <Route path="/platform-module/*" element={<GenericMenuPage />} />
+          <Route path="/combo/*" element={<GenericMenuPage />} />
+          <Route path="/template/*" element={<GenericMenuPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

@@ -684,6 +684,12 @@ const TenderCompetitorsPage = lazy(() => import('./pages/tenders/tender-competit
 const TenderTimelinePage = lazy(() => import('./pages/tenders/tender-timeline'));
 const AiAgentsDashboardPage = lazy(() => import('./pages/ai-engine/ai-agents-dashboard'));
 
+// Catch-all dynamic menu page — handles /registry/*, /marketplace/*, /db/*,
+// /rpc/*, /view/*, /component/*, /hook/*, /api-doc/*, /addons/*,
+// /integrations/*, /platform-module/*, /combo/*, /template/* routes that
+// are seeded into public.app_menu but lack a dedicated React page.
+const GenericMenuPage = lazy(() => import('./pages/GenericMenuPage'));
+
 function lazyPage<P extends object>(
   factory: () => Promise<{ default: ComponentType<P> }>
 ): ComponentType<P> {
@@ -2104,6 +2110,24 @@ function Router() {
           {/* Marketplace — 2,371 module routes seeded in app_menu */}
           <Route path="/marketplace/module/:id" component={MarketplaceModuleDetail} />
           <Route path="/marketplace/:category" component={MarketplaceCategory} />
+
+          {/* Catch-all dynamic menu routes — backed by GenericMenuPage which
+              reads /api/app-menu, /api/db-entity/* and /api/rpc-meta/* and
+              renders a header + breadcrumb + stub body. Wouter v3 uses
+              :rest* to capture any tail segments (including nested /a/b/c). */}
+          <Route path="/registry/:rest*" component={GenericMenuPage} />
+          <Route path="/marketplace/:rest*" component={GenericMenuPage} />
+          <Route path="/db/:rest*" component={GenericMenuPage} />
+          <Route path="/rpc/:rest*" component={GenericMenuPage} />
+          <Route path="/view/:rest*" component={GenericMenuPage} />
+          <Route path="/component/:rest*" component={GenericMenuPage} />
+          <Route path="/hook/:rest*" component={GenericMenuPage} />
+          <Route path="/api-doc/:rest*" component={GenericMenuPage} />
+          <Route path="/addons/:rest*" component={GenericMenuPage} />
+          <Route path="/integrations/:rest*" component={GenericMenuPage} />
+          <Route path="/platform-module/:rest*" component={GenericMenuPage} />
+          <Route path="/combo/:rest*" component={GenericMenuPage} />
+          <Route path="/template/:rest*" component={GenericMenuPage} />
 
           <Route component={NotFound} />
         </Switch>
