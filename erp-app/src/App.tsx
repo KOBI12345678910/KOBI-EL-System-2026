@@ -985,9 +985,7 @@ const OperationalReports = lazyPage(() => import("@/pages/reports/operational-re
 const BIDashboardPage = lazyPage(() => import("@/pages/reports/bi-dashboard"));
 const ModuleView = lazyPage(() => import("@/pages/module-view"));
 const MarketplaceModuleDetail = lazyPage(() => import("@/pages/marketplace-module-detail"));
-const MarketplaceCategory = lazyPage(() =>
-  import("@/pages/marketplace-module-detail").then((m) => ({ default: m.MarketplaceCategory }))
-);
+const MarketplaceCategory = lazyPage(() => import("@/pages/marketplace-category"));
 const ProductRoadmapPage = lazyPage(() => import("@/pages/product-dev/product-roadmap"));
 const RDProjectsPage = lazyPage(() => import("@/pages/product-dev/rd-projects"));
 const FeatureRequestsPage = lazyPage(() => import("@/pages/product-dev/feature-requests"));

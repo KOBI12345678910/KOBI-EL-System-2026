@@ -173,8 +173,8 @@ export default function PayrollRun360() {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginTop: 16 }}>
         <StatCard label="שורות" value={String(run.line_count ?? 0)} />
-        <StatCard label="סה\"כ ברוטו" value={money.format(Number(run.total_gross ?? 0))} />
-        <StatCard label="סה\"כ נטו" value={money.format(Number(run.total_net ?? 0))} />
+        <StatCard label='סה"כ ברוטו' value={money.format(Number(run.total_gross ?? 0))} />
+        <StatCard label='סה"כ נטו' value={money.format(Number(run.total_net ?? 0))} />
         <StatCard label="חריגים פתוחים" value={String(run.open_exceptions ?? 0)}
           tone={Number(run.open_exceptions ?? 0) > 0 ? "warn" : "neutral"} />
       </div>

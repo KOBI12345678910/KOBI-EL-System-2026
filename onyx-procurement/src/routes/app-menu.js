@@ -136,8 +136,8 @@ function registerAppMenuRoutes(app, deps = {}) {
       const allRows = [];
       let offset = 0;
       let lastErr = null;
-      // Hard ceiling: 20 pages = 20,000 rows; menu shouldn't exceed this.
-      for (let page = 0; page < 20; page++) {
+      // Hard ceiling: 200 pages = 200,000 rows; supports the full catalog (50,945 + extras).
+      for (let page = 0; page < 200; page++) {
         let q = supabase
           .from('app_menu')
           .select(

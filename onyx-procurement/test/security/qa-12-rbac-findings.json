@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-29T04:12:02.052Z",
+  "generatedAt": "2026-04-29T04:12:28.353Z",
   "summary": {
     "totalGaps": 7,
     "critical": 0,
@@ -17,7 +17,7 @@
         "role": "employee",
         "resolution": "getCallerIdentity + force-filter applied"
       },
-      "recordedAt": "2026-04-29T04:12:01.990Z"
+      "recordedAt": "2026-04-29T04:12:28.280Z"
     },
     {
       "id": "BUG-QA12-005",
@@ -28,7 +28,7 @@
         "role": "viewer",
         "expected": "403"
       },
-      "recordedAt": "2026-04-29T04:12:02.011Z"
+      "recordedAt": "2026-04-29T04:12:28.301Z"
     },
     {
       "id": "BUG-QA12-006",
@@ -39,7 +39,7 @@
         "role": "accountant",
         "expected": "403"
       },
-      "recordedAt": "2026-04-29T04:12:02.017Z"
+      "recordedAt": "2026-04-29T04:12:28.309Z"
     },
     {
       "id": "BUG-QA12-007",
@@ -50,7 +50,7 @@
         "role": "employee",
         "resolution": "isAdmin gate added"
       },
-      "recordedAt": "2026-04-29T04:12:02.024Z"
+      "recordedAt": "2026-04-29T04:12:28.317Z"
     },
     {
       "id": "BUG-QA12-002",
@@ -61,7 +61,7 @@
         "role": "employee",
         "resolution": "denyIfNotOwnerOrAdmin gate"
       },
-      "recordedAt": "2026-04-29T04:12:02.029Z"
+      "recordedAt": "2026-04-29T04:12:28.324Z"
     },
     {
       "id": "BUG-QA12-003",
@@ -72,7 +72,7 @@
         "role": "employee",
         "resolution": "denyIfNotOwnerOrAdmin gate"
       },
-      "recordedAt": "2026-04-29T04:12:02.034Z"
+      "recordedAt": "2026-04-29T04:12:28.330Z"
     },
     {
       "id": "BUG-QA12-004",
@@ -85,7 +85,7 @@
         },
         "expected": "strip/allowlist body fields"
       },
-      "recordedAt": "2026-04-29T04:12:02.040Z"
+      "recordedAt": "2026-04-29T04:12:28.337Z"
     }
   ]
 }

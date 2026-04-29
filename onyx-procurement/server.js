@@ -311,6 +311,28 @@ console.log('✓ requireTenant() wired — JWT/header/session → req.tenantId +
 // ═══════════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════════
+// AUDIT TRAIL — append-only HTTP envelope writer
+// ───────────────────────────────────────────────────────────────
+// Mounted AFTER requireAuth + requireTenant so req.user.id and
+// req.tenantId are always populated. Records every state-mutating
+// API call (POST/PUT/PATCH/DELETE) into governance.audit_logs:
+//   method, path, user_id, tenant_id, request_body_summary,
+//   status, latency_ms.
+//
+// Append-only: single INSERT per request via res.on('finish') so
+// the response status + wall-clock latency are captured. Failures
+// are warn-only — audit must never block the business path.
+// ═══════════════════════════════════════════════════════════════
+const { auditTrail } = require('./src/middleware/audit-trail');
+app.use('/api/', auditTrail({
+  supabase,
+  serviceName: 'ONYX_PROCUREMENT',
+  moduleName: 'http_audit',
+}));
+console.log('✓ audit-trail wired — POST/PUT/PATCH/DELETE → governance.audit_logs');
+// ═══════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════
 // Agent-Y-QA03 FIX (BUG-02): wire the ai-bridge into the running
 // process. Previously `src/ai-bridge.js` existed but was never
 // required, so the whole cross-service link to onyx-ai was dead
