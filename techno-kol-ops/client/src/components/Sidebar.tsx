@@ -87,28 +87,49 @@ export function Sidebar() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/app-menu')
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((data) => {
-        if (cancelled) return;
-        // Accept either an array of roots, or { menu: [...] } / { roots: [...] } / { items: [...] }.
-        const roots: MenuRoot[] | null = Array.isArray(data)
-          ? data
-          : Array.isArray(data?.menu)
-          ? data.menu
-          : Array.isArray(data?.roots)
-          ? data.roots
-          : Array.isArray(data?.items)
-          ? data.items
-          : null;
-        if (roots && roots.length > 0) setMenu(roots);
-      })
-      .catch(() => {
-        // Fall through to hard-coded NAV.
-      });
+    // Prefer /api/menu/tree (12 service buckets, ~12 root sections — manageable UI).
+    // Fall back to /api/app-menu (9,139 raw roots — flat list, virtualization needed).
+    const tryTree = fetch('/api/menu/tree')
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null);
+    tryTree.then((tree) => {
+      if (cancelled) return;
+      if (tree && Array.isArray(tree.services) && tree.services.length > 0) {
+        // Map service buckets to MenuRoot shape: each service becomes a root with children.
+        const mapped: MenuRoot[] = tree.services.map((s: any) => ({
+          id: `svc-${s.service}`,
+          label: s.service,
+          label_he: s.label_he || s.service,
+          route: null,
+          icon: '📂',
+          parent_id: null,
+          order_index: 0,
+          children: Array.isArray(s.children) ? s.children.slice(0, 200) : [],
+        }));
+        setMenu(mapped);
+        return;
+      }
+      // Fallback to /api/app-menu (raw flat).
+      fetch('/api/app-menu')
+        .then((r) => (r.ok ? r.json() : Promise.reject(`HTTP ${r.status}`)))
+        .then((data) => {
+          if (cancelled) return;
+          // The API returns { source, count, roots, tree }. Read tree[].
+          const roots: MenuRoot[] | null = Array.isArray(data?.tree)
+            ? data.tree.slice(0, 200) // cap to prevent UI hang on 9,139 roots
+            : Array.isArray(data)
+            ? data.slice(0, 200)
+            : Array.isArray(data?.menu)
+            ? data.menu.slice(0, 200)
+            : Array.isArray(data?.items)
+            ? data.items.slice(0, 200)
+            : null;
+          if (roots && roots.length > 0) setMenu(roots);
+        })
+        .catch(() => {
+          // Fall through to hard-coded NAV.
+        });
+    });
     return () => {
       cancelled = true;
     };
