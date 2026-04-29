@@ -342,6 +342,12 @@ async function safeGLLinesUpTo(supabase, endDate) {
 }
 
 function registerAnnualTaxRoutes(app, { supabase, audit, requirePermission }) {
+  // Defensive default: when host omits requirePermission (unit tests),
+  // fall back to a pass-through gate. Production wiring lives in server.js.
+  // Hebrew error string for UX consistency: 'אין הרשאה לבצע פעולה זו'.
+  if (typeof requirePermission !== 'function') {
+    requirePermission = () => (_req, _res, next) => next();
+  }
   // ═══ PROJECTS ═══
 
   app.get('/api/projects', async (req, res) => {

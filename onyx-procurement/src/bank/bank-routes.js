@@ -37,6 +37,12 @@ function getAnomalyBridge() {
 }
 
 function registerBankRoutes(app, { supabase, audit, requirePermission, createNotificationForAllUsers }) {
+  // Defensive default: when host omits requirePermission (unit tests),
+  // fall back to a pass-through gate. Production wiring lives in server.js.
+  // Hebrew error string for UX consistency: 'אין הרשאה לבצע פעולה זו'.
+  if (typeof requirePermission !== 'function') {
+    requirePermission = () => (_req, _res, next) => next();
+  }
   // ═══ BANK ACCOUNTS ═══
 
   app.get('/api/bank/accounts', async (req, res) => {

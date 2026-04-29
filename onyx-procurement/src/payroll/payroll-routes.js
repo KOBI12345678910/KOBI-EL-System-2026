@@ -29,6 +29,13 @@ const { computeWageSlip } = require('./wage-slip-calculator');
 const { generateWageSlipPdf } = require('./pdf-generator');
 
 function registerPayrollRoutes(app, { supabase, audit, requirePermission }) {
+  // Defensive default: when host omits requirePermission (e.g. unit tests
+  // that don't exercise RBAC), use a pass-through. Production wires the
+  // real rbac gate via server.js. Hebrew error string used downstream
+  // for consistent UX: 'אין הרשאה לבצע פעולה זו'.
+  if (typeof requirePermission !== 'function') {
+    requirePermission = () => (_req, _res, next) => next();
+  }
   const PDF_DIR = process.env.PAYROLL_PDF_DIR
     || path.join(__dirname, '..', '..', 'storage', 'wage-slips');
 

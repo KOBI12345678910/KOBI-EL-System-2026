@@ -1,23 +1,12 @@
 {
-  "generatedAt": "2026-04-11T11:54:44.641Z",
+  "generatedAt": "2026-04-29T03:45:25.592Z",
   "summary": {
-    "totalGaps": 7,
-    "critical": 2,
-    "high": 4,
+    "totalGaps": 5,
+    "critical": 1,
+    "high": 3,
     "med": 1
   },
   "gaps": [
-    {
-      "id": "BUG-QA12-001",
-      "severity": "HIGH",
-      "description": "Employee role can list every wage slip of every employee (missing per-actor filter).",
-      "detail": {
-        "route": "GET /api/payroll/wage-slips",
-        "role": "employee",
-        "expected": "filter by req.actor.employee_id"
-      },
-      "recordedAt": "2026-04-11T11:54:44.569Z"
-    },
     {
       "id": "BUG-QA12-005",
       "severity": "HIGH",
@@ -27,7 +16,7 @@
         "role": "viewer",
         "expected": "403"
       },
-      "recordedAt": "2026-04-11T11:54:44.588Z"
+      "recordedAt": "2026-04-29T03:45:25.535Z"
     },
     {
       "id": "BUG-QA12-006",
@@ -38,7 +27,7 @@
         "role": "accountant",
         "expected": "403"
       },
-      "recordedAt": "2026-04-11T11:54:44.601Z"
+      "recordedAt": "2026-04-29T03:45:25.543Z"
     },
     {
       "id": "BUG-QA12-007",
@@ -49,18 +38,7 @@
         "role": "employee",
         "expected": "403"
       },
-      "recordedAt": "2026-04-11T11:54:44.608Z"
-    },
-    {
-      "id": "BUG-QA12-002",
-      "severity": "CRITICAL",
-      "description": "IDOR: employee can GET /api/payroll/wage-slips/:id for slips they do not own.",
-      "detail": {
-        "route": "GET /api/payroll/wage-slips/:id",
-        "role": "employee",
-        "expected": "403 when req.actor.employee_id != slip.employee_id"
-      },
-      "recordedAt": "2026-04-11T11:54:44.615Z"
+      "recordedAt": "2026-04-29T03:45:25.552Z"
     },
     {
       "id": "BUG-QA12-003",
@@ -71,7 +49,7 @@
         "role": "employee",
         "expected": "403"
       },
-      "recordedAt": "2026-04-11T11:54:44.620Z"
+      "recordedAt": "2026-04-29T03:45:25.569Z"
     },
     {
       "id": "BUG-QA12-004",
@@ -84,7 +62,7 @@
         },
         "expected": "strip/allowlist body fields"
       },
-      "recordedAt": "2026-04-11T11:54:44.627Z"
+      "recordedAt": "2026-04-29T03:45:25.576Z"
     }
   ]
 }

@@ -236,18 +236,18 @@ test('logShowing rejects unknown broker and invalid outcome', () => {
 
 // ---------- computeCommission -----------------------------------------------
 
-test('computeCommission sale @2% adds 17% VAT', () => {
+test('computeCommission sale @2% adds 18% VAT', () => {
   const t = seededTracker();
   const r = t.computeCommission({
     transactionType: 'sale',
     price: 2_500_000,
     rate: 0.02,
   });
-  // gross = 50,000; vat = 8,500; total = 58,500
+  // gross = 50,000; vat = 9,000; total = 59,000
   assert.equal(r.gross, 50000);
-  assert.equal(r.vat,   8500);
-  assert.equal(r.total, 58500);
-  assert.equal(r.vatRate, 0.17);
+  assert.equal(r.vat,   9000);
+  assert.equal(r.total, 59000);
+  assert.equal(r.vatRate, 0.18);
   assert.equal(r.cap, 0.02);
 });
 
@@ -267,8 +267,8 @@ test('computeCommission rental 1 month @ rate 1 equals one month rent + VAT', ()
     rate: 1,
   });
   assert.equal(r.gross, 5000);
-  assert.equal(r.vat, 850);   // 17%
-  assert.equal(r.total, 5850);
+  assert.equal(r.vat, 900);   // 18%
+  assert.equal(r.total, 5900);
 });
 
 test('computeCommission rental rejects rate > 1 month', () => {
@@ -290,7 +290,7 @@ test('computeCommission with split returns per-side breakdown', () => {
   assert.equal(r.gross, 20000);
   assert.equal(r.perSide.buyer.gross, 10000);
   assert.equal(r.perSide.seller.gross, 10000);
-  assert.equal(r.perSide.buyer.total, 11700);
+  assert.equal(r.perSide.buyer.total, 11800);
 });
 
 test('computeCommission with bad split throws E_SPLIT_NOT_100', () => {
@@ -323,12 +323,12 @@ test('claimCommission creates a record with gross + VAT', () => {
     sellerBrokerPct: 0.02,
     price: 2_000_000,
   });
-  // buyerGross=40k, sellerGross=40k, gross=80k, vat=13.6k, total=93.6k
+  // buyerGross=40k, sellerGross=40k, gross=80k, vat=14.4k, total=94.4k
   assert.equal(c.buyerGross, 40000);
   assert.equal(c.sellerGross, 40000);
   assert.equal(c.gross, 80000);
-  assert.equal(c.vat, 13600);
-  assert.equal(c.total, 93600);
+  assert.equal(c.vat, 14400);
+  assert.equal(c.total, 94400);
   assert.equal(c.status, 'open');
 });
 
@@ -486,8 +486,8 @@ test('generateInvoice produces a bilingual invoice with allocation number', () =
   assert.equal(inv.broker.licenseNumber, '123456');
   assert.equal(inv.lines.length, 2);
   assert.equal(inv.gross, 120000); // 60k buyer + 60k seller
-  assert.equal(inv.vat, 20400);     // 17% of 120k
-  assert.equal(inv.total, 140400);
+  assert.equal(inv.vat, 21600);     // 18% of 120k
+  assert.equal(inv.total, 141600);
   assert.ok(inv.allocationNumber && inv.allocationNumber.startsWith('IL'));
   assert.ok(inv.headings.he && inv.headings.en);
   // claim marked invoiced
@@ -569,7 +569,7 @@ test('upgrading a broker always keeps the old version accessible via brokerHisto
 // ---------- module exports --------------------------------------------------
 
 test('module exports enums and constants', () => {
-  assert.equal(VAT_RATE, 0.17);
+  assert.equal(VAT_RATE, 0.18);
   assert.equal(SALE_CAP_PCT, 0.02);
   assert.equal(RENTAL_CAP_MONTHS, 1);
   assert.equal(TRANSACTION_TYPES.SALE, 'sale');

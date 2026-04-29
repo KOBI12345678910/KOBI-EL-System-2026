@@ -53,5 +53,8 @@
     "url": "local"
   },
   "license": "UNLICENSED",
-  "author": "Kobi Elkayam"
+  "author": "Kobi Elkayam",
+  "dependencies": {
+    "wouter": "^3.9.0"
+  }
 }

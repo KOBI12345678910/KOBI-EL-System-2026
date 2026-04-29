@@ -64,10 +64,10 @@ function fixture(builder) {
  * ctor + config
  * ========================================================================= */
 
-test('ctor: default VAT 17%, default currency ILS', () => {
+test('ctor: default VAT 18%, default currency ILS', () => {
   const b = new QuoteBuilder();
   assert.equal(b.vatRate, DEFAULT_VAT);
-  assert.equal(b.vatRate, 0.17);
+  assert.equal(b.vatRate, 0.18);
   assert.equal(b.currency, 'ILS');
 });
 
@@ -139,7 +139,7 @@ test('createQuote: allocation_number can be preassigned', () => {
  * computeTotals
  * ========================================================================= */
 
-test('computeTotals: plain math, no discounts, 17% VAT', () => {
+test('computeTotals: plain math, no discounts, 18% VAT', () => {
   const b = new QuoteBuilder();
   const q = b.createQuote({
     customer: { name: 'X' },
@@ -153,8 +153,8 @@ test('computeTotals: plain math, no discounts, 17% VAT', () => {
   assert.equal(t.line_discount, 0);
   assert.equal(t.total_discount, 0);
   assert.equal(t.net, 350);
-  assert.equal(t.vat, round2(350 * 0.17));   // 59.5
-  assert.equal(t.gross, round2(350 + 350 * 0.17)); // 409.5
+  assert.equal(t.vat, round2(350 * 0.18));   // 63
+  assert.equal(t.gross, round2(350 + 350 * 0.18)); // 413
 });
 
 test('computeTotals: fixture quote (10% line discount)', () => {
@@ -166,14 +166,14 @@ test('computeTotals: fixture quote (10% line discount)', () => {
   // line 2: 10 * 45 = 450, 10% = 45 discount → 405 net
   // line 3: 50 * 12 = 600
   // subtotal = 4050, line_discount = 45, net (pre VAT) = 4005
-  // VAT @ 17% = 680.85, gross = 4685.85
+  // VAT @ 18% = 720.9, gross = 4725.9
   assert.equal(t.subtotal, 4050);
   assert.equal(t.line_discount, 45);
   assert.equal(t.net, 4005);
-  assert.equal(t.vat, 680.85);
-  assert.equal(t.gross, 4685.85);
+  assert.equal(t.vat, 720.9);
+  assert.equal(t.gross, 4725.9);
   assert.equal(t.currency, 'ILS');
-  assert.equal(t.vat_rate, 0.17);
+  assert.equal(t.vat_rate, 0.18);
 });
 
 test('computeTotals: honors config vatRate (18%)', () => {
@@ -232,11 +232,11 @@ test('applyDiscount: scope=total, percent', () => {
     items: [{ sku: 'A', qty: 1, unitPrice: 1000 }]
   });
   b.applyDiscount(q, { type: 'percent', value: 10, scope: 'total', reason: 'promo' });
-  // 1000 → 10% → 900 net → VAT 153 → gross 1053
+  // 1000 → 10% → 900 net → VAT 162 → gross 1062
   assert.equal(q.totals.total_discount, 100);
   assert.equal(q.totals.net, 900);
-  assert.equal(q.totals.vat, 153);
-  assert.equal(q.totals.gross, 1053);
+  assert.equal(q.totals.vat, 162);
+  assert.equal(q.totals.gross, 1062);
   assert.equal(q.discounts.length, 1);
   assert.equal(q.discounts[0].reason, 'promo');
 });
@@ -333,11 +333,11 @@ test('updateLine: qty change reflows totals', () => {
   // line 1: 5 * 1500 = 7500
   // line 2: 10 * 45 = 450, 10% = 45 → 405
   // line 3: 50 * 12 = 600
-  // subtotal 8550, line_discount 45, net 8505, VAT 1445.85, gross 9950.85
+  // subtotal 8550, line_discount 45, net 8505, VAT 1530.9, gross 10035.9
   assert.equal(t.subtotal, 8550);
   assert.equal(t.net, 8505);
-  assert.equal(t.vat, 1445.85);
-  assert.equal(t.gross, 9950.85);
+  assert.equal(t.vat, 1530.9);
+  assert.equal(t.gross, 10035.9);
 });
 
 test('removeLine: drops sku', () => {
