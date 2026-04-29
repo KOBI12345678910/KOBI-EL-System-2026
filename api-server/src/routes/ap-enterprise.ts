@@ -71,6 +71,34 @@ router.get("/ap/aging", async (_req, res) => {
   res.json(rows);
 });
 
+// CRUD-GAP-FIX: GET single AP invoice by id. JSON envelope + 404 + 503 on missing table.
+router.get("/ap/:id(\\d+)", async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!Number.isFinite(id) || id <= 0) {
+    return res.status(400).json({ ok: false, error: "מזהה חשבונית לא תקין" });
+  }
+  try {
+    const r = await db.execute(sql`SELECT * FROM accounts_payable WHERE id = ${id} LIMIT 1`);
+    const rows: any[] = (r as any).rows || [];
+    if (rows.length === 0) {
+      return res.status(404).json({ ok: false, error: "חשבונית ספק לא נמצאה" });
+    }
+    let payments: any[] = [];
+    try {
+      const p = await db.execute(sql`SELECT * FROM ap_payments WHERE ap_id = ${id} ORDER BY payment_date DESC`);
+      payments = (p as any).rows || [];
+    } catch { /* ap_payments table may not exist yet */ }
+    return res.json({ ok: true, data: { ...rows[0], payments } });
+  } catch (e: any) {
+    const msg = String(e?.message || e);
+    if (/relation .* does not exist|undefined_table/i.test(msg)) {
+      return res.status(503).json({ ok: false, error: "מודול חשבוניות ספקים אינו זמין" });
+    }
+    console.error("[AP GET /:id] error:", msg);
+    return res.status(500).json({ ok: false, error: "שגיאה באחזור חשבונית ספק" });
+  }
+});
+
 router.get("/ap/top-suppliers", async (_req, res) => {
   const rows = await q(`SELECT 
     supplier_name,

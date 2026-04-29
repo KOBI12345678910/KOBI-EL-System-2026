@@ -501,6 +501,10 @@ router.use("/dispatch", dispatchPlanningRouter);
 import variationOrdersRouter from "./variation-orders";
 router.use("/variation-orders", variationOrdersRouter);
 
+// Closure — Final stage of Master Flow (Lead → ... → Closure)
+import closureRouter from "./closure";
+router.use(closureRouter);
+
 import featureFlagsRouter from "./feature-flags";
 router.use("/feature-flags", featureFlagsRouter);
 
@@ -698,6 +702,7 @@ import savedPlacesRouter from './saved-places';
 // Added: 84 modules
 // ==========================================================
 import accountingExportRouter from './accounting-export';
+import advancedRouter from './advanced';
 import adminCronTriggersRouter from './admin-cron-triggers';
 import aiBusinessAutomationRouter from './ai-business-automation';
 import aiSearchEnhanceRouter from './ai-search-enhance';
@@ -732,6 +737,7 @@ import fieldOperationsRouter from './field-operations';
 import finDocumentsRouter from './fin-documents';
 import finMasterDataRouter from './fin-master-data';
 import finPaymentsRouter from './fin-payments';
+import paymentsUnifiedRouter from './payments';
 import finQuantRouter from './fin-quant';
 import fleetLogisticsRouter from './fleet-logistics';
 import graphqlRouter from './graphql';
@@ -785,6 +791,7 @@ router.use("/whatsapp-business", whatsappBusinessRouter);
 
 // AUTO-WIRED MOUNTS
 router.use('/accounting-export', accountingExportRouter);
+router.use('/advanced', advancedRouter);
 router.use('/admin-cron-triggers', adminCronTriggersRouter);
 router.use('/ai-business-automation', aiBusinessAutomationRouter);
 router.use('/ai-search-enhance', aiSearchEnhanceRouter);
@@ -820,6 +827,7 @@ router.use('/field-operations', fieldOperationsRouter);
 router.use('/fin-documents', finDocumentsRouter);
 router.use('/fin-master-data', finMasterDataRouter);
 router.use('/fin-payments', finPaymentsRouter);
+router.use(paymentsUnifiedRouter); // unified GET /api/payments/:id (CRUD-GAP-FIX)
 router.use('/fin-quant', finQuantRouter);
 router.use('/fleet-logistics', fleetLogisticsRouter);
 router.use('/graphql', graphqlRouter);

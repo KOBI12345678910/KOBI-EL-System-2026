@@ -179,7 +179,7 @@ function SortableTable<T extends { id: number | string }>({ columns, data, onRow
           <tr>
             {columns.map(c => (
               <th key={String(c.key)} onClick={() => handleSort(String(c.key))}
-                style={{ textAlign: 'right', padding: '8px 10px', color: '#5C7080', fontSize: 10, letterSpacing: '0.1em',
+                style={{ textAlign: 'end', padding: '8px 10px', color: '#5C7080', fontSize: 10, letterSpacing: '0.1em',
                   borderBottom: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', userSelect: 'none',
                   width: c.width, whiteSpace: 'nowrap' }}>
                 {c.label} {sortKey === String(c.key) ? (sortDir === 'asc' ? ' ^' : ' v') : ''}
@@ -441,7 +441,7 @@ export function Project360({ projectId: propProjectId }: { projectId?: number })
             <span style={{ fontSize: 13, color: budgetUsed > 100 ? '#FC8585' : '#FFB366', fontWeight: 600 }}>{formatCurrency(project.actual_cost)}</span>
           </div>
           <ProgressBar value={budgetUsed} color={budgetUsed > 100 ? '#FC8585' : '#FFA500'} />
-          <div style={{ fontSize: 10, color: '#5C7080', marginTop: 4, textAlign: 'left' }}>{budgetUsed}% ניצול</div>
+          <div style={{ fontSize: 10, color: '#5C7080', marginTop: 4, textAlign: 'start' }}>{budgetUsed}% ניצול</div>
         </div>
 
         {/* 4. Procurement */}
@@ -643,7 +643,7 @@ export function Project360({ projectId: propProjectId }: { projectId?: number })
                     <div style={{ fontSize: 10, color: '#5C7080' }}>{formatDate(ph.start_date || '')} - {formatDate(ph.end_date || '')}</div>
                   </div>
                   <div style={{ width: 100 }}><ProgressBar value={ph.progress} /></div>
-                  <span style={{ fontSize: 11, color: '#ABB3BF', width: 40, textAlign: 'left' }}>{ph.progress}%</span>
+                  <span style={{ fontSize: 11, color: '#ABB3BF', width: 40, textAlign: 'start' }}>{ph.progress}%</span>
                   <Badge bg={STATE_COLORS[ph.status]?.bg || 'rgba(255,255,255,0.05)'} fg={STATE_COLORS[ph.status]?.fg || '#5C7080'} text={STATE_COLORS[ph.status]?.label || ph.status} />
                 </div>
               ))}
@@ -956,7 +956,7 @@ export function Project360({ projectId: propProjectId }: { projectId?: number })
                     <div style={{ fontSize: 12, color: '#F6F7F9' }}>{entry.action}</div>
                     {entry.details && <div style={{ fontSize: 11, color: '#5C7080' }}>{entry.details}</div>}
                   </div>
-                  <div style={{ textAlign: 'left', flexShrink: 0 }}>
+                  <div style={{ textAlign: 'start', flexShrink: 0 }}>
                     <div style={{ fontSize: 10, color: '#5C7080' }}>{entry.user || '-'}</div>
                     <div style={{ fontSize: 10, color: '#383E47' }}>{formatDateTime(entry.created_at || '')}</div>
                   </div>

@@ -138,29 +138,106 @@ const WORK_ORDER_ALLOWED_COLUMNS = new Set([
   'assigned_to', 'start_date', 'end_date', 'location',
 ]);
 
-// PUT update order
-router.put('/:id', async (req: AuthRequest, res: Response) => {
+// Shared handler for PUT (full update) + PATCH (partial update).
+// Both go through the same column allowlist so SQL injection is impossible.
+async function updateWorkOrderHandler(req: AuthRequest, res: Response) {
   try {
     const { id } = req.params;
-    const fields = req.body;
+    const fields = req.body || {};
     const safePairs = Object.entries(fields).filter(([k]) => WORK_ORDER_ALLOWED_COLUMNS.has(k));
     if (safePairs.length === 0) {
-      return res.status(400).json({ error: 'No valid fields to update' });
+      // Hebrew label: "אין שדות חוקיים לעדכון"
+      return res.status(400).json({ error: 'אין שדות חוקיים לעדכון', code: 'NO_VALID_FIELDS' });
     }
     const keys = safePairs.map(([k]) => k);
     const values = safePairs.map(([, v]) => v);
     const setClause = keys.map((k, i) => `${k} = $${i + 2}`).join(', ');
 
     const { rows } = await query(
-      `UPDATE work_orders SET ${setClause} WHERE id = $1 RETURNING *`,
+      `UPDATE work_orders SET ${setClause}, updated_at = NOW() WHERE id = $1 RETURNING *`,
       [id, ...values]
+    );
+
+    if (!rows[0]) {
+      // Hebrew label: "הזמנת עבודה לא נמצאה"
+      return res.status(404).json({ error: 'הזמנת עבודה לא נמצאה', code: 'WORK_ORDER_NOT_FOUND' });
+    }
+
+    await query(
+      `INSERT INTO order_events (order_id, event_type, description, user_id, metadata)
+       VALUES ($1, 'updated', $2, $3, $4)`,
+      [id, `הזמנה עודכנה — ${keys.join(', ')}`, req.user?.id, JSON.stringify({ fields: keys })]
     );
 
     broadcast(`order:${id}`, 'ORDER_UPDATED', rows[0]);
     broadcastToAll('ORDER_UPDATED', { id, ...fields });
+
+    eventBus.emit('workorder:updated', {
+      entity_type: 'WorkOrder', entity_id: id, action: 'updated',
+      actor: req.user?.id || 'system',
+      timestamp: new Date().toISOString(),
+      fields: keys,
+    });
+
     res.json(rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to update order' });
+  } catch (err: any) {
+    // Hebrew label: "שגיאה בעדכון הזמנת עבודה"
+    res.status(500).json({ error: 'שגיאה בעדכון הזמנת עבודה', detail: err.message });
+  }
+}
+
+// PUT update order (full)
+router.put('/:id', updateWorkOrderHandler);
+
+// PATCH update order (partial — preferred for forms)
+router.patch('/:id', updateWorkOrderHandler);
+
+// DELETE work order — SOFT DELETE (status='cancelled') to preserve audit trail.
+// We never hard-delete: the row stays, status flips, audit logged.
+router.delete('/:id', async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const reason = (req.body && req.body.reason) || (req.query.reason as string) || null;
+
+    const { rows } = await query(
+      `UPDATE work_orders
+         SET status = 'cancelled', updated_at = NOW()
+       WHERE id = $1 AND status <> 'cancelled'
+       RETURNING *`,
+      [id]
+    );
+
+    if (!rows[0]) {
+      // Either not found OR already cancelled — disambiguate
+      const { rows: existing } = await query(`SELECT id, status FROM work_orders WHERE id = $1`, [id]);
+      if (!existing[0]) {
+        // Hebrew label: "הזמנת עבודה לא נמצאה"
+        return res.status(404).json({ error: 'הזמנת עבודה לא נמצאה', code: 'WORK_ORDER_NOT_FOUND' });
+      }
+      // Hebrew label: "הזמנת עבודה כבר בוטלה"
+      return res.status(409).json({ error: 'הזמנת עבודה כבר בוטלה', code: 'ALREADY_CANCELLED' });
+    }
+
+    await query(
+      `INSERT INTO order_events (order_id, event_type, description, user_id, metadata)
+       VALUES ($1, 'cancelled', $2, $3, $4)`,
+      [id, reason ? `הזמנה בוטלה — ${reason}` : 'הזמנה בוטלה', req.user?.id, JSON.stringify({ reason })]
+    );
+
+    broadcast(`order:${id}`, 'ORDER_CANCELLED', rows[0]);
+    broadcastToAll('ORDER_UPDATED', { id, status: 'cancelled' });
+
+    eventBus.emit('workorder:cancelled', {
+      entity_type: 'WorkOrder', entity_id: id, action: 'cancelled',
+      actor: req.user?.id || 'system',
+      timestamp: new Date().toISOString(),
+      reason,
+    });
+
+    res.json({ ok: true, soft_deleted: true, work_order: rows[0] });
+  } catch (err: any) {
+    // Hebrew label: "שגיאה בביטול הזמנת עבודה"
+    res.status(500).json({ error: 'שגיאה בביטול הזמנת עבודה', detail: err.message });
   }
 });
 

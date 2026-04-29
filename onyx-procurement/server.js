@@ -1649,6 +1649,16 @@ try {
   console.error('⚠️  Form 856 routes failed to load:', err.message);
 }
 
+// Form 6111 — IL annual income tax return (דין וחשבון שנתי).
+// Mounts: GET/POST /api/tax/form-6111/:year/...
+// Permissions: tax-annual:export (read), tax-annual:create (submit)
+try {
+  const { registerForm6111Routes } = require('./src/tax/form-6111-routes');
+  registerForm6111Routes(app, { supabase, audit, requirePermission });
+} catch (err) {
+  console.error('⚠️  Form 6111 routes failed to load:', err.message);
+}
+
 // Form 102 — IL Bituach Leumi monthly withholding report.
 // Mounts: GET/POST /api/tax/form-102/:year/:month/...
 // Permission: tax-monthly:export
