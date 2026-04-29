@@ -1,19 +1,9 @@
-import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
+import { Router, type IRouter } from "express";
 import { pool } from "@workspace/db";
-import { validateSession } from "../lib/auth";
+import { requireAuthMw } from "../lib/require-auth-mw";
 
 const router: IRouter = Router();
-
-async function requireAuth(req: Request, res: Response, next: NextFunction) {
-  const header = req.headers.authorization;
-  const token = header?.startsWith("Bearer ") ? header.substring(7) : (req.query.token as string) || null;
-  if (!token) { res.status(401).json({ error: "נדרשת התחברות" }); return; }
-  const result = await validateSession(token);
-  if (result.error || !result.user) { res.status(401).json({ error: "הסשן פג תוקף" }); return; }
-  (req as any).user = result.user;
-  next();
-}
-router.use(requireAuth as any);
+router.use(requireAuthMw as any);
 
 // B-SEC-SQL: explicit allowlist of writable columns. Adding a column requires
 // adding it here. PK and timestamps are excluded — DB defaults manage them.

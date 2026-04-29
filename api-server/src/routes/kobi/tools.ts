@@ -409,14 +409,18 @@ async function manageModule(input: any): Promise<{ result: string }> {
     case "update_entity": {
       const d = input.entity_data || {};
       if (!input.entity_id) throw new Error("entity_id נדרש");
+      // B-SEC-SQL: allowlist columns of module_entities
+      const allowed = new Set(["module_id", "name", "label", "slug", "icon", "sort_order", "is_active"]);
       const sets: string[] = [];
       const vals: any[] = [];
       let idx = 1;
       for (const [k, v] of Object.entries(d)) {
+        if (!allowed.has(k)) throw new Error(`עמודה לא חוקית: ${k}`);
         sets.push(`${k} = $${idx}`);
         vals.push(v);
         idx++;
       }
+      if (sets.length === 0) return { result: "אין שדות לעדכון" };
       vals.push(input.entity_id);
       await pool.query(`UPDATE module_entities SET ${sets.join(", ")} WHERE id = $${idx}`, vals);
       return { result: `✅ ישות ${input.entity_id} עודכנה` };
@@ -424,14 +428,18 @@ async function manageModule(input: any): Promise<{ result: string }> {
     case "update_field": {
       const d = input.field_data || {};
       if (!input.field_id) throw new Error("field_id נדרש");
+      // B-SEC-SQL: allowlist columns of entity_fields
+      const allowed = new Set(["entity_id", "name", "label", "field_type", "is_required", "show_in_list", "show_in_form", "sort_order", "options", "is_active"]);
       const sets: string[] = [];
       const vals: any[] = [];
       let idx = 1;
       for (const [k, v] of Object.entries(d)) {
+        if (!allowed.has(k)) throw new Error(`עמודה לא חוקית: ${k}`);
         sets.push(`${k} = $${idx}`);
         vals.push(v);
         idx++;
       }
+      if (sets.length === 0) return { result: "אין שדות לעדכון" };
       vals.push(input.field_id);
       await pool.query(`UPDATE entity_fields SET ${sets.join(", ")} WHERE id = $${idx}`, vals);
       return { result: `✅ שדה ${input.field_id} עודכן` };
@@ -458,15 +466,19 @@ async function manageMenu(input: any): Promise<{ result: string }> {
     }
     case "update": {
       if (!item_id || !menu_data) throw new Error("item_id + menu_data נדרשים");
+      // B-SEC-SQL: allowlist columns of menu_items (after camelCase normalization)
+      const allowedCols = new Set(["label", "label_he", "path", "section", "icon", "sort_order", "is_active"]);
       const sets: string[] = [];
       const vals: any[] = [];
       let idx = 1;
       for (const [k, v] of Object.entries(menu_data)) {
         const col = k === "labelHe" ? "label_he" : k === "sortOrder" ? "sort_order" : k === "isActive" ? "is_active" : k;
+        if (!allowedCols.has(col)) throw new Error(`עמודה לא חוקית: ${k}`);
         sets.push(`${col} = $${idx}`);
         vals.push(v);
         idx++;
       }
+      if (sets.length === 0) return { result: "אין שדות לעדכון" };
       vals.push(item_id);
       await pool.query(`UPDATE menu_items SET ${sets.join(", ")} WHERE id = $${idx}`, vals);
       return { result: `✅ פריט ${item_id} עודכן` };
