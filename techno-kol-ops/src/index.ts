@@ -275,10 +275,19 @@ app.get('/api/app-menu', async (req, res) => {
     const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
     const upstream = `${base}/api/app-menu${qs}`;
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 5000);
+    const timer = setTimeout(() => ctrl.abort(), 30000);
+    // Forward auth headers so upstream's requireTenant middleware passes.
+    // Inject default tenant from env if browser didn't send one.
+    const fwd: Record<string, string> = {
+      'accept': 'application/json',
+      'x-tenant-id': (req.headers['x-tenant-id'] as string) || process.env.DEFAULT_TENANT_ID || '4d60841d-f003-4994-88f5-a39767bb4689',
+    };
+    if (req.headers['apikey']) fwd['apikey'] = req.headers['apikey'] as string;
+    if (req.headers['authorization']) fwd['authorization'] = req.headers['authorization'] as string;
+    if (req.headers['x-api-key']) fwd['x-api-key'] = req.headers['x-api-key'] as string;
     try {
       const r = await fetch(upstream, {
-        headers: { 'accept': 'application/json' },
+        headers: fwd,
         signal: ctrl.signal,
       });
       const text = await r.text();

@@ -134,19 +134,31 @@ function _cacheKey(tenantId, includeInactive) {
  * pagination loop (~21s) with a single call (~1-2s cold).
  */
 async function _fetchAllRows(supabase, includeInactive) {
-  let q = supabase
-    .from('app_menu')
-    .select(
-      'id,label,label_he,route,icon,parent_id,order_index,required_permission,is_visible,is_active'
-    )
-    .order('parent_id', { ascending: true, nullsFirst: true })
-    .order('order_index', { ascending: true })
-    .order('id', { ascending: true })
-    .range(0, 99999);
-  if (!includeInactive) {
-    q = q.or('is_active.is.null,is_active.eq.true');
+  // PostgREST has a hard 1000-row cap that .range(0, 99999) doesn't always
+  // override (depends on db-max-rows config). Paginate in chunks of 1000 to
+  // guarantee we get all 65,934+ rows.
+  const PAGE = 1000;
+  const allRows = [];
+  for (let page = 0; page < 200; page++) {
+    let q = supabase
+      .from('app_menu')
+      .select(
+        'id,label,label_he,route,icon,parent_id,order_index,required_permission,is_visible,is_active'
+      )
+      .order('parent_id', { ascending: true, nullsFirst: true })
+      .order('order_index', { ascending: true })
+      .order('id', { ascending: true })
+      .range(page * PAGE, (page + 1) * PAGE - 1);
+    if (!includeInactive) {
+      q = q.or('is_active.is.null,is_active.eq.true');
+    }
+    const { data: rows, error } = await q;
+    if (error) return { data: null, error };
+    if (!rows || rows.length === 0) break;
+    allRows.push(...rows);
+    if (rows.length < PAGE) break;
   }
-  return q;
+  return { data: allRows, error: null };
 }
 
 /**
