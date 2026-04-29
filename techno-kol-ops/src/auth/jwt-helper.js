@@ -241,7 +241,24 @@ function verifyToken(token) {
   if (usingFallback) {
     return fallbackVerify(token, secret);
   }
-  return jwtLib.verify(token, secret, { algorithms: ['HS256'] });
+  try {
+    return jwtLib.verify(token, secret, { algorithms: ['HS256'] });
+  } catch (err) {
+    // jsonwebtoken < 9.0.3 attempts to JSON.parse the (base64-decoded) payload
+    // BEFORE checking the signature. A tampered payload will therefore surface
+    // as a generic SyntaxError ("Expected ',' or '}' after property value...")
+    // rather than the expected JsonWebTokenError. Normalize that case so
+    // downstream consumers (and the test suite) see a consistent
+    // "invalid token" / "malformed" signal regardless of which validation
+    // step caught the tamper.
+    if (err && err.name === 'SyntaxError') {
+      const normalized = new Error('invalid token: malformed payload');
+      normalized.name = 'JsonWebTokenError';
+      normalized.cause = err;
+      throw normalized;
+    }
+    throw err;
+  }
 }
 
 module.exports = {
