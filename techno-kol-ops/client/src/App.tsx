@@ -62,6 +62,7 @@ import { InvoicePrint } from './pages/InvoicePrint';
 import { InventoryAlerts } from './pages/InventoryAlerts';
 import { Schedule } from './pages/Schedule';
 import { QRGenerator } from './pages/QRGenerator';
+import { MarketplaceModuleDetail, MarketplaceCategory } from './pages/MarketplaceModuleDetail';
 
 function Project360RouteWrapper() {
   const { id } = useParams<{ id: string }>();
@@ -162,6 +163,9 @@ function Layout() {
           <Route path="/reports" element={<Reports />} />
           <Route path="/reports/:type" element={<Reports />} />
           <Route path="/invoice/:id/print" element={<InvoicePrint />} />
+          {/* Marketplace — 2,371 module routes seeded in app_menu */}
+          <Route path="/marketplace/module/:id" element={<MarketplaceModuleDetail />} />
+          <Route path="/marketplace/:category" element={<MarketplaceCategory />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

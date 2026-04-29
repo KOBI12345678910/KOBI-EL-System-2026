@@ -984,6 +984,10 @@ const FunnelAnalysis = lazyPage(() => import("@/pages/reports/funnel-analysis"))
 const OperationalReports = lazyPage(() => import("@/pages/reports/operational-reports"));
 const BIDashboardPage = lazyPage(() => import("@/pages/reports/bi-dashboard"));
 const ModuleView = lazyPage(() => import("@/pages/module-view"));
+const MarketplaceModuleDetail = lazyPage(() => import("@/pages/marketplace-module-detail"));
+const MarketplaceCategory = lazyPage(() =>
+  import("@/pages/marketplace-module-detail").then((m) => ({ default: m.MarketplaceCategory }))
+);
 const ProductRoadmapPage = lazyPage(() => import("@/pages/product-dev/product-roadmap"));
 const RDProjectsPage = lazyPage(() => import("@/pages/product-dev/rd-projects"));
 const FeatureRequestsPage = lazyPage(() => import("@/pages/product-dev/feature-requests"));
@@ -2098,6 +2102,10 @@ function Router() {
           <Route path="/orchestration-flows" component={IntelligenceOrchestrationFlowsPage} />
           <Route path="/prompt-templates" component={IntelligencePromptTemplatesPage} />
           <Route path="/process-mining" component={IntelligenceProcessMiningPage} />
+
+          {/* Marketplace — 2,371 module routes seeded in app_menu */}
+          <Route path="/marketplace/module/:id" component={MarketplaceModuleDetail} />
+          <Route path="/marketplace/:category" component={MarketplaceCategory} />
 
           <Route component={NotFound} />
         </Switch>

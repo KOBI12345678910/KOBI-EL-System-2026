@@ -250,6 +250,35 @@ app.get('/api/bridges/procurement/purchase-orders', authenticate, async (req, re
   }
 });
 
+// ─── APP MENU PROXY ─────────────────────────────────────────────
+// Forwards GET /api/app-menu → onyx-procurement:3100/api/app-menu
+// so the client at port 3200 doesn't hit CORS. Keeps query string
+// (flat, include_inactive). Public route — same as upstream.
+app.get('/api/app-menu', async (req, res) => {
+  try {
+    const base = (process.env.ONYX_PROCUREMENT_URL || 'http://localhost:3100').replace(/\/+$/, '');
+    const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+    const upstream = `${base}/api/app-menu${qs}`;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 5000);
+    try {
+      const r = await fetch(upstream, {
+        headers: { 'accept': 'application/json' },
+        signal: ctrl.signal,
+      });
+      const text = await r.text();
+      res.status(r.status).type(r.headers.get('content-type') || 'application/json').send(text);
+    } finally {
+      clearTimeout(timer);
+    }
+  } catch (err: any) {
+    res.status(502).json({
+      error: 'app_menu_upstream_unreachable',
+      detail: err?.message || 'fetch_failed',
+    });
+  }
+});
+
 // Proxy: fetch AI insights for operational entities
 app.get('/api/bridges/ai/insights', authenticate, async (req, res) => {
   try {

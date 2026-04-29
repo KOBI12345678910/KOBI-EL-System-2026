@@ -1,0 +1,2 @@
+{"action":"record","id":"h_mojjefe8_72e2190e","record":{"id":"h_mojjefe8_72e2190e","userId":"kobi.test.user","typeId":"backup_failed","priority":"critical","title":"גיבוי נכשל","body":"גיבוי  נכשל ב-. שגיאה: .","channels":["sms","push","in_app","email"],"deliveredOn":["in_app"],"failedOn":[],"data":{"reason":"audit-test"},"readAt":null,"createdAt":1777435829360},"createdAt":1777435829360}
+{"action":"mark_read","id":"h_mojjefe8_72e2190e","ts":1777435847664}

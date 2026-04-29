@@ -55,6 +55,10 @@
   "license": "UNLICENSED",
   "author": "Kobi Elkayam",
   "dependencies": {
+    "@radix-ui/react-tooltip": "^1.2.8",
+    "framer-motion": "^12.38.0",
+    "lucide-react": "^1.12.0",
+    "sonner": "^2.0.7",
     "wouter": "^3.9.0"
   }
 }
