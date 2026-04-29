@@ -12,7 +12,7 @@ export default function Closure360() {
 
   useEffect(() => {
     if (!id) return;
-    supabase.rpc("get_closure_360_fast", { p_project_id: Number(id) })
+    supabase.rpc("rpc_get_closure_360", { p_project_id: Number(id) })
       .then(({ data: p, error: e }) => { if (e) setError(e.message); else setData(p); setLoading(false); });
   }, [id]);
 

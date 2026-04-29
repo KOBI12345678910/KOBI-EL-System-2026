@@ -12,7 +12,7 @@ export default function InventoryItem360() {
 
   useEffect(() => {
     if (!id) return;
-    supabase.rpc("get_inventory_item_360_fast", { p_item_id: Number(id) })
+    supabase.rpc("rpc_get_inventoryitem_360", { p_item_id: Number(id) })
       .then(({ data: p, error: e }) => { if (e) setError(e.message); else setData(p); setLoading(false); });
   }, [id]);
 
