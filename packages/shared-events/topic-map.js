@@ -194,6 +194,9 @@ const TOPIC_MAP = Object.freeze({
     'ledger.reconciliation_completed',
     'ledger.adjustment_posted',
     'ledger.year_end_closed',
+    // AGENT-229 — Year-End Close Orchestrator
+    'ledger.tax_provision_posted',
+    'ledger.opening_balances_posted',
   ],
 
   // ── Workforce ───────────────────────────────────────────────────────────

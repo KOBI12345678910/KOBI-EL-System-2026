@@ -50,6 +50,13 @@ import Quote360 from './pages/360/Quote360';
 import RFQ360 from './pages/360/RFQ360';
 import Supplier360 from './pages/360/Supplier360';
 import WorkOrder360Detail from './pages/360/WorkOrder360';
+// Agent 261 — Master Flow missing 360s (Lead, Order, InventoryItem, Delivery, Payment, Closure)
+import Lead360 from './pages/360/Lead360';
+import Order360 from './pages/360/Order360';
+import InventoryItem360 from './pages/360/InventoryItem360';
+import Delivery360 from './pages/360/Delivery360';
+import Payment360 from './pages/360/Payment360';
+import Closure360 from './pages/360/Closure360';
 import { Reports } from './pages/Reports';
 import { InvoicePrint } from './pages/InvoicePrint';
 import { InventoryAlerts } from './pages/InventoryAlerts';
@@ -142,6 +149,13 @@ function Layout() {
           <Route path="/rfq/:id" element={<RFQ360 />} />
           <Route path="/supplier/:id" element={<Supplier360 />} />
           <Route path="/work-order/:id" element={<WorkOrder360Detail />} />
+          {/* Agent 261 — Master Flow missing 360s */}
+          <Route path="/lead/:id" element={<Lead360 />} />
+          <Route path="/order/:id" element={<Order360 />} />
+          <Route path="/inventory/:id" element={<InventoryItem360 />} />
+          <Route path="/delivery/:id" element={<Delivery360 />} />
+          <Route path="/payment/:id" element={<Payment360 />} />
+          <Route path="/project/:id/closure" element={<Closure360 />} />
           <Route path="/inventory-alerts" element={<InventoryAlerts />} />
           <Route path="/qr-generator" element={<QRGenerator />} />
           <Route path="/schedule" element={<Schedule />} />

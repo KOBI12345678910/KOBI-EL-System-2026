@@ -438,17 +438,37 @@ function computeWageSlip({ employee, employer, timesheet = {}, period, ytd = {} 
   );
 
   // ── 2. Tax base ──
-  // Some allowances are taxable, some not. Simplified: travel/meal partially exempt.
-  // Full rigor: apply שווי (value) rules per ruling. For now treat all as taxable.
-  const taxableBase = gross_pay;
+  // AGENT-04 FIX #3: Apply allowance exemptions per פקודת מס הכנסה ס׳ 32.
+  // Travel ≤ ₪22.60/working-day exempt; meal/clothing/phone follow שווי rulings.
+  const allowanceExemptions = computeAllowanceExemptions({
+    allowances_travel,
+    allowances_meal,
+    allowances_clothing,
+    allowances_phone,
+    working_days: toNum(timesheet.working_days),
+  });
+  const taxableBase = round(gross_pay - allowanceExemptions.total_exempt);
 
-  // ── 3. Income tax ──
+  // ── 3. Income tax — AGENT-04 FIX #2: YTD true-up (תיאום מס) ──
   const tcRaw = toNum(employee.tax_credits);
   const taxCreditPoints = (tcRaw != null && !isNaN(tcRaw)) ? tcRaw : 2.25;
-  const income_tax = computeIncomeTaxMonthly(taxableBase, taxCreditPoints);
+  const income_tax = computeIncomeTaxMonthlyYTD(
+    taxableBase,
+    taxCreditPoints,
+    toNum(ytd.ytd_taxable),
+    toNum(ytd.ytd_income_tax),
+    period.month
+  );
 
   // ── 4. Bituach Leumi + Health Tax ──
-  const blht = computeBituachLeumiAndHealth(taxableBase);
+  // AGENT-04 FIX #6: BL floor-to-agora rounding (matches btl.gov.il batch engine).
+  const blhtRaw = computeBituachLeumiAndHealth(taxableBase);
+  const blht = {
+    bituach_leumi_employee: floorToAgora(blhtRaw.bituach_leumi_employee),
+    bituach_leumi_employer: floorToAgora(blhtRaw.bituach_leumi_employer),
+    health_tax_employee: floorToAgora(blhtRaw.health_tax_employee),
+    health_tax_employer: floorToAgora(blhtRaw.health_tax_employer),
+  };
 
   // ── 5. Pension, Severance ──
   const pension = computePensionContributions(taxableBase);
@@ -458,7 +478,7 @@ function computeWageSlip({ employee, employer, timesheet = {}, period, ytd = {} 
   const studyFund = computeStudyFund(taxableBase, studyFundEligible);
 
   // ── 7. Totals ──
-  const total_deductions = round(
+  let total_deductions = round(
     income_tax +
     blht.bituach_leumi_employee +
     blht.health_tax_employee +
@@ -469,7 +489,44 @@ function computeWageSlip({ employee, employer, timesheet = {}, period, ytd = {} 
     toNum(timesheet.other_deductions)
   );
 
-  const net_pay = round(gross_pay - total_deductions);
+  let net_pay = round(gross_pay - total_deductions);
+
+  // ── 8. AGENT-04 FIX #5: Negative net-pay guard (חוק הגנת השכר ס׳ 25) ──
+  // Voluntary deductions (loans, garnishments excluding child-support, other)
+  // cannot drive net pay below zero. Statutory deductions (tax + BL + health
+  // + pension + study fund) are NEVER capped — they remain as withheld.
+  let net_pay_guard_applied = false;
+  let net_pay_guard_reduction = 0;
+  if (net_pay < 0) {
+    const statutoryDeductions = round(
+      income_tax +
+      blht.bituach_leumi_employee +
+      blht.health_tax_employee +
+      pension.pension_employee +
+      studyFund.study_fund_employee
+    );
+    const voluntaryDeductions = round(
+      toNum(timesheet.loans) +
+      toNum(timesheet.garnishments) +
+      toNum(timesheet.other_deductions)
+    );
+    const disposableAfterStatutory = round(gross_pay - statutoryDeductions);
+    if (disposableAfterStatutory >= 0) {
+      // Cap voluntary deductions at disposable amount; carry overflow forward in notes.
+      const cappedVoluntary = Math.min(voluntaryDeductions, disposableAfterStatutory);
+      net_pay_guard_reduction = round(voluntaryDeductions - cappedVoluntary);
+      total_deductions = round(statutoryDeductions + cappedVoluntary);
+      net_pay = round(gross_pay - total_deductions);
+      net_pay_guard_applied = true;
+    } else {
+      // Edge case: statutory alone exceeds gross (e.g. retroactive bonus YTD true-up).
+      // Floor at zero; flag for manual review.
+      net_pay = 0;
+      total_deductions = gross_pay;
+      net_pay_guard_applied = true;
+      net_pay_guard_reduction = round(disposableAfterStatutory * -1);
+    }
+  }
 
   return {
     // identifiers
@@ -547,12 +604,24 @@ function computeWageSlip({ employee, employer, timesheet = {}, period, ytd = {} 
 
     // YTD (caller may override with live DB sum)
     ytd_gross: round(toNum(ytd.ytd_gross) + gross_pay),
+    ytd_taxable: round(toNum(ytd.ytd_taxable) + taxableBase),
     ytd_income_tax: round(toNum(ytd.ytd_income_tax) + income_tax),
     ytd_bituach_leumi: round(toNum(ytd.ytd_bituach_leumi) + blht.bituach_leumi_employee),
     ytd_pension: round(toNum(ytd.ytd_pension) + pension.pension_employee),
 
+    // AGENT-04 FIX #3: allowance exemption breakdown for audit trail
+    allowance_exempt_travel: allowanceExemptions.travel_exempt,
+    allowance_exempt_meal: allowanceExemptions.meal_exempt,
+    allowance_exempt_clothing: allowanceExemptions.clothing_exempt,
+    allowance_exempt_phone: allowanceExemptions.phone_exempt,
+    allowance_exempt_total: allowanceExemptions.total_exempt,
+
+    // AGENT-04 FIX #5: net-pay guard flag (חוק הגנת השכר ס׳ 25)
+    net_pay_guard_applied,
+    net_pay_guard_reduction,
+
     // status
-    status: 'computed',
+    status: net_pay_guard_applied ? 'computed_with_guard' : 'computed',
 
     // debug helpers (NOT stored)
     _debug: {
@@ -560,18 +629,27 @@ function computeWageSlip({ employee, employer, timesheet = {}, period, ytd = {} 
       taxableBase,
       taxCreditPoints,
       creditValue: taxCreditPoints * CONSTANTS_2026.TAX_CREDIT_POINT_ANNUAL,
+      allowanceExemptions,
+      ytdTaxable: toNum(ytd.ytd_taxable),
+      ytdTaxWithheld: toNum(ytd.ytd_income_tax),
+      monthIndex: period.month,
     },
   };
 }
 
 module.exports = {
   CONSTANTS_2026,
+  ALLOWANCE_EXEMPT_2026,
   computeIncomeTaxAnnual,
   computeIncomeTaxMonthly,
+  computeIncomeTaxMonthlyYTD,    // AGENT-04 FIX #2
   computeBituachLeumiAndHealth,
   computePensionContributions,
   computeStudyFund,
   computeHourlyGross,
   computeMonthlyGross,
   computeWageSlip,
+  computeSickPayLadder,           // AGENT-04 FIX #1
+  computeAllowanceExemptions,     // AGENT-04 FIX #3
+  floorToAgora,                   // AGENT-04 FIX #6
 };

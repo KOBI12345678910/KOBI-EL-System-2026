@@ -4,6 +4,17 @@
  *
  * Heuristics to suggest matches between bank transactions and ledger entries.
  * Confidence score 0..1.
+ *
+ * ──────────────────────────────────────────────────────────────────
+ * DEPRECATED — superseded by `./reconciliation.js`  (Agent 227)
+ * ──────────────────────────────────────────────────────────────────
+ * The route layer (`./bank-routes.js`) no longer imports
+ * `autoReconcileBatch` from this file.  All auto-match traffic is
+ * now driven by the multi-pass engine in `reconciliation.js` and
+ * persisted via `recon-persistence.js` (migration 008).  This file
+ * is retained on disk as required by the never-delete rule and may
+ * still be invoked by legacy unit tests in `test/bank-matcher.test.js`.
+ * Do not introduce new callers.
  */
 
 'use strict';

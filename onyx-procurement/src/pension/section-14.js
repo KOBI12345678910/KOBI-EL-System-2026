@@ -943,6 +943,152 @@ function listArrangementsForEmployee(employeeId) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
+// 10. computeSeveranceOffset — coupling into severance-tracker
+// ═══════════════════════════════════════════════════════════════════════
+//
+// Per AGENT-328 §3.1c + §5 item 6 (HR deep audit, 2026-04-29):
+//   When a valid Section 14 letter is on file, severance-tracker's
+//   computeSeveranceOwed STILL adds an `employerTopUp` for months that
+//   were already covered by the 8.33% deposit → DOUBLE-COUNT RISK.
+//
+// This function produces a structured offset that the severance-tracker
+// can consume to subtract the covered months from the statutory amount
+// before computing the gap. The offset is bilingual and explainable on
+// the wage-slip footer.
+//
+// @param {object} opts
+// @param {string} opts.employeeId
+// @param {string} opts.terminationDate ISO 'YYYY-MM-DD'
+// @param {number} opts.finalSalary
+// @param {number} opts.yearsEmployed
+// @returns {object} {
+//   has_arrangement, fully_released_for_covered, coverage_ratio,
+//   years_covered, years_before_arrangement,
+//   already_deposited, statutory_for_covered, top_up_for_covered,
+//   employer_offset_to_apply, ...
+// }
+
+function computeSeveranceOffset({
+  employeeId,
+  terminationDate,
+  finalSalary,
+  yearsEmployed,
+} = {}) {
+  if (!employeeId) {
+    throw _err('employeeId is required', 'חובה להעביר מזהה עובד');
+  }
+  const fs = _toNum(finalSalary);
+  const years = _toNum(yearsEmployed);
+  const termIso = _isoDate(terminationDate) || _isoDate(new Date());
+
+  // Find the active (non-superseded) arrangement.
+  const arrangements = listArrangementsForEmployee(employeeId);
+  const active = arrangements.find(
+    (a) => !a.superseded_by && a.signed && a.status === 'active'
+  );
+
+  // No arrangement on file → caller pays full statutory severance.
+  if (!active) {
+    return {
+      employee_id: employeeId,
+      has_arrangement: false,
+      fully_released_for_covered: false,
+      coverage_ratio: 0,
+      years_covered: 0,
+      years_before_arrangement: _round(years, 4),
+      statutory_for_covered: 0,
+      already_deposited: 0,
+      top_up_for_covered: 0,
+      employer_offset_to_apply: 0,
+      employer_offset_to_apply_he: 'אין הסדר סעיף 14 בתיק — אין הפחתה',
+      note_en: 'No Section 14 arrangement on file; severance-tracker should pay full statutory.',
+      note_he: 'אין הסדר סעיף 14 — יש לשלם פיצויים מלאים',
+    };
+  }
+
+  // Years actually covered by the arrangement
+  const yearsCovered = Math.min(years, _yearsBetween(active.start_date, termIso));
+  const yearsBefore = Math.max(0, years - yearsCovered);
+
+  // Effective rate: full uses exact 1/12, partial uses the contracted rate
+  const isFull = Math.abs(active.percentages.severance - SECTION_14.STATUTORY_SEVERANCE_RATE) < 1e-4
+              || Math.abs(active.percentages.severance - SECTION_14.SEVERANCE_RATE_ROUNDED) < 1e-4;
+  const effectiveRate = isFull
+    ? SECTION_14.STATUTORY_SEVERANCE_RATE
+    : active.percentages.severance;
+
+  const statutoryForCovered = _round(fs * yearsCovered);
+  const alreadyDeposited    = _round(fs * 12 * effectiveRate * yearsCovered);
+  const topUpForCovered     = _round(Math.max(0, statutoryForCovered - alreadyDeposited));
+
+  // The amount the severance-tracker should DEDUCT from its own
+  // statutory total to avoid double-counting. For FULL arrangements this
+  // is the full statutoryForCovered (the deposit IS the severance for
+  // those months). For PARTIAL it's `alreadyDeposited` (the rest must
+  // still be topped up at termination).
+  const offsetToApply = isFull ? statutoryForCovered : alreadyDeposited;
+
+  return {
+    employee_id: employeeId,
+    arrangement_id: active.id,
+    has_arrangement: true,
+    fully_released_for_covered: isFull,
+    coverage_ratio: active.coverage_ratio,
+    arrangement_type: active.arrangement_type,
+    arrangement_type_he: active.arrangement_type_he,
+
+    years_employed: _round(years, 4),
+    years_covered: _round(yearsCovered, 4),
+    years_before_arrangement: _round(yearsBefore, 4),
+
+    final_salary: _round2(fs),
+    effective_rate: _round(effectiveRate, 6),
+
+    statutory_for_covered: statutoryForCovered,
+    already_deposited:     alreadyDeposited,
+    top_up_for_covered:    topUpForCovered,
+
+    employer_offset_to_apply: offsetToApply,
+    employer_offset_to_apply_he:
+      'הפחתה לחישוב פיצויי פיטורים בגין חודשים שכוסו בהסדר סעיף 14',
+
+    note_en: isFull
+      ? 'FULL Section 14 arrangement — statutory severance for covered years is fully released; severance-tracker should subtract statutory_for_covered from its statutory total.'
+      : `PARTIAL Section 14 arrangement at ${_round(active.percentages.severance * 100, 3)}% — subtract already_deposited; the remaining top_up_for_covered is owed by the employer.`,
+    note_he: isFull
+      ? 'הסדר מלא לפי סעיף 14 — תקופה זו משוחררת מחבות פיצויים נוספת'
+      : `הסדר חלקי בשיעור ${_round(active.percentages.severance * 100, 3)}% — יש להשלים את ההפרש`,
+
+    /**
+     * Suppression flag for severance-tracker's `employerTopUp`. When set,
+     * the tracker should suppress topUp for covered months (they are
+     * settled via the fund deposit), and only compute topUp on the
+     * uncovered pre-arrangement years.
+     */
+    suppress_topup_for_covered: true,
+    generated_at: _nowIso(),
+  };
+}
+
+function _round2(n) {
+  if (n === null || n === undefined || isNaN(n)) return 0;
+  return Math.round(Number(n) * 100) / 100;
+}
+
+/**
+ * Convenience: read the active arrangement for an employee, returning
+ * null if none. Used by external callers (e.g. severance-tracker) that
+ * need a quick has/has-not check before calling computeSeveranceOffset.
+ */
+function getActiveArrangement(employeeId) {
+  if (!employeeId) return null;
+  const arrangements = listArrangementsForEmployee(employeeId);
+  return arrangements.find(
+    (a) => !a.superseded_by && a.signed && a.status === 'active'
+  ) || null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 // TEST HOOK — reset in-memory state between test files
 // ═══════════════════════════════════════════════════════════════════════
 
@@ -985,6 +1131,10 @@ module.exports = {
   upgradeArrangement,
   getArrangement,
   listArrangementsForEmployee,
+
+  // coupling into severance-tracker (AGENT-328 §3.1c, §5 item 6)
+  computeSeveranceOffset,
+  getActiveArrangement,
 
   // test hook
   _resetAll,

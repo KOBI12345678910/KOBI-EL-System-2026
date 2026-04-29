@@ -10,6 +10,89 @@ const BACKUP_CODE_COUNT = 10;
 const EMAIL_CODE_EXPIRY_MS = 10 * 60 * 1000;
 const MFA_CHALLENGE_EXPIRY_MS = 15 * 60 * 1000;
 
+// Agent 222 — scrypt params for backup-code hashing.
+// MUST stay in sync with onyx-procurement/src/auth/totp.js (RFC-6238 reference impl).
+// Format: "scrypt$N$r$p$base64salt$base64hash" — self-describing so verify can
+// parse without a config lookup.
+const SCRYPT_N = 16384;
+const SCRYPT_R = 8;
+const SCRYPT_P = 1;
+const SCRYPT_KEYLEN = 32;
+const SCRYPT_SALTLEN = 16;
+
+type StoredBackupCode = { hash: string; used: boolean; usedAt: string | null };
+
+function normalizeBackupCode(code: string): string {
+  return code.replace(/\s+/g, "").replace(/-/g, "").toUpperCase();
+}
+
+function hashBackupCode(code: string): string {
+  if (typeof code !== "string" || code.length === 0) {
+    throw new TypeError("hashBackupCode: code must be a non-empty string");
+  }
+  const salt = crypto.randomBytes(SCRYPT_SALTLEN);
+  const hash = crypto.scryptSync(normalizeBackupCode(code), salt, SCRYPT_KEYLEN, {
+    N: SCRYPT_N,
+    r: SCRYPT_R,
+    p: SCRYPT_P,
+    // scrypt requires maxmem >= 128 * N * r; bump it explicitly.
+    maxmem: 128 * SCRYPT_N * SCRYPT_R * 2,
+  });
+  return [
+    "scrypt",
+    SCRYPT_N,
+    SCRYPT_R,
+    SCRYPT_P,
+    salt.toString("base64"),
+    hash.toString("base64"),
+  ].join("$");
+}
+
+function verifyBackupCodeHash(code: string, stored: string): boolean {
+  if (typeof code !== "string" || typeof stored !== "string") return false;
+  const parts = stored.split("$");
+  if (parts.length !== 6 || parts[0] !== "scrypt") return false;
+  const N = Number(parts[1]);
+  const r = Number(parts[2]);
+  const p = Number(parts[3]);
+  if (!Number.isInteger(N) || !Number.isInteger(r) || !Number.isInteger(p)) return false;
+  let salt: Buffer;
+  let expected: Buffer;
+  try {
+    salt = Buffer.from(parts[4]!, "base64");
+    expected = Buffer.from(parts[5]!, "base64");
+  } catch {
+    return false;
+  }
+  if (salt.length === 0 || expected.length === 0) return false;
+  let actual: Buffer;
+  try {
+    actual = crypto.scryptSync(normalizeBackupCode(code), salt, expected.length, {
+      N,
+      r,
+      p,
+      maxmem: 128 * N * r * 2,
+    });
+  } catch {
+    return false;
+  }
+  if (actual.length !== expected.length) return false;
+  return crypto.timingSafeEqual(actual, expected);
+}
+
+function generatePlaintextBackupCodes(count: number): string[] {
+  // Crockford-ish alphabet (no 0/O/1/I/L), 50 bits per code in XXXXX-XXXXX format.
+  const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  const out = new Set<string>();
+  while (out.size < count) {
+    const bytes = crypto.randomBytes(10);
+    let raw = "";
+    for (let i = 0; i < 10; i++) raw += alphabet[bytes[i]! % alphabet.length];
+    out.add(`${raw.slice(0, 5)}-${raw.slice(5, 10)}`);
+  }
+  return Array.from(out);
+}
+
 function base32Encode(buffer: Buffer): string {
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
   let bits = 0, value = 0, output = "";
@@ -78,13 +161,19 @@ export async function getMfaConfig(userId: number) {
     where: eq(userMfaTable.userId, userId),
   });
   if (!mfa) return null;
+  // Agent 222 — backup_codes is now an array of {hash, used, usedAt}.
+  // Never surface the hashes; expose only count + remaining-unused so the UI
+  // can prompt the user to regenerate when they're running low.
+  const stored = (mfa.backupCodes as StoredBackupCode[] | null) || [];
+  const remaining = stored.filter((c) => !c.used).length;
   return {
     isEnabled: mfa.enabled,
     method: mfa.method,
     totpVerified: mfa.enabled && mfa.method === "totp",
     emailVerified: mfa.enabled && mfa.method === "email",
     lastUsedAt: null,
-    backupCodes: mfa.backupCodes || [],
+    backupCodesCount: stored.length,
+    backupCodesRemaining: remaining,
   };
 }
 
@@ -94,19 +183,27 @@ export function generateTotpUri(secret: string, username: string): string {
 
 export async function setupTotp(userId: number, username: string) {
   const secret = base32Encode(crypto.randomBytes(20));
-  const backupCodes = Array.from({ length: BACKUP_CODE_COUNT }, () =>
-    crypto.randomBytes(4).toString("hex")
-  );
+  // Agent 222 — generate plaintext + hashed pair. Plaintext returned to caller
+  // exactly once (right here); DB only sees hashed values.
+  const plaintextCodes = generatePlaintextBackupCodes(BACKUP_CODE_COUNT);
+  const hashedCodes: StoredBackupCode[] = plaintextCodes.map((code) => ({
+    hash: hashBackupCode(code),
+    used: false,
+    usedAt: null,
+  }));
   const existing = await db.query.userMfaTable.findFirst({
     where: eq(userMfaTable.userId, userId),
   });
   if (existing) {
-    await db.update(userMfaTable).set({ secret, method: "totp", backupCodes, enabled: false }).where(eq(userMfaTable.userId, userId));
+    await db.update(userMfaTable).set({ secret, method: "totp", backupCodes: hashedCodes, enabled: false }).where(eq(userMfaTable.userId, userId));
   } else {
-    await db.insert(userMfaTable).values({ userId, method: "totp", secret, backupCodes, enabled: false });
+    await db.insert(userMfaTable).values({ userId, method: "totp", secret, backupCodes: hashedCodes, enabled: false });
   }
   const uri = generateTotpUri(secret, username);
-  return { secret, uri, qrData: uri };
+  // plaintextBackupCodes is the ONLY place plaintext leaves this function.
+  // Caller (route handler) is responsible for surfacing it to the user once
+  // and never persisting it.
+  return { secret, uri, qrData: uri, plaintextBackupCodes: plaintextCodes };
 }
 
 export async function verifyAndEnableTotp(userId: number, code: string): Promise<{ success: boolean; error?: string; backupCodes?: string[] }> {
@@ -116,7 +213,10 @@ export async function verifyAndEnableTotp(userId: number, code: string): Promise
   if (!mfa) return { success: false, error: "MFA not set up" };
   if (!verifyTOTP(mfa.secret, code)) return { success: false, error: "Invalid TOTP code" };
   await db.update(userMfaTable).set({ enabled: true }).where(eq(userMfaTable.id, mfa.id));
-  return { success: true, backupCodes: (mfa.backupCodes as string[]) || [] };
+  // Agent 222 — DB no longer stores plaintext. Plaintext was already returned
+  // by setupTotp(); the verify step does not re-issue them. Routes layer that
+  // still reads `result.backupCodes` will get an empty array — by design.
+  return { success: true, backupCodes: [] };
 }
 
 export async function disableMfa(userId: number): Promise<void> {
@@ -154,9 +254,23 @@ export async function verifyMfaCode(
     if (mfa.method === "totp" && verifyTOTP(mfa.secret, code)) {
       return { success: true, method: "totp" };
     }
-    if (mfa.backupCodes && (mfa.backupCodes as string[]).includes(code)) {
-      const updated = (mfa.backupCodes as string[]).filter((c) => c !== code);
-      await db.update(userMfaTable).set({ backupCodes: updated }).where(eq(userMfaTable.id, mfa.id));
+    // Agent 222 — backup codes are now scrypt-hashed objects. Walk EVERY
+    // entry to keep verify-time independent of the array index of the match,
+    // and constant-time compare per entry via crypto.timingSafeEqual inside
+    // verifyBackupCodeHash.
+    const stored = (mfa.backupCodes as StoredBackupCode[] | null) || [];
+    let matchedIndex = -1;
+    for (let i = 0; i < stored.length; i++) {
+      const entry = stored[i]!;
+      if (entry.used) continue;
+      if (verifyBackupCodeHash(code, entry.hash) && matchedIndex === -1) {
+        matchedIndex = i;
+      }
+    }
+    if (matchedIndex >= 0) {
+      const next = stored.slice();
+      next[matchedIndex] = { ...next[matchedIndex]!, used: true, usedAt: new Date().toISOString() };
+      await db.update(userMfaTable).set({ backupCodes: next }).where(eq(userMfaTable.id, mfa.id));
       return { success: true, method: "backup" };
     }
   }
@@ -202,13 +316,18 @@ export async function isMfaRequiredForAction(userId: number, roleIds: number[], 
 
 export async function enableMFA(userId: number, method: "totp" | "email" = "totp") {
   const secret = base32Encode(crypto.randomBytes(20));
-  const backupCodes = Array.from({ length: BACKUP_CODE_COUNT }, () =>
-    crypto.randomBytes(4).toString("hex")
-  );
-  await db.insert(userMfaTable).values({ userId, method, secret, backupCodes, enabled: false });
+  // Agent 222 — same hash-on-storage pattern as setupTotp.
+  const plaintextCodes = generatePlaintextBackupCodes(BACKUP_CODE_COUNT);
+  const hashedCodes: StoredBackupCode[] = plaintextCodes.map((code) => ({
+    hash: hashBackupCode(code),
+    used: false,
+    usedAt: null,
+  }));
+  await db.insert(userMfaTable).values({ userId, method, secret, backupCodes: hashedCodes, enabled: false });
   return {
     secret,
     qrCodeUri: `otpauth://totp/${TOTP_ISSUER}:user${userId}?secret=${secret}&issuer=${TOTP_ISSUER}`,
+    plaintextBackupCodes: plaintextCodes,
   };
 }
 
@@ -226,9 +345,20 @@ export async function verifyMFA(userId: number, code: string): Promise<boolean> 
     where: eq(userMfaTable.userId, userId),
   });
   if (!mfa || !mfa.enabled) return false;
-  if (mfa.backupCodes && (mfa.backupCodes as string[]).includes(code)) {
-    const updated = (mfa.backupCodes as string[]).filter((c) => c !== code);
-    await db.update(userMfaTable).set({ backupCodes: updated }).where(eq(userMfaTable.id, mfa.id));
+  // Agent 222 — same constant-time hashed-code walk as verifyMfaCode.
+  const stored = (mfa.backupCodes as StoredBackupCode[] | null) || [];
+  let matchedIndex = -1;
+  for (let i = 0; i < stored.length; i++) {
+    const entry = stored[i]!;
+    if (entry.used) continue;
+    if (verifyBackupCodeHash(code, entry.hash) && matchedIndex === -1) {
+      matchedIndex = i;
+    }
+  }
+  if (matchedIndex >= 0) {
+    const next = stored.slice();
+    next[matchedIndex] = { ...next[matchedIndex]!, used: true, usedAt: new Date().toISOString() };
+    await db.update(userMfaTable).set({ backupCodes: next }).where(eq(userMfaTable.id, mfa.id));
     return true;
   }
   return verifyTOTP(mfa.secret, code);

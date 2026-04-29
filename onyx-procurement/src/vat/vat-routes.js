@@ -9,6 +9,7 @@
  *   POST   /api/vat/periods              — open new period
  *   GET    /api/vat/periods/:id          — detail + computed totals
  *   POST   /api/vat/periods/:id/close    — compute + lock period
+ *   GET    /api/vat/periods/:id/pcn874   — build PCN874 monthly summary (Agent 215)
  *   POST   /api/vat/periods/:id/submit   — build PCN836 + record submission
  *   GET    /api/vat/periods/:id/pcn836   — download PCN836 file
  *   GET    /api/vat/invoices             — list tax invoices
@@ -20,6 +21,7 @@
 const fs = require('fs');
 const path = require('path');
 const { buildPcn836File, validatePcn836File } = require('./pcn836');
+const { buildPcn874File, validatePcn874File } = require('../tax/pcn874');
 
 function registerVatRoutes(app, { supabase, audit, requireAuth, requirePermission, VAT_RATE }) {
   const PCN836_ARCHIVE_DIR = process.env.PCN836_ARCHIVE_DIR || path.join(__dirname, '..', '..', 'data', 'pcn836');
@@ -157,6 +159,61 @@ function registerVatRoutes(app, { supabase, audit, requireAuth, requirePermissio
       `תקופה ${period.period_label} נסגרה — נטו ₪${totals.net_vat_payable.toFixed(2)}`, period, updated);
 
     res.json({ period: updated, totals });
+  });
+
+  // ═══ PCN874 — Monthly VAT Summary (Agent 215) ═══
+  app.get('/api/vat/periods/:id/pcn874', requirePermission && requirePermission('tax-vat:read'), async (req, res) => {
+    // 1. Re-use the aggregation already done by GET /api/vat/periods/:id
+    const periodResp = await supabase.from('vat_periods').select('*').eq('id', req.params.id).single();
+    if (periodResp.error) return res.status(404).json({ error: 'Period not found' });
+
+    const profileResp = await supabase.from('company_tax_profile').select('*').limit(1).maybeSingle();
+    if (profileResp.error || !profileResp.data) {
+      return res.status(412).json({ error: 'Company tax profile not configured — PUT /api/vat/profile first' });
+    }
+
+    // Recompute the same `computed` block returned by GET /api/vat/periods/:id
+    const [{ data: outs }, { data: ins }] = await Promise.all([
+      supabase.from('tax_invoices').select('net_amount,vat_amount,is_asset,is_zero_rate,is_exempt')
+        .eq('vat_period_id', req.params.id).eq('direction', 'output').neq('status', 'voided'),
+      supabase.from('tax_invoices').select('net_amount,vat_amount,is_asset,is_zero_rate,is_exempt')
+        .eq('vat_period_id', req.params.id).eq('direction', 'input').neq('status', 'voided'),
+    ]);
+    const o = outs || [], n = ins || [];
+    const computed = {
+      taxable_sales: o.filter(i => !i.is_exempt && !i.is_zero_rate).reduce((s, i) => s + Number(i.net_amount || 0), 0),
+      zero_rate_sales: o.filter(i => i.is_zero_rate).reduce((s, i) => s + Number(i.net_amount || 0), 0),
+      exempt_sales:    o.filter(i => i.is_exempt).reduce((s, i) => s + Number(i.net_amount || 0), 0),
+      vat_on_sales:    o.reduce((s, i) => s + Number(i.vat_amount || 0), 0),
+      taxable_purchases: n.filter(i => !i.is_asset).reduce((s, i) => s + Number(i.net_amount || 0), 0),
+      vat_on_purchases:  n.filter(i => !i.is_asset).reduce((s, i) => s + Number(i.vat_amount || 0), 0),
+      asset_purchases:   n.filter(i =>  i.is_asset).reduce((s, i) => s + Number(i.net_amount || 0), 0),
+      vat_on_assets:     n.filter(i =>  i.is_asset).reduce((s, i) => s + Number(i.vat_amount || 0), 0),
+    };
+    computed.net_vat_payable = computed.vat_on_sales - computed.vat_on_purchases - computed.vat_on_assets;
+    computed.is_refund = computed.net_vat_payable < 0;
+
+    let file;
+    try {
+      file = buildPcn874File({
+        companyProfile: profileResp.data,
+        period: periodResp.data,
+        computed,
+        submission: { type: req.query.amendment === '1' ? 'amendment' : 'initial' },
+      });
+    } catch (err) {
+      return res.status(400).json({ error: err.message });
+    }
+
+    const errors = validatePcn874File(file);
+    if (errors.length) return res.status(422).json({ error: 'PCN874 validation failed', details: errors });
+
+    if (req.query.download === '1') {
+      res.set('Content-Type', 'text/plain; charset=windows-1255');
+      res.set('Content-Disposition', `attachment; filename="${file.metadata.filename}"`);
+      return res.send(file.buffer);
+    }
+    res.json({ metadata: file.metadata, preview: file.content });
   });
 
   app.post('/api/vat/periods/:id/submit', requirePermission('tax-pcn836:generate'), async (req, res) => {

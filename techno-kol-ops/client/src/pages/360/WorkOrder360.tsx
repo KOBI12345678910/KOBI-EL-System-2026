@@ -48,8 +48,8 @@ export default function WorkOrder360() {
 
   const breadcrumbs = [
     { label: "בית", to: "/" },
-    ...(w.customer_id ? [{ label: w.customer_name ?? "לקוח", to: `/360/customer/${w.customer_id}` }] : []),
-    ...(w.project_id ? [{ label: w.project_name ?? "פרויקט", to: `/360/project/${w.project_id}` }] : []),
+    ...(w.customer_id ? [{ label: w.customer_name ?? "לקוח", to: `/customer/${w.customer_id}` }] : []),
+    ...(w.project_id ? [{ label: w.project_name ?? "פרויקט", to: `/project/${w.project_id}` }] : []),
     { label: `הזמנת עבודה ${w.wo_number ?? id ?? ""}` },
   ];
 

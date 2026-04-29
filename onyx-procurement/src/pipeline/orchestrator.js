@@ -261,6 +261,52 @@ const ORCHESTRATIONS = {
     ],
     events: ['alert.resolved'],
   },
+
+  // ───────────────────────────────────────────────────────────
+  // AGENT-223 — supplier.blacklist / supplier.reinstate
+  // Closes the loop on AGENT-183 by giving Supplier360 a real
+  // "remove vendor" action wired through the supplier state
+  // machine (see state-machines.js → supplier).
+  // ───────────────────────────────────────────────────────────
+  'supplier.blacklist': {
+    service: 'procurement',
+    label: 'הוצא ספק לרשימה שחורה',
+    preconditions: [
+      { check: 'entity_exists', entity: 'supplier' },
+      { check: 'status_in', statuses: ['active', 'preferred', 'monitor', 'on_hold'] },
+      { check: 'composite_below', threshold: 50 },
+    ],
+    effects: [
+      { type: 'transition',   entity: 'supplier', transition: 'blacklist' },
+      { type: 'update_field', entity: 'supplier', field: 'risk_level',        value: 'critical' },
+      { type: 'update_field', entity: 'supplier', field: 'blacklist_reason',  from:  'context.reason' },
+      { type: 'update_field', entity: 'supplier', field: 'blacklisted_at',    value: '$now' },
+      { type: 'cancel_related', entity: 'rfq_invite', filter: { supplier_id: ':supplierId', status: 'pending' } },
+      { type: 'freeze_related', entity: 'po',        filter: { supplier_id: ':supplierId', status_in: ['draft', 'pending_approval', 'sent'] } },
+      { type: 'notify', channels: ['email', 'in_app'], template: 'vendor_blacklisted', audience: 'buyers' },
+      { type: 'audit',  message: 'ספק הוצא לרשימה שחורה' },
+    ],
+    events: ['vendor.blacklisted'],
+    listeners: ['ai.find_alternative_suppliers', 'ops.alert_open_pos_for_reassignment'],
+    navigate: '/entity360.html?type=supplier&id=:supplierId',
+  },
+
+  'supplier.reinstate': {
+    service: 'procurement',
+    label: 'החזר ספק מהרשימה השחורה',
+    preconditions: [
+      { check: 'entity_exists', entity: 'supplier' },
+      { check: 'status_is',     status:  'blacklisted' },
+      { check: 'role_in',       roles:   ['procurement_manager', 'cfo', 'admin'] },
+    ],
+    effects: [
+      { type: 'transition',   entity: 'supplier', transition: 'reinstate' },
+      { type: 'update_field', entity: 'supplier', field: 'risk_level', value: 'high' },
+      { type: 'audit',        message: 'ספק הוחזר (status=on_hold)' },
+    ],
+    events: ['vendor.reinstated'],
+    navigate: '/entity360.html?type=supplier&id=:supplierId',
+  },
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -270,6 +316,45 @@ const ORCHESTRATIONS = {
 async function executeOrchestration(actionKey, context, { supabase, audit }) {
   const orch = ORCHESTRATIONS[actionKey];
   if (!orch) return { ok: false, error: `Unknown action: ${actionKey}` };
+
+  context = context || {};
+
+  // ────────────────────────────────────────────────────────────
+  // AGENT-223 precondition: composite_below
+  // Verifies the supplier's persisted performance_score is below
+  // a threshold (typically 50 → blacklist gate). Reads
+  // procurement.suppliers.performance_score; if absent or above
+  // the threshold, the orchestration is rejected before any
+  // effect runs. The check is a no-op when supabase is not
+  // available (test environment) — the unit test suite for
+  // orchestrator.js can still exercise the action.
+  // ────────────────────────────────────────────────────────────
+  if (Array.isArray(orch.preconditions) && supabase) {
+    for (const pc of orch.preconditions) {
+      if (pc && pc.check === 'composite_below') {
+        const supplierId = context.supplierId || context.id;
+        if (!supplierId) {
+          return { ok: false, error: 'composite_below: supplierId missing from context' };
+        }
+        try {
+          const { data: row } = await supabase
+            .from('procurement.suppliers')
+            .select('performance_score')
+            .eq('id', supplierId)
+            .single();
+          const score = Number(row && row.performance_score);
+          if (!Number.isFinite(score) || score >= pc.threshold) {
+            return {
+              ok: false,
+              error: `composite ${Number.isFinite(score) ? score : 'unknown'} not below ${pc.threshold}`,
+            };
+          }
+        } catch (err) {
+          return { ok: false, error: `composite_below check failed: ${err && err.message}` };
+        }
+      }
+    }
+  }
 
   // Build result log
   const result = {

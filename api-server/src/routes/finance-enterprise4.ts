@@ -2,6 +2,11 @@ import { Router, Request, Response, NextFunction } from "express";
 import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { validateSession } from "../lib/auth";
+import {
+  loadStoreForRequest,
+  engineAssetToRow,
+  listCategories,
+} from "../lib/asset-engine-bridge";
 
 const router = Router();
 
@@ -335,47 +340,158 @@ router.get("/finance/fixed-assets/by-category", async (_req, res) => {
   res.json(rows);
 });
 
-router.get("/finance/fixed-assets/depreciation-schedule", async (_req, res) => {
-  const rows = await q(`SELECT
-    id, asset_number, asset_name, category, purchase_date, purchase_cost,
-    useful_life_years, depreciation_method, annual_depreciation,
-    accumulated_depreciation, salvage_value,
-    purchase_cost - accumulated_depreciation as book_value,
-    CASE WHEN useful_life_years > 0
-      THEN ROUND((accumulated_depreciation / NULLIF(purchase_cost - salvage_value, 0) * 100)::numeric, 1)
-      ELSE 0 END as depreciation_pct,
-    CASE WHEN useful_life_years > 0 AND annual_depreciation > 0
-      THEN ROUND(((purchase_cost - accumulated_depreciation - salvage_value) / NULLIF(annual_depreciation, 0))::numeric, 1)
-      ELSE 0 END as remaining_years
-  FROM fixed_assets WHERE status='active' AND depreciation_method IS NOT NULL
-  ORDER BY book_value DESC`);
-  res.json(rows);
+// AGENT-226: Israeli depreciation rate catalog (תקנות מס הכנסה — לוח א').
+// Read-only — sourced from onyx-procurement asset-manager.js CATEGORY_RATES.
+router.get("/finance/fixed-assets/categories", async (_req, res) => {
+  try {
+    res.json(listCategories());
+  } catch (err: any) {
+    console.error("GET /finance/fixed-assets/categories error:", err.message);
+    res.status(500).json({ error: "שגיאה בטעינת קטגוריות" });
+  }
 });
 
+// AGENT-226: Engine-backed depreciation schedule. Hydrates the asset-manager
+// engine from fixed_assets and returns a per-asset projection that matches
+// what calculate-depreciation will post — single source of truth.
+router.get("/finance/fixed-assets/depreciation-schedule", async (_req, res) => {
+  try {
+    const store = await loadStoreForRequest({ onlyActive: true });
+    const rows = await q(`SELECT id, asset_number, asset_name FROM fixed_assets`);
+    const numToMeta = new Map<number, any>();
+    for (const r of rows as any[]) numToMeta.set(Number(r.id), r);
+    const all = store.listAssets();
+    const out = all.map((a: any) => {
+      const dbId = a.db_id ?? Number(String(a.id).replace(/^FA-/, ""));
+      const meta = numToMeta.get(dbId) || {};
+      const cost = Number(a.cost) || 0;
+      const accum = Number(a.accumulated_depreciation) || 0;
+      const salvage = Number(a.salvage_value) || 0;
+      const life = Number(a.useful_life_years) || 0;
+      const nbv = Number(a.current_nbv) || cost - accum;
+      const depreciable = Math.max(cost - salvage, 0);
+      const depPct =
+        depreciable > 0 ? Math.round((accum / depreciable) * 1000) / 10 : 0;
+      const annual = life > 0 ? depreciable / life : 0;
+      const monthly = annual / 12;
+      const remaining =
+        annual > 0 ? Math.round(((nbv - salvage) / annual) * 10) / 10 : 0;
+      return {
+        id: dbId,
+        asset_number: meta.asset_number || a.id,
+        asset_name: meta.asset_name || a.name,
+        asset_id: a.id,
+        category: a.category,
+        purchase_date: a.acquisition_date,
+        start_date: a.acquisition_date,
+        original_cost: cost,
+        purchase_cost: cost,
+        salvage_value: salvage,
+        useful_life_years: life,
+        depreciation_method: a.depreciation_method,
+        method: a.depreciation_method,
+        annual_depreciation: Number(annual.toFixed(2)),
+        monthly_depreciation: Number(monthly.toFixed(2)),
+        accumulated_depreciation: accum,
+        net_book_value: nbv,
+        book_value: nbv,
+        depreciation_rate: Number(((a.depreciation_rate || 0) * 100).toFixed(1)),
+        depreciation_pct: depPct,
+        remaining_years: remaining,
+        revaluation_surplus: a.revaluation_surplus || 0,
+        impairment_loss: a.impairment_loss || 0,
+        last_depreciated_to: a.last_depreciated_to,
+        status: String(a.status || "active").toLowerCase(),
+        notes: meta.notes || null,
+      };
+    });
+    out.sort((a: any, b: any) => b.net_book_value - a.net_book_value);
+    res.json(out);
+  } catch (err: any) {
+    console.error("GET /depreciation-schedule error:", err.message);
+    res.status(500).json({ error: "שגיאה בטעינת לוח פחת" });
+  }
+});
+
+// AGENT-226: Engine-backed depreciation run. Replaces the inline SL/DB
+// approximation with the full asset-manager.js engine (mid-month convention,
+// salvage clamping, IAS 16/36 round-trip, GL posting).
 router.post("/finance/fixed-assets/calculate-depreciation", async (req, res) => {
   try {
-  const assets = await q(`SELECT id, purchase_cost, salvage_value, useful_life_years, depreciation_method, accumulated_depreciation, annual_depreciation FROM fixed_assets WHERE status='active' AND useful_life_years > 0`);
-  let updated = 0;
-  for (const asset of assets as any[]) {
-    const cost = Number(asset.purchase_cost || 0);
-    const salvage = Number(asset.salvage_value || 0);
-    const life = Number(asset.useful_life_years || 1);
-    const depreciable = cost - salvage;
-    let annualDep = 0;
-    if (asset.depreciation_method === 'declining_balance') {
-      const rate = 2 / life;
-      const bookValue = cost - Number(asset.accumulated_depreciation || 0);
-      annualDep = Math.max(bookValue * rate, 0);
-    } else {
-      annualDep = depreciable / life;
+    const asOf =
+      String(req.body?.asOf || new Date().toISOString().slice(0, 10));
+    const units = req.body?.units;
+    const store = await loadStoreForRequest({ onlyActive: true });
+    const entries = store.runDepreciation(asOf, {
+      units_this_period: units,
+    });
+    let updated = 0;
+    let posted = 0;
+    for (const e of entries as any[]) {
+      const a = store.getAsset(e.asset_id);
+      if (!a) continue;
+      const row = engineAssetToRow(a);
+      try {
+        await q(`UPDATE fixed_assets SET
+          accumulated_depreciation=${Number(row.accumulated_depreciation) || 0},
+          current_value=${Number(row.current_value) || 0},
+          last_depreciated_to=${row.last_depreciated_to ? `'${row.last_depreciated_to}'` : "NULL"},
+          updated_at=NOW()
+          WHERE id=${row.id}`);
+        updated++;
+      } catch (uerr: any) {
+        console.error("calc-dep: UPDATE failed:", uerr.message);
+      }
+      // GL journal — engine emits a single-line debit/credit pair per period.
+      try {
+        const j = e.journal || {};
+        const entryId = String(j.entry_id || `DEP-${row.id}-${asOf}`).replace(
+          /'/g,
+          "''",
+        );
+        const memo = String(j.memo || "Depreciation").replace(/'/g, "''");
+        const debitAcct = String(j.debit?.account || "7200-DEP-EXP").replace(
+          /'/g,
+          "''",
+        );
+        const creditAcct = String(j.credit?.account || "1590-ACC-DEP").replace(
+          /'/g,
+          "''",
+        );
+        const amount = Number(j.debit?.amount || e.amount || 0);
+        await q(`INSERT INTO journal_entries
+          (entry_number, entry_date, description, debit_account_name, credit_account_name,
+           debit_amount, credit_amount, amount, status, source_type, reference, notes,
+           fiscal_year, fiscal_period)
+          VALUES ('${entryId}', '${asOf}', '${memo}',
+            '${debitAcct}', '${creditAcct}',
+            ${amount}, ${amount}, ${amount},
+            'posted', 'asset_depreciation', 'FA-${row.id}',
+            'AGENT-226 engine-driven monthly depreciation',
+            ${new Date(asOf).getFullYear()}, ${new Date(asOf).getMonth() + 1})`);
+        posted++;
+      } catch (jerr: any) {
+        console.error("calc-dep: journal insert failed:", jerr.message);
+      }
     }
-    const monthlyDep = annualDep / 12;
-    const newAccum = Math.min(Number(asset.accumulated_depreciation || 0) + monthlyDep, depreciable);
-    await q(`UPDATE fixed_assets SET annual_depreciation=${annualDep.toFixed(2)}, accumulated_depreciation=${newAccum.toFixed(2)}, updated_at=NOW() WHERE id=${asset.id}`);
-    updated++;
+    res.json({
+      success: true,
+      asOf,
+      runs: entries.length,
+      updated,
+      journal_entries_posted: posted,
+      entries: entries.map((e: any) => ({
+        asset_id: e.asset_id,
+        amount: e.amount,
+        new_nbv: e.new_nbv,
+        method: e.method,
+        date: e.date,
+      })),
+    });
+  } catch (err: any) {
+    console.error("POST /calculate-depreciation error:", err.message);
+    res.status(500).json({ error: "שגיאה בחישוב פחת" });
   }
-  res.json({ success: true, updated });
-  } catch (err: any) { /* שגיאה בחישוב פחת - לולאה על כל הנכסים הפעילים */ console.error("POST /calculate-depreciation error:", err.message); res.status(500).json({ error: "שגיאה בחישוב פחת" }); }
 });
 
 // ========== FINANCIAL REPORTS ==========

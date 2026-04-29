@@ -174,8 +174,20 @@ const supabase = createClient(
 
 // ═══ DOMAIN EVENTS — init after Supabase client is ready ═══
 try {
-  initDomainEvents({ supabase });
+  const { bus } = initDomainEvents({ supabase });
   console.log('✓ domain-events wired — EventBus + shared-events producer');
+  // ═══ AGENT-223 — Vendor Scoring listener (closes the loop on AGENT-183) ═══
+  try {
+    const { registerVendorScoringListener } = require('./src/wiring/vendor-scoring-listener');
+    const r = registerVendorScoringListener({ bus, supabase, logger: console });
+    if (r && r.ok) {
+      console.log(`✓ vendor-scoring listener wired (${r.eventsBound} events)`);
+    } else {
+      console.warn('⚠️  vendor-scoring listener not wired:', r && r.reason);
+    }
+  } catch (err) {
+    console.warn('⚠️  vendor-scoring listener init failed (non-fatal):', err && err.message);
+  }
 } catch (e) {
   console.warn('⚠️  domain-events init failed (non-fatal):', e && e.message);
 }
@@ -269,6 +281,34 @@ app.use('/api/', (req, res, next) => {
   if (PUBLIC_API_PATHS.has(req.path)) { req.actor = 'public'; return next(); }
   return requireAuth(req, res, next);
 });
+
+// ═══════════════════════════════════════════════════════════════
+// TENANT ISOLATION — Agent 272 / 290 / 303 fix
+// ───────────────────────────────────────────────────────────────
+// Mounted AFTER requireAuth so req.user / req.actor exist by now.
+// Resolves tenant from JWT > X-Tenant-Id header > session, attaches
+// req.tenantId, and pushes the Postgres GUC `app.current_tenant_id`
+// down so RLS predicates evaluate against the correct tenant.
+//
+// Per Agent 290+303: ZERO of 39 top-level routes filter by
+// tenant_id today. This middleware is the single chokepoint that
+// closes that gap before any route handler runs.
+//
+// Stash the supabase singleton on app.locals so the middleware's
+// GUC propagator can find it (fallback (c) — RPC set_tenant_context).
+app.locals.supabase = supabase;
+
+const { requireTenant } = require('./src/middleware/requireTenant');
+app.use('/api/', (req, res, next) => {
+  // Same public allow-list as the auth gate above — never tenant-gate
+  // health/status/bridge endpoints. requireTenant() also has its own
+  // EXEMPT_PATHS, but path here is the /api-relative form, so we
+  // short-circuit explicitly to keep both lists in lock-step.
+  if (PUBLIC_API_PATHS.has(req.path)) return next();
+  return requireTenant()(req, res, next);
+});
+console.log('✓ requireTenant() wired — JWT/header/session → req.tenantId + Postgres GUC');
+// ═══════════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════════
 // Agent-Y-QA03 FIX (BUG-02): wire the ai-bridge into the running
@@ -1568,6 +1608,26 @@ app.post('/api/subcontractors/decide', requirePermission('purchase-orders:approv
 // B-10: Annual tax (projects, customer_invoices, payments, forms 1301/1320/6111)
 // B-11: Bank reconciliation (accounts, statements, auto-match)
 
+// ═══ AGENT-229 — GL Book + Period-Lock Adapter (must precede annual tax) ═══
+try {
+  const { createBook } = require('./src/gl/journal-entry');
+  const { createSupabasePeriodLockAdapter } = require('./src/gl/period-lock-adapter');
+  const periodLockAdapter = createSupabasePeriodLockAdapter(supabase);
+  const currentYear = new Date().getFullYear();
+  // Prime cache for prior 3 + current + next year (covers normal close range).
+  // Fire-and-forget — synchronous isLocked() returns last-known until prime resolves.
+  periodLockAdapter.warmup([currentYear - 3, currentYear - 2,
+    currentYear - 1, currentYear, currentYear + 1])
+    .then(() => console.log('   ✓ period-lock cache warmed for', currentYear - 3, '→', currentYear + 1))
+    .catch((e) => console.warn('⚠️  period-lock warmup failed:', e && e.message));
+  const glBook = createBook({ periods: periodLockAdapter });
+  app.locals.glBook = glBook;
+  app.locals.glPeriods = periodLockAdapter;
+  console.log('✓ GL book + period-lock adapter wired — JE posting enforces fiscal_years.status');
+} catch (err) {
+  console.error('⚠️  GL book / period-lock adapter wiring failed (non-fatal):', err && err.message);
+}
+
 try {
   const { registerVatRoutes } = require('./src/vat/vat-routes');
   registerVatRoutes(app, { supabase, audit, requireAuth, requirePermission, VAT_RATE });
@@ -1580,6 +1640,23 @@ try {
   registerAnnualTaxRoutes(app, { supabase, audit, requirePermission });
 } catch (err) {
   console.error('⚠️  Annual tax module failed to load:', err.message);
+}
+
+try {
+  const { registerForm856Routes } = require('./src/tax/form-856-routes');
+  registerForm856Routes(app, { supabase, audit, requirePermission });
+} catch (err) {
+  console.error('⚠️  Form 856 routes failed to load:', err.message);
+}
+
+// BKMV — מבנה אחיד / regulation 36 (Agent 216)
+// Generates BKMVDATA.TXT + INI.TXT (windows-1255) for tax-authority audits.
+// Mounts: GET /api/tax/bkmv/:year/generate (+ preview / last / download / health)
+try {
+  const { registerBkmvRoutes } = require('./src/tax-exports/bkmv-routes');
+  registerBkmvRoutes(app, { supabase, audit, requirePermission });
+} catch (err) {
+  console.error('⚠️  BKMV (מבנה אחיד) module failed to load:', err.message);
 }
 
 try {

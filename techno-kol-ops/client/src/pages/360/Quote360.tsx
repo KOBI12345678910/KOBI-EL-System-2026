@@ -54,7 +54,7 @@ export default function Quote360() {
 
   const breadcrumbs = [
     { label: "בית", to: "/" },
-    ...(q.customer_id ? [{ label: q.customer_name ?? "לקוח", to: `/360/customer/${q.customer_id}` }] : []),
+    ...(q.customer_id ? [{ label: q.customer_name ?? "לקוח", to: `/customer/${q.customer_id}` }] : []),
     { label: `הצעת מחיר ${q.quote_number ?? id ?? ""}` },
   ];
 
@@ -90,7 +90,7 @@ export default function Quote360() {
           onClick={() => runAction("quote.convert_to_project", "המרה לפרויקט", {
             navigateTo: (r) => {
               const newId = r?.effects_executed?.find((x: any) => x.entity === "project")?.new_id;
-              return newId ? `/360/project/${newId}` : null;
+              return newId ? `/project/${newId}` : null;
             },
           })}
           variant="secondary"

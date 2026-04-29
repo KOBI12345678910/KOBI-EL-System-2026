@@ -67,6 +67,38 @@ type SupplierRFQInvite = {
   response_status: string;
 };
 
+// AGENT-223: live composite from vendor-scoring (latest snapshot)
+type VendorScoreDimension = {
+  score: number;
+  samples: number;
+  detail?: string;
+};
+
+type VendorScoreRisk = {
+  code: string;
+  he: string;
+  severity: string;
+  detail?: string;
+};
+
+type VendorScore = {
+  composite: number;
+  badge: string;
+  badgeEn: string;
+  risk_level: "low" | "medium" | "high" | "critical";
+  dimensions: Record<
+    | "onTimeDelivery"
+    | "priceCompetitiveness"
+    | "quality"
+    | "communication"
+    | "paymentTerms",
+    VendorScoreDimension
+  >;
+  risks: VendorScoreRisk[];
+  recommendations: string[];
+  as_of: string;
+};
+
 type Supplier360Payload = {
   supplier: SupplierCore;
   contacts?: SupplierContact[];
@@ -75,6 +107,7 @@ type Supplier360Payload = {
   rfq_invites?: SupplierRFQInvite[];
   open_rfqs?: number;
   open_pos_count?: number;
+  vendor_score?: VendorScore | null;
 };
 
 // ============================================================
@@ -158,7 +191,7 @@ function Metric({ title, value }: { title: string; value: string }) {
 // TABS
 // ============================================================
 
-type SupplierTab = "overview" | "contacts" | "scorecards" | "pos" | "rfqs";
+type SupplierTab = "overview" | "contacts" | "scorecards" | "scoring" | "pos" | "rfqs";
 
 function TabBtn({ active, label, onClick, count }: { active: boolean; label: string; onClick: () => void; count?: number }) {
   return (
@@ -169,6 +202,160 @@ function TabBtn({ active, label, onClick, count }: { active: boolean; label: str
     >
       {label}{typeof count === "number" ? ` (${count})` : ""}
     </button>
+  );
+}
+
+// ============================================================
+// AGENT-223 — Vendor Scoring panel + blacklist button
+// ============================================================
+
+const SCORING_DIMENSIONS = [
+  { key: "onTimeDelivery", he: "אספקה בזמן", weight: 40 },
+  { key: "priceCompetitiveness", he: "תחרותיות מחיר", weight: 20 },
+  { key: "quality", he: "איכות", weight: 20 },
+  { key: "communication", he: "תקשורת", weight: 10 },
+  { key: "paymentTerms", he: "תנאי תשלום", weight: 10 },
+] as const;
+
+function compositeBadgeClass(c: number): string {
+  if (c > 85) return "bg-emerald-100 text-emerald-800";
+  if (c >= 70) return "bg-blue-100 text-blue-800";
+  if (c >= 50) return "bg-amber-100 text-amber-800";
+  return "bg-red-100 text-red-800";
+}
+
+function riskRowClass(severity: string): string {
+  if (severity === "high") return "bg-red-100 text-red-800 border-red-200";
+  if (severity === "medium") return "bg-amber-100 text-amber-800 border-amber-200";
+  return "bg-slate-100 text-slate-800 border-slate-200";
+}
+
+function BlacklistButton({ supplierId, score }: { supplierId: number; score: number }) {
+  const qc = useQueryClient();
+  const onClick = async () => {
+    const ok = window.confirm(
+      `להוציא את הספק לרשימה שחורה? ציון נוכחי: ${score.toFixed(1)}.`
+    );
+    if (!ok) return;
+    const res = await fetch("/api/orchestrator/execute", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        action: "supplier.blacklist",
+        context: { supplierId, composite: score },
+      }),
+    });
+    if (res.ok) {
+      qc.invalidateQueries({ queryKey: supplier360QueryKey(supplierId) });
+    } else {
+      window.alert("פעולה נכשלה");
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="mt-2 rounded-xl bg-red-600 px-3 py-2 text-xs font-bold text-white hover:bg-red-700"
+    >
+      הוצא לרשימה שחורה
+    </button>
+  );
+}
+
+function VendorScoringPanel({
+  score,
+  supplierId,
+}: {
+  score: VendorScore;
+  supplierId: number;
+}) {
+  const c = score.composite;
+  const compClass = compositeBadgeClass(c);
+
+  return (
+    <div className="space-y-6" dir="rtl">
+      {/* Header — composite + badge + risk + as-of */}
+      <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-5">
+        <div>
+          <div className="text-xs text-slate-500">ציון משוקלל</div>
+          <div className="text-4xl font-black">
+            {c.toFixed(1)}{" "}
+            <span className="text-lg font-normal text-slate-500">/ 100</span>
+          </div>
+          <div
+            className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-bold ${compClass}`}
+          >
+            {score.badge} ({score.badgeEn})
+          </div>
+        </div>
+        <div className="text-sm text-slate-600 text-left">
+          <div>
+            סטטוס סיכון: <b>{score.risk_level}</b>
+          </div>
+          <div>נכון ל: {fmtDate(score.as_of)}</div>
+          {c < 50 && <BlacklistButton supplierId={supplierId} score={c} />}
+        </div>
+      </div>
+
+      {/* 5 weighted dimension bars */}
+      <div className="space-y-2">
+        {SCORING_DIMENSIONS.map((d) => {
+          const dim = score.dimensions[d.key];
+          const v = dim ? dim.score : 0;
+          return (
+            <div
+              key={d.key}
+              className="grid grid-cols-[140px_1fr_60px_50px] items-center gap-3"
+            >
+              <div className="font-bold text-slate-700">{d.he}</div>
+              <div className="h-3 rounded-full bg-slate-200 overflow-hidden">
+                <div
+                  className="h-full bg-blue-600"
+                  style={{ width: `${Math.max(0, Math.min(100, v))}%` }}
+                />
+              </div>
+              <div className="text-right tabular-nums font-bold">
+                {v.toFixed(1)}
+              </div>
+              <div className="text-xs text-slate-500">{d.weight}%</div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Risks — color-coded by severity */}
+      {score.risks && score.risks.length > 0 && (
+        <div>
+          <div className="font-bold mb-2">סיכונים</div>
+          <div className="space-y-2">
+            {score.risks.map((r, i) => (
+              <div
+                key={i}
+                className={`rounded-xl border px-3 py-2 text-sm ${riskRowClass(
+                  r.severity
+                )}`}
+              >
+                <span className="font-bold">{r.he}</span>
+                {r.detail ? ` — ${r.detail}` : ""}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Numbered recommendations */}
+      {score.recommendations && score.recommendations.length > 0 && (
+        <div>
+          <div className="font-bold mb-2">המלצות</div>
+          <ol className="list-decimal pr-5 space-y-1 text-sm text-slate-700">
+            {score.recommendations.map((rec, i) => (
+              <li key={i}>{rec}</li>
+            ))}
+          </ol>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -235,6 +422,7 @@ export function Supplier360({ supplierId }: { supplierId: number }) {
               <TabBtn active={tab === "overview"} label="סקירה" onClick={() => setTab("overview")} />
               <TabBtn active={tab === "contacts"} label="אנשי קשר" onClick={() => setTab("contacts")} count={contacts.length} />
               <TabBtn active={tab === "scorecards"} label="Scorecards" onClick={() => setTab("scorecards")} count={scorecards.length} />
+              <TabBtn active={tab === "scoring"} label="ניקוד והערכה" onClick={() => setTab("scoring")} />
               <TabBtn active={tab === "pos"} label="הזמנות רכש" onClick={() => setTab("pos")} count={openPOs.length} />
               <TabBtn active={tab === "rfqs"} label="RFQs" onClick={() => setTab("rfqs")} count={rfqInvites.length} />
             </div>
@@ -321,6 +509,21 @@ export function Supplier360({ supplierId }: { supplierId: number }) {
                       </div>
                     ))}
                   </div>
+                )}
+              </Card>
+            )}
+
+            {tab === "scoring" && (
+              <Card title="ניקוד והערכה — Vendor Performance">
+                {!data.vendor_score ? (
+                  <div className="text-sm text-slate-600">
+                    אין ניקוד עדיין. ה-PO הראשון של הספק יפעיל חישוב אוטומטי.
+                  </div>
+                ) : (
+                  <VendorScoringPanel
+                    score={data.vendor_score}
+                    supplierId={supplierId}
+                  />
                 )}
               </Card>
             )}

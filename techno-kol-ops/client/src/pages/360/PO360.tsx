@@ -48,8 +48,8 @@ export default function PO360() {
 
   const breadcrumbs = [
     { label: "בית", to: "/" },
-    ...(po.supplier_id ? [{ label: po.supplier_name ?? "ספק", to: `/360/supplier/${po.supplier_id}` }] : []),
-    ...(po.project_id ? [{ label: po.project_name ?? "פרויקט", to: `/360/project/${po.project_id}` }] : []),
+    ...(po.supplier_id ? [{ label: po.supplier_name ?? "ספק", to: `/supplier/${po.supplier_id}` }] : []),
+    ...(po.project_id ? [{ label: po.project_name ?? "פרויקט", to: `/project/${po.project_id}` }] : []),
     { label: `הזמנת רכש ${po.po_number ?? id ?? ""}` },
   ];
 
@@ -82,7 +82,7 @@ export default function PO360() {
         />
         <ActionBtn
           label="פתח ספק"
-          onClick={() => po.supplier_id && navigate(`/360/supplier/${po.supplier_id}`)}
+          onClick={() => po.supplier_id && navigate(`/supplier/${po.supplier_id}`)}
           variant="secondary"
         />
       </div>

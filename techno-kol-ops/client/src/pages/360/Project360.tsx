@@ -24,7 +24,7 @@ export default function Project360() {
 
   const breadcrumbs = [
     { label: "בית", to: "/" },
-    ...(p.customer_id ? [{ label: p.customer_name ?? "לקוח", to: `/360/customer/${p.customer_id}` }] : []),
+    ...(p.customer_id ? [{ label: p.customer_name ?? "לקוח", to: `/customer/${p.customer_id}` }] : []),
     { label: p.project_name ?? `פרויקט #${id}` },
   ];
 

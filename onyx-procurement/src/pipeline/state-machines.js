@@ -373,6 +373,62 @@ const STATE_MACHINES = {
     },
     triggers: {},
   },
+
+  // ─────────────────────────────────────────────────────────────
+  // supplier — added per AGENT-223 (closes the loop on AGENT-183).
+  // States align with procurement.suppliers.status_check after
+  // migration 00092_vendor_score_history.sql:
+  //   active, preferred, monitor, on_hold, blacklisted, inactive,
+  //   pending_review.
+  // pending_review and inactive have no outbound transitions
+  // defined here because they are managed by other flows
+  // (onboarding + off-boarding). All blacklist transitions are
+  // ALSO guarded at the DB layer by trg_guard_rfq_supplier and
+  // trg_guard_po_supplier (00092 migration).
+  // ─────────────────────────────────────────────────────────────
+  supplier: {
+    initial: 'active',
+    states: {
+      active:      { transitions: { monitor: 'monitor', hold: 'on_hold', blacklist: 'blacklisted' } },
+      preferred:   { transitions: { monitor: 'monitor', hold: 'on_hold', blacklist: 'blacklisted' } },
+      monitor:     { transitions: { restore: 'active', hold: 'on_hold', blacklist: 'blacklisted' } },
+      on_hold:     { transitions: { restore: 'active', blacklist: 'blacklisted' } },
+      blacklisted: { transitions: { reinstate: 'on_hold' } },
+      inactive:    { transitions: { restore: 'active' } },
+    },
+    triggers: {
+      'active→blacklisted': [
+        { action: 'cancel_open_rfq_invites', params: {} },
+        { action: 'freeze_open_pos',         params: {} },
+        { action: 'notify_buyers',           params: { template: 'vendor_blacklisted' } },
+      ],
+      'preferred→blacklisted': [
+        { action: 'cancel_open_rfq_invites', params: {} },
+        { action: 'freeze_open_pos',         params: {} },
+        { action: 'notify_buyers',           params: { template: 'vendor_blacklisted' } },
+      ],
+      'monitor→blacklisted': [
+        { action: 'cancel_open_rfq_invites', params: {} },
+        { action: 'freeze_open_pos',         params: {} },
+      ],
+      'on_hold→blacklisted': [
+        { action: 'cancel_open_rfq_invites', params: {} },
+        { action: 'freeze_open_pos',         params: {} },
+      ],
+      'blacklisted→on_hold': [
+        { action: 'create_audit', params: { type: 'vendor_reinstated' } },
+      ],
+    },
+    badges: {
+      active:         { he: 'פעיל',          en: 'Active',      tone: 'success', icon: 'CheckCircle2' },
+      preferred:      { he: 'ספק מועדף',     en: 'Preferred',   tone: 'success', icon: 'Star' },
+      monitor:        { he: 'בניטור',        en: 'Monitor',     tone: 'warning', icon: 'Eye' },
+      on_hold:        { he: 'מוקפא',         en: 'On Hold',     tone: 'warning', icon: 'PauseCircle' },
+      blacklisted:    { he: 'ברשימה שחורה',  en: 'Blacklisted', tone: 'danger',  icon: 'Ban' },
+      inactive:       { he: 'לא פעיל',       en: 'Inactive',    tone: 'muted',   icon: 'Archive' },
+      pending_review: { he: 'בבדיקה',        en: 'Pending',     tone: 'info',    icon: 'Clock' },
+    },
+  },
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -412,7 +468,7 @@ function getBadge(entityType, status) {
 // REGISTER ROUTES
 // ═══════════════════════════════════════════════════════════════
 
-function registerStateMachineRoutes(app) {
+function registerStateMachineRoutes(app, executorOpts) {
 
   // Get all state machines
   app.get('/api/state-machines', (_req, res) => {
@@ -447,6 +503,16 @@ function registerStateMachineRoutes(app) {
     if (req.query.status) return res.json({ badge: getBadge(req.params.type, req.query.status) });
     res.json({ badges: machine.badges || {} });
   });
+
+  // AGENT-211 — POST /api/state-machines/:type/transition
+  // Mount the transition executor so 360-page button-presses funnel
+  // through a single audited/event-emitting endpoint.
+  try {
+    const { registerTransitionExecutor } = require('./transition-executor');
+    registerTransitionExecutor(app, executorOpts || {});
+  } catch (e) {
+    console.warn('   ⚠️  transition executor wiring skipped:', e && e.message);
+  }
 
   console.log('   ✓ State machines registered (' + Object.keys(STATE_MACHINES).length + ' entities)');
 }

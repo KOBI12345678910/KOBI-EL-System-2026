@@ -45,7 +45,9 @@ const statusMap: Record<string, { label: string; color: string }> = {
 const methodMap: Record<string, string> = {
   straight_line: "קו ישר",
   declining_balance: "יתרה פוחתת",
+  sum_of_years: "סכום ספרות שנים",
   units_of_production: "יחידות ייצור",
+  accelerated: "פחת מואץ (תקנות)",
 };
 
 function DetailField({ label, value, children }: { label: string; value?: string; children?: React.ReactNode }) {
@@ -75,7 +77,10 @@ export default function DepreciationSchedulePage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await authFetch(`${API}/depreciation-schedule`);
+      // AGENT-226: hit the registered route at finance-enterprise4.ts:338,
+      // which is engine-backed (asset-manager.js). The bare /depreciation-schedule
+      // path was 404 in production.
+      const res = await authFetch(`${API}/finance/fixed-assets/depreciation-schedule`);
       if (res.ok) setItems(safeArray(await res.json()));
       else setError("שגיאה בטעינת לוח פחת");
     } catch (e: any) {
@@ -192,7 +197,7 @@ export default function DepreciationSchedulePage() {
           <p className="text-sm mt-1">{search || filterStatus !== "all" ? "נסה לשנות את הסינון" : "אין נכסים בלוח הפחת"}</p>
         </div>
       ) : (<>
-        <BulkActions selectedIds={selectedIds} onClear={clear} entityName="נכסים" actions={defaultBulkActions(selectedIds, clear, load, `${API}/depreciation-schedule`)} />
+        <BulkActions selectedIds={selectedIds} onClear={clear} entityName="נכסים" actions={defaultBulkActions(selectedIds, clear, load, `${API}/finance/fixed-assets/depreciation-schedule`)} />
         <div className="border border-border/50 rounded-2xl bg-card/50 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
