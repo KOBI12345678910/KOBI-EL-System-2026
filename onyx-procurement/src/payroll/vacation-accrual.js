@@ -494,7 +494,15 @@ function getBalance(employeeId, asOfDate = null) {
   let opening = 0;
 
   for (const r of list) {
-    if (cutoff && r.recorded_at && r.recorded_at.slice(0, 10) > cutoff) continue;
+    // Cutoff compares against the row's logical period (YYYY-MM) → first
+    // of next month, NOT against `recorded_at` (which is the system clock
+    // at insertion and would silently exclude back-filled history).
+    if (cutoff && r.period) {
+      const rowDate = String(r.period).length === 7
+        ? r.period + '-01'
+        : String(r.period).slice(0, 10);
+      if (rowDate > cutoff) continue;
+    }
     total += _toNum(r.delta_days);
     if (r.type === 'accrual') credits += _toNum(r.delta_days);
     if (r.type === 'use')     usages  += -_toNum(r.delta_days);
