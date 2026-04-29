@@ -25,7 +25,6 @@ const RawMaterialStockPage = lazy(() => import('./pages/procurement/raw-material
 const IncomePage = lazy(() => import('./pages/finance/income'));
 const ExpensesPage = lazy(() => import('./pages/finance/expenses'));
 const DashboardPage3 = lazy(() => import('./pages/finance/finance-dashboard'));
-const CompanyFinancialsPage = lazy(() => import('./pages/company-financials'));
 const ShiftsPage = lazy(() => import('./pages/hr/shifts'));
 const DashboardPage4 = lazy(() => import('./pages/hr/hr-dashboard'));
 const SettingsPage = lazy(() => import('./pages/hr/hr-settings'));
@@ -39,7 +38,6 @@ const ApiKeysPage = lazy(() => import('./pages/settings/api-keys'));
 const SystemSettingsPage = lazy(() => import('./pages/settings/sections/system-settings'));
 const OpportunitiesPage2 = lazy(() => import('./pages/sales/opportunities'));
 const CrmActivitiesPage2 = lazy(() => import('./pages/crm/crm-activities'));
-const PredictiveAnalyticsPage = lazy(() => import('./pages/crm/predictive-analytics'));
 
 // === AUTO-WIRED REACT ROUTES ===
 // Generated: 2026-04-18T06:26:09.682Z · Added: 629

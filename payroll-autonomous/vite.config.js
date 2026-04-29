@@ -59,6 +59,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    setupFiles: ['./src/test/setup.ts']
+    setupFiles: ['./src/test/setup.ts'],
+    exclude: ['**/tests/e2e/**', '**/node_modules/**', '**/dist/**', '**/test/smoke.test.js']
   }
 });

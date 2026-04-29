@@ -1937,8 +1937,10 @@ try {
 }
 
 const PORT = process.env.PORT || 3100;
-const server = app.listen(PORT, () => {
-  console.log(`
+let server;
+function startServer() {
+  server = app.listen(PORT, () => {
+    console.log(`
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
 ║   🚀 ONYX PROCUREMENT API SERVER                            ║
@@ -1969,15 +1971,20 @@ const server = app.listen(PORT, () => {
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
   `);
-});
+  });
+}
 
 // Graceful shutdown
 function shutdown(signal) {
   console.log(`\n${signal} received — shutting down gracefully...`);
-  server.close(() => {
-    console.log('✓ HTTP server closed');
+  if (server) {
+    server.close(() => {
+      console.log('✓ HTTP server closed');
+      process.exit(0);
+    });
+  } else {
     process.exit(0);
-  });
+  }
   setTimeout(() => {
     console.error('⚠️  Forced shutdown after 10s timeout');
     process.exit(1);
@@ -1990,7 +1997,11 @@ process.on('unhandledRejection', (reason) => {
   console.error('❌ Unhandled promise rejection:', reason);
 });
 
+// Only bind the port when run directly (node server.js).
+// Tests that `require('../server')` get the Express app without a port collision.
+if (require.main === module) {
+  startServer();
+}
+
 // Export the Express app for testing (supertest, jest).
-// When this module is required by tests, the server is already listening on PORT above.
-// Supertest will reuse the existing server or open its own connection.
 module.exports = app;

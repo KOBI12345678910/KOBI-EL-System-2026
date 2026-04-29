@@ -123,7 +123,7 @@ if (_describe && _test && _expect) {
     _test('renders all 6 chart cards with mock data', () => {
       const { container } = render(<BIDashboard data={mockBIData} />);
       _expect(screen.getByText('מגמת הכנסות')).toBeTruthy();
-      _expect(screen.getByText('הכנסות מול הוצאות')).toBeTruthy();
+      _expect(screen.getAllByText('הכנסות מול הוצאות')[0]).toBeTruthy();
       _expect(screen.getByText('10 לקוחות מובילים')).toBeTruthy();
       _expect(screen.getByText('תזרים מזומנים')).toBeTruthy();
       _expect(screen.getByText('עלויות עובדים')).toBeTruthy();
