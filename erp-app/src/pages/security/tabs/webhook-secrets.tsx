@@ -170,8 +170,8 @@ export default function WebhookSecretsTab() {
                     <code className="text-xs text-muted-foreground font-mono">{secret.endpoint_path}</code>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    {secret.last_used_at && <span>Last used: {new Date(secret.last_used_at).toLocaleDateString()}</span>}
-                    <span>Created: {new Date(secret.created_at).toLocaleDateString()}</span>
+                    {secret.last_used_at && <span>Last used: {new Date(secret.last_used_at).toLocaleDateString('he-IL')}</span>}
+                    <span>Created: {new Date(secret.created_at).toLocaleDateString('he-IL')}</span>
                   </div>
                   <Badge variant={secret.is_active ? "default" : "secondary"} className="text-xs">
                     {secret.is_active ? "Active" : "Inactive"}

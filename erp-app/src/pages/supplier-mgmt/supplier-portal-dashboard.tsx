@@ -150,7 +150,7 @@ export default function SupplierPortalDashboard() {
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-foreground">{cert.certification_name}</h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        Expires: {new Date(cert.expiry_date).toLocaleDateString()}
+                        Expires: {new Date(cert.expiry_date).toLocaleDateString('he-IL')}
                       </p>
                     </div>
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${

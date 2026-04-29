@@ -1,0 +1,6 @@
+{
+  "name": "@techno-kol/shared-types",
+  "version": "0.1.0",
+  "main": "supabase.ts",
+  "types": "supabase.ts"
+}

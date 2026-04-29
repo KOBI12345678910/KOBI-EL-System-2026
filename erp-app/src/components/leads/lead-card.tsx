@@ -132,7 +132,7 @@ export default function LeadCard({ leadId }: LeadCardProps) {
               {events.length === 0 ? (<p className="text-sm text-slate-500">No events yet</p>) : events.map((event) => (
                 <div key={event.id} className="text-xs">
                   <div className="font-medium text-slate-900">{event.type}</div>
-                  <div className="text-slate-500">{new Date(event.timestamp).toLocaleDateString()}</div>
+                  <div className="text-slate-500">{new Date(event.timestamp).toLocaleDateString('he-IL')}</div>
                 </div>
               ))}
             </div>
