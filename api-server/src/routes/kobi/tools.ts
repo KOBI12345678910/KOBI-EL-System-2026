@@ -2509,11 +2509,17 @@ let _cachedToken: string | null = null;
 let _tokenExpiry = 0;
 async function getAuthToken(): Promise<string | null> {
   if (_cachedToken && Date.now() < _tokenExpiry) return _cachedToken;
+  const username = process.env.KOBI_TOOLS_USERNAME;
+  const password = process.env.KOBI_TOOLS_PASSWORD;
+  if (!username || !password) {
+    console.warn("[kobi/tools] KOBI_TOOLS_USERNAME / KOBI_TOOLS_PASSWORD not set — refusing auth token issuance");
+    return null;
+  }
   try {
     const r = await fetch("http://localhost:8080/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: "admin", password: "admin123" }),
+      body: JSON.stringify({ username, password }),
     });
     const data = await r.json() as any;
     _cachedToken = data.token || null;

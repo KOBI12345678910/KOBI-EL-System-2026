@@ -1,7 +1,19 @@
-import { Router, type Request, type Response } from "express";
+import { Router, type Request, type Response, type NextFunction } from "express";
 import { pool } from "@workspace/db";
+import { validateSession } from "../lib/auth";
 
 const router = Router();
+
+async function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const header = req.headers.authorization;
+  const token = header?.startsWith("Bearer ") ? header.substring(7) : (req.query.token as string) || null;
+  if (!token) { res.status(401).json({ error: "נדרשת התחברות" }); return; }
+  const result = await validateSession(token);
+  if (result.error || !result.user) { res.status(401).json({ error: "הסשן פג תוקף" }); return; }
+  (req as any).user = result.user;
+  next();
+}
+router.use(requireAuth as any);
 
 // ─── helpers ────────────────────────────────────────────────────────
 async function q(sql: string, params: any[] = []) {

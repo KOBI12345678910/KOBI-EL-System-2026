@@ -16,25 +16,25 @@ async function getSystemAdminToken(): Promise<string> {
   const now = Date.now();
   if (_systemToken && now < _systemTokenExpiry) return _systemToken;
 
-  const candidates: Array<{ username: string; password: string }> = [];
-  if (process.env.KIMI_SYSTEM_USERNAME && process.env.KIMI_SYSTEM_PASSWORD) {
-    candidates.push({ username: process.env.KIMI_SYSTEM_USERNAME, password: process.env.KIMI_SYSTEM_PASSWORD });
-  }
-  candidates.push(
-    { username: "admin", password: "admin123" },
-    { username: "kobiellkayam", password: "KOBIE@307994798" }
-  );
-
-  for (const cred of candidates) {
-    const result = await loginUser(cred.username, cred.password);
-    if (result.token) {
-      _systemToken = `Bearer ${result.token}`;
-      _systemTokenExpiry = now + 60 * 60 * 1000;
-      return _systemToken;
-    }
+  const username = process.env.KIMI_SYSTEM_USERNAME;
+  const password = process.env.KIMI_SYSTEM_PASSWORD;
+  if (!username || !password) {
+    console.warn("[kimi/dev-platform] KIMI_SYSTEM_USERNAME / KIMI_SYSTEM_PASSWORD not set — refusing system token issuance");
+    const err: any = new Error("שירות Kimi2 לא מוגדר: חסרות אישורי מערכת בסביבה");
+    err.statusCode = 503;
+    throw err;
   }
 
-  throw new Error("מערכת Kimi2 אינה יכולה להתחבר: לא ניתן לאמת חשבון מערכת");
+  const result = await loginUser(username, password);
+  if (result.token) {
+    _systemToken = `Bearer ${result.token}`;
+    _systemTokenExpiry = now + 60 * 60 * 1000;
+    return _systemToken;
+  }
+
+  const err: any = new Error("מערכת Kimi2 אינה יכולה להתחבר: לא ניתן לאמת חשבון מערכת");
+  err.statusCode = 503;
+  throw err;
 }
 
 router.get("/kimi/dev/file-tree", async (req: Request, res: Response) => {

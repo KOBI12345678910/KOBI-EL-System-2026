@@ -130,7 +130,7 @@ app.use('/api/notifications', authenticate);
 app.use('/api/admin', authenticate, requireAdmin, adminRouter);
 
 // ─── ONTOLOGY SNAPSHOT ───────────────────────
-app.get('/api/ontology/snapshot', async (req, res) => {
+app.get('/api/ontology/snapshot', authenticate, async (req, res) => {
   try {
     const snapshot = await getFactorySnapshot();
     res.json(snapshot);
@@ -235,7 +235,7 @@ app.get('/api/bridges/health', async (_req, res) => {
 });
 
 // Proxy: fetch purchase orders from procurement for project context
-app.get('/api/bridges/procurement/purchase-orders', async (req, res) => {
+app.get('/api/bridges/procurement/purchase-orders', authenticate, async (req, res) => {
   try {
     const client = getDefaultProcurementClient();
     const data = await client.getPurchaseOrders({
@@ -251,7 +251,7 @@ app.get('/api/bridges/procurement/purchase-orders', async (req, res) => {
 });
 
 // Proxy: fetch AI insights for operational entities
-app.get('/api/bridges/ai/insights', async (req, res) => {
+app.get('/api/bridges/ai/insights', authenticate, async (req, res) => {
   try {
     const client = getDefaultAiClient();
     const data = await client.getInsights({

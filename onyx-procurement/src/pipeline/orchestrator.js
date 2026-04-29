@@ -307,6 +307,128 @@ const ORCHESTRATIONS = {
     events: ['vendor.reinstated'],
     navigate: '/entity360.html?type=supplier&id=:supplierId',
   },
+
+  // ───────────────────────────────────────────────────────────
+  // AGENT-FIX-ORCH-MISSING — 6 actions identified by the
+  // Master Flow E2E audit. Each one closes a 360-page button
+  // that previously returned 400 from POST /api/orchestrator/execute.
+  // ───────────────────────────────────────────────────────────
+  'order.create': {
+    service: 'ops',
+    label: 'הפוך הזמנת מכירה לפרויקט',
+    entity_type: 'sales_order',
+    preconditions: [
+      { check: 'entity_exists', entity: 'sales_order' },
+      { check: 'status_in',     statuses: ['confirmed'] },
+    ],
+    effects: [
+      { type: 'create',     entity: 'project', copyFrom: 'sales_order', fields: ['customer_id', 'customer_name', 'value', 'items'] },
+      { type: 'link',       from:   'sales_order', to: 'project' },
+      { type: 'transition', entity: 'sales_order', transition: 'start_production' },
+      { type: 'audit',      message: 'הזמנת מכירה הומרה לפרויקט' },
+    ],
+    events: ['sales_order.converted_to_project'],
+    listeners: ['ai.generate_project_risk_baseline', 'procurement.prepare_procurement_context'],
+    navigate: '/entity360.html?type=project&id=:newId',
+  },
+
+  'order.cancel': {
+    service: 'ops',
+    label: 'בטל הזמנת מכירה',
+    entity_type: 'sales_order',
+    preconditions: [
+      { check: 'entity_exists', entity: 'sales_order' },
+      { check: 'status_in',     statuses: ['draft', 'confirmed'] },
+    ],
+    effects: [
+      { type: 'transition',   entity: 'sales_order', transition: 'cancel' },
+      { type: 'update_field', entity: 'sales_order', field: 'cancelled_at', value: '$now' },
+      { type: 'revert_link',  from:   'quote', optional: true },
+      { type: 'audit',        message: 'הזמנת מכירה בוטלה' },
+    ],
+    events: ['sales_order.cancelled'],
+    navigate: '/entity360.html?type=sales_order&id=:salesOrderId',
+  },
+
+  'project.create_rfq': {
+    service: 'procurement',
+    label: 'צור RFQ מפרויקט',
+    entity_type: 'project',
+    preconditions: [
+      { check: 'entity_exists', entity: 'project' },
+      { check: 'status_in',     statuses: ['in_planning', 'in_procurement'] },
+    ],
+    effects: [
+      { type: 'create',  entity: 'rfq', copyFrom: 'project', fields: ['items', 'project_id'], fromBOM: true },
+      { type: 'link',    from:   'rfq', to: 'project' },
+      { type: 'audit',   message: 'RFQ נוצר מפרויקט' },
+    ],
+    events: ['rfq.created_from_project'],
+    listeners: ['ai.suggest_supplier_invites'],
+    navigate: '/entity360.html?type=rfq&id=:newId',
+  },
+
+  'delivery.confirm': {
+    service: 'ops',
+    label: 'אשר משלוח כנמסר',
+    entity_type: 'delivery',
+    preconditions: [
+      { check: 'entity_exists', entity: 'delivery' },
+      { check: 'status_in',     statuses: ['in_transit', 'pending'] },
+    ],
+    effects: [
+      { type: 'transition',   entity: 'delivery', transition: 'deliver' },
+      { type: 'update_field', entity: 'delivery', field: 'delivered_at', value: '$now' },
+      { type: 'trigger_downstream', action: 'invoice.create' },
+      { type: 'audit',        message: 'משלוח אושר כנמסר' },
+    ],
+    events: ['delivery.confirmed'],
+    listeners: ['ops.notify_customer_delivered', 'ai.update_logistics_metrics'],
+    navigate: '/entity360.html?type=delivery&id=:deliveryId',
+  },
+
+  'delivery.issue_invoice': {
+    service: 'procurement',
+    label: 'הנפק חשבונית ממשלוח',
+    entity_type: 'delivery',
+    preconditions: [
+      { check: 'entity_exists', entity: 'delivery' },
+      { check: 'status_in',     statuses: ['delivered'] },
+    ],
+    effects: [
+      { type: 'create',     entity: 'invoice', copyFrom: 'delivery', fields: ['delivery_id', 'sales_order_id', 'customer_id', 'items', 'direction:output'] },
+      { type: 'link',       from:   'invoice', to: 'delivery' },
+      { type: 'link',       from:   'invoice', to: 'sales_order', optional: true },
+      { type: 'transition', entity: 'invoice', transition: 'issue' },
+      { type: 'post_to_gl' },
+      { type: 'post_to_vat' },
+      { type: 'audit',      message: 'חשבונית הונפקה ממשלוח' },
+    ],
+    events: ['invoice.issued_from_delivery'],
+    listeners: ['ai.update_cashflow_forecast', 'ops.show_project_finance_update'],
+    navigate: '/entity360.html?type=invoice&id=:newId',
+  },
+
+  'project.close': {
+    service: 'ops',
+    label: 'סגור פרויקט',
+    entity_type: 'project',
+    preconditions: [
+      { check: 'entity_exists',      entity: 'project' },
+      { check: 'status_in',          statuses: ['completed', 'in_delivery'] },
+      { check: 'all_invoices_paid',  entity: 'project' },
+    ],
+    effects: [
+      { type: 'transition',   entity: 'project', transition: 'close' },
+      { type: 'update_field', entity: 'project', field: 'closed_at', value: '$now' },
+      { type: 'archive_related', entities: ['document', 'task', 'work_order'] },
+      { type: 'generate_closure_report' },
+      { type: 'audit',        message: 'פרויקט נסגר סופית' },
+    ],
+    events: ['project.closed'],
+    listeners: ['ai.compute_project_profitability', 'finance.lock_project_costing'],
+    navigate: '/entity360.html?type=project&id=:projectId',
+  },
 };
 
 // ═══════════════════════════════════════════════════════════════

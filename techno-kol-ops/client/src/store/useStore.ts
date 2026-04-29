@@ -54,7 +54,7 @@ interface StoreState {
 
   // Alerts
   alerts: Alert[];
-  setAlerts: (a: Alert[]) => void;
+  setAlerts: (a: Alert[] | ((prev: Alert[]) => Alert[])) => void;
   addAlert: (a: Alert) => void;
   resolveAlert: (id: string) => void;
 
@@ -84,7 +84,7 @@ export const useStore = create<StoreState>((set) => ({
   setSnapshot: (s) => set({ snapshot: s }),
 
   alerts: [],
-  setAlerts: (a) => set({ alerts: a }),
+  setAlerts: (a) => set((state) => ({ alerts: typeof a === 'function' ? a(state.alerts) : a })),
   addAlert: (a) => set((state) => ({ alerts: [a, ...state.alerts] })),
   resolveAlert: (id) => set((state) => ({
     alerts: state.alerts.map(a => a.id === id ? { ...a, is_resolved: true } : a)

@@ -375,6 +375,51 @@ const STATE_MACHINES = {
   },
 
   // ─────────────────────────────────────────────────────────────
+  // delivery — added per AGENT-FIX-ORCH-MISSING. Exposes the
+  // logistics state machine that the Master Flow references after
+  // shipped→delivered (sales_order) and feeds the
+  // delivery.confirm + delivery.issue_invoice orchestrations.
+  // ─────────────────────────────────────────────────────────────
+  delivery: {
+    initial: 'pending',
+    states: {
+      pending:    { transitions: { dispatch: 'in_transit', cancel: 'cancelled', deliver: 'delivered' } },
+      in_transit: { transitions: { deliver:  'delivered',  fail:   'failed' } },
+      delivered:  { transitions: { invoice:  'invoiced' } },
+      invoiced:   { transitions: {}, final: true },
+      failed:     { transitions: { retry:    'pending' } },
+      cancelled:  { transitions: {}, final: true },
+    },
+    triggers: {
+      'pending→in_transit': [
+        { action: 'notify_customer', params: { template: 'delivery_dispatched' } },
+        { action: 'update_logistics_eta', params: {} },
+      ],
+      'in_transit→delivered': [
+        { action: 'capture_pod', params: {} },
+        { action: 'notify_customer', params: { template: 'delivery_completed' } },
+        { action: 'set_delivered_at', params: {} },
+      ],
+      'pending→delivered': [
+        { action: 'capture_pod', params: {} },
+        { action: 'set_delivered_at', params: {} },
+      ],
+      'delivered→invoiced': [
+        { action: 'create_invoice', params: { copyFrom: 'delivery' } },
+        { action: 'post_to_gl', params: {} },
+      ],
+    },
+    badges: {
+      pending:    { he: 'ממתין',     en: 'Pending',    tone: 'neutral', icon: 'Clock' },
+      in_transit: { he: 'בהובלה',    en: 'In Transit', tone: 'info',    icon: 'Truck' },
+      delivered:  { he: 'נמסר',      en: 'Delivered',  tone: 'success', icon: 'PackageCheck' },
+      invoiced:   { he: 'חוייב',     en: 'Invoiced',   tone: 'success', icon: 'Receipt' },
+      failed:     { he: 'נכשל',      en: 'Failed',     tone: 'danger',  icon: 'AlertTriangle' },
+      cancelled:  { he: 'בוטל',      en: 'Cancelled',  tone: 'muted',   icon: 'XCircle' },
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────
   // supplier — added per AGENT-223 (closes the loop on AGENT-183).
   // States align with procurement.suppliers.status_check after
   // migration 00092_vendor_score_history.sql:

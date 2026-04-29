@@ -1,7 +1,9 @@
 import { Router } from "express";
 import { pool } from "@workspace/db";
+import { requireAuthMw } from "../lib/require-auth-mw";
 
 const router = Router();
+router.use(requireAuthMw as any);
 
 /* ───── AUTO-CREATE TABLES ───── */
 async function ensureTables() {

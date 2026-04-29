@@ -36,6 +36,24 @@ const NAV = [
   { path: '/control-room/operations', label: 'חדר בקרה תפעולי', icon: '🏗️', section: 'חדרי בקרה' },
   { path: '/control-room/procurement', label: 'חדר בקרה רכש', icon: '📦', section: 'חדרי בקרה' },
   { path: '/control-room/workforce', label: 'חדר בקרה כוח אדם', icon: '👷', section: 'חדרי בקרה' },
+  // Master 360 — surfaces the 15 Master Flow detail-pages (CLAUDE.md: No Dead Pages).
+  // Routes point to existing list pages (drill into 360 on row-click) or to /:type/1 sample detail
+  // for entities without a list page yet. All 15 360s become reachable from the sidebar.
+  { path: '/clients', label: 'לקוחות 360', icon: '🤝', section: 'מאסטר 360' },
+  { path: '/quote/1', label: 'הצעות מחיר 360', icon: '📄', section: 'מאסטר 360' },
+  { path: '/order/1', label: 'הזמנות 360', icon: '🛒', section: 'מאסטר 360' },
+  { path: '/lead/1', label: 'לידים 360', icon: '📥', section: 'מאסטר 360' },
+  { path: '/pipeline', label: 'פרויקטים 360', icon: '📋', section: 'מאסטר 360' },
+  { path: '/work-orders', label: 'הוראות עבודה 360', icon: '🛠️', section: 'מאסטר 360' },
+  { path: '/supplier/1', label: 'ספקים 360', icon: '🚚', section: 'מאסטר 360' },
+  { path: '/rfq/1', label: 'בקשות הצעה 360', icon: '❓', section: 'מאסטר 360' },
+  { path: '/po/1', label: 'הזמנות רכש 360', icon: '🛍️', section: 'מאסטר 360' },
+  { path: '/materials', label: 'מלאי 360', icon: '📦', section: 'מאסטר 360' },
+  { path: '/finance', label: 'פיננסי 360', icon: '💵', section: 'מאסטר 360' },
+  { path: '/payment/1', label: 'תשלומים 360', icon: '💳', section: 'מאסטר 360' },
+  { path: '/employees', label: 'עובדים 360', icon: '👤', section: 'מאסטר 360' },
+  { path: '/delivery/1', label: 'משלוחים 360', icon: '🚛', section: 'מאסטר 360' },
+  { path: '/project/1/closure', label: 'סגירת פרויקטים 360', icon: '✅', section: 'מאסטר 360' },
 ];
 
 export function Sidebar() {

@@ -1,7 +1,51 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
 import { pool } from "@workspace/db";
+import { validateSession } from "../lib/auth";
 
 const router: IRouter = Router();
+
+async function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const header = req.headers.authorization;
+  const token = header?.startsWith("Bearer ") ? header.substring(7) : (req.query.token as string) || null;
+  if (!token) { res.status(401).json({ error: "נדרשת התחברות" }); return; }
+  const result = await validateSession(token);
+  if (result.error || !result.user) { res.status(401).json({ error: "הסשן פג תוקף" }); return; }
+  (req as any).user = result.user;
+  next();
+}
+router.use(requireAuth as any);
+
+// B-SEC-SQL: explicit allowlist of writable supplier columns. Sources: seed-fix.sql,
+// seed-factory-data.sql, factory-seed.ts. Add columns here only after a Drizzle
+// migration adds them to the table. PK and timestamps are excluded.
+const SUPPLIER_ALLOWED_COLUMNS = new Set<string>([
+  "supplier_number", "supplier_name", "name", "contact_person", "phone", "mobile",
+  "email", "address", "city", "country", "country_code", "category", "supply_type",
+  "supplier_type", "payment_terms", "lead_time_days", "vat_number", "status",
+  "activity_field", "material_types", "currency", "credit_days", "rating",
+  "quality_rating", "delivery_rating", "price_rating", "quality_score",
+  "delivery_score", "on_time_delivery_pct", "preferred_supplier", "is_active",
+  "notes", "tax_id", "bank_account", "website",
+]);
+const SUPPLIER_BLOCKED_ON_UPDATE = new Set<string>(["id", "created_at", "updated_at"]);
+
+function pickSupplierColumns(body: Record<string, unknown>, opts: { isUpdate: boolean; dropEmpty?: boolean }): { keys: string[]; vals: unknown[] } {
+  const keys: string[] = [];
+  const vals: unknown[] = [];
+  for (const k of Object.keys(body)) {
+    if (opts.isUpdate && SUPPLIER_BLOCKED_ON_UPDATE.has(k)) {
+      throw new Error(`Field not updatable: ${k}`);
+    }
+    if (!SUPPLIER_ALLOWED_COLUMNS.has(k)) {
+      throw new Error(`Forbidden column: ${k}`);
+    }
+    const v = body[k];
+    if (opts.dropEmpty && (v === undefined || v === "")) continue;
+    keys.push(k);
+    vals.push(v === "" ? null : v);
+  }
+  return { keys, vals };
+}
 
 router.get("/suppliers", async (req, res) => {
   try {

@@ -73,7 +73,8 @@ router.get("/ap/aging", async (_req, res) => {
 
 // CRUD-GAP-FIX: GET single AP invoice by id. JSON envelope + 404 + 503 on missing table.
 router.get("/ap/:id(\\d+)", async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+  const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(String(rawId ?? ""), 10);
   if (!Number.isFinite(id) || id <= 0) {
     return res.status(400).json({ ok: false, error: "מזהה חשבונית לא תקין" });
   }
