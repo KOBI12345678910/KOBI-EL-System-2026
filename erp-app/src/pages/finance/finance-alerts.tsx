@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { authFetch } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -229,6 +229,8 @@ export default function FinanceAlerts() {
   const [statusFilter, setStatusFilter] = useState<AlertStatus | "all">("active");
   const [search, setSearch] = useState("");
   const [showCreateRule, setShowCreateRule] = useState(false);
+  const [isAcknowledging, setIsAcknowledging] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: alerts = FALLBACK_ALERTS, isLoading: isLoadingAlerts } = useQuery({
     queryKey: ["finance-alerts"],
@@ -304,7 +306,34 @@ export default function FinanceAlerts() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => {/* acknowledge all */}}>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={isAcknowledging}
+            onClick={async () => {
+              const activeIds = alerts
+                .filter((a: FinAlert) => a.status === "active")
+                .map((a: FinAlert) => a.id);
+              if (activeIds.length === 0) {
+                alert("אין התראות פעילות");
+                return;
+              }
+              setIsAcknowledging(true);
+              try {
+                const r = await authFetch("/api/notifications/acknowledge-all", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ ids: activeIds, scope: "finance" }),
+                });
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                await queryClient.invalidateQueries({ queryKey: ["finance-alerts"] });
+              } catch (e: any) {
+                alert(`שגיאה בסימון התראות: ${e?.message ?? "לא ידוע"}`);
+              } finally {
+                setIsAcknowledging(false);
+              }
+            }}
+          >
             <CheckCheck className="h-3.5 w-3.5 ml-1" /> סמן הכל כנצפה
           </Button>
           <Button variant="outline" size="sm"><Settings2 className="h-3.5 w-3.5 ml-1" /> הגדרות</Button>

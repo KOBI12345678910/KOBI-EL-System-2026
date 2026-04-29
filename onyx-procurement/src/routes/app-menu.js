@@ -109,6 +109,62 @@ function rowVisibleToCaller(row, req) {
 }
 
 /**
+ * In-memory row cache keyed by `${tenantId}|${includeInactive ? 'all' : 'active'}`.
+ * Stores the *raw* DB rows (post-fetch, pre-permission-filter) so per-caller
+ * RBAC is still applied on every request. 60-second TTL; explicit invalidation
+ * via `invalidateMenu(tenantId?)`.
+ *
+ * Why two keys per tenant? `?include_inactive=1` returns a strict superset, but
+ * we cache them separately to keep the hot path a single Map.get() with no
+ * post-filtering. Two small caches > one large cache + filter on every read.
+ */
+const _menuCache = new Map();
+const _MENU_TTL_MS = 60 * 1000;
+
+function _cacheKey(tenantId, includeInactive) {
+  return `${tenantId || '_'}|${includeInactive ? 'all' : 'active'}`;
+}
+
+/**
+ * Fetch all rows for a tenant in a single PostgREST call.
+ *
+ * The default PostgREST cap is 1000 rows, but an *explicit* upper bound
+ * via `.range(0, 99999)` overrides the cap and returns everything up to
+ * that bound in one round-trip. This replaces the previous 66-page
+ * pagination loop (~21s) with a single call (~1-2s cold).
+ */
+async function _fetchAllRows(supabase, includeInactive) {
+  let q = supabase
+    .from('app_menu')
+    .select(
+      'id,label,label_he,route,icon,parent_id,order_index,required_permission,is_visible,is_active'
+    )
+    .order('parent_id', { ascending: true, nullsFirst: true })
+    .order('order_index', { ascending: true })
+    .order('id', { ascending: true })
+    .range(0, 99999);
+  if (!includeInactive) {
+    q = q.or('is_active.is.null,is_active.eq.true');
+  }
+  return q;
+}
+
+/**
+ * Invalidate the in-memory menu cache.
+ *
+ * @param {string} [tenantId] — if omitted, clears all tenants. If supplied,
+ *   clears both `active` and `all` variants for that tenant.
+ */
+function invalidateMenu(tenantId) {
+  if (!tenantId) {
+    _menuCache.clear();
+    return;
+  }
+  _menuCache.delete(_cacheKey(tenantId, false));
+  _menuCache.delete(_cacheKey(tenantId, true));
+}
+
+/**
  * registerAppMenuRoutes — attaches GET /api/app-menu to the given
  * Express app using the provided Supabase client.
  *
@@ -130,43 +186,38 @@ function registerAppMenuRoutes(app, deps = {}) {
       const includeInactive =
         req.query.include_inactive === '1' || req.query.include_inactive === 'true';
 
-      // Paginate around the PostgREST 1000-row cap to fetch the full menu
-      // (Techno-Kol Uzi tenant has 2,509 rows after marketplace catalog seed).
-      const PAGE = 1000;
-      const allRows = [];
-      let offset = 0;
-      let lastErr = null;
-      // Hard ceiling: 200 pages = 200,000 rows; supports the full catalog (50,945 + extras).
-      for (let page = 0; page < 200; page++) {
-        let q = supabase
-          .from('app_menu')
-          .select(
-            'id,label,label_he,route,icon,parent_id,order_index,required_permission,is_visible,is_active'
-          )
-          .order('parent_id', { ascending: true, nullsFirst: true })
-          .order('order_index', { ascending: true })
-          .order('id', { ascending: true })
-          .range(offset, offset + PAGE - 1);
-        if (!includeInactive) {
-          q = q.or('is_active.is.null,is_active.eq.true');
+      const tenantId =
+        (req.headers && (req.headers['x-tenant-id'] || req.headers['X-Tenant-Id'])) ||
+        (req.user && req.user.tenant_id) ||
+        '_';
+
+      const key = _cacheKey(tenantId, includeInactive);
+      const now = Date.now();
+      const hit = _menuCache.get(key);
+
+      let data;
+      let cacheStatus;
+      if (hit && now - hit.ts < _MENU_TTL_MS) {
+        data = hit.data;
+        cacheStatus = 'HIT';
+      } else {
+        const { data: rowsFetched, error } = await _fetchAllRows(supabase, includeInactive);
+        if (error) {
+          return res.status(500).json({
+            error: 'app_menu_fetch_failed',
+            detail: error.message || String(error),
+          });
         }
-        const { data: pageRows, error } = await q;
-        if (error) { lastErr = error; break; }
-        if (!pageRows || pageRows.length === 0) break;
-        allRows.push(...pageRows);
-        if (pageRows.length < PAGE) break;
-        offset += PAGE;
-      }
-      const data = allRows;
-      const error = lastErr;
-      if (error) {
-        return res.status(500).json({
-          error: 'app_menu_fetch_failed',
-          detail: error.message || String(error),
-        });
+        data = rowsFetched || [];
+        _menuCache.set(key, { data, ts: now });
+        cacheStatus = 'MISS';
       }
 
-      const rows = (data || []).filter((r) => rowVisibleToCaller(r, req));
+      // Per-request permission filter — must run after cache read so that
+      // different roles on the same tenant don't see each other's gated rows.
+      const rows = data.filter((r) => rowVisibleToCaller(r, req));
+
+      res.set('X-Cache', cacheStatus);
 
       if (flat) {
         return res.json({
@@ -194,6 +245,7 @@ function registerAppMenuRoutes(app, deps = {}) {
 
 module.exports = {
   registerAppMenuRoutes,
+  invalidateMenu,
   // exported for unit testing
   buildTree,
   rowVisibleToCaller,

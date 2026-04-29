@@ -93,6 +93,17 @@ const SCHEMA_ALLOWLIST = new Set([
 //    the cache actually pays.
 const PROBE_TTL_MS = 5 * 60 * 1000;
 const probeCache = new Map();
+// ── Tenant-column cache: (schema|table) → { hasTenantId, expires }.
+//    Whether the table has a `tenant_id` column dictates whether we
+//    add an `.eq('tenant_id', req.tenantId)` filter. Determining this
+//    via a column-probe (select tenant_id, head:true) is cheap; we
+//    cache the answer on the same TTL so we don't pay it per request.
+const tenantColCache = new Map();
+
+// ── Tenant-id shape: RFC 4122 UUID, the same shape requireTenant()
+//    accepts. Defense-in-depth — we re-validate even though the
+//    middleware also checks. Requested by the P0 spec.
+const TENANT_ID_RE = /^[0-9a-f-]{36}$/i;
 
 function cacheKey(schema, table) {
   return `${schema}|${table}`;
@@ -113,6 +124,100 @@ function setCachedProbe(schema, table, ok) {
     ok,
     expires: Date.now() + PROBE_TTL_MS,
   });
+}
+
+function getCachedTenantCol(schema, table) {
+  const hit = tenantColCache.get(cacheKey(schema, table));
+  if (!hit) return null;
+  if (hit.expires < Date.now()) {
+    tenantColCache.delete(cacheKey(schema, table));
+    return null;
+  }
+  return hit;
+}
+
+function setCachedTenantCol(schema, table, hasTenantId) {
+  tenantColCache.set(cacheKey(schema, table), {
+    hasTenantId,
+    expires: Date.now() + PROBE_TTL_MS,
+  });
+}
+
+/**
+ * Detect whether (schema, table) has a `tenant_id` column. We can't
+ * read information_schema through PostgREST without a custom RPC, so
+ * we probe by issuing `SELECT tenant_id ... LIMIT 0` against the
+ * table. A 42703 ("column does not exist") tells us cleanly that the
+ * table has no tenant_id column and is therefore NOT tenant-scoped.
+ * Any other success means the column exists.
+ *
+ * Returns true / false. Cached on PROBE_TTL_MS.
+ *
+ * Why this matters: the P0 cross-tenant bypass on /api/db-entity is
+ * fixed by adding `.eq('tenant_id', req.tenantId)` to the SELECT —
+ * but only for tables that actually have such a column. Reference
+ * tables (countries, currencies, schema_migrations, etc.) don't, and
+ * forcing the filter on them would break legitimate reads.
+ */
+async function detectTenantIdColumn(supabase, schema, table) {
+  const cached = getCachedTenantCol(schema, table);
+  if (cached) return cached.hasTenantId;
+
+  const { error } = await supabase
+    .schema(schema)
+    .from(table)
+    .select('tenant_id', { head: true, count: 'exact' })
+    .limit(0);
+
+  if (error) {
+    // 42703 = column does not exist → table is NOT tenant-scoped.
+    if (error.code === '42703' ||
+        String(error.message || '').toLowerCase().includes('tenant_id')) {
+      setCachedTenantCol(schema, table, false);
+      return false;
+    }
+    // Anything else is a transport/permissions issue we can't classify
+    // safely. Fail closed: assume the column exists so the route still
+    // applies the filter. Worst-case the query returns empty rows.
+    setCachedTenantCol(schema, table, true);
+    return true;
+  }
+
+  setCachedTenantCol(schema, table, true);
+  return true;
+}
+
+/**
+ * Verify the request carries a real tenant context attached by
+ * requireTenant() — not just a spoofed X-Tenant-Id header reaching a
+ * handler that forgot to mount the middleware. requireTenant() always
+ * sets BOTH `req.tenantId` AND `req.tenantContext`; if only the first
+ * is present the value didn't come from the middleware, only from a
+ * caller setting `req.tenantId` directly which we don't trust.
+ *
+ * Returns true on success. On failure writes a 401 and returns false
+ * so the caller can `return` immediately.
+ */
+function requireTenantOnRequest(req, res) {
+  // 1. Must be a non-empty string.
+  if (!req.tenantId || typeof req.tenantId !== 'string') {
+    res.status(401).json({ error: 'tenant_required' });
+    return false;
+  }
+  // 2. Must match UUID shape (RFC 4122).
+  if (!TENANT_ID_RE.test(req.tenantId)) {
+    res.status(401).json({ error: 'tenant_required' });
+    return false;
+  }
+  // 3. Must have been set by requireTenant(), not by a downstream
+  //    handler stuffing the field. requireTenant() ALWAYS writes
+  //    req.tenantContext — if it's missing, the middleware did not
+  //    run on this request and we will not trust a bare value.
+  if (!req.tenantContext || typeof req.tenantContext !== 'object') {
+    res.status(401).json({ error: 'tenant_required' });
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -238,6 +343,8 @@ function registerDbEntityRoutes(app, deps = {}) {
   // ── /columns first so the literal "columns" doesn't collide with :id.
   app.get('/api/db-entity/:schema/:table/columns', async (req, res) => {
     try {
+      if (!requireTenantOnRequest(req, res)) return;
+
       const ids = validateIdentifiers(req, res);
       if (!ids) return;
 
@@ -251,11 +358,12 @@ function registerDbEntityRoutes(app, deps = {}) {
       }
 
       // Fetch one row to derive column shape. Empty table = empty columns.
-      const { data, error } = await supabase
-        .schema(ids.schema)
-        .from(ids.table)
-        .select('*')
-        .limit(1);
+      // Filter by tenant_id if the table has it so a foreign tenant
+      // cannot infer column shape from another tenant's data.
+      const hasTenantId = await detectTenantIdColumn(supabase, ids.schema, ids.table);
+      let q = supabase.schema(ids.schema).from(ids.table).select('*').limit(1);
+      if (hasTenantId) q = q.eq('tenant_id', req.tenantId);
+      const { data, error } = await q;
       if (error) {
         return res.status(500).json({
           error: 'columns_fetch_failed',
@@ -281,6 +389,8 @@ function registerDbEntityRoutes(app, deps = {}) {
   // ── Single row by id. Tables without an `id` column will 404.
   app.get('/api/db-entity/:schema/:table/:id', async (req, res) => {
     try {
+      if (!requireTenantOnRequest(req, res)) return;
+
       const ids = validateIdentifiers(req, res);
       if (!ids) return;
 
@@ -293,12 +403,18 @@ function registerDbEntityRoutes(app, deps = {}) {
         });
       }
 
-      const { data, error } = await supabase
+      // Cross-tenant guard: if the table has a tenant_id column, scope
+      // the lookup to req.tenantId. A row owned by a different tenant
+      // becomes a 404 for the caller, not a 403 — we never confirm the
+      // existence of foreign-tenant rows.
+      const hasTenantId = await detectTenantIdColumn(supabase, ids.schema, ids.table);
+      let q = supabase
         .schema(ids.schema)
         .from(ids.table)
         .select('*')
-        .eq('id', req.params.id)
-        .maybeSingle();
+        .eq('id', req.params.id);
+      if (hasTenantId) q = q.eq('tenant_id', req.tenantId);
+      const { data, error } = await q.maybeSingle();
 
       if (error) {
         // 22P02 = invalid_text_representation (e.g. non-uuid where uuid expected).
@@ -344,6 +460,8 @@ function registerDbEntityRoutes(app, deps = {}) {
   // ── List: first 100 rows + columns + total count.
   app.get('/api/db-entity/:schema/:table', async (req, res) => {
     try {
+      if (!requireTenantOnRequest(req, res)) return;
+
       const ids = validateIdentifiers(req, res);
       if (!ids) return;
 
@@ -356,11 +474,19 @@ function registerDbEntityRoutes(app, deps = {}) {
         });
       }
 
-      const { data, error, count } = await supabase
+      // Cross-tenant guard: if the table is tenant-scoped, every list
+      // call MUST be filtered by req.tenantId. This is the fix for the
+      // P0 bypass on /api/db-entity/public/customers — a caller with a
+      // different (or fake) X-Tenant-Id will see zero rows, never the
+      // owning tenant's data.
+      const hasTenantId = await detectTenantIdColumn(supabase, ids.schema, ids.table);
+      let listQ = supabase
         .schema(ids.schema)
         .from(ids.table)
         .select('*', { count: 'exact' })
         .limit(100);
+      if (hasTenantId) listQ = listQ.eq('tenant_id', req.tenantId);
+      const { data, error, count } = await listQ;
 
       if (error) {
         return res.status(500).json({
@@ -396,6 +522,9 @@ module.exports = {
   validateIdentifiers,
   inferColumnsFromRow,
   probeTable,
+  detectTenantIdColumn,
+  requireTenantOnRequest,
   IDENT_RE,
   SCHEMA_ALLOWLIST,
+  TENANT_ID_RE,
 };

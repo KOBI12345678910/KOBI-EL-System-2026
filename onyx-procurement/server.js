@@ -1909,13 +1909,28 @@ app.post('/webhook/whatsapp', verifyWhatsAppHmac, async (req, res) => {
 // START SERVER
 // ═══════════════════════════════════════════════════════════════
 
-// Global error handler — never leak stack traces
+// Global error handler — never leak stack traces (logs to server only)
 app.use((err, req, res, _next) => {
-  console.error(`[ERR] ${req.method} ${req.path}:`, err);
-  const isProd = process.env.NODE_ENV === 'production';
-  res.status(err.status || 500).json({
-    error: isProd ? 'Internal server error' : err.message,
-    ...(isProd ? {} : { stack: err.stack?.split('\n').slice(0, 5) }),
+  // Log full error (incl. stack) to server logs only — never to client
+  console.error(`[error-handler] ${req.method} ${req.path}:`, err);
+
+  // Body-parser JSON parse failures
+  if (err && (err.type === 'entity.parse.failed' || err instanceof SyntaxError) && err.status === 400 && 'body' in err) {
+    return res.status(400).json({ error: 'invalid_json', message: 'Request body is not valid JSON' });
+  }
+  // Generic SyntaxError fallback (still sanitize)
+  if (err instanceof SyntaxError) {
+    return res.status(400).json({ error: 'invalid_json', message: 'Request body is not valid JSON' });
+  }
+  // Payload too large
+  if (err && (err.status === 413 || err.type === 'entity.too.large')) {
+    return res.status(413).json({ error: 'payload_too_large', message: 'Request body too large' });
+  }
+  // Default — sanitized, never include stack or err.message verbatim
+  const status = (err && err.status) || 500;
+  res.status(status).json({
+    error: status === 500 ? 'internal_error' : 'request_failed',
+    message: status === 500 ? 'An internal error occurred' : 'Request could not be processed',
   });
 });
 

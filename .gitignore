@@ -43,3 +43,4 @@ onyx-procurement/data/payroll/*.json
 _audit-clones/
 _external-backups/
 _merge-incoming/
+_route_extract/

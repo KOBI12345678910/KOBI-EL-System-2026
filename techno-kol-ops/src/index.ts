@@ -24,6 +24,11 @@ import reportsRouter from './routes/reports';
 import pipelineRouter from './routes/pipeline';
 import intelligenceRouter from './routes/intelligence';
 import supplyChainRouter from './routes/supplyChain';
+import customersRouter from './routes/customers';
+import projectsRouter from './routes/projects';
+import quotesRouter from './routes/quotes';
+import invoicesRouter from './routes/invoices';
+import paymentsRouter from './routes/payments';
 
 import notificationsRouter from './routes/notifications';
 
@@ -123,6 +128,11 @@ app.use('/api/reports', authenticate);
 app.use('/api/pipeline', authenticate);
 app.use('/api/intelligence', authenticate);
 app.use('/api/supply-chain', authenticate);
+app.use('/api/customers', authenticate);
+app.use('/api/projects', authenticate);
+app.use('/api/quotes', authenticate);
+app.use('/api/invoices', authenticate);
+app.use('/api/payments', authenticate);
 app.use('/api/brain', authenticate);
 app.use('/api/aip', authenticate);
 app.use('/api/signatures', authenticate);
@@ -156,6 +166,11 @@ app.use('/api/reports', reportsRouter);
 app.use('/api/pipeline', pipelineRouter);
 app.use('/api/intelligence', intelligenceRouter);
 app.use('/api/supply-chain', supplyChainRouter);
+app.use('/api/customers', customersRouter);
+app.use('/api/projects', projectsRouter);
+app.use('/api/quotes', quotesRouter);
+app.use('/api/invoices', invoicesRouter);
+app.use('/api/payments', paymentsRouter);
 
 // ── v2.0 Foundry Routes ──
 app.use('/api/brain', brainRouter);

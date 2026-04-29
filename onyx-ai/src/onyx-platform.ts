@@ -2343,6 +2343,39 @@ class APIServer {
         return;
       }
 
+      // ── API-key gate ────────────────────────────────────────────────────
+      // P0 security fix: /api/* exposes compliance state, kill-switch, agent
+      // and tool registries, and the event log. If ONYX_AI_API_KEY is set in
+      // the environment, all /api/* routes (except the public-status read)
+      // require a matching X-API-Key header (or "Bearer <key>" auth header).
+      //
+      // Liveness/readiness probes (/healthz, /livez, /readyz) and the
+      // root path stay public so k8s and Cloud Run can probe without creds.
+      //
+      // If ONYX_AI_API_KEY is unset, the gate is OFF — convenient for local
+      // dev. Production deployments MUST set this env var.
+      {
+        const pathnameForAuth = (req.url ?? '/').split('?')[0];
+        const queryForAuth = (req.url ?? '/').split('?')[1] ?? '';
+        const expectedKey = process.env.ONYX_AI_API_KEY;
+        const isApiPath = pathnameForAuth.startsWith('/api/');
+        const isPublicStatus =
+          pathnameForAuth === '/api/status' &&
+          new URLSearchParams(queryForAuth).get('level') === 'public';
+        if (expectedKey && isApiPath && !isPublicStatus) {
+          const headerKey = req.headers['x-api-key'];
+          const auth = req.headers['authorization'];
+          const provided =
+            (typeof headerKey === 'string' ? headerKey : Array.isArray(headerKey) ? headerKey[0] : undefined) ||
+            (typeof auth === 'string' ? auth.replace(/^Bearer\s+/i, '') : undefined);
+          if (provided !== expectedKey) {
+            res.writeHead(401);
+            res.end(JSON.stringify({ error: 'unauthorized' }));
+            return;
+          }
+        }
+      }
+
       // ── Rate limiting (probes exempt) ───────────────────────────────────
       const ip = (req.headers['x-forwarded-for'] as string || req.socket.remoteAddress || 'unknown').split(',')[0].trim();
       const pathname = (req.url ?? '/').split('?')[0];
