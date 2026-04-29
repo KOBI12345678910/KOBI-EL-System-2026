@@ -130,21 +130,35 @@ function registerAppMenuRoutes(app, deps = {}) {
       const includeInactive =
         req.query.include_inactive === '1' || req.query.include_inactive === 'true';
 
-      let q = supabase
-        .from('app_menu')
-        .select(
-          'id,label,route,icon,parent_id,order_index,required_permission,is_visible,is_active'
-        )
-        .order('parent_id', { ascending: true, nullsFirst: true })
-        .order('order_index', { ascending: true })
-        .order('id', { ascending: true });
-
-      if (!includeInactive) {
-        // Treat NULL is_active as active (older rows from 00017 predate the column).
-        q = q.or('is_active.is.null,is_active.eq.true');
+      // Paginate around the PostgREST 1000-row cap to fetch the full menu
+      // (Techno-Kol Uzi tenant has 2,509 rows after marketplace catalog seed).
+      const PAGE = 1000;
+      const allRows = [];
+      let offset = 0;
+      let lastErr = null;
+      // Hard ceiling: 20 pages = 20,000 rows; menu shouldn't exceed this.
+      for (let page = 0; page < 20; page++) {
+        let q = supabase
+          .from('app_menu')
+          .select(
+            'id,label,label_he,route,icon,parent_id,order_index,required_permission,is_visible,is_active'
+          )
+          .order('parent_id', { ascending: true, nullsFirst: true })
+          .order('order_index', { ascending: true })
+          .order('id', { ascending: true })
+          .range(offset, offset + PAGE - 1);
+        if (!includeInactive) {
+          q = q.or('is_active.is.null,is_active.eq.true');
+        }
+        const { data: pageRows, error } = await q;
+        if (error) { lastErr = error; break; }
+        if (!pageRows || pageRows.length === 0) break;
+        allRows.push(...pageRows);
+        if (pageRows.length < PAGE) break;
+        offset += PAGE;
       }
-
-      const { data, error } = await q;
+      const data = allRows;
+      const error = lastErr;
       if (error) {
         return res.status(500).json({
           error: 'app_menu_fetch_failed',
