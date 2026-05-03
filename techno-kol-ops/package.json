@@ -6,7 +6,8 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "seed": "tsx src/db/seed.ts",
-    "client": "cd client && npm run dev"
+    "client": "cd client && npm run dev",
+    "test": "node --test --test-reporter=spec test/**/*.test.js src/**/*.test.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

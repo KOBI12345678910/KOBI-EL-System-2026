@@ -71,4 +71,35 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
   }
 });
 
+// CRUD-GAP-FIX: soft delete (status='deleted'). Status flip only — never hard-delete.
+router.delete('/:id', async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!id || !/^[a-zA-Z0-9-]+$/.test(id)) {
+      return res.status(400).json({ ok: false, error: 'מזהה ליד לא תקין' });
+    }
+    const { rows } = await query(
+      `UPDATE leads SET status = 'deleted' WHERE id = $1 AND COALESCE(status, '') <> 'deleted' RETURNING *`,
+      [id]
+    );
+    if (rows.length === 0) {
+      const existing = await query(`SELECT id, status FROM leads WHERE id = $1`, [id]);
+      if (existing.rows.length === 0) {
+        return res.status(404).json({ ok: false, error: 'ליד לא נמצא' });
+      }
+      return res.json({ ok: true, data: existing.rows[0], note: 'כבר מסומן כמחוק' });
+    }
+    broadcastToAll('LEAD_DELETED', rows[0]);
+    eventBus.emit('lead.deleted', { id: rows[0].id, actor: req.user?.id });
+    res.json({ ok: true, data: rows[0] });
+  } catch (err: any) {
+    const msg = String(err?.message || err);
+    if (/relation .* does not exist|table .* not found/i.test(msg)) {
+      return res.status(503).json({ ok: false, error: 'שירות הלידים אינו זמין כרגע' });
+    }
+    console.error('[leads DELETE] error:', msg);
+    res.status(500).json({ ok: false, error: 'מחיקת הליד נכשלה' });
+  }
+});
+
 export default router;

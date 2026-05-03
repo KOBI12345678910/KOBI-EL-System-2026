@@ -8,6 +8,7 @@ import {
 import { globalConfirm } from "@/components/confirm-dialog";
 import BulkActions, { useBulkSelection, BulkCheckbox, defaultBulkActions } from "@/components/bulk-actions";
 import { useFormValidation, FormFieldError, RequiredMark } from "@/hooks/use-form-validation";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 const API = "/api";
 const getHeaders = () => ({ "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("erp_token") || ""}` });
@@ -223,7 +224,7 @@ export default function ContractManagement() {
                     <div className="text-xs text-muted-foreground">{a.title}</div>
                   </div>
                 </div>
-                <div className="text-left">
+                <div className="text-start">
                   <div className={`text-sm font-bold ${a.daysLeft <= 0 ? "text-red-400" : "text-amber-400"}`}>
                     {a.daysLeft <= 0 ? `פג לפני ${Math.abs(a.daysLeft)} ימים` : `עוד ${a.daysLeft} ימים`}
                   </div>
@@ -262,14 +263,14 @@ export default function ContractManagement() {
           <table className="w-full text-sm">
             <thead className="bg-muted/30 border-b border-border">
               <tr>
-                <th className="p-3 text-right font-medium"><BulkCheckbox checked={selectedIds.size === filtered.length && filtered.length > 0} onChange={() => toggleAll(filtered.map(r => r.id))} /></th>
-                <th className="p-3 text-right font-medium cursor-pointer" onClick={() => toggleSort("contractNumber")}>מספר חוזה <SortIcon field="contractNumber" /></th>
-                <th className="p-3 text-right font-medium cursor-pointer" onClick={() => toggleSort("customer")}>לקוח <SortIcon field="customer" /></th>
+                <th className="p-3 text-end font-medium"><BulkCheckbox checked={selectedIds.size === filtered.length && filtered.length > 0} onChange={() => toggleAll(filtered.map(r => r.id))} /></th>
+                <th className="p-3 text-end font-medium cursor-pointer" onClick={() => toggleSort("contractNumber")}>מספר חוזה <SortIcon field="contractNumber" /></th>
+                <th className="p-3 text-end font-medium cursor-pointer" onClick={() => toggleSort("customer")}>לקוח <SortIcon field="customer" /></th>
                 <th className="p-3 text-center font-medium">סוג</th>
-                <th className="p-3 text-right font-medium">כותרת</th>
+                <th className="p-3 text-end font-medium">כותרת</th>
                 <th className="p-3 text-center font-medium cursor-pointer" onClick={() => toggleSort("startDate")}>התחלה <SortIcon field="startDate" /></th>
                 <th className="p-3 text-center font-medium cursor-pointer" onClick={() => toggleSort("endDate")}>סיום <SortIcon field="endDate" /></th>
-                <th className="p-3 text-right font-medium cursor-pointer" onClick={() => toggleSort("value")}>שווי <SortIcon field="value" /></th>
+                <th className="p-3 text-end font-medium cursor-pointer" onClick={() => toggleSort("value")}>שווי <SortIcon field="value" /></th>
                 <th className="p-3 text-center font-medium">חידוש אוטו'</th>
                 <th className="p-3 text-center font-medium">סטטוס</th>
                 <th className="p-3 text-center font-medium">פעולות</th>
@@ -344,80 +345,89 @@ export default function ContractManagement() {
         </div>
       )}
 
-      {/* Create/Edit Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
-          <div className="bg-card rounded-2xl border border-border w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 space-y-5" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold">{editing ? "עריכת חוזה" : "חוזה חדש"}</h2>
-              <button onClick={() => setShowForm(false)} className="p-1 rounded hover:bg-muted/30"><X className="w-5 h-5" /></button>
-            </div>
+      {/* Create/Edit Form Modal — Radix Dialog (focus trap + ESC + ARIA) */}
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent dir="rtl" className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editing ? "עריכת חוזה" : "חוזה חדש"}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={(e) => { e.preventDefault(); save(); }} noValidate>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {(() => { const p = validation.getFieldProps("contractNumber"); return (
+                <div>
+                  <label htmlFor={p.id} className="text-sm font-medium">מספר חוזה <RequiredMark /></label>
+                  <input {...p.inputProps} value={form.contractNumber || ""} onChange={e => setForm({ ...form, contractNumber: e.target.value })} className={`w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm ${p.className}`} />
+                  <FormFieldError id={p.errorId} error={p.error} />
+                </div>
+              ); })()}
+              {(() => { const p = validation.getFieldProps("customer"); return (
+                <div>
+                  <label htmlFor={p.id} className="text-sm font-medium">לקוח <RequiredMark /></label>
+                  <input {...p.inputProps} value={form.customer || ""} onChange={e => setForm({ ...form, customer: e.target.value })} className={`w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm ${p.className}`} />
+                  <FormFieldError id={p.errorId} error={p.error} />
+                </div>
+              ); })()}
               <div>
-                <label className="text-sm font-medium">מספר חוזה <RequiredMark /></label>
-                <input value={form.contractNumber || ""} onChange={e => setForm({ ...form, contractNumber: e.target.value })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
-                <FormFieldError error={validation.errors.contractNumber} />
-              </div>
-              <div>
-                <label className="text-sm font-medium">לקוח <RequiredMark /></label>
-                <input value={form.customer || ""} onChange={e => setForm({ ...form, customer: e.target.value })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
-                <FormFieldError error={validation.errors.customer} />
-              </div>
-              <div>
-                <label className="text-sm font-medium">סוג</label>
-                <select value={form.type || "service"} onChange={e => setForm({ ...form, type: e.target.value })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm">
+                <label htmlFor={`${validation.idPrefix}-type`} className="text-sm font-medium">סוג</label>
+                <select id={`${validation.idPrefix}-type`} value={form.type || "service"} onChange={e => setForm({ ...form, type: e.target.value })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm">
                   {Object.entries(TYPE_MAP).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-sm font-medium">סטטוס</label>
-                <select value={form.status || "draft"} onChange={e => setForm({ ...form, status: e.target.value })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm">
+                <label htmlFor={`${validation.idPrefix}-status`} className="text-sm font-medium">סטטוס</label>
+                <select id={`${validation.idPrefix}-status`} value={form.status || "draft"} onChange={e => setForm({ ...form, status: e.target.value })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm">
                   {Object.entries(STATUS_MAP).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                 </select>
               </div>
-              <div className="md:col-span-2">
-                <label className="text-sm font-medium">כותרת <RequiredMark /></label>
-                <input value={form.title || ""} onChange={e => setForm({ ...form, title: e.target.value })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
-                <FormFieldError error={validation.errors.title} />
+              {(() => { const p = validation.getFieldProps("title"); return (
+                <div className="md:col-span-2">
+                  <label htmlFor={p.id} className="text-sm font-medium">כותרת <RequiredMark /></label>
+                  <input {...p.inputProps} value={form.title || ""} onChange={e => setForm({ ...form, title: e.target.value })} className={`w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm ${p.className}`} />
+                  <FormFieldError id={p.errorId} error={p.error} />
+                </div>
+              ); })()}
+              {(() => { const p = validation.getFieldProps("startDate"); return (
+                <div>
+                  <label htmlFor={p.id} className="text-sm font-medium">תאריך התחלה <RequiredMark /></label>
+                  <input {...p.inputProps} type="date" value={form.startDate || ""} onChange={e => setForm({ ...form, startDate: e.target.value })} className={`w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm ${p.className}`} />
+                  <FormFieldError id={p.errorId} error={p.error} />
+                </div>
+              ); })()}
+              {(() => { const p = validation.getFieldProps("endDate"); return (
+                <div>
+                  <label htmlFor={p.id} className="text-sm font-medium">תאריך סיום <RequiredMark /></label>
+                  <input {...p.inputProps} type="date" value={form.endDate || ""} onChange={e => setForm({ ...form, endDate: e.target.value })} className={`w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm ${p.className}`} />
+                  <FormFieldError id={p.errorId} error={p.error} />
+                </div>
+              ); })()}
+              <div>
+                <label htmlFor={`${validation.idPrefix}-value`} className="text-sm font-medium">שווי (₪)</label>
+                <input id={`${validation.idPrefix}-value`} type="number" min={0} value={form.value || 0} onChange={e => setForm({ ...form, value: Number(e.target.value) })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
               </div>
               <div>
-                <label className="text-sm font-medium">תאריך התחלה <RequiredMark /></label>
-                <input type="date" value={form.startDate || ""} onChange={e => setForm({ ...form, startDate: e.target.value })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
-                <FormFieldError error={validation.errors.startDate} />
+                <label htmlFor={`${validation.idPrefix}-monthlyValue`} className="text-sm font-medium">שווי חודשי (₪)</label>
+                <input id={`${validation.idPrefix}-monthlyValue`} type="number" min={0} value={form.monthlyValue || 0} onChange={e => setForm({ ...form, monthlyValue: Number(e.target.value) })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
               </div>
               <div>
-                <label className="text-sm font-medium">תאריך סיום <RequiredMark /></label>
-                <input type="date" value={form.endDate || ""} onChange={e => setForm({ ...form, endDate: e.target.value })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
-                <FormFieldError error={validation.errors.endDate} />
-              </div>
-              <div>
-                <label className="text-sm font-medium">שווי (₪)</label>
-                <input type="number" min={0} value={form.value || 0} onChange={e => setForm({ ...form, value: Number(e.target.value) })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
-              </div>
-              <div>
-                <label className="text-sm font-medium">שווי חודשי (₪)</label>
-                <input type="number" min={0} value={form.monthlyValue || 0} onChange={e => setForm({ ...form, monthlyValue: Number(e.target.value) })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
-              </div>
-              <div>
-                <label className="text-sm font-medium">איש קשר</label>
-                <input value={form.contactPerson || ""} onChange={e => setForm({ ...form, contactPerson: e.target.value })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+                <label htmlFor={`${validation.idPrefix}-contactPerson`} className="text-sm font-medium">איש קשר</label>
+                <input id={`${validation.idPrefix}-contactPerson`} value={form.contactPerson || ""} onChange={e => setForm({ ...form, contactPerson: e.target.value })} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
               </div>
               <div className="flex items-center gap-2 mt-6">
-                <input type="checkbox" id="autoRenew" checked={form.autoRenew || false} onChange={e => setForm({ ...form, autoRenew: e.target.checked })} className="rounded" />
-                <label htmlFor="autoRenew" className="text-sm">חידוש אוטומטי</label>
+                <input type="checkbox" id={`${validation.idPrefix}-autoRenew`} checked={form.autoRenew || false} onChange={e => setForm({ ...form, autoRenew: e.target.checked })} className="rounded" />
+                <label htmlFor={`${validation.idPrefix}-autoRenew`} className="text-sm">חידוש אוטומטי</label>
               </div>
               <div className="md:col-span-2">
-                <label className="text-sm font-medium">הערות</label>
-                <textarea value={form.notes || ""} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+                <label htmlFor={`${validation.idPrefix}-notes`} className="text-sm font-medium">הערות</label>
+                <textarea id={`${validation.idPrefix}-notes`} value={form.notes || ""} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
-              <button onClick={() => setShowForm(false)} className="px-4 py-2 rounded-lg border border-border text-sm hover:bg-muted/30 transition">ביטול</button>
-              <button onClick={save} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90 transition">{editing ? "עדכון" : "יצירה"}</button>
-            </div>
-          </div>
-        </div>
-      )}
+            <DialogFooter className="pt-4 border-t border-border mt-4">
+              <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 rounded-lg border border-border text-sm hover:bg-muted/30 transition">ביטול</button>
+              <button type="submit" className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90 transition">{editing ? "עדכון" : "יצירה"}</button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

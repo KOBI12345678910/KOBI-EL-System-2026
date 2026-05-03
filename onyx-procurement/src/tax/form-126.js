@@ -1111,6 +1111,341 @@ function createEngine() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// File builder API — IL annual employee tax certificate (Form 126).
+// Simple row-oriented surface for the form-126-routes Express layer; sits
+// alongside the richer generate126() engine. NOT a duplicate of 856 — this
+// is the EMPLOYEE side (Form 126 → annual employer summary of employee
+// wages & withholdings) whereas 856 is the freelancer/contractor side.
+// ═══════════════════════════════════════════════════════════════════════════
+
+const F126_ICONV = (() => {
+  try { return require('iconv-lite'); } catch { return null; }
+})();
+
+/**
+ * Per-employee Form 126 fixed-width detail line. Width = 130 chars.
+ * Numeric amounts are whole shekels; dates YYYYMMDD; strings space-padded.
+ *
+ *   3   record_type     "126" data / "100" header / "999" trailer
+ *   9   employer_id     ח.פ. / ת.ז. מעסיק
+ *   4   tax_year        YYYY
+ *   9   employee_id     ת"ז עובד (national_id)
+ *  40   full_name       שם מלא (Hebrew)
+ *  10   gross_annual    סה"כ ברוטו שנתי
+ *  10   income_tax      מס הכנסה שנוכה
+ *  10   bl_withheld     ביטוח לאומי שנוכה — חלק עובד
+ *  10   pension         הפרשות לפנסיה (חלק עובד)
+ *  10   severance       פיצויי פיטורין (חלק מעסיק שהופקדו)
+ *  15   filler          רזרבה
+ */
+const FORM126_FIELD_LAYOUT = Object.freeze([
+  { name: 'record_type',  width:  3, type: 'A', pad: ' ' },
+  { name: 'employer_id',  width:  9, type: 'N', pad: '0' },
+  { name: 'tax_year',     width:  4, type: 'N', pad: '0' },
+  { name: 'employee_id',  width:  9, type: 'N', pad: '0' },
+  { name: 'full_name',    width: 40, type: 'H', pad: ' ' },
+  { name: 'gross_annual', width: 10, type: 'N', pad: '0' },
+  { name: 'income_tax',   width: 10, type: 'N', pad: '0' },
+  { name: 'bl_withheld',  width: 10, type: 'N', pad: '0' },
+  { name: 'pension',      width: 10, type: 'N', pad: '0' },
+  { name: 'severance',    width: 10, type: 'N', pad: '0' },
+  { name: 'filler',       width: 15, type: 'A', pad: ' ' },
+]);
+const FORM126_RECORD_WIDTH =
+  FORM126_FIELD_LAYOUT.reduce((s, f) => s + f.width, 0);
+
+/** Hebrew/English labels for the simplified row-builder API. */
+const FORM126_LABELS = Object.freeze({
+  he: Object.freeze({
+    form_title:    'טופס 126 — דוח שנתי על משכורות ושכר עבודה (אישור שנתי לעובד)',
+    employer:      'מעסיק',
+    employer_id:   'ח.פ. / ת.ז. מעסיק',
+    tax_year:      'שנת מס',
+    employee:      'עובד',
+    employee_id:   'תעודת זהות',
+    full_name:     'שם מלא',
+    gross_annual:  'סה"כ ברוטו שנתי',
+    income_tax:    'מס הכנסה שנוכה',
+    bl_withheld:   'ביטוח לאומי שנוכה',
+    pension:       'הפרשות לפנסיה (חלק עובד)',
+    severance:     'פיצויי פיטורין שהופקדו (מעסיק)',
+    totals:        'סה"כ',
+    record_count:  'מספר עובדים',
+    submission_type: 'סוג הגשה',
+    initial:       'ראשוני',
+    correction:    'תיקון',
+    generated:     'הופק בתאריך',
+  }),
+  en: Object.freeze({
+    form_title:    'Form 126 — Annual Employee Tax Certificate (Employee Side)',
+    employer:      'Employer',
+    employer_id:   'Employer ID (חפ/תז)',
+    tax_year:      'Tax Year',
+    employee:      'Employee',
+    employee_id:   'National ID',
+    full_name:     'Full Name',
+    gross_annual:  'Annual Gross',
+    income_tax:    'Income Tax Withheld',
+    bl_withheld:   'BL Withheld (Employee)',
+    pension:       'Pension (Employee Portion)',
+    severance:     'Severance Deposited (Employer)',
+    totals:        'Totals',
+    record_count:  'Employee Count',
+    submission_type: 'Submission Type',
+    initial:       'initial',
+    correction:    'correction',
+    generated:     'Generated at',
+  }),
+});
+
+function f126SerializeLine(values) {
+  return FORM126_FIELD_LAYOUT.map(f => {
+    const v = values[f.name];
+    switch (f.type) {
+      case 'N': return padNumber(Math.round(toNum(v)), f.width, f.pad);
+      case 'A':
+      case 'H':
+      default:  return padString(v, f.width, f.pad);
+    }
+  }).join('');
+}
+
+/**
+ * buildForm126File({ year, rows, employer, submission_type })
+ *
+ * @param {Object}   payload
+ * @param {number}   payload.year                  e.g. 2026
+ * @param {Array}    payload.rows                  per-employee detail rows.
+ *   Each row: { employee_id|national_id, full_name, gross_annual,
+ *               income_tax, bl_withheld, pension, severance }
+ * @param {Object}   [payload.employer]            { id, name, tax_file_number }
+ * @param {string}   [payload.submission_type]     'initial' | 'correction'
+ * @returns {Object} {
+ *   formCode, year, header, detail, trailer, totals,
+ *   fixedWidth, buffer, json, xml, metadata
+ * }
+ */
+function buildForm126File(payload) {
+  if (!payload || typeof payload !== 'object') {
+    throw new Error('form-126.buildForm126File: payload required');
+  }
+  const year = Number(payload.year);
+  if (!Number.isInteger(year) || year < 2000 || year > 2100) {
+    throw new Error('form-126.buildForm126File: payload.year must be a 4-digit year');
+  }
+  const rows = Array.isArray(payload.rows) ? payload.rows : [];
+  const employer = payload.employer || {};
+  const submissionType =
+    payload.submission_type === 'correction' ? 'correction' : 'initial';
+
+  const employerIdRaw = String(employer.id || employer.employer_id || employer.company_id || '')
+    .replace(/\D/g, '');
+
+  // ── Header (record_type=100) ─────────────────────────────────────────
+  const header = f126SerializeLine({
+    record_type:  '100',
+    employer_id:  employerIdRaw,
+    tax_year:     year,
+    employee_id:  0,
+    full_name:    String(employer.name || employer.legal_name || '').slice(0, 40),
+    gross_annual: 0,
+    income_tax:   0,
+    bl_withheld:  0,
+    pension:      0,
+    severance:    0,
+    filler:       submissionType === 'correction' ? 'CORR' : 'INIT',
+  });
+
+  // ── Detail rows (record_type=126) + accumulate totals ────────────────
+  let totGross = 0, totTax = 0, totBl = 0, totPen = 0, totSev = 0;
+  const detail = rows.map((r, idx) => {
+    const gross = round(toNum(r.gross_annual));
+    const tax   = round(toNum(r.income_tax));
+    const bl    = round(toNum(r.bl_withheld));
+    const pen   = round(toNum(r.pension));
+    const sev   = round(toNum(r.severance));
+    totGross += gross;
+    totTax   += tax;
+    totBl    += bl;
+    totPen   += pen;
+    totSev   += sev;
+    return f126SerializeLine({
+      record_type:  '126',
+      employer_id:  employerIdRaw,
+      tax_year:     year,
+      employee_id:  String(r.employee_id || r.national_id || '').replace(/\D/g, ''),
+      full_name:    String(r.full_name || r.employee_name || `Employee ${idx + 1}`).slice(0, 40),
+      gross_annual: gross,
+      income_tax:   tax,
+      bl_withheld:  bl,
+      pension:      pen,
+      severance:    sev,
+      filler:       '',
+    });
+  });
+
+  // ── Trailer (record_type=999) — totals row ───────────────────────────
+  const trailer = f126SerializeLine({
+    record_type:  '999',
+    employer_id:  employerIdRaw,
+    tax_year:     year,
+    employee_id:  rows.length,
+    full_name:    'TOTALS',
+    gross_annual: Math.round(totGross),
+    income_tax:   Math.round(totTax),
+    bl_withheld:  Math.round(totBl),
+    pension:      Math.round(totPen),
+    severance:    Math.round(totSev),
+    filler:       '',
+  });
+
+  const lines = [header, ...detail, trailer];
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].length !== FORM126_RECORD_WIDTH) {
+      throw new Error(
+        `form-126.buildForm126File: line ${i} width ${lines[i].length}, expected ${FORM126_RECORD_WIDTH}`
+      );
+    }
+  }
+  const fixedWidth = lines.join('\r\n') + '\r\n';
+  const buffer = F126_ICONV ? F126_ICONV.encode(fixedWidth, 'windows-1255') : null;
+
+  const totals = {
+    record_count: rows.length,
+    gross_annual: round(totGross),
+    income_tax:   round(totTax),
+    bl_withheld:  round(totBl),
+    pension:      round(totPen),
+    severance:    round(totSev),
+    net_annual:   round(totGross - totTax - totBl - totPen),
+  };
+
+  const json = {
+    formCode: '126',
+    version:  '2026.1',
+    year,
+    submission_type: submissionType,
+    employer: {
+      id:              employer.id || employer.employer_id || employer.company_id || '',
+      name:            employer.name || employer.legal_name || '',
+      tax_file_number: employer.tax_file_number || '',
+    },
+    rows: rows.map((r, idx) => ({
+      employee_id:  String(r.employee_id || r.national_id || ''),
+      full_name:    String(r.full_name || r.employee_name || `Employee ${idx + 1}`),
+      gross_annual: round(toNum(r.gross_annual)),
+      income_tax:   round(toNum(r.income_tax)),
+      bl_withheld:  round(toNum(r.bl_withheld)),
+      pension:      round(toNum(r.pension)),
+      severance:    round(toNum(r.severance)),
+    })),
+    totals,
+    generated_at: new Date().toISOString(),
+  };
+
+  const x = (tag, body) =>
+    body == null || body === ''
+      ? `<${tag}/>`
+      : `<${tag}>${typeof body === 'string' ? body : xmlEscape(body)}</${tag}>`;
+  const rowXml = json.rows.map(r => [
+    '<Employee>',
+      x('NationalId',   xmlEscape(r.employee_id)),
+      x('FullName',     xmlEscape(r.full_name)),
+      x('GrossAnnual',  Math.round(r.gross_annual)),
+      x('IncomeTax',    Math.round(r.income_tax)),
+      x('BlWithheld',   Math.round(r.bl_withheld)),
+      x('Pension',      Math.round(r.pension)),
+      x('Severance',    Math.round(r.severance)),
+    '</Employee>',
+  ].join('')).join('');
+  const xml =
+    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<Form126 version="2026.1" surface="employee-certificate">' +
+      '<Header>' +
+        x('FormCode',       '126') +
+        x('TaxYear',        year) +
+        x('SubmissionType', submissionType) +
+        x('EmployerId',     xmlEscape(json.employer.id)) +
+        x('EmployerName',   xmlEscape(json.employer.name)) +
+        x('TaxFile',        xmlEscape(json.employer.tax_file_number)) +
+        x('GeneratedAt',    xmlEscape(json.generated_at)) +
+      '</Header>' +
+      '<Employees>' + rowXml + '</Employees>' +
+      '<Totals>' +
+        x('RecordCount', totals.record_count) +
+        x('GrossAnnual', Math.round(totals.gross_annual)) +
+        x('IncomeTax',   Math.round(totals.income_tax)) +
+        x('BlWithheld',  Math.round(totals.bl_withheld)) +
+        x('Pension',     Math.round(totals.pension)) +
+        x('Severance',   Math.round(totals.severance)) +
+        x('NetAnnual',   Math.round(totals.net_annual)) +
+      '</Totals>' +
+    '</Form126>';
+
+  return {
+    formCode: '126',
+    version:  '2026.1',
+    year,
+    submission_type: submissionType,
+    header,
+    detail,
+    trailer,
+    totals,
+    fixedWidth,
+    buffer,
+    json,
+    xml,
+    metadata: {
+      encoding:    'windows-1255',
+      recordWidth: FORM126_RECORD_WIDTH,
+      lineCount:   lines.length,
+      filename:    `form-126-${year}.txt`,
+      generatedAt: json.generated_at,
+    },
+  };
+}
+
+/**
+ * validateForm126File — structural check on a buildForm126File() result.
+ * Returns array of error strings (empty when the file is valid).
+ */
+function validateForm126File(file) {
+  const errors = [];
+  if (!file || typeof file !== 'object') return ['file is missing'];
+  if (file.formCode !== '126') errors.push(`formCode mismatch: ${file.formCode}`);
+  if (typeof file.fixedWidth !== 'string' || file.fixedWidth.length === 0) {
+    errors.push('fixedWidth payload is missing');
+  }
+  if (typeof file.header !== 'string' || file.header.length !== FORM126_RECORD_WIDTH) {
+    errors.push(`header width ${file.header?.length} != ${FORM126_RECORD_WIDTH}`);
+  }
+  if (file.header?.slice(0, 3) !== '100') errors.push('header record_type must be "100"');
+  if (typeof file.trailer !== 'string' || file.trailer.length !== FORM126_RECORD_WIDTH) {
+    errors.push(`trailer width ${file.trailer?.length} != ${FORM126_RECORD_WIDTH}`);
+  }
+  if (file.trailer?.slice(0, 3) !== '999') errors.push('trailer record_type must be "999"');
+  if (!Array.isArray(file.detail)) errors.push('detail must be an array');
+  else {
+    file.detail.forEach((line, i) => {
+      if (typeof line !== 'string' || line.length !== FORM126_RECORD_WIDTH) {
+        errors.push(`detail[${i}] width ${line?.length} != ${FORM126_RECORD_WIDTH}`);
+      } else if (line.slice(0, 3) !== '126') {
+        errors.push(`detail[${i}] record_type must be "126"`);
+      }
+    });
+  }
+  if (!file.totals || typeof file.totals !== 'object') {
+    errors.push('totals object missing');
+  } else if (file.totals.record_count !== (file.detail?.length || 0)) {
+    errors.push(`totals.record_count (${file.totals.record_count}) != detail length (${file.detail?.length})`);
+  }
+  if (!Number.isInteger(file.year) || file.year < 2000 || file.year > 2100) {
+    errors.push('year must be a 4-digit integer');
+  }
+  return errors;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // Module exports
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -1118,6 +1453,13 @@ module.exports = {
   // main API
   generate126,
   distributeToEmployees,
+
+  // file builder API (parallel to form-856 / pcn874)
+  buildForm126File,
+  validateForm126File,
+  FORM126_FIELD_LAYOUT,
+  FORM126_RECORD_WIDTH,
+  FORM126_LABELS,
 
   // sub-functions (useful for partial workflows, tests, API routes)
   aggregateEmployee,

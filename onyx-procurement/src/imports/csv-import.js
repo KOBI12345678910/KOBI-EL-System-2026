@@ -32,6 +32,19 @@
 
 'use strict';
 
+// ─── Agent 224 wiring: bridge to detectAnomalies() ──────────────
+// Lazy-required so this file stays runnable in isolated unit tests
+// that don't drag in the ML detector.
+let _anomalyBridge = null;
+function getAnomalyBridge() {
+  if (_anomalyBridge !== null) return _anomalyBridge;
+  try { _anomalyBridge = require('../ml/anomaly-bridge'); }
+  catch { _anomalyBridge = false; }
+  return _anomalyBridge;
+}
+
+const ANOMALY_ELIGIBLE_ENTITIES = new Set(['invoices', 'bank_transactions']);
+
 // ═══════════════════════════════════════════════════════════════
 //  CONSTANTS
 // ═══════════════════════════════════════════════════════════════
@@ -966,6 +979,32 @@ async function importRows(validated, opts) {
   }
 
   result.finishedAt = new Date().toISOString();
+
+  // ─── Agent 224: post-import anomaly detection ────────────────────
+  // Runs only when the caller flagged this import as finance-relevant
+  // (entity = invoices / bank_transactions) and we have rows to scan.
+  // Detection failure must NEVER fail the import — wrap and swallow.
+  try {
+    const entity = opts && opts.entity;
+    if (entity && ANOMALY_ELIGIBLE_ENTITIES.has(entity) && validated.length > 0) {
+      const bridge = getAnomalyBridge();
+      if (bridge && typeof bridge.detectAndPersist === 'function') {
+        const deps = {
+          supabase,
+          createNotificationForAllUsers: opts && opts.createNotificationForAllUsers,
+        };
+        const r = await bridge.detectAndPersist(validated, deps, { entity });
+        result.anomalies = r && r.persisted
+          ? { inserted: r.persisted.inserted, skipped: r.persisted.skipped, critical: r.persisted.criticalCount }
+          : null;
+      }
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn('[csv-import] anomaly detection failed:', e && e.message);
+    result.anomalies = { error: e.message };
+  }
+
   return result;
 }
 

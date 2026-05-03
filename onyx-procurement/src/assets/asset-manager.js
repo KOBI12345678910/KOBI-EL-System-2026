@@ -829,6 +829,43 @@ function createAssetStore() {
   }
 
   // ──────────────────────────────────────────────────────────────────
+  // HYDRATE — load a pre-built asset object straight into the store
+  // (used by the API bridge to seed from the fixed_assets table without
+  //  re-running addAsset() validation / re-issuing IDs / re-emitting TX).
+  // Append-only by contract: refuses to overwrite an existing id.
+  // ──────────────────────────────────────────────────────────────────
+  function hydrate(asset) {
+    if (!asset || typeof asset !== 'object') {
+      throw new Error('hydrate: asset object required');
+    }
+    if (!asset.id) {
+      throw new Error('hydrate: asset.id required');
+    }
+    if (assets.has(asset.id)) {
+      throw new Error(`hydrate: asset id "${asset.id}" already exists`);
+    }
+    // Defensive defaults — engine math expects these to be numbers / dates
+    const seeded = {
+      accumulated_depreciation: 0,
+      revaluation_surplus: 0,
+      impairment_loss: 0,
+      units_used: 0,
+      total_units_capacity: null,
+      ...asset,
+    };
+    if (!seeded.last_depreciated_to && seeded.acquisition_date) {
+      seeded.last_depreciated_to = seeded.acquisition_date;
+    }
+    if (typeof seeded.current_nbv !== 'number') {
+      const cost = Number(seeded.cost) || 0;
+      const accum = Number(seeded.accumulated_depreciation) || 0;
+      seeded.current_nbv = round2(cost - accum);
+    }
+    assets.set(seeded.id, seeded);
+    return seeded.id;
+  }
+
+  // ──────────────────────────────────────────────────────────────────
   // READ HELPERS (never mutate)
   // ──────────────────────────────────────────────────────────────────
   function getAsset(id) {
@@ -862,6 +899,7 @@ function createAssetStore() {
   return {
     // mutating
     addAsset,
+    hydrate,
     runDepreciation,
     dispose,
     transfer,

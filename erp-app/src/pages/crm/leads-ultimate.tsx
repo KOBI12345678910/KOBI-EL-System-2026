@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import BulkActions, { useBulkSelection, BulkCheckbox, defaultBulkActions } from "@/components/bulk-actions";
 import { useFormValidation, FormFieldError, RequiredMark } from "@/hooks/use-form-validation";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 const API = "/api";
 const safeArray = (d: any) => Array.isArray(d) ? d : (d?.data || d?.items || []);
@@ -427,115 +428,108 @@ export default function LeadsUltimatePage() {
         </div>
       </div>
 
-      {/* Create / Edit Form Modal */}
-      <AnimatePresence>
-        {showForm && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} onClick={e => e.stopPropagation()} className="bg-[#1e293b] rounded-xl border border-white/10 p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto">
-              <h3 className="text-lg font-bold text-white mb-4">{editItem ? "עריכת ליד" : "ליד חדש"}</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Full Name - Required */}
+      {/* Create / Edit Form Modal — Radix Dialog (focus trap + ESC + ARIA) */}
+      <Dialog open={showForm} onOpenChange={(o) => { if (!o) { setEditItem(null); setForm(emptyForm); validation.clearErrors(); } setShowForm(o); }}>
+        <DialogContent dir="rtl" className="max-w-2xl max-h-[85vh] overflow-y-auto bg-[#1e293b] border-white/10 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-white">{editItem ? "עריכת ליד" : "ליד חדש"}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} noValidate>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {(() => { const p = validation.getFieldProps("fullName"); return (
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">שם מלא <RequiredMark /></label>
-                  <input value={form.fullName} onChange={e => { setForm((f: any) => ({ ...f, fullName: e.target.value })); validation.clearField("fullName"); }}
-                    className={`w-full bg-[#0f172a] border rounded-lg px-3 py-2 text-sm text-white ${validation.errors.fullName ? "border-red-500" : "border-white/10"}`} placeholder="שם מלא" />
-                  <FormFieldError error={validation.errors.fullName} />
+                  <label htmlFor={p.id} className="text-xs text-muted-foreground mb-1 block">שם מלא <RequiredMark /></label>
+                  <input {...p.inputProps} value={form.fullName} onChange={e => { setForm((f: any) => ({ ...f, fullName: e.target.value })); validation.clearField("fullName"); }}
+                    className={`w-full bg-[#0f172a] border rounded-lg px-3 py-2 text-sm text-white ${p.error ? "border-red-500" : "border-white/10"}`} placeholder="שם מלא" />
+                  <FormFieldError id={p.errorId} error={p.error} />
                 </div>
-                {/* Phone - Required */}
+              ); })()}
+              {(() => { const p = validation.getFieldProps("phone"); return (
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">טלפון <RequiredMark /></label>
-                  <input value={form.phone} onChange={e => { setForm((f: any) => ({ ...f, phone: e.target.value })); validation.clearField("phone"); }}
-                    className={`w-full bg-[#0f172a] border rounded-lg px-3 py-2 text-sm text-white ${validation.errors.phone ? "border-red-500" : "border-white/10"}`} placeholder="050-0000000" />
-                  <FormFieldError error={validation.errors.phone} />
+                  <label htmlFor={p.id} className="text-xs text-muted-foreground mb-1 block">טלפון <RequiredMark /></label>
+                  <input {...p.inputProps} value={form.phone} onChange={e => { setForm((f: any) => ({ ...f, phone: e.target.value })); validation.clearField("phone"); }}
+                    className={`w-full bg-[#0f172a] border rounded-lg px-3 py-2 text-sm text-white ${p.error ? "border-red-500" : "border-white/10"}`} placeholder="050-0000000" />
+                  <FormFieldError id={p.errorId} error={p.error} />
                 </div>
-                {/* Email */}
+              ); })()}
+              <div>
+                <label htmlFor={`${validation.idPrefix}-email`} className="text-xs text-muted-foreground mb-1 block">אימייל</label>
+                <input id={`${validation.idPrefix}-email`} type="email" value={form.email} onChange={e => setForm((f: any) => ({ ...f, email: e.target.value }))} className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white" placeholder="email@example.com" />
+              </div>
+              <div>
+                <label htmlFor={`${validation.idPrefix}-city`} className="text-xs text-muted-foreground mb-1 block">עיר</label>
+                <input id={`${validation.idPrefix}-city`} value={form.city} onChange={e => setForm((f: any) => ({ ...f, city: e.target.value }))} className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white" placeholder="עיר" />
+              </div>
+              <div className="md:col-span-2">
+                <label htmlFor={`${validation.idPrefix}-address`} className="text-xs text-muted-foreground mb-1 block">כתובת</label>
+                <input id={`${validation.idPrefix}-address`} value={form.address} onChange={e => setForm((f: any) => ({ ...f, address: e.target.value }))} className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white" placeholder="כתובת מלאה" />
+              </div>
+              {(() => { const p = validation.getFieldProps("source"); return (
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">אימייל</label>
-                  <input type="email" value={form.email} onChange={e => setForm((f: any) => ({ ...f, email: e.target.value }))} className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white" placeholder="email@example.com" />
-                </div>
-                {/* City */}
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">עיר</label>
-                  <input value={form.city} onChange={e => setForm((f: any) => ({ ...f, city: e.target.value }))} className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white" placeholder="עיר" />
-                </div>
-                {/* Address */}
-                <div className="md:col-span-2">
-                  <label className="text-xs text-muted-foreground mb-1 block">כתובת</label>
-                  <input value={form.address} onChange={e => setForm((f: any) => ({ ...f, address: e.target.value }))} className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white" placeholder="כתובת מלאה" />
-                </div>
-                {/* Source - Required */}
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">מקור <RequiredMark /></label>
-                  <select value={form.source} onChange={e => { setForm((f: any) => ({ ...f, source: e.target.value })); validation.clearField("source"); }}
-                    className={`w-full bg-[#0f172a] border rounded-lg px-3 py-2 text-sm text-white ${validation.errors.source ? "border-red-500" : "border-white/10"}`}>
+                  <label htmlFor={p.id} className="text-xs text-muted-foreground mb-1 block">מקור <RequiredMark /></label>
+                  <select {...p.inputProps} value={form.source} onChange={e => { setForm((f: any) => ({ ...f, source: e.target.value })); validation.clearField("source"); }}
+                    className={`w-full bg-[#0f172a] border rounded-lg px-3 py-2 text-sm text-white ${p.error ? "border-red-500" : "border-white/10"}`}>
                     <option value="">בחר מקור</option>
                     {LEAD_SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
-                  <FormFieldError error={validation.errors.source} />
+                  <FormFieldError id={p.errorId} error={p.error} />
                 </div>
-                {/* Product Interest */}
+              ); })()}
+              <div>
+                <label htmlFor={`${validation.idPrefix}-productInterest`} className="text-xs text-muted-foreground mb-1 block">עניין מוצר</label>
+                <input id={`${validation.idPrefix}-productInterest`} value={form.productInterest} onChange={e => setForm((f: any) => ({ ...f, productInterest: e.target.value }))} className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white" placeholder="מוצר / שירות" />
+              </div>
+              {(() => { const p = validation.getFieldProps("status"); return (
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">עניין מוצר</label>
-                  <input value={form.productInterest} onChange={e => setForm((f: any) => ({ ...f, productInterest: e.target.value }))} className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white" placeholder="מוצר / שירות" />
-                </div>
-                {/* Status - Required */}
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">סטטוס <RequiredMark /></label>
-                  <select value={form.status} onChange={e => { setForm((f: any) => ({ ...f, status: e.target.value })); validation.clearField("status"); }}
-                    className={`w-full bg-[#0f172a] border rounded-lg px-3 py-2 text-sm text-white ${validation.errors.status ? "border-red-500" : "border-white/10"}`}>
+                  <label htmlFor={p.id} className="text-xs text-muted-foreground mb-1 block">סטטוס <RequiredMark /></label>
+                  <select {...p.inputProps} value={form.status} onChange={e => { setForm((f: any) => ({ ...f, status: e.target.value })); validation.clearField("status"); }}
+                    className={`w-full bg-[#0f172a] border rounded-lg px-3 py-2 text-sm text-white ${p.error ? "border-red-500" : "border-white/10"}`}>
                     {Object.entries(LEAD_STATUS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                   </select>
-                  <FormFieldError error={validation.errors.status} />
+                  <FormFieldError id={p.errorId} error={p.error} />
                 </div>
-                {/* Agent */}
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">סוכן</label>
-                  <select value={form.agentId} onChange={e => setForm((f: any) => ({ ...f, agentId: e.target.value }))} className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white">
-                    <option value="">בחר סוכן</option>
-                    {agents.map(a => <option key={a.id} value={a.id}>{a.name || a.fullName}</option>)}
-                  </select>
-                </div>
-                {/* Urgency */}
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">דחיפות</label>
-                  <select value={form.urgency} onChange={e => setForm((f: any) => ({ ...f, urgency: e.target.value }))} className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white">
-                    {Object.entries(URGENCY_MAP).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-                  </select>
-                </div>
-                {/* Budget */}
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">תקציב משוער</label>
-                  <input type="number" value={form.budget} onChange={e => setForm((f: any) => ({ ...f, budget: e.target.value }))} className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white" placeholder="0" />
-                </div>
-                {/* Company */}
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">חברה</label>
-                  <input value={form.companyName} onChange={e => setForm((f: any) => ({ ...f, companyName: e.target.value }))} className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white" placeholder="שם חברה" />
-                </div>
-                {/* Next Follow Up */}
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">מעקב הבא</label>
-                  <input type="date" value={form.nextFollowUp} onChange={e => setForm((f: any) => ({ ...f, nextFollowUp: e.target.value }))} className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white" />
-                </div>
-                {/* Tags */}
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">תגיות</label>
-                  <input value={form.tags} onChange={e => setForm((f: any) => ({ ...f, tags: e.target.value }))} className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white" placeholder="תגית1, תגית2" />
-                </div>
-                {/* Notes */}
-                <div className="md:col-span-2">
-                  <label className="text-xs text-muted-foreground mb-1 block">הערות</label>
-                  <textarea rows={3} value={form.notes} onChange={e => setForm((f: any) => ({ ...f, notes: e.target.value }))} className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white resize-none" placeholder="הערות..." />
-                </div>
+              ); })()}
+              <div>
+                <label htmlFor={`${validation.idPrefix}-agentId`} className="text-xs text-muted-foreground mb-1 block">סוכן</label>
+                <select id={`${validation.idPrefix}-agentId`} value={form.agentId} onChange={e => setForm((f: any) => ({ ...f, agentId: e.target.value }))} className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white">
+                  <option value="">בחר סוכן</option>
+                  {agents.map(a => <option key={a.id} value={a.id}>{a.name || a.fullName}</option>)}
+                </select>
               </div>
-              <div className="flex gap-2 mt-6">
-                <button onClick={handleSave} className="flex-1 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">{editItem ? "עדכן" : "צור ליד"}</button>
-                <button onClick={() => { setShowForm(false); setEditItem(null); setForm(emptyForm); validation.clearErrors(); }} className="flex-1 py-2 bg-[#0f172a] text-white rounded-lg text-sm border border-white/10">ביטול</button>
+              <div>
+                <label htmlFor={`${validation.idPrefix}-urgency`} className="text-xs text-muted-foreground mb-1 block">דחיפות</label>
+                <select id={`${validation.idPrefix}-urgency`} value={form.urgency} onChange={e => setForm((f: any) => ({ ...f, urgency: e.target.value }))} className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white">
+                  {Object.entries(URGENCY_MAP).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                </select>
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <div>
+                <label htmlFor={`${validation.idPrefix}-budget`} className="text-xs text-muted-foreground mb-1 block">תקציב משוער</label>
+                <input id={`${validation.idPrefix}-budget`} type="number" value={form.budget} onChange={e => setForm((f: any) => ({ ...f, budget: e.target.value }))} className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white" placeholder="0" />
+              </div>
+              <div>
+                <label htmlFor={`${validation.idPrefix}-companyName`} className="text-xs text-muted-foreground mb-1 block">חברה</label>
+                <input id={`${validation.idPrefix}-companyName`} value={form.companyName} onChange={e => setForm((f: any) => ({ ...f, companyName: e.target.value }))} className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white" placeholder="שם חברה" />
+              </div>
+              <div>
+                <label htmlFor={`${validation.idPrefix}-nextFollowUp`} className="text-xs text-muted-foreground mb-1 block">מעקב הבא</label>
+                <input id={`${validation.idPrefix}-nextFollowUp`} type="date" value={form.nextFollowUp} onChange={e => setForm((f: any) => ({ ...f, nextFollowUp: e.target.value }))} className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white" />
+              </div>
+              <div>
+                <label htmlFor={`${validation.idPrefix}-tags`} className="text-xs text-muted-foreground mb-1 block">תגיות</label>
+                <input id={`${validation.idPrefix}-tags`} value={form.tags} onChange={e => setForm((f: any) => ({ ...f, tags: e.target.value }))} className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white" placeholder="תגית1, תגית2" />
+              </div>
+              <div className="md:col-span-2">
+                <label htmlFor={`${validation.idPrefix}-notes`} className="text-xs text-muted-foreground mb-1 block">הערות</label>
+                <textarea id={`${validation.idPrefix}-notes`} rows={3} value={form.notes} onChange={e => setForm((f: any) => ({ ...f, notes: e.target.value }))} className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white resize-none" placeholder="הערות..." />
+              </div>
+            </div>
+            <DialogFooter className="mt-6 flex gap-2 sm:flex-row">
+              <button type="submit" className="flex-1 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">{editItem ? "עדכן" : "צור ליד"}</button>
+              <button type="button" onClick={() => { setShowForm(false); setEditItem(null); setForm(emptyForm); validation.clearErrors(); }} className="flex-1 py-2 bg-[#0f172a] text-white rounded-lg text-sm border border-white/10">ביטול</button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* View Detail Modal */}
       <AnimatePresence>

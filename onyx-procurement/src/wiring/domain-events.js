@@ -95,7 +95,7 @@ const ONYX_EVENT_TYPES = {
  * @param {Object} opts.supabase  - Supabase client (for shared-events persistence)
  * @param {Object} [opts.logger]  - Optional logger (defaults to console)
  */
-function initDomainEvents({ supabase, logger } = {}) {
+function initDomainEvents({ supabase, logger, services } = {}) {
   if (_initialized) return { bus, producer };
 
   const log = logger || console;
@@ -131,6 +131,15 @@ function initDomainEvents({ supabase, logger } = {}) {
 
   // 3. Wire cross-service event consumers (examples)
   _registerCrossServiceConsumers(log);
+
+  // 4. Register the 12 orchestrator listeners (AGENT-212)
+  try {
+    const { registerOrchestratorListeners } = require('./orchestrator-listeners');
+    const summary = registerOrchestratorListeners({ bus, services: services || {}, logger: log });
+    log.info(`[domain-events] Orchestrator listeners wired: ${summary.count}/12 (missing: ${summary.missing.length})`);
+  } catch (err) {
+    log.warn('[domain-events] registerOrchestratorListeners failed (non-fatal):', err.message);
+  }
 
   _initialized = true;
   log.info('[domain-events] Domain event system initialised');

@@ -199,7 +199,7 @@ const ACTION_API_MAP = {
   'work_order.reserve_materials':{ method:'POST',path: '/api/inventory/reserve', body: { workOrderId: ':woId' } },
   'work_order.start':         { method: 'PATCH',path: '/api/work-orders/:id/status', body: { status: 'in_progress' } },
   'work_order.qa_check':      { method: 'POST', path: '/api/quality-checks',   body: { workOrderId: ':woId' } },
-  'work_order.complete':      { method: 'PATCH',path: '/api/work-orders/:id/status', body: { status: 'done' } },
+  'work_order.complete':      { method: 'PATCH',path: '/api/work-orders/:id/status', body: { status: 'completed' } },
   'work_order.signoff':       { method: 'POST', path: '/api/signatures',       body: { workOrderId: ':woId' } },
 
   // Invoice actions

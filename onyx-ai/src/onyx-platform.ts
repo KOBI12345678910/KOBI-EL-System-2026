@@ -63,6 +63,9 @@
  *  └─────────────────────────────────────────────────────────────────────┘
  */
 
+// Agent-218 fix: load .env at module top so all process.env reads see vault keys.
+import 'dotenv/config';
+
 import { EventEmitter } from 'events';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
@@ -2292,13 +2295,19 @@ class APIServer {
     return /^\/(api\/agent|api\/dag|api\/tasks|api\/orchestrat)/.test(pathname);
   }
 
-  start(port: number = 3100): void {
+  // Agent-218 fix: liveness/readiness probes must bypass rate-limit
+  private isHealthPath(pathname: string): boolean {
+    return pathname === '/' || pathname === '/healthz' || pathname === '/livez' || pathname === '/readyz' || pathname === '/health';
+  }
+
+  start(port: number = 3300): void {
     // CORS allowed origins — env-driven, fail-safe default for dev
     const rawOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean);
     const allowedOrigins: Set<string> = new Set(rawOrigins.length ? rawOrigins : [
       'http://localhost:5173',
       'http://localhost:3200',
       'http://localhost:3100',
+      'http://localhost:3300',
     ]);
 
     this.server = http.createServer(async (req, res) => {
@@ -2334,14 +2343,50 @@ class APIServer {
         return;
       }
 
-      // ── Rate limiting ────────────────────────────────────────────────────
+      // ── API-key gate ────────────────────────────────────────────────────
+      // P0 security fix: /api/* exposes compliance state, kill-switch, agent
+      // and tool registries, and the event log. If ONYX_AI_API_KEY is set in
+      // the environment, all /api/* routes (except the public-status read)
+      // require a matching X-API-Key header (or "Bearer <key>" auth header).
+      //
+      // Liveness/readiness probes (/healthz, /livez, /readyz) and the
+      // root path stay public so k8s and Cloud Run can probe without creds.
+      //
+      // If ONYX_AI_API_KEY is unset, the gate is OFF — convenient for local
+      // dev. Production deployments MUST set this env var.
+      {
+        const pathnameForAuth = (req.url ?? '/').split('?')[0];
+        const queryForAuth = (req.url ?? '/').split('?')[1] ?? '';
+        const expectedKey = process.env.ONYX_AI_API_KEY;
+        const isApiPath = pathnameForAuth.startsWith('/api/');
+        const isPublicStatus =
+          pathnameForAuth === '/api/status' &&
+          new URLSearchParams(queryForAuth).get('level') === 'public';
+        if (expectedKey && isApiPath && !isPublicStatus) {
+          const headerKey = req.headers['x-api-key'];
+          const auth = req.headers['authorization'];
+          const provided =
+            (typeof headerKey === 'string' ? headerKey : Array.isArray(headerKey) ? headerKey[0] : undefined) ||
+            (typeof auth === 'string' ? auth.replace(/^Bearer\s+/i, '') : undefined);
+          if (provided !== expectedKey) {
+            res.writeHead(401);
+            res.end(JSON.stringify({ error: 'unauthorized' }));
+            return;
+          }
+        }
+      }
+
+      // ── Rate limiting (probes exempt) ───────────────────────────────────
       const ip = (req.headers['x-forwarded-for'] as string || req.socket.remoteAddress || 'unknown').split(',')[0].trim();
       const pathname = (req.url ?? '/').split('?')[0];
-      const maxForPath = this.isAiPath(pathname) ? this.rateLimitMaxAi : this.rateLimitMaxApi;
-      if (!this.checkRateLimit(ip, maxForPath)) {
-        res.writeHead(429, { 'Retry-After': String(Math.ceil(this.rateLimitWindowMs / 1000)) });
-        res.end(JSON.stringify({ error: 'יותר מדי בקשות, נסה שוב מאוחר יותר' }));
-        return;
+      // Agent-218: never 429 a k8s liveness check.
+      if (!this.isHealthPath(pathname)) {
+        const maxForPath = this.isAiPath(pathname) ? this.rateLimitMaxAi : this.rateLimitMaxApi;
+        if (!this.checkRateLimit(ip, maxForPath)) {
+          res.writeHead(429, { 'Retry-After': String(Math.ceil(this.rateLimitWindowMs / 1000)) });
+          res.end(JSON.stringify({ error: 'יותר מדי בקשות, נסה שוב מאוחר יותר' }));
+          return;
+        }
       }
 
       try {
@@ -2369,6 +2414,200 @@ class APIServer {
     body: Record<string, unknown>,
     params: URLSearchParams,
   ): Promise<{ status: number; body: Record<string, unknown> }> {
+    // ─── Agent-218: bridge & probe endpoints ported from src/index.ts ───
+    // ROOT (Cloud Run health check)
+    if (method === 'GET' && path === '/') {
+      return { status: 200, body: { service: 'onyx-ai', version: '2.0.0', status: 'running' } };
+    }
+    // Kubernetes-style probes (Agent 41)
+    if (method === 'GET' && path === '/healthz') {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const pkg = require('../package.json');
+      return { status: 200, body: { ok: true, service: pkg.name, version: pkg.version, uptime: process.uptime() } };
+    }
+    if (method === 'GET' && path === '/livez') {
+      return { status: 200, body: { alive: true } };
+    }
+    if (method === 'GET' && path === '/readyz') {
+      const DB_TIMEOUT_MS = 2000;
+      const supabaseUrl = process.env.SUPABASE_URL;
+      const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
+      if (!supabaseUrl || !supabaseKey) {
+        const integ = this.eventStore.verifyIntegrity();
+        if (integ.ok && integ.value) return { status: 200, body: { ready: true, source: 'eventstore' } };
+        return { status: 503, body: { ready: false, reason: 'supabase_not_configured_and_eventstore_unhealthy' } };
+      }
+      try {
+        const ping: Promise<number> = new Promise((resolve, reject) => {
+          try {
+            const u = new URL('/rest/v1/', supabaseUrl);
+            const r = https.request(
+              {
+                hostname: u.hostname,
+                port: u.port || 443,
+                path: u.pathname,
+                method: 'GET',
+                headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` },
+              },
+              (resPing) => {
+                resPing.on('data', () => {});
+                resPing.on('end', () => resolve(resPing.statusCode ?? 0));
+              },
+            );
+            r.on('error', reject);
+            r.end();
+          } catch (e) {
+            reject(e);
+          }
+        });
+        const timeout = new Promise<number>((_, rej) => setTimeout(() => rej(new Error('db_timeout_2s')), DB_TIMEOUT_MS));
+        const code = await Promise.race([ping, timeout]);
+        if (code >= 200 && code < 500) return { status: 200, body: { ready: true, db_status: code } };
+        return { status: 503, body: { ready: false, reason: `db_bad_status:${code}` } };
+      } catch (err: any) {
+        return { status: 503, body: { ready: false, reason: err?.message ?? 'db_unreachable' } };
+      }
+    }
+    // Legacy /health alias for ai-bridge probes
+    if (method === 'GET' && path === '/health') {
+      return { status: 200, body: { ok: true, service: 'onyx-ai', alias_of: '/healthz', uptime: process.uptime() } };
+    }
+
+    // POST /evaluate — policy evaluator (procurement/ai-bridge BUG-01 fix)
+    if (method === 'POST' && path === '/evaluate') {
+      const req = body as { action?: string; amount?: number; currency?: string; vendor_id?: string; po_id?: string };
+      const action = typeof req.action === 'string' ? req.action : 'unknown';
+      const amount = typeof req.amount === 'number' ? req.amount : 0;
+      const currency = typeof req.currency === 'string' ? req.currency : 'ILS';
+      if (this.governor.isKilled) {
+        const ev = this.eventStore.append({
+          type: 'ai.policy.deny',
+          actor: 'ai-bridge',
+          aggregateId: req.po_id || 'unknown',
+          aggregateType: 'policy',
+          payload: { action, amount, currency, reason: 'governor_killed' },
+        });
+        return {
+          status: 200,
+          body: {
+            allow: false,
+            reason: 'onyx-ai governor is in killed state',
+            reason_he: 'שומר הסף של onyx-ai במצב השבתה',
+            cost: 0,
+            decision_id: `eval-${Date.now().toString(36)}`,
+            event_id: ev?.id ?? null,
+          },
+        };
+      }
+      const THRESHOLD_REVIEW = 1_000_000;
+      const allow = amount <= THRESHOLD_REVIEW;
+      const ev = this.eventStore.append({
+        type: allow ? 'ai.policy.allow' : 'ai.policy.review',
+        actor: 'ai-bridge',
+        aggregateId: req.po_id || req.vendor_id || 'unknown',
+        aggregateType: 'policy',
+        payload: { action, amount, currency, threshold: THRESHOLD_REVIEW },
+      });
+      return {
+        status: 200,
+        body: {
+          allow,
+          reason: allow
+            ? `amount ${amount} ${currency} within policy threshold`
+            : `amount ${amount} ${currency} exceeds auto-approve threshold (${THRESHOLD_REVIEW} ILS) — human review required`,
+          reason_he: allow
+            ? `הסכום ${amount} ${currency} בתחום המדיניות`
+            : `הסכום ${amount} ${currency} חורג מסף האישור האוטומטי — נדרש אישור אנושי`,
+          cost: 0,
+          decision_id: `eval-${Date.now().toString(36)}`,
+          event_id: ev?.id ?? null,
+          threshold: THRESHOLD_REVIEW,
+          action,
+        },
+      };
+    }
+
+    // POST /events — audit-event ingest (ai-bridge fire-and-forget)
+    if (method === 'POST' && path === '/events') {
+      const req = body as { type?: string; actor?: string; subject?: string; payload?: Record<string, unknown> };
+      if (!req || typeof req.type !== 'string') return { status: 400, body: { error: 'event.type is required' } };
+      const ev = this.eventStore.append({
+        type: req.type,
+        actor: req.actor || 'ai-bridge',
+        aggregateId: req.subject || 'unknown',
+        aggregateType: 'audit',
+        payload: req.payload || {},
+      });
+      return {
+        status: 201,
+        body: {
+          accepted: true,
+          id: ev?.id ?? null,
+          event_id: ev?.id ?? null,
+          received_at: new Date().toISOString(),
+        },
+      };
+    }
+
+    // GET /budget — Governor counters for ai-bridge.getBudgetStatus()
+    if (method === 'GET' && path === '/budget') {
+      const report = this.governor.getComplianceReport() as Record<string, unknown>;
+      const dailySpent = Number((report as any).daily_spent || (report as any).spent || 0);
+      const dailyLimit = Number((report as any).daily_limit || (report as any).limit || 0);
+      return {
+        status: 200,
+        body: {
+          daily_spent: dailySpent,
+          daily_limit: dailyLimit,
+          remaining: Math.max(0, dailyLimit - dailySpent),
+          currency: 'ILS',
+          report_snapshot: report,
+        },
+      };
+    }
+
+    // POST /api/notifications/* — payslip / work-order / invoice / raw whatsapp / raw email
+    if (method === 'POST' && path === '/api/notifications/whatsapp') {
+      const { sendWhatsApp } = await import('./services/notificationService');
+      await sendWhatsApp(body as any);
+      return { status: 200, body: { ok: true } };
+    }
+    if (method === 'POST' && path === '/api/notifications/email') {
+      const { sendEmail } = await import('./services/emailService');
+      await sendEmail(body as any);
+      return { status: 200, body: { ok: true } };
+    }
+    if (method === 'POST' && path.startsWith('/api/notifications/payslip/')) {
+      const employeeId = path.split('/').pop();
+      const { employee, wageSlip } = body as any;
+      const { sendPayslipNotification } = await import('./services/notificationService');
+      const { sendWageSlipEmail } = await import('./services/emailService');
+      await Promise.allSettled([
+        sendPayslipNotification(employee, wageSlip),
+        sendWageSlipEmail(employee, wageSlip),
+      ]);
+      return { status: 200, body: { ok: true, employeeId } };
+    }
+    if (method === 'POST' && path.startsWith('/api/notifications/work-order/')) {
+      const woId = path.split('/').pop();
+      const { employee, workOrder } = body as any;
+      const { sendWorkOrderAssignment } = await import('./services/notificationService');
+      await sendWorkOrderAssignment(employee, workOrder);
+      return { status: 200, body: { ok: true, woId } };
+    }
+    if (method === 'POST' && path.startsWith('/api/notifications/invoice-reminder/')) {
+      const invoiceId = path.split('/').pop();
+      const { customer, invoice } = body as any;
+      const { sendInvoiceReminder } = await import('./services/notificationService');
+      const { sendInvoiceEmail } = await import('./services/emailService');
+      await Promise.allSettled([
+        sendInvoiceReminder(customer, invoice),
+        sendInvoiceEmail(customer, invoice),
+      ]);
+      return { status: 200, body: { ok: true, invoiceId } };
+    }
+    // ─── End Agent-218 port ────────────────────────────────────────────
+
     // System status
     if (method === 'GET' && path === '/api/status') {
       return {
@@ -2533,8 +2772,8 @@ export class OnyxPlatform {
       agent.start();
     }
 
-    // Start API server
-    this.apiServer.start(options?.apiPort ?? 3100);
+    // Start API server (Agent-218: 3300 per CLAUDE.md)
+    this.apiServer.start(options?.apiPort ?? 3300);
 
     this.eventStore.append({
       type: 'platform.started',
@@ -2740,5 +2979,79 @@ export type {
  * onyx.defineWorkflow('daily_report', [ ... ]);
  *
  * // 5. Start
- * onyx.start({ apiPort: 3100 });
+ * onyx.start({ apiPort: 3300 });
  */
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SECTION 10: BOOTSTRAP (moved from src/index.ts by Agent-218)
+// ═══════════════════════════════════════════════════════════════════════════
+// Exported so the shim at src/index.ts can call it when invoked as the entry
+// point. Also auto-boots when this file itself is the main module (e.g. via
+// `node dist/onyx-platform.js`).
+
+export function bootstrap(): void {
+  const PORT = parseInt(process.env.PORT || '3300', 10);
+  const EVENT_STORE_PATH = process.env.ONYX_EVENT_STORE_PATH || './data/events.jsonl';
+
+  console.log('');
+  console.log('╔══════════════════════════════════════════════════════════════╗');
+  console.log('║   🚀 ONYX AI — Institutional Autonomous Platform v2.0        ║');
+  console.log('╚══════════════════════════════════════════════════════════════╝');
+  console.log('');
+
+  try {
+    // OnyxPlatform is exported from this same module — no dynamic require.
+    const onyx = new OnyxPlatform({ persistPath: EVENT_STORE_PATH });
+    onyx.addPolicy({
+      name: 'Daily Budget',
+      description: 'Global spending cap per 24h window',
+      type: 'budget',
+      scope: 'global',
+      rule: {
+        type: 'budget',
+        maxCostPerTask: 50,
+        maxCostPerDay: parseFloat(process.env.ONYX_DAILY_BUDGET || '500'),
+        currency: 'USD',
+        currentSpent: 0,
+      },
+      active: true,
+      priority: 100,
+      createdBy: 'bootstrap',
+    });
+    onyx.start({ apiPort: PORT });
+    console.log(`✓ ONYX AI listening on port ${PORT}`);
+    console.log(`✓ Event store: ${EVENT_STORE_PATH}`);
+    console.log(`✓ Governance: active`);
+    console.log('');
+    const shutdown = (signal: string) => {
+      console.log(`\n${signal} received — shutting down ONYX AI...`);
+      try {
+        onyx.shutdown();
+        console.log('✓ ONYX AI shutdown complete');
+        process.exit(0);
+      } catch (err) {
+        console.error('❌ Shutdown error:', err);
+        process.exit(1);
+      }
+    };
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on('SIGINT', () => shutdown('SIGINT'));
+    process.on('unhandledRejection', (reason) => console.error('❌ Unhandled rejection:', reason));
+    process.on('uncaughtException', (err) => {
+      console.error('❌ Uncaught exception:', err);
+      shutdown('uncaughtException');
+    });
+  } catch (err) {
+    console.error('❌ ONYX AI bootstrap failed:', err);
+    process.exit(1);
+  }
+}
+
+// Auto-boot if this module is invoked directly (e.g. `node dist/onyx-platform.js`).
+// When invoked via the shim (`node dist/index.js`), the shim explicitly calls
+// bootstrap() so the platform starts whether the entry point is index.js or
+// onyx-platform.js.
+if (require.main === module) {
+  bootstrap();
+}

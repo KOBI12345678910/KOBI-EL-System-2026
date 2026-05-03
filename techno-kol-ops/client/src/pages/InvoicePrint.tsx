@@ -157,7 +157,7 @@ export function InvoicePrint() {
               <div>טל: 03-1234567 | info@techno-kol.co.il</div>
             </div>
           </div>
-          <div style={{ textAlign: 'left' }}>
+          <div style={{ textAlign: 'start' }}>
             <div style={{ fontSize: 26, fontWeight: 800, color: '#1a365d', marginBottom: 6 }}>חשבונית מס</div>
             <table style={{ fontSize: 12, borderCollapse: 'collapse' }}>
               <tbody>
@@ -192,7 +192,7 @@ export function InvoicePrint() {
             <tr style={{ background: '#1a365d', color: '#fff' }}>
               {['תיאור', 'כמות', 'מחיר יחידה', 'סה"כ'].map((h, i) => (
                 <th key={h} style={{
-                  padding: '10px 12px', textAlign: i === 0 ? 'right' : 'center',
+                  padding: '10px 12px', textAlign: i === 0 ? 'end' : 'center',
                   fontSize: 12, fontWeight: 600, letterSpacing: '0.05em',
                 }}>{h}</th>
               ))}
@@ -216,15 +216,15 @@ export function InvoicePrint() {
             <tbody>
               <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
                 <td style={{ padding: '8px 16px', color: '#666', fontSize: 13 }}>סכום לפני מע"מ:</td>
-                <td style={{ padding: '8px 16px', textAlign: 'left', fontSize: 13, fontWeight: 600 }}>{fmtMoney(invoice.subtotal)}</td>
+                <td style={{ padding: '8px 16px', textAlign: 'start', fontSize: 13, fontWeight: 600 }}>{fmtMoney(invoice.subtotal)}</td>
               </tr>
               <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
                 <td style={{ padding: '8px 16px', color: '#666', fontSize: 13 }}>מע"מ 18%:</td>
-                <td style={{ padding: '8px 16px', textAlign: 'left', fontSize: 13 }}>{fmtMoney(invoice.vat)}</td>
+                <td style={{ padding: '8px 16px', textAlign: 'start', fontSize: 13 }}>{fmtMoney(invoice.vat)}</td>
               </tr>
               <tr style={{ background: '#1a365d', color: '#fff' }}>
                 <td style={{ padding: '12px 16px', fontSize: 15, fontWeight: 700 }}>סה"כ לתשלום:</td>
-                <td style={{ padding: '12px 16px', textAlign: 'left', fontSize: 16, fontWeight: 800 }}>{fmtMoney(invoice.total)}</td>
+                <td style={{ padding: '12px 16px', textAlign: 'start', fontSize: 16, fontWeight: 800 }}>{fmtMoney(invoice.total)}</td>
               </tr>
             </tbody>
           </table>

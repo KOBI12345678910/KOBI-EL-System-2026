@@ -4,9 +4,13 @@
   "private": true,
   "type": "module",
   "main": "src/index.ts",
+  "scripts": {
+    "test": "vitest run --reporter=default"
+  },
   "dependencies": {
     "@workspace/db": "workspace:*",
     "@workspace/api-zod": "workspace:*",
+    "@techno-kol/shared-tax": "workspace:*",
     "compression": "^1.8.0",
     "cors": "^2.8.5",
     "drizzle-orm": "catalog:",

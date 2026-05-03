@@ -50,11 +50,20 @@ import Quote360 from './pages/360/Quote360';
 import RFQ360 from './pages/360/RFQ360';
 import Supplier360 from './pages/360/Supplier360';
 import WorkOrder360Detail from './pages/360/WorkOrder360';
+// Agent 261 — Master Flow missing 360s (Lead, Order, InventoryItem, Delivery, Payment, Closure)
+import Lead360 from './pages/360/Lead360';
+import Order360 from './pages/360/Order360';
+import InventoryItem360 from './pages/360/InventoryItem360';
+import Delivery360 from './pages/360/Delivery360';
+import Payment360 from './pages/360/Payment360';
+import Closure360 from './pages/360/Closure360';
 import { Reports } from './pages/Reports';
 import { InvoicePrint } from './pages/InvoicePrint';
 import { InventoryAlerts } from './pages/InventoryAlerts';
 import { Schedule } from './pages/Schedule';
 import { QRGenerator } from './pages/QRGenerator';
+import { MarketplaceModuleDetail, MarketplaceCategory } from './pages/MarketplaceModuleDetail';
+import { GenericMenuPage } from './pages/GenericMenuPage';
 
 function Project360RouteWrapper() {
   const { id } = useParams<{ id: string }>();
@@ -133,21 +142,46 @@ function Layout() {
           <Route path="/control-room/operations" element={<OperationsControlRoom />} />
           <Route path="/control-room/procurement" element={<ProcurementControlRoom />} />
           <Route path="/control-room/workforce" element={<WorkforceControlRoom />} />
-          <Route path="/360/customer/:id" element={<Customer360 />} />
-          <Route path="/360/employee/:id" element={<Employee360 />} />
-          <Route path="/360/finance/:id" element={<Finance360 />} />
-          <Route path="/360/po/:id" element={<PO360 />} />
-          <Route path="/360/project/:id" element={<Project360Detail />} />
-          <Route path="/360/quote/:id" element={<Quote360 />} />
-          <Route path="/360/rfq/:id" element={<RFQ360 />} />
-          <Route path="/360/supplier/:id" element={<Supplier360 />} />
-          <Route path="/360/work-order/:id" element={<WorkOrder360Detail />} />
+          <Route path="/customer/:id" element={<Customer360 />} />
+          <Route path="/employee/:id" element={<Employee360 />} />
+          <Route path="/finance/:id" element={<Finance360 />} />
+          <Route path="/po/:id" element={<PO360 />} />
+          <Route path="/project/:id" element={<Project360Detail />} />
+          <Route path="/quote/:id" element={<Quote360 />} />
+          <Route path="/rfq/:id" element={<RFQ360 />} />
+          <Route path="/supplier/:id" element={<Supplier360 />} />
+          <Route path="/work-order/:id" element={<WorkOrder360Detail />} />
+          {/* Agent 261 — Master Flow missing 360s */}
+          <Route path="/lead/:id" element={<Lead360 />} />
+          <Route path="/order/:id" element={<Order360 />} />
+          <Route path="/inventory/:id" element={<InventoryItem360 />} />
+          <Route path="/delivery/:id" element={<Delivery360 />} />
+          <Route path="/payment/:id" element={<Payment360 />} />
+          <Route path="/project/:id/closure" element={<Closure360 />} />
           <Route path="/inventory-alerts" element={<InventoryAlerts />} />
           <Route path="/qr-generator" element={<QRGenerator />} />
           <Route path="/schedule" element={<Schedule />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/reports/:type" element={<Reports />} />
           <Route path="/invoice/:id/print" element={<InvoicePrint />} />
+          {/* Marketplace — 2,371 module routes seeded in app_menu */}
+          <Route path="/marketplace/module/:id" element={<MarketplaceModuleDetail />} />
+          <Route path="/marketplace/:category" element={<MarketplaceCategory />} />
+          {/* Catch-all dynamic menu routes — backed by GenericMenuPage which
+              reads app_menu / db-entity / rpc-meta and renders a stub. */}
+          <Route path="/registry/*" element={<GenericMenuPage />} />
+          <Route path="/marketplace/*" element={<GenericMenuPage />} />
+          <Route path="/db/*" element={<GenericMenuPage />} />
+          <Route path="/rpc/*" element={<GenericMenuPage />} />
+          <Route path="/view/*" element={<GenericMenuPage />} />
+          <Route path="/component/*" element={<GenericMenuPage />} />
+          <Route path="/hook/*" element={<GenericMenuPage />} />
+          <Route path="/api-doc/*" element={<GenericMenuPage />} />
+          <Route path="/addons/*" element={<GenericMenuPage />} />
+          <Route path="/integrations/*" element={<GenericMenuPage />} />
+          <Route path="/platform-module/*" element={<GenericMenuPage />} />
+          <Route path="/combo/*" element={<GenericMenuPage />} />
+          <Route path="/template/*" element={<GenericMenuPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

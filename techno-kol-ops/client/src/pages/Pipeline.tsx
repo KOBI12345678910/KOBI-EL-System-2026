@@ -253,7 +253,7 @@ function ProjectCard({ project, isSelected, onClick }: any) {
           <div style={{ fontSize: 13, color: '#F6F7F9', fontWeight: 600, marginTop: 2 }}>{project.title}</div>
           <div style={{ fontSize: 11, color: '#ABB3BF' }}>{project.client_name}</div>
         </div>
-        <div style={{ textAlign: 'left' }}>
+        <div style={{ textAlign: 'start' }}>
           <div style={{ fontSize: 14, color: '#3DCC91', fontWeight: 700 }}>
             ₪{Number(project.total_price).toLocaleString('he-IL')}
           </div>

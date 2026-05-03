@@ -1,0 +1,44 @@
+{
+  "name": "@techno-kol/shared-tax",
+  "version": "1.0.0",
+  "description": "Shared Israeli tax (VAT, withholding) calculation engine for Techno-Kol Uzi ERP 2026.",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./vat": {
+      "types": "./dist/vat.d.ts",
+      "import": "./dist/vat.js",
+      "require": "./dist/vat.js",
+      "default": "./dist/vat.js"
+    },
+    "./src/vat": "./src/vat.ts",
+    "./src/index": "./src/index.ts"
+  },
+  "files": [
+    "dist",
+    "src",
+    "vat.js",
+    "vat.d.ts"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "build:watch": "tsc -p tsconfig.build.json --watch",
+    "clean": "rimraf dist",
+    "prepublishOnly": "npm run clean && npm run build",
+    "typecheck": "tsc -p tsconfig.build.json --noEmit",
+    "test": "node --test --test-reporter=spec test/**/*.test.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "rimraf": "^5.0.5"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}

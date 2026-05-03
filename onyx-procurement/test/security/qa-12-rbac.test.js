@@ -81,6 +81,15 @@ if (fs.existsSync(TMP_DIR)) {
 }
 process.env.PAYROLL_PDF_DIR = TMP_DIR;
 
+// ─── BUG-QA12-001 FIX: wire PAYROLL_ADMIN_KEYS + PAYROLL_EMPLOYEE_KEY_MAP ─
+// payroll-routes.js reads these env vars at registration time to identify
+// admin callers and pin employee keys to specific employee ids. Without
+// them the IDOR fix would treat EVERY authenticated key (including the
+// admin one) as a non-admin with no self-identity and 403 every payroll
+// read — that is exactly the symptom this bug describes.
+process.env.PAYROLL_ADMIN_KEYS = ['KEY_ADMIN', 'KEY_MANAGER', 'KEY_ACCT'].join(',');
+process.env.PAYROLL_EMPLOYEE_KEY_MAP = ['U1:KEY_EMP', 'U1:KEY_VIEW'].join(',');
+
 // Stub pdf-generator so no real pdfkit fires
 try {
   const pdfGenPath = require.resolve('../../src/payroll/pdf-generator.js');
@@ -388,14 +397,22 @@ test('QA-12/B3  accountant key reads VAT profile → 200 (expected)', async () =
   assert.equal(r.status, 200);
 });
 
-test('QA-12/B4  employee key — LISTING OTHERS\' wage slips currently returns 200', async () => {
+test('QA-12/B4  employee key — LISTING wage slips is now scoped per-actor (BUG-QA12-001 FIXED)', async () => {
+  // After the fix: an employee key (mapped via PAYROLL_EMPLOYEE_KEY_MAP) may
+  // call GET /api/payroll/wage-slips, but the route force-filters to their
+  // own employee_id — they no longer see other employees' rows.
   const r = await authGet(ROLE_KEYS.employee, '/api/payroll/wage-slips');
   assert.equal(r.status, 200);
+  // Every returned slip must belong to U1 (the employee mapped to KEY_EMP).
+  const slips = (r.body && r.body.wage_slips) || [];
+  for (const s of slips) {
+    assert.equal(String(s.employee_id), 'U1', 'employee should only see own slips');
+  }
   markGap(
     'BUG-QA12-001',
-    'HIGH',
-    'Employee role can list every wage slip of every employee (missing per-actor filter).',
-    { route: 'GET /api/payroll/wage-slips', role: 'employee', expected: 'filter by req.actor.employee_id' },
+    'FIXED',
+    'Employee role is now force-filtered to req.actor.employee_id on GET /api/payroll/wage-slips.',
+    { route: 'GET /api/payroll/wage-slips', role: 'employee', resolution: 'getCallerIdentity + force-filter applied' },
   );
 });
 
@@ -421,44 +438,45 @@ test('QA-12/B6  accountant key — can approve a PO (SoD violation)', async () =
   );
 });
 
-test('QA-12/B7  employee key — can approve their own wage slip (SoD violation)', async () => {
+test('QA-12/B7  employee key — wage slip approval now blocked (BUG-QA12-007 FIXED)', async () => {
   const r = await authPost(ROLE_KEYS.employee, '/api/payroll/wage-slips/101/approve', {});
-  // Current code does not block this based on actor; the route may return
-  // 200, 404, or 409 depending on state. We only care that it is not 403.
-  assert.notEqual(r.status, 403);
+  // After the fix: only PAYROLL_ADMIN_KEYS holders may approve. Employee
+  // keys are rejected with 403 + WAGE_SLIP_APPROVE_DENIED.
+  assert.equal(r.status, 403);
   markGap(
     'BUG-QA12-007',
-    'HIGH',
-    'Employee can hit /wage-slips/:id/approve — a manager/accountant-only action.',
-    { route: 'POST /api/payroll/wage-slips/:id/approve', role: 'employee', expected: '403' },
+    'FIXED',
+    'Employee POST /wage-slips/:id/approve is rejected (admin-only + four-eyes principle).',
+    { route: 'POST /api/payroll/wage-slips/:id/approve', role: 'employee', resolution: 'isAdmin gate added' },
   );
 });
 
 // ══════════════════════════════════════════════════════════════════════════
 // 3. IDOR — employee U1 pulling U2's wage slip
 // ══════════════════════════════════════════════════════════════════════════
-test('QA-12/C1  IDOR — employee (acting as U1) fetches U2 wage slip directly', async () => {
+test('QA-12/C1  IDOR — employee fetching someone else\'s wage slip is blocked (BUG-QA12-002 FIXED)', async () => {
+  // KEY_EMP is mapped to employee U1. Slip 102 belongs to U2.
   const r = await authGet(ROLE_KEYS.employee, '/api/payroll/wage-slips/102');
-  // Current code: returns the row, no ownership check
-  assert.ok(r.status === 200 || r.status === 404);
-  if (r.status === 200) {
-    markGap(
-      'BUG-QA12-002',
-      'CRITICAL',
-      'IDOR: employee can GET /api/payroll/wage-slips/:id for slips they do not own.',
-      { route: 'GET /api/payroll/wage-slips/:id', role: 'employee', expected: '403 when req.actor.employee_id != slip.employee_id' },
-    );
-  }
+  assert.equal(r.status, 403);
+  assert.equal(r.body && r.body.code, 'PAYROLL_CROSS_USER_ACCESS_DENIED');
+  markGap(
+    'BUG-QA12-002',
+    'FIXED',
+    'IDOR fix: GET /wage-slips/:id rejects when req.actor.employee_id != slip.employee_id.',
+    { route: 'GET /api/payroll/wage-slips/:id', role: 'employee', resolution: 'denyIfNotOwnerOrAdmin gate' },
+  );
 });
 
-test('QA-12/C2  IDOR — employee lists others\' balances', async () => {
+test('QA-12/C2  IDOR — employee reading another\'s balances is blocked (BUG-QA12-003 FIXED)', async () => {
+  // KEY_EMP is mapped to U1; reading U2's balances must be 403.
   const r = await authGet(ROLE_KEYS.employee, '/api/payroll/employees/U2/balances');
-  assert.notEqual(r.status, 403);
+  assert.equal(r.status, 403);
+  assert.equal(r.body && r.body.code, 'PAYROLL_CROSS_USER_ACCESS_DENIED');
   markGap(
     'BUG-QA12-003',
-    'CRITICAL',
-    'IDOR: employee can read any /api/payroll/employees/:id/balances.',
-    { route: 'GET /api/payroll/employees/:id/balances', role: 'employee', expected: '403' },
+    'FIXED',
+    'IDOR fix: GET /employees/:id/balances rejects cross-employee reads.',
+    { route: 'GET /api/payroll/employees/:id/balances', role: 'employee', resolution: 'denyIfNotOwnerOrAdmin gate' },
   );
 });
 
@@ -481,10 +499,15 @@ test('QA-12/D1  Priv-esc via body.role="admin" — currently accepted', async ()
 
 test('QA-12/D2  Priv-esc via ?admin=1 query param → ignored (no code path reads it)', async () => {
   const r = await authGet(ROLE_KEYS.viewer, '/api/payroll/wage-slips?admin=1&bypassAuth=true');
-  // Current code doesn't look at ?admin, so this is effectively a no-op.
-  // It is still a 200 — which is the real bug (viewer reading payroll), but
-  // the query-string trick itself does nothing.
+  // KEY_VIEW is mapped to employee U1 via PAYROLL_EMPLOYEE_KEY_MAP, so the
+  // call succeeds (200) but the route force-filters to U1's own slips. The
+  // ?admin=1 / ?bypassAuth=true query strings do nothing — the gate is
+  // entirely server-side. This proves the query-trick is a no-op.
   assert.equal(r.status, 200);
+  const slips = (r.body && r.body.wage_slips) || [];
+  for (const s of slips) {
+    assert.equal(String(s.employee_id), 'U1', '?admin=1 must NOT broaden visibility');
+  }
 });
 
 test('QA-12/D3  X-Forwarded-Role: admin header → ignored (not read by server)', async () => {
@@ -507,10 +530,12 @@ test('QA-12/Z  dump findings log', () => {
       critical: FINDINGS.filter(f => f.severity === 'CRITICAL').length,
       high:     FINDINGS.filter(f => f.severity === 'HIGH').length,
       med:      FINDINGS.filter(f => f.severity === 'MED').length,
+      fixed:    FINDINGS.filter(f => f.severity === 'FIXED').length,
     },
     gaps: FINDINGS,
   };
   fs.writeFileSync(outPath, JSON.stringify(payload, null, 2));
-  // At least the CRITICAL + HIGH ones should have been recorded.
-  assert.ok(FINDINGS.length >= 6, `expected >=6 gaps, got ${FINDINGS.length}`);
+  // The audit always records every finding (open or fixed). We expect the
+  // full 6 cells from the matrix to be represented in the side-log.
+  assert.ok(FINDINGS.length >= 6, `expected >=6 findings, got ${FINDINGS.length}`);
 });

@@ -272,7 +272,7 @@ export default function AccountingExportPage() {
             <p>• תאריך מסמך</p>
             <p>• מספר עוסק מורשה / ח.פ.</p>
             <p>• סכום לפני מע"מ</p>
-            <p>• סכום מע"מ (17%)</p>
+            <p>• סכום מע"מ (18%)</p>
             <p>• סה"כ כולל מע"מ</p>
           </div>
           <div className="space-y-1">

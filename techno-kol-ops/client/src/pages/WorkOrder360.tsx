@@ -195,7 +195,7 @@ function SortableTable<T extends { id: number | string }>({ columns, data, onRow
           <tr>
             {columns.map(c => (
               <th key={String(c.key)} onClick={() => handleSort(String(c.key))}
-                style={{ textAlign: 'right', padding: '8px 10px', color: '#5C7080', fontSize: 10, letterSpacing: '0.1em',
+                style={{ textAlign: 'end', padding: '8px 10px', color: '#5C7080', fontSize: 10, letterSpacing: '0.1em',
                   borderBottom: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', userSelect: 'none',
                   width: c.width, whiteSpace: 'nowrap' }}>
                 {c.label} {sortKey === String(c.key) ? (sortDir === 'asc' ? ' ^' : ' v') : ''}
@@ -933,7 +933,7 @@ export function WorkOrder360({ workOrderId: propId }: { workOrderId?: number }) 
                     <div style={{ fontSize: 12, color: '#F6F7F9' }}>{entry.action}</div>
                     {entry.details && <div style={{ fontSize: 11, color: '#5C7080' }}>{entry.details}</div>}
                   </div>
-                  <div style={{ textAlign: 'left', flexShrink: 0 }}>
+                  <div style={{ textAlign: 'start', flexShrink: 0 }}>
                     <div style={{ fontSize: 10, color: '#5C7080' }}>{entry.user || '-'}</div>
                     <div style={{ fontSize: 10, color: '#383E47' }}>{formatDateTime(entry.created_at || '')}</div>
                   </div>

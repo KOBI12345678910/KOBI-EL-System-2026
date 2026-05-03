@@ -27,10 +27,12 @@ describe('Health / liveness endpoints', () => {
     expect(res.status).toBe(200);
   });
 
-  it('GET /healthz returns a JSON body with status ok', async () => {
+  it('GET /healthz returns a JSON body with ok=true', async () => {
     const res = await request(app).get('/healthz');
-    expect(res.body).toHaveProperty('status');
-    expect(res.body.status).toMatch(/ok|healthy/i);
+    // Server returns { ok: true, service, version, uptime }. Many other consumers
+    // (k8s probes, /readyz parity, ops dashboards) depend on this `ok` shape.
+    expect(res.body).toHaveProperty('ok');
+    expect(res.body.ok).toBe(true);
   });
 
   it('GET /api/status returns 200 (public status endpoint)', async () => {

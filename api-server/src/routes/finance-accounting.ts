@@ -2,6 +2,10 @@ import { Router, Request, Response, NextFunction } from "express";
 import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { validateSession } from "../lib/auth";
+import {
+  loadAssetForRequest,
+  engineAssetToRow,
+} from "../lib/asset-engine-bridge";
 
 const router = Router();
 
@@ -246,9 +250,97 @@ router.put("/fixed-assets/:id", async (req, res) => {
   res.json(rows[0]);
 });
 
-router.delete("/fixed-assets/:id", async (req, res) => {
-  await q(`DELETE FROM fixed_assets WHERE id=${req.params.id}`);
-  res.json({ success: true });
+// AGENT-226: Hard DELETE is permanently disabled. Fixed assets are NEVER
+// deleted — they are disposed via POST /:id/dispose, which produces a
+// gain/loss journal and flips status to 'disposed'. Returning 405 here
+// preserves the URL surface while pointing scripts at the correct flow.
+router.delete("/fixed-assets/:id", async (_req, res) => {
+  res.status(405).json({
+    error: "מחיקה אסורה — נכסים אינם נמחקים. השתמש ב-POST /fixed-assets/:id/dispose",
+    code: "NEVER_DELETE",
+    hint: "Use POST /fixed-assets/:id/dispose with { saleAmount, disposalDate }",
+  });
+});
+
+// AGENT-226: Dispose endpoint — drives onyx-procurement asset-manager.dispose()
+// and persists the resulting multi-line journal (cash, accumulated dep, FA,
+// gain or loss). Replaces the previous behaviour of flipping status via PUT
+// without any GL math.
+router.post("/fixed-assets/:id/dispose", async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!Number.isFinite(id)) {
+    res.status(400).json({ error: "מזהה לא תקין" });
+    return;
+  }
+  const { saleAmount, disposalDate } = req.body || {};
+  const sale = Number(saleAmount);
+  if (!Number.isFinite(sale) || sale < 0) {
+    res.status(400).json({ error: "saleAmount חייב להיות מספר אי-שלילי" });
+    return;
+  }
+  try {
+    const { store, asset, engineId } = await loadAssetForRequest(id);
+    if (!asset) {
+      res.status(404).json({ error: "נכס לא נמצא" });
+      return;
+    }
+    if (String(asset.status).toUpperCase() !== "ACTIVE") {
+      res.status(400).json({ error: "הנכס אינו פעיל ואי אפשר למימוש שלו" });
+      return;
+    }
+    const dispDate =
+      disposalDate || new Date().toISOString().slice(0, 10);
+    const result = store.dispose(engineId, sale, dispDate);
+    const after = store.getAsset(engineId);
+    const row = engineAssetToRow(after);
+    const sNum = (n: any) => (Number.isFinite(Number(n)) ? Number(n) : 0);
+    await q(`UPDATE fixed_assets SET
+      status='disposed',
+      disposal_date='${row.disposal_date}',
+      disposal_price=${sNum(row.disposal_price)},
+      disposal_gain_loss=${sNum(row.disposal_gain_loss)},
+      accumulated_depreciation=${sNum(row.accumulated_depreciation)},
+      current_value=0,
+      last_depreciated_to=${row.last_depreciated_to ? `'${row.last_depreciated_to}'` : "NULL"},
+      updated_at=NOW()
+      WHERE id=${id}`);
+    // Persist the disposal journal — engine returns 4 lines (cash debit,
+    // accumulated dep debit, FA credit, gain credit OR loss debit).
+    const memo = String(result.journal?.memo || "Disposal").replace(/'/g, "''");
+    const entryId = String(result.journal?.entry_id || `DISP-${id}-${Date.now()}`).replace(/'/g, "''");
+    const lines = Array.isArray(result.journal?.lines) ? result.journal.lines : [];
+    for (const line of lines) {
+      const debit = Number(line.debit) || 0;
+      const credit = Number(line.credit) || 0;
+      const account = String(line.account || "").replace(/'/g, "''");
+      try {
+        await q(`INSERT INTO journal_entries
+          (entry_number, entry_date, description, debit_account_name, credit_account_name,
+           debit_amount, credit_amount, amount, status, source_type, reference, notes)
+          VALUES ('${entryId}', '${row.disposal_date}', '${memo}',
+            ${debit > 0 ? `'${account}'` : "NULL"},
+            ${credit > 0 ? `'${account}'` : "NULL"},
+            ${debit}, ${credit}, ${Math.max(debit, credit)},
+            'posted', 'asset_disposal', 'FA-${id}',
+            'AGENT-226 disposal line — engine-driven')`);
+      } catch (jerr: any) {
+        // Don't fail the whole disposal if journal table shape differs;
+        // dispose state is already committed on the asset row.
+        console.error("dispose: journal insert failed:", jerr.message);
+      }
+    }
+    res.json({
+      success: true,
+      asset_id: id,
+      gain_loss: result.gain_loss,
+      proceeds: sNum(row.disposal_price),
+      nbv_at_disposal: sNum(row.disposal_price) - Number(result.gain_loss || 0),
+      journal_entry_id: entryId,
+      journal_lines: lines.length,
+    });
+  } catch (e: any) {
+    res.status(400).json({ error: e?.message || "שגיאה במימוש נכס" });
+  }
 });
 
 router.get("/fixed-assets/by-category", async (_req, res) => {

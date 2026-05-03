@@ -1353,6 +1353,95 @@ function DynamicMenuItemsSection({ location, onNavigate }: { location: string; o
   );
 }
 
+/**
+ * AppMenuSection — DB-driven sidebar tree from /api/app-menu.
+ *
+ * Renders the canonical `public.app_menu` table (~2,500+ rows after the
+ * marketplace catalog seed) as additional sidebar sections. Existing
+ * hard-coded NAV_ITEMS still render above this — these items are merged
+ * in below them so nothing in the existing layout breaks.
+ *
+ * The endpoint returns rows shaped like:
+ *   { id, label, label_he, route, icon, parent_id, order_index, is_active, is_visible }
+ *
+ * We map those to the field names that the existing `DynamicMenuItem`
+ * component expects (`path`, `labelHe`, `parentId`, `sortOrder`) so the
+ * hierarchical renderer is reused as-is.
+ */
+function AppMenuSection({ location, onNavigate }: { location: string; onNavigate?: () => void }) {
+  const { data: items = [] } = useQuery<any[]>({
+    queryKey: ["app-menu-tree"],
+    queryFn: async () => {
+      try {
+        const r = await authFetch(`${API_BASE}/app-menu?flat=1`);
+        if (!r.ok) return [];
+        const payload = await r.json();
+        const rows: any[] = Array.isArray(payload)
+          ? payload
+          : (payload.items || payload.tree || []);
+        // Normalize backend field names → DynamicMenuItem expectations.
+        return rows.map((row: any) => ({
+          id: row.id,
+          parentId: row.parent_id ?? row.parentId ?? null,
+          path: row.route || row.path || row.href || "",
+          label: row.label || row.name || "",
+          labelHe: row.label_he || row.labelHe || row.label || "",
+          icon: row.icon || "FileText",
+          sortOrder: row.order_index ?? row.sortOrder ?? 0,
+          section: row.section || "תפריט מערכת",
+          isActive: row.is_active !== false && row.is_visible !== false,
+        }));
+      } catch {
+        return [];
+      }
+    },
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const activeItems = items.filter((item: any) => item.isActive !== false);
+  if (activeItems.length === 0) return null;
+
+  // Build parent → children map and the top-level (root) list.
+  const childrenMap = new Map<number, any[]>();
+  activeItems
+    .filter((item: any) => item.parentId != null)
+    .sort((a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0))
+    .forEach((item: any) => {
+      const existing = childrenMap.get(item.parentId) || [];
+      existing.push(item);
+      childrenMap.set(item.parentId, existing);
+    });
+
+  const topLevel = activeItems
+    .filter((item: any) => item.parentId == null)
+    .sort((a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0));
+
+  // Group top-level items into named sections so each becomes its own
+  // collapsible group (mirrors how DynamicMenuItemsSection is laid out).
+  const sectionsMap = new Map<string, any[]>();
+  topLevel.forEach((item: any) => {
+    const section = item.section || "תפריט מערכת";
+    const existing = sectionsMap.get(section) || [];
+    existing.push(item);
+    sectionsMap.set(section, existing);
+  });
+
+  return (
+    <>
+      {Array.from(sectionsMap.entries()).map(([sectionName, sectionItems]) => (
+        <DynamicMenuSection
+          key={`app-menu-${sectionName}`}
+          title={sectionName}
+          items={sectionItems}
+          childrenMap={childrenMap}
+          location={location}
+          onNavigate={onNavigate}
+        />
+      ))}
+    </>
+  );
+}
+
 function DynamicMenuSection({ title, items, childrenMap, location, onNavigate }: {
   title: string;
   items: any[];
@@ -2240,6 +2329,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               />
             ))}
             <DynamicMenuItemsSection location={location} />
+            <AppMenuSection location={location} onNavigate={() => setIsMobileMenuOpen(false)} />
           </div>
         )}
 

@@ -263,7 +263,7 @@ async function ensureCrmUltimateTables(): Promise<void> {
         discount_requires_approval BOOLEAN DEFAULT false,
         discount_approved_by VARCHAR(200),
         total_before_vat NUMERIC(15,2) DEFAULT 0,
-        vat_rate NUMERIC(5,2) DEFAULT 17,
+        vat_rate NUMERIC(5,2) DEFAULT 18,
         vat_amount NUMERIC(15,2) DEFAULT 0,
         total_with_vat NUMERIC(15,2) DEFAULT 0,
         price_per_sqm NUMERIC(15,2) DEFAULT 0,
@@ -571,18 +571,28 @@ router.post("/init", async (_req: Request, res: Response) => {
 // קבלת כל הלידים עם סינון וחיפוש
 router.get("/leads", async (req: Request, res: Response) => {
   const { status, agent_id, source, city, lead_type, urgency, search, limit, offset } = req.query;
-  let where = "WHERE 1=1";
-  if (status) where += ` AND status = '${status}'`;
-  if (agent_id) where += ` AND assigned_agent_id = ${agent_id}`;
-  if (source) where += ` AND source = '${source}'`;
-  if (city) where += ` AND city = '${city}'`;
-  if (lead_type) where += ` AND lead_type = '${lead_type}'`;
-  if (urgency) where += ` AND urgency = '${urgency}'`;
-  if (search) where += ` AND (full_name ILIKE '%${search}%' OR phone ILIKE '%${search}%' OR mobile ILIKE '%${search}%' OR email ILIKE '%${search}%' OR city ILIKE '%${search}%')`;
-  const lim = Number(limit) || 200;
-  const off = Number(offset) || 0;
-  const rows = await q(sql.raw(`SELECT * FROM crm_leads_ultimate ${where} ORDER BY created_at DESC LIMIT ${lim} OFFSET ${off}`));
-  const countR = await q(sql.raw(`SELECT COUNT(*) as total FROM crm_leads_ultimate ${where}`));
+
+  const conditions: any[] = [sql`1 = 1`];
+  if (status)    conditions.push(sql`status = ${String(status)}`);
+  if (agent_id)  conditions.push(sql`assigned_agent_id = ${Number(agent_id)}`);
+  if (source)    conditions.push(sql`source = ${String(source)}`);
+  if (city)      conditions.push(sql`city = ${String(city)}`);
+  if (lead_type) conditions.push(sql`lead_type = ${String(lead_type)}`);
+  if (urgency)   conditions.push(sql`urgency = ${String(urgency)}`);
+  if (search) {
+    const like = `%${String(search)}%`;
+    conditions.push(sql`(full_name ILIKE ${like} OR phone ILIKE ${like} OR mobile ILIKE ${like} OR email ILIKE ${like} OR city ILIKE ${like})`);
+  }
+  const whereSql = sql.join(conditions, sql` AND `);
+
+  const lim = Math.min(Math.max(Number(limit) || 200, 1), 1000);
+  const off = Math.max(Number(offset) || 0, 0);
+
+  const rows = await q(sql`
+    SELECT * FROM crm_leads_ultimate WHERE ${whereSql}
+    ORDER BY created_at DESC LIMIT ${lim} OFFSET ${off}
+  `);
+  const countR = await q(sql`SELECT COUNT(*) AS total FROM crm_leads_ultimate WHERE ${whereSql}`);
   res.json({ data: rows, total: Number((countR[0] as any)?.total || 0) });
 });
 
@@ -826,12 +836,17 @@ router.delete("/meetings/:id", async (req: Request, res: Response) => {
 
 router.get("/quotes", async (req: Request, res: Response) => {
   const { lead_id, agent_id, status, customer_id } = req.query;
-  let where = "WHERE 1=1";
-  if (lead_id) where += ` AND lead_id = ${lead_id}`;
-  if (agent_id) where += ` AND agent_id = ${agent_id}`;
-  if (status) where += ` AND status = '${status}'`;
-  if (customer_id) where += ` AND customer_id = ${customer_id}`;
-  const rows = await q(sql.raw(`SELECT * FROM crm_quotes ${where} ORDER BY created_at DESC`));
+
+  const conditions: any[] = [sql`1 = 1`];
+  if (lead_id)     conditions.push(sql`lead_id = ${Number(lead_id)}`);
+  if (agent_id)    conditions.push(sql`agent_id = ${Number(agent_id)}`);
+  if (status)      conditions.push(sql`status = ${String(status)}`);
+  if (customer_id) conditions.push(sql`customer_id = ${Number(customer_id)}`);
+  const whereSql = sql.join(conditions, sql` AND `);
+
+  const rows = await q(sql`
+    SELECT * FROM crm_quotes WHERE ${whereSql} ORDER BY created_at DESC
+  `);
   res.json(rows);
 });
 
@@ -864,7 +879,7 @@ router.post("/quotes", async (req: Request, res: Response) => {
     const discAmt = discPct > 0 ? sub * (discPct / 100) : Number(d.discount_amount || 0);
     d.discount_amount = discAmt;
     d.total_before_vat = sub - discAmt;
-    const vatRate = Number(d.vat_rate || 17);
+    const vatRate = Number(d.vat_rate || 18);
     d.vat_amount = d.total_before_vat * (vatRate / 100);
     d.total_with_vat = d.total_before_vat + d.vat_amount;
     if (d.total_sqm && d.total_sqm > 0) d.price_per_sqm = d.total_before_vat / d.total_sqm;

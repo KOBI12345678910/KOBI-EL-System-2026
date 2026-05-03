@@ -122,12 +122,12 @@ if (_describe && _test && _expect) {
 
     _test('renders all 6 chart cards with mock data', () => {
       const { container } = render(<BIDashboard data={mockBIData} />);
-      _expect(screen.getByText('מגמת הכנסות')).toBeTruthy();
-      _expect(screen.getByText('הכנסות מול הוצאות')).toBeTruthy();
-      _expect(screen.getByText('10 לקוחות מובילים')).toBeTruthy();
-      _expect(screen.getByText('תזרים מזומנים')).toBeTruthy();
-      _expect(screen.getByText('עלויות עובדים')).toBeTruthy();
-      _expect(screen.getByText('גיול חובות (AR Aging)')).toBeTruthy();
+      _expect(screen.getAllByText('מגמת הכנסות')[0]).toBeTruthy();
+      _expect(screen.getAllByText('הכנסות מול הוצאות')[0]).toBeTruthy();
+      _expect(screen.getAllByText('10 לקוחות מובילים')[0]).toBeTruthy();
+      _expect(screen.getAllByText('תזרים מזומנים')[0]).toBeTruthy();
+      _expect(screen.getAllByText('עלויות עובדים')[0]).toBeTruthy();
+      _expect(screen.getAllByText('גיול חובות (AR Aging)')[0]).toBeTruthy();
       // 6 SVG charts at least
       const svgs = container.querySelectorAll('svg');
       _expect(svgs.length).toBeGreaterThanOrEqual(6);

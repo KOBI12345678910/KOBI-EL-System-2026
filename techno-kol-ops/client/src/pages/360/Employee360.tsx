@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { Page360, KPI, RelatedTable, AuditLog, ActionBtn, Loader, ErrCard } from "./shared360";
 
 export default function Employee360() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,8 +32,8 @@ export default function Employee360() {
       </div>
 
       <div className="flex gap-2 flex-wrap">
-        <ActionBtn label="חישוב שכר" onClick={() => {}} />
-        <ActionBtn label="בקשת חופשה" onClick={() => {}} variant="secondary" />
+        <ActionBtn label="חישוב שכר" onClick={() => navigate(`/employee/${id}/payroll`)} />
+        <ActionBtn label="בקשת חופשה" onClick={() => navigate(`/employee/${id}/leave-request`)} variant="secondary" />
       </div>
 
       <RelatedTable title="תלושי שכר" rows={data.wage_slips ?? []}

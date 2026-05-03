@@ -8,6 +8,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const clickMock = vi.fn();
 const appendChildMock = vi.fn();
 const removeChildMock = vi.fn();
+// Spy on Blob constructor while preserving native [[Construct]] semantics —
+// vi.spyOn(globalThis, 'Blob') would replace the class and break `new Blob(...)`.
+const OriginalBlob = globalThis.Blob;
+const blobCallSpy = vi.fn();
+class SpiedBlob extends OriginalBlob {
+  constructor(parts?: any, opts?: any) {
+    blobCallSpy(parts, opts);
+    super(parts, opts);
+  }
+}
+function spyOnBlob() {
+  blobCallSpy.mockClear();
+  globalThis.Blob = SpiedBlob as any;
+  return { mock: blobCallSpy.mock };
+}
 
 beforeEach(() => {
   clickMock.mockClear();
@@ -46,7 +61,7 @@ describe('exportToCSV', () => {
   });
 
   it('creates a Blob with UTF-8 BOM prefix', () => {
-    const blobSpy = vi.spyOn(globalThis, 'Blob');
+    const blobSpy = spyOnBlob();
     exportToCSV([{ name: 'Alice' }], 'test.csv');
     const callArg: string = blobSpy.mock.calls[0]?.[0]?.[0] ?? '';
     expect(callArg.startsWith('\uFEFF')).toBe(true);
@@ -59,7 +74,7 @@ describe('exportToCSV', () => {
   });
 
   it('produces correct header row from object keys', () => {
-    const blobSpy = vi.spyOn(globalThis, 'Blob');
+    const blobSpy = spyOnBlob();
     exportToCSV([{ id: 1, name: 'Bob', dept: 'HR' }], 'test.csv');
     const content: string = blobSpy.mock.calls[0]?.[0]?.[0] ?? '';
     // First non-BOM line should be the header
@@ -81,7 +96,7 @@ describe('exportToJSON', () => {
   });
 
   it('produces valid JSON content', () => {
-    const blobSpy = vi.spyOn(globalThis, 'Blob');
+    const blobSpy = spyOnBlob();
     const data = { employees: [{ id: 1, name: 'Alice' }] };
     exportToJSON(data, 'data.json');
     const content: string = blobSpy.mock.calls[0]?.[0]?.[0] ?? '';
@@ -90,7 +105,7 @@ describe('exportToJSON', () => {
   });
 
   it('pretty-prints JSON with 2-space indentation', () => {
-    const blobSpy = vi.spyOn(globalThis, 'Blob');
+    const blobSpy = spyOnBlob();
     exportToJSON({ a: 1 }, 'data.json');
     const content: string = blobSpy.mock.calls[0]?.[0]?.[0] ?? '';
     expect(content).toContain('\n  ');

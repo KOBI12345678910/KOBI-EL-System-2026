@@ -217,7 +217,12 @@ function defaultCoa() {
     { no: '2200', name: 'הלוואות לזמן קצר', nameEn: 'Short-term Loans',   active: true, frozen: false },
     { no: '2300', name: 'מע״מ לשלם',        nameEn: 'VAT Payable',        active: true, frozen: false },
     { no: '2310', name: 'מע״מ תשומות',      nameEn: 'VAT Input',          active: true, frozen: false },
+    // AGENT-229 — Year-end close support accounts
+    { no: '1490', name: 'נכס מס נדחה',      nameEn: 'Deferred Tax Asset', active: true, frozen: false },
+    { no: '2190', name: 'הפרשה למס חברות',  nameEn: 'Accrued Corp. Tax',  active: true, frozen: false },
     { no: '3000', name: 'הון מניות',        nameEn: 'Share Capital',      active: true, frozen: false },
+    // AGENT-229 — Income summary (transient close account)
+    { no: '3490', name: 'סיכום הכנסה',      nameEn: 'Income Summary',     active: true, frozen: false },
     { no: '3500', name: 'עודפים',           nameEn: 'Retained Earnings',  active: true, frozen: false },
     { no: '4000', name: 'הכנסות ממכירות',    nameEn: 'Sales Revenue',      active: true, frozen: false },
     { no: '5000', name: 'עלות המכירות',     nameEn: 'COGS',               active: true, frozen: false },
@@ -230,6 +235,9 @@ function defaultCoa() {
     { no: '7100', name: 'הפרשי שער',        nameEn: 'FX Gain/Loss',       active: true, frozen: false },
     { no: '7200', name: 'ריבית',            nameEn: 'Interest Expense',   active: true, frozen: false },
     { no: '9000', name: 'מס הכנסה',         nameEn: 'Income Tax',         active: true, frozen: false },
+    // AGENT-229 — Tax provision accounts (current and benefit)
+    { no: '9100', name: 'הוצאת מס חברות',   nameEn: 'Corp Tax Expense',   active: true, frozen: false },
+    { no: '9150', name: 'הטבת מס שוטף',     nameEn: 'Current Tax Benefit',active: true, frozen: false },
   ];
   const map = new Map();
   for (const a of accts) map.set(String(a.no), Object.freeze({ ...a }));
@@ -435,6 +443,165 @@ function defaultTemplates() {
           lines: [
             { account: '3500', debit:  a, description: 'הפסד מעודפים' },
             { account: '4000', credit: a, description: 'סגירת הכנסות' },
+          ],
+        };
+      },
+    },
+    /* -------------------------------------------------------------- */
+    /* AGENT-229 — Year-End Close Orchestrator                        */
+    /* Full P&L sweep across ALL P&L bands (4xxx-9xxx) into retained  */
+    /* earnings (3500) or income summary (3490).                      */
+    /* -------------------------------------------------------------- */
+    YEAR_END_CLOSE_FULL: {
+      id: 'YEAR_END_CLOSE_FULL',
+      name: { he: 'סגירת שנה — סגירת כל חשבונות התוצאה', en: 'Year-End Close — full P&L sweep' },
+      variables: ['trialBalance', 'retainedEarningsAccount', 'incomeSummaryAccount', 'useIncomeSummary'],
+      build: (v) => {
+        const tb = v.trialBalance || {};
+        const RE = v.retainedEarningsAccount || '3500';
+        const IS = v.incomeSummaryAccount    || '3490';
+        const useIS = v.useIncomeSummary !== false;
+        const lines = [];
+        let netCredit = 0; // positive = profit
+
+        // Revenue (4xxx) — credit balances → DEBIT to zero
+        for (const r of (tb.revenue || [])) {
+          if (Math.abs(Number(r.balance) || 0) < 0.01) continue;
+          const bal = Math.abs(Number(r.balance) || 0);
+          lines.push({
+            account: r.account, debit: round2(bal),
+            description: `סגירת הכנסות ${r.account}`,
+          });
+          netCredit += bal;
+        }
+        // COGS (5xxx), OpEx (6xxx,7xxx), Tax (9xxx) — debit balances → CREDIT
+        for (const grp of ['cogs', 'opex', 'tax']) {
+          for (const x of (tb[grp] || [])) {
+            if (Math.abs(Number(x.balance) || 0) < 0.01) continue;
+            const bal = Math.abs(Number(x.balance) || 0);
+            lines.push({
+              account: x.account, credit: round2(bal),
+              description: `סגירת ${grp} ${x.account}`,
+            });
+            netCredit -= bal;
+          }
+        }
+        // Finance (8xxx) — sign-aware (income or expense)
+        for (const f of (tb.finance || [])) {
+          const bal = Number(f.balance) || 0;
+          if (Math.abs(bal) < 0.01) continue;
+          const isExpense = bal > 0;
+          lines.push({
+            account: f.account,
+            ...(isExpense ? { credit: round2(bal) } : { debit: round2(-bal) }),
+            description: `סגירת מימון ${f.account}`,
+          });
+          netCredit -= bal;
+        }
+        // Plug to retained earnings (or via income summary)
+        const plugAcct = useIS ? IS : RE;
+        const plug = round2(netCredit);
+        if (plug > 0) {
+          lines.push({ account: plugAcct, credit: plug, description: 'רווח נקי לעודפים' });
+        } else if (plug < 0) {
+          lines.push({ account: plugAcct, debit: Math.abs(plug), description: 'הפסד נקי מעודפים' });
+        }
+
+        return {
+          memo: (v.memo || 'סגירת שנה — Year-End Close (full P&L sweep)'),
+          lines,
+          // If using IS, follow-up JE moves IS → RE (caller posts both)
+          followUp: useIS && plug !== 0 ? {
+            memo: 'העברת income summary לעודפים',
+            lines: plug > 0
+              ? [
+                  { account: IS, debit:  Math.abs(plug), description: 'income summary → עודפים' },
+                  { account: RE, credit: Math.abs(plug), description: 'רווח נקי לעודפים' },
+                ]
+              : [
+                  { account: RE, debit:  Math.abs(plug), description: 'הפסד מעודפים' },
+                  { account: IS, credit: Math.abs(plug), description: 'income summary → עודפים' },
+                ],
+          } : null,
+        };
+      },
+    },
+    /* -------------------------------------------------------------- */
+    /* AGENT-229 — Roll-forward opening balances for next fiscal year */
+    /* P&L bands intentionally omitted (they reset to zero each year). */
+    /* -------------------------------------------------------------- */
+    ROLL_FORWARD_OPENING: {
+      id: 'ROLL_FORWARD_OPENING',
+      name: { he: 'יתרות פתיחה לשנה חדשה', en: 'New Year Opening Balances' },
+      variables: ['priorYearClosingTB'],
+      build: (v) => {
+        const tb = v.priorYearClosingTB || {};
+        const lines = [];
+        // Assets — debit balances carry forward
+        for (const a of (tb.assets || [])) {
+          const bal = Number(a.balance) || 0;
+          if (Math.abs(bal) < 0.01) continue;
+          lines.push({
+            account: a.account, debit: round2(bal),
+            description: `יתרת פתיחה ${a.account}`,
+          });
+        }
+        // Liabilities + Equity — credit balances carry forward (incl. roll-forward of RE)
+        for (const grp of ['liabilities', 'equity']) {
+          for (const x of (tb[grp] || [])) {
+            const bal = Number(x.balance) || 0;
+            if (Math.abs(bal) < 0.01) continue;
+            lines.push({
+              account: x.account, credit: round2(bal),
+              description: `יתרת פתיחה ${x.account}`,
+            });
+          }
+        }
+        // P&L (4xxx-9xxx) intentionally omitted — they reset to zero in new year
+        return {
+          memo: (v.memo || 'Opening balances — new fiscal year'),
+          lines,
+        };
+      },
+    },
+    /* -------------------------------------------------------------- */
+    /* AGENT-229 — Corporate tax provision JE                          */
+    /* Profit year   → Dr 9100 / Cr 2190                               */
+    /* Loss year     → Dr 1490 (DTA) / Cr 9150 (tax benefit)           */
+    /* -------------------------------------------------------------- */
+    TAX_PROVISION: {
+      id: 'TAX_PROVISION',
+      name: { he: 'הפרשה למס חברות', en: 'Corporate Tax Provision' },
+      variables: ['profit_before_tax', 'tax_rate', 'tax_expense_account', 'tax_payable_account'],
+      build: (v) => {
+        const pbt  = Number(v.profit_before_tax || 0);
+        const rate = Number(v.tax_rate || 0.23);
+        const exp  = v.tax_expense_account || '9100';
+        const pay  = v.tax_payable_account || '2190';
+
+        if (pbt <= 0) {
+          // Loss year — book deferred tax asset (1490), not a payable
+          const dta = round2(Math.abs(pbt) * rate);
+          if (dta < 0.01) {
+            return { memo: 'הפרשה למס — אין רווח, אין מס', lines: [] };
+          }
+          return {
+            memo: (v.memo || 'הפרשה למס — הפסד (נכס מס נדחה)'),
+            lines: [
+              { account: '1490', debit:  dta, description: 'נכס מס נדחה (Deferred Tax Asset)' },
+              { account: '9150', credit: dta, description: 'הטבת מס שוטף' },
+            ],
+          };
+        }
+        const tax = round2(pbt * rate);
+        if (tax < 0.01) {
+          return { memo: 'הפרשה למס — סכום אפסי', lines: [] };
+        }
+        return {
+          memo: (v.memo || `הפרשה למס חברות ${(rate * 100).toFixed(1)}% × ₪${pbt.toFixed(2)}`),
+          lines: [
+            { account: exp, debit:  tax, description: `הוצאת מס חברות (${(rate * 100).toFixed(1)}%)` },
+            { account: pay, credit: tax, description: 'התחייבות מס נצברת' },
           ],
         };
       },

@@ -13,8 +13,8 @@ describe('StatusBadge', () => {
     render(<StatusBadge status="approved" />);
     const badge = screen.getByTestId('status-badge');
     const style = badge.getAttribute('style') ?? '';
-    // The approved color is #3DCC91
-    expect(style).toContain('#3DCC91');
+    // The approved color is #3DCC91 — jsdom serializes inline color hex as rgb()
+    expect(style).toContain('rgb(61, 204, 145)');
   });
 
   it('renders the correct Hebrew label for "approved"', () => {

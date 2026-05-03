@@ -24,6 +24,11 @@ import reportsRouter from './routes/reports';
 import pipelineRouter from './routes/pipeline';
 import intelligenceRouter from './routes/intelligence';
 import supplyChainRouter from './routes/supplyChain';
+import customersRouter from './routes/customers';
+import projectsRouter from './routes/projects';
+import quotesRouter from './routes/quotes';
+import invoicesRouter from './routes/invoices';
+import paymentsRouter from './routes/payments';
 
 import notificationsRouter from './routes/notifications';
 
@@ -123,6 +128,11 @@ app.use('/api/reports', authenticate);
 app.use('/api/pipeline', authenticate);
 app.use('/api/intelligence', authenticate);
 app.use('/api/supply-chain', authenticate);
+app.use('/api/customers', authenticate);
+app.use('/api/projects', authenticate);
+app.use('/api/quotes', authenticate);
+app.use('/api/invoices', authenticate);
+app.use('/api/payments', authenticate);
 app.use('/api/brain', authenticate);
 app.use('/api/aip', authenticate);
 app.use('/api/signatures', authenticate);
@@ -130,7 +140,7 @@ app.use('/api/notifications', authenticate);
 app.use('/api/admin', authenticate, requireAdmin, adminRouter);
 
 // ─── ONTOLOGY SNAPSHOT ───────────────────────
-app.get('/api/ontology/snapshot', async (req, res) => {
+app.get('/api/ontology/snapshot', authenticate, async (req, res) => {
   try {
     const snapshot = await getFactorySnapshot();
     res.json(snapshot);
@@ -156,6 +166,11 @@ app.use('/api/reports', reportsRouter);
 app.use('/api/pipeline', pipelineRouter);
 app.use('/api/intelligence', intelligenceRouter);
 app.use('/api/supply-chain', supplyChainRouter);
+app.use('/api/customers', customersRouter);
+app.use('/api/projects', projectsRouter);
+app.use('/api/quotes', quotesRouter);
+app.use('/api/invoices', invoicesRouter);
+app.use('/api/payments', paymentsRouter);
 
 // ── v2.0 Foundry Routes ──
 app.use('/api/brain', brainRouter);
@@ -235,7 +250,7 @@ app.get('/api/bridges/health', async (_req, res) => {
 });
 
 // Proxy: fetch purchase orders from procurement for project context
-app.get('/api/bridges/procurement/purchase-orders', async (req, res) => {
+app.get('/api/bridges/procurement/purchase-orders', authenticate, async (req, res) => {
   try {
     const client = getDefaultProcurementClient();
     const data = await client.getPurchaseOrders({
@@ -250,8 +265,46 @@ app.get('/api/bridges/procurement/purchase-orders', async (req, res) => {
   }
 });
 
+// ─── APP MENU PROXY ─────────────────────────────────────────────
+// Forwards GET /api/app-menu → onyx-procurement:3100/api/app-menu
+// so the client at port 3200 doesn't hit CORS. Keeps query string
+// (flat, include_inactive). Public route — same as upstream.
+app.get('/api/app-menu', async (req, res) => {
+  try {
+    const base = (process.env.ONYX_PROCUREMENT_URL || 'http://localhost:3100').replace(/\/+$/, '');
+    const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+    const upstream = `${base}/api/app-menu${qs}`;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 30000);
+    // Forward auth headers so upstream's requireTenant middleware passes.
+    // Inject default tenant from env if browser didn't send one.
+    const fwd: Record<string, string> = {
+      'accept': 'application/json',
+      'x-tenant-id': (req.headers['x-tenant-id'] as string) || process.env.DEFAULT_TENANT_ID || '4d60841d-f003-4994-88f5-a39767bb4689',
+    };
+    if (req.headers['apikey']) fwd['apikey'] = req.headers['apikey'] as string;
+    if (req.headers['authorization']) fwd['authorization'] = req.headers['authorization'] as string;
+    if (req.headers['x-api-key']) fwd['x-api-key'] = req.headers['x-api-key'] as string;
+    try {
+      const r = await fetch(upstream, {
+        headers: fwd,
+        signal: ctrl.signal,
+      });
+      const text = await r.text();
+      res.status(r.status).type(r.headers.get('content-type') || 'application/json').send(text);
+    } finally {
+      clearTimeout(timer);
+    }
+  } catch (err: any) {
+    res.status(502).json({
+      error: 'app_menu_upstream_unreachable',
+      detail: err?.message || 'fetch_failed',
+    });
+  }
+});
+
 // Proxy: fetch AI insights for operational entities
-app.get('/api/bridges/ai/insights', async (req, res) => {
+app.get('/api/bridges/ai/insights', authenticate, async (req, res) => {
   try {
     const client = getDefaultAiClient();
     const data = await client.getInsights({

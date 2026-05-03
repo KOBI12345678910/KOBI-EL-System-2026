@@ -143,7 +143,7 @@ test('SwipeableRow renders to an RTL list-item with Hebrew labels', () => {
   );
   const html = renderToString(element);
   assert(typeof html === 'string' && html.length > 0, 'non-empty render');
-  assert(html.includes('dir="rtl"'), 'RTL direction');
+  assert(html.includes('direction:rtl') || html.includes('dir="rtl"'), 'RTL direction');
   assert(html.includes('שורה לבדיקה'), 'children rendered');
   assert(html.includes('מחק'), 'delete label present');
   assert(html.includes('ערוך'), 'edit label present');

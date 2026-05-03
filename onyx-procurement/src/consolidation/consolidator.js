@@ -796,20 +796,29 @@ function eliminateInvestmentAndComputeGoodwill(groupState) {
       ACCOUNT_CLASS.ASSET,
       { sub: sub.id, description: 'Eliminate investment in subsidiary' }
     ));
-    // Eliminate the parent's share of the subsidiary's current equity.
-    // The remainder of sub equity is reclassified to NCI below.
-    const parentShareOfCurrent = round2(ownership * currentEquity);
+    // ביטול הון עצמי של חברת הבת לפי IFRS 10 / IAS 27:
+    // נמחק את ההון לפני הרכישה במלואו, ואת חלק המיעוט מתנועות אחרי הרכישה.
+    // חלק האם בתנועות אחרי הרכישה נשאר בהון המאוחד.
+    //   elim = netAssetsAtAcq + (1 − ownership) × (currentEquity − netAssetsAtAcq)
+    // The remainder (parent share of post-acq) stays in consolidated equity;
+    // NCI is recognised separately at (1 − ownership) × currentEquity.
+    const postAcqMovement = round2(currentEquity - netAssetsAtAcq);
+    const equityToEliminate = round2(
+      netAssetsAtAcq + (1 - ownership) * postAcqMovement
+    );
     elims.push(makeElim(
       ELIMINATION_TYPE.IC_INVESTMENT_EQUITY,
       '3000',
       'Equity of ' + sub.id,
-      -parentShareOfCurrent,
+      -equityToEliminate,
       ACCOUNT_CLASS.EQUITY,
       {
         sub: sub.id,
-        description: 'Eliminate parent share of subsidiary equity',
+        description: 'Eliminate pre-acq equity + NCI share of post-acq',
         ownership,
         currentEquity,
+        netAssetsAtAcq,
+        postAcqMovement,
       }
     ));
     // plug fair value uplifts

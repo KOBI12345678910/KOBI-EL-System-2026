@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 
@@ -36,47 +36,280 @@ const NAV = [
   { path: '/control-room/operations', label: 'חדר בקרה תפעולי', icon: '🏗️', section: 'חדרי בקרה' },
   { path: '/control-room/procurement', label: 'חדר בקרה רכש', icon: '📦', section: 'חדרי בקרה' },
   { path: '/control-room/workforce', label: 'חדר בקרה כוח אדם', icon: '👷', section: 'חדרי בקרה' },
+  // Master 360 — surfaces the 15 Master Flow detail-pages (CLAUDE.md: No Dead Pages).
+  // Routes point to existing list pages (drill into 360 on row-click) or to /:type/1 sample detail
+  // for entities without a list page yet. All 15 360s become reachable from the sidebar.
+  { path: '/clients', label: 'לקוחות 360', icon: '🤝', section: 'מאסטר 360' },
+  { path: '/quote/1', label: 'הצעות מחיר 360', icon: '📄', section: 'מאסטר 360' },
+  { path: '/order/1', label: 'הזמנות 360', icon: '🛒', section: 'מאסטר 360' },
+  { path: '/lead/1', label: 'לידים 360', icon: '📥', section: 'מאסטר 360' },
+  { path: '/pipeline', label: 'פרויקטים 360', icon: '📋', section: 'מאסטר 360' },
+  { path: '/work-orders', label: 'הוראות עבודה 360', icon: '🛠️', section: 'מאסטר 360' },
+  { path: '/supplier/1', label: 'ספקים 360', icon: '🚚', section: 'מאסטר 360' },
+  { path: '/rfq/1', label: 'בקשות הצעה 360', icon: '❓', section: 'מאסטר 360' },
+  { path: '/po/1', label: 'הזמנות רכש 360', icon: '🛍️', section: 'מאסטר 360' },
+  { path: '/materials', label: 'מלאי 360', icon: '📦', section: 'מאסטר 360' },
+  { path: '/finance', label: 'פיננסי 360', icon: '💵', section: 'מאסטר 360' },
+  { path: '/payment/1', label: 'תשלומים 360', icon: '💳', section: 'מאסטר 360' },
+  { path: '/employees', label: 'עובדים 360', icon: '👤', section: 'מאסטר 360' },
+  { path: '/delivery/1', label: 'משלוחים 360', icon: '🚛', section: 'מאסטר 360' },
+  { path: '/project/1/closure', label: 'סגירת פרויקטים 360', icon: '✅', section: 'מאסטר 360' },
 ];
+
+// Tree node from /api/app-menu — each root has children (categories/modules).
+// Shape is intentionally permissive so the API can evolve without breaking the UI.
+type MenuChild = {
+  path?: string;
+  route?: string;
+  url?: string;
+  label?: string;
+  title?: string;
+  name?: string;
+  icon?: string;
+  children?: MenuChild[];
+};
+type MenuRoot = MenuChild & { id?: string | number };
+
+function getLabel(node: MenuChild): string {
+  return node.label || node.title || node.name || '';
+}
+function getPath(node: MenuChild): string | undefined {
+  return node.path || node.route || node.url;
+}
 
 export function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { sidebarOpen, snapshot } = useStore();
 
+  const [menu, setMenu] = useState<MenuRoot[] | null>(null);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    // Prefer /api/menu/tree (12 service buckets, ~12 root sections — manageable UI).
+    // Fall back to /api/app-menu (9,139 raw roots — flat list, virtualization needed).
+    const tryTree = fetch('/api/menu/tree')
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null);
+    tryTree.then((tree) => {
+      if (cancelled) return;
+      if (tree && Array.isArray(tree.services) && tree.services.length > 0) {
+        // Map service buckets to MenuRoot shape: each service becomes a root with children.
+        const mapped: MenuRoot[] = tree.services.map((s: any) => ({
+          id: `svc-${s.service}`,
+          label: s.service,
+          label_he: s.label_he || s.service,
+          route: null,
+          icon: '📂',
+          parent_id: null,
+          order_index: 0,
+          children: Array.isArray(s.children) ? s.children.slice(0, 200) : [],
+        }));
+        setMenu(mapped);
+        return;
+      }
+      // Fallback to /api/app-menu (raw flat).
+      fetch('/api/app-menu')
+        .then((r) => (r.ok ? r.json() : Promise.reject(`HTTP ${r.status}`)))
+        .then((data) => {
+          if (cancelled) return;
+          // The API returns { source, count, roots, tree }. Read tree[].
+          const roots: MenuRoot[] | null = Array.isArray(data?.tree)
+            ? data.tree.slice(0, 200) // cap to prevent UI hang on 9,139 roots
+            : Array.isArray(data)
+            ? data.slice(0, 200)
+            : Array.isArray(data?.menu)
+            ? data.menu.slice(0, 200)
+            : Array.isArray(data?.items)
+            ? data.items.slice(0, 200)
+            : null;
+          if (roots && roots.length > 0) setMenu(roots);
+        })
+        .catch(() => {
+          // Fall through to hard-coded NAV.
+        });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   if (!sidebarOpen) return null;
 
-  const sections = [...new Set(NAV.map(n => n.section))];
+  const containerStyle: React.CSSProperties = {
+    width: 240,
+    background: '#1C2127',
+    borderRight: '1px solid rgba(255,255,255,0.1)',
+    position: 'fixed',
+    top: 48,
+    left: 0,
+    bottom: 0,
+    overflowY: 'auto',
+    zIndex: 99,
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    direction: 'rtl',
+  };
+
+  const sectionLabelStyle: React.CSSProperties = {
+    padding: '12px 16px 4px',
+    fontSize: 10,
+    color: '#5C7080',
+    letterSpacing: '0.15em',
+    fontWeight: 600,
+    textTransform: 'uppercase',
+  };
+
+  const itemStyle = (active: boolean): React.CSSProperties => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    padding: '8px 16px',
+    cursor: 'pointer',
+    background: active ? 'rgba(255,165,0,0.1)' : 'transparent',
+    borderLeft: active ? '2px solid #FFA500' : '2px solid transparent',
+    color: active ? '#FFA500' : '#ABB3BF',
+    fontSize: 13,
+    transition: 'all 0.1s',
+    userSelect: 'none',
+  });
+
+  // ---- API-driven render: collapsible roots with children ----
+  if (menu) {
+    const toggle = (key: string) =>
+      setExpanded((s) => ({ ...s, [key]: !s[key] }));
+
+    const renderChild = (child: MenuChild, depth: number, keyPrefix: string) => {
+      const path = getPath(child);
+      const label = getLabel(child);
+      const hasKids = Array.isArray(child.children) && child.children.length > 0;
+      const key = `${keyPrefix}/${path || label}`;
+      const active = !!path && location.pathname === path;
+      const isOpen = !!expanded[key];
+
+      return (
+        <div key={key}>
+          <div
+            onClick={() => {
+              if (hasKids) toggle(key);
+              else if (path) navigate(path);
+            }}
+            tabIndex={0}
+            aria-current={active ? 'page' : undefined}
+            aria-expanded={hasKids ? isOpen : undefined}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                if (hasKids) toggle(key);
+                else if (path) navigate(path);
+              }
+            }}
+            style={{
+              ...itemStyle(active),
+              paddingRight: 16 + depth * 12,
+            }}
+            onMouseEnter={(e) => {
+              if (!active)
+                (e.currentTarget as HTMLDivElement).style.background =
+                  'rgba(255,255,255,0.05)';
+            }}
+            onMouseLeave={(e) => {
+              if (!active)
+                (e.currentTarget as HTMLDivElement).style.background =
+                  'transparent';
+            }}
+          >
+            {child.icon && <span style={{ fontSize: 12 }}>{child.icon}</span>}
+            <span style={{ flex: 1 }}>{label}</span>
+            {hasKids && (
+              <span style={{ fontSize: 10, color: '#5C7080' }}>
+                {isOpen ? '▾' : '◂'}
+              </span>
+            )}
+          </div>
+          {hasKids && isOpen && (
+            <div>
+              {child.children!.map((grand) =>
+                renderChild(grand, depth + 1, key)
+              )}
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    return (
+      <div role="navigation" aria-label="ניווט ראשי" style={containerStyle}>
+        {menu.map((root, idx) => {
+          const key = `root-${idx}-${getLabel(root)}`;
+          const isOpen = !!expanded[key];
+          const label = getLabel(root);
+          const hasKids = Array.isArray(root.children) && root.children.length > 0;
+
+          return (
+            <div key={key} style={{ marginBottom: 4 }}>
+              <div
+                onClick={() => {
+                  if (hasKids) setExpanded((s) => ({ ...s, [key]: !s[key] }));
+                  else {
+                    const p = getPath(root);
+                    if (p) navigate(p);
+                  }
+                }}
+                tabIndex={0}
+                role="button"
+                aria-expanded={hasKids ? isOpen : undefined}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (hasKids)
+                      setExpanded((s) => ({ ...s, [key]: !s[key] }));
+                    else {
+                      const p = getPath(root);
+                      if (p) navigate(p);
+                    }
+                  }
+                }}
+                style={{
+                  ...sectionLabelStyle,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  cursor: 'pointer',
+                  color: isOpen ? '#FFA500' : '#5C7080',
+                }}
+              >
+                {root.icon && (
+                  <span style={{ fontSize: 12 }}>{root.icon}</span>
+                )}
+                <span style={{ flex: 1 }}>{label}</span>
+                {hasKids && <span>{isOpen ? '▾' : '◂'}</span>}
+              </div>
+              {hasKids && isOpen && (
+                <div>
+                  {root.children!.map((c) => renderChild(c, 1, key))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // ---- Fallback: hard-coded NAV (used until API responds, or if it fails) ----
+  const sections = [...new Set(NAV.map((n) => n.section))];
 
   return (
-    <div
-      role="navigation"
-      aria-label="ניווט ראשי"
-      style={{
-      width: 240,
-      background: '#1C2127',
-      borderRight: '1px solid rgba(255,255,255,0.1)',
-      position: 'fixed',
-      top: 48, left: 0, bottom: 0,
-      overflowY: 'auto',
-      zIndex: 99,
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
-    }}>
-      {sections.map(section => (
+    <div role="navigation" aria-label="ניווט ראשי" style={containerStyle}>
+      {sections.map((section) => (
         <div key={section} style={{ marginBottom: 8 }}>
-          <div style={{
-            padding: '12px 16px 4px',
-            fontSize: 10,
-            color: '#5C7080',
-            letterSpacing: '0.15em',
-            fontWeight: 600,
-            textTransform: 'uppercase'
-          }}>
-            {section}
-          </div>
-          {NAV.filter(n => n.section === section).map(item => {
+          <div style={sectionLabelStyle}>{section}</div>
+          {NAV.filter((n) => n.section === section).map((item) => {
             const active = location.pathname === item.path;
             const isAlerts = item.path === '/alerts';
-            const alertCount = snapshot?.openAlerts.filter(a => !a.is_resolved).length || 0;
+            const alertCount =
+              snapshot?.openAlerts.filter((a) => !a.is_resolved).length || 0;
 
             return (
               <div
@@ -84,34 +317,37 @@ export function Sidebar() {
                 onClick={() => navigate(item.path)}
                 tabIndex={0}
                 aria-current={active ? 'page' : undefined}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(item.path); } }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  padding: '8px 16px',
-                  cursor: 'pointer',
-                  background: active ? 'rgba(255,165,0,0.1)' : 'transparent',
-                  borderLeft: active ? '2px solid #FFA500' : '2px solid transparent',
-                  color: active ? '#FFA500' : '#ABB3BF',
-                  fontSize: 13,
-                  transition: 'all 0.1s',
-                  userSelect: 'none',
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate(item.path);
+                  }
                 }}
-                onMouseEnter={e => {
-                  if (!active) (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.05)';
+                style={itemStyle(active)}
+                onMouseEnter={(e) => {
+                  if (!active)
+                    (e.currentTarget as HTMLDivElement).style.background =
+                      'rgba(255,255,255,0.05)';
                 }}
-                onMouseLeave={e => {
-                  if (!active) (e.currentTarget as HTMLDivElement).style.background = 'transparent';
+                onMouseLeave={(e) => {
+                  if (!active)
+                    (e.currentTarget as HTMLDivElement).style.background =
+                      'transparent';
                 }}
               >
                 <span style={{ fontSize: 12 }}>{item.icon}</span>
                 <span style={{ flex: 1 }}>{item.label}</span>
                 {isAlerts && alertCount > 0 && (
-                  <span style={{
-                    background: '#FC8585', color: '#fff',
-                    fontSize: 9, padding: '1px 5px', borderRadius: 2, fontWeight: 600
-                  }}>
+                  <span
+                    style={{
+                      background: '#FC8585',
+                      color: '#fff',
+                      fontSize: 9,
+                      padding: '1px 5px',
+                      borderRadius: 2,
+                      fontWeight: 600,
+                    }}
+                  >
                     {alertCount}
                   </span>
                 )}

@@ -1,22 +1,23 @@
 {
-  "generatedAt": "2026-04-11T11:54:44.641Z",
+  "generatedAt": "2026-04-29T04:12:28.353Z",
   "summary": {
     "totalGaps": 7,
-    "critical": 2,
-    "high": 4,
-    "med": 1
+    "critical": 0,
+    "high": 2,
+    "med": 1,
+    "fixed": 4
   },
   "gaps": [
     {
       "id": "BUG-QA12-001",
-      "severity": "HIGH",
-      "description": "Employee role can list every wage slip of every employee (missing per-actor filter).",
+      "severity": "FIXED",
+      "description": "Employee role is now force-filtered to req.actor.employee_id on GET /api/payroll/wage-slips.",
       "detail": {
         "route": "GET /api/payroll/wage-slips",
         "role": "employee",
-        "expected": "filter by req.actor.employee_id"
+        "resolution": "getCallerIdentity + force-filter applied"
       },
-      "recordedAt": "2026-04-11T11:54:44.569Z"
+      "recordedAt": "2026-04-29T04:12:28.280Z"
     },
     {
       "id": "BUG-QA12-005",
@@ -27,7 +28,7 @@
         "role": "viewer",
         "expected": "403"
       },
-      "recordedAt": "2026-04-11T11:54:44.588Z"
+      "recordedAt": "2026-04-29T04:12:28.301Z"
     },
     {
       "id": "BUG-QA12-006",
@@ -38,40 +39,40 @@
         "role": "accountant",
         "expected": "403"
       },
-      "recordedAt": "2026-04-11T11:54:44.601Z"
+      "recordedAt": "2026-04-29T04:12:28.309Z"
     },
     {
       "id": "BUG-QA12-007",
-      "severity": "HIGH",
-      "description": "Employee can hit /wage-slips/:id/approve — a manager/accountant-only action.",
+      "severity": "FIXED",
+      "description": "Employee POST /wage-slips/:id/approve is rejected (admin-only + four-eyes principle).",
       "detail": {
         "route": "POST /api/payroll/wage-slips/:id/approve",
         "role": "employee",
-        "expected": "403"
+        "resolution": "isAdmin gate added"
       },
-      "recordedAt": "2026-04-11T11:54:44.608Z"
+      "recordedAt": "2026-04-29T04:12:28.317Z"
     },
     {
       "id": "BUG-QA12-002",
-      "severity": "CRITICAL",
-      "description": "IDOR: employee can GET /api/payroll/wage-slips/:id for slips they do not own.",
+      "severity": "FIXED",
+      "description": "IDOR fix: GET /wage-slips/:id rejects when req.actor.employee_id != slip.employee_id.",
       "detail": {
         "route": "GET /api/payroll/wage-slips/:id",
         "role": "employee",
-        "expected": "403 when req.actor.employee_id != slip.employee_id"
+        "resolution": "denyIfNotOwnerOrAdmin gate"
       },
-      "recordedAt": "2026-04-11T11:54:44.615Z"
+      "recordedAt": "2026-04-29T04:12:28.324Z"
     },
     {
       "id": "BUG-QA12-003",
-      "severity": "CRITICAL",
-      "description": "IDOR: employee can read any /api/payroll/employees/:id/balances.",
+      "severity": "FIXED",
+      "description": "IDOR fix: GET /employees/:id/balances rejects cross-employee reads.",
       "detail": {
         "route": "GET /api/payroll/employees/:id/balances",
         "role": "employee",
-        "expected": "403"
+        "resolution": "denyIfNotOwnerOrAdmin gate"
       },
-      "recordedAt": "2026-04-11T11:54:44.620Z"
+      "recordedAt": "2026-04-29T04:12:28.330Z"
     },
     {
       "id": "BUG-QA12-004",
@@ -84,7 +85,7 @@
         },
         "expected": "strip/allowlist body fields"
       },
-      "recordedAt": "2026-04-11T11:54:44.627Z"
+      "recordedAt": "2026-04-29T04:12:28.337Z"
     }
   ]
 }

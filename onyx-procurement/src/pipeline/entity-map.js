@@ -120,7 +120,7 @@ const ENTITY_MAP = {
     label: 'בקשת הצעת מחיר', labelEn: 'RFQ', icon: '📨', service: 'procurement',
     purpose: 'בקשת הצעת מחיר מספקים',
     links: ['supplier', 'pricing', 'approval', 'supplier_quote', 'po', 'document'],
-    statuses: ['draft', 'sent', 'quotes_received', 'decided', 'cancelled'],
+    statuses: ['draft', 'sent', 'quotes_received', 'under_comparison', 'approved', 'rejected', 'converted_to_po', 'cancelled'],
     nextSteps: [
       { id: 'send_to_suppliers',label: 'שלח לספקים',         icon: '📤', targetStatus: 'sent' },
       { id: 'compare_quotes',  label: 'השווה הצעות',        icon: '⚖️' },
@@ -198,7 +198,7 @@ const ENTITY_MAP = {
     label: 'הזמנת עבודה', labelEn: 'Work Order', icon: '🔧', service: 'ops',
     purpose: 'יחידת עבודה תפעולית',
     links: ['project', 'material_request', 'inventory_reservation', 'employee_assignment', 'attendance', 'task', 'quality_check', 'signature', 'expense'],
-    statuses: ['open', 'assigned', 'in_progress', 'waiting_materials', 'qa_check', 'done', 'signed_off'],
+    statuses: ['open', 'assigned', 'in_progress', 'waiting_materials', 'qa', 'completed', 'signed_off', 'cancelled'],
     nextSteps: [
       { id: 'assign',    label: 'שבץ עובדים',         icon: '👷', targetStatus: 'assigned' },
       { id: 'start',     label: 'התחל ביצוע',         icon: '▶️', targetStatus: 'in_progress' },

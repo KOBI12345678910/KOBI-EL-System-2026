@@ -1,0 +1,43 @@
+import { useParams, Link } from "wouter";
+import { Package, ArrowLeft } from "lucide-react";
+
+/**
+ * Generic stub handler for the 2,371 marketplace module routes seeded into
+ * `app_menu` (route='/marketplace/module/<id>'). Renders a minimal placeholder
+ * card so the link resolves instead of falling through to the 404 handler.
+ */
+export default function MarketplaceModuleDetail() {
+  const params = useParams<{ id?: string }>();
+  const id = params?.id ?? "unknown";
+
+  return (
+    <div className="p-6 max-w-4xl mx-auto" data-testid="marketplace-module-detail">
+      <Link
+        href="/settings/marketplace"
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        חזרה ל-Marketplace
+      </Link>
+
+      <div className="rounded-lg border border-border bg-card p-8">
+        <div className="flex items-start gap-4">
+          <div className="rounded-md bg-primary/10 p-3">
+            <Package className="w-6 h-6 text-primary" />
+          </div>
+          <div className="flex-1">
+            <h1 className="text-2xl font-semibold mb-1">Marketplace Module</h1>
+            <p className="text-sm text-muted-foreground mb-4">
+              Module ID: <code className="font-mono">{id}</code>
+            </p>
+            <p className="text-sm text-muted-foreground">
+              This module page is a placeholder. Detailed views will be wired
+              when the catalog rendering pipeline lands.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+

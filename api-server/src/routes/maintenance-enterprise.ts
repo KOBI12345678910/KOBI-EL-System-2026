@@ -136,9 +136,17 @@ router.put("/fixed-assets/:id", async (req, res) => {
   res.json((await q(`SELECT * FROM fixed_assets WHERE id=${req.params.id}`))[0]);
 });
 
-router.delete("/fixed-assets/:id", async (req, res) => {
-  await q(`DELETE FROM fixed_assets WHERE id=${req.params.id} AND status='disposed'`);
-  res.json({ success: true });
+// AGENT-226: Hard DELETE is permanently disabled in this module too — fixed
+// assets are NEVER deleted, even when their status is 'disposed'. The
+// disposal flow lives at POST /fixed-assets/:id/dispose (finance-accounting.ts).
+// Returning 405 keeps the URL surface stable while the never-delete rule
+// is enforced uniformly.
+router.delete("/fixed-assets/:id", async (_req, res) => {
+  res.status(405).json({
+    error: "מחיקה אסורה — נכסים אינם נמחקים. השתמש ב-POST /fixed-assets/:id/dispose",
+    code: "NEVER_DELETE",
+    hint: "Use POST /fixed-assets/:id/dispose with { saleAmount, disposalDate }",
+  });
 });
 
 // ========== CONTROLLED DOCUMENTS ==========

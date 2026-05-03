@@ -174,8 +174,20 @@ const supabase = createClient(
 
 // ═══ DOMAIN EVENTS — init after Supabase client is ready ═══
 try {
-  initDomainEvents({ supabase });
+  const { bus } = initDomainEvents({ supabase });
   console.log('✓ domain-events wired — EventBus + shared-events producer');
+  // ═══ AGENT-223 — Vendor Scoring listener (closes the loop on AGENT-183) ═══
+  try {
+    const { registerVendorScoringListener } = require('./src/wiring/vendor-scoring-listener');
+    const r = registerVendorScoringListener({ bus, supabase, logger: console });
+    if (r && r.ok) {
+      console.log(`✓ vendor-scoring listener wired (${r.eventsBound} events)`);
+    } else {
+      console.warn('⚠️  vendor-scoring listener not wired:', r && r.reason);
+    }
+  } catch (err) {
+    console.warn('⚠️  vendor-scoring listener init failed (non-fatal):', err && err.message);
+  }
 } catch (e) {
   console.warn('⚠️  domain-events init failed (non-fatal):', e && e.message);
 }
@@ -269,6 +281,56 @@ app.use('/api/', (req, res, next) => {
   if (PUBLIC_API_PATHS.has(req.path)) { req.actor = 'public'; return next(); }
   return requireAuth(req, res, next);
 });
+
+// ═══════════════════════════════════════════════════════════════
+// TENANT ISOLATION — Agent 272 / 290 / 303 fix
+// ───────────────────────────────────────────────────────────────
+// Mounted AFTER requireAuth so req.user / req.actor exist by now.
+// Resolves tenant from JWT > X-Tenant-Id header > session, attaches
+// req.tenantId, and pushes the Postgres GUC `app.current_tenant_id`
+// down so RLS predicates evaluate against the correct tenant.
+//
+// Per Agent 290+303: ZERO of 39 top-level routes filter by
+// tenant_id today. This middleware is the single chokepoint that
+// closes that gap before any route handler runs.
+//
+// Stash the supabase singleton on app.locals so the middleware's
+// GUC propagator can find it (fallback (c) — RPC set_tenant_context).
+app.locals.supabase = supabase;
+
+const { requireTenant } = require('./src/middleware/requireTenant');
+app.use('/api/', (req, res, next) => {
+  // Same public allow-list as the auth gate above — never tenant-gate
+  // health/status/bridge endpoints. requireTenant() also has its own
+  // EXEMPT_PATHS, but path here is the /api-relative form, so we
+  // short-circuit explicitly to keep both lists in lock-step.
+  if (PUBLIC_API_PATHS.has(req.path)) return next();
+  return requireTenant()(req, res, next);
+});
+console.log('✓ requireTenant() wired — JWT/header/session → req.tenantId + Postgres GUC');
+// ═══════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════
+// AUDIT TRAIL — append-only HTTP envelope writer
+// ───────────────────────────────────────────────────────────────
+// Mounted AFTER requireAuth + requireTenant so req.user.id and
+// req.tenantId are always populated. Records every state-mutating
+// API call (POST/PUT/PATCH/DELETE) into governance.audit_logs:
+//   method, path, user_id, tenant_id, request_body_summary,
+//   status, latency_ms.
+//
+// Append-only: single INSERT per request via res.on('finish') so
+// the response status + wall-clock latency are captured. Failures
+// are warn-only — audit must never block the business path.
+// ═══════════════════════════════════════════════════════════════
+const { auditTrail } = require('./src/middleware/audit-trail');
+app.use('/api/', auditTrail({
+  supabase,
+  serviceName: 'ONYX_PROCUREMENT',
+  moduleName: 'http_audit',
+}));
+console.log('✓ audit-trail wired — POST/PUT/PATCH/DELETE → governance.audit_logs');
+// ═══════════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════════
 // Agent-Y-QA03 FIX (BUG-02): wire the ai-bridge into the running
@@ -550,6 +612,56 @@ try {
   console.log('✓ notifications wired — /api/notifications/*');
 } catch (e) {
   console.warn('⚠️  notifications wiring skipped:', e && e.message);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PIPELINE / WIRING / ENTITY-MAP / STATE-MACHINES / ORCHESTRATOR /
+// WORKFLOW-FLOWS — System Blueprint APIs (Agent 210)
+//
+// CLAUDE.md "Key APIs" contract:
+//   GET  /api/wiring/spec
+//   GET  /api/entity-map/:type
+//   GET  /api/state-machines/:type/transitions?current=X
+//   POST /api/orchestrator/execute
+//   GET  /api/pipeline/stages
+//   GET  /api/workflows/:id
+//
+// Each module exports a register*Routes(app[, deps]) helper that mounts
+// the contract route plus its sibling endpoints. supabase + audit() are
+// already in scope (defined above at lines 168 and 498).
+// ═══════════════════════════════════════════════════════════════
+try {
+  const { registerWiringRoutes }       = require('./src/pipeline/wiring-spec');
+  const { registerEntityMapRoutes }    = require('./src/pipeline/entity-map');
+  const { registerStateMachineRoutes } = require('./src/pipeline/state-machines');
+  const { registerOrchestratorRoutes } = require('./src/pipeline/orchestrator');
+  const { registerPipelineRoutes }     = require('./src/pipeline/pipeline-engine');
+  const { registerWorkflowRoutes }     = require('./src/pipeline/workflow-flows');
+
+  registerWiringRoutes(app);
+  registerEntityMapRoutes(app);
+  registerStateMachineRoutes(app);
+  registerOrchestratorRoutes(app, { supabase, audit });
+  registerPipelineRoutes(app, { supabase, audit });
+  registerWorkflowRoutes(app);
+
+  console.log('✓ pipeline blueprint APIs wired — wiring-spec + entity-map + state-machines + orchestrator + pipeline-engine + workflow-flows');
+} catch (e) {
+  console.error('❌ pipeline blueprint wiring failed:', e && e.message);
+  if (errorTracker) errorTracker.capture(e, { tag: 'pipeline-blueprint-wiring' });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// API: GENERIC DB-ENTITY BROWSER (allow-listed schema/table peek)
+// Mount after registerWiringRoutes so the wiring-spec module loads first.
+// ═══════════════════════════════════════════════════════════════
+try {
+  const { registerDbEntityRoutes } = require('./src/routes/db-entity');
+  registerDbEntityRoutes(app, { supabase });
+  console.log('✓ db-entity browser wired — /api/db-entity/:schema/:table');
+} catch (e) {
+  console.error('❌ db-entity wiring failed:', e && e.message);
+  if (errorTracker) errorTracker.capture(e, { tag: 'db-entity-wiring' });
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1531,6 +1643,26 @@ app.post('/api/subcontractors/decide', requirePermission('purchase-orders:approv
 // B-10: Annual tax (projects, customer_invoices, payments, forms 1301/1320/6111)
 // B-11: Bank reconciliation (accounts, statements, auto-match)
 
+// ═══ AGENT-229 — GL Book + Period-Lock Adapter (must precede annual tax) ═══
+try {
+  const { createBook } = require('./src/gl/journal-entry');
+  const { createSupabasePeriodLockAdapter } = require('./src/gl/period-lock-adapter');
+  const periodLockAdapter = createSupabasePeriodLockAdapter(supabase);
+  const currentYear = new Date().getFullYear();
+  // Prime cache for prior 3 + current + next year (covers normal close range).
+  // Fire-and-forget — synchronous isLocked() returns last-known until prime resolves.
+  periodLockAdapter.warmup([currentYear - 3, currentYear - 2,
+    currentYear - 1, currentYear, currentYear + 1])
+    .then(() => console.log('   ✓ period-lock cache warmed for', currentYear - 3, '→', currentYear + 1))
+    .catch((e) => console.warn('⚠️  period-lock warmup failed:', e && e.message));
+  const glBook = createBook({ periods: periodLockAdapter });
+  app.locals.glBook = glBook;
+  app.locals.glPeriods = periodLockAdapter;
+  console.log('✓ GL book + period-lock adapter wired — JE posting enforces fiscal_years.status');
+} catch (err) {
+  console.error('⚠️  GL book / period-lock adapter wiring failed (non-fatal):', err && err.message);
+}
+
 try {
   const { registerVatRoutes } = require('./src/vat/vat-routes');
   registerVatRoutes(app, { supabase, audit, requireAuth, requirePermission, VAT_RATE });
@@ -1546,6 +1678,54 @@ try {
 }
 
 try {
+  const { registerForm856Routes } = require('./src/tax/form-856-routes');
+  registerForm856Routes(app, { supabase, audit, requirePermission });
+} catch (err) {
+  console.error('⚠️  Form 856 routes failed to load:', err.message);
+}
+
+// Form 6111 — IL annual income tax return (דין וחשבון שנתי).
+// Mounts: GET/POST /api/tax/form-6111/:year/...
+// Permissions: tax-annual:export (read), tax-annual:create (submit)
+try {
+  const { registerForm6111Routes } = require('./src/tax/form-6111-routes');
+  registerForm6111Routes(app, { supabase, audit, requirePermission });
+} catch (err) {
+  console.error('⚠️  Form 6111 routes failed to load:', err.message);
+}
+
+// Form 102 — IL Bituach Leumi monthly withholding report.
+// Mounts: GET/POST /api/tax/form-102/:year/:month/...
+// Permission: tax-monthly:export
+try {
+  const { registerForm102Routes } = require('./src/tax/form-102-routes');
+  registerForm102Routes(app, { supabase, audit, requirePermission });
+} catch (err) {
+  console.error('⚠️  Form 102 routes failed to load:', err.message);
+}
+
+// Form 126 — IL annual employee tax certificate (employee side; complement
+// to 856 which is the freelancer/contractor side).
+// Mounts: GET/POST /api/tax/form-126/:year/...
+// Permission: tax-annual:export
+try {
+  const { registerForm126Routes } = require('./src/tax/form-126-routes');
+  registerForm126Routes(app, { supabase, audit, requirePermission });
+} catch (err) {
+  console.error('⚠️  Form 126 routes failed to load:', err.message);
+}
+
+// BKMV — מבנה אחיד / regulation 36 (Agent 216)
+// Generates BKMVDATA.TXT + INI.TXT (windows-1255) for tax-authority audits.
+// Mounts: GET /api/tax/bkmv/:year/generate (+ preview / last / download / health)
+try {
+  const { registerBkmvRoutes } = require('./src/tax-exports/bkmv-routes');
+  registerBkmvRoutes(app, { supabase, audit, requirePermission });
+} catch (err) {
+  console.error('⚠️  BKMV (מבנה אחיד) module failed to load:', err.message);
+}
+
+try {
   const { registerBankRoutes } = require('./src/bank/bank-routes');
   registerBankRoutes(app, { supabase, audit, requirePermission });
 } catch (err) {
@@ -1557,6 +1737,32 @@ try {
   registerPayrollRoutes(app, { supabase, audit, requirePermission });
 } catch (err) {
   console.error('⚠️  Payroll module failed to load:', err.message);
+}
+
+// ═══ APP MENU (Agent-330) — sidebar tree from public.app_menu ═══
+// Exposes GET /api/app-menu so the 138 active DB-backed menu rows are
+// no longer dark. Frontends (techno-kol-ops AppShell, erp-app, payroll)
+// can converge on this single endpoint instead of bypassing the API
+// to hit Supabase PostgREST or hard-coding NAV arrays.
+try {
+  const { registerAppMenuRoutes } = require('./src/routes/app-menu');
+  registerAppMenuRoutes(app, { supabase });
+  console.log('✓ app-menu wired — GET /api/app-menu (public.app_menu tree)');
+} catch (err) {
+  console.error('⚠️  App menu module failed to load:', err.message);
+}
+
+// ═══ MENU TREE — service+domain grouped sidebar ═══
+// Same source (public.app_menu) but bucketed by order_index ranges into
+// 12 services (core / marketplace / registry / hamelech / addons /
+// integrations / misc / code / db / rpcs / views / backend) so frontend
+// shells can render a domain-organised mega-menu instead of a flat tree.
+try {
+  const { registerMenuTreeRoutes } = require('./src/routes/menu-tree');
+  registerMenuTreeRoutes(app, { supabase });
+  console.log('✓ menu-tree wired — GET /api/menu/tree (service+domain buckets)');
+} catch (err) {
+  console.error('⚠️  Menu tree module failed to load:', err.message);
 }
 
 
@@ -1703,13 +1909,28 @@ app.post('/webhook/whatsapp', verifyWhatsAppHmac, async (req, res) => {
 // START SERVER
 // ═══════════════════════════════════════════════════════════════
 
-// Global error handler — never leak stack traces
+// Global error handler — never leak stack traces (logs to server only)
 app.use((err, req, res, _next) => {
-  console.error(`[ERR] ${req.method} ${req.path}:`, err);
-  const isProd = process.env.NODE_ENV === 'production';
-  res.status(err.status || 500).json({
-    error: isProd ? 'Internal server error' : err.message,
-    ...(isProd ? {} : { stack: err.stack?.split('\n').slice(0, 5) }),
+  // Log full error (incl. stack) to server logs only — never to client
+  console.error(`[error-handler] ${req.method} ${req.path}:`, err);
+
+  // Body-parser JSON parse failures
+  if (err && (err.type === 'entity.parse.failed' || err instanceof SyntaxError) && err.status === 400 && 'body' in err) {
+    return res.status(400).json({ error: 'invalid_json', message: 'Request body is not valid JSON' });
+  }
+  // Generic SyntaxError fallback (still sanitize)
+  if (err instanceof SyntaxError) {
+    return res.status(400).json({ error: 'invalid_json', message: 'Request body is not valid JSON' });
+  }
+  // Payload too large
+  if (err && (err.status === 413 || err.type === 'entity.too.large')) {
+    return res.status(413).json({ error: 'payload_too_large', message: 'Request body too large' });
+  }
+  // Default — sanitized, never include stack or err.message verbatim
+  const status = (err && err.status) || 500;
+  res.status(status).json({
+    error: status === 500 ? 'internal_error' : 'request_failed',
+    message: status === 500 ? 'An internal error occurred' : 'Request could not be processed',
   });
 });
 
@@ -1779,8 +2000,10 @@ try {
 }
 
 const PORT = process.env.PORT || 3100;
-const server = app.listen(PORT, () => {
-  console.log(`
+let server;
+function startServer() {
+  server = app.listen(PORT, () => {
+    console.log(`
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
 ║   🚀 ONYX PROCUREMENT API SERVER                            ║
@@ -1811,15 +2034,20 @@ const server = app.listen(PORT, () => {
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
   `);
-});
+  });
+}
 
 // Graceful shutdown
 function shutdown(signal) {
   console.log(`\n${signal} received — shutting down gracefully...`);
-  server.close(() => {
-    console.log('✓ HTTP server closed');
+  if (server) {
+    server.close(() => {
+      console.log('✓ HTTP server closed');
+      process.exit(0);
+    });
+  } else {
     process.exit(0);
-  });
+  }
   setTimeout(() => {
     console.error('⚠️  Forced shutdown after 10s timeout');
     process.exit(1);
@@ -1832,7 +2060,11 @@ process.on('unhandledRejection', (reason) => {
   console.error('❌ Unhandled promise rejection:', reason);
 });
 
+// Only bind the port when run directly (node server.js).
+// Tests that `require('../server')` get the Express app without a port collision.
+if (require.main === module) {
+  startServer();
+}
+
 // Export the Express app for testing (supertest, jest).
-// When this module is required by tests, the server is already listening on PORT above.
-// Supertest will reuse the existing server or open its own connection.
 module.exports = app;

@@ -1,7 +1,9 @@
 import { Router, type Request, type Response } from "express";
 import { pool } from "@workspace/db";
+import { requireAuthMw } from "../lib/require-auth-mw";
 
 const router = Router();
+router.use(requireAuthMw as any);
 
 // ─── helpers ────────────────────────────────────────────────────────
 async function q(sql: string, params: any[] = []) {

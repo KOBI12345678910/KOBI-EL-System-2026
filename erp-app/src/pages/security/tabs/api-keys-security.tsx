@@ -209,13 +209,13 @@ export default function ApiKeysSecurityTab() {
                       <div className="flex gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
                         <code className="font-mono">{key.key_preview}</code>
                         <span>Used {key.usage_count} times</span>
-                        {key.last_used_at && <span>Last: {new Date(key.last_used_at).toLocaleDateString()}</span>}
+                        {key.last_used_at && <span>Last: {new Date(key.last_used_at).toLocaleDateString('he-IL')}</span>}
                         {key.expires_at && (
                           <span className={expired ? "text-red-500" : ""}>
-                            Expires: {new Date(key.expires_at).toLocaleDateString()}
+                            Expires: {new Date(key.expires_at).toLocaleDateString('he-IL')}
                           </span>
                         )}
-                        <span>Created: {new Date(key.created_at).toLocaleDateString()}</span>
+                        <span>Created: {new Date(key.created_at).toLocaleDateString('he-IL')}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1">

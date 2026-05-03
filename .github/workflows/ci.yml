@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   pull_request:
-    branches: [main]
+    branches: [main, master]
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -14,6 +14,7 @@ jobs:
   build-test:
     name: ${{ matrix.project }} (node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     strategy:
       fail-fast: false
@@ -104,6 +105,7 @@ jobs:
   build-techno-kol-ops-client:
     name: techno-kol-ops client build & artifact
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: build-test
     if: always()
     steps:
@@ -159,6 +161,7 @@ jobs:
   unit-tests:
     name: Unit & API tests
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: build-test
     if: always()
     steps:
@@ -170,11 +173,54 @@ jobs:
         with:
           node-version: 20
 
+      - name: Cache node_modules (payroll-autonomous)
+        uses: actions/cache@v4
+        with:
+          path: payroll-autonomous/node_modules
+          key: ${{ runner.os }}-node20-payroll-autonomous-${{ hashFiles('payroll-autonomous/package-lock.json', 'payroll-autonomous/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node20-payroll-autonomous-
+
       - name: Test payroll-autonomous
+        timeout-minutes: 5
+        continue-on-error: false
         run: cd payroll-autonomous && npm ci && npm test
 
+      - name: Cache node_modules (onyx-procurement)
+        uses: actions/cache@v4
+        with:
+          path: onyx-procurement/node_modules
+          key: ${{ runner.os }}-node20-onyx-procurement-${{ hashFiles('onyx-procurement/package-lock.json', 'onyx-procurement/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node20-onyx-procurement-
+
       - name: Test onyx-procurement
+        timeout-minutes: 5
+        continue-on-error: false
         run: cd onyx-procurement && npm ci && npm test
 
+      - name: Cache node_modules (onyx-ai)
+        uses: actions/cache@v4
+        with:
+          path: onyx-ai/node_modules
+          key: ${{ runner.os }}-node20-onyx-ai-${{ hashFiles('onyx-ai/package-lock.json', 'onyx-ai/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node20-onyx-ai-
+
+      - name: Test onyx-ai
+        timeout-minutes: 5
+        continue-on-error: false
+        run: cd onyx-ai && npm ci && npm test
+
+      - name: Cache node_modules (techno-kol-ops/client)
+        uses: actions/cache@v4
+        with:
+          path: techno-kol-ops/client/node_modules
+          key: ${{ runner.os }}-node20-techno-kol-ops-client-unit-${{ hashFiles('techno-kol-ops/client/package-lock.json', 'techno-kol-ops/client/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node20-techno-kol-ops-client-unit-
+
       - name: Test techno-kol-ops client
+        timeout-minutes: 5
+        continue-on-error: false
         run: cd techno-kol-ops/client && npm ci && npm test

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
-import { Page360, KPI, RelatedTable, AuditLog, Loader, ErrCard } from "./shared360";
+import { Page360, KPI, RelatedTable, AuditLog, ActionBtn, Loader, ErrCard, executeAction } from "./shared360";
 
 export default function Finance360() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +29,38 @@ export default function Finance360() {
         <KPI label="יתרה לתשלום" value={inv.balance_due ? `₪${Number(inv.balance_due).toLocaleString()}` : "₪0"} color={Number(inv.balance_due ?? 0) > 0 ? "red" : "green"} />
         <KPI label="תאריך פירעון" value={inv.due_date ?? "—"} />
         <KPI label="תשלומים" value={data.payments?.length ?? 0} />
+      </div>
+
+      <div className="flex gap-2 flex-wrap">
+        <ActionBtn label="רישום תשלום" onClick={() => navigate("/payment/new")} />
+        <ActionBtn
+          label="שלח תזכורת"
+          onClick={async () => {
+            if (!id) return;
+            try {
+              await executeAction("finance.send_reminder", "invoice", id);
+              window.location.reload();
+            } catch (err) {
+              alert(`שליחת תזכורת נכשלה: ${(err as Error)?.message ?? "שגיאה"}`);
+            }
+          }}
+          variant="secondary"
+        />
+        <ActionBtn label="ייצוא דוח" onClick={() => navigate("/finance/reports/export")} variant="secondary" />
+        <ActionBtn
+          label="סגירת חודש"
+          onClick={async () => {
+            if (!id) return;
+            if (!window.confirm("האם לסגור את החודש?")) return;
+            try {
+              await executeAction("finance.close_period", "invoice", id);
+              window.location.reload();
+            } catch (err) {
+              alert(`סגירת חודש נכשלה: ${(err as Error)?.message ?? "שגיאה"}`);
+            }
+          }}
+          variant="secondary"
+        />
       </div>
 
       <RelatedTable title="שורות חשבונית" rows={data.line_items ?? []}

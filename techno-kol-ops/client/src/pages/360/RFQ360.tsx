@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
-import { Page360, KPI, RelatedTable, AuditLog, ActionBtn, Loader, ErrCard } from "./shared360";
+import { Page360, KPI, RelatedTable, AuditLog, ActionBtn, Loader, ErrCard, executeAction } from "./shared360";
 
 export default function RFQ360() {
   const { id } = useParams<{ id: string }>();
@@ -32,8 +32,23 @@ export default function RFQ360() {
       </div>
 
       <div className="flex gap-2 flex-wrap">
-        <ActionBtn label="שלח לספקים" onClick={() => {}} />
-        <ActionBtn label="החלטה" onClick={() => {}} variant="secondary" />
+        <ActionBtn
+          label="שלח לספקים"
+          onClick={async () => {
+            if (!id) return;
+            try {
+              await executeAction("rfq.send_to_vendors", "rfq", id);
+              window.location.reload();
+            } catch (err) {
+              alert(`שליחה לספקים נכשלה: ${(err as Error)?.message ?? "שגיאה"}`);
+            }
+          }}
+        />
+        <ActionBtn
+          label="החלטה"
+          onClick={() => navigate(`/rfq/${id}/decision`)}
+          variant="secondary"
+        />
       </div>
 
       <RelatedTable title="ספקים" rows={data.invited_suppliers ?? []}

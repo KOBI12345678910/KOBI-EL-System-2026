@@ -1,7 +1,41 @@
 import { Router, type IRouter } from "express";
 import { pool } from "@workspace/db";
+import { requireAuthMw } from "../lib/require-auth-mw";
 
 const router: IRouter = Router();
+router.use(requireAuthMw as any);
+
+// B-SEC-SQL: explicit allowlist of writable supplier columns. Sources: seed-fix.sql,
+// seed-factory-data.sql, factory-seed.ts. Add columns here only after a Drizzle
+// migration adds them to the table. PK and timestamps are excluded.
+const SUPPLIER_ALLOWED_COLUMNS = new Set<string>([
+  "supplier_number", "supplier_name", "name", "contact_person", "phone", "mobile",
+  "email", "address", "city", "country", "country_code", "category", "supply_type",
+  "supplier_type", "payment_terms", "lead_time_days", "vat_number", "status",
+  "activity_field", "material_types", "currency", "credit_days", "rating",
+  "quality_rating", "delivery_rating", "price_rating", "quality_score",
+  "delivery_score", "on_time_delivery_pct", "preferred_supplier", "is_active",
+  "notes", "tax_id", "bank_account", "website",
+]);
+const SUPPLIER_BLOCKED_ON_UPDATE = new Set<string>(["id", "created_at", "updated_at"]);
+
+function pickSupplierColumns(body: Record<string, unknown>, opts: { isUpdate: boolean; dropEmpty?: boolean }): { keys: string[]; vals: unknown[] } {
+  const keys: string[] = [];
+  const vals: unknown[] = [];
+  for (const k of Object.keys(body)) {
+    if (opts.isUpdate && SUPPLIER_BLOCKED_ON_UPDATE.has(k)) {
+      throw new Error(`Field not updatable: ${k}`);
+    }
+    if (!SUPPLIER_ALLOWED_COLUMNS.has(k)) {
+      throw new Error(`Forbidden column: ${k}`);
+    }
+    const v = body[k];
+    if (opts.dropEmpty && (v === undefined || v === "")) continue;
+    keys.push(k);
+    vals.push(v === "" ? null : v);
+  }
+  return { keys, vals };
+}
 
 router.get("/suppliers", async (req, res) => {
   try {
@@ -41,9 +75,8 @@ router.get("/suppliers/:id", async (req, res) => {
 
 router.post("/suppliers", async (req, res) => {
   try {
-    const data = req.body;
-    const keys = Object.keys(data).filter(k => data[k] !== undefined && data[k] !== "");
-    const vals = keys.map(k => data[k] === "" ? null : data[k]);
+    const { keys, vals } = pickSupplierColumns(req.body || {}, { isUpdate: false, dropEmpty: true });
+    if (keys.length === 0) return res.status(400).json({ message: "אין שדות לשמירה" });
     const placeholders = keys.map((_, i) => `$${i + 1}`).join(", ");
     const result = await pool.query(`INSERT INTO suppliers (${keys.join(", ")}) VALUES (${placeholders}) RETURNING *`, vals);
     res.status(201).json(result.rows[0]);
@@ -58,9 +91,8 @@ router.post("/suppliers", async (req, res) => {
 router.put("/suppliers/:id", async (req, res) => {
   try {
     const id = String(req.params.id);
-    const data = req.body;
-    const keys = Object.keys(data);
-    const vals = Object.values(data);
+    const { keys, vals } = pickSupplierColumns(req.body || {}, { isUpdate: true });
+    if (keys.length === 0) return res.status(400).json({ message: "אין שדות לעדכון" });
     const sets = keys.map((k, i) => `${k} = $${i + 1}`).join(", ");
     vals.push(id);
     const result = await pool.query(`UPDATE suppliers SET ${sets}, updated_at = NOW() WHERE id = $${vals.length} RETURNING *`, vals);

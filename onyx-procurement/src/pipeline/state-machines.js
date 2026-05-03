@@ -52,6 +52,74 @@ const STATE_MACHINES = {
     },
   },
 
+  // ─────────────────────────────────────────────────────────────
+  // sales_order — added per AGENT-159 / AGENT-246. Entity exists in
+  // commercial.sales_orders (migration 00043) and now in 00084 with
+  // DB-layer guard trigger. Statuses align with status check
+  // constraint AND state_machines.transitions seed in 00084.
+  // ─────────────────────────────────────────────────────────────
+  sales_order: {
+    initial: 'draft',
+    states: {
+      draft:         { transitions: { confirm: 'confirmed', cancel: 'cancelled' } },
+      confirmed:     { transitions: { start_production: 'in_production', invoice_direct: 'invoiced', cancel: 'cancelled' } },
+      in_production: { transitions: { ship: 'shipped', cancel: 'cancelled' } },
+      shipped:       { transitions: { deliver: 'delivered' } },
+      delivered:     { transitions: { invoice: 'invoiced' } },
+      invoiced:      { transitions: { close: 'closed' } },
+      closed:        { transitions: {}, final: true },
+      cancelled:     { transitions: {}, final: true },
+    },
+    triggers: {
+      'draft→confirmed': [
+        { action: 'reserve_inventory', params: {} },
+        { action: 'create_draft_invoice', params: { target: 'accounts_receivable' } },
+        { action: 'notify_customer', params: { template: 'order_confirmed' } },
+      ],
+      'confirmed→in_production': [
+        { action: 'create_work_orders', params: { fromOrder: true } },
+        { action: 'link_to_project', params: {} },
+      ],
+      'in_production→shipped': [
+        { action: 'create_logistics_order', params: {} },
+        { action: 'decrement_inventory', params: { type: 'shipment' } },
+      ],
+      'shipped→delivered': [
+        { action: 'capture_pod', params: {} },
+        { action: 'notify_customer', params: { template: 'order_delivered' } },
+      ],
+      'delivered→invoiced': [
+        { action: 'issue_invoice', params: { copyFrom: 'sales_order' } },
+        { action: 'post_to_gl', params: {} },
+      ],
+      'confirmed→invoiced': [
+        { action: 'issue_invoice', params: { copyFrom: 'sales_order' } },
+      ],
+      'invoiced→closed': [
+        { action: 'reconcile_payment', params: {} },
+        { action: 'create_audit', params: { type: 'order_closure' } },
+      ],
+      'confirmed→cancelled': [
+        { action: 'release_inventory', params: {} },
+        { action: 'void_draft_invoice', params: {} },
+      ],
+      'in_production→cancelled': [
+        { action: 'cancel_work_orders', params: {} },
+        { action: 'release_inventory', params: {} },
+      ],
+    },
+    badges: {
+      draft:         { he: 'טיוטה',         en: 'Draft',         tone: 'neutral', icon: 'FileText' },
+      confirmed:     { he: 'מאושר',         en: 'Confirmed',     tone: 'info',    icon: 'CheckCircle2' },
+      in_production: { he: 'בייצור',        en: 'In Production', tone: 'warning', icon: 'Factory' },
+      shipped:       { he: 'נשלח',          en: 'Shipped',       tone: 'info',    icon: 'Truck' },
+      delivered:     { he: 'נמסר',          en: 'Delivered',     tone: 'success', icon: 'PackageCheck' },
+      invoiced:      { he: 'חשבונית הופקה', en: 'Invoiced',      tone: 'success', icon: 'Receipt' },
+      closed:        { he: 'סגור',          en: 'Closed',        tone: 'muted',   icon: 'Lock' },
+      cancelled:     { he: 'בוטל',          en: 'Cancelled',     tone: 'danger',  icon: 'XCircle' },
+    },
+  },
+
   rfq: {
     initial: 'draft',
     states: {
@@ -305,6 +373,107 @@ const STATE_MACHINES = {
     },
     triggers: {},
   },
+
+  // ─────────────────────────────────────────────────────────────
+  // delivery — added per AGENT-FIX-ORCH-MISSING. Exposes the
+  // logistics state machine that the Master Flow references after
+  // shipped→delivered (sales_order) and feeds the
+  // delivery.confirm + delivery.issue_invoice orchestrations.
+  // ─────────────────────────────────────────────────────────────
+  delivery: {
+    initial: 'pending',
+    states: {
+      pending:    { transitions: { dispatch: 'in_transit', cancel: 'cancelled', deliver: 'delivered' } },
+      in_transit: { transitions: { deliver:  'delivered',  fail:   'failed' } },
+      delivered:  { transitions: { invoice:  'invoiced' } },
+      invoiced:   { transitions: {}, final: true },
+      failed:     { transitions: { retry:    'pending' } },
+      cancelled:  { transitions: {}, final: true },
+    },
+    triggers: {
+      'pending→in_transit': [
+        { action: 'notify_customer', params: { template: 'delivery_dispatched' } },
+        { action: 'update_logistics_eta', params: {} },
+      ],
+      'in_transit→delivered': [
+        { action: 'capture_pod', params: {} },
+        { action: 'notify_customer', params: { template: 'delivery_completed' } },
+        { action: 'set_delivered_at', params: {} },
+      ],
+      'pending→delivered': [
+        { action: 'capture_pod', params: {} },
+        { action: 'set_delivered_at', params: {} },
+      ],
+      'delivered→invoiced': [
+        { action: 'create_invoice', params: { copyFrom: 'delivery' } },
+        { action: 'post_to_gl', params: {} },
+      ],
+    },
+    badges: {
+      pending:    { he: 'ממתין',     en: 'Pending',    tone: 'neutral', icon: 'Clock' },
+      in_transit: { he: 'בהובלה',    en: 'In Transit', tone: 'info',    icon: 'Truck' },
+      delivered:  { he: 'נמסר',      en: 'Delivered',  tone: 'success', icon: 'PackageCheck' },
+      invoiced:   { he: 'חוייב',     en: 'Invoiced',   tone: 'success', icon: 'Receipt' },
+      failed:     { he: 'נכשל',      en: 'Failed',     tone: 'danger',  icon: 'AlertTriangle' },
+      cancelled:  { he: 'בוטל',      en: 'Cancelled',  tone: 'muted',   icon: 'XCircle' },
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────
+  // supplier — added per AGENT-223 (closes the loop on AGENT-183).
+  // States align with procurement.suppliers.status_check after
+  // migration 00092_vendor_score_history.sql:
+  //   active, preferred, monitor, on_hold, blacklisted, inactive,
+  //   pending_review.
+  // pending_review and inactive have no outbound transitions
+  // defined here because they are managed by other flows
+  // (onboarding + off-boarding). All blacklist transitions are
+  // ALSO guarded at the DB layer by trg_guard_rfq_supplier and
+  // trg_guard_po_supplier (00092 migration).
+  // ─────────────────────────────────────────────────────────────
+  supplier: {
+    initial: 'active',
+    states: {
+      active:      { transitions: { monitor: 'monitor', hold: 'on_hold', blacklist: 'blacklisted' } },
+      preferred:   { transitions: { monitor: 'monitor', hold: 'on_hold', blacklist: 'blacklisted' } },
+      monitor:     { transitions: { restore: 'active', hold: 'on_hold', blacklist: 'blacklisted' } },
+      on_hold:     { transitions: { restore: 'active', blacklist: 'blacklisted' } },
+      blacklisted: { transitions: { reinstate: 'on_hold' } },
+      inactive:    { transitions: { restore: 'active' } },
+    },
+    triggers: {
+      'active→blacklisted': [
+        { action: 'cancel_open_rfq_invites', params: {} },
+        { action: 'freeze_open_pos',         params: {} },
+        { action: 'notify_buyers',           params: { template: 'vendor_blacklisted' } },
+      ],
+      'preferred→blacklisted': [
+        { action: 'cancel_open_rfq_invites', params: {} },
+        { action: 'freeze_open_pos',         params: {} },
+        { action: 'notify_buyers',           params: { template: 'vendor_blacklisted' } },
+      ],
+      'monitor→blacklisted': [
+        { action: 'cancel_open_rfq_invites', params: {} },
+        { action: 'freeze_open_pos',         params: {} },
+      ],
+      'on_hold→blacklisted': [
+        { action: 'cancel_open_rfq_invites', params: {} },
+        { action: 'freeze_open_pos',         params: {} },
+      ],
+      'blacklisted→on_hold': [
+        { action: 'create_audit', params: { type: 'vendor_reinstated' } },
+      ],
+    },
+    badges: {
+      active:         { he: 'פעיל',          en: 'Active',      tone: 'success', icon: 'CheckCircle2' },
+      preferred:      { he: 'ספק מועדף',     en: 'Preferred',   tone: 'success', icon: 'Star' },
+      monitor:        { he: 'בניטור',        en: 'Monitor',     tone: 'warning', icon: 'Eye' },
+      on_hold:        { he: 'מוקפא',         en: 'On Hold',     tone: 'warning', icon: 'PauseCircle' },
+      blacklisted:    { he: 'ברשימה שחורה',  en: 'Blacklisted', tone: 'danger',  icon: 'Ban' },
+      inactive:       { he: 'לא פעיל',       en: 'Inactive',    tone: 'muted',   icon: 'Archive' },
+      pending_review: { he: 'בבדיקה',        en: 'Pending',     tone: 'info',    icon: 'Clock' },
+    },
+  },
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -334,11 +503,17 @@ function getTriggersForTransition(entityType, fromStatus, toStatus) {
   return machine.triggers[key] || [];
 }
 
+function getBadge(entityType, status) {
+  const machine = STATE_MACHINES[entityType];
+  if (!machine || !machine.badges) return null;
+  return machine.badges[status] || null;
+}
+
 // ═══════════════════════════════════════════════════════════════
 // REGISTER ROUTES
 // ═══════════════════════════════════════════════════════════════
 
-function registerStateMachineRoutes(app) {
+function registerStateMachineRoutes(app, executorOpts) {
 
   // Get all state machines
   app.get('/api/state-machines', (_req, res) => {
@@ -366,7 +541,25 @@ function registerStateMachineRoutes(app) {
     res.json({ transitions: getAvailableTransitions(req.params.type, current) });
   });
 
+  // Get UI badge mapping for a status (or all if no status param)
+  app.get('/api/state-machines/:type/badges', (req, res) => {
+    const machine = STATE_MACHINES[req.params.type];
+    if (!machine) return res.status(404).json({ error: `Unknown entity: ${req.params.type}` });
+    if (req.query.status) return res.json({ badge: getBadge(req.params.type, req.query.status) });
+    res.json({ badges: machine.badges || {} });
+  });
+
+  // AGENT-211 — POST /api/state-machines/:type/transition
+  // Mount the transition executor so 360-page button-presses funnel
+  // through a single audited/event-emitting endpoint.
+  try {
+    const { registerTransitionExecutor } = require('./transition-executor');
+    registerTransitionExecutor(app, executorOpts || {});
+  } catch (e) {
+    console.warn('   ⚠️  transition executor wiring skipped:', e && e.message);
+  }
+
   console.log('   ✓ State machines registered (' + Object.keys(STATE_MACHINES).length + ' entities)');
 }
 
-module.exports = { STATE_MACHINES, canTransition, getAvailableTransitions, getTriggersForTransition, registerStateMachineRoutes };
+module.exports = { STATE_MACHINES, canTransition, getAvailableTransitions, getTriggersForTransition, getBadge, registerStateMachineRoutes };

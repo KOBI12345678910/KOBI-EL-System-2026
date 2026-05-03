@@ -22,8 +22,19 @@ export default function Project360() {
 
   const p = data.project ?? {};
 
+  const breadcrumbs = [
+    { label: "בית", to: "/" },
+    ...(p.customer_id ? [{ label: p.customer_name ?? "לקוח", to: `/customer/${p.customer_id}` }] : []),
+    { label: p.project_name ?? `פרויקט #${id}` },
+  ];
+
   return (
-    <Page360 title={p.project_name ?? `פרויקט #${id}`} subtitle={`${p.project_number ?? ""} · ${p.customer_name ?? ""}`} state={p.state}>
+    <Page360
+      title={p.project_name ?? `פרויקט #${id}`}
+      subtitle={`${p.project_number ?? ""} · ${p.customer_name ?? ""}`}
+      state={p.state}
+      breadcrumbs={breadcrumbs}
+    >
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <KPI label="התקדמות" value={`${p.progress_percent ?? 0}%`} />
         <KPI label="תקציב" value={p.budget_amount ? `₪${Number(p.budget_amount).toLocaleString()}` : "—"} />

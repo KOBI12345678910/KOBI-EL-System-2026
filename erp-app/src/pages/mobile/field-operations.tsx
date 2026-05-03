@@ -337,12 +337,12 @@ export default function FieldOperationsPage() {
                 </button>
               )}
               {selectedTask.status !== "completed" && selectedTask.status !== "issue_reported" && (
-                <button onClick={() => {}}
-                  className="bg-red-500 text-white rounded-xl p-4 text-lg font-bold shadow-lg active:bg-red-600"
-                  onClickCapture={() => {
+                <button onClick={() => {
                     const el = document.getElementById("issue-section");
                     if (el) el.scrollIntoView({ behavior: "smooth" });
-                  }}>
+                    else window.location.href = '/issue-report';
+                  }}
+                  className="bg-red-500 text-white rounded-xl p-4 text-lg font-bold shadow-lg active:bg-red-600">
                   ⚠️ דווח בעיה
                 </button>
               )}

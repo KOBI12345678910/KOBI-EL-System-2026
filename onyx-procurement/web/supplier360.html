@@ -333,7 +333,11 @@
         <div class="bg-bg2 border border-border rounded-lg overflow-hidden">
           <div class="px-4 py-3 border-b border-border flex items-center justify-between">
             <h3 class="text-sm font-semibold text-text0">&#128176; חשבוניות ספק</h3>
-            <button onclick="actionRegisterInvoice()" class="text-xs bg-accent/15 text-accent px-3 py-1 rounded-md hover:bg-accent/25">+ רשום חשבונית</button>
+            <div class="flex items-center gap-2">
+              <input type="file" id="pdfInvoiceInput" accept="application/pdf,.pdf" class="hidden" onchange="handlePdfInvoiceUpload(event)" />
+              <button onclick="document.getElementById('pdfInvoiceInput').click()" class="text-xs bg-bg3 text-text1 border border-border px-3 py-1 rounded-md hover:bg-borderHi" title="ייבוא חשבונית מקובץ PDF (Agent 225)">&#128196; ייבוא PDF</button>
+              <button onclick="actionRegisterInvoice()" class="text-xs bg-accent/15 text-accent px-3 py-1 rounded-md hover:bg-accent/25">+ רשום חשבונית</button>
+            </div>
           </div>
           <div class="overflow-x-auto">
             <table>
@@ -1083,6 +1087,63 @@ async function actionRegisterInvoice() {
     if (res.ok) { alert('חשבונית ספק נרשמה בהצלחה!'); loadSupplier(); }
     else alert('שגיאה ברישום חשבונית');
   } catch { alert('חשבונית ספק נרשמה (דמו)'); }
+}
+
+// ─── Agent 225 — PDF invoice import wiring ──────────────────
+// Reads a PDF locally, base64-encodes it, and posts to
+// /api/imports/pdf-invoice. Server returns parsed fields and
+// a matched supplier (by vat_id, or fuzzy-name fallback).
+async function handlePdfInvoiceUpload(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) {
+    alert('הקובץ גדול מ-10MB. אנא העלה קובץ קטן יותר.');
+    event.target.value = '';
+    return;
+  }
+  try {
+    const buf = await file.arrayBuffer();
+    let bin = '';
+    const bytes = new Uint8Array(buf);
+    for (let i = 0; i < bytes.byteLength; i++) bin += String.fromCharCode(bytes[i]);
+    const b64 = btoa(bin);
+
+    const res = await fetch(API_BASE + '/api/imports/pdf-invoice', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pdf: { base64: b64 } }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      alert('שגיאה בעיבוד PDF: ' + (data.error || res.statusText));
+      return;
+    }
+    const p = data.parsed || {};
+    const m = data.supplier_match || {};
+    const matchedLine = m.matched
+      ? `\nהספק זוהה: ${m.supplier_name} (לפי ${m.strategy === 'vat_id' ? 'ע.מ' : 'שם'})`
+      : (m.candidates && m.candidates.length
+          ? `\nנמצאו ${m.candidates.length} ספקים אפשריים — נדרשת בחירה ידנית.`
+          : '\nלא זוהה ספק תואם — אנא יצרו ספק חדש.');
+    alert(
+      'חשבונית נקראה בהצלחה (אמון ' + (p.confidence || 0) + '%)' +
+      '\n\nמספר חשבונית: ' + (p.invoice_no || '—') +
+      '\nתאריך: ' + (p.invoice_date || '—') +
+      '\nע.מ ספק: ' + (p.vendor_vat_id || '—') +
+      '\nספק: ' + (p.vendor || '—') +
+      '\nסה"כ לפני מע"מ: ' + (p.subtotal || '—') +
+      '\nמע"מ: ' + (p.vat_amount || '—') +
+      '\nסה"כ לתשלום: ' + (p.total || '—') +
+      matchedLine
+    );
+    // Hand off to the registration form (left as the operator's
+    // confirmation step — never auto-creates an invoice).
+    window.__pdfParsedInvoice = { parsed: p, match: m };
+  } catch (e) {
+    alert('שגיאה בקריאת קובץ PDF: ' + (e && e.message ? e.message : e));
+  } finally {
+    event.target.value = '';
+  }
 }
 
 function actionAttachContract() { alert('פתיחת צירוף חוזה לספק: ' + (supplierData?.supplier?.name || '')); }

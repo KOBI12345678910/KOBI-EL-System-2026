@@ -1,0 +1,612 @@
+{
+  "totals_by_lang": {
+    "Markdown": {
+      "files": 958,
+      "sloc": 274152
+    },
+    "YAML": {
+      "files": 50,
+      "sloc": 65616
+    },
+    "JSON": {
+      "files": 199,
+      "sloc": 200590
+    },
+    "JavaScript": {
+      "files": 1037,
+      "sloc": 551957
+    },
+    "Python": {
+      "files": 194,
+      "sloc": 30611
+    },
+    "TypeScript": {
+      "files": 3470,
+      "sloc": 744826
+    },
+    "SQL": {
+      "files": 159,
+      "sloc": 40081
+    },
+    "HTML": {
+      "files": 36,
+      "sloc": 7762
+    },
+    "TSX": {
+      "files": 3864,
+      "sloc": 1209361
+    },
+    "CSS": {
+      "files": 10,
+      "sloc": 1169
+    },
+    "JSX": {
+      "files": 51,
+      "sloc": 24751
+    }
+  },
+  "by_service": {
+    "(root)": {
+      "Markdown": {
+        "files": 24,
+        "sloc": 6200
+      },
+      "YAML": {
+        "files": 7,
+        "sloc": 1358
+      },
+      "JSON": {
+        "files": 5,
+        "sloc": 17501
+      }
+    },
+    "AI-Task-Manager": {
+      "Markdown": {
+        "files": 40,
+        "sloc": 35930
+      },
+      "YAML": {
+        "files": 11,
+        "sloc": 45771
+      },
+      "JSON": {
+        "files": 46,
+        "sloc": 17522
+      },
+      "JavaScript": {
+        "files": 11,
+        "sloc": 1000
+      },
+      "Python": {
+        "files": 19,
+        "sloc": 4145
+      },
+      "TypeScript": {
+        "files": 1407,
+        "sloc": 330698
+      },
+      "SQL": {
+        "files": 22,
+        "sloc": 2548
+      },
+      "HTML": {
+        "files": 4,
+        "sloc": 1247
+      },
+      "TSX": {
+        "files": 1746,
+        "sloc": 580351
+      },
+      "CSS": {
+        "files": 3,
+        "sloc": 424
+      }
+    },
+    "api-server": {
+      "JavaScript": {
+        "files": 1,
+        "sloc": 120
+      },
+      "TypeScript": {
+        "files": 765,
+        "sloc": 259996
+      },
+      "JSON": {
+        "files": 2,
+        "sloc": 60
+      },
+      "Markdown": {
+        "files": 1,
+        "sloc": 143
+      },
+      "SQL": {
+        "files": 7,
+        "sloc": 1386
+      }
+    },
+    "desktop-tutorial-client": {
+      "HTML": {
+        "files": 1,
+        "sloc": 15
+      },
+      "JSON": {
+        "files": 1,
+        "sloc": 27
+      },
+      "JavaScript": {
+        "files": 4,
+        "sloc": 53
+      },
+      "JSX": {
+        "files": 21,
+        "sloc": 2175
+      },
+      "CSS": {
+        "files": 1,
+        "sloc": 12
+      }
+    },
+    "desktop-tutorial-server": {
+      "JSON": {
+        "files": 1,
+        "sloc": 20
+      },
+      "JavaScript": {
+        "files": 27,
+        "sloc": 1896
+      },
+      "SQL": {
+        "files": 1,
+        "sloc": 145
+      }
+    },
+    "docker": {
+      "SQL": {
+        "files": 1,
+        "sloc": 80
+      },
+      "YAML": {
+        "files": 2,
+        "sloc": 44
+      },
+      "Markdown": {
+        "files": 1,
+        "sloc": 159
+      }
+    },
+    "docs": {
+      "Markdown": {
+        "files": 53,
+        "sloc": 24923
+      }
+    },
+    "enterprise_palantir_core": {
+      "Markdown": {
+        "files": 2,
+        "sloc": 447
+      },
+      "Python": {
+        "files": 124,
+        "sloc": 18749
+      }
+    },
+    "erp-app": {
+      "Markdown": {
+        "files": 13,
+        "sloc": 16780
+      },
+      "HTML": {
+        "files": 1,
+        "sloc": 12
+      },
+      "JSON": {
+        "files": 4,
+        "sloc": 217
+      },
+      "YAML": {
+        "files": 1,
+        "sloc": 20
+      },
+      "TypeScript": {
+        "files": 64,
+        "sloc": 7486
+      },
+      "TSX": {
+        "files": 1727,
+        "sloc": 539476
+      },
+      "CSS": {
+        "files": 1,
+        "sloc": 150
+      },
+      "Python": {
+        "files": 18,
+        "sloc": 3989
+      }
+    },
+    "GPS-Connect": {
+      "JSON": {
+        "files": 20,
+        "sloc": 462
+      },
+      "YAML": {
+        "files": 3,
+        "sloc": 5379
+      },
+      "Markdown": {
+        "files": 1,
+        "sloc": 45
+      },
+      "JavaScript": {
+        "files": 1,
+        "sloc": 120
+      },
+      "TypeScript": {
+        "files": 45,
+        "sloc": 2760
+      },
+      "HTML": {
+        "files": 2,
+        "sloc": 45
+      },
+      "TSX": {
+        "files": 123,
+        "sloc": 11519
+      },
+      "CSS": {
+        "files": 2,
+        "sloc": 290
+      }
+    },
+    "k8s": {
+      "YAML": {
+        "files": 14,
+        "sloc": 2995
+      }
+    },
+    "lib-client": {
+      "JSON": {
+        "files": 14,
+        "sloc": 145
+      },
+      "TypeScript": {
+        "files": 844,
+        "sloc": 50440
+      },
+      "YAML": {
+        "files": 1,
+        "sloc": 7571
+      },
+      "Markdown": {
+        "files": 1,
+        "sloc": 66
+      },
+      "SQL": {
+        "files": 14,
+        "sloc": 1161
+      },
+      "JavaScript": {
+        "files": 1,
+        "sloc": 101
+      },
+      "TSX": {
+        "files": 1,
+        "sloc": 101
+      }
+    },
+    "locales": {
+      "JSON": {
+        "files": 5,
+        "sloc": 2865
+      },
+      "Markdown": {
+        "files": 1,
+        "sloc": 321
+      }
+    },
+    "mobile-app": {
+      "JSON": {
+        "files": 3,
+        "sloc": 89
+      },
+      "TSX": {
+        "files": 112,
+        "sloc": 34038
+      },
+      "JavaScript": {
+        "files": 9,
+        "sloc": 756
+      },
+      "TypeScript": {
+        "files": 14,
+        "sloc": 2690
+      },
+      "Markdown": {
+        "files": 1,
+        "sloc": 59
+      }
+    },
+    "nexus_engine": {
+      "JavaScript": {
+        "files": 18,
+        "sloc": 2846
+      },
+      "JSON": {
+        "files": 1,
+        "sloc": 37
+      },
+      "Markdown": {
+        "files": 1,
+        "sloc": 155
+      }
+    },
+    "onyx-ai": {
+      "Markdown": {
+        "files": 3,
+        "sloc": 609
+      },
+      "JavaScript": {
+        "files": 1,
+        "sloc": 1
+      },
+      "HTML": {
+        "files": 1,
+        "sloc": 127
+      },
+      "JSON": {
+        "files": 6,
+        "sloc": 1504
+      },
+      "TypeScript": {
+        "files": 166,
+        "sloc": 63155
+      }
+    },
+    "onyx-procurement": {
+      "Markdown": {
+        "files": 174,
+        "sloc": 46263
+      },
+      "JSON": {
+        "files": 15,
+        "sloc": 22236
+      },
+      "JavaScript": {
+        "files": 829,
+        "sloc": 504692
+      },
+      "SQL": {
+        "files": 15,
+        "sloc": 2953
+      },
+      "YAML": {
+        "files": 5,
+        "sloc": 2239
+      },
+      "HTML": {
+        "files": 25,
+        "sloc": 6273
+      },
+      "TSX": {
+        "files": 7,
+        "sloc": 3078
+      },
+      "JSX": {
+        "files": 4,
+        "sloc": 3314
+      },
+      "CSS": {
+        "files": 1,
+        "sloc": 232
+      }
+    },
+    "packages": {
+      "JSON": {
+        "files": 4,
+        "sloc": 70
+      },
+      "YAML": {
+        "files": 2,
+        "sloc": 51
+      },
+      "JavaScript": {
+        "files": 41,
+        "sloc": 8173
+      },
+      "TypeScript": {
+        "files": 2,
+        "sloc": 350
+      }
+    },
+    "palantir_realtime_core": {
+      "Markdown": {
+        "files": 1,
+        "sloc": 135
+      },
+      "Python": {
+        "files": 32,
+        "sloc": 3610
+      },
+      "SQL": {
+        "files": 1,
+        "sloc": 403
+      },
+      "JSON": {
+        "files": 1,
+        "sloc": 18
+      }
+    },
+    "paradigm_engine": {
+      "JSON": {
+        "files": 27,
+        "sloc": 5134
+      },
+      "JavaScript": {
+        "files": 13,
+        "sloc": 9735
+      },
+      "Markdown": {
+        "files": 1,
+        "sloc": 131
+      },
+      "JSX": {
+        "files": 1,
+        "sloc": 520
+      }
+    },
+    "payroll-autonomous": {
+      "HTML": {
+        "files": 1,
+        "sloc": 18
+      },
+      "JSON": {
+        "files": 3,
+        "sloc": 8498
+      },
+      "JavaScript": {
+        "files": 13,
+        "sloc": 1953
+      },
+      "JSX": {
+        "files": 25,
+        "sloc": 18742
+      },
+      "CSS": {
+        "files": 2,
+        "sloc": 61
+      },
+      "TSX": {
+        "files": 52,
+        "sloc": 7740
+      },
+      "TypeScript": {
+        "files": 8,
+        "sloc": 524
+      },
+      "Markdown": {
+        "files": 1,
+        "sloc": 75
+      }
+    },
+    "scripts": {
+      "JavaScript": {
+        "files": 20,
+        "sloc": 4196
+      },
+      "YAML": {
+        "files": 4,
+        "sloc": 188
+      },
+      "Markdown": {
+        "files": 1,
+        "sloc": 88
+      }
+    },
+    "src": {
+      "TypeScript": {
+        "files": 1,
+        "sloc": 123
+      }
+    },
+    "supabase": {
+      "SQL": {
+        "files": 92,
+        "sloc": 28557
+      },
+      "TypeScript": {
+        "files": 59,
+        "sloc": 4680
+      }
+    },
+    "techno-kol-ops": {
+      "Markdown": {
+        "files": 8,
+        "sloc": 1087
+      },
+      "JSON": {
+        "files": 8,
+        "sloc": 10992
+      },
+      "HTML": {
+        "files": 1,
+        "sloc": 25
+      },
+      "JavaScript": {
+        "files": 16,
+        "sloc": 2617
+      },
+      "TypeScript": {
+        "files": 95,
+        "sloc": 21924
+      },
+      "TSX": {
+        "files": 96,
+        "sloc": 33058
+      },
+      "SQL": {
+        "files": 4,
+        "sloc": 1186
+      }
+    },
+    "test": {
+      "JavaScript": {
+        "files": 27,
+        "sloc": 13105
+      }
+    },
+    "vm-task-runner": {
+      "JSON": {
+        "files": 1,
+        "sloc": 28
+      },
+      "Markdown": {
+        "files": 1,
+        "sloc": 45
+      },
+      "JavaScript": {
+        "files": 4,
+        "sloc": 203
+      }
+    },
+    "_master-registry": {
+      "Markdown": {
+        "files": 96,
+        "sloc": 16133
+      },
+      "SQL": {
+        "files": 2,
+        "sloc": 1662
+      },
+      "JSON": {
+        "files": 30,
+        "sloc": 109616
+      }
+    },
+    "_qa-reports": {
+      "Markdown": {
+        "files": 314,
+        "sloc": 86206
+      },
+      "JSON": {
+        "files": 2,
+        "sloc": 3549
+      },
+      "JavaScript": {
+        "files": 1,
+        "sloc": 390
+      }
+    },
+    "_qa-reports-25": {
+      "Markdown": {
+        "files": 219,
+        "sloc": 38152
+      },
+      "Python": {
+        "files": 1,
+        "sloc": 118
+      }
+    }
+  },
+  "grand_files": 10028,
+  "grand_sloc": 3150876
+}

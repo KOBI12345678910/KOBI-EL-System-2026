@@ -42,3 +42,6 @@ onyx-procurement/backups/
 onyx-procurement/data/payroll/*.json
 _audit-clones/
 _external-backups/
+_merge-incoming/
+_route_extract/
+TECHNO-KOL-UZI-ERP-2026-FULL-SOURCE.txt

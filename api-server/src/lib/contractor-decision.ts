@@ -1,4 +1,4 @@
-export const VAT_RATE = 1.17;
+export const VAT_RATE = 1.18; // gross-up multiplier - IL VAT 18% effective 2026-01-01
 
 export interface PaymentComparisonInput {
   invoiceAmount: number;

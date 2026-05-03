@@ -1047,6 +1047,221 @@ function createEngine() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// File builder API — IL annual income-tax return (דין וחשבון שנתי).
+// Parallel surface to form-102/form-856; leaves generate6111() intact.
+// Fixed width 80, record-types A10/B20/Z99, windows-1255 buffer when iconv-lite present.
+// ═══════════════════════════════════════════════════════════════════════════
+
+const F6111_ICONV = (() => {
+  try { return require('iconv-lite'); } catch { return null; }
+})();
+
+const FORM6111_FIELD_LAYOUT = Object.freeze([
+  { name: 'record_type', width:  3, type: 'A', pad: ' ' },
+  { name: 'tin',         width:  9, type: 'N', pad: '0' },
+  { name: 'tax_year',    width:  4, type: 'N', pad: '0' },
+  { name: 'row_code',    width:  4, type: 'N', pad: '0' },
+  { name: 'label',       width: 40, type: 'H', pad: ' ' },
+  { name: 'amount',      width: 14, type: 'S', pad: '0' },
+  { name: 'filler',      width:  6, type: 'A', pad: ' ' },
+]);
+const FORM6111_RECORD_WIDTH =
+  FORM6111_FIELD_LAYOUT.reduce((s, f) => s + f.width, 0);
+
+/** Canonical row codes for the slim/aggregated annual return surface. */
+const FORM6111_ROWS = Object.freeze([
+  { code: 1000, key: 'revenue',     he: 'הכנסות' },
+  { code: 4900, key: 'expenses',    he: 'הוצאות' },
+  { code: 9100, key: 'taxable',     he: 'הכנסה חייבת' },
+  { code: 9300, key: 'tax',         he: 'מס חברות' },
+  { code: 9400, key: 'advances',    he: 'מקדמות וניכויים' },
+  { code: 9500, key: 'balance',     he: 'יתרה לתשלום / החזר' },
+]);
+
+function f6111PadNumber(v, width, pad = '0') {
+  const n = Math.max(0, Math.trunc(num(v)));
+  const s = String(n);
+  return s.length >= width ? s.slice(-width) : pad.repeat(width - s.length) + s;
+}
+function f6111PadSigned(v, width) {
+  const n = Math.trunc(num(v));
+  const sign = n < 0 ? '-' : '+';
+  const body = String(Math.abs(n));
+  const pad = '0'.repeat(Math.max(0, width - 1 - body.length));
+  return (sign + pad + body).slice(-width);
+}
+function f6111PadString(v, width, pad = ' ') {
+  const s = (v === undefined || v === null) ? '' : String(v);
+  if (s.length >= width) return s.slice(0, width);
+  return s + pad.repeat(width - s.length);
+}
+
+function f6111SerializeLine(values) {
+  return FORM6111_FIELD_LAYOUT.map(f => {
+    const v = values[f.name];
+    switch (f.type) {
+      case 'N': return f6111PadNumber(v, f.width, f.pad);
+      case 'S': return f6111PadSigned(v, f.width);
+      case 'A':
+      case 'H':
+      default:  return f6111PadString(v, f.width, f.pad);
+    }
+  }).join('');
+}
+
+/** computeDeadline(year) — calendar-year filers: April 30 of (year+1). ISO YYYY-MM-DD. */
+function computeDeadline(year) {
+  const y = Number(year);
+  if (!Number.isInteger(y) || y < 2000 || y > 2100) return null;
+  return `${y + 1}-04-30`;
+}
+
+/**
+ * buildForm6111File({ year, revenue, expenses, taxable?, tax?, advances?, company? })
+ *   → { formCode, year, header, detail, trailer, totals, fixedWidth, buffer, json, xml, deadline, metadata }
+ * Slim row-oriented surface for the routes layer; generate6111() handles the full TB pipeline.
+ * Computes taxable = revenue - expenses and tax = max(0, taxable) * 23% if not supplied.
+ */
+function buildForm6111File(payload) {
+  if (!payload || typeof payload !== 'object') {
+    throw new Error('form-6111.buildForm6111File: payload required');
+  }
+  const year = Number(payload.year);
+  if (!Number.isInteger(year) || year < 2000 || year > 2100) {
+    throw new Error('form-6111.buildForm6111File: payload.year must be a 4-digit year');
+  }
+  const company = payload.company || {};
+  const tinRaw = String(company.tin || company.company_id || company.tax_id || '')
+    .replace(/\D/g, '').slice(-9);
+
+  const revenue  = round(num(payload.revenue));
+  const expenses = round(num(payload.expenses));
+  const computedTaxable = round(revenue - expenses);
+  const taxable  = payload.taxable != null ? round(num(payload.taxable)) : computedTaxable;
+  const computedTax = round(Math.max(0, taxable) * CONSTANTS_2026.CORPORATE_TAX_RATE);
+  const tax      = payload.tax != null ? round(num(payload.tax)) : computedTax;
+  const advances = round(num(payload.advances));
+  const balance  = round(tax - advances);
+
+  const values = { revenue, expenses, taxable, tax, advances, balance };
+  const submissionType = payload.submission_type === 'correction' ? 'correction' : 'initial';
+
+  // Header (A10) → detail rows (B20) → trailer (Z99); all width-checked below.
+  const header = f6111SerializeLine({
+    record_type: 'A10', tin: tinRaw, tax_year: year, row_code: 0,
+    label: String(company.legal_name || company.name || '').slice(0, 40),
+    amount: 0, filler: submissionType === 'correction' ? 'CORR' : 'INIT',
+  });
+  const detail = FORM6111_ROWS.map(r => f6111SerializeLine({
+    record_type: 'B20', tin: tinRaw, tax_year: year, row_code: r.code,
+    label: r.he, amount: values[r.key], filler: '',
+  }));
+  const trailer = f6111SerializeLine({
+    record_type: 'Z99', tin: tinRaw, tax_year: year, row_code: detail.length,
+    label: 'סיכום', amount: tax, filler: '',
+  });
+
+  const lines = [header, ...detail, trailer];
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].length !== FORM6111_RECORD_WIDTH) {
+      throw new Error(
+        `form-6111.buildForm6111File: line ${i} width ${lines[i].length}, expected ${FORM6111_RECORD_WIDTH}`
+      );
+    }
+  }
+  const fixedWidth = lines.join('\r\n') + '\r\n';
+  const buffer = F6111_ICONV ? F6111_ICONV.encode(fixedWidth, 'windows-1255') : null;
+  const totals = { revenue, expenses, taxable, tax, advances, balance, record_count: detail.length };
+  const json = {
+    formCode: '6111', version: '2026.1', year, submission_type: submissionType,
+    company: {
+      tin:             company.tin || company.company_id || company.tax_id || '',
+      legal_name:      company.legal_name || company.name || '',
+      tax_file_number: company.tax_file_number || '',
+    },
+    rows: FORM6111_ROWS.map(r => ({ row_code: r.code, key: r.key, label_he: r.he, amount: values[r.key] })),
+    totals,
+    deadline: computeDeadline(year),
+    generated_at: new Date().toISOString(),
+  };
+
+  const x = (tag, body) =>
+    body == null || body === ''
+      ? `<${tag}/>`
+      : `<${tag}>${typeof body === 'string' ? body : xmlEscape(body)}</${tag}>`;
+  const rowXml = json.rows.map(r => [
+    '<Row>', x('Code', r.row_code), x('LabelHe', xmlEscape(r.label_he)),
+    x('Amount', Math.round(r.amount)), '</Row>',
+  ].join('')).join('');
+  const xml =
+    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<Form6111 version="2026.1">' +
+      '<Header>' +
+        x('FormCode', '6111') +
+        x('Year', year) +
+        x('SubmissionType', submissionType) +
+        x('Tin', xmlEscape(json.company.tin)) +
+        x('LegalName', xmlEscape(json.company.legal_name)) +
+        x('TaxFile', xmlEscape(json.company.tax_file_number)) +
+        x('Deadline', xmlEscape(json.deadline)) +
+        x('GeneratedAt', xmlEscape(json.generated_at)) +
+      '</Header>' +
+      '<Rows>' + rowXml + '</Rows>' +
+      '<Totals>' +
+        x('Revenue',  Math.round(totals.revenue)) +
+        x('Expenses', Math.round(totals.expenses)) +
+        x('Taxable',  Math.round(totals.taxable)) +
+        x('Tax',      Math.round(totals.tax)) +
+        x('Advances', Math.round(totals.advances)) +
+        x('Balance',  Math.round(totals.balance)) +
+      '</Totals>' +
+    '</Form6111>';
+
+  return {
+    formCode: '6111', version: '2026.1', year,
+    deadline: json.deadline, submission_type: submissionType,
+    header, detail, trailer, totals, fixedWidth, buffer, json, xml,
+    metadata: {
+      encoding: 'windows-1255', recordWidth: FORM6111_RECORD_WIDTH,
+      lineCount: lines.length, filename: `form-6111-${year}.txt`,
+      generatedAt: json.generated_at,
+    },
+  };
+}
+
+/** validateForm6111File(fileObjOrBufferOrString) → string[] of structural errors. */
+function validateForm6111File(file) {
+  const errors = [];
+  if (!file) return ['file is missing'];
+  if (Buffer.isBuffer(file) || typeof file === 'string') {
+    const text = Buffer.isBuffer(file)
+      ? (F6111_ICONV ? F6111_ICONV.decode(file, 'windows-1255') : file.toString('utf8'))
+      : file;
+    const lines = text.replace(/\r\n?$/, '').split(/\r\n|\n/).filter(Boolean);
+    if (lines.length < 3) errors.push('expected header + detail + trailer (>=3 lines)');
+    lines.forEach((line, i) => {
+      if (line.length !== FORM6111_RECORD_WIDTH) errors.push(`line ${i} width ${line.length} != ${FORM6111_RECORD_WIDTH}`);
+    });
+    if (lines[0] && lines[0].slice(0, 3) !== 'A10') errors.push('header record_type must be "A10"');
+    if (lines.length && lines[lines.length - 1].slice(0, 3) !== 'Z99') errors.push('trailer record_type must be "Z99"');
+    return errors;
+  }
+  if (file.formCode !== '6111') errors.push(`formCode mismatch: ${file.formCode}`);
+  if (typeof file.fixedWidth !== 'string' || !file.fixedWidth.length) errors.push('fixedWidth payload is missing');
+  if (typeof file.header !== 'string' || file.header.length !== FORM6111_RECORD_WIDTH) errors.push(`header width ${file.header?.length} != ${FORM6111_RECORD_WIDTH}`);
+  if (file.header?.slice(0, 3) !== 'A10') errors.push('header record_type must be "A10"');
+  if (typeof file.trailer !== 'string' || file.trailer.length !== FORM6111_RECORD_WIDTH) errors.push(`trailer width ${file.trailer?.length} != ${FORM6111_RECORD_WIDTH}`);
+  if (file.trailer?.slice(0, 3) !== 'Z99') errors.push('trailer record_type must be "Z99"');
+  if (!Array.isArray(file.detail)) errors.push('detail must be an array');
+  else file.detail.forEach((line, i) => {
+    if (typeof line !== 'string' || line.length !== FORM6111_RECORD_WIDTH) errors.push(`detail[${i}] width ${line?.length} != ${FORM6111_RECORD_WIDTH}`);
+    else if (line.slice(0, 3) !== 'B20') errors.push(`detail[${i}] record_type must be "B20"`);
+  });
+  if (!Number.isInteger(file.year) || file.year < 2000 || file.year > 2100) errors.push('year must be a 4-digit integer');
+  return errors;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // Exports
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -1065,6 +1280,13 @@ module.exports = {
   TYPE_FALLBACK,
   CONSTANTS_2026,
   createEngine,
+  // File-builder API (parallel to form-102 / form-856)
+  buildForm6111File,
+  validateForm6111File,
+  computeDeadline,
+  FORM6111_FIELD_LAYOUT,
+  FORM6111_RECORD_WIDTH,
+  FORM6111_ROWS,
   // Test-only internals
   _internals: { num, round, pct, findSection, xmlEscape, capitalize },
 };

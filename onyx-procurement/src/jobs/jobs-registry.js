@@ -295,6 +295,77 @@ async function runCacheWarm(ctx) {
   }
 }
 
+/**
+ * nightly-vendor-rescore — AGENT-223 Patch 2
+ * ──────────────────────────────────────────
+ * Re-scores every active supplier (suppliers.status in active/preferred/
+ * monitor/on_hold) once a night at 02:15 (after daily-backup at 02:00).
+ *
+ * Catches vendors with NO recent PO (event listener wouldn't fire for
+ * them) and feeds the recentScores[] history that drives the
+ * DECLINING_TREND risk in vendor-scoring.js.
+ *
+ * Defensive: if Supabase is not available we no-op rather than throw.
+ * Per-supplier failures are caught individually so one bad row does
+ * not nuke the whole sweep.
+ */
+async function runNightlyVendorRescore(ctx) {
+  const { scoreVendor } = require('../analytics/vendor-scoring');
+  const { persistScore } = require('../suppliers/score-persistence');
+  const { __loadSupplierHistory } = require('../wiring/vendor-scoring-listener');
+
+  // ctx.deps?.supabase preferred; fall back to env-driven client.
+  let supabase = (ctx && ctx.deps && ctx.deps.supabase) || ctx.supabase || null;
+  if (!supabase) {
+    try {
+      const { createClient } = require('@supabase/supabase-js');
+      if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
+        supabase = createClient(
+          process.env.SUPABASE_URL,
+          process.env.SUPABASE_ANON_KEY,
+          { auth: { persistSession: false, autoRefreshToken: false } }
+        );
+      }
+    } catch (_) { /* @supabase/supabase-js may not be installed in offline test env */ }
+  }
+  if (!supabase) {
+    ctx.logger.warn({ id: ctx.id }, 'rescore.skipped_no_supabase');
+    return { scored: 0, failed: 0, skipped: true };
+  }
+
+  let vendors = [];
+  try {
+    const { data } = await supabase
+      .from('procurement.suppliers')
+      .select('id')
+      .in('status', ['active', 'preferred', 'monitor', 'on_hold']);
+    vendors = data || [];
+  } catch (err) {
+    ctx.logger.warn({ id: ctx.id, err: err && err.message }, 'rescore.list_failed');
+    return { scored: 0, failed: 0, error: err && err.message };
+  }
+
+  let scored = 0;
+  let failed = 0;
+  for (const v of vendors) {
+    try {
+      const history = await __loadSupplierHistory(supabase, v.id);
+      const result = scoreVendor(String(v.id), history);
+      await persistScore(supabase, v.id, result);
+      scored += 1;
+    } catch (err) {
+      failed += 1;
+      ctx.logger.warn(
+        { vendorId: v.id, err: err && err.message },
+        'rescore.row_failed'
+      );
+    }
+  }
+
+  ctx.logger.info({ id: ctx.id, scored, failed, total: vendors.length }, 'rescore.done');
+  return { scored, failed, total: vendors.length };
+}
+
 // ─────────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────────
@@ -465,6 +536,19 @@ const DEFAULT_JOBS = [
     retries: 1,
     jitterMs: 60_000,
   },
+  {
+    // AGENT-223 Patch 2 — closes the loop on AGENT-183
+    id: 'nightly-vendor-rescore',
+    description: 'Re-score every active supplier (catches vendors with no recent PO)',
+    category: 'analytics',
+    cron: '15 2 * * *', // 02:15 — runs after daily-backup (02:00)
+    handler: runNightlyVendorRescore,
+    timeout: 30 * 60 * 1000,
+    retries: 1,
+    retryDelayMs: 5 * 60_000,
+    onFailure: 'notify-admin',
+    runMissedOnStartup: true,
+  },
 ];
 
 /**
@@ -501,5 +585,6 @@ module.exports = {
     runCleanOldLogs,
     runTokenRefresh,
     runCacheWarm,
+    runNightlyVendorRescore,
   },
 };

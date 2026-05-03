@@ -549,7 +549,7 @@ router.get("/quote-builder/pdf/:quoteId", async (req: Request, res: Response) =>
     // Totals
     const totals = [
       ["Subtotal / Lifney Maam:", fmtC(subtotal)],
-      ["VAT 17% / Maam:", fmtC(vat)],
+      ["VAT 18% / Maam:", fmtC(vat)],
       ["TOTAL / Sach HaKol:", fmtC(total)],
     ];
     totals.forEach(([label, val], i) => {

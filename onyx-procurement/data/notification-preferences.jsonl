@@ -1,0 +1,1 @@
+{"userId":"kobi.test.user","prefs":{"channels":{"email":true,"whatsapp":true,"sms":true,"push":true,"in_app":true},"quietHours":{"enabled":true,"start":"22:00","end":"07:00"},"timezone":"Asia/Jerusalem","frequencyCap":30,"typeOverrides":{}},"ts":1777435832521}

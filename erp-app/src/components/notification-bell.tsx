@@ -166,7 +166,7 @@ export function NotificationBell() {
                         </p>
                       )}
                       <p className="text-xs text-gray-400 mt-1">
-                        {new Date(notification.createdAt).toLocaleDateString()}
+                        {new Date(notification.createdAt).toLocaleDateString('he-IL')}
                       </p>
                     </div>
                     <div className="flex gap-1">

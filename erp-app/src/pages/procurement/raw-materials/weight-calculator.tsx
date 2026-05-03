@@ -15,7 +15,7 @@ import {
 type ProfileType = "square_tube" | "round_tube" | "angle" | "flat_sheet" | "u_channel" | "i_beam";
 type MaterialType = "iron" | "aluminum" | "stainless" | "glass";
 
-const VAT_RATE = 0.17;
+const VAT_RATE = 0.18; // IL VAT 18% effective 2026-01-01
 
 const FALLBACK_PROFILES: { key: ProfileType; label: string; icon: typeof Layers }[] = [
   { key: "square_tube", label: "צינור מרובע", icon: SquareSlash },
@@ -287,7 +287,7 @@ export default function WeightCalculator() {
               <Badge className="bg-cyan-500/20 text-cyan-300 border-cyan-500/30 text-[10px]">cost_by_weight</Badge>
             </div>
             <div className="text-2xl font-bold text-white">{fmtCurrency(costBeforeVat)}</div>
-            <div className="text-lg font-semibold text-emerald-400 mt-1">{fmtCurrency(costAfterVat)} <span className="text-xs text-slate-400">כולל מע״מ 17%</span></div>
+            <div className="text-lg font-semibold text-emerald-400 mt-1">{fmtCurrency(costAfterVat)} <span className="text-xs text-slate-400">כולל מע״מ 18%</span></div>
             <p className="text-xs text-slate-500 mt-1">עלות ליחידה: {fmtCurrency(costPerPiece)}</p>
           </CardContent>
         </Card>

@@ -17,13 +17,16 @@
 'use strict';
 
 // Load .env file into process.env (idempotent — safe to call multiple times).
-try {
-  require('dotenv').config();
-} catch (err) {
-  // dotenv is an optional convenience — if it's missing we still try to
-  // validate whatever is already in process.env. We never want import of
-  // this module to fail purely because dotenv wasn't installed.
-  if (process.env.NODE_ENV !== 'test') {
+// Skip during tests so the test harness has full control over process.env
+// (otherwise dotenv leaks .env values into a "fresh" test environment and
+// masks missing-var assertions).
+if (process.env.NODE_ENV !== 'test') {
+  try {
+    require('dotenv').config();
+  } catch (err) {
+    // dotenv is an optional convenience — if it's missing we still try to
+    // validate whatever is already in process.env. We never want import of
+    // this module to fail purely because dotenv wasn't installed.
     // eslint-disable-next-line no-console
     console.warn('[env] dotenv not available — reading process.env directly');
   }

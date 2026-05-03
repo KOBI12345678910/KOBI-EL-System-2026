@@ -402,11 +402,11 @@ test('generateItem — prices within category band', () => {
   }
 });
 
-test('generateItem — VAT rate is 17%', () => {
+test('generateItem — VAT rate is 18%', () => {
   const g = new IsraeliSeedGenerator({ seed: 42 });
   const items = g.generateItem(20);
   for (const it of items) {
-    assert.strictEqual(it.vat_rate, 0.17);
+    assert.strictEqual(it.vat_rate, 0.18);
   }
 });
 
@@ -434,13 +434,13 @@ test('generateInvoice — determinism', () => {
   assert.deepStrictEqual(invA, invB);
 });
 
-test('generateInvoice — VAT math: subtotal + 17% = total', () => {
+test('generateInvoice — VAT math: subtotal + 18% = total', () => {
   const g = new IsraeliSeedGenerator({ seed: 42 });
   const supp = g.generateSupplier(5);
   const items = g.generateItem(10);
   const invs = g.generateInvoice(30, { suppliers: supp, items: items });
   for (const inv of invs) {
-    const expectedVat = Math.round(inv.subtotal_nis * 0.17 * 100) / 100;
+    const expectedVat = Math.round(inv.subtotal_nis * 0.18 * 100) / 100;
     const expectedTotal = Math.round((inv.subtotal_nis + expectedVat) * 100) / 100;
     assert.strictEqual(inv.vat_amount_nis, expectedVat,
       `VAT mismatch: ${inv.vat_amount_nis} vs ${expectedVat}`);

@@ -1,7 +1,7 @@
 import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wouter";
 import { useState, useEffect, useCallback, lazy, Suspense, type ComponentType } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ConfirmDialogProvider } from "@/components/confirm-dialog";
 import { Layout } from "@/components/layout";
@@ -12,34 +12,17 @@ import { useToast } from "@/hooks/use-toast";
 
 // === AUTO-WIRED REACT ROUTES ===
 // Generated: 2026-04-18T13:34:26.057Z · Added: 28
-const OpportunitiesPage = lazy(() => import('./pages/sales/opportunities'));
-const DashboardPage = lazy(() => import('./pages/crm/crm-dashboard'));
-const CrmPipelinePage = lazy(() => import('./pages/sales/crm-pipeline'));
-const CrmActivitiesPage = lazy(() => import('./pages/crm/crm-activities'));
-const SupplierScorecardsPage = lazy(() => import('./pages/supplier-mgmt/supplier-scorecards'));
 const DashboardPage2 = lazy(() => import('./pages/modules/procurement-dashboard'));
-const ContractsPage = lazy(() => import('./pages/documents/contracts'));
-const VendorNegotiationPage = lazy(() => import('./pages/procurement/vendor-negotiation'));
-const SupplierManagementPage = lazy(() => import('./pages/procurement/supplier-management'));
-const RawMaterialStockPage = lazy(() => import('./pages/procurement/raw-materials/raw-material-stock'));
-const IncomePage = lazy(() => import('./pages/finance/income'));
-const ExpensesPage = lazy(() => import('./pages/finance/expenses'));
 const DashboardPage3 = lazy(() => import('./pages/finance/finance-dashboard'));
-const CompanyFinancialsPage = lazy(() => import('./pages/company-financials'));
-const ShiftsPage = lazy(() => import('./pages/hr/shifts'));
 const DashboardPage4 = lazy(() => import('./pages/hr/hr-dashboard'));
 const SettingsPage = lazy(() => import('./pages/hr/hr-settings'));
-const LoginPage = lazy(() => import('./pages/login'));
 const DashboardPage5 = lazy(() => import('./pages/dashboard'));
 const ScorecardPage = lazy(() => import('./pages/executive/executive-scorecard'));
 const PoliciesPage = lazy(() => import('./pages/hr/policies'));
 const IntegrationsHubDataPage = lazy(() => import('./pages/integrations-hub-data'));
-const IntegrationSettingsPage = lazy(() => import('./pages/integrations/integration-settings'));
-const ApiKeysPage = lazy(() => import('./pages/settings/api-keys'));
 const SystemSettingsPage = lazy(() => import('./pages/settings/sections/system-settings'));
 const OpportunitiesPage2 = lazy(() => import('./pages/sales/opportunities'));
 const CrmActivitiesPage2 = lazy(() => import('./pages/crm/crm-activities'));
-const PredictiveAnalyticsPage = lazy(() => import('./pages/crm/predictive-analytics'));
 
 // === AUTO-WIRED REACT ROUTES ===
 // Generated: 2026-04-18T06:26:09.682Z · Added: 629
@@ -701,6 +684,12 @@ const TenderCompetitorsPage = lazy(() => import('./pages/tenders/tender-competit
 const TenderTimelinePage = lazy(() => import('./pages/tenders/tender-timeline'));
 const AiAgentsDashboardPage = lazy(() => import('./pages/ai-engine/ai-agents-dashboard'));
 
+// Catch-all dynamic menu page — handles /registry/*, /marketplace/*, /db/*,
+// /rpc/*, /view/*, /component/*, /hook/*, /api-doc/*, /addons/*,
+// /integrations/*, /platform-module/*, /combo/*, /template/* routes that
+// are seeded into public.app_menu but lack a dedicated React page.
+const GenericMenuPage = lazy(() => import('./pages/GenericMenuPage'));
+
 function lazyPage<P extends object>(
   factory: () => Promise<{ default: ComponentType<P> }>
 ): ComponentType<P> {
@@ -1001,6 +990,8 @@ const FunnelAnalysis = lazyPage(() => import("@/pages/reports/funnel-analysis"))
 const OperationalReports = lazyPage(() => import("@/pages/reports/operational-reports"));
 const BIDashboardPage = lazyPage(() => import("@/pages/reports/bi-dashboard"));
 const ModuleView = lazyPage(() => import("@/pages/module-view"));
+const MarketplaceModuleDetail = lazyPage(() => import("@/pages/marketplace-module-detail"));
+const MarketplaceCategory = lazyPage(() => import("@/pages/marketplace-category"));
 const ProductRoadmapPage = lazyPage(() => import("@/pages/product-dev/product-roadmap"));
 const RDProjectsPage = lazyPage(() => import("@/pages/product-dev/rd-projects"));
 const FeatureRequestsPage = lazyPage(() => import("@/pages/product-dev/feature-requests"));
@@ -2116,6 +2107,28 @@ function Router() {
           <Route path="/prompt-templates" component={IntelligencePromptTemplatesPage} />
           <Route path="/process-mining" component={IntelligenceProcessMiningPage} />
 
+          {/* Marketplace — 2,371 module routes seeded in app_menu */}
+          <Route path="/marketplace/module/:id" component={MarketplaceModuleDetail} />
+          <Route path="/marketplace/:category" component={MarketplaceCategory} />
+
+          {/* Catch-all dynamic menu routes — backed by GenericMenuPage which
+              reads /api/app-menu, /api/db-entity/* and /api/rpc-meta/* and
+              renders a header + breadcrumb + stub body. Wouter v3 uses
+              :rest* to capture any tail segments (including nested /a/b/c). */}
+          <Route path="/registry/:rest*" component={GenericMenuPage} />
+          <Route path="/marketplace/:rest*" component={GenericMenuPage} />
+          <Route path="/db/:rest*" component={GenericMenuPage} />
+          <Route path="/rpc/:rest*" component={GenericMenuPage} />
+          <Route path="/view/:rest*" component={GenericMenuPage} />
+          <Route path="/component/:rest*" component={GenericMenuPage} />
+          <Route path="/hook/:rest*" component={GenericMenuPage} />
+          <Route path="/api-doc/:rest*" component={GenericMenuPage} />
+          <Route path="/addons/:rest*" component={GenericMenuPage} />
+          <Route path="/integrations/:rest*" component={GenericMenuPage} />
+          <Route path="/platform-module/:rest*" component={GenericMenuPage} />
+          <Route path="/combo/:rest*" component={GenericMenuPage} />
+          <Route path="/template/:rest*" component={GenericMenuPage} />
+
           <Route component={NotFound} />
         </Switch>
       </Suspense>
@@ -2903,7 +2916,7 @@ function App() {
             <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
               <PortalRouter />
             </WouterRouter>
-            <Toaster />
+            <Toaster dir="rtl" position="top-right" richColors closeButton expand visibleToasts={5} />
             <GlobalErrorHandler />
           </ConfirmDialogProvider>
         </TooltipProvider>
@@ -2932,7 +2945,7 @@ function App() {
               <LoginPage onLogin={handleLogin} />
             </Suspense>
           </ErrorBoundary>
-          <Toaster />
+          <Toaster dir="rtl" position="top-right" richColors closeButton expand visibleToasts={5} />
           <GlobalErrorHandler />
         </TooltipProvider>
       </QueryClientProvider>
@@ -2948,7 +2961,7 @@ function App() {
               <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
                 <Router />
               </WouterRouter>
-              <Toaster />
+              <Toaster dir="rtl" position="top-right" richColors closeButton expand visibleToasts={5} />
               <GlobalErrorHandler />
             </ConfirmDialogProvider>
           </TooltipProvider>

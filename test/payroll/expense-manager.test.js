@@ -90,8 +90,8 @@ test('01 categories contain all 8 Israeli expense types', () => {
   }
 });
 
-test('02 VAT standard rate is 17%', () => {
-  assert.equal(VAT_STANDARD, 0.17);
+test('02 VAT standard rate is 18% (2026-01-01)', () => {
+  assert.equal(VAT_STANDARD, 0.18);
 });
 
 test('03 status enum exposes full lifecycle', () => {
@@ -127,9 +127,9 @@ test('06 splitVat — 0% rate returns all net', () => {
   assert.equal(vat, 0);
 });
 
-test('07 splitVat — default rate = 17% when omitted', () => {
+test('07 splitVat — default rate = 18% when omitted', () => {
   const { net } = splitVat(234);
-  assert.ok(Math.abs(net - 200) < 0.01);
+  assert.ok(Math.abs(net - 198.31) < 0.01);
 });
 
 /* ─────────────────────────────────────────────────────────────
@@ -320,14 +320,14 @@ test('26 computeReimbursement with VAT-invoice claims VAT back', () => {
   mgr.addLine(rep.id, {
     date: '2026-04-05',
     description: 'ציוד מחשב',
-    amount: 1170,          // 1000 net + 170 VAT
+    amount: 1180,          // 1000 net + 180 VAT @ 18%
     currency: 'ILS',
     has_tax_invoice: true,
     category: 'equipment',
   });
   const r = mgr.computeReimbursement(rep.id);
-  assert.equal(r.grossIls, 1170);
-  assert.ok(Math.abs(r.deductibleVat - 170) < 0.5);
+  assert.equal(r.grossIls, 1180);
+  assert.ok(Math.abs(r.deductibleVat - 180) < 0.5);
   assert.ok(Math.abs(r.netIls - 1000) < 0.5);
 });
 

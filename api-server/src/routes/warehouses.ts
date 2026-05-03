@@ -1,7 +1,33 @@
 import { Router, type IRouter } from "express";
 import { pool } from "@workspace/db";
+import { requireAuthMw } from "../lib/require-auth-mw";
 
 const router: IRouter = Router();
+router.use(requireAuthMw as any);
+
+// B-SEC-SQL: explicit allowlist of writable columns. Adding a column requires
+// adding it here. PK and timestamps are excluded — DB defaults manage them.
+const WAREHOUSE_ALLOWED_COLUMNS = new Set<string>([
+  "name", "code", "warehouse_type", "address", "manager_id",
+  "capacity", "current_utilization", "notes", "is_active",
+]);
+const WAREHOUSE_BLOCKED_ON_UPDATE = new Set<string>(["id", "created_at", "updated_at"]);
+
+function pickWarehouseColumns(body: Record<string, unknown>, opts: { isUpdate: boolean }): { keys: string[]; vals: unknown[] } {
+  const keys: string[] = [];
+  const vals: unknown[] = [];
+  for (const k of Object.keys(body)) {
+    if (opts.isUpdate && WAREHOUSE_BLOCKED_ON_UPDATE.has(k)) {
+      throw new Error(`Field not updatable: ${k}`);
+    }
+    if (!WAREHOUSE_ALLOWED_COLUMNS.has(k)) {
+      throw new Error(`Forbidden column: ${k}`);
+    }
+    keys.push(k);
+    vals.push(body[k]);
+  }
+  return { keys, vals };
+}
 
 router.get("/warehouses", async (_req, res) => {
   const result = await pool.query("SELECT * FROM warehouses ORDER BY id DESC LIMIT 200");
@@ -16,9 +42,10 @@ router.get("/warehouses/:id", async (req, res) => {
 });
 
 router.post("/warehouses", async (req, res) => {
-  const data = req.body;
-  const keys = Object.keys(data);
-  const vals = Object.values(data);
+  let keys: string[]; let vals: unknown[];
+  try { ({ keys, vals } = pickWarehouseColumns(req.body || {}, { isUpdate: false })); }
+  catch (err: any) { res.status(400).json({ error: err.message }); return; }
+  if (keys.length === 0) { res.status(400).json({ error: "אין שדות לשמירה" }); return; }
   const placeholders = keys.map((_, i) => `$${i + 1}`).join(", ");
   const result = await pool.query(`INSERT INTO warehouses (${keys.join(", ")}) VALUES (${placeholders}) RETURNING *`, vals);
   res.status(201).json(result.rows[0]);
@@ -26,9 +53,10 @@ router.post("/warehouses", async (req, res) => {
 
 router.put("/warehouses/:id", async (req, res) => {
   const id = String(req.params.id);
-  const data = req.body;
-  const keys = Object.keys(data);
-  const vals = Object.values(data);
+  let keys: string[]; let vals: unknown[];
+  try { ({ keys, vals } = pickWarehouseColumns(req.body || {}, { isUpdate: true })); }
+  catch (err: any) { res.status(400).json({ error: err.message }); return; }
+  if (keys.length === 0) { res.status(400).json({ error: "אין שדות לעדכון" }); return; }
   const sets = keys.map((k, i) => `${k} = $${i + 1}`).join(", ");
   vals.push(id);
   const result = await pool.query(`UPDATE warehouses SET ${sets} WHERE id = $${vals.length} RETURNING *`, vals);

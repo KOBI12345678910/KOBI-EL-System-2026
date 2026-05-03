@@ -57,7 +57,7 @@ export function generateInvoice(data: {
 
   y += 20;
   doc.text('סה"כ לפני מע"מ: ' + data.subtotal, 350, y, { align: 'right' });
-  doc.text('מע"מ (17%): ' + data.vat, 350, y + 15, { align: 'right' });
+  doc.text('מע"מ (18%): ' + data.vat, 350, y + 15, { align: 'right' });
   doc.fontSize(12).text('סה"כ לתשלום: ' + data.total, 350, y + 35, { align: 'right' });
 
   doc.end();

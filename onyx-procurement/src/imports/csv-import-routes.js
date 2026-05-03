@@ -17,6 +17,8 @@
  *                                       → final import (batched, 100/batch)
  *   GET  /api/imports/csv/history   — last N import runs
  *   GET  /api/imports/csv/entities  — list supported entities + field defs
+ *   POST /api/imports/pdf-invoice   — body: {pdf:{base64}|text} (Agent 225)
+ *                                       → parsed invoice + matched supplier
  *
  * Rule: NEVER delete. Commits are insert or upsert only.
  */
@@ -34,6 +36,8 @@ const {
   importReport,
   TARGET_SCHEMAS,
 } = require('./csv-import');
+
+const { parseInvoicePdf, parseInvoiceText } = require('./pdf-invoice-parser');
 
 // In-memory history for when no `import_runs` table exists.
 // Persisted runs are also written to supabase when available.
@@ -231,6 +235,10 @@ function registerCsvImportRoutes(app, deps = {}) {
         supabase,
         upsert,
         onConflict,
+        // Agent 224: pass entity + notification helper so importRows can
+        // run the post-import anomaly bridge for invoices / bank_transactions.
+        entity,
+        createNotificationForAllUsers: deps.createNotificationForAllUsers,
       });
 
       const report = importReport({ entity, validation, imported: imp });
@@ -291,6 +299,129 @@ function registerCsvImportRoutes(app, deps = {}) {
     } catch { /* fall through */ }
 
     res.json({ source: 'memory', runs: recentRuns.slice(0, limit) });
+  });
+
+  // ─────────────────────────────────────────────────────────
+  //  POST /api/imports/pdf-invoice    (Agent 225 wiring)
+  //    Parses an Israeli tax invoice PDF (or pre-OCR'd text)
+  //    and returns the structured fields plus a matched
+  //    supplier when the extracted VAT ID lands in the
+  //    `suppliers` table (column: vat_id, ע"מ/ח.פ).
+  //
+  //    Body shapes accepted:
+  //      { pdf: { base64: "..." } }         binary upload
+  //      { pdf: <base64-string> }           shorthand
+  //      { text: "raw OCR text" }           pre-extracted text
+  //
+  //    Response:
+  //      { parsed, supplier_match, audit_id }
+  //
+  //    NEVER writes invoice rows. Pure read + match. The UI
+  //    follows up with POST /api/supplier-invoices once the
+  //    operator confirms / edits the parsed fields.
+  // ─────────────────────────────────────────────────────────
+  app.post('/api/imports/pdf-invoice', async (req, res) => {
+    try {
+      const body = req.body || {};
+      let parsed;
+
+      if (body.text && typeof body.text === 'string') {
+        parsed = parseInvoiceText(body.text);
+        parsed.extraction_engine = 'text-input';
+      } else if (body.pdf) {
+        let buf;
+        if (typeof body.pdf === 'string') {
+          buf = Buffer.from(body.pdf, 'base64');
+        } else if (body.pdf && typeof body.pdf === 'object' && body.pdf.base64) {
+          buf = Buffer.from(body.pdf.base64, 'base64');
+        } else {
+          return res.status(400).json({ error: 'pdf.base64 string is required' });
+        }
+        if (!buf || buf.length < 4) {
+          return res.status(400).json({ error: 'pdf payload is empty or too small' });
+        }
+        parsed = await parseInvoicePdf(buf);
+      } else {
+        return res.status(400).json({ error: 'either pdf or text is required' });
+      }
+
+      // ─── Vendor matching layer ──────────────────────────
+      // Look up suppliers by extracted VAT ID. The DB column is
+      // `vat_id` (see migration 0002_suppliers_and_contacts.sql).
+      // Falls back to fuzzy name match when VAT ID is absent.
+      let supplierMatch = { matched: false, strategy: 'none', candidates: [] };
+      const vatId = parsed.vendor_vat_id;
+
+      if (supabase && supabase.from) {
+        try {
+          if (vatId && /^\d{9}$/.test(String(vatId))) {
+            const { data: byVat, error: vatErr } = await supabase
+              .from('suppliers')
+              .select('id, code, name_he, name_en, vat_id, active')
+              .eq('vat_id', vatId)
+              .limit(5);
+            if (!vatErr && byVat && byVat.length) {
+              supplierMatch = {
+                matched: true,
+                strategy: 'vat_id',
+                supplier_id: byVat[0].id,
+                supplier_name: byVat[0].name_he || byVat[0].name_en,
+                candidates: byVat,
+              };
+            }
+          }
+
+          if (!supplierMatch.matched && parsed.vendor) {
+            // Best-effort name fuzzy match (trigram index already exists).
+            const term = String(parsed.vendor).slice(0, 80);
+            const { data: byName, error: nameErr } = await supabase
+              .from('suppliers')
+              .select('id, code, name_he, name_en, vat_id, active')
+              .ilike('name_he', `%${term}%`)
+              .limit(5);
+            if (!nameErr && byName && byName.length) {
+              supplierMatch = {
+                matched: byName.length === 1,
+                strategy: 'name_fuzzy',
+                supplier_id: byName.length === 1 ? byName[0].id : null,
+                supplier_name: byName[0].name_he || byName[0].name_en,
+                candidates: byName,
+              };
+            }
+          }
+        } catch (lookupErr) {
+          // Non-fatal — return the parse without a match.
+          supplierMatch.error = lookupErr.message;
+        }
+      }
+
+      const auditId = `pdf-inv-${Date.now()}`;
+      try {
+        await audit('pdf_invoice_parse', auditId, 'parsed',
+          req.actor || req.headers['x-actor'] || 'api',
+          `PDF invoice parsed (engine=${parsed.extraction_engine || 'unknown'}, ` +
+          `confidence=${parsed.confidence}, vat_id=${vatId || '∅'}, ` +
+          `match=${supplierMatch.strategy})`,
+          null,
+          {
+            engine: parsed.extraction_engine,
+            confidence: parsed.confidence,
+            vendor_vat_id: vatId,
+            invoice_no: parsed.invoice_no,
+            total: parsed.total,
+            match_strategy: supplierMatch.strategy,
+            match_supplier_id: supplierMatch.supplier_id || null,
+          });
+      } catch { /* non-fatal */ }
+
+      res.json({
+        audit_id: auditId,
+        parsed,
+        supplier_match: supplierMatch,
+      });
+    } catch (err) {
+      res.status(err.status || 500).json({ error: err.message });
+    }
   });
 }
 

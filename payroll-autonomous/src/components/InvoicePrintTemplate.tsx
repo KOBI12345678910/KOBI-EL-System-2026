@@ -72,8 +72,8 @@ export default function InvoicePrintTemplate({ invoice }: { invoice: InvoiceData
             <tr key={idx} style={idx % 2 === 0 ? styles.trEven : styles.trOdd}>
               <td style={styles.td}>{item.description}</td>
               <td style={{ ...styles.td, textAlign: 'center' }}>{item.quantity}</td>
-              <td style={{ ...styles.td, textAlign: 'left' }}>{fmtMoney(item.unit_price)}</td>
-              <td style={{ ...styles.td, textAlign: 'left' }}>{fmtMoney(item.total)}</td>
+              <td style={{ ...styles.td, textAlign: 'start' }}>{fmtMoney(item.unit_price)}</td>
+              <td style={{ ...styles.td, textAlign: 'start' }}>{fmtMoney(item.total)}</td>
             </tr>
           ))}
         </tbody>
@@ -140,10 +140,10 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'flex-start',
     marginBottom: 16,
   },
-  companyBlock: { textAlign: 'right' },
+  companyBlock: { textAlign: 'end' },
   companyName: { fontSize: 22, fontWeight: 700, marginBottom: 4 },
   companyDetail: { fontSize: 13, color: '#444' },
-  invoiceTitleBlock: { textAlign: 'left' },
+  invoiceTitleBlock: { textAlign: 'start' },
   invoiceTitle: { fontSize: 28, fontWeight: 700, color: '#1a1a6e', marginBottom: 6 },
   invoiceMeta: { fontSize: 13, marginBottom: 2 },
   divider: { border: 'none', borderTop: '2px solid #1a1a6e', margin: '16px 0' },
@@ -152,14 +152,14 @@ const styles: Record<string, React.CSSProperties> = {
   customerName: { fontSize: 16, fontWeight: 700 },
   table: { width: '100%', borderCollapse: 'collapse', marginBottom: 24 },
   tableHeaderRow: { background: '#1a1a6e', color: '#fff' },
-  th: { padding: '10px 12px', textAlign: 'right', fontWeight: 700 },
+  th: { padding: '10px 12px', textAlign: 'end', fontWeight: 700 },
   td: { padding: '8px 12px', borderBottom: '1px solid #ddd' },
   trEven: { background: '#fff' },
   trOdd: { background: '#f9f9f9' },
   totalsBlock: { display: 'flex', justifyContent: 'flex-start', marginBottom: 24 },
   totalsTable: { borderCollapse: 'collapse', minWidth: 300 },
-  totalLabel: { padding: '6px 16px', textAlign: 'right', fontWeight: 600 },
-  totalValue: { padding: '6px 16px', textAlign: 'left', minWidth: 120 },
+  totalLabel: { padding: '6px 16px', textAlign: 'end', fontWeight: 600 },
+  totalValue: { padding: '6px 16px', textAlign: 'start', minWidth: 120 },
   grandTotalRow: { background: '#1a1a6e', color: '#fff', fontSize: 16, fontWeight: 700 },
   paymentTerms: { padding: '10px 12px', background: '#fffbe6', border: '1px solid #ffe58f', borderRadius: 4, marginBottom: 16 },
   notes: { padding: '10px 12px', background: '#f0f0f0', borderRadius: 4, marginBottom: 16, fontSize: 13 },
