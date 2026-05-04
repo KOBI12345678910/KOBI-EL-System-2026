@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import { AnyZodObject, ZodError } from 'zod';
+import { ZodTypeAny, ZodError } from 'zod';
 
 /**
  * Zod-based input validation middleware (Agent 4 fix)
  * Validates req.body, req.query, req.params against provided schema
  */
-export const validate = (schema: AnyZodObject) =>
+export const validate = (schema: ZodTypeAny) =>
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
           try {
                   await schema.parseAsync({
@@ -18,7 +18,7 @@ export const validate = (schema: AnyZodObject) =>
                   if (err instanceof ZodError) {
                             res.status(400).json({
                                         error: 'Validation failed',
-                                        details: err.errors.map((e) => ({
+                                        details: err.issues.map((e: any) => ({
                                                       field: e.path.join('.'),
                                                       message: e.message,
                                         })),

@@ -1,0 +1,10 @@
+steps:
+ - name: 'gcr.io/cloud-builders/docker'
+   args: ['build','-t','europe-west1-docker.pkg.dev/${PROJECT_ID}/kobi-repo/techno-kol-ops:latest','-f','gcp-Dockerfile','.']
+ - name: 'gcr.io/cloud-builders/docker'
+   args: ['push','europe-west1-docker.pkg.dev/${PROJECT_ID}/kobi-repo/techno-kol-ops:latest']
+ - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+   entrypoint: gcloud
+   args: ['run','deploy','techno-kol-ops','--image','europe-west1-docker.pkg.dev/${PROJECT_ID}/kobi-repo/techno-kol-ops:latest','--region','europe-west1','--platform','managed','--allow-unauthenticated','--max-instances','10','--min-instances','1','--memory','1Gi','--cpu','1']
+images:
+ - 'europe-west1-docker.pkg.dev/${PROJECT_ID}/kobi-repo/techno-kol-ops:latest'

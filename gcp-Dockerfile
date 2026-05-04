@@ -1,0 +1,15 @@
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY techno-kol-ops/package*.json ./
+RUN npm install -g pnpm@9 && pnpm install --frozen-lockfile || npm install
+COPY techno-kol-ops/ .
+RUN pnpm build || npm run build
+
+FROM node:20-alpine AS production
+WORKDIR /app
+COPY techno-kol-ops/package*.json ./
+RUN npm install --production
+COPY --from=builder /app/dist ./dist
+ENV NODE_ENV=production PORT=8080
+EXPOSE 8080
+CMD ["node", "dist/index.js"]
