@@ -5,3 +5,4 @@ dockerfilePath = "techno-kol-ops/Dockerfile"
 [deploy]
 startCommand = "node dist/index.js"
 healthcheckPath = "/"
+restartPolicyType = "ON_FAILURE"
