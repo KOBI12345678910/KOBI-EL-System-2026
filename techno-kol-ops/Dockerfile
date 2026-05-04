@@ -1,9 +1,15 @@
-FROM node:20-alpine
+FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package.json pnpm-lock.yaml* ./
-RUN npm install -g pnpm@9 && pnpm install --prod --frozen-lockfile || npm install --production
+RUN npm install -g pnpm@9 && pnpm install --frozen-lockfile || npm install
 COPY . .
-ENV NODE_ENV=production
-ENV PORT=3200
+RUN pnpm build || npm run build
+
+FROM node:20-alpine AS production
+WORKDIR /app
+COPY package.json ./
+RUN npm install --production
+COPY --from=builder /app/dist ./dist
+ENV NODE_ENV=production PORT=3200
 EXPOSE 3200
 CMD ["node", "dist/index.js"]
