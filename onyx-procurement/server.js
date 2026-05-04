@@ -676,7 +676,7 @@ app.get('/api/status', async (req, res) => {
     status: 'operational',
     timestamp: new Date().toISOString(),
     dashboard: dashboard || {},
-    whatsapp: !!WA_TOKEN ? 'configured' : 'not configured',
+    whatsapp: Boolean(WA_TOKEN) ? 'configured' : 'not configured',
     supabase: 'connected',
   });
 });

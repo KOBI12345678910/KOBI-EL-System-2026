@@ -208,7 +208,7 @@ function parseDateFlexible(str) {
   if (!s) return null;
 
   // ISO yyyy-mm-dd
-  let m = s.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
+  let m = s.match(/^(\d{4})[/\-.](\d{1,2})[/\-.](\d{1,2})/);
   if (m) {
     return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
   }
@@ -534,7 +534,7 @@ function parseQifDate(str) {
   if (!s) return null;
 
   // MM/DD/YYYY or M/D/YY (US)
-  let m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+  let m = s.match(/^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{2,4})$/);
   if (m) {
     const month = parseInt(m[1], 10);
     const day = parseInt(m[2], 10);

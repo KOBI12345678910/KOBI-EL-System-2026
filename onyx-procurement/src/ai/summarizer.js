@@ -208,7 +208,7 @@ function splitSentences(text) {
 function tokenize(text) {
   return String(text || '')
     .toLowerCase()
-    .split(/[\s.,;:!?"'״׳(){}\[\]<>\/\\|~`@#$%^&*+=\-_]+/u)
+    .split(/[\s.,;:!?"'״׳(){}[\]<>/\\|~`@#$%^&*+=\-_]+/u)
     .filter((t) => t.length > 0);
 }
 

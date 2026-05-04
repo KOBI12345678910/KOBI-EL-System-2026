@@ -1,16 +1,14 @@
 // ═══════════════════════════════════════════════════════════════════
 // TECHNO-KOL OPS — env.js validation tests (Agent-23)
 // ───────────────────────────────────────────────────────────────────
-// Standalone runner — no test framework required. Run with:
-//   node src/config/env.test.js
-//
-// Exits with code 1 if any assertion fails. Intended for CI smoke.
+// Node native test runner. Run with:
+//   node --test src/config/env.test.js
 // ═══════════════════════════════════════════════════════════════════
 
 'use strict';
 
+const { test } = require('node:test');
 const assert = require('assert');
-const path = require('path');
 
 // Ensure we don't accidentally log during tests.
 process.env.NODE_ENV = 'test';
@@ -51,11 +49,6 @@ const VALID = {
   SUPABASE_URL: 'https://example.supabase.co',
   SUPABASE_ANON_KEY: 'super-secret-anon-key',
 };
-
-const tests = [];
-function test(name, fn) {
-  tests.push({ name, fn });
-}
 
 // ───────────────────────────────────────────────────────────────────
 // 1. Missing required var → throws with ALL missing listed
@@ -190,34 +183,3 @@ test('cannot add new keys to frozen config', () => {
   } catch (_e) { /* strict mode throws */ }
   assert.strictEqual(mod.HACKED, undefined);
 });
-
-// ───────────────────────────────────────────────────────────────────
-// Runner
-// ───────────────────────────────────────────────────────────────────
-(function run() {
-  let passed = 0;
-  let failed = 0;
-  const failures = [];
-  for (const t of tests) {
-    try {
-      t.fn();
-      passed++;
-      // eslint-disable-next-line no-console
-      console.log(`  ok  ${t.name}`);
-    } catch (err) {
-      failed++;
-      failures.push({ name: t.name, err });
-      // eslint-disable-next-line no-console
-      console.log(`  FAIL ${t.name}\n       ${err.message}`);
-    }
-  }
-  // eslint-disable-next-line no-console
-  console.log(`\n[env.test] ${passed} passed, ${failed} failed`);
-  if (failed > 0) {
-    for (const f of failures) {
-      // eslint-disable-next-line no-console
-      console.error(`\n--- ${f.name} ---\n${f.err.stack || f.err.message}`);
-    }
-    process.exit(1);
-  }
-})();
