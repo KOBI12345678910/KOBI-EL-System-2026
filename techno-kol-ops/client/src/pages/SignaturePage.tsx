@@ -2,14 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import DOMPurify from 'isomorphic-dompurify';
 import { api } from '../hooks/useApi';
-import DOMPurify from 'isomorphic-dompurify'; // Agent 8 XSS fix
 
 // ════════════════════════════════════════════
 // דף חתימה ציבורי — ללא לוגין
 // נגיש דרך לינק ייחודי
 // ════════════════════════════════════════════
 
-type SignStep = 'loading' | 'view' | 'sign' | 'done' | 'rejected' | 'error' | 'expired'h;
+type SignStep = 'loading' | 'view' | 'sign' | 'done' | 'rejected' | 'error' | 'expired';
 
 export function SignaturePage() {
   const { token } = useParams<{ token: string }>();
