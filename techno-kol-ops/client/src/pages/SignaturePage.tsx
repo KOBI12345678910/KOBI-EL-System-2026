@@ -2,13 +2,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import DOMPurify from 'isomorphic-dompurify';
 import { api } from '../hooks/useApi';
+import DOMPurify from 'isomorphic-dompurify'; // Agent 8 XSS fix
 
 // ════════════════════════════════════════════
 // דף חתימה ציבורי — ללא לוגין
 // נגיש דרך לינק ייחודי
 // ════════════════════════════════════════════
 
-type SignStep = 'loading' | 'view' | 'sign' | 'done' | 'rejected' | 'error' | 'expired';
+type SignStep = 'loading' | 'view' | 'sign' | 'done' | 'rejected' | 'error' | 'expired'h;
 
 export function SignaturePage() {
   const { token } = useParams<{ token: string }>();
@@ -323,7 +324,7 @@ export function SignaturePage() {
               </div>
             </div>
             <div style={{ padding: 0, maxHeight: 500, overflowY: 'auto' }}>
-              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(doc?.content || '') }}
+                        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(doc?.content || '') }}
                 style={{ pointerEvents: 'none', userSelect: 'none' }} />
             </div>
             <div style={{ padding: '12px 20px', background: '#f9f9f9', borderTop: '1px solid #ddd', display: 'flex', justifyContent: 'flex-end' }}>

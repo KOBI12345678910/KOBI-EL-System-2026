@@ -1,0 +1,21 @@
+name: Frontend Deploy
+on:
+  push: { branches: [master] }
+  workflow_dispatch:
+permissions: { contents: read, pages: write, id-token: write }
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: { name: github-pages }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: pnpm install --no-frozen-lockfile || pnpm install --filter @workspace/erp-app
+      - run: pnpm --filter @workspace/erp-app build || cd erp-app && npx vite build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: erp-app/dist }
+      - uses: actions/deploy-pages@v4        
