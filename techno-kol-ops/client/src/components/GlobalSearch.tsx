@@ -36,6 +36,7 @@ function fuzzyMatch(text: string, query: string): boolean {
 }
 
 function getRecent(): SearchResult[] {
+  // TODO: consider migrating search history out of localStorage
   try {
     return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
   } catch {

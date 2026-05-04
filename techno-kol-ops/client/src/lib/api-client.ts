@@ -106,6 +106,7 @@ function getApiKey(): string | null {
     | string
     | undefined;
   if (fromEnv && fromEnv.length > 0) return fromEnv;
+  // TODO: migrate API key out of localStorage to secure storage or env-only
   if (typeof localStorage !== 'undefined') {
     return localStorage.getItem('tk_api_key');
   }
@@ -113,9 +114,9 @@ function getApiKey(): string | null {
 }
 
 function getAuthToken(): string | null {
-  if (typeof localStorage !== 'undefined') {
-    return localStorage.getItem('tk_token');
-  }
+  // TODO: migrate JWT to httpOnly cookie — token is no longer accessible from JS
+  // The server reads tk_token from req.cookies automatically.
+  // Return null; cookie is sent by browser with fetch automatically (same-origin).
   return null;
 }
 
@@ -145,7 +146,7 @@ function showToast(level: ToastLevel, message: string): void {
 function clearCredentialsAndReload(): void {
   try {
     if (typeof localStorage !== 'undefined') {
-      localStorage.removeItem('tk_token');
+      // TODO: migrate JWT to httpOnly cookie — call /api/auth/logout to clear cookie server-side
       localStorage.removeItem('tk_user');
       localStorage.removeItem('tk_api_key');
     }

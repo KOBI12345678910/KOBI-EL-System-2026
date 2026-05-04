@@ -1,5 +1,5 @@
 import { Router, Response } from 'express';
-import { AuthRequest, authenticate } from '../middleware/auth';
+import { AuthRequest, authenticate, authorizeRole } from '../middleware/auth';
 import { query } from '../db/connection';
 
 const router = Router();
@@ -70,7 +70,7 @@ const CLIENT_ALLOWED_COLUMNS = new Set([
   'credit_limit', 'notes', 'is_active', 'tax_id', 'payment_terms',
 ]);
 
-router.put('/:id', async (req: AuthRequest, res: Response) => {
+router.put('/:id', authorizeRole(['admin', 'manager', 'engineer']), async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const fields = req.body;

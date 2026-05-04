@@ -100,7 +100,7 @@ try {
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
         imgSrc: ["'self'", "data:", "blob:", "https:"],
-        connectSrc: ["'self'", "ws:", "wss:", "http://localhost:*", "https://localhost:*"],
+        connectSrc: ["'self'", "ws:", "wss:", "http://localhost:*", "https://localhost:*", process.env.SUPABASE_URL || "", "https://*.supabase.co"],
         frameSrc: ["'none'"],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],

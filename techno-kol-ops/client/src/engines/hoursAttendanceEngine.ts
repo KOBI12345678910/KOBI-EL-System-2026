@@ -137,6 +137,7 @@ const LS_BALANCES = 'tk_employee_balances';
 const LS_ACCRUAL = 'tk_accrual_rules';
 
 function readLS<T>(key: string, fallback: T): T {
+  // TODO: consider migrating sensitive engine data out of localStorage
   try {
     const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T) : fallback;

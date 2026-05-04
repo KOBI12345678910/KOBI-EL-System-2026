@@ -72,6 +72,7 @@ export function InvoicePrint() {
     const load = async () => {
       try {
         const res = await fetch(`/api/invoices/${id}`, {
+          // TODO: migrate API key out of localStorage to secure storage or cookie-based auth
           headers: { 'X-API-Key': localStorage.getItem('ONYX_API_KEY') || '' },
         });
         if (res.ok) {

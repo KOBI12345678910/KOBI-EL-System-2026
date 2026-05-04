@@ -154,6 +154,7 @@ const LS_RECIPIENTS = 'tk_alert_recipients';
 const LS_ALERTS = 'tk_situation_alerts';
 
 function readLS<T>(key: string, fallback: T): T {
+  // TODO: consider migrating sensitive engine data out of localStorage
   try {
     const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T) : fallback;

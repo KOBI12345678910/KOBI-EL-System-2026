@@ -1,5 +1,5 @@
 import { Router, Response } from 'express';
-import { AuthRequest, authenticate } from '../middleware/auth';
+import { AuthRequest, authenticate, authorizeRole } from '../middleware/auth';
 import { query } from '../db/connection';
 import { broadcastToAll } from '../realtime/websocket';
 import { eventBus } from '../realtime/eventBus';
