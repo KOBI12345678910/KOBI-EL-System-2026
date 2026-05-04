@@ -1,5 +1,6 @@
 import { Router, Response } from 'express';
 import { AuthRequest, authenticate } from '../middleware/auth';
+import { requireRole } from '../middleware/validate';
 import { query } from '../db/connection';
 
 const router = Router();
@@ -93,7 +94,8 @@ const EMPLOYEE_ALLOWED_COLUMNS = new Set([
   'address', 'emergency_contact', 'bank_account', 'tax_id',
 ]);
 
-router.put('/:id', async (req: AuthRequest, res: Response) => {
+// Agent 7 fix: restrict PUT to manager/admin/employee only
+router.put('/:id', requireRole(['admin', 'manager', 'employee']), async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const fields = req.body;
