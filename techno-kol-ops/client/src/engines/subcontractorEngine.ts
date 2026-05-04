@@ -188,6 +188,7 @@ const KEYS = {
 // ═══════════════════════════════════════════════════════════════════════════
 
 function loadContractors(): Subcontractor[] {
+  // TODO: consider migrating sensitive engine data out of localStorage
   try {
     const raw = localStorage.getItem(KEYS.contractors);
     return raw ? JSON.parse(raw) : [];

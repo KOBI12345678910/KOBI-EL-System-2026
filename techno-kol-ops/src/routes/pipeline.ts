@@ -1,5 +1,5 @@
 import { Router, Response } from 'express';
-import { AuthRequest, authenticate } from '../middleware/auth';
+import { AuthRequest, authenticate, authorizeRole } from '../middleware/auth';
 import { pipelineService } from '../services/pipeline';
 import { query } from '../db/connection';
 import { eventBus } from '../realtime/eventBus';
@@ -78,7 +78,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
 });
 
 // PUT קדם שלב (אישור)
-router.put('/:id/advance', async (req: AuthRequest, res: Response) => {
+router.put('/:id/advance', authorizeRole(['admin', 'manager']), async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { stage, notes, photos, signature, lat, lng } = req.body;

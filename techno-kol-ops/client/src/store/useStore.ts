@@ -64,15 +64,16 @@ interface StoreState {
 }
 
 export const useStore = create<StoreState>((set) => ({
-  token: localStorage.getItem('tk_token'),
+  // TODO: migrate JWT to httpOnly cookie — token no longer stored in localStorage
+  token: null,
   user: JSON.parse(localStorage.getItem('tk_user') || 'null'),
   setAuth: (token, user) => {
-    localStorage.setItem('tk_token', token);
+    // TODO: migrate JWT to httpOnly cookie
     localStorage.setItem('tk_user', JSON.stringify(user));
     set({ token, user });
   },
   logout: () => {
-    localStorage.removeItem('tk_token');
+    // TODO: call /api/auth/logout to clear httpOnly cookie server-side
     localStorage.removeItem('tk_user');
     set({ token: null, user: null });
   },

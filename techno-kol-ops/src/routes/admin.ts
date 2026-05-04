@@ -3,6 +3,7 @@
  * Requires authentication + admin role (enforced at mount in index.ts)
  */
 import { Router, Request, Response } from 'express';
+import { requireAdmin } from '../middleware/auth';
 
 const router = Router();
 
@@ -83,7 +84,7 @@ router.post('/users', (req: Request, res: Response) => {
 });
 
 /* ─── PUT /api/admin/users/:id ─────────────────────────── */
-router.put('/users/:id', (req: Request, res: Response) => {
+router.put('/users/:id', requireAdmin, (req: Request, res: Response) => {
   const idx = users.findIndex(u => u.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'User not found' });
   const { fullName, email, role, status } = req.body as Partial<UserRecord>;

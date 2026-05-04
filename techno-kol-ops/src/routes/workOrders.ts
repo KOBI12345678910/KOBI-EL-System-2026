@@ -1,5 +1,5 @@
 import { Router, Response } from 'express';
-import { AuthRequest, authenticate } from '../middleware/auth';
+import { AuthRequest, authenticate, authorizeRole } from '../middleware/auth';
 import { query } from '../db/connection';
 import { broadcast, broadcastToAll } from '../realtime/websocket';
 import { eventBus } from '../realtime/eventBus';
@@ -139,7 +139,7 @@ const WORK_ORDER_ALLOWED_COLUMNS = new Set([
 ]);
 
 // PUT update order
-router.put('/:id', async (req: AuthRequest, res: Response) => {
+router.put('/:id', authorizeRole(['admin', 'manager', 'engineer']), async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const fields = req.body;
@@ -165,7 +165,7 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
 });
 
 // PUT update progress only
-router.put('/:id/progress', async (req: AuthRequest, res: Response) => {
+router.put('/:id/progress', authorizeRole(['admin', 'manager', 'engineer']), async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { progress, note } = req.body;
@@ -233,7 +233,7 @@ router.post('/:id/employees', async (req: AuthRequest, res: Response) => {
 });
 
 // PUT log hours
-router.put('/:id/employees/:empId/hours', async (req: AuthRequest, res: Response) => {
+router.put('/:id/employees/:empId/hours', authorizeRole(['admin', 'manager', 'engineer']), async (req: AuthRequest, res: Response) => {
   try {
     const { id, empId } = req.params;
     const { hours } = req.body;

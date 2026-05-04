@@ -7,6 +7,8 @@ export const pool = new Pool({
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
+  query_timeout: 30000,
+});
   statement_timeout: 30000, // 30s query timeout});
 
 pool.on('error', (err) => {

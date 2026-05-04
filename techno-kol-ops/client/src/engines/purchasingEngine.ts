@@ -181,6 +181,7 @@ const KEYS = {
 };
 
 function load<T>(key: string): T[] {
+  // TODO: consider migrating sensitive engine data out of localStorage
   try {
     const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : [];

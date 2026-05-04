@@ -3,6 +3,7 @@ import { createServer } from 'http';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import cookieParser from 'cookie-parser';
 import { pool, query } from './db/connection';
 import { initWebSocket, broadcastToAll } from './realtime/websocket';
 import { startAlertEngine } from './realtime/alertEngine';
@@ -76,6 +77,11 @@ app.use('/api/', apiRateLimit);
 app.get("/", (_req, res) => {
   res.json({ service: "techno-kol-ops", version: "2.0", status: "running" });
 });
+
+// ─── Production safety: silence console.log ───────────────────────
+if (process.env.NODE_ENV === 'production') {
+  console.log = () => {};
+}
 
 // ─── AUTH ─────────────────────────────────────
 app.use('/api/auth/login', loginRateLimit);
@@ -288,6 +294,12 @@ brainEngine.boot().catch(err => console.error('[BRAIN] Boot error:', err));
 setInterval(() => apolloEngine.healthCheck().catch(() => {}), 60000);
 
 export { eventBus };
+
+// ── Global error handler ──
+app.use((err: any, _req: any, res: any, _next: any) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ error: 'Internal server error' });
+});
 
 const PORT = process.env.PORT || 3200;
 server.listen(PORT, () => {

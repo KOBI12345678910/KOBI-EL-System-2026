@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import DOMPurify from 'isomorphic-dompurify';
 import { api } from '../hooks/useApi';
 import DOMPurify from 'isomorphic-dompurify'; // Agent 8 XSS fix
 

@@ -762,6 +762,7 @@ const LS = {
 } as const;
 
 function loadLS<T>(key: string, fallback: T): T {
+  // TODO: consider migrating sensitive engine data out of localStorage
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return fallback;
