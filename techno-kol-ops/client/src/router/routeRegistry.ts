@@ -1,4 +1,4 @@
-import { lazy } from "react";
+import { lazy, ComponentType } from "react";
 
 // ── Control Rooms (lazy-loaded) ────────────────────────────
 const OperationsControlRoom = lazy(
@@ -35,7 +35,7 @@ const Finance360 = lazy(() => import("../features/finance/Finance360"));
 export type AppRouteRecord = {
   key: string;
   path: string;
-  component: React.ComponentType<any>;
+  component: ComponentType<any>;
   requiredPermission?: string;
   title: string;
 };
