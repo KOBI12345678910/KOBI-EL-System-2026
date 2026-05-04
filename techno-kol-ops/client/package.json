@@ -13,7 +13,7 @@
     "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
-    "@blueprintjs/core": "^5.10.2",
+    "@blueprintjs/core": "^6.12.1",
     "@blueprintjs/icons": "^5.10.2",
     "@blueprintjs/table": "^5.1.2",
     "@supabase/supabase-js": "^2.103.3",
