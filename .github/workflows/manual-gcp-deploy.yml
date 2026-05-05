@@ -1,0 +1,59 @@
+name: Manual GCP Cloud Run Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      gcp_project_id:
+        description: 'GCP Project ID'
+        required: true
+        type: string
+      supabase_url:
+        description: 'Supabase URL'
+        required: true
+        type: string
+      jwt_secret:
+        description: 'JWT Secret'
+        required: true
+        type: string
+
+env:
+  REGION: europe-west1
+  SERVICE_NAME: techno-kol-ops
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ github.event.inputs.gcp_project_id }}
+
+      - name: Enable APIs
+        run: |
+          gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com
+
+      - name: Build & Push
+        run: |
+          gcloud builds submit --config cloudbuild.yaml
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image europe-west1-docker.pkg.dev/${{ github.event.inputs.gcp_project_id }}/kobi-repo/${{ env.SERVICE_NAME }}:latest \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --allow-unauthenticated \
+            --set-env-vars "NODE_ENV=production,PORT=8080,SUPABASE_URL=${{ github.event.inputs.supabase_url }},JWT_SECRET=${{ github.event.inputs.jwt_secret }}" \
+            --max-instances 10 \
+            --min-instances 1 \
+            --memory 1Gi \
+            --cpu 1
