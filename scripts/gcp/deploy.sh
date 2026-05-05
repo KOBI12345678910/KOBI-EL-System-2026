@@ -31,7 +31,7 @@ set -euo pipefail
 PROJECT_ID_DEFAULT="bash44-erp-$(date +%s | tail -c 5)"
 REGION="${REGION:-europe-west3}"
 REPO_URL="${REPO_URL:-https://github.com/KOBI12345678910/KOBI-EL-System-2026.git}"
-BRANCH="${BRANCH:-master}"
+BRANCH="${BRANCH:-claude/objective-merkle-40ff93}"
 AR_REPO="bash44"
 WORK_DIR="${WORK_DIR:-$HOME/techno-kol-erp}"
 
