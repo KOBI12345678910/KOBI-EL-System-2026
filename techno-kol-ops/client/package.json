@@ -15,7 +15,7 @@
   "dependencies": {
     "@blueprintjs/core": "^5.10.2",
     "@blueprintjs/icons": "^5.10.2",
-    "@blueprintjs/table": "^5.1.2",
+    "@blueprintjs/table": "^6.0.25",
     "@supabase/supabase-js": "^2.103.3",
     "@tanstack/react-query": "^5.99.0",
     "ag-grid-community": "^31.1.1",
