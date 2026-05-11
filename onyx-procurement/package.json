@@ -26,8 +26,8 @@
     "validate:env:all": "node scripts/validate-env-all.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.45.0",
-    "bwip-js": "^4.5.1",
+    "@supabase/supabase-js": "^2.105.4",
+    "bwip-js": "^4.10.1",
     "cors": "^2.8.5",
     "csv-parse": "^5.5.6",
     "dotenv": "^16.4.5",
@@ -35,7 +35,7 @@
     "express-rate-limit": "^7.4.1",
     "helmet": "^8.0.0",
     "iconv-lite": "^0.7.2",
-    "pdfkit": "^0.15.1",
+    "pdfkit": "^0.18.0",
     "pino": "^9.5.0",
     "pino-pretty": "^11.3.0"
   },
