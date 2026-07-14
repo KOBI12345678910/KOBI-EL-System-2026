@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartBuild Pilot 2.0 — מגדל בקרה</title>
+<style>
+  :root{
+    --bg:#0b1220; --bg2:#101a2e; --card:#141f36; --card2:#1a2742; --line:#24334f;
+    --text:#e8eef8; --muted:#8fa1bd; --accent:#4da3ff; --accent2:#7cc4ff;
+    --ok:#3ecf8e; --warn:#f5b942; --crit:#f4655f; --info:#8fa1bd;
+    font-size:15px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI','Arial Hebrew',Arial,sans-serif;min-height:100vh}
+  header{background:linear-gradient(135deg,#0d1526,#15233f);border-bottom:1px solid var(--line);padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  header h1{font-size:1.25rem;font-weight:700}
+  header .sub{color:var(--muted);font-size:.85rem}
+  .badge{background:var(--card2);border:1px solid var(--line);border-radius:20px;padding:3px 12px;font-size:.8rem;color:var(--accent2)}
+  nav{display:flex;gap:4px;padding:10px 20px;background:var(--bg2);border-bottom:1px solid var(--line);overflow-x:auto}
+  nav button{background:none;border:1px solid transparent;color:var(--muted);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:.95rem;font-family:inherit;white-space:nowrap}
+  nav button:hover{color:var(--text);background:var(--card)}
+  nav button.active{background:var(--card2);color:var(--accent2);border-color:var(--line);font-weight:600}
+  main{padding:20px;max-width:1500px;margin:0 auto}
+  .grid{display:grid;gap:14px}
+  .kpis{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .card h3{font-size:.85rem;color:var(--muted);font-weight:500;margin-bottom:6px}
+  .card .big{font-size:1.5rem;font-weight:700}
+  .card .hint{font-size:.78rem;color:var(--muted);margin-top:4px}
+  .pos{color:var(--ok)} .neg{color:var(--crit)} .warn-c{color:var(--warn)}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:980px){.cols{grid-template-columns:1fr}}
+  h2{font-size:1.05rem;margin:22px 0 10px;color:var(--accent2)}
+  table{width:100%;border-collapse:collapse;font-size:.88rem}
+  th{color:var(--muted);font-weight:500;text-align:right;padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:8px;border-bottom:1px solid #1c2a45;white-space:nowrap}
+  tr:hover td{background:#16233d}
+  .scroll{overflow-x:auto}
+  .sev{display:inline-block;border-radius:6px;padding:2px 8px;font-size:.75rem;font-weight:600}
+  .sev.critical,.sev.breach,.sev.overdue,.sev.delayed,.sev.over_budget{background:#3d1a1c;color:var(--crit)}
+  .sev.warning,.sev.reserved,.sev.pending,.sev.in_progress,.sev.mitigating,.sev.bidding{background:#3c2f12;color:var(--warn)}
+  .sev.info{background:#1c2a45;color:var(--info)}
+  .sev.ok,.sev.active,.sev.paid,.sev.sold,.sev.completed,.sev.approved,.sev.granted,.sev.signed,.sev.awarded,.sev.open{background:#12331f;color:var(--ok)}
+  .sev.available,.sev.planned,.sev.submitted,.sev.draft,.sev.scheduled{background:#1c2a45;color:var(--accent2)}
+  .btn{background:var(--card2);border:1px solid var(--line);color:var(--accent2);border-radius:8px;padding:6px 14px;cursor:pointer;font-size:.85rem;font-family:inherit}
+  .btn:hover{background:#213254;border-color:var(--accent)}
+  .btn:disabled{opacity:.4;cursor:default}
+  .list{display:flex;flex-direction:column;gap:8px}
+  .item{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+  .item .t{font-weight:600;font-size:.92rem}
+  .item .d{color:var(--muted);font-size:.82rem;margin-top:3px;white-space:normal}
+  .flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .spread{justify-content:space-between}
+  .pipeline{display:flex;gap:6px;overflow-x:auto;padding:6px 0}
+  .stage{min-width:120px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center;flex:1}
+  .stage.current{border-color:var(--accent);background:#16274a;box-shadow:0 0 12px #4da3ff33}
+  .stage.completed{border-color:#1f4a35}
+  .stage .ic{font-size:1.3rem}
+  .stage .nm{font-size:.8rem;margin-top:4px;font-weight:600}
+  .stage .pr{height:5px;background:#1c2a45;border-radius:3px;margin-top:8px;overflow:hidden}
+  .stage .pr i{display:block;height:100%;background:var(--accent)}
+  .stage.completed .pr i{background:var(--ok)}
+  .gauge{position:relative;width:130px;height:130px}
+  .apt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:6px}
+  .apt{border-radius:8px;padding:7px 4px;text-align:center;font-size:.72rem;cursor:pointer;border:1px solid var(--line)}
+  .apt b{display:block;font-size:.8rem}
+  .apt.available{background:#152441}
+  .apt.reserved{background:#3c2f12}
+  .apt.sold{background:#12331f}
+  .apt.delivered{background:#0e3a3a}
+  select,input{background:var(--bg2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:.9rem}
+  .meter{height:10px;background:#1c2a45;border-radius:6px;overflow:hidden}
+  .meter i{display:block;height:100%;background:var(--accent)}
+  .heat{display:grid;grid-template-columns:auto repeat(5,1fr);gap:4px;max-width:420px}
+  .heat .cell{aspect-ratio:1.6;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem}
+  .heat .lbl{display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.75rem}
+  .loading{color:var(--muted);padding:30px;text-align:center}
+  .err{color:var(--crit);padding:20px;text-align:center}
+  svg text{font-family:inherit}
+  .answer-grid{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:.88rem}
+  .answer-grid dt{color:var(--muted);white-space:nowrap}
+  footer{color:var(--muted);text-align:center;font-size:.78rem;padding:26px 0 40px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏗️ SmartBuild Pilot 2.0</h1>
+  <span class="badge" id="hdr-project">טוען…</span>
+  <span class="badge" id="hdr-stage"></span>
+  <span class="sub">מגדל בקרה פיננסי-תפעולי ליזמות נדל"ן · שירות #5 במונורפו · פורט 3400</span>
+</header>
+<nav id="tabs"></nav>
+<main id="view"><div class="loading">טוען נתונים…</div></main>
+<footer>SmartBuild Pilot 2.0 — Event-Driven Engines · חוק המכר · אפס תלויות · No Dead Pages</footer>
+
+<script>
+'use strict';
+const PROJECT='proj-1';
+const $=(s)=>document.querySelector(s);
+const NIS=(v)=>v===null||v===undefined||isNaN(v)?'—':'₪'+Math.round(v).toLocaleString('he-IL');
+const NISM=(v)=>v===null||v===undefined||isNaN(v)?'—':(v<0?'-':'')+'₪'+(Math.abs(v)/1e6).toFixed(1)+'M';
+const PCT=(v)=>v===null||v===undefined||isNaN(v)?'—':v.toLocaleString('he-IL',{maximumFractionDigits:1})+'%';
+const esc=(s)=>String(s??'').replace(/[&<>"']/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function api(path,opts){const r=await fetch('/api'+path,opts);const b=await r.json().catch(()=>({}));if(!r.ok&&!('ok'in b))throw new Error(b.error||r.status);return b;}
+async function exec(action,params){
+  const r=await api('/orchestrator/execute',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,params})});
+  alert(r.ok?'✅ הפעולה בוצעה: '+action+'\nאירועים: '+(r.events||[]).join(', '):'⛔ '+(r.error||'הפעולה נכשלה'));
+  render();
+  return r;
+}
+const TABS=[['dashboard','🎛️ מגדל בקרה'],['pipeline','🛤️ צנרת'],['budget','💼 תקציב'],['sales','🏠 מכירות'],['cashflow','💧 תזרים'],['finance','🏦 מימון'],['risk','⚠️ סיכונים'],['entities','🔍 ישויות 360']];
+let tab='dashboard';
+function renderTabs(){$('#tabs').innerHTML=TABS.map(([id,l])=>`<button class="${id===tab?'active':''}" onclick="tab='${id}';renderTabs();render()">${l}</button>`).join('');}
+
+// ── SVG helpers ──
+function barLineChart(months,w,h){
+  if(!months.length)return'';
+  const pad={t:14,r:10,b:34,l:10};const W=w-pad.l-pad.r,H=h-pad.t-pad.b;
+  const nets=months.map(m=>m.net),cums=months.map(m=>m.cumulative);
+  const maxV=Math.max(...nets,...cums,0),minV=Math.min(...nets,...cums,0);
+  const span=(maxV-minV)||1;const y=(v)=>pad.t+H-((v-minV)/span)*H;
+  const bw=Math.max(2,W/months.length-2);
+  let bars='';months.forEach((m,i)=>{const x=pad.l+(i/months.length)*W;const y0=y(0),y1=y(m.net);
+    bars+=`<rect x="${x}" y="${Math.min(y0,y1)}" width="${bw}" height="${Math.max(1,Math.abs(y0-y1))}" fill="${m.net>=0?'#3ecf8e':'#f4655f'}" opacity="0.75"><title>${m.month}: נטו ${NISM(m.net)}</title></rect>`;});
+  const line=cums.map((v,i)=>`${i?'L':'M'}${pad.l+(i/months.length)*W+bw/2},${y(v)}`).join('');
+  let labels='';months.forEach((m,i)=>{if(i%6===0)labels+=`<text x="${pad.l+(i/months.length)*W}" y="${h-8}" fill="#8fa1bd" font-size="10">${m.month}</text>`;});
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto" preserveAspectRatio="xMidYMid meet">
+    <line x1="${pad.l}" x2="${w-pad.r}" y1="${y(0)}" y2="${y(0)}" stroke="#24334f"/>
+    ${bars}<path d="${line}" fill="none" stroke="#4da3ff" stroke-width="2.5"/>${labels}</svg>`;
+}
+function histChart(hist,w,h){
+  if(!hist.length)return'';
+  const pad={t:10,r:8,b:26,l:8};const W=w-pad.l-pad.r,H=h-pad.t-pad.b;
+  const maxC=Math.max(...hist.map(b=>b.count))||1;const bw=W/hist.length-2;
+  let bars='';hist.forEach((b,i)=>{const bh=(b.count/maxC)*H;
+    bars+=`<rect x="${pad.l+i*(W/hist.length)}" y="${pad.t+H-bh}" width="${bw}" height="${bh}" fill="${b.bucketEnd<0?'#f4655f':'#4da3ff'}" opacity="0.8"><title>${NISM(b.bucketStart)}—${NISM(b.bucketEnd)}: ${b.count}</title></rect>`;});
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto">${bars}
+    <text x="${pad.l}" y="${h-6}" fill="#8fa1bd" font-size="10">${NISM(hist[0].bucketStart)}</text>
+    <text x="${w-70}" y="${h-6}" fill="#8fa1bd" font-size="10">${NISM(hist[hist.length-1].bucketEnd)}</text></svg>`;
+}
+function gauge(score,grade){
+  const ang=(score/100)*Math.PI;const x=65-55*Math.cos(ang),y=65-55*Math.sin(ang);
+  const color=score>=85?'#3ecf8e':score>=70?'#4da3ff':score>=55?'#f5b942':'#f4655f';
+  return `<svg viewBox="0 0 130 80" class="gauge"><path d="M10,65 A55,55 0 0 1 120,65" fill="none" stroke="#1c2a45" stroke-width="10" stroke-linecap="round"/>
+  <path d="M10,65 A55,55 0 0 1 ${x},${y}" fill="none" stroke="${color}" stroke-width="10" stroke-linecap="round"/>
+  <text x="65" y="58" text-anchor="middle" fill="${color}" font-size="24" font-weight="700">${score}</text>
+  <text x="65" y="76" text-anchor="middle" fill="#8fa1bd" font-size="11">ציון ${grade}</text></svg>`;
+}
+
+// ── Views ──
+async function vDashboard(){
+  const s=await api('/summary/'+PROJECT);
+  $('#hdr-project').textContent=s.project.name+' · '+s.project.city;
+  $('#hdr-stage').textContent='שלב: '+(s.pipeline.stages.find(x=>x.state==='current')||{}).label;
+  const z=s.zero,cf=s.cashflow,sl=s.sales,h=s.health;
+  return `
+  <div class="grid kpis">
+    <div class="card"><h3>רווח גולמי צפוי</h3><div class="big ${z.profit.gross>=0?'pos':'neg'}">${NISM(z.profit.gross)}</div><div class="hint">מרווח ${PCT(z.profit.margin_on_revenue)}</div></div>
+    <div class="card"><h3>IRR שנתי</h3><div class="big">${z.irr_annual===null?'—':PCT(z.irr_annual*100)}</div><div class="hint">NPV: ${NISM(z.npv)}</div></div>
+    <div class="card"><h3>מכירות</h3><div class="big">${sl.unitsSold}/${sl.unitsTotal}</div><div class="hint">${PCT(sl.soldPct)} · קצב ${sl.salesPacePerMonth}/חודש</div></div>
+    <div class="card"><h3>גבייה</h3><div class="big">${NISM(sl.collected)}</div><div class="hint">פיגורים: <span class="${sl.overdueAmount>0?'neg':'pos'}">${NISM(sl.overdueAmount)}</span></div></div>
+    <div class="card"><h3>שיא גירעון תזרימי</h3><div class="big ${cf.peakDeficit.amount<0?'warn-c':'pos'}">${NISM(cf.peakDeficit.amount)}</div><div class="hint">${cf.peakDeficit.month} · פער מימון ${NISM(cf.fundingGap)}</div></div>
+    <div class="card"><h3>סטיית תקציב</h3><div class="big ${s.budget.totals.variance>0?'warn-c':'pos'}">${PCT(s.budget.totals.variance_percent)}</div><div class="hint">FAC ${NISM(s.budget.totals.fac)} / ${NISM(s.budget.totals.revised)}</div></div>
+    <div class="card"><div class="flex"><div>${gauge(h.healthScore,h.grade)}</div><div><h3>בריאות הפרויקט</h3><div class="hint" style="max-width:150px">${esc(h.summary)}</div></div></div></div>
+  </div>
+  <div class="cols" style="margin-top:16px">
+    <div>
+      <h2>🔔 התראות פעילות (${s.alerts.active} · ${s.alerts.critical} קריטיות)</h2>
+      <div class="list">${s.alerts.items.map(a=>`<div class="item"><div class="flex spread"><span class="t">${esc(a.title)}</span><span class="sev ${a.severity}">${a.severity==='critical'?'קריטי':a.severity==='warning'?'אזהרה':'מידע'}</span></div><div class="d">${esc(a.message)}</div></div>`).join('')||'<div class="item">אין התראות 🎉</div>'}</div>
+    </div>
+    <div>
+      <h2>🧠 תובנות מובילות</h2>
+      <div class="list">${s.topInsights.map(i=>`<div class="item"><div class="flex spread"><span class="t">${esc(i.title)}</span><span class="badge">עדיפות ${i.priority}</span></div><div class="d">${esc(i.detail)}</div><div class="d" style="color:#7cc4ff">💡 ${esc(i.recommendation)}</div>${i.impact_estimate?`<div class="d">אומדן השפעה: <b>${NIS(i.impact_estimate)}</b></div>`:''}</div>`).join('')}</div>
+      <h2>⚡ הפעולות הבאות המומלצות</h2>
+      <div class="list">${s.nextBestActions.map(a=>`<div class="item flex spread"><div><div class="t">${esc(a.label)}</div><div class="d">${esc(a.reason)}</div></div><button class="btn" onclick="alert('פעולה: ${a.action_id}\\nישות: ${a.entity_type} ${a.entity_id}\\n\\nניתן להפעיל מתוך תצוגת ה-360 של הישות.')">פרטים</button></div>`).join('')}</div>
+    </div>
+  </div>`;
+}
+
+async function vPipeline(){
+  const p=await api('/pipeline/status/'+PROJECT);
+  const flows=await api('/workflows');
+  return `<h2>🛤️ Master Flow — 14 שלבים</h2>
+  <div class="pipeline">${p.stages.map(st=>`<div class="stage ${st.state}"><div class="ic">${st.icon}</div><div class="nm">${esc(st.label)}</div><div class="pr"><i style="width:${st.progress_pct}%"></i></div><div class="hint" style="font-size:.72rem;color:var(--muted);margin-top:4px">${st.progress_pct}%</div></div>`).join('')}</div>
+  <h2>🔁 זרימות עסקיות</h2>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(340px,1fr))">
+  ${(await Promise.all(flows.map(f=>api('/workflows/'+f.id)))).map(f=>`<div class="card"><div class="t" style="font-weight:700">${esc(f.label)}</div><div class="hint">${esc(f.description)}</div>
+    <ol style="margin:10px 18px 0 0;font-size:.85rem;color:var(--muted)">${f.steps.map(st=>`<li style="margin-bottom:4px"><b style="color:var(--text)">${esc(st.description)}</b>${st.triggers_event?` <span class="badge">⚡ ${st.triggers_event}</span>`:''}</li>`).join('')}</ol>
+    <div class="hint" style="margin-top:8px">KPIs: ${f.kpis.join(' · ')}</div></div>`).join('')}
+  </div>`;
+}
+
+async function vBudget(){
+  const b=await api('/engines/budget/'+PROJECT);
+  const cats={land:'קרקע',hard_costs:'בנייה',soft_costs:'רכות',financing:'מימון',marketing:'שיווק',permits_tax:'אגרות',guarantees:'ערבויות',contingency:'בצ"מ'};
+  const cont=b.contingency;
+  return `
+  <div class="grid kpis">
+    <div class="card"><h3>תקציב מעודכן</h3><div class="big">${NISM(b.totals.revised)}</div></div>
+    <div class="card"><h3>תחזית לסיום (FAC)</h3><div class="big">${NISM(b.totals.fac)}</div></div>
+    <div class="card"><h3>סטייה</h3><div class="big ${b.totals.variance>0?'warn-c':'pos'}">${NISM(b.totals.variance)} (${PCT(b.totals.variance_percent)})</div></div>
+    <div class="card"><h3>שולם</h3><div class="big">${NISM(b.totals.paid)}</div><div class="hint">התחייבויות: ${NISM(b.totals.committed)}</div></div>
+    <div class="card"><h3>בצ"מ</h3><div class="big">${NISM(cont.remaining)}</div><div class="meter" style="margin-top:6px"><i style="width:${cont.allocated?Math.round(cont.used/cont.allocated*100):0}%;background:var(--warn)"></i></div><div class="hint">נוצל ${NISM(cont.used)} מתוך ${NISM(cont.allocated)}</div></div>
+  </div>
+  <h2>סעיפי תקציב (${b.lines.length})</h2>
+  <div class="card scroll"><table><thead><tr><th>קוד</th><th>סעיף</th><th>קטגוריה</th><th>מעודכן</th><th>התחייבויות</th><th>שולם</th><th>FAC</th><th>סטייה</th><th>סיכון</th><th>סטטוס</th><th></th></tr></thead><tbody>
+  ${b.lines.map(l=>`<tr><td>${l.budget_code}</td><td><b>${esc(l.budget_name)}</b></td><td>${cats[l.category]||l.category}</td><td>${NISM(l.revised_budget)}</td><td>${NISM(l.committed_amount)}</td><td>${NISM(l.paid_amount)}</td><td>${NISM(l.forecast_at_completion)}</td>
+    <td class="${l.budget_variance>0?'neg':'pos'}">${PCT(l.budget_variance_percent)}</td>
+    <td><span class="sev ${l.risk_level==='critical'?'critical':l.risk_level==='high'?'warning':l.risk_level==='medium'?'info':'ok'}">${l.risk_level}</span></td>
+    <td><span class="sev ${l.status}">${l.status}</span></td>
+    <td><button class="btn" onclick="show360('budget_item','${l.id}')">360</button></td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+
+async function vSales(){
+  const [sl,apts]=await Promise.all([api('/engines/sales/'+PROJECT),api('/entities/apartment?projectId='+PROJECT)]);
+  const linkage=sl.sales.reduce((a,s)=>a+s.totalLinkagePaid,0);
+  return `
+  <div class="grid kpis">
+    <div class="card"><h3>נמכרו / סה"כ</h3><div class="big">${sl.unitsSold}/${sl.unitsTotal}</div><div class="hint">${sl.unitsReserved} משוריינות · ${sl.unitsAvailable} זמינות</div></div>
+    <div class="card"><h3>הכנסה חתומה</h3><div class="big">${NISM(sl.signedRevenue)}</div><div class="hint">צפי כולל: ${NISM(sl.projectedRevenue)}</div></div>
+    <div class="card"><h3>נגבה</h3><div class="big pos">${NISM(sl.collected)}</div><div class="hint">יתרה: ${NISM(sl.outstanding)}</div></div>
+    <div class="card"><h3>הצמדה שנגבתה (חוק המכר)</h3><div class="big">${NIS(linkage)}</div><div class="hint">20% ראשונים ללא הצמדה · יתרה 50% מהמדד</div></div>
+    <div class="card"><h3>קצב מכירות</h3><div class="big">${sl.salesPacePerMonth}/חודש</div><div class="hint">${sl.monthsToSellOut===null?'—':sl.monthsToSellOut+' חודשים לסיום המלאי'}</div></div>
+  </div>
+  <h2>מלאי דירות</h2>
+  <div class="card"><div class="apt-grid">${apts.map(a=>`<div class="apt ${a.status}" onclick="show360('apartment','${a.id}')" title="${esc(a.unit_number)} · ${a.rooms} חד' · ${NIS(a.current_price)}"><b>${esc(a.unit_number)}</b>${a.rooms} חד'</div>`).join('')}</div>
+  <div class="hint" style="margin-top:10px">🟦 זמינה · 🟨 משוריינת · 🟩 מכורה · לחיצה פותחת 360</div></div>
+  <h2>מכירות חתומות (${sl.sales.length})</h2>
+  <div class="card scroll"><table><thead><tr><th>מכירה</th><th>דירה</th><th>מחיר חוזה</th><th>% שולם</th><th>נגבה</th><th>מזה הצמדה</th><th>יתרה</th><th>פיגורים</th><th>תשלום הבא</th><th></th></tr></thead><tbody>
+  ${sl.sales.map(s=>`<tr><td>${s.saleId}</td><td>${s.apartment_id}</td><td>${NISM(s.contractPrice)}</td><td>${PCT(s.pctPaid)}</td><td>${NISM(s.totalPaid)}</td><td>${NIS(s.totalLinkagePaid)}</td><td>${NISM(s.balanceDue)}</td>
+  <td>${s.overdueCount?`<span class="sev critical">${s.overdueCount}</span>`:'—'}</td>
+  <td>${s.nextDue?esc(s.nextDue.milestone_label)+' · '+s.nextDue.due_date:'הושלם'}</td>
+  <td><button class="btn" onclick="show360('sale','${s.saleId}')">360</button></td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+
+async function vCashflow(){
+  const cf=await api('/engines/cashflow/'+PROJECT);
+  const next12=cf.months.filter(m=>m.month>='2026-07').slice(0,12);
+  return `
+  <div class="grid kpis">
+    <div class="card"><h3>שיא גירעון</h3><div class="big ${cf.peakDeficit.amount<0?'warn-c':'pos'}">${NISM(cf.peakDeficit.amount)}</div><div class="hint">${cf.peakDeficit.month}</div></div>
+    <div class="card"><h3>יתרת סיום (${cf.months.length} חודשים)</h3><div class="big ${cf.endBalance>=0?'pos':'neg'}">${NISM(cf.endBalance)}</div></div>
+    <div class="card"><h3>הון עצמי נדרש</h3><div class="big">${NISM(cf.equityRequired)}</div><div class="hint">פער מימון: <span class="${cf.fundingGap>0?'neg':'pos'}">${NISM(cf.fundingGap)}</span></div></div>
+  </div>
+  <h2>תזרים חודשי — נטו (עמודות) ומצטבר (קו)</h2>
+  <div class="card">${barLineChart(cf.months,980,300)}</div>
+  <h2>12 החודשים הקרובים</h2>
+  <div class="card scroll"><table><thead><tr><th>חודש</th><th>תקבולי רוכשים</th><th>מכירות חזויות</th><th>משיכות ליווי</th><th>קבלנים</th><th>מימון</th><th>אחר</th><th>נטו</th><th>מצטבר</th></tr></thead><tbody>
+  ${next12.map(m=>`<tr><td><b>${m.month}</b></td><td>${NISM(m.inflows.buyer_payments)}</td><td>${NISM(m.inflows.projected_sales)}</td><td>${NISM(m.inflows.loan_drawdowns)}</td><td>${NISM(-m.outflows.contractors)}</td><td>${NISM(-m.outflows.financing_interest)}</td><td>${NISM(-(m.outflows.soft_costs+m.outflows.marketing+m.outflows.other+m.outflows.land))}</td>
+  <td class="${m.net>=0?'pos':'neg'}"><b>${NISM(m.net)}</b></td><td class="${m.cumulative>=0?'pos':'neg'}">${NISM(m.cumulative)}</td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+
+async function vFinance(){
+  const f=await api('/engines/finance/'+PROJECT);
+  return `
+  <div class="grid kpis">
+    <div class="card"><h3>LTV</h3><div class="big">${f.ltv===null?'—':PCT(f.ltv*100)}</div></div>
+    <div class="card"><h3>LTC</h3><div class="big">${f.ltc===null?'—':PCT(f.ltc*100)}</div></div>
+    <div class="card"><h3>כיסוי מכירות מוקדמות</h3><div class="big">${PCT(f.presalesCoveragePct)}</div></div>
+    <div class="card"><h3>יתרת חוב</h3><div class="big">${NISM(f.totals.balance)}</div><div class="hint">מסגרות: ${NISM(f.totals.facilities)}</div></div>
+  </div>
+  <h2>מסגרות אשראי</h2>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(380px,1fr))">
+  ${f.loans.map(l=>`<div class="card"><div class="flex spread"><b>${esc(l.lender)}</b><span class="sev ${l.status}">${l.status}</span></div>
+    <div class="hint">${l.facility_type} · ריבית ${PCT(l.interest_rate_annual*100)} · פירעון ${l.maturity_date}</div>
+    <div class="meter" style="margin:10px 0 4px"><i style="width:${l.utilization_pct}%"></i></div>
+    <div class="hint">נוצל ${PCT(l.utilization_pct)}: ${NISM(l.balance)} יתרה · ${NISM(l.undrawn)} פנוי · ריבית חודשית ~${NIS(l.accrued_interest_estimate)}</div>
+    <div style="margin-top:8px"><button class="btn" onclick="show360('loan','${l.id}')">360</button></div></div>`).join('')}
+  </div>
+  <h2>קובננטים</h2>
+  <div class="card scroll"><table><thead><tr><th>קובננט</th><th>מדד</th><th>סף</th><th>בפועל</th><th>מרווח</th><th>סטטוס</th></tr></thead><tbody>
+  ${f.covenants.map(c=>`<tr><td><b>${esc(c.name)}</b></td><td>${c.metric}</td><td>${c.operator} ${c.threshold}</td><td>${c.actual}</td><td>${c.headroom}</td><td><span class="sev ${c.status_computed}">${c.status_computed==='ok'?'תקין':c.status_computed==='warning'?'אזהרה':'הפרה'}</span></td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+
+async function vRisk(){
+  const [r,mc]=await Promise.all([api('/engines/risk/'+PROJECT),api('/engines/montecarlo/'+PROJECT+'?runs='+(window.mcRuns||2000)+'&seed='+(window.mcSeed||42))]);
+  const heatColor=(i,p,c)=>{const sc=(i+1)*(p+1);const base=sc>=20?'#f4655f':sc>12?'#f5b942':sc>6?'#4da3ff':'#3ecf8e';return c?base:'#141f36';};
+  let heat='<div class="heat"><div class="lbl">השפעה↓</div>';
+  for(let x=1;x<=5;x++)heat+=`<div class="lbl">${x}</div>`;
+  for(let i=4;i>=0;i--){heat+=`<div class="lbl">${i+1}</div>`;for(let p=0;p<5;p++){const c=r.heatmap[i][p];heat+=`<div class="cell" style="background:${heatColor(i,p,c)}${c?'':''};opacity:${c?1:.25};color:${c?'#0b1220':'#8fa1bd'}">${c||''}</div>`;}}
+  heat+='</div><div class="hint" style="margin-top:6px">ציר אופקי: הסתברות · תא = מספר סיכונים פתוחים</div>';
+  return `
+  <div class="cols">
+    <div><h2>🗺️ מפת חום סיכונים (${r.openCount} פתוחים · ממוצע ${r.avgScore})</h2><div class="card">${heat}</div>
+      <h2>סיכונים מובילים</h2>
+      <div class="list">${r.topRisks.map(k=>`<div class="item"><div class="flex spread"><span class="t">${esc(k.title)}</span><span class="sev ${k.level==='critical'?'critical':k.level==='high'?'warning':'info'}">${k.score}</span></div><div class="d">🛡️ ${esc(k.mitigation)} · ${esc(k.owner)}</div></div>`).join('')}</div>
+    </div>
+    <div><h2>🎲 מונטה-קרלו (${mc.runs.toLocaleString()} ריצות, seed ${mc.seed})</h2>
+      <div class="grid kpis" style="grid-template-columns:1fr 1fr">
+        <div class="card"><h3>P50 רווח</h3><div class="big">${NISM(mc.profit.p50)}</div><div class="hint">P5: ${NISM(mc.profit.p5)} · P95: ${NISM(mc.profit.p95)}</div></div>
+        <div class="card"><h3>הסתברות להפסד</h3><div class="big ${mc.probLoss>10?'neg':'pos'}">${PCT(mc.probLoss)}</div><div class="hint">מרווח&lt;8%: ${PCT(mc.probMarginBelow)} · VaR95: ${NISM(mc.var95)}</div></div>
+      </div>
+      <div class="card" style="margin-top:12px">${histChart(mc.histogram,460,180)}</div>
+      <div class="card" style="margin-top:12px"><h3>מנועי אי-הוודאות</h3>
+        ${[['עלויות',mc.drivers.costImpact],['מחירי מכירה',mc.drivers.priceImpact],['עיכובים',mc.drivers.delayImpact]].map(([l,v])=>`<div class="flex" style="margin-top:6px"><span style="width:100px">${l}</span><div class="meter" style="flex:1"><i style="width:${v}%"></i></div><b>${v}%</b></div>`).join('')}
+      </div>
+      <div class="flex" style="margin-top:12px">
+        <input type="number" id="mc-runs" value="${mc.runs}" min="100" max="20000" style="width:110px"> ריצות
+        <input type="number" id="mc-seed" value="${mc.seed}" style="width:90px"> seed
+        <button class="btn" onclick="window.mcRuns=$('#mc-runs').value;window.mcSeed=$('#mc-seed').value;render()">🔁 הרץ מחדש</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function vEntities(){
+  const map=await api('/entity-map');
+  const types=Object.keys(map).filter(t=>!['audit_event','index_rate','buyer_payment','loan_transaction'].includes(t));
+  const sel=window.entType||'sale';
+  const list=await api('/entities/'+sel+'?projectId='+PROJECT);
+  return `
+  <div class="flex">
+    <select onchange="window.entType=this.value;window.entId=null;render()">${types.map(t=>`<option value="${t}" ${t===sel?'selected':''}>${map[t].icon} ${map[t].label} (${map[t].labelEn})</option>`).join('')}</select>
+    <span class="hint" style="color:var(--muted)">${esc(map[sel].purpose)}</span>
+  </div>
+  <div class="cols" style="margin-top:14px">
+    <div class="card scroll" style="max-height:560px;overflow-y:auto"><table><thead><tr>${map[sel].topFields.slice(0,5).map(f=>`<th>${f}</th>`).join('')}<th></th></tr></thead><tbody>
+    ${list.slice(0,60).map(e=>`<tr>${map[sel].topFields.slice(0,5).map(f=>`<td>${typeof e[f]==='number'&&e[f]>10000?NISM(e[f]):(e[f]===null||e[f]===undefined?'—':(String(e[f]).length>24?esc(String(e[f]).slice(0,24))+'…':esc(e[f])))}</td>`).join('')}<td><button class="btn" onclick="show360('${sel}','${e.id}')">360</button></td></tr>`).join('')}
+    </tbody></table></div>
+    <div id="panel360">${window.entId?await panel360(sel,window.entId):'<div class="card"><div class="loading">בחר רשומה לתצוגת 360 מלאה</div></div>'}</div>
+  </div>`;
+}
+
+async function panel360(type,id){
+  const x=await api('/360/'+type+'/'+id);
+  const statusVal=type==='change_order'?x.entity.approval_status:x.entity.status;
+  const relEntries=Object.entries(x.related).filter(([,v])=>v.length);
+  return `<div class="card">
+    <div class="flex spread"><div style="font-size:1.15rem;font-weight:700">${x.def.icon} ${esc(x.def.label)} · ${esc(id)}</div>${statusVal?`<span class="sev ${esc(statusVal)}">${esc(statusVal)}</span>`:''}</div>
+    <h2 style="margin-top:14px">6 השאלות (No Dead Pages)</h2>
+    <dl class="answer-grid">${Object.entries(x.answers).map(([q,a])=>`<dt>${q}</dt><dd>${esc(a)}</dd>`).join('')}</dl>
+    ${x.nextStep?`<h2>⚡ הצעד הבא המומלץ</h2><div class="item flex spread"><div><div class="t">${esc(x.nextStep.label)}</div><div class="d">${esc(x.nextStep.reason)}</div></div></div>`:''}
+    ${x.transitions.length?`<h2>מעברי מצב זמינים</h2><div class="flex">${x.transitions.map(t=>`<button class="btn" onclick="tryTransition('${type}','${id}','${t.action}','${t.to}')">${esc(t.label)} ← ${t.to}</button>`).join('')}</div>`:''}
+    ${relEntries.length?`<h2>רשומות קשורות</h2>${relEntries.map(([k,v])=>`<div class="hint" style="margin-top:4px"><b>${k}</b> (${v.length}): ${v.slice(0,6).map(r=>`<a href="#" onclick="show360('${k}','${r.id}');return false" style="color:var(--accent2)">${r.id}</a>`).join(', ')}${v.length>6?'…':''}</div>`).join('')}`:''}
+    ${x.audit.length?`<h2>יומן ביקורת (${x.audit.length} אחרונים)</h2><div class="list">${x.audit.slice(0,5).map(a=>`<div class="item" style="padding:6px 10px"><span class="d">${a.ts.slice(0,19).replace('T',' ')} · <b>${esc(a.action)}</b> · ${esc(a.actor)}</span></div>`).join('')}</div>`:''}
+  </div>`;
+}
+window.show360=async(type,id)=>{tab='entities';window.entType=type;window.entId=id;renderTabs();await render();};
+window.tryTransition=async(type,id,action,to)=>{
+  // מיפוי פרמטרים לפי סוג הישות — הפעולה רצה דרך ה-orchestrator האמיתי
+  const key={apartment:'apartment_id',sale:'sale_id',tender:'tender_id',loan:'loan_id',milestone:'milestone_id',permit:'permit_id',delivery:'delivery_id',payment_request:'payment_request_id',budget_transfer:'transfer_id',change_order:'change_order_id',payment_schedule_item:'schedule_item_id'}[type];
+  if(!key)return alert('המעבר "'+action+'" מנוהל על-ידי המנועים האוטומטיים');
+  const params={[key]:id};
+  if(action==='drawdown_loan'){const amt=prompt('סכום משיכה (₪):','5000000');if(!amt)return;params.amount=Number(amt);}
+  if(action==='repay_loan'){const amt=prompt('סכום פירעון (₪):','1000000');if(!amt)return;params.amount=Number(amt);}
+  if(action==='award_tender'){const bid=prompt('מזהה הצעה זוכה (bid-x):');if(!bid)return;params.bid_id=bid;}
+  if(action==='sign_sale'){const buyer=prompt('מזהה רוכש (buyer-x):');if(!buyer)return;params.buyer_id=buyer;params.apartment_id=id;delete params[key];}
+  await exec(action,params);
+};
+
+const VIEWS={dashboard:vDashboard,pipeline:vPipeline,budget:vBudget,sales:vSales,cashflow:vCashflow,finance:vFinance,risk:vRisk,entities:vEntities};
+async function render(){
+  const view=$('#view');
+  view.innerHTML='<div class="loading">טוען…</div>';
+  try{view.innerHTML=await VIEWS[tab]();}
+  catch(e){view.innerHTML='<div class="err">שגיאה בטעינה: '+esc(e.message)+'</div>';}
+}
+renderTabs();render();
+</script>
+</body>
+</html>
