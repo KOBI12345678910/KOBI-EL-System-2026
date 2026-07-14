@@ -4,13 +4,16 @@
 This is a **Palantir-grade Enterprise ERP** — not a collection of pages.
 Treat it as a fully connected operating system with business flow from end to end.
 
-## 4 Services
+## 5 Services
 | Service | Role | Port |
 |---------|------|------|
 | **TECHNO_KOL_OPS** | Operational Core (hub) | 3200 |
 | **ONYX_PROCUREMENT** | Finance & Procurement backbone | 3100 |
 | **PAYROLL_AUTONOMOUS** | Workforce & Salary engine | 5173 (served at /payroll) |
 | **ONYX_AI** | Intelligence & Automation layer | 3300 (served at /ai) |
+| **SMARTBUILD_PILOT** | Real-Estate Development Control Tower (`smartbuild-pilot/`) | 3400 |
+
+`smartbuild-pilot/` is a zero-dependency Node service (see `smartbuild-pilot/SPEC.md`) that re-implements the SmartBuildPilot/YzmCon real-estate finance system with the same core-module pattern as `onyx-procurement/src/pipeline/` plus 11 deterministic financial engines (budget, Sale-Law sales, 36-month cashflow, zero-report/IRR, covenants, risk, Monte Carlo, alerts, insights, health).
 
 ## Architecture — `src/pipeline/`
 All system definitions live in 6 modules under `onyx-procurement/src/pipeline/`:
